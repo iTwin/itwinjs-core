@@ -1703,13 +1703,6 @@ export enum ClipEventType {
     NewPlane = 1
 }
 
-// @internal
-export enum ClipResult {
-    NewElements = 1,
-    NotSupported = 0,
-    OriginalElements = 2
-}
-
 // @public
 export class Cluster<T extends Marker> {
     constructor(markers: T[]);
@@ -2541,25 +2534,18 @@ export namespace EditManipulator {
 // @internal (undocumented)
 export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
     clear(): void;
     // (undocumented)
     get count(): number;
-    // (undocumented)
-    readonly elements: string[];
+    readonly elements: Id64Array;
     find(id: Id64String): boolean;
     getSource(): ModifyElementSource.Unknown | ModifyElementSource;
-    // (undocumented)
     readonly groupMarks: GroupMark[];
-    // (undocumented)
     has(id: string): boolean;
-    hilite(): void;
-    // (undocumented)
-    hilitedState: HilitedState;
-    hiliteOnAdd: boolean;
     // (undocumented)
     iModel: IModelConnection;
     invert(arg: Id64Arg): boolean;
@@ -2567,6 +2553,8 @@ export class ElementAgenda {
     get isEmpty(): boolean;
     // (undocumented)
     get length(): number;
+    // (undocumented)
+    manageHiliteState: boolean;
     popGroup(): void;
     // (undocumented)
     remove(arg: Id64Arg): boolean;
@@ -2647,6 +2635,104 @@ export class ElementPicker {
     viewport?: Viewport;
 }
 
+// @alpha (undocumented)
+export abstract class ElementSetTool extends PrimitiveTool {
+    protected get agenda(): ElementAgenda;
+    protected get allowDragSelect(): boolean;
+    protected get allowGroups(): boolean;
+    protected get allowSelectionSet(): boolean;
+    // (undocumented)
+    protected anchorPoint?: Point3d;
+    // (undocumented)
+    protected buildDragSelectAgenda(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<boolean>;
+    // (undocumented)
+    protected buildLocateAgenda(hit: HitDetail): Promise<boolean>;
+    // (undocumented)
+    protected buildSelectionSetAgenda(ss: SelectionSet): Promise<boolean>;
+    protected chooseNextHit(ev: BeButtonEvent): Promise<EventHandled>;
+    protected get clearSelectionSet(): boolean;
+    protected get controlKeyContinuesSelection(): boolean;
+    protected get controlKeyInvertsSelection(): boolean;
+    protected get currentElementCount(): number;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    protected doLocate(ev: BeButtonEvent, newSearch: boolean): Promise<boolean>;
+    // (undocumented)
+    protected doProcessSelectionSetImmediate(): Promise<void>;
+    // (undocumented)
+    protected dragStartPoint?: Point3d;
+    filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus>;
+    // (undocumented)
+    protected gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
+    protected getLocateCandidates(hit: HitDetail): Promise<Id64Arg>;
+    protected getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg>;
+    // (undocumented)
+    protected initAgendaDynamics(): Promise<boolean>;
+    protected get isControlDown(): boolean;
+    protected isElementIdValid(id: Id64String, source: ModifyElementSource): boolean;
+    protected isElementValidForOperation(hit: HitDetail, _out?: LocateResponse): Promise<boolean>;
+    protected get isSelectByPoints(): boolean;
+    protected get isSelectionSetModify(): boolean;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onPostInstall(): void;
+    protected onProcessComplete(): Promise<void>;
+    // (undocumented)
+    onReinitialize(): void;
+    // (undocumented)
+    onResetButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onUnsuspend(): void;
+    protected processAgenda(_ev: BeButtonEvent): Promise<void>;
+    protected processAgendaImmediate(): Promise<void>;
+    protected processDataButton(ev: BeButtonEvent): Promise<EventHandled>;
+    protected processResetButton(ev: BeButtonEvent): Promise<EventHandled>;
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    protected get requireAcceptForSelectionSetDynamics(): boolean;
+    protected get requireAcceptForSelectionSetOperation(): boolean;
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    protected selectByPointsDecorate(context: DecorateContext): void;
+    // (undocumented)
+    protected selectByPointsEnd(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected selectByPointsStart(ev: BeButtonEvent): Promise<boolean>;
+    protected setPreferredElementSource(): void;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected get shouldEnableLocate(): boolean;
+    // (undocumented)
+    protected get shouldEnableSnap(): boolean;
+    // (undocumented)
+    protected useOverlapSelection(ev: BeButtonEvent): boolean;
+    protected get wantAccuSnap(): boolean;
+    protected get wantAdditionalElements(): boolean;
+    protected get wantAdditionalInput(): boolean;
+    protected get wantDynamics(): boolean;
+    protected wantProcessAgenda(_ev: BeButtonEvent): boolean;
+}
+
 // @public
 export class ElementState extends EntityState implements ElementProps {
     constructor(props: ElementProps, iModel: IModelConnection);
@@ -2659,19 +2745,6 @@ export class ElementState extends EntityState implements ElementProps {
     // @internal (undocumented)
     toJSON(): ElementProps;
     readonly userLabel?: string;
-}
-
-// @internal
-export enum ElemMethod {
-    Add = 0,
-    Invert = 1
-}
-
-// @internal
-export enum ElemSource {
-    Fence = 1,
-    Pick = 0,
-    SelectionSet = 2
 }
 
 // @internal
@@ -2801,15 +2874,6 @@ export class Environment {
     readonly sky: SkyBox;
     // (undocumented)
     toJSON(): EnvironmentProps;
-}
-
-// @internal
-export enum ErrorNums {
-    NoFence = 0,
-    NoFenceElems = 1,
-    NoFenceElemsOutside = 2,
-    NoSSElems = 3,
-    NotSupportedElmType = 4
 }
 
 // @public
@@ -3677,19 +3741,12 @@ export enum GraphicType {
     WorldOverlay = 3
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export interface GroupMark {
     // (undocumented)
     source: ModifyElementSource;
     // (undocumented)
     start: number;
-}
-
-// @internal (undocumented)
-export enum HilitedState {
-    No = 2,
-    Unknown = 0,
-    Yes = 1
 }
 
 // @internal (undocumented)
@@ -6072,11 +6129,9 @@ export class ModelState extends EntityState implements ModelProps {
     toJSON(): ModelProps;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export enum ModifyElementSource {
-    DragSelect = 5,
-    Fence = 3,
-    Group = 4,
+    DragSelect = 3,
     Selected = 1,
     SelectionSet = 2,
     Unknown = 0
@@ -10538,27 +10593,6 @@ export class UpsampledMapTile extends MapTile {
     get isUpsampled(): boolean;
     // (undocumented)
     get loadableTile(): RealityTile;
-}
-
-// @internal
-export enum UsesDragSelect {
-    Box = 0,
-    Line = 1,
-    None = 2
-}
-
-// @internal
-export enum UsesFence {
-    Check = 0,
-    None = 2,
-    Required = 1
-}
-
-// @internal
-export enum UsesSelection {
-    Check = 0,
-    None = 2,
-    Required = 1
 }
 
 // @beta
