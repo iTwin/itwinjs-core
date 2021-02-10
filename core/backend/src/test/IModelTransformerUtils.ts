@@ -1298,8 +1298,8 @@ export class FilterByViewTransformer extends IModelTransformer {
     Logger.logInfo(BackendLoggerCategory.IModelTransformer, `processAll complete with ${this._deferredElementIds.size} deferred elements remaining`);
   }
   /** Override of IModelTransformer.processDeferredElements that catches all exceptions and keeps going. */
-  public processDeferredElements(numRetries: number = 3): void {
-    try { super.processDeferredElements(numRetries); } catch (error) { }
+  public async processDeferredElements(numRetries: number = 3): Promise<void> {
+    try { await super.processDeferredElements(numRetries); } catch (error) { }
   }
 }
 

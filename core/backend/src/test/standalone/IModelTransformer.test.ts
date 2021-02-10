@@ -610,7 +610,7 @@ describe.only("IModelTransformer", () => {
       await transformerS2C.processModel(definitionB);
       await transformerS2C.processModel(physicalA);
       await transformerS2C.processModel(physicalB);
-      transformerS2C.processDeferredElements();
+      await transformerS2C.processDeferredElements();
       await transformerS2C.processRelationships(ElementRefersToElements.classFullName);
       transformerS2C.dispose();
       IModelTransformerUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");
@@ -663,7 +663,7 @@ describe.only("IModelTransformer", () => {
     await targetDb.importSchemas(new BackendRequestContext(), [cloneTestSchema101]);
 
     const transformer = new IModelTransformer(sourceDb, targetDb);
-    transformer.processElement(sourceElementId);
+    await transformer.processElement(sourceElementId);
     targetDb.saveChanges();
 
     const targetElementId = transformer.context.findTargetElementId(sourceElementId);
@@ -703,8 +703,8 @@ describe.only("IModelTransformer", () => {
     exporter.iModelExporter.visitRelationships = false;
     // call various methods to make sure the onExport* callbacks don't assert
     await exporter.iModelExporter.exportAll();
-    exporter.iModelExporter.exportElement(IModel.rootSubjectId);
-    exporter.iModelExporter.exportChildElements(IModel.rootSubjectId);
+    await exporter.iModelExporter.exportElement(IModel.rootSubjectId);
+    await exporter.iModelExporter.exportChildElements(IModel.rootSubjectId);
     await exporter.iModelExporter.exportRepositoryLinks();
     await exporter.iModelExporter.exportModelContents(IModel.repositoryModelId);
     await exporter.iModelExporter.exportRelationships(ElementRefersToElements.classFullName);

@@ -240,7 +240,7 @@ export class IModelExporter {
     await this.exportCodeSpecs();
     await this.exportFonts();
     this.exportModelContainer(this.sourceDb.models.getModel(IModel.repositoryModelId));
-    this.exportElement(IModel.rootSubjectId);
+    await this.exportElement(IModel.rootSubjectId);
     await this.exportRepositoryLinks();
     await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
@@ -269,7 +269,7 @@ export class IModelExporter {
     requestContext.enter();
     await this.exportCodeSpecs();
     await this.exportFonts();
-    this.exportElement(IModel.rootSubjectId);
+    await this.exportElement(IModel.rootSubjectId);
     await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
     // handle deletes
@@ -460,10 +460,10 @@ export class IModelExporter {
     }
     Logger.logTrace(loggerCategory, `exportModelContents()`);
     const sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
-    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
       statement.bindId("modelId", modelId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        this.exportElement(statement.getValue(0).getId());
+        await this.exportElement(statement.getValue(0).getId());
       }
     });
   }
@@ -525,7 +525,7 @@ export class IModelExporter {
   /** Export the specified element, its child elements (if applicable), and any owned ElementAspects.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportElement(elementId: Id64String): void {
+  public async exportElement(elementId: Id64String): Promise<void> {
     if (!this.visitElements) {
       Logger.logTrace(loggerCategory, `visitElements=false, skipping exportElement(${elementId})`);
       return;
@@ -539,8 +539,7 @@ export class IModelExporter {
       } else {
         // NOTE: This optimization assumes that the Element will change (LastMod) if an owned ElementAspect changes
         // NOTE: However, child elements may have changed without the parent changing
-        this.exportChildElements(elementId);
-        return;
+        return this.exportChildElements(elementId);
       }
     }
     const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry });
@@ -549,14 +548,14 @@ export class IModelExporter {
       this.handler.callProtected.onExportElement(element, isUpdate);
       this.trackProgress();
       this.exportElementAspects(elementId);
-      this.exportChildElements(elementId);
+      await this.exportChildElements(elementId);
     }
   }
 
   /** Export the child elements of the specified element from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportChildElements(elementId: Id64String): void {
+  public async exportChildElements(elementId: Id64String): Promise<void> {
     if (!this.visitElements) {
       Logger.logTrace(loggerCategory, `visitElements=false, skipping exportChildElements(${elementId})`);
       return;
@@ -565,7 +564,7 @@ export class IModelExporter {
     if (childElementIds.length > 0) {
       Logger.logTrace(loggerCategory, `exportChildElements(${elementId})`);
       for (const childElementId of childElementIds) {
-        this.exportElement(childElementId);
+        await this.exportElement(childElementId);
       }
     }
   }
@@ -577,10 +576,10 @@ export class IModelExporter {
       return;
     }
     const sql = `SELECT ECInstanceId FROM ${RepositoryLink.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
-    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
       statement.bindId("modelId", IModel.repositoryModelId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        this.exportElement(statement.getValue(0).getId());
+        await this.exportElement(statement.getValue(0).getId());
       }
     });
   }

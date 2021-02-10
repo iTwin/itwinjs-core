@@ -312,19 +312,19 @@ export class IModelTransformer extends IModelExportHandler {
    * @param sourceElementId Identifies the Element from the source iModel to import.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processElement(sourceElementId: Id64String): void {
+  public async processElement(sourceElementId: Id64String): Promise<void> {
     if (sourceElementId === IModel.rootSubjectId) {
       throw new IModelError(IModelStatus.BadRequest, "The root Subject should not be directly imported", Logger.logError, loggerCategory);
     }
-    this.exporter.exportElement(sourceElementId);
+    return this.exporter.exportElement(sourceElementId);
   }
 
   /** Import child elements into the target IModelDb
    * @param sourceElementId Import the child elements of this element in the source IModelDb.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processChildElements(sourceElementId: Id64String): void {
-    this.exporter.exportChildElements(sourceElementId);
+  public async processChildElements(sourceElementId: Id64String): Promise<void> {
+    return this.exporter.exportChildElements(sourceElementId);
   }
 
   /** Override of [IModelExportHandler.shouldExportElement]($backend) that is called to determine if an element should be exported from the source iModel.
@@ -489,15 +489,17 @@ export class IModelTransformer extends IModelExportHandler {
   /** Import elements that were deferred in a prior pass.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processDeferredElements(numRetries: number = 3): void {
+  public async processDeferredElements(numRetries: number = 3): Promise<void> {
     Logger.logTrace(loggerCategory, `processDeferredElements(), numDeferred=${this._deferredElementIds.size}`);
     const copyOfDeferredElementIds: Id64Set = this._deferredElementIds;
     this._deferredElementIds = new Set<Id64String>();
-    copyOfDeferredElementIds.forEach((elementId: Id64String) => this.processElement(elementId));
+    for (const elementId of copyOfDeferredElementIds) {
+      await this.processElement(elementId);
+    }
     if (this._deferredElementIds.size > 0) {
       if (--numRetries > 0) {
         Logger.logTrace(loggerCategory, "Retrying processDeferredElements()");
-        this.processDeferredElements(numRetries);
+        await this.processDeferredElements(numRetries);
       } else {
         throw new IModelError(IModelStatus.BadRequest, "Not all deferred elements could be processed", Logger.logError, loggerCategory);
       }
@@ -702,9 +704,9 @@ export class IModelTransformer extends IModelExportHandler {
     this.sourceDb.elements.getElement(sourceSubjectId, Subject); // throws if sourceSubjectId is not a Subject
     this.targetDb.elements.getElement(targetSubjectId, Subject); // throws if targetSubjectId is not a Subject
     this.context.remapElement(sourceSubjectId, targetSubjectId);
-    this.processChildElements(sourceSubjectId);
+    await this.processChildElements(sourceSubjectId);
     await this.processSubjectSubModels(sourceSubjectId);
-    this.processDeferredElements();
+    await this.processDeferredElements();
   }
 
   /** Export everything from the source iModel and import the transformed entities into the target iModel.
@@ -715,11 +717,11 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportCodeSpecs();
     await this.exporter.exportFonts();
     // The RepositoryModel and root Subject of the target iModel should not be transformed.
-    this.exporter.exportChildElements(IModel.rootSubjectId); // start below the root Subject
+    await this.exporter.exportChildElements(IModel.rootSubjectId); // start below the root Subject
     await this.exporter.exportRepositoryLinks();
     await this.exporter.exportSubModels(IModel.repositoryModelId); // start below the RepositoryModel
     await this.exporter.exportRelationships(ElementRefersToElements.classFullName);
-    this.processDeferredElements();
+    await this.processDeferredElements();
     if (!this._isReverseSynchronization) {
       this.detectElementDeletes();
       this.detectRelationshipDeletes();
@@ -739,7 +741,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(requestContext, startChangeSetId);
     requestContext.enter();
-    this.processDeferredElements();
+    await this.processDeferredElements();
     this.importer.computeProjectExtents();
   }
 }

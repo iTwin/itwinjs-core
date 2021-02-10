@@ -2648,11 +2648,11 @@ export class IModelExporter {
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
     exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
-    exportChildElements(elementId: Id64String): void;
+    exportChildElements(elementId: Id64String): Promise<void>;
     exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
     exportCodeSpecByName(codeSpecName: string): Promise<void>;
     exportCodeSpecs(): Promise<void>;
-    exportElement(elementId: Id64String): void;
+    exportElement(elementId: Id64String): Promise<void>;
     exportFontByName(fontName: string): Promise<void>;
     exportFontByNumber(fontNumber: number): Promise<void>;
     exportFonts(): Promise<void>;
@@ -2914,11 +2914,11 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): Promise<void>;
     processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
-    processChildElements(sourceElementId: Id64String): void;
+    processChildElements(sourceElementId: Id64String): Promise<void>;
     processCodeSpec(codeSpecName: string): Promise<void>;
     processCodeSpecs(): Promise<void>;
-    processDeferredElements(numRetries?: number): void;
-    processElement(sourceElementId: Id64String): void;
+    processDeferredElements(numRetries?: number): Promise<void>;
+    processElement(sourceElementId: Id64String): Promise<void>;
     processFonts(): Promise<void>;
     processModel(sourceModeledElementId: Id64String): Promise<void>;
     processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): Promise<void>;
