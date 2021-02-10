@@ -706,7 +706,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.context.remapElement(sourceSubjectId, targetSubjectId);
     await this.processChildElements(sourceSubjectId);
     await this.processSubjectSubModels(sourceSubjectId);
-    await this.processDeferredElements();
+    return this.processDeferredElements();
   }
 
   /** Export everything from the source iModel and import the transformed entities into the target iModel.

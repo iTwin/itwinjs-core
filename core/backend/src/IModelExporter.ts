@@ -548,7 +548,7 @@ export class IModelExporter {
       this.handler.callProtected.onExportElement(element, isUpdate);
       this.trackProgress();
       this.exportElementAspects(elementId);
-      await this.exportChildElements(elementId);
+      return this.exportChildElements(elementId);
     }
   }
 
