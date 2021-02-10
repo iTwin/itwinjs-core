@@ -46,40 +46,69 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     return false;
   }, [backgroundLayers, overlayLayers]);
 
+  const handleModalUrlDialogOk = React.useCallback(() => {
+    // close popup and refresh UI
+    onLayerAttached();
+  }, [onLayerAttached]);
+
   React.useEffect(() => {
     async function attemptToAddLayer(layerName: string) {
       if (layerName && activeViewport) {
         // if the layer is not in the style add it now.
         if (undefined === backgroundLayers?.find((layer) => layerName === layer.name) && undefined === overlayLayers?.find((layer) => layerName === layer.name)) {
           const mapLayerSettings = sources?.find((source) => source.name === layerName);
-          if (mapLayerSettings) {
-            try {
-              setLoading(true);
-              const { status, subLayers } = await mapLayerSettings.validateSource();
+          if (mapLayerSettings === undefined) {
+            return;
+          }
+
+          try {
+            setLoading(true);
+            const { status, subLayers } = await mapLayerSettings.validateSource();
+            if (status === MapLayerSourceStatus.Valid || status === MapLayerSourceStatus.RequireAuth) {
+
               if (status === MapLayerSourceStatus.Valid) {
-                activeViewport.displayStyle.attachMapLayer({
-                  formatId: mapLayerSettings.formatId,
-                  name: mapLayerSettings.name,
-                  url: mapLayerSettings.url,
-                  userName: mapLayerSettings.userName,
-                  password: mapLayerSettings.password,
-                  maxZoom: mapLayerSettings.maxZoom,
-                  subLayers,
-                }, isOverlay);
-                activeViewport.invalidateRenderPlan();
-                setLoading(false);
-                if (onLayerAttached)
-                  onLayerAttached();
-              } else {
-                IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Invalid response from URL: ${mapLayerSettings.url}`));
-                setLoading(false);
+
+                const layerSettings = mapLayerSettings.toLayerSettings();
+
+                if (layerSettings) {
+                  const updatedLayerSettings = layerSettings.clone({ subLayers });
+                  activeViewport.displayStyle.attachMapLayerSettings(updatedLayerSettings, isOverlay);
+
+                  activeViewport.invalidateRenderPlan();
+
+                  const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: layerSettings.name, sourceUrl: layerSettings.url });
+                  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+                }
+
+              } else if (status === MapLayerSourceStatus.RequireAuth) {
+                ModalDialogManager.openDialog(
+                  <MapUrlDialog
+                    activeViewport={activeViewport}
+                    isOverlay={isOverlay}
+                    layerToEdit={mapLayerSettings.toJSON()}
+                    onOkResult={handleModalUrlDialogOk}
+                    mapTypesOptions={mapTypesOptions}
+                    askForCredentialsOnly={true} />
+                );
               }
-            } catch (err) {
+
               setLoading(false);
-              IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "Error loading map layers", err.toString()));
+              if (onLayerAttached) {
+                onLayerAttached();
+              }
+
+            } else {
+              const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerValidationFailed", { sourceUrl: mapLayerSettings.url });
+              IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
+              setLoading(false);
             }
+          } catch (err) {
+            setLoading(false);
+            const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttachError", { error: err, sourceUrl: mapLayerSettings.url });
+            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
           }
         }
+
       }
       return;
     }
@@ -88,7 +117,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
       attemptToAddLayer(layerNameToAdd); // eslint-disable-line @typescript-eslint/no-floating-promises
       setLayerNameToAdd(undefined);
     }
-  }, [setLayerNameToAdd, layerNameToAdd, activeViewport, sources, backgroundLayers, isOverlay, overlayLayers, onLayerAttached]);
+  }, [setLayerNameToAdd, layerNameToAdd, activeViewport, sources, backgroundLayers, isOverlay, overlayLayers, onLayerAttached, handleModalUrlDialogOk, mapTypesOptions]);
 
   const options = React.useMemo(() => sources?.filter((source) => !styleContainsLayer(source.name)).map((value) => value.name), [sources, styleContainsLayer]);
   const filteredOptions = React.useMemo(() => {
@@ -98,11 +127,6 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
       return options?.filter((option) => option.toLowerCase().includes(sourceFilterString?.toLowerCase()));
     }
   }, [options, sourceFilterString]);
-
-  const handleModalUrlDialogOk = React.useCallback(() => {
-    // close popop and refresh UI
-    onLayerAttached();
-  }, [onLayerAttached]);
 
   const handleAddNewMapSource = React.useCallback(() => {
     ModalDialogManager.openDialog(<MapUrlDialog isOverlay={isOverlay} onOkResult={handleModalUrlDialogOk} mapTypesOptions={mapTypesOptions} />);
