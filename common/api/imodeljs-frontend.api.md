@@ -2462,11 +2462,9 @@ export class ElementAgenda {
     clear(): void;
     // (undocumented)
     get count(): number;
-    // (undocumented)
     readonly elements: Id64Array;
     find(id: Id64String): boolean;
     getSource(): ModifyElementSource.Unknown | ModifyElementSource;
-    // (undocumented)
     readonly groupMarks: GroupMark[];
     has(id: string): boolean;
     // (undocumented)
