@@ -15,7 +15,7 @@ import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { IsThematic } from "../TechniqueFlags";
 import { Texture2DHandle } from "../Texture";
-import { addUInt32s } from "./Common";
+import { addShaderFlags, addUInt32s } from "./Common";
 import { addClassifierFlash } from "./FeatureSymbology";
 import { addWindowToTexCoords } from "./Fragment";
 import { addInstancedRtcMatrix } from "./Vertex";
@@ -52,6 +52,15 @@ const applyPlanarClassificationColor = `
   }
 
   vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
+  if (colorTexel.b >= 0.5) {
+    if (u_shaderFlags[kShaderBit_IgnoreNonLocatable]) {
+      discard;
+      return vec4(0.0);
+    }
+    colorTexel.b = (colorTexel.b * 255.0 - 128.0) / 127.0;
+  } else {
+    colorTexel.b *= 255.0 / 127.0;
+  }
   bool isClassified = colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0;
   float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
   if (kClassifierDisplay_Off == param)
@@ -102,6 +111,15 @@ const applyPlanarClassificationColorForThematic = `
   }
 
   vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
+  if (colorTexel.b >= 0.5) {
+    if (u_shaderFlags[kShaderBit_IgnoreNonLocatable]) {
+      discard;
+      return vec4(0.0);
+    }
+    colorTexel.b = (colorTexel.b * 255.0 - 128.0) / 127.0;
+  } else {
+    colorTexel.b *= 255.0 / 127.0;
+  }
   bool isClassified = colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0;
   float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
   if (kClassifierDisplay_Off == param)
@@ -248,6 +266,8 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
     frag.addFunction(volClassOpaqueColor);
   }
 
+  addShaderFlags(builder);
+
   frag.set(FragmentShaderComponent.ApplyPlanarClassifier, (isThematic === IsThematic.No) ? applyPlanarClassificationColor : applyPlanarClassificationColorForThematic);
 }
 
@@ -286,24 +306,39 @@ export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextur
   frag.set(FragmentShaderComponent.ComputeBaseColor, supportTextures ? computeClassifiedSurfaceHiliteColor : computeClassifiedHiliteColor);
 }
 
+// NonLocatable flag is put in upper bit of blue component when drawing the classification texture.
+const encodeNonLocatableWithFeatures = `
+vec4 encodeNonLocatable(vec4 clr) {
+  float encoded_b = (floor(clr.b * 127.0) + float(extractNthBit(floor(v_feature_emphasis + 0.5), kEmphBit_NonLocatable)) * 128.0) / 255.0;
+  return vec4(clr.r, clr.g, encoded_b, clr.a);
+}
+`;
+
+const encodeNonLocatable = `
+vec4 encodeNonLocatable(vec4 clr) {
+  float encoded_b = floor(clr.b * 127.0) / 255.0;
+  return vec4(clr.r, clr.g, encoded_b, clr.a);
+}
+`;
+
 const overrideClassifierColorPrelude = `
   if (0.0 == u_planarClassifierInsideMode)
     return currentColor;
 
   if (0.0 == currentColor.a)
-    return vec4(0.0, 0.0, 1.0, 0.5);
+    return encodeNonLocatable(vec4(0.0, 0.0, 1.0, 0.5));
 `;
 
 const overrideClassifierEmphasis = `
   if (kClassifierDisplay_Element != u_planarClassifierInsideMode) {
     float emph = floor(v_feature_emphasis + 0.5);
     if (0.0 != emph)
-      return vec4(extractNthBit(emph, kEmphBit_Hilite), extractNthBit(emph, kEmphBit_Flash), 0.0, 0.5);
+      return encodeNonLocatable(vec4(extractNthBit(emph, kEmphBit_Hilite), extractNthBit(emph, kEmphBit_Flash), 0.0, 0.5));
   }
 `;
 
 const overrideClassifierColorPostlude = `
-  return currentColor;
+  return encodeNonLocatable(currentColor);
 `;
 
 const overrideClassifierWithFeatures = overrideClassifierColorPrelude + overrideClassifierEmphasis + overrideClassifierColorPostlude;
@@ -314,7 +349,7 @@ const overrideClassifierColorPreludeForThematic = `
     return currentColor;
 
   if (0.0 == currentColor.a)
-    return vec4(0.0, 0.0, 1.0, 0.5);
+    return encodeNonLocatable(vec4(0.0, 0.0, 1.0, 0.5));
 
   bool isElem = kClassifierDisplay_Element == u_planarClassifierInsideMode;
 `;
@@ -322,14 +357,14 @@ const overrideClassifierColorPreludeForThematic = `
 const overrideClassifierEmphasisForThematic = `
   float emph = floor(v_feature_emphasis + 0.5);
   if (0.0 != emph)
-    return vec4(extractNthBit(emph, kEmphBit_Hilite), extractNthBit(emph, kEmphBit_Flash), isElem ? currentColor.a : 0.0, isElem ? 1.0 : 0.5);
+    return encodeNonLocatable(vec4(extractNthBit(emph, kEmphBit_Hilite), extractNthBit(emph, kEmphBit_Flash), isElem ? currentColor.a : 0.0, isElem ? 1.0 : 0.5));
   else if (kClassifierDisplay_Element == u_planarClassifierInsideMode)
-    return vec4(0.0, 0.0, currentColor.a, 1.0);
+    return encodeNonLocatable(vec4(0.0, 0.0, currentColor.a, 1.0));
 `;
 
 // Thematic classifiers use alpha of 1 to blend; we just want thematic colors to largely win out except when selecting and flashing classifiers.
 const overrideClassifierColorPostludeClipForThematic = `
-  return isElem ? vec4(0.0, 0.0, 1.0, 1.0) : currentColor;
+  return encodeNonLocatable(isElem ? vec4(0.0, 0.0, 1.0, 1.0) : currentColor);
 `;
 
 const overrideClassifierWithFeaturesForThematic = overrideClassifierColorPreludeForThematic + overrideClassifierEmphasisForThematic + overrideClassifierColorPostlude;
@@ -353,6 +388,7 @@ export function addOverrideClassifierColor(builder: ProgramBuilder, isThematic: 
   });
 
   const haveOverrides = undefined !== builder.frag.find("v_feature_emphasis");
+  builder.frag.addFunction(haveOverrides ? encodeNonLocatableWithFeatures : encodeNonLocatable);
   if (isThematic === IsThematic.No)
     builder.frag.set(FragmentShaderComponent.OverrideColor, haveOverrides ? overrideClassifierWithFeatures : overrideClassifierForClip);
   else

@@ -148,7 +148,8 @@ function SampleNavigationWidget () {
       horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Horizontal} />}
       verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />}
     />
-  ```
+  );
+```
 
 There is an extensible Navigation Widget named [BasicNavigationWidget]($ui-framework) in the ui-framework package. It provides basic view manipulation tools and supports the specification of additional horizontal and vertical toolbar items via props.
 
