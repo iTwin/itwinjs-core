@@ -26,7 +26,7 @@ import { TimePointComparisonTool } from "./TimePointComparison";
 import { FenceClassifySelectedTool } from "./Fence";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { PathDecorationTestTool } from "./PathDecorationTest";
-import { DeleteElementsTool, EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, UndoTool } from "./EditingTools";
+import { DeleteElementsTool, EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, RotateElementByAngleTool, RotateElementByPointsTool, UndoTool } from "./EditingTools";
 import { AsyncMethodsOf, FrontendIpc, MobileRpcConfiguration, PromiseReturnType } from "@bentley/imodeljs-common";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 
@@ -168,6 +168,8 @@ export class DisplayTestApp {
       ReopenIModelTool,
       ResizeWindowTool,
       RestoreWindowTool,
+      RotateElementByAngleTool,
+      RotateElementByPointsTool,
       SaveImageTool,
       ShutDownTool,
       SVTSelectionTool,
