@@ -15,6 +15,7 @@
     "test:electron": "certa -r electron --grep \"#integration\" --invert",
     "test:integration": "npm run test:integration:electron",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
+    "copy:config": "internal-tools copy-config",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
   },
   "repository": {},
@@ -53,6 +54,7 @@
     "eslint": "^6.8.0",
     "glob": "^7.1.2",
     "istanbul-instrumenter-loader": "^3.0.1",
+    "internal-tools": "0.0.0",
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
