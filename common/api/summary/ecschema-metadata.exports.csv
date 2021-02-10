@@ -167,7 +167,7 @@ alpha;PropertyEditResults
 alpha;PropertyMissing 
 beta;PropertyProps
 beta;PropertyType
-beta;propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "StructArrayProperty" | "StructProperty" | "NavigationProperty"
+beta;propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty"
 beta;PropertyTypeUtils
 alpha;PropertyValueChange 
 beta;RelationshipClass 

@@ -1824,7 +1824,7 @@ export const expandWidget: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "right" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -1840,7 +1840,7 @@ export const expandWidget: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "right" | "top";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -1907,7 +1907,7 @@ export const expandWidget: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "right" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -2612,7 +2612,7 @@ export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, d
 export function getFeatureOverrideSyncEventIds(): string[];
 
 // @internal (undocumented)
-export const getFirstItem: (groupItemDef: GroupItemDef) => import("../shared/ToolItemDef").ToolItemDef | ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | GroupItemDef | undefined;
+export const getFirstItem: (groupItemDef: GroupItemDef) => import("../shared/CommandItemDef").CommandItemDef | ActionButtonItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
 
 // @internal (undocumented)
 export const getFirstItemId: (groupItemDef: GroupItemDef) => string;
@@ -4213,7 +4213,7 @@ export interface ProjectServices {
 }
 
 // @public @deprecated
-export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "isInFooterMode" | "ref" | "style" | "className" | "key" | "onOpenWidget" | "openWidget">>;
+export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
 export class PropsHelper {
@@ -4425,10 +4425,10 @@ export class SelectionContextToolDefinitions {
 }
 
 // @public
-export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "isInFooterMode" | "ref" | "style" | "className" | "key" | "onOpenWidget" | "openWidget">>;
+export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "isInFooterMode" | "ref" | "style" | "className" | "key" | "onOpenWidget" | "openWidget">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -4554,7 +4554,7 @@ export const setPanelSize: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "right" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4570,7 +4570,7 @@ export const setPanelSize: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "right" | "top";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4637,7 +4637,7 @@ export const setPanelSize: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "right" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4657,7 +4657,7 @@ export const setPanelSize: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, side: "bottom" | "left" | "right" | "top", size: number | undefined) => Base;
+}>(base: Base, side: PanelSide, size: number | undefined) => Base;
 
 // @internal (undocumented)
 export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
@@ -4673,7 +4673,7 @@ export const setWidgetLabel: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "right" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4689,7 +4689,7 @@ export const setWidgetLabel: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "right" | "top";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4756,7 +4756,7 @@ export const setWidgetLabel: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "right" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4789,7 +4789,7 @@ export const setWidgetState: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "right" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4805,7 +4805,7 @@ export const setWidgetState: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "right" | "top";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -4872,7 +4872,7 @@ export const setWidgetState: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "right" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -4969,7 +4969,7 @@ export const showWidget: <Base extends {
         readonly home: {
             readonly widgetIndex: number;
             readonly widgetId: string | undefined;
-            readonly side: "bottom" | "left" | "right" | "top";
+            readonly side: PanelSide;
         };
     } | undefined;
     readonly floatingWidgets: {
@@ -4985,7 +4985,7 @@ export const showWidget: <Base extends {
                 readonly home: {
                     readonly widgetIndex: number;
                     readonly widgetId: string | undefined;
-                    readonly side: "bottom" | "left" | "right" | "top";
+                    readonly side: PanelSide;
                 };
             };
         };
@@ -5052,7 +5052,7 @@ export const showWidget: <Base extends {
                 readonly height: number;
             } | undefined;
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
-            readonly allowedPanelTargets?: readonly ("bottom" | "left" | "right" | "top")[] | undefined;
+            readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
         };
     };
     readonly toolSettings: {
@@ -5104,7 +5104,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     }
 
 // @public
-export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "isInFooterMode" | "ref" | "style" | "className" | "key" | "onOpenWidget" | "openWidget">>;
+export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
@@ -5742,7 +5742,7 @@ export interface TaskPropsList {
 }
 
 // @public
-export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<ThemeManagerComponent> & ThemeProps, "children" | "ref" | "key">>;
+export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<ThemeManagerComponent> & ThemeProps, "ref" | "children" | "key">>;
 
 // @beta
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
@@ -7189,7 +7189,7 @@ export enum WidgetType {
 }
 
 // @beta
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "targetRef" | "onOpenWidget" | "openWidget">>>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
 
 // @alpha
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {
@@ -7247,7 +7247,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (
 };
 
 // @beta
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "onOpenWidget" | "openWidget">>>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
 
 // @public
 export class Workflow extends ItemDefBase {
