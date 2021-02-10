@@ -224,6 +224,7 @@ import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RenderTexture } from '@bentley/imodeljs-common';
 import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
+import { Response } from '@bentley/itwin-client';
 import { ResponseHandler } from '@bentley/imodeljs-common';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
@@ -1073,21 +1074,93 @@ export interface AppearanceOverrideProps {
 }
 
 // @internal (undocumented)
+export enum ArcGisErrorCode {
+    // (undocumented)
+    InvalidCredentials = 401,
+    // (undocumented)
+    InvalidToken = 498,
+    // (undocumented)
+    NoTokenService = 1001,
+    // (undocumented)
+    TokenRequired = 499,
+    // (undocumented)
+    UnknownError = 1000
+}
+
+// @internal (undocumented)
+export interface ArcGisGenerateTokenOptions {
+    // (undocumented)
+    client: ArcGisTokenClientType;
+    // (undocumented)
+    expiration?: number;
+    // (undocumented)
+    ip?: string;
+    // (undocumented)
+    referer?: string;
+}
+
+// @internal (undocumented)
+export interface ArcGisToken {
+    // (undocumented)
+    expires: number;
+    // (undocumented)
+    ssl: boolean;
+    // (undocumented)
+    token: string;
+}
+
+// @internal (undocumented)
+export enum ArcGisTokenClientType {
+    // (undocumented)
+    ip = 0,
+    // (undocumented)
+    referer = 1,
+    // (undocumented)
+    requestIp = 2
+}
+
+// @internal (undocumented)
+export class ArcGisTokenGenerator {
+    // (undocumented)
+    static fetchTokenServiceUrl(esriRestServiceUrl: string): Promise<string | undefined>;
+    // (undocumented)
+    static formEncode(str: string): string;
+    // (undocumented)
+    generate(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any>;
+    // (undocumented)
+    static getTokenServiceFromInfoJson(json: any): string | undefined;
+    // (undocumented)
+    getTokenServiceUrl(baseUrl: string): Promise<string | undefined>;
+    // (undocumented)
+    static rfc1738Encode(str: string): string;
+    }
+
+// @internal (undocumented)
+export class ArcGisTokenManager {
+    // (undocumented)
+    static getToken(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any>;
+    // (undocumented)
+    static invalidateToken(esriRestServiceUrl: string, userName: string): boolean;
+    }
+
+// @internal (undocumented)
 export class ArcGisUtilities {
     // (undocumented)
     static getEndpoint(url: string): Promise<any | undefined>;
     // (undocumented)
-    static getFootprintJson(url: string): Promise<any>;
+    static getFootprintJson(url: string, credentials?: RequestBasicCredentials): Promise<any>;
     // (undocumented)
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
     // (undocumented)
-    static getServiceJson(url: string, credentials?: RequestBasicCredentials): Promise<any>;
+    static getServiceJson(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<any>;
     // (undocumented)
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     // (undocumented)
-    static validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation>;
+    static hasTokenError(response: Response): boolean;
+    // (undocumented)
+    static validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
 // @internal
@@ -1433,7 +1506,7 @@ export class BingElevationProvider {
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     constructor(settings: MapLayerSettings);
     // (undocumented)
-    constructUrl(row: number, column: number, zoomLevel: number): string;
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
     getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
@@ -2076,6 +2149,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     anyMapLayersVisible(overlay: boolean): boolean;
     // @internal (undocumented)
     attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex?: number): void;
+    // @internal (undocumented)
+    attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex?: number): void;
     // @beta
     attachRealityModel(props: ContextRealityModelProps): void;
     get backgroundColor(): ColorDef;
@@ -2099,6 +2174,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeBaseMapProps(props: MapLayerProps | ColorDef): void;
     // @internal (undocumented)
     changeBaseMapTransparency(transparency: number): void;
+    // (undocumented)
+    changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string): void;
     // @internal (undocumented)
     changeMapLayerProps(props: MapLayerProps, index: number, isOverlay: boolean): void;
     // (undocumented)
@@ -2144,6 +2221,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     } | undefined;
     // @internal (undocumented)
     getIsBackgroundMapVisible(): boolean;
+    // @internal (undocumented)
+    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
     // @internal (undocumented)
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
@@ -3929,6 +4008,8 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
     // (undocumented)
     get castsShadows(): boolean;
     // (undocumented)
+    get imageryProvider(): MapLayerImageryProvider | undefined;
+    // (undocumented)
     iModel: IModelConnection;
     // (undocumented)
     get layerName(): string;
@@ -4814,7 +4895,7 @@ export class MapLayerFormat {
     // (undocumented)
     static register(): void;
     // (undocumented)
-    static validateSource(_url: string, _credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation>;
+    static validateSource(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
 // @internal (undocumented)
@@ -4829,7 +4910,7 @@ export class MapLayerFormatRegistry {
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
     // (undocumented)
-    validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation>;
+    validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
 // @internal (undocumented)
@@ -4843,7 +4924,7 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     cartoRange?: MapCartoRectangle;
     // (undocumented)
-    abstract constructUrl(row: number, column: number, zoomLevel: number): string;
+    abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
     protected get _filterByCartoRange(): boolean;
     // (undocumented)
@@ -4860,9 +4941,13 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getEPSG3857Y(latitude: number): number;
     // (undocumented)
+    protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): ImageSource | undefined;
+    // (undocumented)
     getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
-    getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
+    protected getRequestAuthorization(): RequestBasicCredentials | undefined;
+    // (undocumented)
+    getToolTip(_strings: string[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)
@@ -4880,9 +4965,13 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     get mutualExclusiveSubLayer(): boolean;
     // (undocumented)
+    readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
+    // (undocumented)
     protected _requestContext: ClientRequestContext;
     // (undocumented)
     protected readonly _settings: MapLayerSettings;
+    // (undocumented)
+    status: MapLayerImageryProviderStatus;
     // (undocumented)
     testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void): void;
     // (undocumented)
@@ -4899,6 +4988,14 @@ export abstract class MapLayerImageryProvider {
     get usesCachedTiles(): boolean;
     // (undocumented)
     protected _usesCachedTiles: boolean;
+}
+
+// @internal (undocumented)
+export enum MapLayerImageryProviderStatus {
+    // (undocumented)
+    RequireAuth = 1,
+    // (undocumented)
+    Valid = 0
 }
 
 // @beta
@@ -4964,13 +5061,15 @@ export class MapLayerSource implements MapLayerProps {
         transparentBackground: boolean | undefined;
     };
     // (undocumented)
+    toLayerSettings(): MapLayerSettings | undefined;
+    // (undocumented)
     transparentBackground?: boolean | undefined;
     // (undocumented)
     url: string;
     // (undocumented)
     userName?: string | undefined;
     // (undocumented)
-    validateSource(): Promise<MapLayerSourceValidation>;
+    validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
 // @internal
@@ -4992,11 +5091,15 @@ export class MapLayerSources {
 // @internal (undocumented)
 export enum MapLayerSourceStatus {
     // (undocumented)
-    InvalidFormat = 1,
+    InvalidCredentials = 1,
     // (undocumented)
-    InvalidTileTree = 2,
+    InvalidFormat = 2,
     // (undocumented)
-    InvalidUrl = 3,
+    InvalidTileTree = 3,
+    // (undocumented)
+    InvalidUrl = 4,
+    // (undocumented)
+    RequireAuth = 5,
     // (undocumented)
     Valid = 0
 }
@@ -5283,6 +5386,8 @@ export class MapTileTreeReference extends TileTreeReference {
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
+    // (undocumented)
+    getLayerImageryTreeRef(index: number): ImageryMapLayerTreeReference | undefined;
     // (undocumented)
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides;
     // (undocumented)
@@ -12422,7 +12527,7 @@ export class WmsCapabilities {
     // (undocumented)
     get cartoRange(): MapCartoRectangle | undefined;
     // (undocumented)
-    static create(url: string, credentials?: RequestBasicCredentials): Promise<WmsCapabilities | undefined>;
+    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmsCapabilities | undefined>;
     // (undocumented)
     get featureInfoFormats(): string[] | undefined;
     // (undocumented)
@@ -12505,7 +12610,7 @@ export class WmtsCapabilities {
     // (undocumented)
     readonly contents?: WmtsCapability.Contents;
     // (undocumented)
-    static create(url: string, credentials?: RequestBasicCredentials): Promise<WmtsCapabilities | undefined>;
+    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmtsCapabilities | undefined>;
     // (undocumented)
     static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined;
     // (undocumented)
