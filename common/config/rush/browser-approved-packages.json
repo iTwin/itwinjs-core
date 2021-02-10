@@ -576,7 +576,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
