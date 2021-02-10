@@ -202,13 +202,10 @@ export class IModelHostConfiguration {
  */
 export class IModelHost {
   private constructor() { }
-  private static _authorizationClient?: AuthorizationClient;
-  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for backend applications */
-  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
-  public static get authorizationClient(): AuthorizationClient | undefined { return IModelHost._authorizationClient; }
-  public static set authorizationClient(authorizationClient: AuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
+  public static authorizationClient?: AuthorizationClient;
 
   private static _imodelClient?: IModelClient;
+
   private static _clientAuthIntrospectionManager?: ClientAuthIntrospectionManager;
   /** @alpha */
   public static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined { return this._clientAuthIntrospectionManager; }
@@ -299,12 +296,6 @@ export class IModelHost {
     }
     this._platform = undefined;
     throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). imodeljs-backend requires version (${requiredVersion})`);
-  }
-
-  private static validateNodeJsVersion(): void {
-    const requiredVersion = require("../package.json").engines.node; // eslint-disable-line @typescript-eslint/no-var-requires
-    if (!semver.satisfies(process.version, requiredVersion))
-      throw new IModelError(IModelStatus.BadRequest, `Node.js version ${process.version} is not within the range acceptable to imodeljs-backend: (${requiredVersion})`);
   }
 
   private static setupRpcRequestContext() {
