@@ -10,7 +10,7 @@ import "./Settings.scss";
 import * as React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
-import { OptionType, ThemedSelect, ThemedSelectProps, Toggle } from "@bentley/ui-core";
+import { OptionType, Slider, ThemedSelect, ThemedSelectProps, Toggle } from "@bentley/ui-core";
 import { ColorTheme, FrameworkAccuDraw, ModalFrontstageInfo, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
 import { RootState, SampleAppActions, SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
@@ -56,6 +56,8 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
   private _escapeToHomeDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.escapeToHomeDescription");
   private _accuDrawNotificationsTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsTitle");
   private _accuDrawNotificationsDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsDescription");
+  private _widgetOpacityTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.widgetOpacityTitle");
+  private _widgetOpacityDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.widgetOpacityDescription");
 
   private _defaultThemeOption = { label: this._systemPreferredLabel, value: SYSTEM_PREFERRED_COLOR_THEME };
   private _themeOptions: Array<OptionType> = [
@@ -114,6 +116,13 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
     await SampleAppIModelApp.appUiSettings.accuDrawNotifications.saveSetting(SampleAppIModelApp.uiSettings);
   };
 
+  private _onWidgetOpacityChange = async (values: readonly number[]) => {
+    if (values.length > 0) {
+      UiFramework.setWidgetOpacity(values[0]);
+      await SampleAppIModelApp.appUiSettings.widgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
+    }
+  };
+
   public render(): React.ReactNode {
     return (
       <div className="uifw-settings">
@@ -149,6 +158,13 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
         />
         <SettingsItem title={this._accuDrawNotificationsTitle} description={this._accuDrawNotificationsDescription}
           settingUi={ <Toggle isOn={FrameworkAccuDraw.displayNotifications} showCheckmark={false} onChange={this._onAccuDrawNotificationsChange} /> }
+        />
+        <SettingsItem title={this._widgetOpacityTitle} description={this._widgetOpacityDescription}
+          settingUi={
+            <Slider  values={[UiFramework.getWidgetOpacity()]} step={0.01} showTooltip onChange={this._onWidgetOpacityChange}
+              min={0} max={1.0} showMinMax formatMax={(v: number) => v.toFixed(1)}
+              showTicks showTickLabels getTickCount={() => 10} formatTick={(v: number) => v.toFixed(1)}  />
+          }
         />
       </div>
     );
