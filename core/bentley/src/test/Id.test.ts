@@ -566,6 +566,15 @@ describe("CompressedId64Set", () => {
     roundTrip(["0x1", "0xffffffffffffffff"], "+1+FFFFFFFFFFFFFFFE");
     roundTrip(["0x1000000000000001", "0x4000000000000004", "0x7000000000000007", "0xa000007777777777"], "+1000000000000001+3000000000000003*2+3000007777777770");
 
+    roundTrip(["0xfffffffffe", "0xffffffffff"], "+FFFFFFFFFE+1");
+    roundTrip(["0xfffffffffe", "0x10000000001"], "+FFFFFFFFFE+3");
+    roundTrip(["0xffffffffff", "0x10000000001"], "+FFFFFFFFFF+2");
+    roundTrip(["0x10000000001", "0x10000000002"], "+10000000001+1");
+
+    roundTrip(["0x1", "0x10000000001"], "+1+10000000000");
+
+    roundTrip(["0x4000000023a", "0xe00000001c9"], "+4000000023A+9FFFFFFFF8F");
+
     expect(CompressedId64Set.compressArray([])).to.equal("");
     expect(CompressedId64Set.compressArray(["0"])).to.equal("");
     expect(CompressedId64Set.compressArray(["garbage", "0", "0x1", "0x4", "0", "0x5abc", "0x5xyz", "zzzzzzzz"])).to.equal("+1+3+5AB8");
@@ -598,6 +607,6 @@ describe("MutableCompressedId64Set", () => {
       mutate(set);
       expect(set.equals(test[2])).to.be.true;
       expect(set.equals(expected)).to.be.true;
-    };
+    }
   });
 });

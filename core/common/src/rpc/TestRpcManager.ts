@@ -24,7 +24,6 @@ import { RpcConfiguration, RpcDefaultConfiguration } from "./core/RpcConfigurati
  */
 export class TestRpcManager {
   public static initialize(interfaces: RpcInterfaceDefinition[]) {
-    // eslint-disable-next-line @typescript-eslint/class-name-casing
     const config = class extends RpcDefaultConfiguration {
       public interfaces: any = () => interfaces;
     };

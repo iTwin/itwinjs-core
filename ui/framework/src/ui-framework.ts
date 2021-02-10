@@ -9,6 +9,7 @@ export * from "./ui-framework/UiFramework";  // Please ensure that this line com
 
 export * from "./ui-framework/accudraw/AccuDrawCommandItems";
 export * from "./ui-framework/accudraw/AccuDrawDialog";
+export * from "./ui-framework/accudraw/AccuDrawKeyboardShortcuts";
 export * from "./ui-framework/accudraw/AccuDrawPopupManager";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
@@ -85,6 +86,7 @@ export * from "./ui-framework/hooks/useFrameworkVersion";
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
 export * from "./ui-framework/imodel-components/models-tree/ModelsTree";
+export * from "./ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
 export * from "./ui-framework/imodel-components/Common";
 export * from "./ui-framework/imodel-components/VisibilityTreeEventHandler";
 export * from "./ui-framework/imodel-components/VisibilityTreeRenderer";
@@ -208,6 +210,7 @@ export * from "./ui-framework/toolbar/useUiItemsProviderToolbarItems";
 export * from "./ui-framework/toolbar/useDefaultToolbarItems";
 
 export * from "./ui-framework/tools/CoreToolDefinitions";
+export * from "./ui-framework/tools/FrameworkToolAdmin";
 export * from "./ui-framework/tools/MarkupToolDefinitions";
 export * from "./ui-framework/tools/RestoreLayoutTool";
 

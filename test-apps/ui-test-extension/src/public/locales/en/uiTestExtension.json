@@ -62,5 +62,19 @@
         "identifyPosition": "Identify Position"
       }
     }
+  },
+  "properties": {
+    "widget-label": "Properties",
+    "too-many-elements-selected": "Too many elements selected",
+    "context-menu": {
+      "add-favorite": {
+        "label": "Add to Favorite",
+        "description": "Add this property to Favorite category"
+      },
+      "remove-favorite": {
+        "label": "Remove from Favorite",
+        "description": "Remove this property from Favorite category"
+      }
+    }
   }
 }

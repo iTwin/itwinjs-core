@@ -223,6 +223,14 @@ export interface IContentDataProvider extends IPresentationDataProvider {
     selectionInfo: SelectionInfo | undefined;
 }
 
+// @public
+export interface IFilteredPresentationTreeDataProvider extends IPresentationTreeDataProvider {
+    countFilteringResults(nodePaths: ReadonlyArray<Readonly<NodePathElement>>): number;
+    filter: string;
+    getActiveMatch(index: number): ActiveMatchInfo | undefined;
+    nodeMatchesFilter(node: TreeNodeItem): boolean;
+}
+
 // @beta
 export class InstanceKeyValueRenderer implements IPropertyValueRenderer {
     // (undocumented)
@@ -514,7 +522,7 @@ export interface UnifiedSelectionTreeEventHandlerParams {
 // @beta
 export function useControlledTreeFiltering(props: ControlledTreeFilteringProps): {
     nodeHighlightingProps: HighlightableTreeProps | undefined;
-    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | PagedTreeNodeLoader<FilteredPresentationTreeDataProvider>;
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
     filteredModelSource: TreeModelSource;
     isFiltering: boolean;
     matchesCount: number | undefined;

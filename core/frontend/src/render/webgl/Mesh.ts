@@ -21,7 +21,7 @@ import { LineCode } from "./LineCode";
 import { FloatRgba } from "./FloatRGBA";
 import { GL } from "./GL";
 import { Graphic } from "./Graphic";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { InstanceBuffers } from "./InstancedGeometry";
 import { createMaterialInfo, MaterialInfo } from "./Material";
 import { Primitive } from "./Primitive";
@@ -512,21 +512,21 @@ export class SurfaceGeometry extends MeshGeometry {
     if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode)
       return opaquePass;
 
+    // We have 3 sources of alpha: the material, the texture, and the color.
+    // Base alpha comes from the material if it overrides it; otherwise from the color.
+    // The texture's alpha is multiplied by the base alpha.
+    // So we must draw in the translucent pass if the texture has transparency OR the base alpha is less than 1.
     let hasAlpha = false;
-
-    // If the material overrides alpha (currently, everything except the default - aka "no" - material), alpha comes from the material
-    const mat = this.isLit && wantMaterials(vf) ? this.mesh.materialInfo : undefined;
+    const mat = wantMaterials(vf) ? this.mesh.materialInfo : undefined;
     if (undefined !== mat && mat.overridesAlpha)
       hasAlpha = mat.hasTranslucency;
-
-    // A texture can contain translucent pixels. Its alpha is also always multiplied by the material's alpha
-    const tex = this.wantTextures(target, true) ? this.texture : undefined;
-    if (!hasAlpha && undefined !== tex)
-      hasAlpha = tex.hasTranslucency;
-
-    // If we have a material overriding transparency, OR a texture, transparency comes solely from them. Otherwise, use element transparency.
-    if (undefined === tex && (undefined === mat || !mat.overridesAlpha))
+    else
       hasAlpha = this.getColor(target).hasTranslucency;
+
+    if (!hasAlpha) {
+      const tex = this.wantTextures(target, true) ? this.texture : undefined;
+      hasAlpha = undefined !== tex && tex.hasTranslucency;
+    }
 
     return hasAlpha ? RenderPass.Translucent : opaquePass;
   }
@@ -585,16 +585,7 @@ export class SurfaceGeometry extends MeshGeometry {
       flags[SurfaceBitIndex.HasNormals] = 0;
     }
 
-    if (this.useTexture(params)) {
-      flags[SurfaceBitIndex.HasTexture] = 1;
-      if (useMaterial && undefined !== this.mesh.materialInfo && this.mesh.materialInfo.overridesAlpha && RenderPass.Translucent === params.renderPass)
-        flags[SurfaceBitIndex.MultiplyAlpha] = 1;
-      else
-        flags[SurfaceBitIndex.MultiplyAlpha] = 0;
-    } else {
-      flags[SurfaceBitIndex.HasTexture] = 0;
-      flags[SurfaceBitIndex.MultiplyAlpha] = 0;
-    }
+    flags[SurfaceBitIndex.HasTexture] = this.useTexture(params) ? 1 : 0;
 
     // The transparency threshold controls how transparent a surface must be to allow light to pass through; more opaque surfaces cast shadows.
     flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;

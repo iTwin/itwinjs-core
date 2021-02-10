@@ -8,8 +8,11 @@ export * from "./FrontEndDevTools";
 
 export * from "./effects/Convolution";
 export * from "./effects/EffectTools";
+export * from "./effects/Explosion";
 export * from "./effects/FlipImage";
 export * from "./effects/LensDistortion";
+export * from "./effects/Random";
+export * from "./effects/Saturation";
 export * from "./effects/Snow";
 
 export * from "./tools/AnimationIntervalTool";
@@ -35,6 +38,7 @@ export * from "./tools/RenderTargetTools";
 export * from "./tools/ReportWebGLCompatibilityTool";
 export * from "./tools/SavedViews";
 export * from "./tools/SelectionTools";
+export * from "./tools/SetGpuMemoryLimitTool";
 export * from "./tools/SourceAspectIdTools";
 export * from "./tools/TileRequestDecoration";
 export * from "./tools/TileTreeBoundsDecoration";
@@ -56,6 +60,7 @@ export * from "./widgets/FpsTracker";
 export * from "./widgets/GpuProfiler";
 export * from "./widgets/KeyinField";
 export * from "./widgets/MemoryTracker";
+export * from "./widgets/TileMemoryBreakdown";
 export * from "./widgets/TileStatisticsTracker";
 export * from "./widgets/ToolSettingsTracker";
 

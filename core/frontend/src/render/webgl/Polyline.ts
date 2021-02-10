@@ -16,7 +16,7 @@ import { ColorInfo } from "./ColorInfo";
 import { ShaderProgramParams } from "./DrawCommand";
 import { LineCode } from "./LineCode";
 import { GL } from "./GL";
-import { BuffersContainer } from "./Handle";
+import { BuffersContainer } from "./AttributeBuffers";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";

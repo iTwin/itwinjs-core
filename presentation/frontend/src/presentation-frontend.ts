@@ -9,7 +9,9 @@
  * Common types used for retrieving presentation data from iModels.
  */
 export { Presentation } from "./presentation-frontend/Presentation";
-export { PresentationManager, PresentationManagerProps } from "./presentation-frontend/PresentationManager";
+export {
+  IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager, PresentationManagerProps,
+} from "./presentation-frontend/PresentationManager";
 export { RulesetManager } from "./presentation-frontend/RulesetManager";
 export { RulesetVariablesManager } from "./presentation-frontend/RulesetVariablesManager";
 export {

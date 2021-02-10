@@ -149,12 +149,20 @@ class TestUiProvider implements UiItemsProvider {
     return statusBarItems;
   }
 
-  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
+  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
-    if (stageId === "ViewsFrontstage" && location === StagePanelLocation.Right) {
+    const allowedStages = ["ViewsFrontstage", "Ui2"];
+    // Section parameter is ignored. The widget will be added once to the top section of a right panel.
+    if (allowedStages.includes(stageId) && location === StagePanelLocation.Right) {
       widgets.push({
         id: "addonWidget",
         getWidgetContent: () => <FillCentered>Addon Widget in panel</FillCentered>, // eslint-disable-line react/display-name
+      });
+    }
+    if (allowedStages.includes(stageId) && location === StagePanelLocation.Right && section === StagePanelSection.Middle) {
+      widgets.push({
+        id: "addonWidgetMiddle",
+        getWidgetContent: () => <FillCentered>Addon Widget in middle section</FillCentered>, // eslint-disable-line react/display-name
       });
     }
     return widgets;

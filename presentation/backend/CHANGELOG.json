@@ -2,6 +2,21 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/presentation-backend_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fi"
+          },
+          {
+            "comment": "Add ability to control content cache size"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/presentation-backend_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

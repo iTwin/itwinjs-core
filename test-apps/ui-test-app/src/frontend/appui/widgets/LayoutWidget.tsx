@@ -172,12 +172,15 @@ function useWidgetState(id: string) {
   const widgetDef = useWidgetDef(id);
   const [state, setState] = React.useState(widgetDef?.state);
   React.useEffect(() => {
+    setState(widgetDef?.state);
+  }, [widgetDef]);
+  React.useEffect(() => {
     const remove = FrontstageManager.onWidgetStateChangedEvent.addListener((e) => {
       if (e.widgetDef.id === id)
         setState(e.widgetState);
     });
     return remove;
-  });
+  }, [id]);
   return state;
 }
 

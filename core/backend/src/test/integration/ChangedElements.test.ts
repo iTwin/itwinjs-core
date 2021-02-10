@@ -7,7 +7,7 @@ import { ChangedElements } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import { ChangedElementsManager } from "../../ChangedElementsManager";
-import { AuthorizedBackendRequestContext, BriefcaseManager, ChangedElementsDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseManager, ChangedElementsDb, IModelHost, IModelJsFs, ProcessChangesetOptions } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -60,7 +60,12 @@ describe("ChangedElements (#integration)", () => {
     }
     assert.isTrue(changes === undefined);
     // Process changesets with "Items" presentation rules
-    const result = await cache.processChangesets(requestContext, iModel, "Items", startChangesetId, endChangesetId);
+    const options: ProcessChangesetOptions = {
+      rulesetId: "Items",
+      startChangesetId,
+      endChangesetId,
+    };
+    const result = await cache.processChangesets(requestContext, iModel, options);
     assert.equal(result, DbResult.BE_SQLITE_OK);
     // Check that the changesets should have been processed now
     assert.isTrue(cache.isProcessed(startChangesetId));
@@ -105,8 +110,9 @@ describe("ChangedElements (#integration)", () => {
     assert.isTrue(changes!.elements.length === changes!.classIds.length);
     assert.isTrue(changes!.elements.length === changes!.opcodes.length);
     assert.isTrue(changes!.elements.length === changes!.type.length);
-    // assert.isTrue(changes!.elements.length === changes!.properties!.length);
-    // NEEDS_WORK: DP
+    assert.isTrue(changes!.elements.length === changes!.properties!.length);
+    assert.isTrue(changes!.elements.length === changes!.oldChecksums!.length);
+    assert.isTrue(changes!.elements.length === changes!.newChecksums!.length);
     assert.isTrue(changes!.elements.length === changes!.modelIds!.length);
     assert.isTrue(changes!.elements.length === changes!.parentIds!.length);
     assert.isTrue(changes!.elements.length === changes!.parentClassIds!.length);
@@ -132,8 +138,9 @@ describe("ChangedElements (#integration)", () => {
     assert.isTrue(changes!.elements.length === changes!.opcodes.length);
     assert.isTrue(changes!.elements.length === changes!.type.length);
     assert.isTrue(changes!.elements.length === changes!.modelIds!.length);
-    // assert.isTrue(changes!.elements.length === changes!.properties!.length);
-    // NEEDS_WORK: DP
+    assert.isTrue(changes!.elements.length === changes!.properties!.length);
+    assert.isTrue(changes!.elements.length === changes!.oldChecksums!.length);
+    assert.isTrue(changes!.elements.length === changes!.newChecksums!.length);
     assert.isTrue(changes!.elements.length === changes!.parentIds!.length);
     assert.isTrue(changes!.elements.length === changes!.parentClassIds!.length);
 
@@ -148,8 +155,9 @@ describe("ChangedElements (#integration)", () => {
     assert.isTrue(changeData!.changedElements.elements.length === changeData!.changedElements.classIds.length);
     assert.isTrue(changeData!.changedElements.elements.length === changeData!.changedElements.opcodes.length);
     assert.isTrue(changeData!.changedElements.elements.length === changeData!.changedElements.type.length);
-    // assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.properties!.length);
-    // NEEDS_WORK: DP
+    assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.properties!.length);
+    assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.oldChecksums!.length);
+    assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.newChecksums!.length);
     assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.modelIds!.length);
     assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.parentIds!.length);
     assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.parentClassIds!.length);

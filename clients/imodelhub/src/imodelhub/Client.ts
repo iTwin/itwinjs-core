@@ -14,7 +14,7 @@ import { RbacClient } from "@bentley/rbac-client";
 
 /**
  * Class that allows access to different iModelHub class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
- * @beta
+ * @public
  */
 export class IModelHubClient extends IModelClient {
   /**

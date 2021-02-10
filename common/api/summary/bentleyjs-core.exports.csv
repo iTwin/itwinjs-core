@@ -89,9 +89,11 @@ public;OpenMode
 public;OrderedComparator
 beta;OrderedId64Iterable = Iterable
 beta;OrderedId64Iterable
+public;OrderedSet
 beta;partitionArray
 public;PerfLogger 
 public;PriorityQueue
+public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 beta;RepositoryStatus
 beta;RpcInterfaceStatus

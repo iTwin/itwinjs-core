@@ -72,6 +72,7 @@ export { tableWithUnifiedSelection, TableWithUnifiedSelectionProps } from "./pre
  */
 export { PresentationTreeDataProvider, PresentationTreeDataProviderProps, PresentationTreeDataProviderDataSourceEntryPoints } from "./presentation-components/tree/DataProvider";
 export { IPresentationTreeDataProvider } from "./presentation-components/tree/IPresentationTreeDataProvider";
+export { IFilteredPresentationTreeDataProvider } from "./presentation-components/tree/FilteredDataProvider";
 export { DEPRECATED_treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./presentation-components/tree/WithUnifiedSelection";
 export { DEPRECATED_treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./presentation-components/tree/WithFilteringSupport";
 export { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams, useUnifiedSelectionTreeEventHandler } from "./presentation-components/tree/controlled/UseUnifiedSelection";

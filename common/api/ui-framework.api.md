@@ -11,6 +11,7 @@ import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
 import { AccuDraw } from '@bentley/imodeljs-frontend';
+import { AccuDrawField } from '@bentley/ui-abstract';
 import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
@@ -22,6 +23,7 @@ import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@bentley/ui-
 import { BadgeType } from '@bentley/ui-abstract';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
+import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
@@ -62,6 +64,7 @@ import { IconProps } from '@bentley/ui-core';
 import { IconSpec } from '@bentley/ui-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IFilteredPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { IMatch } from '@bentley/ui-abstract';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
@@ -137,6 +140,7 @@ import { TabMode } from '@bentley/ui-ninezone';
 import { TabState } from '@bentley/ui-ninezone';
 import { TimelineDataProvider } from '@bentley/ui-components';
 import { Tool } from '@bentley/imodeljs-frontend';
+import { ToolAdmin } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstructions } from '@bentley/imodeljs-frontend';
 import { ToolbarItem } from '@bentley/ui-abstract';
@@ -220,12 +224,15 @@ export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
 
 // @alpha (undocumented)
 export interface AccuDrawDialogProps extends CommonProps {
-    // (undocumented)
     dialogId: string;
-    // (undocumented)
     onClose?: () => void;
-    // (undocumented)
     opened: boolean;
+    orientation?: Orientation;
+}
+
+// @alpha
+export class AccuDrawKeyboardShortcuts {
+    static getDefaultShortcuts(): KeyboardShortcutProps[];
 }
 
 // @alpha
@@ -377,6 +384,9 @@ export interface ActivityMessageProps {
 // @public
 export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArgs> {
 }
+
+// @internal
+export function addMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState;
 
 // @internal (undocumented)
 export function addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageDef, side: PanelSide): NineZoneState;
@@ -1929,15 +1939,40 @@ export interface FooterModeFieldProps extends StatusFieldProps {
 
 // @alpha (undocumented)
 export class FrameworkAccuDraw extends AccuDraw {
+    constructor();
+    static get displayNotifications(): boolean;
+    static set displayNotifications(v: boolean);
+    // (undocumented)
+    static getFieldDisplayValue(index: ItemField): string;
+    // @internal
+    grabInputFocus(): void;
+    // @internal (undocumented)
+    get hasInputFocus(): boolean;
+    static readonly isACSRotationConditional: ConditionalBooleanValue;
+    static readonly isContextRotationConditional: ConditionalBooleanValue;
+    static readonly isFrontRotationConditional: ConditionalBooleanValue;
+    static readonly isPolarModeConditional: ConditionalBooleanValue;
+    static readonly isRectangularModeConditional: ConditionalBooleanValue;
+    static readonly isSideRotationConditional: ConditionalBooleanValue;
+    static readonly isTopRotationConditional: ConditionalBooleanValue;
+    static readonly isViewRotationConditional: ConditionalBooleanValue;
     // @internal (undocumented)
     onCompassModeChange(): void;
     // @internal (undocumented)
     onFieldLockChange(index: ItemField): void;
     // @internal (undocumented)
     onFieldValueChange(index: ItemField): void;
+    // @internal
+    onMotion(_ev: BeButtonEvent): void;
+    // @internal (undocumented)
+    onRotationModeChange(): void;
     // @internal (undocumented)
     setFocusItem(index: ItemField): void;
-    }
+    // @internal (undocumented)
+    static translateFromItemField(item: ItemField): AccuDrawField;
+    // @internal (undocumented)
+    static translateToItemField(field: AccuDrawField): ItemField;
+}
 
 // @beta
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
@@ -2014,8 +2049,14 @@ export interface FrameworkState {
     sessionState: SessionState;
 }
 
+// @alpha
+export class FrameworkToolAdmin extends ToolAdmin {
+    processShortcutKey(e: KeyboardEvent, wentDown: boolean): boolean;
+}
+
 // @beta
 export class FrameworkUiAdmin extends UiAdmin {
+    constructor();
     closeDialog(dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     get cursorPosition(): XAndY;
@@ -2144,7 +2185,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     // @internal
     componentWillUnmount(): void;
     // @internal (undocumented)
-    static createStagePanelDef(panelNode: React.ReactElement<StagePanelProps> | undefined, panelLocation: StagePanelLocation_2, props: FrontstageProps): StagePanelDef | undefined;
+    static createStagePanelDef(panelLocation: StagePanelLocation_2, props: FrontstageProps): StagePanelDef | undefined;
     // @internal (undocumented)
     static createZoneDef(zoneNode: React.ReactElement<ZoneProps> | undefined, zoneLocation: ZoneLocation, props: FrontstageProps): ZoneDef | undefined;
     static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void;
@@ -2559,7 +2600,7 @@ export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, d
 export function getFeatureOverrideSyncEventIds(): string[];
 
 // @internal (undocumented)
-export const getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
+export const getFirstItem: (groupItemDef: GroupItemDef) => import("../shared/CommandItemDef").CommandItemDef | ActionButtonItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
 
 // @internal (undocumented)
 export const getFirstItemId: (groupItemDef: GroupItemDef) => string;
@@ -2581,6 +2622,9 @@ export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue;
 
 // @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
+
+// @internal (undocumented)
+export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[];
 
 // @beta
 export function getSelectionContextSyncEventIds(): string[];
@@ -2971,7 +3015,7 @@ export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.
 // @internal (undocumented)
 export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is {
     status: UiSettingsStatus.Success;
-    setting: FrontstageState_2;
+    setting: WidgetPanelsFrontstageState;
 };
 
 // @beta
@@ -3125,6 +3169,7 @@ export class KeyboardShortcutManager {
     static get cursorY(): number;
     static displayShortcutsMenu(): void;
     static getShortcut(keyMapKey: string): KeyboardShortcut | undefined;
+    static initialize(): void;
     static get isFocusOnHome(): boolean;
     static loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps): void;
     static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
@@ -3742,11 +3787,19 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     // (undocumented)
     protected getModelDisplayStatus(id: Id64String): VisibilityStatus;
     // (undocumented)
+    static getNodeType(item: TreeNodeItem, dataProvider: IPresentationTreeDataProvider): ModelsTreeNodeType;
+    // (undocumented)
     protected getSubjectNodeVisibility(ids: Id64String[], node: TreeNodeItem): Promise<VisibilityStatus>;
     getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
+    static isCategoryNode(node: TreeNodeItem): any;
+    // (undocumented)
+    static isModelNode(node: TreeNodeItem): any;
+    // (undocumented)
+    static isSubjectNode(node: TreeNodeItem): any;
+    // (undocumented)
     onVisibilityChange: BeEvent<VisibilityChangeListener>;
-    setFilteredDataProvider(provider: IPresentationTreeDataProvider | undefined): void;
+    setFilteredDataProvider(provider: IFilteredPresentationTreeDataProvider | undefined): void;
     }
 
 // @alpha
@@ -4214,6 +4267,9 @@ export class ReducerRegistry {
 
 // @beta
 export const ReducerRegistryInstance: ReducerRegistry;
+
+// @internal
+export function removeMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState;
 
 // @alpha
 export class RestoreFrontstageLayoutTool extends Tool {
@@ -5155,9 +5211,8 @@ export class StagePanelDef extends WidgetHost {
     get defaultSize(): number | undefined;
     // @internal (undocumented)
     get defaultState(): StagePanelState;
-    findWidgetDef(id: string): WidgetDef | undefined;
     // @internal (undocumented)
-    initializeFromProps(props: StagePanelProps, panelLocation?: StagePanelLocation_2): void;
+    initializeFromProps(props?: StagePanelProps, panelLocation?: StagePanelLocation_2): void;
     get location(): StagePanelLocation_2;
     // @internal (undocumented)
     get maxSizeSpec(): number | {
@@ -5168,11 +5223,15 @@ export class StagePanelDef extends WidgetHost {
     get panelState(): StagePanelState;
     set panelState(panelState: StagePanelState);
     // @internal
-    get panelZones(): StagePanelZonesDef | undefined;
+    get panelWidgetDefs(): readonly WidgetDef[];
+    // @internal
+    get panelZones(): StagePanelZonesDef;
     get pinned(): boolean;
     get resizable(): boolean;
     get size(): number | undefined;
     set size(size: number | undefined);
+    // @internal (undocumented)
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, _section: StagePanelSection_2 | undefined, widgetDefs: WidgetDef[]): void;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
 }
 
@@ -5299,13 +5358,13 @@ export class StagePanelZonesDef {
     // (undocumented)
     [Symbol.iterator](): Iterator<[StagePanelZoneDefKeys, StagePanelZoneDef]>;
     // (undocumented)
-    get end(): StagePanelZoneDef | undefined;
+    get end(): StagePanelZoneDef;
     // (undocumented)
     initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation_2): void;
     // (undocumented)
-    get middle(): StagePanelZoneDef | undefined;
+    get middle(): StagePanelZoneDef;
     // (undocumented)
-    get start(): StagePanelZoneDef | undefined;
+    get start(): StagePanelZoneDef;
     }
 
 // @beta
@@ -5541,6 +5600,8 @@ export class SyncUiEventDispatcher {
 
 // @public
 export enum SyncUiEventId {
+    AccuDrawCompassModeChanged = "accudrawcompassmodechanged",
+    AccuDrawRotationChanged = "accudrawrotationchanged",
     ActiveContentChanged = "activecontentchanged",
     ActiveViewportChanged = "activeviewportchanged",
     // @deprecated
@@ -6133,6 +6194,9 @@ export class UiFramework {
     static closeCursorMenu(): void;
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
+    // @alpha
+    static get escapeToHome(): boolean;
+    static set escapeToHome(v: boolean);
     // @beta
     static get frameworkState(): FrameworkState | undefined;
     // @beta (undocumented)
@@ -6175,6 +6239,8 @@ export class UiFramework {
     static get initialized(): boolean;
     // @internal
     static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
+    // @alpha
+    static get isContextMenuOpen(): boolean;
     // (undocumented)
     static isMobile(): boolean;
     // @internal (undocumented)
@@ -6388,7 +6454,7 @@ export function useUpdateNineZoneSize(frontstageDef: FrontstageDef): void;
 
 // @alpha
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
-    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | import("@bentley/ui-components").PagedTreeNodeLoader<import("@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider").FilteredPresentationTreeDataProvider>;
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
     isFiltering: boolean;
     nodeHighlightingProps: import("@bentley/ui-components").HighlightableTreeProps | undefined;
 };
@@ -6796,7 +6862,7 @@ export class WidgetHost {
     findWidgetDef(id: string): WidgetDef | undefined;
     getSingleWidgetDef(): WidgetDef | undefined;
     // @internal
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section: StagePanelSection_2 | undefined, widgetDefs: WidgetDef[]): void;
     get widgetCount(): number;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
     }
@@ -6841,6 +6907,18 @@ export const WidgetPanelsFrontstage: React.NamedExoticComponent<object>;
 
 // @internal (undocumented)
 export function WidgetPanelsFrontstageContent(): JSX.Element | null;
+
+// @internal
+export interface WidgetPanelsFrontstageState {
+    // (undocumented)
+    id: FrontstageDef["id"];
+    // (undocumented)
+    nineZone: SavedNineZoneState;
+    // (undocumented)
+    stateVersion: number;
+    // (undocumented)
+    version: number;
+}
 
 // @internal (undocumented)
 export function WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null;

@@ -235,7 +235,7 @@ interface TreeState {
  * @public
  * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
-// eslint-disable-next-line @typescript-eslint/class-name-casing, @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
 
   private _mounted: boolean = false;

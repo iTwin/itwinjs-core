@@ -23,11 +23,16 @@ import { WorkflowManager } from "../workflow/Workflow";
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
 // cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged viewstatechanged
+// cSpell:ignore accudrawcompassmodechanged accudrawfieldlockchanged accudrawrotationchanged uisettingschanged
 
 /** Event Id used to sync UI components. Used to refresh visibility or enable state of control.
  * @public
  */
 export enum SyncUiEventId {
+  /** AccuDraw compass mode has changed. */
+  AccuDrawCompassModeChanged = "accudrawcompassmodechanged",
+  /** AccuDraw rotation has changed. */
+  AccuDrawRotationChanged = "accudrawrotationchanged",
   /** The active content as maintained by the ContentViewManager has changed. */
   ActiveContentChanged = "activecontentchanged",
   /** The active view maintained by the ViewManager has changed. */
@@ -202,7 +207,7 @@ export class SyncUiEventDispatcher {
   /** Checks to see if an eventId of interest is contained in the set of eventIds */
   public static hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]) {
     /* istanbul ignore else */
-    if ((idsOfInterest.length > 0) && idsOfInterest.some((value: string): boolean => eventIds.has(value)))
+    if ((idsOfInterest.length > 0) && idsOfInterest.some((value: string): boolean => eventIds.has(value.toLowerCase())))
       return true;
     return false;
   }

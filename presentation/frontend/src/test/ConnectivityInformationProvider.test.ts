@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
-import { IModelApp, NativeApp } from "@bentley/imodeljs-frontend";
+import { NativeApp } from "@bentley/imodeljs-frontend";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { ConnectivityInformationProvider } from "../presentation-frontend/ConnectivityInformationProvider";
 import { Presentation } from "../presentation-frontend/Presentation";
@@ -27,12 +27,11 @@ describe("ConnectivityInformationProvider", () => {
   describe("native app", () => {
 
     beforeEach(() => {
-      (IModelApp as any)._nativeApp = true;
+      sinon.stub(NativeApp, "isValid").get(() => true); // we're not really going to use any native methods, just events.
       NativeApp.onInternetConnectivityChanged.clear();
     });
 
     afterEach(() => {
-      (IModelApp as any)._nativeApp = false;
     });
 
     describe("constructor", () => {

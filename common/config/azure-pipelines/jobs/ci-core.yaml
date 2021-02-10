@@ -10,12 +10,15 @@ jobs:
       "Windows_${{ parameters.name }}":
         OS: windows-latest
         platform: Windows_NT
+        name: $(win_pool)
       "Linux_${{ parameters.name }}":
         OS: ubuntu-latest
         platform: Linux
+        name: $(linux_pool)
       "MacOS_${{ parameters.name }}":
         OS: macOS-latest
         platform: Darwin
+        name: $(mac_pool)
 
   timeoutInMinutes: 120
 

@@ -587,4 +587,133 @@ describe("<TimelineComponent showDuration={true} />", () => {
     // onPlayPause should not be called again, since the args don't include an action
     expect(spyOnPlayPause.calledThrice).to.be.true;
   });
+  it("re-render on repeat change", () => {
+    const dataProvider = new TestTimelineDataProvider(false);
+    const renderedComponent = render(
+      <TimelineComponent
+        startDate={dataProvider.start}
+        endDate={dataProvider.end}
+        initialDuration={dataProvider.initialDuration}
+        totalDuration={dataProvider.duration}
+        milestones={dataProvider.getMilestones()}
+        minimized={false}
+        showDuration={true}
+        repeat={false}
+        onChange={dataProvider.onAnimationFractionChanged}
+        onSettingsChange={dataProvider.onPlaybackSettingChanged}
+        onPlayPause={dataProvider.onPlayPause}
+        alwaysMinimized={false}
+      />,
+    );
+
+    expect(renderedComponent).not.to.be.undefined;
+    expect(dataProvider.getSettings().loop).to.be.false;
+
+    // trigger call to componentDidUpdate
+    renderedComponent.rerender(
+      <TimelineComponent
+        startDate={dataProvider.start}
+        endDate={dataProvider.end}
+        initialDuration={50000}
+        totalDuration={dataProvider.duration}
+        milestones={dataProvider.getMilestones()}
+        minimized={false}
+        showDuration={true}
+        repeat={true}
+        onChange={dataProvider.onAnimationFractionChanged}
+        onSettingsChange={dataProvider.onPlaybackSettingChanged}
+        onPlayPause={dataProvider.onPlayPause}
+        alwaysMinimized={false}
+      />,
+    );
+    expect(dataProvider.getSettings().loop).to.be.true;
+  });
+  it("re-render on totalDuration change", () => {
+    const dataProvider = new TestTimelineDataProvider(false);
+    const renderedComponent = render(
+      <TimelineComponent
+        startDate={dataProvider.start}
+        endDate={dataProvider.end}
+        initialDuration={dataProvider.initialDuration}
+        totalDuration={dataProvider.duration}
+        milestones={dataProvider.getMilestones()}
+        minimized={false}
+        showDuration={true}
+        repeat={false}
+        onChange={dataProvider.onAnimationFractionChanged}
+        onSettingsChange={dataProvider.onPlaybackSettingChanged}
+        onPlayPause={dataProvider.onPlayPause}
+        alwaysMinimized={false}
+      />,
+    );
+
+    expect(renderedComponent).not.to.be.undefined;
+
+    const newDuration = dataProvider.getSettings().duration! * 2;
+
+    // trigger call to componentDidUpdate
+    renderedComponent.rerender(
+      <TimelineComponent
+        startDate={dataProvider.start}
+        endDate={dataProvider.end}
+        initialDuration={50000}
+        totalDuration={newDuration}
+        milestones={dataProvider.getMilestones()}
+        minimized={false}
+        showDuration={true}
+        repeat={true}
+        onChange={dataProvider.onAnimationFractionChanged}
+        onSettingsChange={dataProvider.onPlaybackSettingChanged}
+        onPlayPause={dataProvider.onPlayPause}
+        alwaysMinimized={false}
+      />,
+    );
+    expect(dataProvider.getSettings().duration).to.be.eq(newDuration);
+  });
+  it("re-render on new start and end date", () => {
+    const dataProvider = new TestTimelineDataProvider(false);
+    const renderedComponent = render(
+      <TimelineComponent
+        startDate={dataProvider.start}
+        endDate={dataProvider.end}
+        initialDuration={dataProvider.initialDuration}
+        totalDuration={dataProvider.duration}
+        milestones={dataProvider.getMilestones()}
+        minimized={false}
+        showDuration={true}
+        onChange={dataProvider.onAnimationFractionChanged}
+        onSettingsChange={dataProvider.onPlaybackSettingChanged}
+        onPlayPause={dataProvider.onPlayPause}
+        alwaysMinimized={false}
+      />,
+    );
+
+    expect(renderedComponent).not.to.be.undefined;
+    const newStartDate = new Date(2019, 4, 1);
+    const newEndDate = new Date(2020, 5, 7);
+
+    // trigger call to componentDidUpdate
+    renderedComponent.rerender(
+      <TimelineComponent
+        startDate={newStartDate}
+        endDate={newEndDate}
+        initialDuration={50000}
+        totalDuration={dataProvider.duration}
+        milestones={dataProvider.getMilestones()}
+        minimized={false}
+        showDuration={true}
+        onChange={dataProvider.onAnimationFractionChanged}
+        onSettingsChange={dataProvider.onPlaybackSettingChanged}
+        onPlayPause={dataProvider.onPlayPause}
+        alwaysMinimized={false}
+      />,
+    );
+    const startDateItem = renderedComponent.container.querySelector(".start-date") as HTMLElement;
+    expect(startDateItem).not.to.be.null;
+    expect(startDateItem?.innerHTML).to.be.eq(newStartDate.toLocaleDateString());
+
+    const endDateItem = renderedComponent.container.querySelector(".end-date") as HTMLElement;
+    expect(endDateItem).not.to.be.null;
+    expect(endDateItem?.innerHTML).to.be.eq(newEndDate.toLocaleDateString());
+  });
 });

@@ -1,6 +1,18 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Add examples of various custom screen-space post-processing effects.
+- Replace use of deprecated property method used to set unit system for quantity formatting.
+- InspectElementTool optionally copies output to clipboard.
+- Add an example of particle effect snow.
+- Keyins for working with section drawing views.
+- Keyins for working with section-cut graphics.
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT

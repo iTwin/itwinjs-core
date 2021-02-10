@@ -232,4 +232,26 @@ describe("FilteredTreeDataProvider", () => {
       expect(result).to.be.undefined;
     });
   });
+
+  describe("nodeMatchesFilter", () => {
+    it("returns true when node matches filter", () => {
+      provider = new FilteredPresentationTreeDataProvider({
+        parentDataProvider: parentProviderMock.object,
+        filter: constantFilter,
+        paths: filteredNodePaths,
+      });
+      const node = createTreeNodeItem(filteredNodePaths[1].node);
+      expect(provider.nodeMatchesFilter(node)).to.be.true;
+    });
+
+    it("returns false when node matches filter", () => {
+      provider = new FilteredPresentationTreeDataProvider({
+        parentDataProvider: parentProviderMock.object,
+        filter: constantFilter,
+        paths: filteredNodePaths,
+      });
+      const node = createTreeNodeItem(filteredNodePaths[0].node);
+      expect(provider.nodeMatchesFilter(node)).to.be.false;
+    });
+  });
 });

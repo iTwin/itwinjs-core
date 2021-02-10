@@ -121,6 +121,7 @@ export class ChangeSummaryManager {
   /** Detaches the *Change Cache file* from the specified iModel.
    * @param iModel iModel to detach the *Change Cache file* to
    * @throws [IModelError]($common) in case of errors, e.g. if no *Change Cache file* was attached before.
+   * @deprecated This method is not required to be called anymore. The attach change cache will stay around until connection is closed.
    */
   public static detachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.isOpen)
@@ -175,8 +176,9 @@ export class ChangeSummaryManager {
 
     // Detach change cache as it's being written to during the extraction
     const isChangeCacheAttached = this.isChangeCacheAttached(iModel);
-    if (isChangeCacheAttached)
-      ChangeSummaryManager.detachChangeCache(iModel);
+    if (isChangeCacheAttached) {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "There is an attached change cache file. Re-open the connection to detach it.");
+    }
 
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Change Cache file");
     const changesFile: ECDb = ChangeSummaryManager.openOrCreateChangesFile(iModel);

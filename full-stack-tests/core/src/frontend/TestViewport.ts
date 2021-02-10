@@ -360,3 +360,10 @@ export async function testViewports(viewId: Id64String, imodel: IModelConnection
   await testOnScreenViewport(viewId, imodel, width, height, test, devicePixelRatio);
   await testOffScreenViewport(viewId, imodel, width, height, test);
 }
+
+/** Execute a test against both an off-screen and on-screen viewport at varying device pixel ratios. */
+export async function testViewportsWithDpr(imodel: IModelConnection, rect: ViewRect, test: (vp: TestViewport) => Promise<void>): Promise<void> {
+  const devicePixelRatios = [1.0, 1.25, 1.5, 2.0];
+  for (const dpr of devicePixelRatios)
+    await testViewports("0x24", imodel, rect.width, rect.height, test, dpr);
+}

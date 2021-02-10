@@ -8,7 +8,7 @@
 
 import { RenderType } from "@bentley/webgl-compatibility";
 import { DrawParams } from "../DrawCommand";
-import { UniformHandle } from "../Handle";
+import { UniformHandle } from "../UniformHandle";
 import { ProgramBuilder, ShaderBuilder, ShaderType, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { addModelViewMatrix } from "./Vertex";

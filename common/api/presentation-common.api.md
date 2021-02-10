@@ -2372,9 +2372,11 @@ export const UPDATE_FULL = "FULL";
 // @alpha (undocumented)
 export interface UpdateInfo {
     // (undocumented)
-    [rulesetId: string]: {
-        hierarchy?: HierarchyUpdateInfo;
-        content?: ContentUpdateInfo;
+    [imodel: string]: {
+        [rulesetId: string]: {
+            hierarchy?: HierarchyUpdateInfo;
+            content?: ContentUpdateInfo;
+        };
     };
 }
 
@@ -2387,9 +2389,11 @@ export namespace UpdateInfo {
 // @alpha (undocumented)
 export interface UpdateInfoJSON {
     // (undocumented)
-    [rulesetId: string]: {
-        hierarchy?: HierarchyUpdateInfoJSON;
-        content?: ContentUpdateInfo;
+    [imodel: string]: {
+        [rulesetId: string]: {
+            hierarchy?: HierarchyUpdateInfoJSON;
+            content?: ContentUpdateInfo;
+        };
     };
 }
 

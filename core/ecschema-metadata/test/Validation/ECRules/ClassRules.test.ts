@@ -102,4 +102,79 @@ describe("ClassRule tests", () => {
       expect(false, "Rule should have passed").to.be.true;
     }
   });
+
+  it("AbstractClassWithNonAbstractBase, base class is sealed, rule violated.", async () => {
+    const baseClass = new EntityClass(schema, "TestBase", ECClassModifier.Sealed);
+    const entityClass = new EntityClass(schema, "TestClass", ECClassModifier.Abstract);
+    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+    const baseType = schemaItemTypeToString(baseClass.schemaItemType);
+
+    const result = Rules.abstractClassWithNonAbstractBase(entityClass);
+    expect(result).not.undefined;
+    let resultHasEntries = false;
+    for await (const diagnostic of result!) {
+      resultHasEntries = true;
+      expect(diagnostic).to.not.be.undefined;
+      expect(diagnostic!.ecDefinition).to.equal(entityClass);
+      expect(diagnostic!.messageArgs).to.eql([entityClass.fullName, baseClass.fullName]);
+      expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+      expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.AbstractClassWithNonAbstractBase);
+      expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+    }
+    expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+  });
+
+  it("AbstractClassWithNonAbstractBase, base class modifier is `none`, rule violated.", async () => {
+    const baseClass = new EntityClass(schema, "TestBase", ECClassModifier.None);
+    const entityClass = new EntityClass(schema, "TestClass", ECClassModifier.Abstract);
+    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+
+    const result = Rules.abstractClassWithNonAbstractBase(entityClass);
+    expect(result).not.undefined;
+    let resultHasEntries = false;
+    for await (const diagnostic of result!) {
+      resultHasEntries = true;
+      expect(diagnostic).to.not.be.undefined;
+      expect(diagnostic!.ecDefinition).to.equal(entityClass);
+      expect(diagnostic!.messageArgs).to.eql([entityClass.fullName, baseClass.fullName]);
+      expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+      expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.AbstractClassWithNonAbstractBase);
+      expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+    }
+    expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+  });
+
+  it("AbstractClassWithNonAbstractBase, no base class, rule passes.", async () => {
+    const entityClass = new EntityClass(schema, "TestClass", ECClassModifier.Abstract);
+
+    const result = Rules.abstractClassWithNonAbstractBase(entityClass);
+
+    for await (const _diagnostic of result!) {
+      expect(false, "Rule should have passed").to.be.true;
+    }
+  });
+
+  it("AbstractClassWithNonAbstractBase, base class is abstract, rule passes.", async () => {
+    const baseClass = new EntityClass(schema, "TestBase", ECClassModifier.Abstract);
+    const entityClass = new EntityClass(schema, "TestClass", ECClassModifier.Abstract);
+    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+
+    const result = Rules.abstractClassWithNonAbstractBase(entityClass);
+
+    for await (const _diagnostic of result!) {
+      expect(false, "Rule should have passed").to.be.true;
+    }
+  });
+
+  it("AbstractClassWithNonAbstractBase, class is not abstract, rule passes.", async () => {
+    const baseClass = new EntityClass(schema, "TestBase", ECClassModifier.Sealed);
+    const entityClass = new EntityClass(schema, "TestClass", ECClassModifier.None);
+    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+
+    const result = Rules.abstractClassWithNonAbstractBase(entityClass);
+
+    for await (const _diagnostic of result!) {
+      expect(false, "Rule should have passed").to.be.true;
+    }
+  });
 });

@@ -8,7 +8,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 
 function scale(norm: number): number {
   assert(1.0 >= norm && 0.0 <= norm);

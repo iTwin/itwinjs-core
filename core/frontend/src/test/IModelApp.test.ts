@@ -63,7 +63,6 @@ class TestApp extends MockRender.App {
     IModelApp.toolAdmin.onInitialized();
 
     // register an anonymous class with the toolId "Null.Tool"
-    // eslint-disable-next-line @typescript-eslint/class-name-casing
     const testNull = class extends Tool { public static toolId = "Null.Tool"; public run() { testVal1 = "fromNullTool"; return true; } };
     testNull.register(this.testNamespace);
   }

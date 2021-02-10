@@ -2,7 +2,7 @@
 
 A "channel" is a tree of elements. The root of the tree is called the channel "root" element. The tree includes the root and all of its child elements and sub-models, recursively. Channels do not nest.
 
-To be a channel root, an element must have a [ChannelRootAspect]($backend). (Legacy iModel bridges/connectors mark their channel roots with a special JSON property.)
+To be a channel root, an element must have a [ChannelRootAspect]($backend). (Legacy iModel connectors mark their channel roots with a special JSON property.)
 
 To help visualize what a channel is, imagine an iModel with the following breakdown:
 
@@ -70,7 +70,7 @@ The rules of locking are slightly different for channels:
 
 ## Connectors and Channels
 
-A connector always works in a channel. A connector does not create channels or change the channel. A supervisor calls some connector methods in the repository channel and others in the bridge's own private channel. The channel is locked by the supervisor.
+A connector always works in a channel. A connector does not create channels or change the channel. A supervisor calls some connector methods in the repository channel and others in the connector's own private channel. The channel is locked by the supervisor.
 
 ## Non-Connector Apps and Channels
 

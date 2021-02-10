@@ -340,8 +340,16 @@ export class ComponentExamplesProvider {
           <ColorSwatch colorDef={colorDef} onColorPick={handleColorPick} />),
         createComponentExample("Color Picker Button", undefined,
           <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} />),
+        createComponentExample("Color Picker Button", "with Caret",
+          <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} showCaret />),
+        createComponentExample("Color Picker Button", "disabled with Caret",
+          <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} disabled showCaret />),
+        createComponentExample("Color Picker Button", "Round with Caret",
+          <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} round showCaret />),
         createComponentExample("Color Picker Dialog", undefined, <ColorPickerToggle />),
         createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} />),
+        createComponentExample("Color Picker Popup", "with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} showCaret />),
+        createComponentExample("Color Picker Popup", "disabled with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} disabled showCaret />),
       ],
     };
   }
@@ -650,6 +658,9 @@ export class ComponentExamplesProvider {
         createComponentExample("SearchBox", undefined,
           // eslint-disable-next-line no-console
           <SearchBox placeholder="Search" onValueChanged={(value: string) => console.log(`Search text: ${value}`)} />),
+        createComponentExample("SearchBoxWithDelay", undefined,
+          // eslint-disable-next-line no-console
+          <SearchBox placeholder="Search" valueChangedDelay={1000} onValueChanged={(value: string) => console.log(`Search text: ${value}`)} />),
       ],
     };
   }

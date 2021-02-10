@@ -358,115 +358,123 @@ Object {
 
 exports[`UpdateInfo fromJSON deserializes \`UpdateInfo\` object from JSON 1`] = `
 Object {
-  "test_ruleset_1": Object {
-    "content": "FULL",
-    "hierarchy": undefined,
+  "test_imodel_1": Object {
+    "test_ruleset_1": Object {
+      "content": "FULL",
+      "hierarchy": undefined,
+    },
+    "test_ruleset_2": Object {
+      "content": undefined,
+      "hierarchy": "FULL",
+    },
   },
-  "test_ruleset_2": Object {
-    "content": undefined,
-    "hierarchy": "FULL",
-  },
-  "test_ruleset_3": Object {
-    "content": undefined,
-    "hierarchy": Array [
-      Object {
-        "node": Object {
-          "backColor": "rgb(
+  "test_imodel_2": Object {
+    "test_ruleset_3": Object {
+      "content": undefined,
+      "hierarchy": Array [
+        Object {
+          "node": Object {
+            "backColor": "rgb(
     193,
     243,
     39
   )",
-          "description": "Architecto pariatur magnam nam quisquam.",
-          "foreColor": "#F4E98F",
-          "hasChildren": false,
-          "isCheckboxEnabled": true,
-          "isCheckboxVisible": true,
-          "isChecked": true,
-          "isEditable": true,
-          "isExpanded": false,
-          "isSelectionDisabled": false,
-          "key": Object {
-            "instanceKeys": Array [
-              Object {
-                "className": "internet solution",
-                "id": "0xd5c10000004941",
-              },
-              Object {
-                "className": "RAM",
-                "id": "0x702300000184a5",
-              },
-            ],
-            "pathFromRoot": Array [
-              "609c256d-9938-42d0-b65c-afd19e430113",
-              "181aeb51-d8bb-4081-91eb-dc6a3ed59ec2",
-            ],
-            "type": "ECInstancesNode",
+            "description": "Architecto pariatur magnam nam quisquam.",
+            "foreColor": "#F4E98F",
+            "hasChildren": false,
+            "isCheckboxEnabled": true,
+            "isCheckboxVisible": true,
+            "isChecked": true,
+            "isEditable": true,
+            "isExpanded": false,
+            "isSelectionDisabled": false,
+            "key": Object {
+              "instanceKeys": Array [
+                Object {
+                  "className": "internet solution",
+                  "id": "0xd5c10000004941",
+                },
+                Object {
+                  "className": "RAM",
+                  "id": "0x702300000184a5",
+                },
+              ],
+              "pathFromRoot": Array [
+                "609c256d-9938-42d0-b65c-afd19e430113",
+                "181aeb51-d8bb-4081-91eb-dc6a3ed59ec2",
+              ],
+              "type": "ECInstancesNode",
+            },
+            "label": Object {
+              "displayValue": "User-centric",
+              "rawValue": "invoice",
+              "typeName": "string",
+            },
           },
-          "label": Object {
-            "displayValue": "User-centric",
-            "rawValue": "invoice",
-            "typeName": "string",
-          },
+          "type": "Delete",
         },
-        "type": "Delete",
-      },
-    ],
+      ],
+    },
   },
 }
 `;
 
 exports[`UpdateInfo toJSON serializes \`UpdateInfo\` object to JSON 1`] = `
 Object {
-  "test_ruleset_1": Object {
-    "content": "FULL",
-    "hierarchy": undefined,
+  "test_imodel_1": Object {
+    "test_ruleset_1": Object {
+      "content": "FULL",
+      "hierarchy": undefined,
+    },
+    "test_ruleset_2": Object {
+      "content": undefined,
+      "hierarchy": "FULL",
+    },
   },
-  "test_ruleset_2": Object {
-    "content": undefined,
-    "hierarchy": "FULL",
-  },
-  "test_ruleset_3": Object {
-    "content": undefined,
-    "hierarchy": Array [
-      Object {
-        "node": Object {
-          "backColor": undefined,
-          "description": "Doloribus exercitationem eius debitis quidem.",
-          "foreColor": "#CB2FF4",
-          "hasChildren": false,
-          "imageId": "Progressive",
-          "isCheckboxEnabled": true,
-          "isCheckboxVisible": false,
-          "isChecked": true,
-          "isEditable": true,
-          "isExpanded": false,
-          "isSelectionDisabled": false,
-          "key": Object {
-            "instanceKeys": Array [
-              Object {
-                "className": "transmitter",
-                "id": "0x42290000009bd8",
-              },
-              Object {
-                "className": "Bedfordshire",
-                "id": "0x11fb000000f97b",
-              },
-            ],
-            "pathFromRoot": Array [
-              "86c178ef-2a83-4ef6-a2ab-1556ecfc57e6",
-              "18dad7d8-a0cd-41ed-b11f-462952cd6500",
-            ],
-            "type": "ECInstancesNode",
+  "test_imodel_2": Object {
+    "test_ruleset_3": Object {
+      "content": undefined,
+      "hierarchy": Array [
+        Object {
+          "node": Object {
+            "backColor": undefined,
+            "description": "Doloribus exercitationem eius debitis quidem.",
+            "foreColor": "#CB2FF4",
+            "hasChildren": false,
+            "imageId": "Progressive",
+            "isCheckboxEnabled": true,
+            "isCheckboxVisible": false,
+            "isChecked": true,
+            "isEditable": true,
+            "isExpanded": false,
+            "isSelectionDisabled": false,
+            "key": Object {
+              "instanceKeys": Array [
+                Object {
+                  "className": "transmitter",
+                  "id": "0x42290000009bd8",
+                },
+                Object {
+                  "className": "Bedfordshire",
+                  "id": "0x11fb000000f97b",
+                },
+              ],
+              "pathFromRoot": Array [
+                "86c178ef-2a83-4ef6-a2ab-1556ecfc57e6",
+                "18dad7d8-a0cd-41ed-b11f-462952cd6500",
+              ],
+              "type": "ECInstancesNode",
+            },
+            "labelDefinition": Object {
+              "displayValue": "Sausages",
+              "rawValue": "Manat",
+              "typeName": "string",
+            },
           },
-          "labelDefinition": Object {
-            "displayValue": "Sausages",
-            "rawValue": "Manat",
-            "typeName": "string",
-          },
+          "type": "Delete",
         },
-        "type": "Delete",
-      },
-    ],
+      ],
+    },
   },
 }
 `;

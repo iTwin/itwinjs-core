@@ -321,11 +321,23 @@
     "EdgeDetectionEffect": {
       "keyin": "fdt effect add edgedetect"
     },
+    "SaturationConfig": {
+      "keyin": "fdt effect config saturation"
+    },
+    "SaturationEffect": {
+      "keyin": "fdt effect add saturation"
+    },
     "SnowEffect": {
       "keyin": "fdt particle snow"
     },
+    "ExplosionEffect": {
+      "keyin": "fdt particle explosion"
+    },
     "ClearEffects": {
       "keyin": "fdt effect clear"
+    },
+    "SetGpuMemoryLimit": {
+      "keyin": "fdt gpu mem limit"
     }
   }
 }

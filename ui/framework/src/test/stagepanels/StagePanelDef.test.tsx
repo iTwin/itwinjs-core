@@ -168,20 +168,20 @@ describe("StagePanelDef", () => {
 describe("StagePanelZonesDef", () => {
   it("should initialize start", () => {
     const sut = new StagePanelZonesDef();
-    sut.initializeFromProps({ start: { widgets: [] } }, StagePanelLocation.Left);
-    expect(sut.start).to.exist;
+    sut.initializeFromProps({ start: { widgets: [<Widget key="w1" id="w1" />] } }, StagePanelLocation.Left);
+    expect(sut.start.widgetCount).to.eq(1);
   });
 
   it("should initialize middle", () => {
     const sut = new StagePanelZonesDef();
-    sut.initializeFromProps({ middle: { widgets: [] } }, StagePanelLocation.Left);
-    expect(sut.middle).to.exist;
+    sut.initializeFromProps({ middle: { widgets: [<Widget key="w1" id="w1" />] } }, StagePanelLocation.Left);
+    expect(sut.middle.widgetCount).to.eq(1);
   });
 
   it("should initialize end", () => {
     const sut = new StagePanelZonesDef();
-    sut.initializeFromProps({ end: { widgets: [] } }, StagePanelLocation.Left);
-    expect(sut.end).to.exist;
+    sut.initializeFromProps({ end: { widgets: [<Widget key="w1" id="w1" />] } }, StagePanelLocation.Left);
+    expect(sut.end.widgetCount).to.eq(1);
   });
 });
 

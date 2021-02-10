@@ -15,7 +15,7 @@ import { AttributeMap } from "./AttributeMap";
 import { LUTGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
