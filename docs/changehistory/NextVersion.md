@@ -38,3 +38,12 @@ This feature replaces the `@alpha` `TileAdmin.Props.mobileExpirationMemoryThresh
 ## Common table expression support in ECSQL
 
 CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
+
+## IModelTransformer and IModelExporter APIs are now async
+
+The *export* methods of [IModelExporter]($backend) and the *process* methods of [IModelTransformer]($backend) are now `async`. This is a breaking API change.
+While exporting and transforming should generally be considered *batch* operations, changing these methods to `async` makes progress reporting and process health monitoring much easier.
+This is particularly important when processing large iModels.
+
+To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from an `async` method.
+No internal logic was changed, so that should be the only changes required.
