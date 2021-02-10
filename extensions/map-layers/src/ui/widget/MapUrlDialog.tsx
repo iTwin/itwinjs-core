@@ -146,7 +146,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const doAttach = React.useCallback(async (source: MapLayerSource): Promise<boolean> => {
 
     // Returns a promise, When true, the dialog should closed
-    return new Promise((resolve, _reject) => {
+    return new Promise<boolean>((resolve, _reject) => {
 
       const vp = IModelApp.viewManager.selectedView;
       if (vp === undefined || source === undefined) {
