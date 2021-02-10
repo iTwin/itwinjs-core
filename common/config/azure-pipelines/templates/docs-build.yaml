@@ -1,0 +1,38 @@
+# The template defines the primary steps for creating the TypeDoc API files, gathering other md files,
+# and running a step to combine everything.
+
+parameters:
+  - name: workingDir
+    type: string
+    default: $(System.DefaultWorkingDirectory)
+  - name: stagingDir
+    type: string
+    default: $(System.ArtifactsDirectory)/staging
+
+steps:
+- script: node common/scripts/install-run-rush.js install
+  displayName: rush install
+  workingDirectory: ${{ parameters.workingDir }}
+
+- script: node common/scripts/install-run-rush.js compile -v
+  displayName: rush compile
+  workingDirectory: ${{ parameters.workingDir }}
+
+- script: node common/scripts/install-run-rush.js docs
+  displayName: rush docs
+  workingDirectory: ${{ parameters.workingDir }}
+
+# Gathers all the pieces to run BeMetalsmith
+- template: ../templates/gather-docs.yaml
+  parameters:
+    workingDir: ${{ parameters.workingDir }}
+    stagingDir: ${{ parameters.stagingDir }}
+
+# Currently BeMetalSmith is an internal only tool
+- task: Npm@0
+  displayName: Install BeMetalSmith
+  inputs:
+    arguments: "@bentley/bemetalsmith@4.x"
+
+- script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination $(Agent.BuildDirectory)/tempDocsBuild/public_build --siteTitle iTwin.js"
+  displayName: Run bmsBuild
