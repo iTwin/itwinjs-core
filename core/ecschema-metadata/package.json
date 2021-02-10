@@ -53,6 +53,7 @@
     "ts-node": "^7.0.1",
     "typescript": "~3.7.4",
     "xmldom": "^0.1.27",
+    "xmlhttprequest": "^1.8.0",
     "@types/graphlib": "^2.1.7",
     "graphlib": "^2.1.8",
     "ulp": "^1.0.1"
