@@ -129,7 +129,7 @@ describe("<ColorPickerPopup/>", () => {
     expect(spyOnColorPopupClosed).to.be.calledOnce;
   });
 
-  it("captureClicks property should stop mouse click propagation", () =>{
+  it("captureClicks property should stop mouse click propagation", async () =>{
     const spyOnClick = sinon.spy();
 
     /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
@@ -139,9 +139,19 @@ describe("<ColorPickerPopup/>", () => {
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
     fireEvent.click(pickerButton);
     expect(spyOnClick).not.to.be.called;
+
+    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
+    expect(popupDiv).not.to.be.undefined;
+
+    if (popupDiv) {
+      const colorSwatch = popupDiv.querySelector("button.components-colorpicker-panel-swatch") as HTMLElement;
+      expect(colorSwatch).not.to.be.null;
+      fireEvent.click(colorSwatch);
+    }
+    expect(spyOnClick).not.to.be.called;
   });
 
-  it("mouse click should propagate if captureClicks not set to true", () =>{
+  it("mouse click should propagate if captureClicks not set to true", async () =>{
     const spyOnClick = sinon.spy();
 
     /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
@@ -151,5 +161,15 @@ describe("<ColorPickerPopup/>", () => {
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
     fireEvent.click(pickerButton);
     expect(spyOnClick).to.be.called;
+
+    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
+    expect(popupDiv).not.to.be.undefined;
+
+    if (popupDiv) {
+      const colorSwatch = popupDiv.querySelector("button.components-colorpicker-panel-swatch") as HTMLElement;
+      expect(colorSwatch).not.to.be.null;
+      fireEvent.click(colorSwatch);
+    }
+    expect(spyOnClick).to.be.calledTwice;
   });
 });
