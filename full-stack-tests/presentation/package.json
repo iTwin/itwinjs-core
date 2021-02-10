@@ -18,6 +18,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "cross-env NODE_ENV=development mocha --opts ./mocha.opts \"./lib/**/*.js\" --grep \"#with-services\" --invert",
     "test:integration": "mocha --opts ./mocha.opts \"./lib/**/*.js\" --grep \"#with-services\"",
+    "copy:config": "internal-tools copy-config",
     "cover": "npm run test"
   },
   "dependencies": {
@@ -80,6 +81,7 @@
     "cross-env": "^5.1.4",
     "eslint": "^6.8.0",
     "ignore-styles": "^5.0.1",
+    "internal-tools": "0.0.0",
     "jsdom-global": "3.0.2",
     "ts-node": "^7.0.1",
     "typescript": "~3.7.4"
