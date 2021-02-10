@@ -8,7 +8,7 @@
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import {
-  Format, FormatProps, FormatterSpec, ParseResult, ParserSpec, QuantityStatus, UnitConversion, UnitProps, UnitsProvider,
+  Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 import { IModelApp } from "./IModelApp";
 import { BasicUnitsProvider } from "./BasicUnitsProvider";
@@ -673,12 +673,12 @@ export class QuantityFormatter implements UnitsProvider {
   /** Parse input string into quantity given the ParserSpec
    * @param inString       The magnitude of the quantity.
    * @param parserSpec     The parse specification the defines the expected format of the string and the conversion to the output unit.
-   * @return ParseResult object containing either the parsed value or an error value if unsuccessful.
+   * @return QuantityParseResult object containing either the parsed value or an error value if unsuccessful.
    */
-  public parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult {
+  public parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult {
     if (parserSpec)
       return parserSpec.parseToQuantityValue(inString);
-    return { status: QuantityStatus.UnknownUnit };
+    return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
   /** Get a UnitSystemKey from a string that may have been entered via a key-in. Support different variation of unit system names.

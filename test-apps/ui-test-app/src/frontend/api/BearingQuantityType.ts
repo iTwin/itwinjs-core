@@ -6,7 +6,7 @@
 import { Logger } from "@bentley/bentleyjs-core";
 import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp, TextSelectFormatPropEditorSpec, UnitSystemKey } from "@bentley/imodeljs-frontend";
 import {
-  CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversionSpec, UnitProps, UnitsProvider,
+  CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 
 interface BearingFormatProps extends CustomFormatProps {
@@ -96,7 +96,7 @@ class BearingParserSpec extends ParserSpec {
     super(outUnit, format, conversions);
   }
 
-  public parseToQuantityValue(inString: string): ParseResult {
+  public parseToQuantityValue(inString: string): QuantityParseResult {
     let prefix: string|undefined;
     let suffix: string|undefined;
     let adjustedString=inString.toLocaleUpperCase().trimLeft().trimRight();
@@ -114,7 +114,7 @@ class BearingParserSpec extends ParserSpec {
 
     // const parsedRadians = Parser.parseToQuantityValue(inString, this.format, this.unitConversions);
     const parsedRadians = Parser.parseToQuantityValue(adjustedString, this.format, this.unitConversions);
-    if (undefined !== parsedRadians.value && parsedRadians.status === QuantityStatus.Success) {
+    if (Parser.isParsedQuantity(parsedRadians)) {
       if (prefix === "N" && suffix === "E") {
         if (isCCW)
           parsedRadians.value = (2*Math.PI) - parsedRadians.value;

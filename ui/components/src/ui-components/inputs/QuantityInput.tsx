@@ -8,13 +8,12 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { IModelApp, QuantityTypeArg } from "@bentley/imodeljs-frontend";
-import { QuantityFormatsChangedArgs } from "@bentley/imodeljs-frontend/lib/QuantityFormatter";
-import { QuantityStatus } from "@bentley/imodeljs-quantity";
+import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@bentley/imodeljs-frontend";
+import { Parser } from "@bentley/imodeljs-quantity";
 import { ParseResults } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
 import { ParsedInput } from "./ParsedInput";
+import { UiComponents } from "../UiComponents";
 
 /** Props for [[QuantityInput]] control
  * @beta
@@ -53,10 +52,11 @@ export function QuantityInput({ initialValue, quantityType, readonly, className,
     if (parserSpec) {
       const parseResult = IModelApp.quantityFormatter.parseToQuantityValue(userInput, parserSpec);
       // istanbul ignore else
-      if (parseResult.status === QuantityStatus.Success) {
+      if (Parser.isParsedQuantity(parseResult)) {
         return { value: parseResult.value };
       } else {
-        return { parseError: `${UiComponents.translate("QuantityInput.NoParserDefined")}${parseResult.status}` };
+        const statusId = Parser.isParseError(parseResult) ? parseResult.error.toString() : "Unknown";
+        return { parseError: `${UiComponents.translate("QuantityInput.NoParserDefined")}${statusId}` };
       }
     }
     // istanbul ignore next
