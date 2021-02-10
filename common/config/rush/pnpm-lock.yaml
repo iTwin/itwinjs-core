@@ -63,6 +63,7 @@ dependencies:
   '@rush-temp/linear-referencing-common': 'file:projects/linear-referencing-common.tgz'
   '@rush-temp/logger-config': 'file:projects/logger-config.tgz'
   '@rush-temp/map-layers': 'file:projects/map-layers.tgz'
+  '@rush-temp/mobile-manager': 'file:projects/mobile-manager.tgz'
   '@rush-temp/native-app-full-stack-tests': 'file:projects/native-app-full-stack-tests.tgz'
   '@rush-temp/ninezone-test-app': 'file:projects/ninezone-test-app.tgz_sass@1.32.5+webpack-cli@3.3.12'
   '@rush-temp/oidc-signin-tool': 'file:projects/oidc-signin-tool.tgz'
@@ -19334,7 +19335,7 @@ packages:
     dev: false
     name: '@rush-temp/electron-manager'
     resolution:
-      integrity: sha512-8HiG9EOAaFctwnMT70qxVrbyGKp7gUTSPr7CKMisZ5Ysme6TP9E2dZOdBc3GKg3/bUpExLjqcbv2gA+DJ835Zg==
+      integrity: sha512-US8Y21PsUjcQoRkC8WPleujhL4+OHXoY7/emBFgOFs1YwHDEaDhVuwOvVn9MeiaD6g19Cia440ICPgbrLEgimQ==
       tarball: 'file:projects/electron-manager.tgz'
     version: 0.0.0
   'file:projects/eslint-plugin.tgz':
@@ -20224,6 +20225,18 @@ packages:
     resolution:
       integrity: sha512-YOSuaTrlRdFxI2B8+9R/3b7yyVAR1WwtOJ5DMOsA96D3iwaWHQzXFfI6/LzuZ2aec90K9qUa+M3P7i7+cRXeSA==
       tarball: 'file:projects/map-layers.tgz'
+    version: 0.0.0
+  'file:projects/mobile-manager.tgz':
+    dependencies:
+      '@types/node': 10.14.1
+      eslint: 6.8.0
+      rimraf: 3.0.2
+      typescript: 3.7.5
+    dev: false
+    name: '@rush-temp/mobile-manager'
+    resolution:
+      integrity: sha512-D2K0oYWmWxPjmpAGdIt7STBrrNN34Da2v4BFSyIRCtL0EG0/R7wRvZV1P0sKrjzGu3kDGmkI66cJCeYqS1xpIw==
+      tarball: 'file:projects/mobile-manager.tgz'
     version: 0.0.0
   'file:projects/native-app-full-stack-tests.tgz':
     dependencies:
@@ -21345,6 +21358,7 @@ specifiers:
   '@rush-temp/linear-referencing-common': 'file:./projects/linear-referencing-common.tgz'
   '@rush-temp/logger-config': 'file:./projects/logger-config.tgz'
   '@rush-temp/map-layers': 'file:./projects/map-layers.tgz'
+  '@rush-temp/mobile-manager': 'file:./projects/mobile-manager.tgz'
   '@rush-temp/native-app-full-stack-tests': 'file:./projects/native-app-full-stack-tests.tgz'
   '@rush-temp/ninezone-test-app': 'file:./projects/ninezone-test-app.tgz'
   '@rush-temp/oidc-signin-tool': 'file:./projects/oidc-signin-tool.tgz'

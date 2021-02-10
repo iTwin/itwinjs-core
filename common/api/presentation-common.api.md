@@ -1577,8 +1577,8 @@ export class PresentationError extends BentleyError {
 }
 
 // @alpha (undocumented)
-export enum PresentationRpcEvents {
-    Update = "OnUpdate"
+export enum PresentationIpcEvents {
+    Update = "presentation.onUpdate"
 }
 
 // @public

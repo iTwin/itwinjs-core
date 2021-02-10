@@ -10,7 +10,7 @@ import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@bentley
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
   BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeProps, ModelGeometryChanges, TileProps,ViewFlagOverrides,
+  IModelTileTreeProps, ModelGeometryChanges, TileProps, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -57,7 +57,7 @@ export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel:
   return { formatVersion, id, rootTile, iModel, location, modelId, contentRange, geometryGuid, contentIdQualifier, maxInitialTilesToSkip, priority, options };
 }
 
-function findElementChangesForModel(changes: Iterable<ModelGeometryChanges>, modelId: Id64String): Iterable<ElementGeometryChange>| undefined {
+function findElementChangesForModel(changes: Iterable<ModelGeometryChanges>, modelId: Id64String): Iterable<ElementGeometryChange> | undefined {
   for (const change of changes)
     if (change.id === modelId)
       return change.elements;
@@ -181,7 +181,7 @@ class RootTile extends Tile {
 
     // Determine initial state.
     const session = InteractiveEditingSession.get(tree.iModel);
-    if (!session) {
+    if (undefined === session) {
       this._tileState = new StaticState(this);
     } else {
       const changes = session.getGeometryChangesForModel(tree.modelId);
@@ -199,7 +199,7 @@ class RootTile extends Tile {
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
-    const children: Tile[] = [ this.staticBranch ];
+    const children: Tile[] = [this.staticBranch];
     if (this._tileState.type === "dynamic")
       children.push(this._tileState.rootTile);
 

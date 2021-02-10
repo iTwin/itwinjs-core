@@ -35,7 +35,7 @@ export class EditingSessionTool extends Tool {
 
   private async _run(): Promise<void> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
-    if (!imodel)
+    if (!imodel || !imodel.isBriefcaseConnection())
       return;
 
     const session = InteractiveEditingSession.get(imodel);
@@ -54,7 +54,7 @@ export abstract class UndoRedoTool extends Tool {
   public run(): boolean {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (imodel) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises,deprecation/deprecation
       IModelWriteRpcInterface.getClient().undoRedo(imodel.getRpcProps(), this.isUndo);
     }
 
@@ -86,7 +86,7 @@ export class DeleteElementsTool extends Tool {
 
   private async _run(): Promise<void> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
-    if (!imodel)
+    if (!imodel || !imodel.isBriefcaseConnection())
       return;
 
     const elements = imodel.selectionSet.elements;
@@ -94,6 +94,7 @@ export class DeleteElementsTool extends Tool {
       return;
 
     try {
+      // eslint-disable-next-line deprecation/deprecation
       await IModelWriteRpcInterface.getClient().deleteElements(imodel.getRpcProps(), Array.from(elements));
       await imodel.saveChanges();
     } catch (err) {
@@ -302,7 +303,7 @@ export class PlaceLineStringTool extends InteractiveEditingTool {
       return undefined;
 
     const geom = IModelJson.Writer.toIModelJson(LineString3d.create(this._points));
-    return geom ? [ geom ] : undefined;
+    return geom ? [geom] : undefined;
   }
 
   public decorate(context: DecorateContext): void {

@@ -13,7 +13,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { addCsrfHeader, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
+import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
@@ -29,7 +29,6 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
-import { EventSource } from "./EventSource";
 import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import { FeatureToggleClient } from "./FeatureToggleClient";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -134,6 +133,7 @@ export interface IModelAppOptions {
    * @internal
    */
   featureToggles?: FeatureToggleClient;
+  rpcInterfaces?: RpcInterfaceDefinition[];
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -203,8 +203,8 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
 
-  // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
-  private constructor() { }
+  // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
+  protected constructor() { }
 
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: FrontendAuthorizationClient;
@@ -329,18 +329,16 @@ export class IModelApp {
    * @param opts The options for configuring IModelApp
    */
   public static async startup(opts?: IModelAppOptions): Promise<void> {
-    opts = opts ? opts : {};
-
     if (this._initialized)
-      throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
+      return; // we're already initialized, do nothing.
+    this._initialized = true;
 
     // Setup a current context for all requests that originate from this frontend
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
 
+    opts = opts ?? {};
     this._securityOptions = opts.security || {};
-
-    this._initialized = true;
 
     // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
     (window as IModelAppForDebugger).iModelAppForDebugger = this;
@@ -461,7 +459,6 @@ export class IModelApp {
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this._renderSystem = dispose(this._renderSystem);
     this._entityClasses.clear();
-    EventSource.clearGlobal();
     this._initialized = false;
   }
 

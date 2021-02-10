@@ -9,7 +9,7 @@
 import * as hash from "object-hash";
 import * as path from "path";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, EventSink, IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
@@ -288,9 +288,6 @@ export interface PresentationManagerProps {
 
   /** @internal */
   addon?: NativePlatformDefinition;
-
-  /** @internal */
-  eventSink?: EventSink;
 }
 
 /**
@@ -354,13 +351,13 @@ export class PresentationManager {
     if (this._props.enableSchemasPreload)
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
 
-    this._isOneFrontendPerBackend = IModelHost.isNativeAppBackend;
+    this._isOneFrontendPerBackend = IpcHost.isValid;
+
+    // TODO: updates tracker should only be created for native app backends, but that's a breaking
+    // change - make it when moving to 3.0
     if (isChangeTrackingEnabled) {
-      // if change tracking is enabled, assume we're in native app mode even if `IModelHost.isNativeAppBackend` tells we're not
-      this._isOneFrontendPerBackend = true;
       this._updatesTracker = UpdatesTracker.create({
         nativePlatformGetter: this.getNativePlatform,
-        eventSink: (props && props.eventSink) ? props.eventSink /* istanbul ignore next */ : EventSink.global,
         pollInterval: props!.updatesPollInterval!, // set if `isChangeTrackingEnabled == true`
       });
     }

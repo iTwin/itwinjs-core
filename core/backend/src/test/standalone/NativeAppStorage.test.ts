@@ -5,18 +5,18 @@
 import { assert } from "chai";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
-import { NativeAppBackend } from "../../NativeAppBackend";
+import { NativeHost } from "../../NativeHost";
 import { NativeAppStorage } from "../../NativeAppStorage";
 
-describe("NativeApp Storage", () => {
+describe("NativeApp storage backend", () => {
   before(async () => {
     await IModelHost.shutdown();
-    await NativeAppBackend.startup();
-    IModelJsFs.purgeDirSync(NativeAppBackend.appSettingsCacheDir);
+    await NativeHost.startup();
+    IModelJsFs.purgeDirSync(NativeHost.appSettingsCacheDir);
   });
 
   after(async () => {
-    await NativeAppBackend.shutdown();
+    await NativeHost.shutdown();
     await IModelHost.startup();
   });
 

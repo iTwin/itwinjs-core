@@ -14,46 +14,67 @@ The frontend-devtools package contains an example [SnowEffect]($frontend-devtool
 
 Updated recommended version of Electron from 10.1.3 to 11.1.0. Note that Electron is specified as a peer dependency in iModel.js - so it's recommended but not mandatory that applications migrate to this electron version.
 
-## IpcSocket for use with dedicated backends
-
-For cases where a frontend and backend are explicitly paired (e.g. desktop and mobile apps), a more direct communication path is now supported via the [IpcSocket api]($docs/learning/IpcInterface.md). See the [Rpc vs Ipc learning article]($docs/learning/RpcVsIpc.md) for more details.
-
 ## External textures
 
 By default, a tile containing textured materials embeds the texture images as JPEGs or PNGs. This increases the size of the tile, wasting bandwidth. A new alternative requires only the Id of the texture element to be included in the tile; the image can be requested separately. Texture images are cached, so the image need only be requested once no matter how many tiles reference it.
 
 This feature is currently disabled by default. Enabling it requires the use of APIs currently marked `@alpha`. Pass to [IModelApp.startup]($frontend) a `TileAdmin` with the feature enabled as follows:
+
 ```ts
   const tileAdminProps: TileAdmin.Props = { enableExternalTextures: true };
   const tileAdmin = TileAdmin.create(tileAdminProps);
    IModelApp.startup({ tileAdmin });
 ```
 
-## Breaking API Changes
+## IModelHost and IModelApp Initialization Changes
 
-### Electron Initialization
+Initialization processing of iModel.js applications, and in particular the order of individual steps for frontend and backend.js classes has been complicated and vague, involving several steps that vary depending on application type and platform. This release attempts to clarify and simplify that process, while maintaining backwards compatibility. In general, if your code uses [IModelHost.startup]($backend)` and [IModelApp.startup]($frontend) for web visualization, it will continue to work without changes. However, for native (desktop and mobile) apps, some refactoring may be necessary. See [IModelHost documentation]($docs/learning/backend/IModelHost.md) for appropriate backend initialization, and [IModelApp documentation]($docs/learning/frontend/IModelApp.md) for frontend initialization.
 
-The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes `ElectronBackend` and `ElectronFrontend`.
+The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes `ElectronHost` and `ElectronApp`.
 
 To create an Electron application, you should initialize your frontend via:
 
 ```ts
-  import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
-  ElectronFrontend.initialize({ rpcInterfaces });
+  import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+  ...
+  await ElectronApp.startup();
 ```
 
 And your backend via:
 
 ```ts
-  import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
-  ElectronBackend.initialize({ rpcInterfaces });
+  import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+  ...
+  await ElectronHost.startup();
 ```
 
-> Note that the class `ElectronRpcManager` is now initialized internally by the calls above, and you do not need to initialize it directly.
+Likewise, to create an iOS application, you should initialize your frontend via:
+
+```ts
+  import { IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
+  ...
+  await IOSApp.startup();
+```
+
+And your backend via:
+
+```ts
+  import { IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
+  ...
+  await IOSHost.startup();
+```
+
+Both frontend and backend `startup` methods take optional arguments to customize the App/Host environments.
+
+## ProcessDetector API
+
+It is frequently necessary to detect the type of JavaScript process currently executing. Previously, there were several ways (sometimes redundant, sometimes conflicting) to do that, depending on the subsystem being used. This release attempts to centralize process classification into the class [ProcessDetector]($bentley) in the `@bentleyjs-core` package. All previous methods for detecting process type have been deprecated in favor of `ProcessDetector`. The deprecated methods will likely be removed in version 3.0.
+
+## Breaking API Changes
 
 ### Update element behavior
 
-In order to support partial updates and clearing an existing value, the update element behavior has been enhanced/changed with regard to how `undefined` values are handled.
+To support partial updates and clearing an existing value, the update element behavior has been enhanced/changed with regard to how `undefined` values are handled.
 The new behavior is documented as part of the method documentation here:
 
 [IModelDb.Elements.updateElement]($backend)
@@ -114,3 +135,4 @@ The above example creates content for `ECDbMeta.ECClassDef` instances by selecti
 that are of given `ECDbMeta.ECClassDef` instances.
 
 Previously this was not possible, because there is no ECRelationship between `ECDbMeta.ECClassDef` and `BisCore.Element`.
+
