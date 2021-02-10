@@ -1879,6 +1879,8 @@ export function Slider(props: SliderProps): JSX.Element;
 // @public
 export interface SliderProps extends CommonProps {
     disabled?: boolean;
+    formatMax?: (value: number) => string;
+    formatMin?: (value: number) => string;
     formatTick?: (tick: number) => string;
     formatTooltip?: (value: number) => string;
     getTickCount?: () => number;
