@@ -16,10 +16,12 @@ import {
 } from "@bentley/ui-abstract";
 import { CommonProps, Orientation, UiSettings } from "@bentley/ui-core";
 import { AccuDrawInputField } from "./AccuDrawInputField";
-import { CompassMode, IModelApp, ItemField } from "@bentley/imodeljs-frontend";
+import { CompassMode, IModelApp, ItemField, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import angleIcon from "./angle.svg?sprite";
 import distanceIcon from "./distance.svg?sprite";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { ContentControlActivatedEventArgs } from "../content/ContentControl";
 
 /** @alpha */
 export interface AccuDrawFieldContainerProps extends CommonProps {
@@ -27,14 +29,21 @@ export interface AccuDrawFieldContainerProps extends CommonProps {
   orientation: Orientation;
   /** Optional parameter for persistent UI settings. Defaults to LocalUiSettings. */
   uiSettings?: UiSettings;
+  /** @internal */
+  showZOverride?: boolean;
 }
 
 let AccuDrawContainerIndex = 0;
 
+function determineShowZ(vp?: ScreenViewport): boolean {
+  const showZ = (vp !== undefined) ? /* istanbul ignore next */ vp.view.is3d() : false;
+  return showZ;
+}
+
 /** @alpha */
 export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { className, style, orientation, uiSettings, ...otherProps } = props;
+  const { className, style, orientation, uiSettings, showZOverride, ...otherProps } = props;
 
   const [containerIndex] = React.useState(() => ++AccuDrawContainerIndex);
   const xInputRef = React.useRef<HTMLInputElement>(null);
@@ -49,6 +58,7 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   const [zLock, setZLock] = React.useState(false);
   const [angleLock, setAngleLock] = React.useState(false);
   const [distanceLock, setDistanceLock] = React.useState(false);
+  const [showZ, setShowZ] = React.useState(showZOverride || determineShowZ(IModelApp.accuDraw.currentView));
 
   const getInputRef = (field: AccuDrawField): React.RefObject<HTMLInputElement> => {
     let inputRef: React.RefObject<HTMLInputElement>;
@@ -154,6 +164,15 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
     className,
   );
 
+  React.useEffect(() => {
+    // istanbul ignore next
+    const handleContentControlActivated = (args: ContentControlActivatedEventArgs) => {
+      setShowZ(determineShowZ(args.activeContentControl.viewport));
+    };
+
+    return FrontstageManager.onContentControlActivatedEvent.addListener(handleContentControlActivated);
+  }, []);
+
   const delay = 250;
 
   return (
@@ -168,10 +187,12 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
             field={AccuDrawField.Y} id={`uifw-accudraw-y-${containerIndex}`} label="Y" data-testid="uifw-accudraw-y"
             valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Y, stringValue)}
             onEscPressed={handleEscPressed} />
-          <AccuDrawInputField ref={zInputRef} isLocked={zLock} className="uifw-accudraw-z-value"
-            field={AccuDrawField.Z} id={`uifw-accudraw-z-${containerIndex}`} label="Z" data-testid="uifw-accudraw-z"
-            valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Z, stringValue)}
-            onEscPressed={handleEscPressed} />
+          {showZ &&
+            <AccuDrawInputField ref={zInputRef} isLocked={zLock} className="uifw-accudraw-z-value"
+              field={AccuDrawField.Z} id={`uifw-accudraw-z-${containerIndex}`} label="Z" data-testid="uifw-accudraw-z"
+              valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Z, stringValue)}
+              onEscPressed={handleEscPressed} />
+          }
         </>
       }
       {mode === AccuDrawMode.Polar &&
