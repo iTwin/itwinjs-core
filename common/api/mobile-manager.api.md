@@ -85,14 +85,10 @@ export class IOSApp {
 }
 
 // @beta (undocumented)
-export abstract class IOSDevice extends MobileDevice {
-}
-
-// @beta (undocumented)
 export class IOSHost extends MobileHost {
     static startup(opt?: {
         mobileHost?: {
-            device: IOSDevice;
+            device: MobileDevice;
         };
         ipcHost?: IpcHostOptions;
         iModelHost?: IModelHostConfiguration;
