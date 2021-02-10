@@ -423,7 +423,7 @@ export class IModelExporter {
     if (this.shouldExportElement(modeledElement)) {
       this.exportModelContainer(model);
       if (this.visitElements) {
-        this.exportModelContents(modeledElementId);
+        await this.exportModelContents(modeledElementId);
         await this.exportSubModels(modeledElementId);
       }
     }
@@ -448,7 +448,7 @@ export class IModelExporter {
   /** Export the model contents.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportModelContents(modelId: Id64String, elementClassFullName: string = Element.classFullName): void {
+  public async exportModelContents(modelId: Id64String, elementClassFullName: string = Element.classFullName): Promise<void> {
     if (!this.visitElements) {
       Logger.logTrace(loggerCategory, `visitElements=false, skipping exportModelContents()`);
       return;

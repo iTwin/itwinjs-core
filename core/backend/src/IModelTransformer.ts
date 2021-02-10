@@ -766,11 +766,11 @@ export class TemplateModelCloner extends IModelTransformer {
    * @note *Predecessors* like the SpatialCategory must be remapped before calling this method.
    * @returns The mapping of sourceElementIds from the template model to the instantiated targetElementIds in the targetDb in case further processing is required.
    */
-  public placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Map<Id64String, Id64String> {
+  public async placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Promise<Map<Id64String, Id64String>> {
     this.context.remapElement(sourceTemplateModelId, targetModelId);
     this._transform3d = Transform.createOriginAndMatrix(placement.origin, placement.angles.toMatrix3d());
     this._sourceIdToTargetIdMap = new Map<Id64String, Id64String>();
-    this.exporter.exportModelContents(sourceTemplateModelId);
+    await this.exporter.exportModelContents(sourceTemplateModelId);
     // Note: the source --> target mapping was needed during the template model cloning phase (remapping parent/child, for example), but needs to be reset afterwards
     for (const sourceElementId of this._sourceIdToTargetIdMap.keys()) {
       const targetElementId = this.context.findTargetElementId(sourceElementId);
@@ -786,11 +786,11 @@ export class TemplateModelCloner extends IModelTransformer {
    * @note *Predecessors* like the DrawingCategory must be remapped before calling this method.
    * @returns The mapping of sourceElementIds from the template model to the instantiated targetElementIds in the targetDb in case further processing is required.
    */
-  public placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Map<Id64String, Id64String> {
+  public async placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Promise<Map<Id64String, Id64String>> {
     this.context.remapElement(sourceTemplateModelId, targetModelId);
     this._transform3d = Transform.createOriginAndMatrix(Point3d.createFrom(placement.origin), placement.rotation);
     this._sourceIdToTargetIdMap = new Map<Id64String, Id64String>();
-    this.exporter.exportModelContents(sourceTemplateModelId);
+    await this.exporter.exportModelContents(sourceTemplateModelId);
     // Note: the source --> target mapping was needed during the template model cloning phase (remapping parent/child, for example), but needs to be reset afterwards
     for (const sourceElementId of this._sourceIdToTargetIdMap.keys()) {
       const targetElementId = this.context.findTargetElementId(sourceElementId);

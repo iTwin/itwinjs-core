@@ -270,44 +270,52 @@ describe.only("IModelTransformer", () => {
     const targetDrawingListModelId = DocumentListModel.insert(targetDb, IModel.rootSubjectId, "Drawings");
     const targetDrawingId = Drawing.insert(targetDb, targetDrawingListModelId, "Drawing1");
     const cloner = new TemplateModelCloner(componentLibraryDb, targetDb);
-    assert.throws(() => cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, Placement3d.fromJSON())); // expect error since category not remapped
+    try {
+      await cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, Placement3d.fromJSON());
+      assert.fail("Expected error to be thrown since category not remapped");
+    } catch (error) {
+    }
     cloner.context.remapElement(sourceSpatialCategoryId, targetSpatialCategoryId);
     const cylinderLocations: Point3d[] = [
       Point3d.create(10, 10), Point3d.create(20, 10), Point3d.create(30, 10),
       Point3d.create(10, 20), Point3d.create(20, 20), Point3d.create(30, 20),
       Point3d.create(10, 30), Point3d.create(20, 30), Point3d.create(30, 30),
     ];
-    cylinderLocations.forEach((location: Point3d) => {
+    for (const location of cylinderLocations) {
       const placement = new Placement3d(location, new YawPitchRollAngles(), new Range3d());
-      const sourceIdToTargetIdMap = cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, placement);
+      const sourceIdToTargetIdMap = await cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, placement);
       for (const sourceElementId of sourceIdToTargetIdMap.keys()) {
         const sourceElement = componentLibraryDb.elements.getElement(sourceElementId);
         const targetElement = targetDb.elements.getElement(sourceIdToTargetIdMap.get(sourceElementId)!);
         assert.equal(sourceElement.classFullName, targetElement.classFullName);
       }
-    });
+    }
     const assemblyLocations: Point3d[] = [Point3d.create(-10, 0), Point3d.create(-20, 0), Point3d.create(-30, 0)];
-    assemblyLocations.forEach((location: Point3d) => {
+    for (const location of assemblyLocations) {
       const placement = new Placement3d(location, new YawPitchRollAngles(), new Range3d());
-      const sourceIdToTargetIdMap = cloner.placeTemplate3d(assemblyTemplateId, targetPhysicalModelId, placement);
+      const sourceIdToTargetIdMap = await cloner.placeTemplate3d(assemblyTemplateId, targetPhysicalModelId, placement);
       for (const sourceElementId of sourceIdToTargetIdMap.keys()) {
         const sourceElement = componentLibraryDb.elements.getElement(sourceElementId);
         const targetElement = targetDb.elements.getElement(sourceIdToTargetIdMap.get(sourceElementId)!);
         assert.equal(sourceElement.classFullName, targetElement.classFullName);
         assert.equal(sourceElement.parent?.id ? true : false, targetElement.parent?.id ? true : false);
       }
-    });
-    assert.throws(() => cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, Placement2d.fromJSON())); // expect error since category not remapped
+    }
+    try {
+      await cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, Placement2d.fromJSON());
+      assert.fail("Expected error to be thrown since category not remapped");
+    } catch (error) {
+    }
     cloner.context.remapElement(sourceDrawingCategoryId, targetDrawingCategoryId);
     const drawingGraphicLocations: Point2d[] = [
       Point2d.create(10, 10), Point2d.create(20, 10), Point2d.create(30, 10),
       Point2d.create(10, 20), Point2d.create(20, 20), Point2d.create(30, 20),
       Point2d.create(10, 30), Point2d.create(20, 30), Point2d.create(30, 30),
     ];
-    drawingGraphicLocations.forEach((location: Point2d) => {
+    for (const location of drawingGraphicLocations) {
       const placement = new Placement2d(location, Angle.zero(), new Range2d());
-      cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, placement);
-    });
+      await cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, placement);
+    }
     cloner.dispose();
     componentLibraryDb.close();
     targetDb.close();
@@ -698,7 +706,7 @@ describe.only("IModelTransformer", () => {
     exporter.iModelExporter.exportElement(IModel.rootSubjectId);
     exporter.iModelExporter.exportChildElements(IModel.rootSubjectId);
     await exporter.iModelExporter.exportRepositoryLinks();
-    exporter.iModelExporter.exportModelContents(IModel.repositoryModelId);
+    await exporter.iModelExporter.exportModelContents(IModel.repositoryModelId);
     await exporter.iModelExporter.exportRelationships(ElementRefersToElements.classFullName);
     // make sure the exporter actually visited something
     assert.isAtLeast(exporter.modelCount, 4);
