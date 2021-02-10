@@ -1,6 +1,37 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fi
+- Add ability to control content cache size
+
+## 2.10.3
+Fri, 08 Jan 2021 18:34:03 GMT
+
+_Version update only_
+
+## 2.10.2
+Fri, 08 Jan 2021 14:52:02 GMT
+
+_Version update only_
+
+## 2.10.1
+Tue, 22 Dec 2020 00:53:38 GMT
+
+_Version update only_
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- Add `PresentationBackendNativeLoggerCategory.ECPresentation_Localization` for localization-related logs
+- Allow specifying asset path overrides separately for 'presentation-common' and 'presentation-backend' packages
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT

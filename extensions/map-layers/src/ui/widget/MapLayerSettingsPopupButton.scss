@@ -1,0 +1,32 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/index";
+
+$hovered-icon-color: $buic-foreground-primary-tone;
+
+.maplayers-settings-popup-panel {
+  z-index: 14000;
+  font-size: 14px;
+  margin: 0.5em;
+  width: 300px;
+  //display: flex;
+  //flex-direction: row;
+}
+
+.maplayers-settings-popup-button {
+  color: $buic-foreground-body;
+  font-size: 20px;
+  background-color: transparent;
+  border: none;
+  position: relative;
+  top: 3.5px;
+
+  &:hover {
+    color: $hovered-icon-color;
+  }
+  &:focus {
+    outline: none;
+  }
+}

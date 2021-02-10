@@ -11,6 +11,7 @@ import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
@@ -285,6 +286,39 @@ describe("PipeConnections", () => {
       x0 += 20.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createArcPointTangentPoint");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("createRectangleXY", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 1.5;
+    const y0 = 2.0;
+    const x1 = 6;
+    const y1 = 7;
+    const radiusA = 3.0;
+    const rectangleA = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, radiusA);
+    const rectangleB1 = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, undefined);
+    const rectangleB0 = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, 0.0);
+    ck.testType<Loop>(rectangleA);
+    ck.testType<Loop>(rectangleB0);
+    ck.testType<Loop>(rectangleB1);
+    const radii: (number | undefined)[] = [undefined, 0, 1, 2, 3];
+    let yOut = 0.0;
+    for (const yB of [4, -4]) {
+      let xOut = 0.0;
+      for (const xB of [6, -6]) {
+        for (const radiusD of radii) {
+          const rectangleD = CurveFactory.createRectangleXY(0, 0, xB, yB, 0, radiusD);
+          ck.testType<Loop>(rectangleD, "CurveFactory always returns a loop");
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangleD, xOut, yOut);
+          xOut += 10.0;
+        }
+        xOut += 20.0;
+      }
+      yOut += 20;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createRectangleXY");
     expect(ck.getNumErrors()).equals(0);
   });
 

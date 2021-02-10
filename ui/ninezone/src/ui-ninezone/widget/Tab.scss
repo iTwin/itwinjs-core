@@ -106,7 +106,9 @@
     &:not(.nz-active), &.nz-minimized {
       color: $buic-foreground-muted;
       border-right-width: 1px;
+    }
 
+    &:not(.nz-minimized) {
       &.nz-first-inactive {
         border-left-width: 1px;
       }

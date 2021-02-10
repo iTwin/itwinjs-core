@@ -119,4 +119,23 @@ describe("ECSql Query", () => {
       assert.equal(rowCounts[entry], resultSet.length);
     }
   });
+
+  it("Query with Abbreviated Blobs", async function () {
+    const query1 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart LIMIT 1";
+    const query2 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart WHERE ECInstanceId=?";
+    let row1;
+    let row2;
+    let row3;
+    for await (const row of imodel2.query(query1))
+      row1 = row;
+    assert.isNotEmpty(row1.geometryStream);
+    for await(const row of imodel2.query(query2, [row1.id], undefined, undefined, undefined, false))
+      row2 = row;
+    assert.isNotEmpty(row2.geometryStream);
+    assert.deepEqual(row2.geometryStream, row1.geometryStream);
+    for await(const row of imodel2.query(query2, [row1.id], undefined, undefined, undefined, true))
+      row3 = row;
+    assert.equal(row3.id, row1.id);
+    assert.include(row1.geometryStream, row3.geometryStream);
+  });
 });

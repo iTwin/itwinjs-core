@@ -23,7 +23,7 @@ export function useActiveIModelConnection(): IModelConnection | undefined {
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
       const eventIds = [SessionStateActionId.SetIModelConnection];
       // istanbul ignore else
-      if (eventIds.some((value: string): boolean => args.eventIds.has(value))) {
+      if (eventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
         setActiveConnection(UiFramework.getIModelConnection());
       }
     };

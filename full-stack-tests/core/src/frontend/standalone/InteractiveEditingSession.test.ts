@@ -7,11 +7,11 @@ const expect = chai.expect;
 import * as path from "path";
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { ElectronRpcConfiguration, IModelError } from "@bentley/imodeljs-common";
+import { isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelError } from "@bentley/imodeljs-common";
 import { IModelApp, InteractiveEditingSession, StandaloneConnection } from "@bentley/imodeljs-frontend";
 
-if (ElectronRpcConfiguration.isElectron) {
+if (isElectronRenderer) {
   describe("InteractiveEditingSession", () => {
     let imodel: StandaloneConnection | undefined;
     // Editable; BisCore version < 1.0.11

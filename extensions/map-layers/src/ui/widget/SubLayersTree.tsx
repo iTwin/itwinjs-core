@@ -14,7 +14,7 @@ import {
   TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useVisibleTreeNodes,
 } from "@bentley/ui-components";
 import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
-import { StyleMapLayerSettings } from "./MapLayerManager";
+import { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./SubLayersTree.scss";

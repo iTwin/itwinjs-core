@@ -8,7 +8,7 @@
 
 import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
-import { IModelApp, NativeApp } from "@bentley/imodeljs-frontend";
+import { NativeApp } from "@bentley/imodeljs-frontend";
 
 /** @internal */
 export interface IConnectivityInformationProvider {
@@ -17,7 +17,7 @@ export interface IConnectivityInformationProvider {
 }
 
 /**
- * A helper that wraps connectivity-related APIs in IModelApp / NativeApp
+ * A helper that wraps connectivity-related APIs in NativeApp
  * to give a unified information for interested parties in presentation.
  *
  * @internal
@@ -29,7 +29,7 @@ export class ConnectivityInformationProvider implements IConnectivityInformation
   public readonly onInternetConnectivityChanged = new BeEvent<(args: { status: InternetConnectivityStatus }) => void>();
 
   public constructor() {
-    if (IModelApp.isNativeApp) {
+    if (NativeApp.isValid) {
       this._unsubscribeFromInternetConnectivityChangedEvent = NativeApp.onInternetConnectivityChanged.addListener(this.onNativeAppInternetConnectivityChanged);
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       NativeApp.checkInternetConnectivity().then((status: InternetConnectivityStatus) => {

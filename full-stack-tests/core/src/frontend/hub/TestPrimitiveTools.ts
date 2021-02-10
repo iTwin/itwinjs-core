@@ -6,8 +6,8 @@ import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelJson as GeomJson, LineSegment3d, LineString3d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, GeometricElement3dProps, GeometryStreamProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d, EventHandled, GraphicType, HitDetail,
-  IModelApp, PrimitiveTool, SnapStatus, Viewport,
+  AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d, EventHandled, GraphicType, HitDetail, IModelApp,
+  PrimitiveTool, SnapStatus, Viewport,
 } from "@bentley/imodeljs-frontend";
 
 const loggingCategory = "TestPrimitiveTools";
@@ -185,12 +185,6 @@ export class PlacementTestTool extends PrimitiveToolEx {
     else
       this.setupAndPromptForNextAction();
     return true;
-  }
-
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 
   public onRestartTool(): void {

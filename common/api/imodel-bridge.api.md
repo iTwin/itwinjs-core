@@ -23,6 +23,7 @@ export class BridgeJobDefArgs {
     dmsServerUrl?: string;
     // (undocumented)
     documentGuid?: string;
+    doDetectDeletedElements: boolean;
     isSnapshot: boolean;
     outputDir?: string;
     revisionComments?: string;

@@ -230,6 +230,7 @@ public;class PhysicalType
 public;PhysicalTypeIsOfPhysicalMaterial 
 public;PlanCallout 
 public;Platform
+internal;ProcessChangesetOptions
 beta;ProgressFunction = (loaded: number, total: number) => number
 beta;class RecipeDefinitionElement 
 public;Relationship 
@@ -278,7 +279,7 @@ public;Subject
 public;SubjectOwnsPartitionElements 
 public;SubjectOwnsSubjects 
 beta;TemplateModelCloner 
-internal;TemplateRecipe2d 
+beta;TemplateRecipe2d 
 beta;TemplateRecipe3d 
 internal;TemplateViewDefinition2d 
 internal;TemplateViewDefinition3d 

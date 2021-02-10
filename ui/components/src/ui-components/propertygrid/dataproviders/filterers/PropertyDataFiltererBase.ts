@@ -91,7 +91,7 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
 export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFiltererBase {
   public async recordMatchesFilter(): Promise<PropertyDataFilterResult> {
     return { matchesFilter: !this.isActive };
-  };
+  }
 }
 /**
  * PropertyDataFilter base which is suited for only Record filtering
@@ -100,5 +100,5 @@ export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFilte
 export abstract class PropertyRecordDataFiltererBase extends PropertyDataFiltererBase {
   public async categoryMatchesFilter(): Promise<PropertyDataFilterResult> {
     return { matchesFilter: !this.isActive };
-  };
+  }
 }

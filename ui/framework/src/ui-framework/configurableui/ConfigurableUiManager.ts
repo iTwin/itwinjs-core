@@ -92,6 +92,9 @@ export class ConfigurableUiManager {
     // Initialize the modeless dialog manager.
     ModelessDialogManager.initialize();
 
+    // Initialize the Keyboard Shortcut manager
+    KeyboardShortcutManager.initialize();
+
     this._initialized = true;
   }
 

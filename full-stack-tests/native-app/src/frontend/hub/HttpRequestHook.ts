@@ -65,7 +65,7 @@ class XMLHttpRequestProxy {
       return this._nativeXhr.responseType;
     }
     if (this._fetchResponse) {
-      const contentType = this._fetchResponse?.headers.get("Content-Type")!;
+      const contentType = this._fetchResponse.headers.get("Content-Type")!;
       if (contentType.search("json") >= 0)
         return "json";
 
@@ -83,7 +83,7 @@ class XMLHttpRequestProxy {
     if (this._nativeXhr) {
       return this._nativeXhr.responseURL;
     }
-    return this._fetchResponse?.url!;
+    return this._fetchResponse!.url;
   }
   public get responseXML(): any {
     if (this._nativeXhr) {
@@ -96,13 +96,13 @@ class XMLHttpRequestProxy {
     if (this._nativeXhr) {
       return this._nativeXhr.status;
     }
-    return this._fetchResponse?.status!;
+    return this._fetchResponse!.status;
   }
   public get statusText(): string {
     if (this._nativeXhr) {
       return this._nativeXhr.statusText;
     }
-    return this._fetchResponse?.statusText!;
+    return this._fetchResponse!.statusText;
   }
   public get timeout(): number {
     if (this._nativeXhr) {

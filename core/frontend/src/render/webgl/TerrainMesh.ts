@@ -18,7 +18,7 @@ import { RenderMemory } from "../RenderMemory";
 import { RenderSystem, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
 import { AttributeMap } from "./AttributeMap";
 import { GL } from "./GL";
-import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./Handle";
+import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { Primitive } from "./Primitive";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
@@ -76,13 +76,23 @@ export class TerrainTextureParams {
 export class TerrainMeshParams extends IndexedGeometryParams {
   public readonly uvParams: QBufferHandle2d;
   public readonly featureID?: number;
+  public readonly normals?: BufferHandle;
 
-  protected constructor(positions: QBufferHandle3d, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, featureID?: number) {
+  protected constructor(positions: QBufferHandle3d, normals: BufferHandle | undefined, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, featureID?: number) {
     super(positions, indices, numIndices);
-    const attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.TerrainMesh, false);
+    let attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.TerrainMesh, false);
     assert(attrParams !== undefined);
     this.buffers.addBuffer(uvParams, [BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
     this.uvParams = uvParams;
+
+    if (undefined !== normals) {
+      attrParams = AttributeMap.findAttribute("a_norm", TechniqueId.TerrainMesh, false);
+      assert(attrParams !== undefined);
+      if (normals.bytesUsed > 0)
+        this.buffers.addBuffer(normals, [BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+      this.normals = normals;
+    }
+
     this.featureID = featureID;
   }
 
@@ -95,16 +105,26 @@ export class TerrainMeshParams extends IndexedGeometryParams {
       indArray[i] = terrainMesh.indices[i];
 
     const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indArray);
-    if (undefined === posBuf || undefined === uvParamBuf || undefined === indBuf)
+
+    let normBuf: BufferHandle | undefined;
+    if (terrainMesh.normals.length > 0) {
+      const normalBytes = new Uint8Array(terrainMesh.normals.length * 2);
+      const normalShorts = new Uint16Array(normalBytes.buffer);
+      for (let i = 0; i < terrainMesh.normals.length; i++)
+        normalShorts[i] = terrainMesh.normals[i].value;
+      normBuf = BufferHandle.createArrayBuffer(normalBytes);
+    }
+
+    if (undefined === posBuf || undefined === uvParamBuf || undefined === indBuf || (terrainMesh.normals.length > 0 && undefined === normBuf))
       return undefined;
 
-    return new TerrainMeshParams(posBuf, uvParamBuf, indBuf, terrainMesh.indices.length, terrainMesh.featureID);
+    return new TerrainMeshParams(posBuf, normBuf, uvParamBuf, indBuf, terrainMesh.indices.length, terrainMesh.featureID);
   }
 
   public get isDisposed(): boolean {
     return super.isDisposed && this.uvParams.isDisposed;
   }
-  public get bytesUsed(): number { return this.positions.bytesUsed + this.uvParams.bytesUsed + this.indices.bytesUsed; }
+  public get bytesUsed(): number { return this.positions.bytesUsed + (undefined === this.normals ? 0 : this.normals.bytesUsed) + this.uvParams.bytesUsed + this.indices.bytesUsed; }
 
   public dispose() {
     super.dispose();

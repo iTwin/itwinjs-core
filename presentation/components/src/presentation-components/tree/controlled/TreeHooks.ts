@@ -8,9 +8,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  HierarchyUpdateInfo, PartialHierarchyModification, RegisteredRuleset, Ruleset, UPDATE_FULL, VariableValue,
+  PartialHierarchyModification, RegisteredRuleset, Ruleset, UPDATE_FULL, VariableValue,
 } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { IModelHierarchyChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import {
   isTreeModelNode, PagedTreeNodeLoader, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, useTreeModelSource,
 } from "@bentley/ui-components";
@@ -86,8 +86,8 @@ interface ModelSourceUpdateProps {
 
 function useModelSourceUpdateOnIModelHierarchyUpdate(props: ModelSourceUpdateProps) {
   const { modelSource, dataProvider, reset } = props;
-  const onIModelHierarchyChanged = useCallback(async (args: { ruleset: Ruleset, updateInfo: HierarchyUpdateInfo }) => {
-    if (args.ruleset.id === dataProvider.rulesetId) {
+  const onIModelHierarchyChanged = useCallback(async (args: IModelHierarchyChangeEventArgs) => {
+    if (args.rulesetId === dataProvider.rulesetId && args.imodelKey === dataProvider.imodel.key) {
       if (args.updateInfo === UPDATE_FULL)
         reset();
       else

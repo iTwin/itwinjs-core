@@ -17,7 +17,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /**
  * Specifies types of changes in a [[ChangeSet]].
- * @beta
+ * @public
  */
 export enum ChangesType {
   /** [[ChangeSet]] contains regular file changes (e.g. changes to elements or models). */
@@ -38,7 +38,7 @@ export enum ChangesType {
 
 /**
  * [ChangeSet]($docs/learning/Glossary.md#changeset) represents a file containing changes to the iModel. A single ChangeSet contains changes made on a single [[Briefcase]] file and pushed as a single file. ChangeSets form a linear change history of the iModel. If a user wants to push their changes to iModelHub, they first have to merge all ChangeSet they do not have yet. Only a single briefcase is allowed to push their changes at a time.
- * @beta
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.ChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class ChangeSet extends WsgInstance {
@@ -66,7 +66,10 @@ export class ChangeSet extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ParentId")
   public parentId?: string;
 
-  /** Id of the file that this ChangeSet belongs to. It has to be set during the push. See [IModelDb.getGuid]($backend). */
+  /**
+   * Id of the file that this ChangeSet belongs to. It has to be set during the push. See [IModelDb.getGuid]($backend).
+   * @internal @deprecated
+   */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId")
   public seedFileId?: GuidString;
 
@@ -86,15 +89,24 @@ export class ChangeSet extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ContainingChanges")
   public changesType?: ChangesType;
 
-  /** Flag that needs to be marked true, when confirming successful ChangeSet upload. */
+  /**
+   * Flag that needs to be marked true, when confirming successful ChangeSet upload.
+   * @internal
+   */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.IsUploaded")
   public isUploaded?: boolean;
 
-  /** URL from where the ChangeSet file can be downloaded. See [[ChangeSetQuery.selectDownloadUrl]]. */
+  /**
+   * URL from where the ChangeSet file can be downloaded. See [[ChangeSetQuery.selectDownloadUrl]].
+   * @internal
+   */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.DownloadUrl")
   public downloadUrl?: string;
 
-  /** URL where the ChangeSet file has to be uploaded. */
+  /**
+   * URL where the ChangeSet file has to be uploaded.
+   * @internal
+   */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.UploadUrl")
   public uploadUrl?: string;
 
@@ -135,7 +147,7 @@ export class ChangeSet extends WsgInstance {
 
 /**
  * Query object for getting [[ChangeSet]]s. You can use this to modify the query. See [[ChangeSetHandler.get]].
- * @beta
+ * @public
  */
 export class ChangeSetQuery extends StringIdQuery {
   /**
@@ -372,7 +384,7 @@ class DownloadProgress {
 
 /**
  * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [BriefcaseDb]($backend) methods instead.
- * @beta
+ * @public
  */
 export class ChangeSetHandler {
   private _handler: IModelBaseHandler;
@@ -448,6 +460,7 @@ export class ChangeSetHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley), if one of the required arguments is undefined or empty.
    * @param progressCallback Callback for tracking progress.
    * @throws [ResponseError]($itwin-client) if the download fails.
+   * @internal
    */
   public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet[]> {
     ArgumentCheck.defined("requestContext", requestContext);
@@ -610,7 +623,6 @@ export class ChangeSetHandler {
    * @param path Path of file where the ChangeSet should be downloaded.
    * @param expectedFileSize Size of the file that's being downloaded.
    * @param changeSet ChangeSet that's being downloaded.
-   * @internal
    */
   private wasChangeSetDownloaded(path: string, expectedFileSize: number, changeSet: ChangeSet): boolean {
     if (!this._fileHandler)
@@ -647,6 +659,7 @@ export class ChangeSetHandler {
    * @throws [IModelHubStatus.ChangeSetAlreadyExists]($bentley) if a ChangeSet with this id already exists. This usually happens if previous upload attempt has succeeded.
    * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId is not set to the correct file id. That file id should match to the value written to the Briefcase file.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   * @internal
    */
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet> {
     requestContext.enter();

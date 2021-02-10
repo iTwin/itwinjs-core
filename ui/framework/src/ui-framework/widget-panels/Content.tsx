@@ -6,7 +6,7 @@
  * @module Widget
  */
 import * as React from "react";
-import { TabIdContext } from "@bentley/ui-ninezone";
+import { ScrollableWidgetContent, TabIdContext } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetDef } from "../widgets/WidgetDef";
 
@@ -14,9 +14,9 @@ import { WidgetDef } from "../widgets/WidgetDef";
 export function WidgetContent() {
   const widget = useWidgetDef();
   return (
-    <>
+    <ScrollableWidgetContent>
       {widget?.reactNode}
-    </>
+    </ScrollableWidgetContent>
   );
 }
 

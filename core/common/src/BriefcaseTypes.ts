@@ -60,8 +60,6 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
   fileName: string;
   /** If true, open the briefcase readonly */
   readonly?: boolean;
-  /** parameter to control upgrading the briefcase before opening. */
-  upgrade?: UpgradeOptions;
 }
 
 /** Properties of a local briefcase file, returned by [BriefcaseManager.getCachedBriefcases]($backend) and [BriefcaseManager.downloadBriefcase]($backend)
@@ -165,4 +163,29 @@ export interface UpgradeOptions {
 
   /** Options that control whether a profile upgrade should be performed when opening a file */
   profile?: ProfileOptions;
+}
+
+/**
+ * The state of the schemas in the Db compared with what the current version of the software expects
+ * Note: The state may vary depending on whether the Db is to be opened ReadOnly or ReadWrite.
+ * @beta
+ */
+export enum SchemaState {
+  /** The schemas in the Db are up-to-date, and do not need to be upgraded before opening it with the current version of the software */
+  UpToDate,
+
+  /** It's required that the schemas in the Db be upgraded before it can be opened with the current version of the software.
+   * This may happen in read-write scenarios where the application requires a newer version of the schemas to be in place before
+   * it can write data based on that new schema.
+   */
+  UpgradeRequired,
+
+  /** It's recommended, but not necessary that the schemas in the Db be upgraded before opening it with the current version of the software */
+  UpgradeRecommended,
+
+  /** The schemas in the Db are too old to be opened by the current version of the software. Upgrade using the API is not possible. */
+  TooOld,
+
+  /** The schemas in the Db are too new to be opened by the current version of the software */
+  TooNew,
 }

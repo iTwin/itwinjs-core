@@ -11,6 +11,8 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Button, ButtonType, FillCentered } from "@bentley/ui-core";
 import { Indicator, StatusBarFieldId, StatusFieldProps } from "@bentley/ui-framework";
 import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
+import { ColorPickerPopup } from "@bentley/ui-components";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 interface SampleStatusFieldState {
   target: HTMLElement | null;
@@ -57,10 +59,14 @@ export class SampleStatusField extends React.Component<StatusFieldProps, SampleS
 
   /** Render buttons for clear and show/hide manipulators */
   private renderContents() {
+    const colorDef = ColorDef.blue;
     return (
-      <div style={{ height: "60px" }}>
+      <div style={{ height: "70px" }}>
         <FillCentered>
-          <Button buttonType={ButtonType.Blue}>{IModelApp.i18n.translate("SampleApp:statusFields.sampleButton")}</Button>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <ColorPickerPopup initialColor={colorDef} />
+            <Button buttonType={ButtonType.Blue}>{IModelApp.i18n.translate("SampleApp:statusFields.sampleButton")}</Button>
+          </div>
         </FillCentered>
       </div>
     );

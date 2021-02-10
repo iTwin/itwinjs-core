@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { EventSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { EventSource, IModelConnection, NativeApp } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
@@ -15,13 +15,39 @@ import {
   isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition,
   LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
   PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationStatus, PresentationUnitSystem,
-  RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
+  RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { LocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
+
+/**
+ * Data structure that describes IModel hierarchy change event arguments.
+ * @alpha
+ */
+export interface IModelHierarchyChangeEventArgs {
+  /** Id of ruleset that was used to create hierarchy. */
+  rulesetId: string;
+  /** Hierarchy changes info. */
+  updateInfo: HierarchyUpdateInfo;
+  /** Key of iModel that was used to create hierarchy. It matches [[IModelConnection.key]] property. */
+  imodelKey: string;
+}
+
+/**
+ * Data structure that describes iModel content change event arguments.
+ * @alpha
+ */
+export interface IModelContentChangeEventArgs {
+  /** Id of ruleset that was used to create content. */
+  rulesetId: string;
+  /** Content changes info. */
+  updateInfo: ContentUpdateInfo;
+  /** Key of iModel that was used to create content. It matches [[IModelConnection.key]] property. */
+  imodelKey: string;
+}
 
 /**
  * Properties used to configure [[PresentationManager]]
@@ -77,13 +103,13 @@ export class PresentationManager implements IDisposable {
    * An event raised when hierarchies created using specific ruleset change
    * @alpha
    */
-  public onIModelHierarchyChanged = new BeEvent<(args: { ruleset: Ruleset, updateInfo: HierarchyUpdateInfo }) => void>();
+  public onIModelHierarchyChanged = new BeEvent<(args: IModelHierarchyChangeEventArgs) => void>();
 
   /**
    * An event raised when content created using specific ruleset changes
    * @alpha
    */
-  public onIModelContentChanged = new BeEvent<(args: { ruleset: Ruleset, updateInfo: ContentUpdateInfo }) => void>();
+  public onIModelContentChanged = new BeEvent<(args: IModelContentChangeEventArgs) => void>();
 
   /** Get / set active locale used for localizing presentation data */
   public activeLocale: string | undefined;
@@ -103,7 +129,7 @@ export class PresentationManager implements IDisposable {
     this._localizationHelper = new LocalizationHelper();
     this._connections = new Map<IModelConnection, Promise<void>>();
 
-    if (IModelApp.isNativeApp) {
+    if (NativeApp.isValid) {
       // EventSource only works in native apps, so the `onUpdate` callback will only be called there. Adding
       // under the condition just to avoid an error message being logged.
       const eventSource = props?.eventSource ?? EventSource.global;
@@ -140,21 +166,24 @@ export class PresentationManager implements IDisposable {
 
   /** @note This is only called in native apps after changes in iModels */
   private async handleUpdateAsync(report: UpdateInfo) {
-    const rulesetIds = new Array<string>();
-    for (const rulesetId in report) {
-      // istanbul ignore else
-      if (report.hasOwnProperty(rulesetId))
-        rulesetIds.push(rulesetId);
+    for (const imodelKey in report) {
+      // istanbul ignore if
+      if (!report.hasOwnProperty(imodelKey))
+        continue;
+
+      const imodelReport = report[imodelKey];
+      for (const rulesetId in imodelReport) {
+        // istanbul ignore if
+        if (!imodelReport.hasOwnProperty(rulesetId))
+          continue;
+
+        const updateInfo = imodelReport[rulesetId];
+        if (updateInfo.content)
+          this.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.content, imodelKey });
+        if (updateInfo.hierarchy)
+          this.onIModelHierarchyChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.hierarchy, imodelKey });
+      }
     }
-    const rulesets = (await Promise.all(rulesetIds.map(async (id) => this._rulesets.get(id))))
-      .filter<RegisteredRuleset>((ruleset): ruleset is RegisteredRuleset => !!ruleset);
-    rulesets.forEach((ruleset: Ruleset) => {
-      const updateInfo = report[ruleset.id];
-      if (updateInfo.content)
-        this.onIModelContentChanged.raiseEvent({ ruleset, updateInfo: updateInfo.content });
-      if (updateInfo.hierarchy)
-        this.onIModelHierarchyChanged.raiseEvent({ ruleset, updateInfo: updateInfo.hierarchy });
-    });
   }
 
   /** @alpha */

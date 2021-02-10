@@ -107,6 +107,15 @@ export abstract class GraphicBuilder {
    * @alpha
    */
   public applyAspectRatioSkew = false;
+  /** If true, the order in which geometry is added to the GraphicBuilder is preserved.
+   * This is useful for overlay and background graphics because they draw without using the depth buffer. For example, to draw an overlay containing a red shape with a white outline,
+   * you would add the shape to the GraphicBuilder first, followed by the outline, to ensure the outline draws "in front of" the shape.
+   * It defaults to true for overlays and background graphics, and false for other graphics types.
+   * It is not useful for other types of graphics, and it imposes a performance penalty (more draw calls).
+   * For overlay and background graphics that do not need to draw in any particular order, performance can be improved by setting this to false.
+   * @beta
+   */
+  public preserveOrder: boolean;
 
   /** The local coordinate system transform applied to this builder's geometry. */
   public get placement(): Transform { return this._placement; }
@@ -147,6 +156,7 @@ export abstract class GraphicBuilder {
     this._placement = placement;
     this.type = type;
     this.viewport = viewport;
+    this.preserveOrder = this.isOverlay || this.isViewBackground;
     if (undefined !== pickId)
       this.pickId = pickId.toString();
   }

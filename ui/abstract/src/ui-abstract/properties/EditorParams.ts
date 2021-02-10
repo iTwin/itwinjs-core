@@ -35,7 +35,7 @@ export enum AlternateDateFormats {
   UtcShortWithDay,
   // Www, dd Mmm yyyy hh:mm:ss GMT
   UtcDateTimeWithDay,
-};
+}
 
 /** Enum that defines supported time formats.
  * @beta
@@ -49,7 +49,7 @@ export enum TimeDisplay {
   H24M = "hh:mm",
   // 24 hour with minutes and seconds
   H24MS = "hh:mm:ss",
-};
+}
 
 /**
  * Enum for Property Editor Param Types

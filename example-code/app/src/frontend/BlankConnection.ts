@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Range3d } from "@bentley/geometry-core";
 import { Cartographic, ColorDef } from "@bentley/imodeljs-common";
-import { BlankConnection, DisplayStyle3dState, IModelConnection, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { BlankConnection, IModelConnection, SpatialViewState } from "@bentley/imodeljs-frontend";
 
 export class BlankConnectionExample {
 
@@ -35,7 +35,7 @@ export class BlankConnectionExample {
     const blankView = SpatialViewState.createBlank(iModel, ext.low, ext.high.minus(ext.low));
 
     // turn on the background map
-    const style = blankView.displayStyle as DisplayStyle3dState;
+    const style = blankView.displayStyle;
     const viewFlags = style.viewFlags;
     viewFlags.backgroundMap = true;
     style.viewFlags = viewFlags; // call to accessor to get the json properties to reflect the changes to ViewFlags

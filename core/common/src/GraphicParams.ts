@@ -46,10 +46,6 @@ export class GraphicParams {
   public lineColor = ColorDef.black;
   /** The color of surfaces. */
   public fillColor = ColorDef.black;
-  /** @alpha */
-  public trueWidthStart = 0;
-  /** @alpha */
-  public trueWidthEnd = 0;
   /** Material applied to surfaces.
    * @beta
    */
@@ -62,6 +58,20 @@ export class GraphicParams {
 
   /** Set the transparency of the fill color, where 0=fully opaque and 255=full transparent. */
   public setFillTransparency(transparency: number) { this.fillColor = this.fillColor.withTransparency(transparency); }
+
+  public clone(out?: GraphicParams): GraphicParams {
+    out = out ?? new GraphicParams();
+
+    out.fillFlags = this.fillFlags;
+    out.linePixels = this.linePixels;
+    out.rasterWidth = this.rasterWidth;
+    out.lineColor = this.lineColor;
+    out.fillColor = this.fillColor;
+    out.material = this.material;
+    out.gradient = this.gradient;
+
+    return out;
+  }
 
   /** Conveniently create a GraphicParams the most commonly-used properties. */
   public static fromSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels = LinePixels.Solid): GraphicParams {

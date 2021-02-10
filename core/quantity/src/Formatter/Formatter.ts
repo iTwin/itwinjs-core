@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
-import { FormatterSpec } from "./Format";
+import { FormatterSpec } from "./FormatterSpec";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
 
 /**  rounding additive

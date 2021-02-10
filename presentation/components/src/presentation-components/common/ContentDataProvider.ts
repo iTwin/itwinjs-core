@@ -13,7 +13,7 @@ import {
   Content, ContentRequestOptions, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, Field, KeySet, PageOptions, RegisteredRuleset, Ruleset,
   SelectionInfo,
 } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { IModelContentChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
@@ -420,8 +420,8 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onIModelContentChanged = (args: { ruleset: Ruleset }) => {
-    if (args.ruleset.id === this.rulesetId)
+  private onIModelContentChanged = (args: IModelContentChangeEventArgs) => {
+    if (args.rulesetId === this.rulesetId && args.imodelKey === this.imodel.key)
       this.onContentUpdate();
   };
 

@@ -1004,6 +1004,43 @@ describe("MatrixProductAliasing", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+  it("cloneRigid", () => {
+    const ck = new Checker();
+    // createRigidFromMatrix3d failed on this.
+    // Failure due to applying metric tolerance to columns AFTER doing cross products.
+    // with diagonal magnitude "a", first cross product is a^2, second uses an original column and first cross and has magnitude a^3
+    // That failed the tolerance test.
+    // Revised code divides entire (copy of) input by its largest magnitude, and the later test passes as expected. (But can still fail for near-parallel columns)
+    const matrix = Matrix3d.createRowValues(
+      -6.438509378433656e-18, -1.0840344784091856e-18, -0.008851813267008355,
+      7.88489990157899e-34, -0.008851813267008355, 1.0840344784091856e-18,
+      -0.008851813267008355, 0, 6.438509378433656e-18);
+    const origin = Point3d.create(1, 2, 3);
+    const transform = Transform.createOriginAndMatrix(origin, matrix);
+    const transform1 = transform.cloneRigid(AxisOrder.XYZ);
+    ck.testType<Transform>(transform1, "confirm corrected code returned a transform.");
+    for (const scale of [1.0 / matrix.maxAbs(), 10, 100, 1000]) {
+      const matrix1 = matrix.scale(scale);
+      const transform2 = Transform.createOriginAndMatrix(origin, matrix1);
+      const transform3 = transform2.cloneRigid(AxisOrder.XYZ);
+      ck.testType<Transform>(transform3, "cloneRigid");
+    }
+    for (const a of [1.0e-5, 1.0e-4, 1.0e-2, 1, 1.0e3, 1.0e6]) {
+      const matrixA = Matrix3d.createScale(a, a, a);
+      const matrixC = Matrix3d.createRigidFromMatrix3d(matrixA);
+      ck.testTrue(matrixC !== undefined && matrixC.isIdentity, "normalize of uniform scale");
+    }
+    const matrixB = Matrix3d.createScale(1.0e-10, 1.0e-10, 1.0e-10);
+    const e = 1.0e-10;
+    ck.testUndefined(Matrix3d.createRigidFromMatrix3d(matrixB), "Expect no rigid from epsilon matrix");
+    const matrixD = Matrix3d.createRowValues(
+      1, 1, 0,
+      0, e, 0,
+      0, e, 1);
+    ck.testUndefined(Matrix3d.createRigidFromMatrix3d(matrixD), "Expect no rigid from matrix with near-parallel columns");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 function correctSmallNumber(value: number, tolerance: number): number {

@@ -175,11 +175,11 @@ export class UsageLoggingUtilities {
     const applicationVersion = LogEntryConverter.getApplicationVersion(requestContext);
 
     let versionStr = `${applicationVersion.major}.${applicationVersion.minor}`;
-    if (applicationVersion.sub1) {
+    if (applicationVersion.sub1 !== undefined) {
       versionStr = `${versionStr}.${applicationVersion.sub1}`;
-    }
-    if (applicationVersion.sub2) {
-      versionStr = `${versionStr}.${applicationVersion.sub2}`;
+      if (applicationVersion.sub2 !== undefined) {
+        versionStr = `${versionStr}.${applicationVersion.sub2}`;
+      }
     }
 
     return versionStr;

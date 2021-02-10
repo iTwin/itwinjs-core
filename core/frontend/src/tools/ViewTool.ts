@@ -8,8 +8,8 @@
 
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
-  Angle, AngleSweep, Arc3d, AxisOrder, ClipUtilities, Constant, CurveLocationDetail, Geometry, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range2d,
-  Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY, YawPitchRollAngles,
+  Angle, AngleSweep, Arc3d, AxisOrder, ClipUtilities, Constant, CurveLocationDetail, Geometry, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal,
+  Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import { Cartographic, ColorDef, Frustum, LinePixels, Npc, NpcCenter } from "@bentley/imodeljs-common";
 import {
@@ -18,30 +18,30 @@ import {
 import { AccuDraw } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { BingLocationProvider } from "../BingLocation";
+import { CoordSystem } from "../CoordSystem";
 import { IModelApp } from "../IModelApp";
 import { LengthDescription } from "../properties/LengthDescription";
 import { GraphicType } from "../render/GraphicBuilder";
+import { Pixel } from "../render/Pixel";
 import { StandardViewId } from "../StandardView";
+import { Animator, ViewChangeOptions } from "../ViewAnimation";
 import { DecorateContext } from "../ViewContext";
 import {
-  eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation, ViewGlobalLocationConstants,
+  eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation,
+  ViewGlobalLocationConstants,
 } from "../ViewGlobalLocation";
-import { Animator, ViewChangeOptions } from "../ViewAnimation";
-import { CoordSystem } from "../CoordSystem";
 import { DepthPointSource, ScreenViewport, Viewport } from "../Viewport";
-import { ViewRect } from "../ViewRect";
 import { ViewPose } from "../ViewPose";
-import { ViewStatus } from "../ViewStatus";
+import { ViewRect } from "../ViewRect";
 import { ViewState3d } from "../ViewState";
-import { AccuDrawShortcuts } from "./AccuDrawTool";
+import { ViewStatus } from "../ViewStatus";
+import { EditManipulator } from "./EditManipulator";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
   BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, CoreTools, EventHandled, InputSource, InteractiveTool,
 } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 import { ToolSettings } from "./ToolSettings";
-import { Pixel } from "../render/Pixel";
-import { EditManipulator } from "./EditManipulator";
 
 // cspell:ignore wasd, arrowright, arrowleft, pagedown, pageup, arrowup, arrowdown
 /* eslint-disable no-restricted-syntax */
@@ -2443,7 +2443,7 @@ class ViewLookAndMove extends ViewNavigate {
       return super.onWheel(ev);
     const focusHandle = tool.viewHandles.focusHandle;
     if (undefined === focusHandle || ViewHandleType.LookAndMove !== focusHandle.handleType)
-      return super.onWheel(ev);;
+      return super.onWheel(ev);
     this.changeWalkVelocity(ev.wheelDelta > 0);
     tool.viewport.setAnimator(this); // animator was cleared by wheel event...
     return true;
@@ -4060,12 +4060,6 @@ export class SetupCameraTool extends PrimitiveTool {
     IModelApp.viewManager.invalidateDecorationsAllViews();
   }
 
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
-  }
-
   public static drawCameraFrustum(context: DecorateContext, vp: ScreenViewport, eyePtWorld: Point3d, targetPtWorld: Point3d, eyeSnapPtWorld?: Point3d, targetSnapPtWorld?: Point3d) {
     if (!vp.view.is3d() || vp.view.iModel !== context.viewport.view.iModel)
       return;
@@ -4263,8 +4257,8 @@ export class SetupCameraTool extends PrimitiveTool {
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
 
     // load latest values from session
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId,
-      [SetupCameraTool._useCameraHeightName, SetupCameraTool._cameraHeightName, SetupCameraTool._useTargetHeightName, SetupCameraTool._targetHeightName])?.forEach((value) => {
+    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [SetupCameraTool._useCameraHeightName, SetupCameraTool._cameraHeightName, SetupCameraTool._useTargetHeightName, SetupCameraTool._targetHeightName])
+      ?.forEach((value) => {
         if (value.propertyName === SetupCameraTool._useCameraHeightName)
           this._useCameraHeightValue = value.value;
         else if (value.propertyName === SetupCameraTool._cameraHeightName)

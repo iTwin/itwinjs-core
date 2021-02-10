@@ -18,7 +18,7 @@ import {
 import { ContentGroup } from "../content/ContentGroup";
 import { ContentLayout, ContentLayoutDef } from "../content/ContentLayout";
 import { ToolItemDef } from "../shared/ToolItemDef";
-import { getNestedStagePanelKey, StagePanel, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
+import { getNestedStagePanelKey, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
@@ -33,7 +33,7 @@ import { FrontstageActivatedEventArgs, FrontstageManager } from "./FrontstageMan
 
 /** Properties for a [[Frontstage]] component.
  * @public
- */
+ */
 export interface FrontstageProps extends CommonProps {
   /** Id for the Frontstage */
   id: string;
@@ -109,7 +109,7 @@ interface FrontstageState {
 /** Frontstage React component.
  * A Frontstage is a full-screen configuration designed to enable the user to accomplish a task.
  * @public
- */
+ */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
   private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8);
   private _contentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>();
@@ -233,19 +233,13 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   /** @internal */
-  public static createStagePanelDef(panelNode: React.ReactElement<StagePanelProps> | undefined, panelLocation: StagePanelLocation, props: FrontstageProps): StagePanelDef | undefined {
-    if (panelNode) {
-      const panelDef = new StagePanelDef();
-      const panelElement = Frontstage.getStagePanelElement(panelLocation, props);
+  public static createStagePanelDef(panelLocation: StagePanelLocation, props: FrontstageProps): StagePanelDef | undefined {
+    const panelDef = new StagePanelDef();
 
-      // istanbul ignore else
-      if (panelElement && React.isValidElement(panelElement)) {
-        StagePanel.initializeStagePanelDef(panelDef, panelElement.props, panelLocation);
-        return panelDef;
-      }
-    }
+    const panelElement = Frontstage.getStagePanelElement(panelLocation, props);
+    panelDef.initializeFromProps(panelElement?.props, panelLocation);
 
-    return undefined;
+    return panelDef;
   }
 
   private static getStagePanelElement(location: StagePanelLocation, props: FrontstageProps): React.ReactElement<StagePanelProps> | undefined {
@@ -324,6 +318,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     if (!this.state.isUiVisible && UiShowHideManager.showHidePanels)
       return null;
 
+    // istanbul ignore else
     if (panelDef) {
       const { location } = panelDef;
       const panelElement = Frontstage.getStagePanelElement(location, this.props);

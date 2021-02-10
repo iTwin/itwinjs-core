@@ -10,7 +10,7 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, NativeAppBackend } from "@bentley/imodeljs-backend";
 import {
-  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition,
+  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileRpcConfiguration, RpcInterfaceDefinition,
   RpcManager, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -84,7 +84,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
   }
 }
 
-export const getRpcInterfaces = (appType: "native" | "browser"): RpcInterfaceDefinition[] => {
+export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
   const rpcs: RpcInterfaceDefinition[] = [
     DtaRpcInterface,
     Editor3dRpcInterface,
@@ -94,9 +94,6 @@ export const getRpcInterfaces = (appType: "native" | "browser"): RpcInterfaceDef
     SnapshotIModelRpcInterface,
     StandaloneIModelRpcInterface,
   ];
-
-  if ("native" === appType)
-    rpcs.push(NativeAppRpcInterface);
 
   return rpcs;
 };
@@ -133,6 +130,9 @@ const setupStandaloneConfiguration = () => {
 
   if (undefined !== process.env.SVT_IGNORE_AREA_PATTERNS)
     configuration.ignoreAreaPatterns = true;
+
+  if (undefined !== process.env.SVT_NO_EXTERNAL_TEXTURES)
+    configuration.enableExternalTextures = false;
 
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;

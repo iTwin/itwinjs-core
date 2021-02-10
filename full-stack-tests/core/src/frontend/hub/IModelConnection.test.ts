@@ -146,7 +146,7 @@ describe("IModelConnection (#integration)", () => {
     assert.isNotNull(noVersionsIModel3);
   });
 
-  it.skip("should send a usage log everytime an iModel is opened", async () => {
+  it("should send a usage log everytime an iModel is opened", async () => {
     const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const iModelId = await TestUtility.getTestIModelId(projectId, "ReadOnlyTest");
 

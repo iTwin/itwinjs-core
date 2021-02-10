@@ -114,6 +114,10 @@ export class ImageryMapTile extends RealityTile {
       stats.addTexture(this._texture.bytesUsed);
   }
 
+  public freeMemory(): void {
+    // ###TODO MapTiles and ImageryMapTiles share resources and don't currently interact well with TileAdmin.freeMemory(). Opt out for now.
+  }
+
   public disposeContents() {
     if (0 === this._mapTileUsageCount) {
       super.disposeContents();

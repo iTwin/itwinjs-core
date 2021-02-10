@@ -9,7 +9,7 @@ import { BentleyLoggerCategory, Config, DbResult, Id64, Id64String, Logger, LogL
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
-  BackendLoggerCategory, BriefcaseManager, ECSqlStatement, ExternalSourceAspect, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs,
+  BackendLoggerCategory, ECSqlStatement, ExternalSourceAspect, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs,
   NativeLoggerCategory, PhysicalPartition, Subject,
 } from "@bentley/imodeljs-backend";
 import { IModel } from "@bentley/imodeljs-common";
@@ -106,7 +106,7 @@ export class BridgeTestUtils {
     const iModelInfo = new TestIModelInfo(iModelName);
     iModelInfo.id = await HubUtility.queryIModelIdByName(requestContext, testProjectId, iModelInfo.name);
 
-    iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelInfo.id);
+    iModelInfo.changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, iModelInfo.id);
     return iModelInfo;
   }
 

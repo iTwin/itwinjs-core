@@ -136,10 +136,9 @@ export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefiniti
 }
 // __PUBLISH_EXTRACT_END__
 
-// __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientDesktop
-import { ElectronRpcManager } from "@bentley/imodeljs-common";
-
-export function initializeRpcClientDesktop(interfaces: RpcInterfaceDefinition[]) {
-  ElectronRpcManager.initializeClient({}, interfaces);
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeFrontendForElectron
+import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
+export async function initializeRpcClientDesktop(rpcInterfaces: RpcInterfaceDefinition[]) {
+  ElectronFrontend.initialize({ rpcInterfaces });
 }
 // __PUBLISH_EXTRACT_END__

@@ -2,14 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { BentleyError, GuidString } from "@bentley/bentleyjs-core";
-import { ChangeSet } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { assert } from "chai";
 import { SnapshotDb } from "../../IModelDb";
-import { AuthorizedBackendRequestContext, BriefcaseManager } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseManager, IModelHost } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -94,7 +93,7 @@ describe("IModelOpen (#integration)", () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, testIModelId);
+    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, testIModelId);
     const numChangeSets = changeSets.length;
     assert.isAbove(numChangeSets, 10);
 
@@ -107,7 +106,7 @@ describe("IModelOpen (#integration)", () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, testIModelId);
+    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, testIModelId);
     const numChangeSets = changeSets.length;
     assert.isAbove(numChangeSets, 10);
 

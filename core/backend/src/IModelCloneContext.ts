@@ -134,7 +134,6 @@ export class IModelCloneContext {
       // The native C++ cloneElement strips off federationGuid, want to put it back if transformation is between iModels
       targetElementProps.federationGuid = sourceElement.federationGuid;
       if (CodeScopeSpec.Type.Repository === this.targetDb.codeSpecs.getById(targetElementProps.code.spec).scopeType) {
-        // WIP: temporary work-around for addon bug!
         targetElementProps.code.scope = IModel.rootSubjectId;
       }
     }

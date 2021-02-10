@@ -72,8 +72,7 @@
   ],
   "eslint.workingDirectories": [
     {
-      "pattern": "./**/*",
-      "changeProcessCWD": true
+      "mode": "auto"
     }
   ],
   "eslint.options": {
@@ -83,6 +82,7 @@
   },
   "importSorter.importStringConfiguration.quoteMark": "double",
   "importSorter.generalConfiguration.sortImportsInDirectory": false,
+  "importSorter.generalConfiguration.sortOnBeforeSave": false,
   "importSorter.importStringConfiguration.trailingComma": "multiLine",
   "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 150,
   "importSorter.importStringConfiguration.tabSize": 2,
@@ -109,4 +109,11 @@
   ],
   "importSorter.sortConfiguration.customOrderingRules.defaultNumberOfEmptyLinesAfterGroup": 0,
   "debug.internalConsoleOptions": "openOnSessionStart",
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.markdownlint": true, // first run the markdown linter
+    "editor.action.fixAll": true, // Run the default formatter before eslint, it handles whitespace better
+    "source.fixAll.eslint": true // then run ESLint auto-fix
+  }
 }

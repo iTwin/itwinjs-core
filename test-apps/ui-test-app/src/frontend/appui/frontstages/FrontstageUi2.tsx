@@ -11,6 +11,7 @@ import { CommonToolbarItem, StageUsage } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
+import { LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 
 /* eslint-disable react/jsx-key */
 
@@ -46,7 +47,7 @@ export function MyCustomViewOverlay() {
         justifyContent: "center",
         alignItems: "center",
         height: "100%",
-        backgroundColor: "white",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
       }}>
         <div>Hello World</div>
         <div>(turn off using Hide/Show items tool in horizontal toolbar at top-left)</div>
@@ -91,7 +92,7 @@ export class FrontstageUi2 extends FrontstageProvider {
         usage={StageUsage.General}
         applicationData={{ key: "value" }}
         contentManipulationTools={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isFreeform={true} element={<BasicToolWidget additionalHorizontalItems={this.additionalHorizontalToolbarItems} />} />,
@@ -99,7 +100,7 @@ export class FrontstageUi2 extends FrontstageProvider {
           />
         }
         viewNavigationTools={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isFreeform={true} element={<BasicNavigationWidget />} />,
@@ -107,7 +108,7 @@ export class FrontstageUi2 extends FrontstageProvider {
           />
         }
         toolSettings={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isToolSettings={true} />,
@@ -115,7 +116,7 @@ export class FrontstageUi2 extends FrontstageProvider {
           />
         }
         statusBar={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isStatusBar={true} classId="SmallStatusBar" />,
@@ -124,7 +125,7 @@ export class FrontstageUi2 extends FrontstageProvider {
         }
 
         leftPanel={
-          < StagePanel
+          <StagePanel
             size={300}
             defaultState={StagePanelState.Minimized}
             panelZones={{
@@ -151,7 +152,7 @@ export class FrontstageUi2 extends FrontstageProvider {
         }
 
         topPanel={
-          < StagePanel
+          <StagePanel
             size={90}
             defaultState={StagePanelState.Minimized}
             panelZones={{
@@ -172,7 +173,7 @@ export class FrontstageUi2 extends FrontstageProvider {
         }
 
         rightPanel={
-          < StagePanel
+          <StagePanel
             defaultState={StagePanelState.Open}
             panelZones={{
               start: {
@@ -198,20 +199,20 @@ export class FrontstageUi2 extends FrontstageProvider {
         }
 
         bottomPanel={
-          < StagePanel
+          <StagePanel
             size={180}
-            defaultState={StagePanelState.Minimized}
+            defaultState={StagePanelState.Open}
             panelZones={{
               start: {
                 widgets: [
                   <Widget id="BottomStart1" label="Start1" element={<h2>Bottom Start1 widget</h2>} />,
-                  <Widget id="BottomStart2" label="Start2" defaultState={WidgetState.Open} element={<h2>Bottom Start2 widget</h2>} />,
+                  <Widget id="BottomStart2" label="Start2" defaultState={WidgetState.Open} element={<LayoutInfo />} />,
                 ],
               },
               end: {
                 widgets: [
-                  <Widget id="BottomEnd1" label="End1" defaultState={WidgetState.Open} element={<h2>Bottom End1 widget</h2>} />,
-                  <Widget id="BottomEnd2" label="End2" element={<h2>Bottom End2 widget</h2>} />,
+                  <Widget id="BottomEnd1" label="End1" element={<h2>Bottom End1 widget</h2>} />,
+                  <Widget id="BottomEnd2" label="End2" defaultState={WidgetState.Open} element={<LayoutControls />} />,
                 ],
               },
             }}

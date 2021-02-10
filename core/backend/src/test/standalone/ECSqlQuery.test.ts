@@ -9,9 +9,9 @@ import { IModelTestUtils } from "../IModelTestUtils";
 
 // cspell:ignore mirukuru ibim
 
-async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object): Promise<any[]> {
+async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
   const rows: any[] = [];
-  for await (const row of iModel.query(ecsql, bindings)) {
+  for await (const row of iModel.query(ecsql, bindings, undefined, undefined, undefined, abbreviateBlobs)) {
     rows.push(row);
   }
   return rows;
@@ -54,6 +54,11 @@ describe("ECSql Query", () => {
 
     rows = await executeQuery(imodel1, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
     assert.equal(rows.length, 1);
+
+    rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1", undefined, true);
+    assert.equal(rows.length, 1);
+    assert.isTrue(Id64.isValidId64(rows[0].id));
+    assert.isDefined(rows[0].geometryStream);
   });
 
   it("Restart query", async () => {

@@ -43,7 +43,11 @@
     "useProximityOpacityTitle": "Change Toolbar Opacity",
     "useProximityOpacityDescription": "Change the toolbar opacity as the mouse gets closer or farther away",
     "snapWidgetOpacityTitle": "Snap Widget Opacity",
-    "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close"
+    "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close",
+    "escapeToHomeTitle": "Escape To Home",
+    "escapeToHomeDescription": "Pressing the Escape key puts focus in Home position for shortcuts",
+    "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
+    "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes"
   },
   "backstage": {
     "command": "Command",
@@ -134,7 +138,7 @@
     "openSeveralMessages": "Open Several Messages",
     "setLengthFormatMetric": "Set Format Metric",
     "setLengthFormatImperial": "Set Format Imperial",
-    "toggleLengthFormat": "Toggle Length Format (Imperial/Metric)",
+    "toggleLengthFormatOverride": "Toggle Length Overrides",
     "toggleItemDisplay": "Toggle Hide/Show Test",
     "openRadial": "Open Radial Menu",
     "openCalculator": "Open Calculator",
@@ -165,7 +169,7 @@
     "stopCursorPopup": "Stop Cursor Popup",
     "cmdKeyinDialog": "Command Key-in",
     "opencmdKeyinDialog": "Open command key-in dialog",
-    "accuDrawSubMenu": "AccuDraw",
+    "accuDrawSubMenu": "AccuDraw Tests",
     "accuDrawLocks": "AccuDraw Locks",
     "accuDrawRotate": "AccuDraw Rotate",
     "addMenuButton": "Add Menu Button",
@@ -181,7 +185,10 @@
     "clearMessages": "Clear Messages",
     "toggleTimelinePlay": "Toggle Timeline Pause/Play",
     "sampleModelessDialog": "Sample Modeless Dialog",
-    "sampleModalDialog": "Sample Modal Dialog"
+    "sampleModalDialog": "Sample Modal Dialog",
+    "misc": "Miscellaneous",
+    "accuDrawDialogVertical": "AccuDraw Dialog - Vertical",
+    "accuDrawDialogHorizontal": "AccuDraw Dialog - Horizontal"
   },
   "tools": {
     "ToolWithSettings": {

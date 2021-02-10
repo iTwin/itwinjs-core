@@ -53,7 +53,7 @@ export enum ElementGeometryOpcode {
   /** Render material */
   Material = 21,
   /** [[TextString]] */
-  // eslint-disable-next-line no-shadow
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   TextString = 22,
   /** Specifies line style overrides [[LineStyle.Modifier]] */
   LineStyleModifiers = 23,
@@ -784,7 +784,7 @@ export namespace ElementGeometry {
           if (1 === faceSymbFb.useColor())
             faceSymbProps.color = faceSymbFb.color();
           if (1 === faceSymbFb.useMaterial())
-            faceSymbProps.materialId = Id64.fromUint32Pair(faceSymbFb.materialId().low, faceSymbFb.materialId().high);;
+            faceSymbProps.materialId = Id64.fromUint32Pair(faceSymbFb.materialId().low, faceSymbFb.materialId().high);
           faceSymbProps.transparency = faceSymbFb.transparency();
         }
         faceSymbPropsArray.push(faceSymbProps);

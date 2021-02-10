@@ -68,8 +68,8 @@ export enum RuleTypes {
 
   // content rules
   Content = "Content",
-  ContentModifier = "ContentModifier", // eslint-disable-line no-shadow
-  DefaultPropertyCategoryOverride = "DefaultPropertyCategoryOverride", // eslint-disable-line no-shadow
+  ContentModifier = "ContentModifier", // eslint-disable-line @typescript-eslint/no-shadow
+  DefaultPropertyCategoryOverride = "DefaultPropertyCategoryOverride", // eslint-disable-line @typescript-eslint/no-shadow
 
   // customization rules
   Grouping = "Grouping",

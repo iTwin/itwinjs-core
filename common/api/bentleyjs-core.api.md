@@ -861,6 +861,8 @@ export enum IModelStatus {
     // (undocumented)
     ForeignKeyConstraint = 65553,
     // (undocumented)
+    FunctionNotFound = 65606,
+    // (undocumented)
     IdExists = 65554,
     // (undocumented)
     IMODEL_ERROR_BASE = 65536,
@@ -895,6 +897,8 @@ export enum IModelStatus {
     // (undocumented)
     MissingId = 65569,
     // (undocumented)
+    NoActiveCommand = 65607,
+    // (undocumented)
     NoContent = 65604,
     // (undocumented)
     NoGeoLocation = 65602,
@@ -916,6 +920,8 @@ export enum IModelStatus {
     NotOpen = 65575,
     // (undocumented)
     NotOpenForWrite = 65576,
+    // (undocumented)
+    NotRegistered = 65605,
     // (undocumented)
     NotSameUnitBase = 65577,
     // (undocumented)
@@ -1199,6 +1205,14 @@ export namespace OrderedId64Iterable {
     export function uniqueIterator(ids: OrderedId64Iterable): Generator<string, void, unknown>;
 }
 
+// @public
+export class OrderedSet<T> extends ReadonlyOrderedSet<T> {
+    constructor(compare: OrderedComparator<T>, clone?: CloneFunction<T>);
+    add(value: T): this;
+    clear(): void;
+    delete(value: T): boolean;
+}
+
 // @beta
 export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number;
 
@@ -1233,6 +1247,16 @@ export class PriorityQueue<T> implements Iterable<T> {
     sort(): void;
     // (undocumented)
     protected _swap(a: number, b: number): void;
+}
+
+// @public
+export class ReadonlyOrderedSet<T> implements Iterable<T> {
+    [Symbol.iterator](): Iterator<T>;
+    constructor(compare: OrderedComparator<T>, clone?: CloneFunction<T>);
+    // (undocumented)
+    protected readonly _array: SortedArray<T>;
+    has(value: T): boolean;
+    get size(): number;
 }
 
 // @public

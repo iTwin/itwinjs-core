@@ -9,6 +9,7 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
 import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { MapLayerOptions } from "./Interfaces";
 
 export class MapLayersUiItemsProvider implements UiItemsProvider {
   public readonly id = "MapLayersUiItemsProvider";
@@ -20,25 +21,23 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
 
   public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
+    const mapLayerOptions: MapLayerOptions = {
+      hideExternalMapLayers: false,
+      mapTypeOptions: { supportTileUrl: false, supportWmsAuthentication: true },
+      fetchPublicMapLayerSources: false,
+    };
+
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       widgets.push({
         id: "map-layers:mapLayersWidget",
         label: MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.Label"),
         icon: "icon-map",
-        getWidgetContent: () => <MapLayersWidget />, // eslint-disable-line react/display-name
+        getWidgetContent: () => <MapLayersWidget mapLayerOptions={mapLayerOptions} />, // eslint-disable-line react/display-name
       });
     }
+
     return widgets;
   }
-}
-export interface MapTypesOptions {
-  readonly supportTileUrl: boolean;
-  readonly supportWmsAuthentication: boolean;
-}
-export interface MapLayerOptions {
-  hideExternalMapLayers?: boolean;
-  fetchPublicMapLayerSources?: boolean;
-  mapTypeOptions?: MapTypesOptions;
 }
 
 /** MapLayersWidgetControl provides a widget to attach and remove maps layers from the active view's display style.

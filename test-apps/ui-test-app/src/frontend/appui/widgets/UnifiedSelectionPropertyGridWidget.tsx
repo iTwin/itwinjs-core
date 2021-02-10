@@ -14,7 +14,7 @@ import {
   VirtualizedPropertyGridWithDataProviderProps,
 } from "@bentley/ui-components";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, ConfigurableUiManager, FrameworkVersionSwitch, WidgetControl } from "@bentley/ui-framework";
 
 export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -148,19 +148,24 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
 
   public render() {
     const actionButtonRenderers = [this._favoriteActionButtonRenderer];
-    if (this.props.iModelConnection)
+    if (this.props.iModelConnection) {
+      const element = <>
+        <UnifiedSelectionPropertyGrid
+          dataProvider={this.state.dataProvider}
+          orientation={Orientation.Horizontal}
+          isPropertyHoverEnabled={true}
+          onPropertyContextMenu={this._onPropertyContextMenu}
+          actionButtonRenderers={actionButtonRenderers}
+        />
+        {this.renderContextMenu()}
+      </>;
       return (
-        <div style={{ height: "100%" }}>
-          <UnifiedSelectionPropertyGrid
-            dataProvider={this.state.dataProvider}
-            orientation={Orientation.Horizontal}
-            isPropertyHoverEnabled={true}
-            onPropertyContextMenu={this._onPropertyContextMenu}
-            actionButtonRenderers={actionButtonRenderers}
-          />
-          {this.renderContextMenu()}
-        </div>
+        <FrameworkVersionSwitch
+          v1={<div style={{ height: "100%" }}>{element}</div>}
+          v2={<div style={{ height: "100%", width: "100%", position: "absolute" }}>{element}</div>}
+        />
       );
+    }
 
     return null;
   }

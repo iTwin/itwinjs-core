@@ -8,7 +8,7 @@ import * as React from "react";
 import { ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
 import { DisplayStyleState } from "@bentley/imodeljs-frontend";
 import { ColorPickerDialog, ColorSwatch } from "@bentley/ui-components";
-import { OptionType, ThemedSelect, WebFontIcon } from "@bentley/ui-core";
+import { OptionType, ThemedSelect } from "@bentley/ui-core";
 import { ActionMeta, ValueType } from "react-select/src/types";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { TransparencyPopupButton } from "./TransparencyPopupButton";
@@ -76,7 +76,6 @@ export function BasemapPanel() {
   const baseIsMap = React.useMemo(() => !baseIsColor && (selectedBaseMap !== undefined), [baseIsColor, selectedBaseMap]);
   const bgColor = React.useMemo(() => baseIsColor ? selectedBaseMap as number : presetColors[0].toJSON(), [baseIsColor, selectedBaseMap, presetColors]);
   const [colorDialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:ColorDialog.Title"));
-  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.ToggleVisibility"));
   const selectedBaseMapValue = React.useMemo(() => {
     if (baseIsMap) {
       const mapName = (selectedBaseMap! as MapLayerProps).name!;
@@ -86,24 +85,6 @@ export function BasemapPanel() {
     }
     return baseMapOptions[0];
   }, [selectedBaseMap, baseMapOptions, baseIsMap]);
-
-  const [basemapVisible, setBasemapVisible] = React.useState(() => {
-    if (activeViewport) {
-      return activeViewport.viewFlags.backgroundMap;
-    }
-    return false;
-  });
-
-  const handleVisibilityChange = React.useCallback(() => {
-    if (activeViewport) {
-      const newState = !basemapVisible;
-      const vf = activeViewport.viewFlags.clone();
-      vf.backgroundMap = newState; // Or any other modifications
-      activeViewport.viewFlags = vf;
-      activeViewport.invalidateRenderPlan();
-      setBasemapVisible(newState);
-    }
-  }, [basemapVisible, activeViewport]);
 
   const handleBackgroundColorDialogOk = React.useCallback((bgColorDef: ColorDef) => {
     ModalDialogManager.closeDialog();
@@ -146,19 +127,14 @@ export function BasemapPanel() {
 
   return (
     <>
-      <div className="map-manager-base-header">
-        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={handleVisibilityChange}>
-          <WebFontIcon iconName={basemapVisible ? "icon-visibility" : "icon-visibility-hide-2"} />
-        </button>
-        <span className="map-manager-base-label">{baseLayerLabel}</span>
-        <TransparencyPopupButton transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange} />
-      </div>
       <div className="map-manager-base-item" >
+        <span className="map-manager-base-label">{baseLayerLabel}</span>
         <ThemedSelect options={baseMapOptions} closeMenuOnSelect placeholder={selectBaseMapLabel} value={selectedBaseMapValue} onChange={handleBaseMapSelection} />
         {
           baseIsColor &&
           <ColorSwatch className="map-manager-base-item-color" colorDef={ColorDef.fromJSON(bgColor)} round={false} onColorPick={handleBgColorClick} />
         }
+        <TransparencyPopupButton transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange} />
       </div>
     </>
   );

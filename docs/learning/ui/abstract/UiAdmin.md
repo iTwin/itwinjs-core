@@ -2,16 +2,16 @@
 
 The [UiAdmin]($ui-abstract) class contains an API used to display the following:
 
-* Context Menu
-* Toolbar
-* Menu Buttons
-* Calculator
-* Input editors
-* Card at Cursor
-* Tool Settings popup
-* Keyin Palette
-* Dialog
-* HTML element
+- Context Menu
+- Toolbar
+- Menu Buttons
+- Calculator
+- Input editors
+- Card at Cursor
+- Tool Settings popup
+- Keyin Palette
+- Dialog
+- HTML element
 
 The UiAdmin methods are callable from `IModelApp.uiAdmin` in the imodeljs-frontend package.
 
@@ -290,17 +290,17 @@ IModelApp.uiAdmin.showInputEditor(30, propertyDescription, IModelApp.uiAdmin.cur
 ### showCard
 
 ```tsx
-  private _showCard() {
-    const contentContainer = document.createElement("div");
+private _showCard() {
+  const contentContainer = document.createElement("div");
 
-    // Add HTMLElements as child elements of contentContainer
+  // Add HTMLElements as child elements of contentContainer
 
-    ElementTooltip.isTooltipHalted = true;
+  ElementTooltip.isTooltipHalted = true;
 
-    IModelApp.uiAdmin.showCard(contentContainer, "Title", myToolbar,
-      IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
-      toolbarItemExecuted, toolbarCancel, RelativePosition.Right);
-  }
+  IModelApp.uiAdmin.showCard(contentContainer, "Title", myToolbar,
+    IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
+    toolbarItemExecuted, toolbarCancel, RelativePosition.Right);
+}
 ```
 
 ![uiAdmin-showCard](./images/UiAdmin-showCard.png "IModelApp.uiAdmin.showCard")
@@ -313,17 +313,17 @@ The `FrameworkUiAdmin.showReactCard` function may be used instead of `UiAdmin.sh
 when React components with event handlers need to be used.
 
 ```tsx
-  private _showReactCard() {
-    let content: React.ReactNode;
+private _showReactCard() {
+  let content: React.ReactNode;
 
-    // Set content to React elements
+  // Set content to React elements
 
-    ElementTooltip.isTooltipHalted = true;
+  ElementTooltip.isTooltipHalted = true;
 
-    (IModelApp.uiAdmin as FrameworkUiAdmin).showReactCard(content, "Title", myToolbar,
-      IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
-      toolbarItemExecuted, toolbarCancel, RelativePosition.Right);
-  }
+  (IModelApp.uiAdmin as FrameworkUiAdmin).showReactCard(content, "Title", myToolbar,
+    IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
+    toolbarItemExecuted, toolbarCancel, RelativePosition.Right);
+}
 ```
 
 #### hideCard
@@ -331,10 +331,10 @@ when React components with event handlers need to be used.
 The `hideCard` function hides the Card.
 
 ```tsx
-  private _closeCard() {
-    IModelApp.uiAdmin.hideCard();
-    ElementTooltip.isTooltipHalted = false;
-  }
+private _closeCard() {
+  IModelApp.uiAdmin.hideCard();
+  ElementTooltip.isTooltipHalted = false;
+}
 ```
 
 ### openToolSettingsPopup
@@ -447,10 +447,9 @@ export class MyToolWithSettings extends PrimitiveTool {
 The `closeToolSettingsPopup` function closes the popup.
 
 ```ts
-  private _handleToolSettingsPopupCancel = () => {
-    IModelApp.uiAdmin.closeToolSettingsPopup();
-  };
-
+private _handleToolSettingsPopupCancel = () => {
+  IModelApp.uiAdmin.closeToolSettingsPopup();
+};
 ```
 
 ![uiAdmin-openToolSettingsPopup1](./images/UiAdmin-openToolSettingsPopup1.png "IModelApp.uiAdmin.openToolSettingsPopup 1")
@@ -595,7 +594,7 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
 The `closeDialog` function closes a Dialog with a given Id.
 
 ```ts
-  IModelApp.uiAdmin.closeDialog("SampleApp:DynamicModal");
+IModelApp.uiAdmin.closeDialog("SampleApp:DynamicModal");
 ```
 
 ![uiAdmin-openDialog1](./images/UiAdmin-openDialog1.png "IModelApp.uiAdmin.openDialog 1")
@@ -604,4 +603,4 @@ The `closeDialog` function closes a Dialog with a given Id.
 
 ## API Reference
 
-* [UiAdmin]($ui-abstract)
+- [UiAdmin]($ui-abstract)

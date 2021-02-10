@@ -17,6 +17,7 @@ export interface DtaConfiguration {
   disableInstancing?: boolean; // default false
   enableImprovedElision?: boolean; // default true
   ignoreAreaPatterns?: boolean; // default false
+  enableExternalTextures?: boolean; // default true
   disableMagnification?: boolean;
   preserveShaderSourceCode?: boolean;
   useProjectExtents?: boolean; // default ON

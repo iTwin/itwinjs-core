@@ -8,7 +8,6 @@
 
 import { assert, BeEvent, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { IModelError, RpcRequest } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseDb } from "./IModelDb";
@@ -209,7 +208,7 @@ export class AutoPush {
   }
 
   public async reserveCodes(): Promise<void> {
-    const requestContext: AuthorizedBackendRequestContext = await this.getRequestContext();
+    const requestContext = await this.getRequestContext();
     return this._iModel.concurrencyControl.request(requestContext);
   }
 
@@ -217,7 +216,7 @@ export class AutoPush {
   private async getRequestContext(): Promise<AuthorizedBackendRequestContext> {
     // Create or refresh requestContext as necessary
     // todo: replace this logic to check the validity of the accessToken
-    const accessToken: AccessToken = await IModelHost.getAccessToken();
+    const accessToken = await IModelHost.getAccessToken();
     if (!this._requestContext || this._requestContext.accessToken !== accessToken)
       this._requestContext = new AuthorizedBackendRequestContext(accessToken);
 

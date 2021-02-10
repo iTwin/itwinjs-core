@@ -17,6 +17,6 @@ jobs:
       name: Node_12
       nodeVersion: 12.17.0
       pool:
+        name: $(name)
         demands:
-        - Agent.OS -equals $(platform)
-
+          - Agent.OS -equals $(platform)

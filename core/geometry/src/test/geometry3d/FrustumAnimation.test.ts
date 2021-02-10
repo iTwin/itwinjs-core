@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { SmoothTransformBetweenFrusta } from "../../geometry3d/FrustumAnimation";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -175,6 +176,53 @@ describe("FrustumAnimation", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Geometry3d", "FrustumAnimation.PureRotation");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+/**
+ * Compute an intermediate eye point as it swings around a moving target with rotating axes and varying distance to target.
+ * (eye, target, distance) is redundant -- implementation problem is to figure out which to use for compatibility with subsequent view setup.
+ */
+function interpolateSwingingEye(
+  axes0: Matrix3d,
+  eye0: Point3d,
+  distance0: number,
+  axes1: Matrix3d,
+  eye1: Point3d,
+  distance1: number,
+  fraction: number,
+  axesAtFraction: Matrix3d
+): { target: Point3d, eye: Point3d, distance: number } {
+  const z0 = axes0.rowZ();
+  const z1 = axes1.rowZ();
+  const zA = axesAtFraction.rowZ();
+  const target0 = eye0.plusScaled(z0, -distance0);
+  const target1 = eye1.plusScaled(z1, -distance1);
+  const targetA = target0.interpolate(fraction, target1);
+  // const distanceA = 1.0 / Geometry.interpolate(1.0 / distance0, fraction, 1.0 / distance1);
+  const distanceA = Geometry.interpolate(distance0, fraction, distance1);
+  const eyeA = targetA.plusScaled(zA, distanceA);
+  return {
+    target: targetA,
+    eye: eyeA,
+    distance: distanceA,
+  };
+}
+
+describe("FrustumSwing", () => {
+  it("PureTranslation", () => {
+    const ck = new Checker();
+    // const allGeometry: GeometryQuery[] = [];
+    const identity = Matrix3d.createIdentity();
+    const pointA = Point3d.create(1, 2, 3);
+    const pointB = Point3d.create(4, 2, 1);
+    const a = 10.0;
+    for (const f of [0.0, 0.4, 1.0]) {
+      const data = interpolateSwingingEye(identity, pointA, a, identity, pointB, a, f, identity);
+      ck.testPoint3d(pointA.interpolate(f, pointB), data.eye);
+    }
+    // GeometryCoreTestIO.saveGeometry(allGeometry, "FrustumSwing", "MoveLinear");
     expect(ck.getNumErrors()).equals(0);
   });
 });

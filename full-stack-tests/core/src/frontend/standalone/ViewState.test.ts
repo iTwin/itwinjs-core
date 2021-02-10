@@ -8,7 +8,7 @@ import {
   AmbientOcclusion, BackgroundMapSettings, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
-  AuxCoordSystemSpatialState, CategorySelectorState, DisplayStyle3dState, DrawingModelState, DrawingViewState, IModelConnection, MarginPercent,
+  AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, MarginPercent,
   MockRender, ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
   StandardViewId, ViewState3d, ViewStatus,
 } from "@bentley/imodeljs-frontend";
@@ -40,8 +40,8 @@ describe("ViewState", () => {
 
   const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
     const compare = new DeepCompare();
-    const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
-    const v1State = new SpatialViewState(v1.toJSON(), v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
+    const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle, v1.modelSelector);
+    const v1State = new SpatialViewState(v1.toJSON(), v1.iModel, v1.categorySelector, v1.displayStyle, v1.modelSelector);
 
     const val = compare.compare(JSON.parse(JSON.stringify(v1State)), JSON.parse(JSON.stringify(v2State)));
     if (!val)

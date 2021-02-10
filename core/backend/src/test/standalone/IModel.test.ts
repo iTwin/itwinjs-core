@@ -15,22 +15,22 @@ import {
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettingsProps, DomainOptions, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
+  DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
-  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags,
-  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
+  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb } from "../../IModelDb";
 import {
-  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue,
-  BriefcaseManager, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
-  DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
-  ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
-  GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalElement,
-  PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
-  StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
+  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
+  ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
+  DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers,
+  ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost,
+  IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel,
+  PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb,
+  SubCategory, Subject, Texture, ViewDefinition,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -1743,9 +1743,9 @@ describe("iModel", () => {
       containerAccessKeySAS: "testSAS",
       containerAccessKeyDbName: "testDb",
     };
-    const checkpointsV2Handler = BriefcaseManager.imodelClient.checkpointsV2;
+    const checkpointsV2Handler = IModelHost.iModelClient.checkpointsV2;
     sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
-    sinon.stub(BriefcaseManager.imodelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     // Mock blockcacheVFS daemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
@@ -1784,9 +1784,9 @@ describe("iModel", () => {
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpointsV2Handler = BriefcaseManager.imodelClient.checkpointsV2;
+    const checkpointsV2Handler = IModelHost.iModelClient.checkpointsV2;
     const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
-    sinon.stub(BriefcaseManager.imodelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
@@ -2122,16 +2122,12 @@ describe("iModel", () => {
     assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
     iModel.close();
 
-    let result: DbResult = DbResult.BE_SQLITE_OK;
-    try {
-      iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.CheckRecommendedUpgrades });
-    } catch (err) {
-      assert(err instanceof IModelError);
-      result = err.errorNumber;
-    }
-    assert.strictEqual(result, DbResult.BE_SQLITE_ERROR_SchemaUpgradeRecommended);
+    const schemaState: SchemaState = StandaloneDb.validateSchemas(testFileName, true);
+    assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
-    iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
+    StandaloneDb.upgradeSchemas(testFileName);
+
+    iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     const afterVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
     iModel.close();
@@ -2271,7 +2267,26 @@ describe("iModel", () => {
     assert.isFalse(imodel1.containsClass("InvalidSchemaName:Element"));
   });
 
-  it("should clear UserLabel", () => {
+  it("should update Element code", () => {
+    const elementId = imodel4.elements.insertElement({
+      classFullName: "DgnPlatformTest:TestInformationRecord",
+      model: IModel.repositoryModelId,
+      code: Code.createEmpty(),
+    });
+    let element = imodel4.elements.getElement<InformationRecordElement>(elementId, InformationRecordElement);
+    assert.isTrue(Code.isValid(element.code));
+    assert.isTrue(Code.isEmpty(element.code));
+    const codeSpecId = imodel4.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
+    const codeValue = `${element.className}-1`;
+    element.code = new Code({ spec: codeSpecId, scope: IModel.repositoryModelId, value: codeValue });
+    element.update();
+    element = imodel4.elements.getElement<InformationRecordElement>(elementId, InformationRecordElement);
+    assert.isTrue(Code.isValid(element.code));
+    assert.isFalse(Code.isEmpty(element.code));
+    assert.equal(element.code.getValue(), codeValue);
+  });
+
+  it("should update UserLabel", () => {
     // type coercion reminder!
     const s: string = "";
     assert.isTrue(s === "");
@@ -2287,26 +2302,36 @@ describe("iModel", () => {
     let element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.userLabel);
 
-    // update element with a defined UserLabel
+    // update element with a defined userLabel
     element.userLabel = "UserLabel";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.userLabel, "UserLabel");
 
+    // make sure userLabel is not updated when not part of the specified ElementProps
+    imodel1.elements.updateElement({
+      id: element.id,
+      classFullName: element.classFullName,
+      model: element.model,
+      code: element.code,
+    });
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.userLabel, "UserLabel"); // NOTE: userLabel is not modified when userLabel is not part of the input ElementProps
+
     // update UserLabel to undefined
     element.userLabel = undefined;
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.equal(element.userLabel, "UserLabel"); // NOTE: UserLabel is not cleared in this case!
+    assert.equal(element.userLabel, undefined); // NOTE: userLabel is cleared when userLabel is specified as undefined
 
     // update UserLabel to ""
     element.userLabel = "";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.isUndefined(element.userLabel);
+    assert.isUndefined(element.userLabel); // NOTE: userLabel is also cleared when the empty string is specified
   });
 
-  it("should clear FederationGuid", () => {
+  it("should update FederationGuid", () => {
     // insert element with an undefined FederationGuid
     const elementProps: DefinitionElementProps = {
       classFullName: SpatialCategory.classFullName,
@@ -2316,25 +2341,169 @@ describe("iModel", () => {
     const elementId = imodel1.elements.insertElement(elementProps);
     let element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.federationGuid);
+    assert.isFalse(element.isPrivate);
 
     // update element with a defined FederationGuid
     const federationGuid: GuidString = Guid.createValue();
     element.federationGuid = federationGuid;
+    element.isPrivate = true;
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.federationGuid, federationGuid);
+    assert.isTrue(element.isPrivate);
+
+    // make sure FederationGuid is not updated when not part of the specified ElementProps
+    imodel1.elements.updateElement({
+      id: element.id,
+      classFullName: element.classFullName,
+      model: element.model,
+      code: element.code,
+    });
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.federationGuid, federationGuid);
+    assert.isTrue(element.isPrivate);
 
     // update FederationGuid to undefined
     element.federationGuid = undefined;
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.equal(element.federationGuid, federationGuid); // NOTE: FederationGuid is not cleared in this case!
+    assert.isUndefined(element.federationGuid);
 
     // update FederationGuid to ""
     element.federationGuid = "";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.federationGuid);
+  });
+
+  it("should support partial update", () => {
+    // Insert Subject elements - initializing Description and UserLabel to similar values
+    let subject1 = Subject.create(imodel1, IModel.rootSubjectId, "Subject1", "Description1");
+    let subject2 = Subject.create(imodel1, IModel.rootSubjectId, "Subject2", "Description2");
+    let subject3 = Subject.create(imodel1, IModel.rootSubjectId, "Subject3", "");
+    let subject4 = Subject.create(imodel1, IModel.rootSubjectId, "Subject4");
+    subject1.userLabel = "UserLabel1";
+    subject2.userLabel = "UserLabel2";
+    subject3.userLabel = "";
+    subject4.userLabel = undefined;
+    const federationGuid1 = Guid.createValue();
+    const federationGuid2 = Guid.createValue();
+    subject1.federationGuid = federationGuid1;
+    subject2.federationGuid = federationGuid2;
+    subject3.federationGuid = "";
+    subject4.federationGuid = undefined;
+    const subjectId1 = subject1.insert();
+    const subjectId2 = subject2.insert();
+    const subjectId3 = subject3.insert();
+    const subjectId4 = subject4.insert();
+    subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
+    subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
+    subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
+    subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
+
+    // Subject.Description is an auto-handled property
+    assert.equal(subject1.description, "Description1");
+    assert.equal(subject2.description, "Description2");
+    assert.equal(subject3.description, ""); // NOTE: different behavior between auto-handled and custom-handled
+    assert.isUndefined(subject4.description);
+
+    // Element.UserLabel is a custom-handled property
+    assert.equal(subject1.userLabel, "UserLabel1");
+    assert.equal(subject2.userLabel, "UserLabel2");
+    assert.isUndefined(subject3.userLabel); // NOTE: different behavior between auto-handled and custom-handled
+    assert.isUndefined(subject4.userLabel);
+
+    // Element.FederationGuid is a custom-handled property
+    assert.equal(subject1.federationGuid, federationGuid1);
+    assert.equal(subject2.federationGuid, federationGuid2);
+    assert.isUndefined(subject3.federationGuid);
+    assert.isUndefined(subject4.federationGuid);
+
+    // test partial update of Description (auto-handled)
+    imodel1.elements.updateElement({
+      id: subject1.id,
+      classFullName: subject1.classFullName,
+      description: "Description1-Updated",
+    } as unknown as ElementProps);
+    subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
+    assert.equal(subject1.description, "Description1-Updated"); // should have been updated
+    assert.isDefined(subject1.model);
+    assert.isDefined(subject1.parent);
+    assert.equal(subject1.code.value, "Subject1"); // should not have changed
+    assert.equal(subject1.userLabel, "UserLabel1"); // should not have changed
+    assert.equal(subject1.federationGuid, federationGuid1); // should not have changed
+
+    // test partial update of UserLabel (custom-handled)
+    imodel1.elements.updateElement({
+      id: subject2.id,
+      classFullName: subject2.classFullName,
+      userLabel: "UserLabel2-Updated",
+    } as unknown as ElementProps);
+    subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
+    assert.isDefined(subject2.model);
+    assert.isDefined(subject2.parent);
+    assert.equal(subject2.userLabel, "UserLabel2-Updated"); // should have been updated
+    assert.equal(subject2.code.value, "Subject2"); // should not have changed
+    assert.equal(subject2.description, "Description2"); // should not have changed
+    assert.equal(subject2.federationGuid, federationGuid2); // should not have changed
+
+    // Update Subject elements - setting Description and UserLabel to similar values
+    subject1.description = undefined;
+    subject2.description = "";
+    subject3.description = "Description3";
+    subject4.description = "Description4";
+    subject1.userLabel = undefined;
+    subject2.userLabel = "";
+    subject3.userLabel = "UserLabel3";
+    subject4.userLabel = "UserLabel4";
+    subject1.update();
+    subject2.update();
+    subject3.update();
+    subject4.update();
+    subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
+    subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
+    subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
+    subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
+
+    // Subject.Description is an auto-handled property
+    assert.isUndefined(subject1.description);
+    assert.equal(subject2.description, ""); // NOTE: different behavior between auto-handled and custom-handled
+    assert.equal(subject3.description, "Description3");
+    assert.equal(subject4.description, "Description4");
+
+    // Element.UserLabel is a custom-handled property
+    assert.isUndefined(subject1.userLabel);
+    assert.isUndefined(subject2.userLabel); // NOTE: different behavior between auto-handled and custom-handled
+    assert.equal(subject3.userLabel, "UserLabel3");
+    assert.equal(subject4.userLabel, "UserLabel4");
+
+    // test partial update of Description to undefined
+    imodel1.elements.updateElement({
+      id: subject3.id,
+      classFullName: subject3.classFullName,
+      description: undefined,
+    } as unknown as ElementProps);
+    subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
+    assert.isUndefined(subject3.description); // should have been updated
+    assert.isDefined(subject3.model);
+    assert.isDefined(subject3.parent);
+    assert.equal(subject3.code.value, "Subject3"); // should not have changed
+    assert.equal(subject3.userLabel, "UserLabel3"); // should not have changed
+    assert.isUndefined(subject3.federationGuid); // should not have changed
+
+    // test partial update of UserLabel to undefined
+    imodel1.elements.updateElement({
+      id: subject4.id,
+      classFullName: subject4.classFullName,
+      userLabel: undefined,
+    } as unknown as ElementProps);
+    subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
+    assert.isDefined(subject4.model);
+    assert.isDefined(subject4.parent);
+    // assert.isUndefined(subject4.userLabel); // should have been updated  - WIP WIP WIP
+    assert.equal(subject4.code.value, "Subject4"); // should not have changed
+    assert.equal(subject4.description, "Description4"); // should not have changed
+    assert.isUndefined(subject4.federationGuid); // should not have changed
   });
 });
 

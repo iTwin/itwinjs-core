@@ -5,5 +5,10 @@
   "context": ".",
   "workspaceMount": "",
   "workspaceFolder": "/workspace/imodeljs",
-  "extensions": []
+  "extensions": [
+    "streetsidesoftware.code-spell-checker",
+    "dbaeumer.vscode-eslint",
+    "davidanson.vscode-markdownlint",
+    "mike-co.import-sorter"
+  ]
 }
