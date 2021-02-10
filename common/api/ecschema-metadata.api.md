@@ -440,7 +440,6 @@ export function diagnosticCategoryToString(category: DiagnosticCategory): "Error
 export const DiagnosticCodes: {
     BaseClassIsSealed: string;
     BaseClassOfDifferentType: string;
-    AbstractClassWithNonAbstractBase: string;
     CustomAttributeNotOfConcreteClass: string;
     CustomAttributeSchemaMustBeReferenced: string;
     CustomAttributeClassNotFound: string;
@@ -517,18 +516,6 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory;
-        };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
-    };
-    AbstractClassWithNonAbstractBase: {
-        new (ecClass: AnyClass, messageArgs: [string, string], category?: import("./Diagnostic").DiagnosticCategory): {
-            readonly code: string;
-            readonly messageText: string;
-            readonly schema: Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
-            ecDefinition: AnyClass;
-            messageArgs?: [string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
