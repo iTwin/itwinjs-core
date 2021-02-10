@@ -45,5 +45,5 @@ The *export* methods of [IModelExporter]($backend) and the *process* methods of 
 While exporting and transforming should generally be considered *batch* operations, changing these methods to `async` makes progress reporting and process health monitoring much easier.
 This is particularly important when processing large iModels.
 
-To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from an `async` method.
+To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from within an `async` method.
 No internal logic was changed, so that should be the only changes required.
