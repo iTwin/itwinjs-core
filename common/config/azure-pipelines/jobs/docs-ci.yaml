@@ -34,6 +34,7 @@ jobs:
 
       - template: ../templates/docs-build.yaml
 
+      # The rest of the file is needed to release the documentation.
       - task: Npm@1
         displayName: npm audit
         inputs:
@@ -46,34 +47,13 @@ jobs:
         displayName: Run Credential Scanner
         inputs:
           scanFolder: $(Agent.BuildDirectory)/tempDocsBuild
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
-
-      - task: PublishPipelineArtifact@1
-        displayName: Publish Pipeline Artifact - .updated.json
-        inputs:
-          targetPath: $(System.ArtifactsDirectory)/staging/config/.updated.json
-          artifact: .updated.json
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
 
       - task: PublishPipelineArtifact@1
         displayName: Publish Pipeline Artifact - Credential Scanner
         inputs:
           targetPath: $(Build.ArtifactStagingDirectory)/../_sdt/logs/CredentialScanner
           artifact: CredentialScanner
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
-
-      - task: DownloadPipelineArtifact@2
-        displayName: Download Pipeline Artifact - Nuget Spec
-        inputs:
-          buildType: specific
-          project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
-          definition: 1830
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
-
-      - task: qetza.replacetokens.replacetokens-task.replacetokens@3
-        displayName: Replace tokens in NugetPackage.nuspec
-        inputs:
-          targetFiles: $(Agent.BuildDirectory)/DocsNugetSpecFile/NugetPackage.nuspec
         condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
       - task: DeleteFiles@1

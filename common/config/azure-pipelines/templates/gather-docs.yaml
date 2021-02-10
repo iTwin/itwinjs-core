@@ -58,11 +58,4 @@ steps:
     inputs:
       runVersion: latestFromBranch
       artifactName: .updated.json
-      targetPath: $(System.ArtifactsDirectory)
-
-  - task: CopyFiles@2
-    displayName: Copy .updated.json to staging
-    inputs:
-      SourceFolder: $(System.ArtifactsDirectory)
-      Contents: .updated.json
-      TargetFolder: ${{ parameters.stagingDir }}/config/
+      targetPath: ${{ parameters.stagingDir }}/config/
