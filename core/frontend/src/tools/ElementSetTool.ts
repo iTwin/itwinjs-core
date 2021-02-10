@@ -45,7 +45,13 @@ export interface GroupMark {
 
 /** @alpha */
 export class ElementAgenda {
+  /** The IDs of the elements in this agenda.
+   * @note Prefer methods like [[ElementAgenda.add]] instead of modifying directly.
+   */
   public readonly elements: Id64Array = [];
+  /** The group source identifiers for the elements in this agenda.
+   * @note Prefer methods like [[ElementAgenda.add]] instead of modifying directly.
+   */
   public readonly groupMarks: GroupMark[] = [];
   public manageHiliteState = true; // Whether entries are hilited/unhilited as they are added/removed...
   public constructor(public iModel: IModelConnection) { }
