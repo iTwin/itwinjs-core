@@ -92,6 +92,7 @@ beta;OrderedId64Iterable
 beta;partitionArray
 public;PerfLogger 
 public;PriorityQueue
+beta;ProcessDetector
 public;ReadonlySortedArray
 beta;RepositoryStatus
 beta;RpcInterfaceStatus

@@ -8,7 +8,7 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
-  defaultTileOptions, ElementGraphicsRequestProps, FrontendIpc, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
+  defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
   RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -19,7 +19,7 @@ import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModelState } from "../ModelState";
 import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileTreeSet, TileUsageMarker } from "./internal";
-import { NativeApp } from "../NativeApp";
+import { IpcApp } from "../IpcApp";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -883,7 +883,7 @@ class Admin extends TileAdmin {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        NativeApp.callBackend("cancelTileContentRequests", iModelConnection.getRpcProps(), treeContentIds);
+        IpcApp.callIpcHost("cancelTileContentRequests", iModelConnection.getRpcProps(), treeContentIds);
       }
 
       this._canceledIModelTileRequests.clear();
@@ -892,7 +892,7 @@ class Admin extends TileAdmin {
     if (this._canceledElementGraphicsRequests && this._canceledElementGraphicsRequests.size > 0) {
       for (const [connection, requestIds] of this._canceledElementGraphicsRequests) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        NativeApp.callBackend("cancelElementGraphicsRequests", connection.getRpcProps(), requestIds);
+        IpcApp.callIpcHost("cancelElementGraphicsRequests", connection.key, requestIds);
         this._totalAbortedRequests += requestIds.length;
       }
 
@@ -1243,7 +1243,7 @@ class Admin extends TileAdmin {
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
 
-    if (FrontendIpc.isValid) {
+    if (IpcApp.isValid) {
       this._canceledElementGraphicsRequests = new Map<IModelConnection, string[]>();
       if (this._cancelBackendTileRequests)
         this._canceledIModelTileRequests = new Map<IModelConnection, Map<string, Set<string>>>();

@@ -16,7 +16,6 @@ import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
 import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
 import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
-import { EventSink } from '@bentley/imodeljs-backend';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { FormatProps } from '@bentley/imodeljs-quantity';
@@ -261,8 +260,6 @@ export interface PresentationManagerProps {
         [phenomenon: string]: UnitSystemFormat;
     };
     enableSchemasPreload?: boolean;
-    // @internal (undocumented)
-    eventSink?: EventSink;
     // @internal
     id?: string;
     localeDirectories?: string[];

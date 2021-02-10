@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { ViewRect } from "./ViewRect";
@@ -271,7 +271,7 @@ export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha
  * @beta
  */
 export function openImageDataUrlInNewWindow(url: string, title?: string): void {
-  if (isElectronRenderer) {
+  if (ProcessDetector.isElectronAppFrontend) {
     window.open(url, title);
   } else {
     const win = window.open();

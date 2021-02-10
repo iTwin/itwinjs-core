@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable @typescript-eslint/promise-function-async */
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
 import { BeDuration, BeEvent, Logger, using } from "@bentley/bentleyjs-core";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { EventSource, IModelConnection, NativeApp } from "@bentley/imodeljs-frontend";
+import { IModelRpcProps, IpcListener, RemoveFunction } from "@bentley/imodeljs-common";
+import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
   DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor,
   FieldDescriptorType, HierarchyCompareInfoJSON, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions, Node,
-  NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationRpcEvents,
-  PresentationRpcInterface, PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset,
+  NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError,
+  PresentationIpcEvents,
+  PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset,
   RulesetVariable, UpdateInfo, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -125,22 +125,10 @@ describe("PresentationManager", () => {
     });
 
     it("starts listening to update events", async () => {
-      sinon.stub(NativeApp, "isValid").get(() => true);
-      const eventSourceStub = sinon.createStubInstance(EventSource);
-      using(PresentationManager.create({ eventSource: (eventSourceStub as unknown as EventSource) }), (_) => { });
-      expect(eventSourceStub.on).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
-    });
-
-    it("uses global EventSource if not provided through props", async () => {
-      sinon.stub(NativeApp, "isValid").get(() => true);
-      const eventSourceStub = sinon.createStubInstance(EventSource);
-      sinon.stub(EventSource, "global").get(() => (eventSourceStub as unknown as EventSource));
-
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      const addListenerSpy = sinon.stub(IpcApp, "addListener").returns(() => { });
       using(PresentationManager.create(), (_) => { });
-      expect(eventSourceStub.on).to.be.calledOnce;
-
-      using(PresentationManager.create({}), (_) => { });
-      expect(eventSourceStub.on).to.be.calledTwice;
+      expect(addListenerSpy).to.be.calledOnceWith(PresentationIpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
     });
 
   });
@@ -152,14 +140,13 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock.verify((x) => x.dispose(), moq.Times.once());
     });
 
-    it("stops listening to update events", async () => {
-      sinon.stub(NativeApp, "isValid").get(() => true);
-      const offSpy = sinon.stub();
-      const eventSourceStub = sinon.createStubInstance(EventSource);
-      eventSourceStub.on.returns(offSpy);
-      using(PresentationManager.create({ eventSource: (eventSourceStub as unknown as EventSource) }), (_) => { });
-      expect(offSpy).to.be.calledOnce;
-    });
+    // it("stops listening to update events", async () => {
+    //   sinon.stub(IpcApp, "isValid").get(() => true);
+    //   const offSpy = sinon.stub();
+    //   const addListenerSpy = sinon.stub(IpcApp, "addListener").returns(offSpy);
+    //   using(PresentationManager.create(), (_) => { });
+    //   expect(offSpy).to.be.calledOnce;
+    // });
 
   });
 
@@ -170,7 +157,7 @@ describe("PresentationManager", () => {
       const onCloseEvent = new BeEvent();
       const imodelMock = moq.Mock.ofType<IModelConnection>();
       imodelMock.setup((x) => x.onClose).returns(() => onCloseEvent);
-      rpcRequestsHandlerMock.setup((x) => x.getNodesCount(moq.It.isAny())).returns(async () => 0);
+      rpcRequestsHandlerMock.setup(async (x) => x.getNodesCount(moq.It.isAny())).returns(async () => 0);
 
       // expect the spy to be called on first imodel use
       await manager.getNodesCount({ // eslint-disable-line deprecation/deprecation
@@ -210,7 +197,7 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
       });
-      rpcRequestsHandlerMock.verify((x) => x.getNodesCount({
+      rpcRequestsHandlerMock.verify(async (x) => x.getNodesCount({
         imodel: testData.imodelToken,
         rulesetOrId: testData.rulesetId,
         locale,
@@ -228,7 +215,7 @@ describe("PresentationManager", () => {
         rulesetOrId: testData.rulesetId,
         locale,
       });
-      rpcRequestsHandlerMock.verify((x) => x.getNodesCount({
+      rpcRequestsHandlerMock.verify(async (x) => x.getNodesCount({
         imodel: testData.imodelToken,
         rulesetOrId: testData.rulesetId,
         locale,
@@ -251,7 +238,7 @@ describe("PresentationManager", () => {
         displayType: "",
         keys,
       });
-      rpcRequestsHandlerMock.verify((x) => x.getContentDescriptor({
+      rpcRequestsHandlerMock.verify(async (x) => x.getContentDescriptor({
         imodel: testData.imodelToken,
         rulesetOrId: testData.rulesetId,
         unitSystem,
@@ -272,7 +259,7 @@ describe("PresentationManager", () => {
         displayType: "",
         keys,
       });
-      rpcRequestsHandlerMock.verify((x) => x.getContentDescriptor({
+      rpcRequestsHandlerMock.verify(async (x) => x.getContentDescriptor({
         imodel: testData.imodelToken,
         rulesetOrId: testData.rulesetId,
         unitSystem,
@@ -324,7 +311,7 @@ describe("PresentationManager", () => {
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
+        .setup(async (x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
         .returns(async () => ({ total: count, items: nodes.map(Node.toJSON) }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options, parentNodeKey); // eslint-disable-line deprecation/deprecation
@@ -342,7 +329,7 @@ describe("PresentationManager", () => {
         parentKey: undefined,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedNodes(prepareOptions(options)))
+        .setup(async (x) => x.getPagedNodes(prepareOptions(options)))
         .returns(async () => ({ total: count, items: nodes.map(Node.toJSON) }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
@@ -361,7 +348,7 @@ describe("PresentationManager", () => {
         parentKey: parentNodeKey,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
+        .setup(async (x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
         .returns(async () => ({ total: count, items: nodes.map(Node.toJSON) }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
@@ -380,11 +367,11 @@ describe("PresentationManager", () => {
         parentKey: parentNodeKey,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey), paging: { start: 0, size: 0 } })))
+        .setup(async (x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey), paging: { start: 0, size: 0 } })))
         .returns(async () => ({ total: count, items: [Node.toJSON(node1)] }))
         .verifiable();
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey), paging: { start: 1, size: 0 } })))
+        .setup(async (x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey), paging: { start: 1, size: 0 } })))
         .returns(async () => ({ total: count, items: [Node.toJSON(node2)] }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
@@ -405,7 +392,7 @@ describe("PresentationManager", () => {
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
+        .setup(async (x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
         .returns(async () => ({ total: 666, items: result.map(Node.toJSON) }))
         .verifiable();
       const actualResult = await manager.getNodes(options, parentNodeKey); // eslint-disable-line deprecation/deprecation
@@ -422,7 +409,7 @@ describe("PresentationManager", () => {
         parentKey: undefined,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedNodes(prepareOptions(options)))
+        .setup(async (x) => x.getPagedNodes(prepareOptions(options)))
         .returns(async () => ({ total: 666, items: result.map(Node.toJSON) }))
         .verifiable();
       const actualResult = await manager.getNodes(options); // eslint-disable-line deprecation/deprecation
@@ -440,7 +427,7 @@ describe("PresentationManager", () => {
         parentKey: parentNodeKey,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
+        .setup(async (x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
         .returns(async () => ({ total: 666, items: result.map(Node.toJSON) }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
@@ -459,11 +446,11 @@ describe("PresentationManager", () => {
         parentKey: parentNodeKey,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey), paging: { start: 0, size: 0 } })))
+        .setup(async (x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey), paging: { start: 0, size: 0 } })))
         .returns(async () => ({ total: count, items: [Node.toJSON(node1)] }))
         .verifiable();
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey), paging: { start: 1, size: 0 } })))
+        .setup(async (x) => x.getPagedNodes(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey), paging: { start: 1, size: 0 } })))
         .returns(async () => ({ total: count, items: [Node.toJSON(node2)] }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
@@ -483,7 +470,7 @@ describe("PresentationManager", () => {
         parentKey: undefined,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getNodesCount(prepareOptions(options)))
+        .setup(async (x) => x.getNodesCount(prepareOptions(options)))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getNodesCount(options);
@@ -500,7 +487,7 @@ describe("PresentationManager", () => {
         parentKey: parentNodeKey,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getNodesCount(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
+        .setup(async (x) => x.getNodesCount(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getNodesCount(options);
@@ -516,7 +503,7 @@ describe("PresentationManager", () => {
         rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getNodesCount(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
+        .setup(async (x) => x.getNodesCount(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getNodesCount(options, parentNodeKey); // eslint-disable-line deprecation/deprecation
@@ -534,7 +521,7 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
       };
-      rpcRequestsHandlerMock.setup((x) => x.getFilteredNodePaths(prepareOptions(options), "filter"))
+      rpcRequestsHandlerMock.setup(async (x) => x.getFilteredNodePaths(prepareOptions(options), "filter"))
         .returns(async () => value.map(NodePathElement.toJSON))
         .verifiable();
       const result = await manager.getFilteredNodePaths(options, "filter");
@@ -553,7 +540,7 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
       };
-      rpcRequestsHandlerMock.setup((x) => x.getNodePaths(prepareOptions(options), keyArray.map((k) => k.map(InstanceKey.toJSON)), 1))
+      rpcRequestsHandlerMock.setup(async (x) => x.getNodePaths(prepareOptions(options), keyArray.map((k) => k.map(InstanceKey.toJSON)), 1))
         .returns(async () => value.map(NodePathElement.toJSON))
         .verifiable();
       const result = await manager.getNodePaths(options, keyArray, 1);
@@ -570,7 +557,7 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
       };
-      rpcRequestsHandlerMock.setup((x) => x.loadHierarchy({ ...prepareOptions(options), priority: RequestPriority.Preload }))
+      rpcRequestsHandlerMock.setup(async (x) => x.loadHierarchy({ ...prepareOptions(options), priority: RequestPriority.Preload }))
         .returns(async () => { })
         .verifiable();
       await manager.loadHierarchy(options);
@@ -583,7 +570,7 @@ describe("PresentationManager", () => {
         rulesetOrId: testData.rulesetId,
         priority: 999,
       };
-      rpcRequestsHandlerMock.setup((x) => x.loadHierarchy({ ...prepareOptions(options), priority: 999 }))
+      rpcRequestsHandlerMock.setup(async (x) => x.loadHierarchy({ ...prepareOptions(options), priority: 999 }))
         .returns(async () => { })
         .verifiable();
       await manager.loadHierarchy(options);
@@ -602,7 +589,7 @@ describe("PresentationManager", () => {
         rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContentDescriptor(prepareOptions({ ...options, displayType: "test", keys: keyset.toJSON(), selection: undefined })))
+        .setup(async (x) => x.getContentDescriptor(prepareOptions({ ...options, displayType: "test", keys: keyset.toJSON(), selection: undefined })))
         .returns(async () => result.toJSON())
         .verifiable();
       const actualResult = await manager.getContentDescriptor(options, "test", keyset, undefined); // eslint-disable-line deprecation/deprecation
@@ -621,7 +608,7 @@ describe("PresentationManager", () => {
         keys: keyset,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContentDescriptor(prepareOptions({ ...options, keys: keyset.toJSON() })))
+        .setup(async (x) => x.getContentDescriptor(prepareOptions({ ...options, keys: keyset.toJSON() })))
         .returns(async () => result.toJSON())
         .verifiable();
       const actualResult = await manager.getContentDescriptor(options);
@@ -641,7 +628,7 @@ describe("PresentationManager", () => {
         keys: keyset,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContentDescriptor(prepareOptions({ ...options, keys: new KeySet([persistentKey]).toJSON() })))
+        .setup(async (x) => x.getContentDescriptor(prepareOptions({ ...options, keys: new KeySet([persistentKey]).toJSON() })))
         .returns(async () => createRandomDescriptor().toJSON())
         .verifiable();
       await manager.getContentDescriptor(options);
@@ -657,7 +644,7 @@ describe("PresentationManager", () => {
         keys: keyset,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContentDescriptor(prepareOptions({ ...options, keys: keyset.toJSON() })))
+        .setup(async (x) => x.getContentDescriptor(prepareOptions({ ...options, keys: keyset.toJSON() })))
         .returns(async () => undefined)
         .verifiable();
       const actualResult = await manager.getContentDescriptor(options);
@@ -678,7 +665,7 @@ describe("PresentationManager", () => {
         rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContentSetSize(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
+        .setup(async (x) => x.getContentSetSize(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getContentSetSize(options, descriptor, keyset); // eslint-disable-line deprecation/deprecation
@@ -697,7 +684,7 @@ describe("PresentationManager", () => {
         keys: keyset,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContentSetSize(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
+        .setup(async (x) => x.getContentSetSize(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getContentSetSize(options);
@@ -1000,7 +987,7 @@ describe("PresentationManager", () => {
         rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getDistinctValues(prepareOptions(options),
+        .setup(async (x) => x.getDistinctValues(prepareOptions(options),
           moq.deepEquals(descriptor.createDescriptorOverrides()),
           moq.deepEquals(keyset.toJSON()), fieldName, maximumValueCount))
         .returns(async () => result)
@@ -1016,7 +1003,7 @@ describe("PresentationManager", () => {
         rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getDistinctValues(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAnyString(), 0))
+        .setup(async (x) => x.getDistinctValues(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAnyString(), 0))
         .verifiable();
       await manager.getDistinctValues(options, createRandomDescriptor(), new KeySet(), "");
       rpcRequestsHandlerMock.verifyAll();
@@ -1054,7 +1041,7 @@ describe("PresentationManager", () => {
         paging: { start: 0, size: 0 },
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedDistinctValues(rpcHandlerOptions))
+        .setup(async (x) => x.getPagedDistinctValues(rpcHandlerOptions))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getPagedDistinctValues(managerOptions);
@@ -1091,11 +1078,11 @@ describe("PresentationManager", () => {
         keys: keys.toJSON(),
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
+        .setup(async (x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
         .returns(async () => ({ total: 2, items: [DisplayValueGroup.toJSON(item1)] }))
         .verifiable();
       rpcRequestsHandlerMock
-        .setup((x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 1, size: 0 } }))
+        .setup(async (x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 1, size: 0 } }))
         .returns(async () => ({ total: 2, items: [DisplayValueGroup.toJSON(item2)] }))
         .verifiable();
       const actualResult = await manager.getPagedDistinctValues(managerOptions);
@@ -1225,7 +1212,7 @@ describe("PresentationManager", () => {
       expect(actualResult).to.deep.eq([]);
     });
 
-    it("throws when request handler throws non-cancelation exception", async () => {
+    it("throws when request handler throws non-cancellation exception", async () => {
       const options: PresentationDataCompareOptions<IModelConnection, NodeKey> = {
         imodel: testData.imodelMock.object,
         prev: {
@@ -1366,7 +1353,7 @@ describe("PresentationManager", () => {
 
     beforeEach(async () => {
       testRuleset = await createRandomRuleset();
-      rulesetsManagerMock.setup((x) => x.get(testRuleset.id)).returns(async () => new RegisteredRuleset(testRuleset, "", () => { }));
+      rulesetsManagerMock.setup(async (x) => x.get(testRuleset.id)).returns(async () => new RegisteredRuleset(testRuleset, "", () => { }));
       testRulesetVariable = { id: faker.random.word(), type: VariableValueTypes.String, value: faker.random.word() };
       await manager.vars(testRuleset.id).setString(testRulesetVariable.id, testRulesetVariable.value as string);
     });
@@ -1380,7 +1367,7 @@ describe("PresentationManager", () => {
       };
       const expectedOptions = { ...options, rulesetOrId: testRuleset, rulesetVariables: [testRulesetVariable] };
       rpcRequestsHandlerMock
-        .setup((x) => x.getNodesCount(toIModelTokenOptions(expectedOptions)))
+        .setup(async (x) => x.getNodesCount(toIModelTokenOptions(expectedOptions)))
         .returns(async () => 0)
         .verifiable();
       await manager.getNodesCount(options);
@@ -1398,7 +1385,7 @@ describe("PresentationManager", () => {
       const expectedOptions = { ...options, rulesetOrId: testRuleset, rulesetVariables: [testRulesetVariable] };
 
       rpcRequestsHandlerMock
-        .setup((x) => x.getNodesCount(toIModelTokenOptions(expectedOptions)))
+        .setup(async (x) => x.getNodesCount(toIModelTokenOptions(expectedOptions)))
         .returns(async () => 0)
         .verifiable();
       await manager.getNodesCount(options);
@@ -1414,7 +1401,7 @@ describe("PresentationManager", () => {
       };
       const expectedOptions = { ...options, rulesetVariables: [] };
       rpcRequestsHandlerMock
-        .setup((x) => x.getNodesCount(toIModelTokenOptions(expectedOptions)))
+        .setup(async (x) => x.getNodesCount(toIModelTokenOptions(expectedOptions)))
         .returns(async () => 0)
         .verifiable();
       await manager.getNodesCount(options);
@@ -1434,7 +1421,7 @@ describe("PresentationManager", () => {
       const expectedOptions = { ...options, rulesetOrId: testRuleset, rulesetVariables: [rulesetVariable, testRulesetVariable] };
 
       rpcRequestsHandlerMock
-        .setup((x) => x.getNodesCount(toIModelTokenOptions(expectedOptions)))
+        .setup(async (x) => x.getNodesCount(toIModelTokenOptions(expectedOptions)))
         .returns(async () => 0)
         .verifiable();
       await manager.getNodesCount(options);
@@ -1445,18 +1432,17 @@ describe("PresentationManager", () => {
 
   describe("listening to updates", () => {
 
-    let eventSourceListener: (report: UpdateInfo) => void;
+    let ipcAppAddListenerStub: sinon.SinonStub<[string, IpcListener], RemoveFunction>;
     let hierarchyUpdatesSpy: sinon.SinonSpy<[IModelHierarchyChangeEventArgs], void>;
     let contentUpdatesSpy: sinon.SinonSpy<[IModelContentChangeEventArgs], void>;
 
     beforeEach(() => {
-      sinon.stub(NativeApp, "isValid").get(() => true);
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      ipcAppAddListenerStub = sinon.stub(IpcApp, "addListener");
 
-      const eventSource = sinon.createStubInstance(EventSource);
-      manager = PresentationManager.create({ eventSource: eventSource as unknown as EventSource });
+      manager = PresentationManager.create();
 
-      eventSourceListener = eventSource.on.args[0][2];
-      expect(eventSourceListener).to.not.be.undefined;
+      expect(ipcAppAddListenerStub).to.be.calledOnce;
 
       hierarchyUpdatesSpy = sinon.spy() as any;
       manager.onIModelHierarchyChanged.addListener(hierarchyUpdatesSpy);
@@ -1471,10 +1457,10 @@ describe("PresentationManager", () => {
       const ruleset2: Ruleset = { id: "2", rules: [] };
       const ruleset3: Ruleset = { id: "3", rules: [] };
       const ruleset4: Ruleset = { id: "4", rules: [] };
-      rulesetsManagerMock.setup((x) => x.get(ruleset1.id)).returns(async () => new RegisteredRuleset(ruleset1, "", () => { }));
-      rulesetsManagerMock.setup((x) => x.get(ruleset2.id)).returns(async () => new RegisteredRuleset(ruleset2, "", () => { }));
-      rulesetsManagerMock.setup((x) => x.get(ruleset3.id)).returns(async () => new RegisteredRuleset(ruleset3, "", () => { }));
-      rulesetsManagerMock.setup((x) => x.get(ruleset4.id)).returns(async () => undefined);
+      rulesetsManagerMock.setup(async (x) => x.get(ruleset1.id)).returns(async () => new RegisteredRuleset(ruleset1, "", () => { }));
+      rulesetsManagerMock.setup(async (x) => x.get(ruleset2.id)).returns(async () => new RegisteredRuleset(ruleset2, "", () => { }));
+      rulesetsManagerMock.setup(async (x) => x.get(ruleset3.id)).returns(async () => new RegisteredRuleset(ruleset3, "", () => { }));
+      rulesetsManagerMock.setup(async (x) => x.get(ruleset4.id)).returns(async () => undefined);
 
       const report: UpdateInfo = {
         [imodelKey]: {
@@ -1491,7 +1477,7 @@ describe("PresentationManager", () => {
           [ruleset4.id]: {},
         },
       };
-      eventSourceListener(report);
+      ipcAppAddListenerStub.firstCall.args[1](new Event(PresentationIpcEvents.Update), report);
 
       // workaround for a floating promise...
       await BeDuration.wait(1);
