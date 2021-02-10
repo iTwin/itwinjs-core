@@ -35,15 +35,15 @@ To adjust the limit after startup, assign to [TileAdmin.gpuMemoryLimit]($fronten
 
 This feature replaces the `@alpha` `TileAdmin.Props.mobileExpirationMemoryThreshold` option.
 
-## Breaking changes to alpha class QuantityFormatter
+## Breaking API changes in imodeljs-fronted alpha class QuantityFormatter
 
 The QuantityFormatter now registers its own standard QuantityTypeDefinitions during initialization. CustomQuantityTypeDefinitions must now be registered to support additional QuantityTypes. This replaces the use of FormatterParserSpecsProvider to provide custom quantity types. Removed koq methods that were never implemented.
+
+## Breaking API change in imodeljs-quantity package
+
+The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
+New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.
 
 ## Common table expression support in ECSQL
 
 CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
-
-## Breaking API change in quantity package
-
-The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
-New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.
