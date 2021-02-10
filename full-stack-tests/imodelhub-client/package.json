@@ -12,6 +12,7 @@
     "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "copy:config": "internal-tools copy-config",
     "copy:test-assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "cover": "npm run cover:imodelhub-client && npm run cover:backend-itwin-client && npm run cover:itwin-client",
     "cover:imodelhub-client": "nyc --nycrc-path=imodelhub-client.nycrc npm test",
@@ -63,6 +64,7 @@
     "@types/nock": "^9.1.2",
     "cpx": "^1.5.0",
     "eslint": "^6.8.0",
+    "internal-tools": "0.0.0",
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",
     "typescript": "~3.7.4"

@@ -6,7 +6,6 @@
 const path = require("path");
 const glob = require("glob");
 const webpack = require("webpack");
-const raw = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig.init(true /*suppress error*/, true);
 module.exports = {
   mode: "development",
   entry: glob.sync(path.resolve(__dirname, "lib/**/*.test.js")),
@@ -63,16 +62,6 @@ module.exports = {
     // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
     new webpack.DefinePlugin({
       "global.GENTLY": false,
-      "process.env": Object.keys(raw)
-        .filter((key) => {
-          return key.match(/^imjs_/i);
-        })
-        .reduce((env, key) => {
-          env[key] = JSON.stringify(raw[key]);
-          return env;
-        }, {
-          IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
-        }),
     })
   ]
 };
