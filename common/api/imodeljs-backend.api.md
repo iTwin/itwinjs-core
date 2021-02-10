@@ -2891,8 +2891,8 @@ export class IModelTransformer extends IModelExportHandler {
     constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
     readonly context: IModelCloneContext;
     protected _deferredElementIds: Set<string>;
-    detectElementDeletes(): void;
-    detectRelationshipDeletes(): void;
+    detectElementDeletes(): Promise<void>;
+    detectRelationshipDeletes(): Promise<void>;
     dispose(): void;
     readonly exporter: IModelExporter;
     protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;

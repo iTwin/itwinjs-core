@@ -228,7 +228,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processAll]] and is not needed by [[processChanges]], so it only needs to be called directly when processing a subset of an iModel.
    * @throws [[IModelError]] If the required provenance information is not available to detect deletes.
    */
-  public detectElementDeletes(): void {
+  public async detectElementDeletes(): Promise<void> {
     if (this._isReverseSynchronization) {
       throw new IModelError(IModelStatus.BadRequest, "Cannot detect deletes when isReverseSynchronization=true", Logger.logError, loggerCategory);
     }
@@ -559,7 +559,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processAll]] and is not needed by [[processChanges]], so it only needs to be called directly when processing a subset of an iModel.
    * @throws [[IModelError]] If the required provenance information is not available to detect deletes.
    */
-  public detectRelationshipDeletes(): void {
+  public async detectRelationshipDeletes(): Promise<void> {
     if (this._isReverseSynchronization) {
       throw new IModelError(IModelStatus.BadRequest, "Cannot detect deletes when isReverseSynchronization=true", Logger.logError, loggerCategory);
     }
@@ -723,8 +723,8 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportRelationships(ElementRefersToElements.classFullName);
     await this.processDeferredElements();
     if (!this._isReverseSynchronization) {
-      this.detectElementDeletes();
-      this.detectRelationshipDeletes();
+      await this.detectElementDeletes();
+      await this.detectRelationshipDeletes();
     }
     this.importer.computeProjectExtents();
   }
