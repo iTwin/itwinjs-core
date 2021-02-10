@@ -6,14 +6,16 @@
  * @module Tiles
  */
 
-import { ClientRequestContext, Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContext, Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
 import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, MapSubLayerProps, ServerError } from "@bentley/imodeljs-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
+import { ArcGisErrorCode, NotifyMessageDetails, OutputMessagePriority } from "../../imodeljs-frontend";
 import { ScreenViewport } from "../../Viewport";
-import { BingMapsImageryLayerProvider, ImageryMapLayerTreeReference, ImageryMapTile, ImageryMapTileTree, MapLayerFormat, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerTileTreeReference, QuadId, WmsUtilities } from "../internal";
+import { ArcGisTokenClientType, BingMapsImageryLayerProvider, ImageryMapLayerTreeReference, ImageryMapTile, ImageryMapTileTree, MapLayerFormat, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerTileTreeReference, QuadId, WmsUtilities } from "../internal";
+import { ArcGisTokenManager } from "./ArcGisTokenManager";
 import { ArcGisUtilities } from "./ArcGisUtilities";
 import { MapCartoRectangle } from "./MapCartoRectangle";
 import { WmsCapabilities, WmsCapability } from "./WmsCapabilities";
@@ -22,8 +24,12 @@ import { WmtsCapabilities, WmtsCapability } from "./WmtsCapabilities";
 const tileImageSize = 256, untiledImageSize = 256;
 // eslint-disable-next-line prefer-const
 let doToolTips = true;
-// eslint-disable-next-line prefer-const
-let debugToolTip = false;
+
+/** @internal */
+export enum MapLayerImageryProviderStatus {
+  Valid,
+  RequireAuth,
+}
 
 const scratchPoint2d = Point2d.createZero();
 
@@ -40,6 +46,9 @@ export class ImageryMapLayerFormat extends MapLayerFormat {
  * @internal
  */
 export abstract class MapLayerImageryProvider {
+  public status: MapLayerImageryProviderStatus = MapLayerImageryProviderStatus.Valid;
+  public readonly onStatusChanged = new BeEvent<(provider: MapLayerImageryProvider) => void>();
+
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
   public get maximumScreenSize() { return 2 * this.tileSize; }
   public get minimumZoomLevel(): number { return 4; }
@@ -56,7 +65,7 @@ export abstract class MapLayerImageryProvider {
     });
   }
   protected _requestContext = new ClientRequestContext("");
-  public abstract constructUrl(row: number, column: number, zoomLevel: number): string;
+  public abstract async constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
 
   public getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined { return undefined; }
   protected _missingTileData?: Uint8Array;
@@ -73,51 +82,49 @@ export abstract class MapLayerImageryProvider {
     this._testChildAvailability(tile, resolveChildren);
   }
 
-  public async getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
-    if (debugToolTip) {
-      const cartoRectangle = tree.cartoRectangleFromQuadId(quadId);
-      const debugString = `QuadId: ${quadId.debugString} Rectangle: ${cartoRectangle.latLongString} EPSG:3857: ${this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level)} URL: ${this.constructUrl(quadId.row, quadId.column, quadId.level)}`;
-      strings.push(debugString);
-      // eslint-disable-next-line no-console
-      console.log(debugString);
-    }
+  public async getToolTip(_strings: string[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
   }
-  private getRequestAuthorization(): RequestBasicCredentials | undefined {
+
+  protected getRequestAuthorization(): RequestBasicCredentials | undefined {
     return (this._settings.userName && this._settings.password) ? { user: this._settings.userName, password: this._settings.password } : undefined;
   }
 
-  // returns a Uint8Array with the contents of the tile.
-  public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    const tileUrl: string = this.constructUrl(row, column, zoomLevel);
-    if (tileUrl.length === 0)
+  protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {
+    const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
+    if (!byteArray || (byteArray.length === 0))
       return undefined;
+    if (this.matchesMissingTile(byteArray) && zoomLevel > 8)
+      return undefined;
+    let imageFormat: ImageSourceFormat;
+    switch (tileResponse.header["content-type"]) {
+      case "image/jpeg":
+        imageFormat = ImageSourceFormat.Jpeg;
+        break;
+      case "image/png":
+        imageFormat = ImageSourceFormat.Png;
+        break;
+      default:
+        return undefined;
+    }
 
+    return new ImageSource(byteArray, imageFormat);
+  }
+
+  public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     tileRequestOptions.auth = this.getRequestAuthorization();
     try {
-      const tileResponse: Response = await request(this._requestContext, tileUrl, tileRequestOptions);
-      const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
-      if (!byteArray || (byteArray.length === 0))
+      const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
+      if (tileUrl.length === 0)
         return undefined;
-      if (this.matchesMissingTile(byteArray) && zoomLevel > 8)
-        return undefined;
-      let imageFormat: ImageSourceFormat;
-      switch (tileResponse.header["content-type"]) {
-        case "image/jpeg":
-          imageFormat = ImageSourceFormat.Jpeg;
-          break;
-        case "image/png":
-          imageFormat = ImageSourceFormat.Png;
-          break;
-        default:
-          return undefined;
-      }
 
-      return new ImageSource(byteArray, imageFormat);
+      const tileResponse: Response = await request(this._requestContext, tileUrl, tileRequestOptions);
+      return this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
       return undefined;
     }
   }
+
   protected async toolTipFromUrl(strings: string[], url: string): Promise<void> {
 
     const requestOptions: RequestOptions = {
@@ -274,7 +281,7 @@ class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   // construct the Url from the desired Tile
-  public constructUrl(row: number, column: number, zoomLevel: number): string {
+  public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
     const bboxString = this.getEPSG3857ExtentString(row, column, zoomLevel);
     const layerString = this.getVisibleLayerString();
     return `${this._baseUrl}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=${this.transparentBackgroundString}&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&CRS=EPSG%3A3857&STYLES=&BBOX=${bboxString}`;
@@ -393,7 +400,7 @@ class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
     });
   }
 
-  public constructUrl(row: number, column: number, zoomLevel: number): string {
+  public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
     // WMTS support a single layer per tile request, so we pick the first visible layer.
     const layerString = this._settings.subLayers.find((subLayer) => subLayer.visible)?.name;
     let tileMatrix, tileMatrixSet, style;
@@ -412,12 +419,14 @@ class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       return `${this._baseUrl}?Service=WMTS&Version=1.0.0&Request=GetTile&Format=image%2Fpng&layer=${layerString}&style=${style.identifier}&TileMatrixSet=${tileMatrixSet.identifier}&TileMatrix=${tileMatrix}&TileCol=${column}&TileRow=${row} `;
     else
       return "";
+
   }
 }
 
 const scratchQuadId = new QuadId(0, 0, 0);
 
 class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
+  private _hasSuccessfullyFetchedTile = false;
   private _maxDepthFromLod = 0;
   private _copyrightText = "Copyright";
   private _querySupported = false;
@@ -430,8 +439,75 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
   protected get _filterByCartoRange() { return false; }      // Can't trust footprint ranges (USGS Hydro)
   public get maximumZoomLevel() { return this._maxDepthFromLod > 0 ? this._maxDepthFromLod : super.maximumZoomLevel; }
+
+  public uintToString(uintArray: any) {
+    return Buffer.from(uintArray).toJSON();
+
+  }
+
+  private async fetchTile(row: number, column: number, zoomLevel: number): Promise<Response | undefined> {
+    const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
+    tileRequestOptions.auth = this.getRequestAuthorization();
+    const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
+    if (tileUrl.length === 0)
+      return undefined;
+
+    return request(this._requestContext, tileUrl, tileRequestOptions);
+  }
+
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    return super.loadTile(row, column, zoomLevel);
+
+    if ((this.status === MapLayerImageryProviderStatus.RequireAuth)) {
+      return undefined;
+    }
+
+    try {
+      let tileResponse = await this.fetchTile(row, column, zoomLevel);
+      if (tileResponse === undefined)
+        return undefined;
+
+      // Check the content type from the response, it might contain an authentication error that need to be reported.
+      // Skip if the layer state was already invalid
+      if (ArcGisUtilities.hasTokenError(tileResponse)) {
+
+        // Token might have expired, make a second attempt by forcing new token.
+        if (this._settings.userName && this._settings.userName.length > 0) {
+          ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
+          tileResponse = await this.fetchTile(row, column, zoomLevel);
+          if (tileResponse === undefined)
+            return undefined;
+        }
+
+        // OK at this point, if response still contain a token error, we assume end-user will
+        // have to provide credentials again.  Change the layer status so we
+        // don't make additional invalid requests..
+        if (tileResponse && ArcGisUtilities.hasTokenError(tileResponse)) {
+          // Check again layer status, it might have change during await.
+          if (this.status === MapLayerImageryProviderStatus.Valid) {
+            this.status = MapLayerImageryProviderStatus.RequireAuth;
+            this.onStatusChanged.raiseEvent(this);
+
+            // Only report error to end-user if we were previously able to fetch tiles
+            // and then encountered an error, otherwise I assume an error was already reported
+            // through the source validation process.
+            if (this._hasSuccessfullyFetchedTile) {
+              const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
+              IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+            }
+
+          }
+
+          return undefined;
+        }
+      }
+
+      if (!this._hasSuccessfullyFetchedTile) {
+        this._hasSuccessfullyFetchedTile = true;
+      }
+      return this.getImageFromTileResponse(tileResponse, zoomLevel);
+    } catch (error) {
+      return undefined;
+    }
   }
 
   protected _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {
@@ -488,7 +564,7 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   public async initialize(): Promise<void> {
-    const json = await ArcGisUtilities.getServiceJson(this._settings.url);
+    const json = await ArcGisUtilities.getServiceJson(this._settings.url, this.getRequestAuthorization());
     if (json === undefined)
       throw new ServerError(IModelStatus.ValidationFailed, "");
 
@@ -505,7 +581,7 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
             ;
         }
       }
-      const footprintJson = await ArcGisUtilities.getFootprintJson(this._settings.url);
+      const footprintJson = await ArcGisUtilities.getFootprintJson(this._settings.url, this.getRequestAuthorization());
       if (undefined !== footprintJson && undefined !== footprintJson.featureCollection && Array.isArray(footprintJson.featureCollection.layers)) {
         for (const layer of footprintJson.featureCollection.layers) {
           if (layer.layerDefinition && layer.layerDefinition.extent) {
@@ -533,8 +609,31 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
     const x = this.getEPSG3857X(carto.longitudeDegrees);
     const y = this.getEPSG3857Y(carto.latitudeDegrees);
-    const url = `${this._settings.url}/identify?f=json&tolerance=1&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
-    const json = await getJson(this._requestContext, url);
+    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=1&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
+    const url = await this.appendSecurityToken(tmpUrl);
+
+    let json = await getJson(this._requestContext, url);
+    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+      // Token might have expired, make a second attempt by forcing new token.
+      if (this._settings.userName && this._settings.userName.length > 0) {
+        ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
+        json = await getJson(this._requestContext, url);
+      }
+
+      // OK at this point, if response still contain a token error, we assume end-user will
+      // have to provide credentials again.  Change the layer status so we
+      // don't make additional invalid requests..
+      if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+        // Check again layer status, it might have change during await.
+        if (this.status === MapLayerImageryProviderStatus.Valid) {
+          this.status = MapLayerImageryProviderStatus.RequireAuth;
+          const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+        }
+
+        return;
+      }
+    }
 
     if (json && Array.isArray(json.results)) {
       for (const result of json.results) {
@@ -554,13 +653,33 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     return `${prefix}: ${layers.join(",")} `;
   }
   // construct the Url from the desired Tile
-  public constructUrl(row: number, column: number, zoomLevel: number): string {
+  public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
+    let tmpUrl;
     if (this._usesCachedTiles) {
-      return `${this._settings.url}/tile/${zoomLevel}/${row}/${column} `;
+      tmpUrl = `${this._settings.url}/tile/${zoomLevel}/${row}/${column} `;
     } else {
       const bboxString = `${this.getEPSG3857ExtentString(row, column, zoomLevel)}&bboxSR=3857`;
-      return `${this._settings.url}/export?bbox=${bboxString}&size=${this.tileSize},${this.tileSize}&layers=${this.getLayerString()}&format=png&transparent=${this.transparentBackgroundString}&f=image&sr=3857&imagesr=3857`;
+      tmpUrl = `${this._settings.url}/export?bbox=${bboxString}&size=${this.tileSize},${this.tileSize}&layers=${this.getLayerString()}&format=png&transparent=${this.transparentBackgroundString}&f=image&sr=3857&imagesr=3857`;
     }
+    return this.appendSecurityToken(tmpUrl);
+  }
+
+  // construct the Url from the desired Tile
+  private async appendSecurityToken(url: string): Promise<string> {
+    // Append security token if required
+    let tokenParam = "";
+    if (this._settings.userName && this._settings.password) {
+      try {
+        const token = await ArcGisTokenManager.getToken(this._settings.url, this._settings.userName, this._settings.password,
+          {
+            client: ArcGisTokenClientType.referer,
+          });
+        if (token?.token)
+          tokenParam = `&token=${token.token}`;
+      } catch {
+      }
+    }
+    return `${url}${tokenParam}`;
   }
 }
 
@@ -568,7 +687,7 @@ class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
   constructor(settings: MapLayerSettings) { super(settings, true); }
 
   // construct the Url from the desired Tile
-  public constructUrl(y: number, x: number, zoom: number): string {
+  public async constructUrl(y: number, x: number, zoom: number): Promise<string> {
     if (!this._settings.accessKey)
       return "";
     return `${this._settings.url}&${this._settings.accessKey.key}=${this._settings.accessKey.value}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
@@ -596,7 +715,7 @@ class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
   public get maximumZoomLevel(): number { return this._zoomMax; }
 
   // construct the Url from the desired Tile
-  public constructUrl(row: number, column: number, zoomLevel: number): string {
+  public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
     if (!this._settings.accessKey) {
       return "";
     }
@@ -631,7 +750,7 @@ class TileUrlImageryProvider extends MapLayerImageryProvider {
   }
 
   // construct the Url from the desired Tile
-  public constructUrl(row: number, column: number, level: number): string {
+  public async constructUrl(row: number, column: number, level: number): Promise<string> {
     let url = this._settings.url;
     if (TileUrlImageryProvider.validateUrlTemplate(url).status !== MapLayerSourceStatus.Valid) {
       if (url.lastIndexOf("/") !== url.length - 1)
@@ -649,11 +768,11 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
   public static createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
     return new WmsMapLayerImageryProvider(settings);
   }
-  public static async validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
+  public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     try {
       let subLayers: MapSubLayerProps[] | undefined;
       const maxVisibleSubLayers = 50;
-      const capabilities = await WmsCapabilities.create(url, credentials);
+      const capabilities = await WmsCapabilities.create(url, credentials, ignoreCache);
       if (capabilities !== undefined) {
         subLayers = capabilities.getSubLayers(false);
         const rootsSubLayer = subLayers?.find((sublayer) => sublayer.parent === undefined);
@@ -709,10 +828,10 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
     return new WmtsMapLayerImageryProvider(settings);
   }
 
-  public static async validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
+  public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     try {
       const subLayers: MapSubLayerProps[] = [];
-      const capabilities = await WmtsCapabilities.create(url, credentials);
+      const capabilities = await WmtsCapabilities.create(url, credentials, ignoreCache);
       if (!capabilities)
         return { status: MapLayerSourceStatus.InvalidUrl };
 
@@ -752,7 +871,9 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 
 class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   public static formatId = "ArcGIS";
-  public static async validateSource(url: string): Promise<MapLayerSourceValidation> { return ArcGisUtilities.validateSource(url); }
+  public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+    return ArcGisUtilities.validateSource(url, credentials, ignoreCache);
+  }
   public static createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
     return new ArcGISMapLayerImageryProvider(settings);
   }
