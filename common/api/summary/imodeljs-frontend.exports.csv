@@ -33,6 +33,12 @@ internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
 public;AppearanceOverrideProps
+internal;ArcGisErrorCode
+internal;ArcGisGenerateTokenOptions
+internal;ArcGisToken
+internal;ArcGisTokenClientType
+internal;ArcGisTokenGenerator
+internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
@@ -280,6 +286,7 @@ internal;MapLayerFormat
 internal;MapLayerFormatRegistry
 internal;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
+internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 internal;MapLayerSetting
 internal;MapLayerSettingsService

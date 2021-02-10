@@ -152,5 +152,11 @@
       "label": "Volume",
       "description": "Volume Values"
     }
+  },
+  "MapLayers": {
+    "Messages": {
+      "LoadTileTokenError": "An authentication error occurred while loading tiles for layer '{{layerName}}'",
+      "FetchTooltipTokenError": "An authentication error occurred while fetching tooltip for layer '{{layerName}}'"
+    }
   }
 }
