@@ -369,6 +369,9 @@
       "condition": "ContentDisplayType = \"AssemblyElementsRequest\"",
       "specifications": [
         {
+          "specType": "SelectedNodeInstances"
+        },
+        {
           "specType": "ContentRelatedInstances",
           "relationshipPaths": [
             {
