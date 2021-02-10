@@ -23,7 +23,7 @@ import {
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe.only("IModelTransformer", () => {
+describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
 
   before(async () => {
