@@ -359,10 +359,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "chevrotain",
-      "allowedCategories": [ "common" ]
-    },
-    {
       "name": "child_process",
       "allowedCategories": [ "internal" ]
     },

@@ -8,13 +8,13 @@ import {
   SchemaItemKey,
   SchemaKey,
 } from "../../src/ecschema-metadata";
+import { KnownLocations } from '../../../backend/src/IModelHost';
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { Float } from "../../src/UnitConversion/Float";
 import { UnitConvertorContext } from "../../src/UnitConversion/Convert";
 import { deserializeXml } from "./DeserializeSchema";
-// import { initialize, convert } from "../src/convert-api";
 
 interface TestData {
   From: string;
@@ -31,11 +31,10 @@ describe("A unit tree creator", () => {
   );
 
   before(() => {
-    const schemaFile = path.join(__dirname, "./Units.01.00.00.ecschema.xml");
+    const schemaFile = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Standard", `Units.ecschema.xml`);;
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     const schema: Schema = deserializeXml(context, schemaXml as string);
     context.addSchema(schema);
-    // initialize();
   });
 
   testData.forEach((test: TestData) => {
@@ -55,7 +54,6 @@ describe("A unit tree creator", () => {
           3 * ulp
         }`
       ).to.be.true;
-      // convert(42.42, test.From, test.To);
     });
   });
 });
