@@ -184,7 +184,8 @@ export class BackgroundMapSettings {
         break;
       }
     }
-    props.planarClipMask = this.planarClipMask.isValid ? this.planarClipMask.toJSON() : undefined;
+    if (this.planarClipMask.isValid)
+      props.planarClipMask = this.planarClipMask.toJSON();
 
     return props;
   }
@@ -220,7 +221,7 @@ export class BackgroundMapSettings {
       providerData: {
         mapType: changedProps.providerData?.mapType ?? this.mapType,
       },
-      planarClipMask: changedProps.planarClipMask ?? this.planarClipMask.toJSON(),
+      planarClipMask: changedProps.planarClipMask ? this.planarClipMask.clone(changedProps.planarClipMask).toJSON() : this.planarClipMask.toJSON(),
     };
 
     return BackgroundMapSettings.fromJSON(props);

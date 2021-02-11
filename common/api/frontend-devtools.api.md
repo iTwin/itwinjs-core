@@ -1120,6 +1120,8 @@ export class MaskBackgroundMapByModelTool extends PlanarMaskBaseTool {
 // @beta
 export class MaskBackgroundMapBySubCategoryTool extends PlanarMaskBaseTool {
     // (undocumented)
+    protected allowSelection(): boolean;
+    // (undocumented)
     protected applyMask(vp: ScreenViewport): void;
     // (undocumented)
     protected createToolInstance(): PlanarMaskBaseTool;
@@ -1191,6 +1193,8 @@ export class MaskRealityModelByModelTool extends PlanarMaskBaseTool {
 
 // @beta
 export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
+    // (undocumented)
+    protected allowSelection(): boolean;
     // (undocumented)
     protected applyMask(vp: ScreenViewport): void;
     // (undocumented)
@@ -1311,6 +1315,8 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     protected readonly _acceptedModelIds: Set<string>;
     // (undocumented)
     protected readonly _acceptedSubCategoryIds: Set<string>;
+    // (undocumented)
+    protected allowSelection(): boolean;
     // (undocumented)
     protected abstract applyMask(vp: ScreenViewport): void;
     // (undocumented)

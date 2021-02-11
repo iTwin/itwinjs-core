@@ -18,9 +18,11 @@ import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationM
 /** @internal */
 export enum MapLayerSourceStatus {
   Valid,
+  InvalidCredentials,
   InvalidFormat,
   InvalidTileTree,
   InvalidUrl,
+  RequireAuth,
 }
 
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
@@ -28,14 +30,15 @@ export enum MapLayerSourceStatus {
  */
 export class MapLayerSource implements MapLayerProps {
   public subLayers?: MapSubLayerProps[];
+
   private constructor(public formatId: string, public name: string, public url: string, public baseMap = false, public transparentBackground?: boolean, public maxZoom?: number, public userName?: string, public password?: string) { }
   public static fromJSON(json: any): MapLayerSource | undefined {
     const baseMap = json.baseMap === true || (json.url && json.url.toLowerCase().indexOf("basemap") >= 0);
     return (typeof json.name === "string" && typeof json.url === "string" && typeof json.formatId === "string") ? new MapLayerSource(json.formatId, json.name, json.url, baseMap, json.transparentBackground === undefined ? true : json.transparentBackground, json.maxZoom, json.userName, json.password) : undefined;
   }
 
-  public async validateSource(): Promise<MapLayerSourceValidation> {
-    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials());
+  public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
   }
   public static fromBackgroundMapProps(props: BackgroundMapProps) {
     const settings = BackgroundMapSettings.fromJSON(props);
@@ -52,10 +55,18 @@ export class MapLayerSource implements MapLayerProps {
   public toJSON() {
     return { url: this.url, name: this.name, formatId: this.formatId, maxZoom: this.maxZoom, transparentBackground: this.transparentBackground };
   }
+
+  public toLayerSettings(): MapLayerSettings | undefined {
+    const layerSettings = MapLayerSettings.fromJSON(this.toJSON());
+    layerSettings?.setCredentials(this.userName, this.password);
+    return layerSettings;
+  }
+
   private getCredentials(): RequestBasicCredentials | undefined {
     return this.userName && this.password ? { user: this.userName, password: this.password } : undefined;
   }
 }
+
 /** A collection of [[MapLayerSource]] objects.
  * @internal
  */

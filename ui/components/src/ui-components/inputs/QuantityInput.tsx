@@ -10,7 +10,7 @@ import * as React from "react";
 import classnames from "classnames";
 import { CommonProps } from "@bentley/ui-core";
 import { ParseResults } from "@bentley/ui-abstract";
-import { QuantityStatus } from "@bentley/imodeljs-quantity";
+import { Parser } from "@bentley/imodeljs-quantity";
 import { IModelApp, QuantityType } from "@bentley/imodeljs-frontend";
 import { ParsedInput } from "./ParsedInput";
 import { UiComponents } from "../UiComponents";
@@ -53,10 +53,11 @@ export function QuantityInput({ initialValue, quantityType, readonly, className,
     if (parserSpec) {
       const parseResult = IModelApp.quantityFormatter.parseToQuantityValue(userInput, parserSpec);
       // istanbul ignore else
-      if (parseResult.status === QuantityStatus.Success) {
+      if (Parser.isParsedQuantity(parseResult)) {
         return { value: parseResult.value };
       } else {
-        return { parseError: `${UiComponents.translate("QuantityInput.NoParserDefined")}${parseResult.status}` };
+        const statusId = Parser.isParseError(parseResult) ? parseResult.error.toString() : "Unknown";
+        return { parseError: `${UiComponents.translate("QuantityInput.NoParserDefined")}${statusId}` };
       }
     }
     // istanbul ignore next

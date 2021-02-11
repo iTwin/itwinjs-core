@@ -248,6 +248,18 @@ export class AccuDrawPopupManager {
     static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
 }
 
+// @alpha
+export function AccuDrawWidget(): JSX.Element;
+
+// @alpha
+export class AccuDrawWidgetControl extends WidgetControl {
+    constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    static id: string;
+    // (undocumented)
+    static get label(): string;
+}
+
 // @public
 export interface Action<T extends string> {
     // (undocumented)
