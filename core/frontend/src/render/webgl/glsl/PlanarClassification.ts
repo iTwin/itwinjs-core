@@ -187,7 +187,7 @@ const computeClassifierPosW = "v_pClassPosW = classProj.w;";
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchBaseComponents = [0, 0, 0, 0];
-const scratchColorParams = new Float32Array(4);      // Unclassified scale, classified base scale, classified classifier scale.
+const scratchColorParams = new Float32Array(4);      // Unclassified scale, classified base scale, classified classifier scale, content/image count...  MaskOnly = 1, ClassifierOnly = 2, ClassifierAndMask = 3
 const scratchModel = Matrix4d.createIdentity();
 const scratchModelProjection = Matrix4d.createIdentity();
 const scratchMatrix = new Matrix4();
