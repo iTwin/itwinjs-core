@@ -7,7 +7,7 @@ import { IModelJson as GeomJson, LineSegment3d, LineString3d, Point3d, Vector3d,
 import { Code, ColorDef, GeometricElement3dProps, GeometryStreamProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import {
   AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d, EventHandled, GraphicType, HitDetail, IModelApp,
-  PrimitiveTool, SnapStatus, Viewport,
+  PrimitiveTool, RemoteBriefcaseConnection, SnapStatus, Viewport,
 } from "@bentley/imodeljs-frontend";
 
 const loggingCategory = "TestPrimitiveTools";

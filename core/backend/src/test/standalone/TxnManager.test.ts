@@ -96,10 +96,10 @@ describe("TxnManager", () => {
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
 
-    const classId = imodel.nativeDb.classNameToId(props.classFullName);
-    assert.isTrue(Id64.isValid(classId));
-    const class2 = imodel.nativeDb.classIdToName(classId);
-    assert.equal(class2, props.classFullName);
+    // const classId = imodel.nativeDb.classNameToId(props.classFullName);
+    // assert.isTrue(Id64.isValid(classId));
+    // const class2 = imodel.nativeDb.classIdToName(classId);
+    // assert.equal(class2, props.classFullName);
 
     model = models.getModel(modelId);
     assert.isDefined(model.geometryGuid);

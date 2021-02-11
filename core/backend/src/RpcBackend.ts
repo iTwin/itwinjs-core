@@ -70,7 +70,5 @@ export function initializeRpcBackend() {
       form.parse(req);
     });
   };
-
-    BackendIpc.initialize(new IpcWebSocketBackend());
 }
 
