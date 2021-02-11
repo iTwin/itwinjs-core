@@ -114,8 +114,8 @@ public;DisplayStyle3dSettingsProps
 public;DisplayStyleLoadProps
 beta;DisplayStyleModelAppearanceProps 
 beta;DisplayStyleOverridesOptions
-beta;DisplayStylePlanarClipMaskProps 
 public;DisplayStyleProps 
+beta;DisplayStyleRealityModelPlanarClipMaskProps 
 public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
