@@ -7,9 +7,9 @@ import "./RpcImpl";
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import * as http from "http";
 import * as path from "path";
-import { isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
-import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
@@ -28,8 +28,13 @@ async function init() {
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
 
-  if (isElectronMain) {
-    ElectronBackend.initialize({ rpcInterfaces });
+  const iModelHost = new IModelHostConfiguration();
+  iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
+  iModelHost.concurrentQuery.concurrent = 2;
+  iModelHost.concurrentQuery.pollInterval = 5;
+
+  if (ProcessDetector.isElectronAppBackend) {
+    await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
     EditCommandAdmin.registerModule(testCommands);
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
@@ -49,14 +54,10 @@ async function init() {
         });
       }).listen(Number(process.env.CERTA_PORT ?? 3011) + 4000, undefined, undefined, resolve);
     });
+    await IModelHost.startup(iModelHost);
   }
 
   // Start the backend
-  const hostConfig = new IModelHostConfiguration();
-  hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
-  await IModelHost.startup(hostConfig);
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
   Logger.initializeToConsole();
@@ -64,7 +65,6 @@ async function init() {
   Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
   Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Error);
-
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */

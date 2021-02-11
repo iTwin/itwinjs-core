@@ -5,7 +5,7 @@
 // cSpell:ignore picklist
 
 import { assert } from "@bentley/bentleyjs-core";
-import { AxisOrder, IModelJson, LinearSweep, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AxisOrder, IModelJson, LinearSweep, Matrix3d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, LinePixels, PhysicalElementProps } from "@bentley/imodeljs-common";
 import {
   AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, IModelApp, ToolAssistance,
@@ -16,6 +16,8 @@ import { PrimitiveToolEx } from "./PrimitiveToolEx";
 function translate(prompt: string) {
   return IModelApp.i18n.translate(`SampleApp:tools.PlaceBlockTool.${prompt}`);
 }
+
+/* eslint-disable deprecation/deprecation */
 
 export class PlaceBlockTool extends PrimitiveToolEx {
   public static toolId = "PlaceBlock";
@@ -200,8 +202,8 @@ export class PlaceBlockTool extends PrimitiveToolEx {
       await this.createElement();
       await this.editorConnection.write();
 
-      const extents = await this.iModel.models.queryModelRanges([this.targetModelId]);
-      await this.iModel.editing.updateProjectExtents(Range3d.fromJSON(extents[0]));
+      // const extents = await this.iModel.models.queryModelRanges([this.targetModelId]);
+      // await this.iModel.editing.updateProjectExtents(Range3d.fromJSON(extents[0]));
 
       await this.saveChanges();
 

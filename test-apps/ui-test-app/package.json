@@ -79,6 +79,7 @@
     "@bentley/bentleyjs-core": "2.13.0-dev.9",
     "@bentley/context-registry-client": "2.13.0-dev.9",
     "@bentley/electron-manager": "2.13.0-dev.9",
+    "@bentley/mobile-manager": "2.13.0-dev.9",
     "@bentley/express-server": "2.13.0-dev.9",
     "@bentley/frontend-application-insights-client": "2.13.0-dev.9",
     "@bentley/frontend-authorization-client": "2.13.0-dev.9",

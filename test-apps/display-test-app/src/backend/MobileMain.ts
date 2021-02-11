@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MobileRpcManager } from "@bentley/imodeljs-common";
+import { MobileRpcManager } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
+
 const dtaMobileMain = (async () => {
   // Initialize the backend
   await initializeDtaBackend();

@@ -93,6 +93,7 @@ public;OrderedSet
 beta;partitionArray
 public;PerfLogger 
 public;PriorityQueue
+beta;ProcessDetector
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 beta;RepositoryStatus
