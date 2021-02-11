@@ -83,6 +83,17 @@ System.Math.Sin(1.57)
 this.IsOfClass("ClassName", "SchemaName")
 ```
 
+##### Value Lists
+
+Value lists in ECExpressions are iterable containers and can be handled with [lambdas](#lambda-operator). Currently presentation rules
+engine supports only a single simple lambda for value lists, `AnyMatches`, which checks if any of the items in the value list passes given condition. Examples:
+
+```
+value_list.AnyMatches(x => x = this.PropertyValue)
+value_list.AnyMatches(x => this.PropertyValue = x)
+value_list.AnyMatches(x => this.IsOfClass(x.PropertyValue))
+```
+
 #### Operators
 
 ##### Parentheses `(`,`)`
@@ -262,6 +273,17 @@ Symbol                              | Type    | Value
 <code>GetRelatedInstancesCount("RelationshipSchemaName:RelationshipName", "Forward&#124;Backward", "RelatedClassSchemaName:RelatedClassName")</code> | number | Number of related instances following the specified relationship
 <code>HasRelatedInstance("RelationshipSchemaName:RelationshipName", "Forward&#124;Backward", "RelatedClassSchemaName:RelatedClassName")</code> | bool | Does this instance has a related instance following the specified relationship
 <code>GetRelatedValue("RelationshipSchemaName:RelationshipName", "Forward&#124;Backward", "RelatedClassSchemaName:RelatedClassName", "PropertyName")</code> | any | Returns property value of the related instance
+<code>IsOfClass("SchemaName", "ClassName"))</code> | bool | Returns <code>true</code> if the instance is of a class with given schema and class names
+<code>IsOfClass(SomeECClassId))</code> | bool | Returns <code>true</code> if the instance is of a class with specified ECClass ID
+
+### ECInstance Key
+
+ECInstance key expression context provides access to class and instance IDs. The context has the following symbols:
+
+Symbol         | Type    | Value
+---------------|---------|----------
+`ECClassId`    | number  | ID of ECInstance's ECClass
+`ECInstanceId` | number  | ID of ECInstance
 
 ## Symbols in Global Context
 
@@ -286,21 +308,10 @@ Symbol                                | Type     | Value
 `Set(number1, number2, ..., numberN)` | number[] | Create a [value list](#value-lists) of the supplied numbers.
 `GetFormattedValue(this.MyProp, "Metric\|UsCustomary\|UsSurvey\|BritishImperial")` | any | Returns property value formatted using specified unit system. If unit system is not specified default presentation units are used to format value
 
-## Value Lists
-
-Value lists in ECExpressions can be handled with lambdas. Currently the
-presentation rules engine supports only a single simple lambda for
-value lists:
-```
-value_list.AnyMatch(x => x = this.PropertyValue)
-```
-The above expression returns `true` if `value_list` contains the value
-of `this.PropertyValue`.
-
 ## Formatted property values
 
 Comparison of formatted property values in ECExpressions can be done using
-`GetFormattedValue` function. Specific unit system can be passed as second argument
+`GetFormattedValue` function. Specific unit system can be passed as a second argument
 to function or omitted to use default presentation format:
 ```
 GetFormattedValue(this.Length, "Metric") = "10.0 m"

@@ -107,3 +107,32 @@ Presentation.initialize({
   },
 });
 ```
+
+### Accessing selection in instance filter of content specifications
+
+Added a way to create and filter content that's related to given input through some ID type of property that is not part of a relationship. That can be done by
+using [ContentInstancesOfSpecificClasses specification](../learning/presentation/content/ContentInstancesOfSpecificClasses.md) with an instance filter that makes use
+of the newly added [SelectedInstanceKeys](../learning/presentation/content/ECExpressions.md#instance=filter) ECExpression symbol. Example:
+
+```json
+{
+  "ruleType": "Content",
+  "condition": "SelectedNode.IsOfClass(\"ECClassDef\", \"ECDbMeta\")",
+  "specifications": [
+    {
+      "specType": "ContentInstancesOfSpecificClasses",
+      "classes": {
+        "schemaName": "BisCore",
+        "classNames": ["Element"]
+      },
+      "arePolymorphic": true,
+      "instanceFilter": "SelectedInstanceKeys.AnyMatches(x => this.IsOfClass(x.ECInstanceId))"
+    }
+  ]
+}
+```
+The above example creates content for `ECDbMeta.ECClassDef` instances by selecting all `BisCore.Element` instances
+that are of given `ECDbMeta.ECClassDef` instances.
+
+Previously this was not possible, because there is no ECRelationship between `ECDbMeta.ECClassDef` and `BisCore.Element`.
+
