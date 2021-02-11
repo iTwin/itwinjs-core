@@ -2,36 +2,33 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
 } from "@bentley/frontend-authorization-client";
 import {
-  BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, Editor3dRpcInterface,
-  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager,
-  RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, TileContentIdentifier,
+  CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, RpcConfiguration, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import {
-  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, MobileAuthorizationClient, RenderDiagnostics, RenderSystem,
+  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem,
 } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
+import { MobileAuthorizationClient, MobileAuthorizationClientConfiguration } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
-import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
+import { openStandaloneIModel } from "./openStandaloneIModel";
 import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
-import { openStandaloneIModel } from "./openStandaloneIModel";
-import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 const configuration: DtaConfiguration = {};
 
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
 async function retrieveConfiguration(): Promise<void> {
   return new Promise<void>((resolve, _reject) => {
-    if (MobileRpcConfiguration.isMobileFrontend) {
+    if (ProcessDetector.isMobileAppFrontend) {
       if (window) {
         const urlParams = new URLSearchParams(window.location.hash);
         urlParams.forEach((val, key) => {
@@ -68,10 +65,10 @@ async function openIModel(filename: string, writable: boolean): Promise<IModelCo
 }
 
 function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
-  const redirectUri = MobileRpcConfiguration.isMobileFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
+  const redirectUri = ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
   const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
-  return isElectronRenderer || MobileRpcConfiguration.isMobileFrontend
+  return ProcessDetector.isElectronAppFrontend || ProcessDetector.isMobileAppFrontend
     ? {
       clientId: "imodeljs-electron-test",
       redirectUri,
@@ -86,17 +83,17 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | Deskt
 }
 
 async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientConfiguration): Promise<void> {
-  if (!isElectronRenderer) {
+  if (!ProcessDetector.isElectronAppFrontend) {
     await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
   }
 }
 
 async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<DesktopAuthorizationClient | BrowserAuthorizationClient | MobileAuthorizationClient> {
-  if (isElectronRenderer) {
+  if (ProcessDetector.isElectronAppFrontend) {
     const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
-  } else if (MobileRpcConfiguration.isMobileFrontend) {
+  } else if (ProcessDetector.isMobileAppFrontend) {
     const mobileClient = new MobileAuthorizationClient(oidcConfiguration as MobileAuthorizationClientConfiguration);
     await mobileClient.initialize(requestContext);
     return mobileClient;
@@ -205,27 +202,7 @@ const dtaFrontendMain = async () => {
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
-  // Choose RpcConfiguration based on whether we are in electron or browser
-  const rpcInterfaces: RpcInterfaceDefinition[] = [
-    DtaRpcInterface,
-    Editor3dRpcInterface,
-    IModelReadRpcInterface,
-    IModelTileRpcInterface,
-    IModelWriteRpcInterface,
-    SnapshotIModelRpcInterface,
-    StandaloneIModelRpcInterface,
-  ];
-
-  if (isElectronRenderer) {
-    ElectronFrontend.initialize({ rpcInterfaces });
-  } else if (MobileRpcConfiguration.isMobileFrontend) {
-    MobileRpcManager.initializeClient(rpcInterfaces);
-  } else {
-    const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
-    BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, rpcInterfaces);
-  }
-
-  await DisplayTestApp.startup({ renderSys: renderSystemOptions });
+  await DisplayTestApp.startup(configuration, renderSystemOptions);
   if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
@@ -310,7 +287,7 @@ async function initView(iModel: IModelConnection | undefined) {
 
 // Set up the HTML UI elements and wire them to our functions
 async function displayUi() {
-  return new Promise(async (resolve) => { // eslint-disable-line @typescript-eslint/no-misused-promises
+  return new Promise<void>(async (resolve) => { // eslint-disable-line @typescript-eslint/no-misused-promises
     showSpinner();
     resolve();
   });

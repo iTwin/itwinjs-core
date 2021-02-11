@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { IpcWebSocketFrontend } from "@bentley/imodeljs-common";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
 
-if (!isElectronRenderer) {
+if (!ProcessDetector.isElectronAppFrontend) {
   describe("IpcWebSocket", () => {
     let socket: IpcWebSocketFrontend;
 

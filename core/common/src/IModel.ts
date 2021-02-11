@@ -76,15 +76,8 @@ export interface IModelProps {
   name?: string;
 }
 
-/** Supplies the name of the [EventSource]($frontend) through which the backend pushes notifications to the frontend.
- * @alpha
- */
-export interface IModelEventSourceProps {
-  eventSourceName: string;
-}
-
 /** @alpha */
-export type IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps;
+export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
 /** The properties that can be supplied when creating a *new* iModel.
  * @public
@@ -113,7 +106,7 @@ export interface IModelEncryptionProps {
  * Keys must be unique - that is there can never be two IModelDbs opened with the same key at any given time.
  * If no key is supplied in a call to open an IModelDb, one is generated and returned.
  * It is only necessary to supply a key if you have some reason to assign a specific value to identify an IModelDb.
- * If you don't supply the key, you must use the returned value for RPC communications.
+ * If you don't supply the key, you must use the returned value for Rpc and Ipc communications.
  * @public
  */
 export interface OpenDbKey {
@@ -290,9 +283,6 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @internal */
-  protected abstract getEventSourceProps(): IModelEventSourceProps;
-
-  /** @internal */
   public getConnectionProps(): IModelConnectionProps {
     return {
       name: this.name,
@@ -302,7 +292,6 @@ export abstract class IModel implements IModelProps {
       ecefLocation: this.ecefLocation,
       geographicCoordinateSystem: this.geographicCoordinateSystem,
       ... this.getRpcProps(),
-      ...this.getEventSourceProps(),
     };
   }
 
@@ -315,7 +304,7 @@ export abstract class IModel implements IModelProps {
    * @internal
    */
   protected _fileKey: string;
-  /** Get the key that was used to open this iModel. This is the value used for RPC communications. */
+  /** Get the key that was used to open this iModel. This is the value used for Rpc and Ipc communications. */
   public get key() { return this._fileKey; }
 
   /** @internal */
