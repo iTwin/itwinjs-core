@@ -7,7 +7,7 @@ import { IModelJson as GeomJson, LineSegment3d, LineString3d, Point3d, Vector3d,
 import { Code, ColorDef, GeometricElement3dProps, GeometryStreamProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import {
   AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d, EventHandled, GraphicType, HitDetail, IModelApp,
-  PrimitiveTool, SnapStatus, Viewport,
+  PrimitiveTool, RemoteBriefcaseConnection, SnapStatus, Viewport,
 } from "@bentley/imodeljs-frontend";
 
 const loggingCategory = "TestPrimitiveTools";
@@ -55,7 +55,7 @@ export abstract class PrimitiveToolEx extends PrimitiveTool {
   }
 
   public async lockTargetModel(): Promise<void> {
-    if (this.targetModelId === undefined)
+    if (this.targetModelId === undefined || !(this.iModel instanceof RemoteBriefcaseConnection)) // eslint-disable-line deprecation/deprecation
       throw new IModelError(IModelStatus.BadModel, "", Logger.logError, loggingCategory, () => this.targetModelId);
 
     return this.iModel.editing.concurrencyControl.lockModel(this.targetModelId);
