@@ -100,8 +100,8 @@ if (doMask) {
 `
   ;
 
-// ###TODO Currently we discard if classifier is pure black (acts as clipping mask).
-// Change it so that fully-transparent classifiers do the clipping.
+// Currently we discard if classifier is pure black (acts as clipping mask).
+// These could be more efficiently handled with masks.
 const applyPlanarClassificationColor = applyPlanarClassificationPrelude + // eslint-disable-line prefer-template
   `
   float colorMix = u_pClassPointCloud ? .65 : .35;
