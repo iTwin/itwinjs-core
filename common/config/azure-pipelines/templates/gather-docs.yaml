@@ -18,6 +18,7 @@ steps:
     inputs:
       targetPath: ${{ parameters.workingDir }}/generated-docs
       artifact: TypeDoc json
+    enabled: false
 
   - script: |
       echo Copying all reference files to staging
