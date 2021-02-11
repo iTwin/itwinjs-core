@@ -120,6 +120,8 @@ export class Format {
   /** Get string used in FormatProps  */
   public static getTraitString(trait: FormatTraits) {
     switch (trait) {
+      case FormatTraits.TrailZeroes:
+        return "trailZeroes";
       case FormatTraits.KeepSingleZero:
         return "keepSingleZero";
       case FormatTraits.ZeroEmpty:
