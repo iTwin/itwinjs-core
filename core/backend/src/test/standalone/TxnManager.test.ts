@@ -6,7 +6,9 @@
 import { assert, expect } from "chai";
 import { BeDuration, DbResult, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, UpgradeOptions } from "@bentley/imodeljs-common";
+import {
+  Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, UpgradeOptions,
+} from "@bentley/imodeljs-common";
 import {
   BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, UpdateModelOptions,
 } from "../../imodeljs-backend";
@@ -95,6 +97,11 @@ describe("TxnManager", () => {
     assert.isFalse(txns.hasUnsavedChanges);
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
+
+    // const classId = imodel.nativeDb.classNameToId(props.classFullName);
+    // assert.isTrue(Id64.isValid(classId));
+    // const class2 = imodel.nativeDb.classIdToName(classId);
+    // assert.equal(class2, props.classFullName);
 
     model = models.getModel(modelId);
     assert.isDefined(model.geometryGuid);

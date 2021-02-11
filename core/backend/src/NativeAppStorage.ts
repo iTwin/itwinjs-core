@@ -8,7 +8,7 @@ import { IModelError, StorageValue } from "@bentley/imodeljs-common";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { NativeAppBackend } from "./NativeAppBackend";
+import { NativeHost } from "./NativeHost";
 
 /**
  * Native app storage allow key value pair to be persisted in a sqlite db in app cache.
@@ -114,7 +114,7 @@ export class NativeAppStorage {
     if (!this._ecdb.isOpen) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cache is not open or disposed");
     }
-    const storageFile = path.join(NativeAppBackend.appSettingsCacheDir, this.id);
+    const storageFile = path.join(NativeHost.appSettingsCacheDir, this.id);
     this._ecdb.saveChanges();
     this._ecdb.closeDb();
     if (deleteFile) {
@@ -140,7 +140,7 @@ export class NativeAppStorage {
     this._storages.clear();
   }
   public static getStorageNames(): string[] {
-    return IModelJsFs.readdirSync(NativeAppBackend.appSettingsCacheDir).filter((_) => _.endsWith(this._ext));
+    return IModelJsFs.readdirSync(NativeHost.appSettingsCacheDir).filter((_) => _.endsWith(this._ext));
   }
   public static open(name: string): NativeAppStorage {
     if (!this._init) {
@@ -150,10 +150,10 @@ export class NativeAppStorage {
       this._init = true;
     }
     const fileName = name + this._ext;
-    if (!IModelJsFs.existsSync(NativeAppBackend.appSettingsCacheDir)) {
-      IModelJsFs.recursiveMkDirSync(NativeAppBackend.appSettingsCacheDir);
+    if (!IModelJsFs.existsSync(NativeHost.appSettingsCacheDir)) {
+      IModelJsFs.recursiveMkDirSync(NativeHost.appSettingsCacheDir);
     }
-    const storageFile = path.join(NativeAppBackend.appSettingsCacheDir, fileName);
+    const storageFile = path.join(NativeHost.appSettingsCacheDir, fileName);
     let storage = this.find(fileName);
     if (!storage) {
       const ecdb: ECDb = new ECDb();

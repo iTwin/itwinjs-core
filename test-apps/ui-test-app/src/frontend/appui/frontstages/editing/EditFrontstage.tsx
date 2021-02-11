@@ -8,9 +8,9 @@ import { NodeKey } from "@bentley/presentation-common";
 import { CommonToolbarItem, ConditionalBooleanValue, StagePanelLocation, StageUsage, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { SelectionMode } from "@bentley/ui-components";
 import {
-  AccuDrawDialog, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps, CoreTools,
-  CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager, ModelsTreeNodeType, StagePanel,
-  StagePanelHeader, StagePanelState, ToolbarHelper, VisibilityComponentHierarchy, VisibilityWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
+  AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps,
+  CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager, ModelsTreeNodeType,
+  StagePanel, StagePanelHeader, StagePanelState, ToolbarHelper, VisibilityComponentHierarchy, VisibilityWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../../frontend/index";
 import { EditTools } from "../../../tools/editing/ToolSpecifications";
@@ -46,7 +46,9 @@ export class EditFrontstage extends FrontstageProvider {
   };
 
   private _bottomPanel = {
-    allowedZones: [2, 7],
+    widgets: [
+      <Widget id={AccuDrawWidgetControl.id} label={AccuDrawWidgetControl.label} control={AccuDrawWidgetControl} />,
+    ],
   };
 
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
@@ -96,7 +98,7 @@ export class EditFrontstage extends FrontstageProvider {
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage={StageUsage.Edit}
         contentManipulationTools={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isFreeform={true} element={<BasicToolWidget additionalHorizontalItems={this._additionalTools.additionalHorizontalToolbarItems}
@@ -105,7 +107,7 @@ export class EditFrontstage extends FrontstageProvider {
           />
         }
         toolSettings={
-          < Zone
+          <Zone
             allowsMerging
             widgets={
               [
@@ -117,7 +119,7 @@ export class EditFrontstage extends FrontstageProvider {
           />
         }
         viewNavigationTools={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isFreeform={true} element={
@@ -127,7 +129,7 @@ export class EditFrontstage extends FrontstageProvider {
           />
         }
         centerLeft={
-          < Zone
+          <Zone
             allowsMerging
             defaultState={ZoneState.Minimized}
             initialWidth={250}
@@ -145,7 +147,7 @@ export class EditFrontstage extends FrontstageProvider {
           />
         }
         centerRight={
-          < Zone
+          <Zone
             allowsMerging
             defaultState={ZoneState.Minimized}
             initialWidth={350}
@@ -161,18 +163,8 @@ export class EditFrontstage extends FrontstageProvider {
             ]}
           />
         }
-        bottomLeft={
-          < Zone
-            allowsMerging
-            defaultState={ZoneState.Minimized}
-            initialWidth={450}
-            widgets={
-              [
-              ]}
-          />
-        }
         statusBar={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isStatusBar={true} control={EditStatusBarWidgetControl} />,
@@ -180,15 +172,15 @@ export class EditFrontstage extends FrontstageProvider {
           />
         }
         bottomRight={
-          < Zone defaultState={ZoneState.Minimized} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
+          <Zone defaultState={ZoneState.Minimized} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
             widgets={
               [
               ]}
           />
         }
         leftPanel={
-          < StagePanel
-            header={< StagePanelHeader
+          <StagePanel
+            header={<StagePanelHeader
               collapseButton
               collapseButtonTitle="Collapse"
               location={StagePanelLocation.Left}
@@ -202,13 +194,13 @@ export class EditFrontstage extends FrontstageProvider {
           />
         }
         rightPanel={
-          < StagePanel
+          <StagePanel
             allowedZones={this._rightPanel.allowedZones}
           />
         }
         bottomPanel={
-          < StagePanel
-            allowedZones={this._bottomPanel.allowedZones}
+          <StagePanel
+            widgets={this._bottomPanel.widgets}
           />
         }
       />

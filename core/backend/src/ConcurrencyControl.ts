@@ -6,14 +6,12 @@
  * @module iModels
  */
 
-import { assert, DbOpcode, DbResult, Id64, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
-import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import {
-  ChannelConstraintError, CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps,
-} from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as deepAssign from "deep-assign";
 import * as path from "path";
+import { assert, DbOpcode, DbResult, Id64, Id64String, IModelStatus, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
+import { ChannelConstraintError, CodeProps, ElementProps, IModelError, ModelProps } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
@@ -22,6 +20,7 @@ import { ChannelRootAspect } from "./ElementAspect";
 import { BriefcaseDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
 
@@ -138,7 +137,7 @@ export class ConcurrencyControl {
     this.applyTransactionOptions();
     this._iModel.nativeDb.purgeTileTrees(undefined); // TODO: Remove this when we get tile healing
     const data = { parentChangeSetId: this.iModel.changeSetId };
-    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onPulledChanges", data);
+    IpcHost.notifyPushAndPull(this._iModel, "notifyPulledChanges", data);
   }
 
   /** @internal */
@@ -510,15 +509,14 @@ export class ConcurrencyControl {
     requestContext.enter();
 
     const data = { parentChangeSetId: this.iModel.changeSetId };
-    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onPushedChanges", data);
-
+    IpcHost.notifyPushAndPull(this._iModel, "notifyPushedChanges", data);
     return this.openOrCreateCache(requestContext); // re-create after we know that push has succeeded
   }
 
   /** @internal */
   private emitOnSavedChangesEvent() {
     const data = { hasPendingTxns: this.iModel.txns.hasPendingTxns, time: Date.now() }; // Note that not all calls to saveChanges create a txn. For example, an update to be_local does not.
-    this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onSavedChanges", data);
+    IpcHost.notifyPushAndPull(this._iModel, "notifySavedChanges", data);
   }
 
   /** @internal */

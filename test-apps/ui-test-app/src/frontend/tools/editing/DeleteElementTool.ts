@@ -101,8 +101,9 @@ export class DeleteElementTool extends PrimitiveToolEx {
 
   private async process(ids: string[]) {
     try {
-      await this.iModel.editing.deleteElements(ids);
-      await this.saveChanges();
+      // NEEDS WORK
+      // await this.iModel.editing.deleteElements(ids);
+      // await this.saveChanges();
 
       const msg = new NotifyMessageDetails(OutputMessagePriority.Info, `${ids.length} elements deleted`, "", OutputMessageType.Toast, OutputMessageAlert.None);
       IModelApp.notifications.outputMessage(msg);
