@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Point } from "@bentley/ui-core";
 import {
-  CommandItemDef, ConfigurableUiManager, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
+  AccuDrawKeyboardShortcuts, CommandItemDef, ConfigurableUiManager, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
 } from "../../ui-framework";
 import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
 import { KeyboardShortcutMenu } from "../../ui-framework/keyboardshortcut/KeyboardShortcutMenu";
@@ -324,6 +324,15 @@ describe("KeyboardShortcut", () => {
       expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
       document.body.removeChild(buttonElement);
     });
+  });
+
+  it("should support loading the AccuDraw keyboard shortcuts", async () => {
+    KeyboardShortcutManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
+
+    const shortcutA = KeyboardShortcutManager.getShortcut("a");
+    expect(shortcutA).to.not.be.undefined;
+    const shortcutR = KeyboardShortcutManager.getShortcut("r");
+    expect(shortcutR).to.not.be.undefined;
   });
 
 });

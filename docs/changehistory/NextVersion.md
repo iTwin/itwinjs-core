@@ -35,7 +35,73 @@ To adjust the limit after startup, assign to [TileAdmin.gpuMemoryLimit]($fronten
 
 This feature replaces the `@alpha` `TileAdmin.Props.mobileExpirationMemoryThreshold` option.
 
+## IModelHost and IModelApp Initialization Changes
+
+Initialization processing of iModel.js applications, and in particular the order of individual steps for frontend and backend classes has been complicated and vague, involving several steps that vary depending on application type and platform. This release attempts to clarify and simplify that process, while maintaining backwards compatibility. In general, if your code uses [IModelHost.startup]($backend) and [IModelApp.startup]($frontend) for web visualization, it will continue to work without changes. However, for native (desktop and mobile) apps, some refactoring may be necessary. See [IModelHost documentation]($docs/learning/backend/IModelHost.md) for appropriate backend initialization, and [IModelApp documentation]($docs/learning/frontend/IModelApp.md) for frontend initialization.
+
+The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes `ElectronHost` and `ElectronApp`.
+
+To create an Electron application, you should initialize your frontend via:
+
+```ts
+  import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+  ...
+  await ElectronApp.startup();
+```
+
+And your backend via:
+
+```ts
+  import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+  ...
+  await ElectronHost.startup();
+```
+
+Likewise, to create an iOS application, you should initialize your frontend via:
+
+```ts
+  import { IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
+  ...
+  await IOSApp.startup();
+```
+
+And your backend via:
+
+```ts
+  import { IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
+  ...
+  await IOSHost.startup();
+```
+
+Both frontend and backend `startup` methods take optional arguments to customize the App/Host environments.
+
+## ProcessDetector API
+
+It is frequently necessary to detect the type of JavaScript process currently executing. Previously, there were several ways (sometimes redundant, sometimes conflicting) to do that, depending on the subsystem being used. This release attempts to centralize process classification into the class [ProcessDetector]($bentley) in the `@bentleyjs-core` package. All previous methods for detecting process type have been deprecated in favor of `ProcessDetector`. The deprecated methods will likely be removed in version 3.0.
+
 ## Planar clip masks
+
+Planar clip masks provide a two and a half dimensional method for masking the regions where the background map, reality models and BIM geometry overlap. A planar clip mask is described by [PlanarClipMaskProps]($common).A planar clip mask may be applied to a contexual reality model as a [ContextRealityModelProps.planarClipMask]($common) to the background map as [BackgroundMapProps.planarClipMask]($common) or as an override to attached reality models with the [DisplayStyleSettingsProps.planarClipOvr]($common) array of [DisplayStyleRealityModelPlanarClipMaskProps]($common).   The planar clip mask geometry is not required to be planar as the masks will be generated from their projection to the X-Y plane, therefore any 3D model or reality model can be used to generate a planar clip mask.
+
+The [PlanarClipMaskProps.mode]($common) specifies how the mask geometry is collected.  [PlanarClipMaskMode]$(common) includes collection of masks by models, subcategories, elements (included or excluded) or by a priority scheme that clips against other models with a higher priority.
+
+#### By masking a reality model with a BIM model we can display the BIM model without the overlapping reality model
+
+![Building and reality model without mask](./assets/PlanarMask_BuildingNoMask.png)
+![Reality model masked by building](./assets/PlanarMask_BuildingMasked.png)
+
+#### By masking the background map terrain with the reality model we can display the current state of the quarry without intrusive terrain
+
+![Quarry and Background Map Terrain without mask](./assets/PlanarMask_QuarryNoMask.png)
+![Background Map Terrain masked by quarry reality model](./assets/PlanarMask_QuarryMasked.png)
+
+#### Planar Clip Mask Transparency
+
+Planar clip masks support transparency.  If a mask is not transparent then the masked geometry is omitted completely, if transparency is included then increasing the transparency will decrease the masking and increase a translucent blending of the masked geometry.  A transparency value of 1 would indicate no masking.  If no transparency is included then the transparency value from the mask elements is used.  In the image below a transparent mask is applied to the reality model to show the underground tunnel.
+
+![Planar clip mask with transparency](./assets/PlanarMask_TunnelTransparent.png)
+
+## Common table expression support in ECSQL
 
 Planar clip masks provide a two and a half dimensional method for masking the regions where the background map, reality models and BIM geometry overlap. A planar clip mask is described by [PlanarClipMaskProps]($common).A planar clip mask may be applied to a contexual reality model as a [ContextRealityModelProps.planarClipMask]($common) to the background map as [BackgroundMapProps.planarClipMask]($common) or as an override to attached reality models with the [DisplayStyleSettingsProps.planarClipOvr]($common) array of [DisplayStyleRealityModelPlanarClipMaskProps]($common).   The planar clip mask geometry is not required to be planar as the masks will be generated from their projection to the X-Y plane, therefore any 3D model or reality model can be used to generate a planar clip mask.
 
@@ -58,7 +124,13 @@ Planar clip masks support transparency.  If a mask is not transparent then the m
 ![Planar clip mask with transparency](./assets/PlanarMask_TunnelTransparent.png)
 CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
 
-## Breaking API change in quantity package
+## Breaking Api Changes
+
+### Quantity package
 
 The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
 New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.
+
+### IModelHostConfiguration.applicationType
+
+The type of the internal member `IModelHostConfiguration.applicationType` had a redundant declaration in `IModelHost.ts`. It is now correctly declared to be of type `IModelJsNative.ApplicationType`. The names of the members were the same, so this will not likely cause problems.

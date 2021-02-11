@@ -3,16 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Id64, Id64Set, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64, Id64Set } from "@bentley/bentleyjs-core";
 import { Matrix4d, Point3d, Transform, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelTileRpcInterface, MassPropertiesOperation,
   MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, RemoteBriefcaseConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestContext } from "./setup/TestContext";
+
+/* eslint-disable deprecation/deprecation */
 
 const expect = chai.expect;
 
@@ -38,10 +40,9 @@ describe("IModel Connection", () => {
 
   it("should successfully open an IModelConnection for read", async () => {
     const contextId = testContext.iModelWithChangesets!.contextId;
-    const openMode = OpenMode.Readonly;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
 
-    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode);
+    const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId);
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -52,7 +53,7 @@ describe("IModel Connection", () => {
   it("should successfully close an open an IModelConnection", async () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const contextId = testContext.iModelWithChangesets!.contextId;
-    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId);
+    const iModel = await CheckpointConnection.openRemote(contextId, iModelId);
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
@@ -76,7 +77,7 @@ describe("IModelConnection Tiles", () => {
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
+    iModel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
   it("IModelTileRpcInterface method getTileCacheContainerUrl should work as expected", async () => {
@@ -206,7 +207,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
+    iModel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
   it("IModelReadRpcInterface method queryEntityIds should work as expected", async () => {
@@ -437,7 +438,7 @@ describe("Snapping", () => {
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
+    iModel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
   it("should be able to request a snap", async () => {
