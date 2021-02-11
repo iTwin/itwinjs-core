@@ -1761,16 +1761,16 @@ export interface DisplayStyleOverridesOptions {
     includeProjectSpecific?: true;
 }
 
-// @beta
-export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
-    modelId?: Id64String;
-}
-
 // @public
 export interface DisplayStyleProps extends DefinitionElementProps {
     jsonProperties?: {
         styles?: DisplayStyleSettingsProps;
     };
+}
+
+// @beta
+export interface DisplayStyleRealityModelPlanarClipMaskProps extends PlanarClipMaskProps {
+    modelId?: Id64String;
 }
 
 // @public
@@ -1907,7 +1907,7 @@ export interface DisplayStyleSettingsProps {
     monochromeColor?: ColorDefProps;
     monochromeMode?: MonochromeMode;
     // @beta
-    planarClipOvr?: DisplayStylePlanarClipMaskProps[];
+    planarClipOvr?: DisplayStyleRealityModelPlanarClipMaskProps[];
     // @beta
     scheduleScript?: RenderSchedule.ModelTimelineProps[];
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
@@ -5282,6 +5282,7 @@ export interface PlanarClipMaskProps {
 
 // @beta
 export class PlanarClipMaskSettings {
+    clone(changedProps?: PlanarClipMaskProps): PlanarClipMaskSettings;
     static create(mode: PlanarClipMaskMode, modelIds?: Id64Set, subCategoryOrElementIds?: Id64Set, transparency?: number): PlanarClipMaskSettings | undefined;
     static createByPriority(priority: number, transparency?: number): PlanarClipMaskSettings;
     static defaults: PlanarClipMaskSettings;

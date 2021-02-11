@@ -148,7 +148,7 @@ alpha;SetAspectRatioSkewTool
 beta;SetGpuMemoryLimitTool 
 beta;SetHigherPriorityRealityModelMasking 
 alpha;SetMapBaseTool 
-alpha;SetMapHigherPriorityMasking 
+beta;SetMapHigherPriorityMasking 
 beta;SetModelColorTool 
 beta;SetModelEmphasizedTool 
 beta;SetModelIgnoresMaterialsTool 
@@ -208,7 +208,7 @@ internal;ToggleVolClassIntersect
 beta;ToggleWiremeshTool 
 beta;ToolArgs
 alpha;ToolSettingsTracker
-alpha;UnmaskMapTool 
+beta;UnmaskMapTool 
 beta;UnmaskRealityModelTool 
 beta;UnsharpenEffect 
 alpha;ViewportAddRealityModel 

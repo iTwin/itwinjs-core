@@ -1650,7 +1650,7 @@ export class SetMapBaseTool extends AttachMapLayerTool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export class SetMapHigherPriorityMasking extends Tool {
     // (undocumented)
     static get maxArgs(): number;
@@ -2310,7 +2310,7 @@ export class ToolSettingsTracker {
     dispose(): void;
     }
 
-// @alpha
+// @beta
 export class UnmaskMapTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
