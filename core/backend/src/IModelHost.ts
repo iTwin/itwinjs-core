@@ -300,11 +300,14 @@ export class IModelHost {
       : applicationType === ApplicationType.NativeApp
         ? IModelJsNative.ApplicationType.NativeApp
         : IModelJsNative.ApplicationType.WebApplicationBackend;
-    const iModelClientType = !!iModelClient && iModelClient instanceof IModelBankClient
-      ? IModelJsNative.IModelClientType.IModelBank
-      : IModelJsNative.IModelClientType.IModelHub;
+    let iModelClientType = IModelJsNative.IModelClientType.IModelHub;
+    let iModelBankUrl: string | undefined;
+    if (!!iModelClient && iModelClient instanceof IModelBankClient) {
+      iModelClientType = IModelJsNative.IModelClientType.IModelBank;
+      iModelBankUrl = iModelClient.baseUrl;
+    }
 
-    platform.NativeUlasClient.initialize(region, nativeApplicationType, iModelClientType);
+    platform.NativeUlasClient.initialize(region, nativeApplicationType, iModelClientType, iModelBankUrl);
   }
 
   private static validateNativePlatformVersion(): void {

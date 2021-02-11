@@ -24,4 +24,8 @@ export class IModelBankClient extends IModelClient {
   public async getUrl(rqctx: AuthorizedClientRequestContext): Promise<string> {
     return (this._handler as IModelBankHandler).getUrl(rqctx);
   }
+
+  public get baseUrl(): string {
+    return (this._handler as IModelBankHandler).baseUrl;
+  }
 }
