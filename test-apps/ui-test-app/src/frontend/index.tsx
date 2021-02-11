@@ -40,7 +40,7 @@ import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
 import {
   ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw, FrameworkReducer,
-  FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager, IModelAppUiSettings,
+  FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager, IModelAppUiSettings,
   IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager, ToolbarDragInteractionContext,
   UiFramework, UiSettingsProvider,
 } from "@bentley/ui-framework";
@@ -283,8 +283,6 @@ export class SampleAppIModelApp {
     // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
     await MapLayersUI.initialize(false); // if false then add widget in FrontstageDef
   }
-
-  // cSpell:enable
 
   public static loggerCategory(obj: any): string {
     const className = getClassName(obj);
@@ -748,6 +746,7 @@ async function main() {
   const opts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
+      toolAdmin: new FrameworkToolAdmin(),
       notifications: new AppNotificationManager(),
       uiAdmin: new FrameworkUiAdmin(),
       accuDraw: new FrameworkAccuDraw(),

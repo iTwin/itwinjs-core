@@ -142,10 +142,6 @@ export class RealityTileTree extends TileTree {
     this.rootTile.purgeContents(olderThan);
   }
 
-  public forcePrune(): void {
-    this.rootTile.purgeContents(BeTimePoint.now());
-  }
-
   public draw(args: TileDrawArgs): void {
     const displayedTileDescendants = new Array<RealityTile[]>();
     const debugControl = args.context.target.debugControl;

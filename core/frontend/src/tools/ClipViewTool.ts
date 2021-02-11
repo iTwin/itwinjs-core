@@ -22,7 +22,6 @@ import { GraphicBuilder, GraphicType } from "../render/GraphicBuilder";
 import { StandardViewId } from "../StandardView";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
-import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { EditManipulator } from "./EditManipulator";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled } from "./Tool";
@@ -713,12 +712,6 @@ export class ViewClipByShapeTool extends ViewClipTool {
     this._points.pop();
     this.setupAndPromptForNextAction();
     return true;
-  }
-
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 }
 

@@ -1205,6 +1205,14 @@ export namespace OrderedId64Iterable {
     export function uniqueIterator(ids: OrderedId64Iterable): Generator<string, void, unknown>;
 }
 
+// @public
+export class OrderedSet<T> extends ReadonlyOrderedSet<T> {
+    constructor(compare: OrderedComparator<T>, clone?: CloneFunction<T>);
+    add(value: T): this;
+    clear(): void;
+    delete(value: T): boolean;
+}
+
 // @beta
 export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number;
 
@@ -1257,6 +1265,16 @@ export class ProcessDetector {
     static get isMobileAppFrontend(): boolean;
     static get isMobileBrowser(): boolean;
     static get isNodeProcess(): boolean;
+}
+
+// @public
+export class ReadonlyOrderedSet<T> implements Iterable<T> {
+    [Symbol.iterator](): Iterator<T>;
+    constructor(compare: OrderedComparator<T>, clone?: CloneFunction<T>);
+    // (undocumented)
+    protected readonly _array: SortedArray<T>;
+    has(value: T): boolean;
+    get size(): number;
 }
 
 // @public

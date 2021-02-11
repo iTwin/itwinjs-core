@@ -4,11 +4,11 @@ An IModelDb also serves as a staging area where a [backend](../Glossary.md#backe
 
 A backend can make the following kinds of changes:
 
-* [Create or update Elements](./CreateElements.md)
-* [Create or update Models](./CreateModels.md)
-* [Reserve Codes](./ReserveCodes.md)
+- [Create or update Elements](./CreateElements.md)
+- [Create or update Models](./CreateModels.md)
+- [Reserve Codes](./ReserveCodes.md)
 
-Use [IModelDb.saveChanges]($backend) to commit changes locally. [IModelDb.txns]($backend) manages local transactions, it supports local undo/redo.
+Use [IModelDb.saveChanges]($backend) to commit changes locally. [BriefcaseDb.txns]($backend) manages local transactions, it supports local undo/redo.
 
 ## Pushing changes to iModelHub
 

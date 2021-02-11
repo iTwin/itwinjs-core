@@ -2,6 +2,21 @@
   "name": "@bentley/webpack-tools-core",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/webpack-tools-core_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add function to check versions semantically "
+          },
+          {
+            "comment": "Changed the way CopyExternalsPlugin works to grab more dependencies"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/webpack-tools-core_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

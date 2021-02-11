@@ -6,12 +6,13 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Point } from "@bentley/ui-core";
 import {
-  CommandItemDef, ConfigurableUiManager, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
+  AccuDrawKeyboardShortcuts, CommandItemDef, ConfigurableUiManager, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
 } from "../../ui-framework";
 import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
 import { KeyboardShortcutMenu } from "../../ui-framework/keyboardshortcut/KeyboardShortcutMenu";
 import TestUtils from "../TestUtils";
-import { FunctionKey, SpecialKey } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, FunctionKey, SpecialKey } from "@bentley/ui-abstract";
+import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 
 describe("KeyboardShortcut", () => {
 
@@ -152,6 +153,40 @@ describe("KeyboardShortcut", () => {
         expect(shortcut.isShiftKeyRequired).to.be.true;
       }
     });
+
+    it("Should support disabled & hidden", () => {
+      KeyboardShortcutManager.loadKeyboardShortcut({
+        key: "x",
+        item: testCommand,
+        isDisabled: true,
+        isHidden: true,
+        label: "Test",
+      });
+      const shortcut = KeyboardShortcutManager.getShortcut("x");
+      expect(shortcut).to.not.be.undefined;
+      expect(shortcut!.isDisabled).to.be.true;
+      expect(shortcut!.isHidden).to.be.true;
+
+      const yCommand = new CommandItemDef({
+        commandId: "yCommand",
+        iconSpec: "icon-placeholder",
+        isDisabled: true,
+        isHidden: true,
+        label: "Test",
+        execute: () => {
+          testSpyMethod();
+        },
+      });
+      KeyboardShortcutManager.loadKeyboardShortcut({
+        key: "y",
+        item: yCommand,
+        label: "Test",
+      });
+      const yShortcut = KeyboardShortcutManager.getShortcut("y");
+      expect(yShortcut).to.not.be.undefined;
+      expect(yShortcut!.isDisabled).to.be.true;
+      expect(yShortcut!.isHidden).to.be.true;
+    });
   });
 
   describe("KeyboardShortcutManager", () => {
@@ -220,6 +255,54 @@ describe("KeyboardShortcut", () => {
       expect(processedG).to.be.false;
     });
 
+    it("processKey should invoke item", async () => {
+      const testEventId = "test-sync-event";
+      const testEventId3 = "test-sync-event3";
+      const conditional1 = new ConditionalBooleanValue(() => true, [testEventId], false);
+      const conditional2 = new ConditionalBooleanValue(() => true, [testEventId], false);
+      const conditional3 = new ConditionalBooleanValue(() => true, [testEventId3], false);
+
+      KeyboardShortcutManager.initialize();
+      KeyboardShortcutManager.loadKeyboardShortcut(
+        {
+          key: "r",
+          labelKey: "Test",
+          isDisabled: conditional1,
+          shortcuts: [
+            {
+              key: "t",
+              item: testCommand,
+              isDisabled: conditional2,
+            },
+            {
+              key: "z",
+              item: testCommand,
+              isDisabled: conditional3,
+              isHidden: conditional2,
+            },
+          ],
+        },
+      );
+
+      const shortcut = KeyboardShortcutManager.getShortcut("r");
+      expect(shortcut).to.not.be.undefined;
+      expect(ConditionalBooleanValue.getValue(shortcut!.isDisabled)).to.be.false;
+      const childShortcut = shortcut!.getShortcut("t");
+      expect(childShortcut).to.not.be.undefined;
+      expect(ConditionalBooleanValue.getValue(childShortcut!.isDisabled)).to.be.false;
+      const childShortcutZ = shortcut!.getShortcut("z");
+      expect(childShortcutZ).to.not.be.undefined;
+      expect(ConditionalBooleanValue.getValue(childShortcutZ!.isDisabled)).to.be.false;
+      expect(ConditionalBooleanValue.getValue(childShortcutZ!.isHidden)).to.be.false;
+
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+
+      expect(ConditionalBooleanValue.getValue(shortcut!.isDisabled)).to.be.true;
+      expect(ConditionalBooleanValue.getValue(childShortcut!.isDisabled)).to.be.true;
+      expect(ConditionalBooleanValue.getValue(childShortcutZ!.isDisabled)).to.be.false;
+      expect(ConditionalBooleanValue.getValue(childShortcutZ!.isHidden)).to.be.true;
+    });
+
     it("Should maintain cursor X & Y", () => {
       CursorInformation.cursorPosition = new Point(100, 200);
 
@@ -241,6 +324,15 @@ describe("KeyboardShortcut", () => {
       expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
       document.body.removeChild(buttonElement);
     });
+  });
+
+  it("should support loading the AccuDraw keyboard shortcuts", async () => {
+    KeyboardShortcutManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
+
+    const shortcutA = KeyboardShortcutManager.getShortcut("a");
+    expect(shortcutA).to.not.be.undefined;
+    const shortcutR = KeyboardShortcutManager.getShortcut("r");
+    expect(shortcutR).to.not.be.undefined;
   });
 
 });

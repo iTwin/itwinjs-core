@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import { assert } from "chai";
+import * as path from "path";
+import * as semver from "semver";
 import { DbResult, Guid, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { ColorDef, IModel } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { assert } from "chai";
-import * as path from "path";
-import * as semver from "semver";
 import {
-  BackendLoggerCategory, BisCoreSchema, ConcurrencyControl, ECSqlStatement, Element,
-  ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelTransformer, NativeLoggerCategory,
-  SnapshotDb,
+  BackendLoggerCategory, BisCoreSchema, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema,
+  IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelTransformer, NativeLoggerCategory, SnapshotDb,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
@@ -186,12 +186,12 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.isTrue(IModelJsFs.existsSync(sourceExportFileName));
         const sourceDbChanges: any = (sourceExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(sourceDbChanges);
-        // expect no inserts from updateSourceDb
+        // expect some inserts from updateSourceDb
         assert.equal(sourceDbChanges.codeSpec.insertIds.size, 0);
-        assert.equal(sourceDbChanges.element.insertIds.size, 0);
+        assert.equal(sourceDbChanges.element.insertIds.size, 1);
         assert.equal(sourceDbChanges.aspect.insertIds.size, 0);
         assert.equal(sourceDbChanges.model.insertIds.size, 0);
-        assert.equal(sourceDbChanges.relationship.insertIds.size, 0);
+        assert.equal(sourceDbChanges.relationship.insertIds.size, 2);
         // expect some updates from updateSourceDb
         assert.isAtLeast(sourceDbChanges.element.updateIds.size, 1);
         assert.isAtLeast(sourceDbChanges.aspect.updateIds.size, 1);
@@ -212,7 +212,7 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, "Import #2");
-        IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
+        IModelTransformerUtils.assertUpdatesInDb(targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
         const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-2.txt");
@@ -222,12 +222,12 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.isTrue(IModelJsFs.existsSync(targetExportFileName));
         const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(targetDbChanges);
-        // expect no inserts from transforming the result of updateSourceDb
+        // expect some inserts from transforming the result of updateSourceDb
         assert.equal(targetDbChanges.codeSpec.insertIds.size, 0);
-        assert.equal(targetDbChanges.element.insertIds.size, 0);
-        assert.equal(targetDbChanges.aspect.insertIds.size, 0);
+        assert.equal(targetDbChanges.element.insertIds.size, 1);
+        assert.equal(targetDbChanges.aspect.insertIds.size, 3);
         assert.equal(targetDbChanges.model.insertIds.size, 0);
-        assert.equal(targetDbChanges.relationship.insertIds.size, 0);
+        assert.equal(targetDbChanges.relationship.insertIds.size, 2);
         // expect some updates from transforming the result of updateSourceDb
         assert.isAtLeast(targetDbChanges.element.updateIds.size, 1);
         assert.isAtLeast(targetDbChanges.aspect.updateIds.size, 1);
