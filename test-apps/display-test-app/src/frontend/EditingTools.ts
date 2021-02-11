@@ -32,7 +32,7 @@ export class EditingSessionTool extends Tool {
 
   private async _run(): Promise<void> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
-    if (!imodel)
+    if (!imodel || !imodel.isBriefcaseConnection())
       return;
 
     const session = InteractiveEditingSession.get(imodel);
@@ -51,7 +51,7 @@ export abstract class UndoRedoTool extends Tool {
   public run(): boolean {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (imodel) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises,deprecation/deprecation
       IModelWriteRpcInterface.getClient().undoRedo(imodel.getRpcProps(), this.isUndo);
     }
 
@@ -82,6 +82,7 @@ export class DeleteElementsTool extends ElementSetTool {
   public async processAgendaImmediate(): Promise<void> {
     // TODO: EditCommand...what clears the deleted elements from the selection set?
     try {
+      // eslint-disable-next-line deprecation/deprecation
       await IModelWriteRpcInterface.getClient().deleteElements(this.iModel.getRpcProps(), Array.from(this.agenda.elements));
       await this.iModel.saveChanges();
     } catch (err) {
@@ -405,7 +406,7 @@ export class ExactlyTwoElementsTool extends ElementSetTool {
   protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
     let mainMsg;
     if (this.wantAdditionalElements)
-      mainMsg = (0 === this.currentElementCount ?  "Identify First Element" : "Identify Second Element");
+      mainMsg = (0 === this.currentElementCount ? "Identify First Element" : "Identify Second Element");
     super.provideToolAssistance(mainMsg);
   }
 

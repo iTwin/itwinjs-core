@@ -42,6 +42,8 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
+beta;AsyncFunction = (...args: any) => Promise
+beta;AsyncMethodsOf
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -62,9 +64,10 @@ public;BeWheelEvent
 public;BeWheelEventProps 
 internal;BingElevationProvider
 internal;BingMapsImageryLayerProvider 
-beta;BlankConnection 
-beta;BlankConnectionProps
-public;class BriefcaseConnection 
+public;BlankConnection 
+public;BlankConnectionProps
+public;BriefcaseConnection 
+beta;class BriefcaseNotificationHandler 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -76,6 +79,7 @@ public;CategorySelectorState
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
+public;CheckpointConnection 
 alpha;ClipEventType
 public;Cluster
 internal;CompassMode
@@ -117,8 +121,12 @@ public;DrawingModelState
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
+alpha;EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection
 alpha;EditingFunctions
 alpha;EditingFunctions
+deprecated;CategoryEditor
+deprecated;ConcurrencyControl
+deprecated;ModelEditor
 alpha;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
@@ -135,8 +143,6 @@ public;EntityState
 public;Environment
 public;EventController
 public;EventHandled
-beta;EventListener = (eventData: any) => void
-beta;EventSource 
 beta;class Extension
 beta;ExtensionAdmin
 beta;ExtensionAdminProps
@@ -254,17 +260,18 @@ internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModel
 public;class InputCollector 
 public;InputSource
 internal;InstancedGraphicParams
-alpha;InteractiveEditingSession
+alpha;InteractiveEditingSession 
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
+beta;IpcApp
+beta;IpcAppOptions
 alpha;ItemField
 beta;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
-alpha;LocalBriefcaseConnection 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -314,7 +321,6 @@ public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
 internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number
-alpha;MobileAuthorizationClient 
 internal;MockRender
 internal;ModalOptions
 internal;ModalReturn
@@ -322,9 +328,10 @@ alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 alpha;ModifyElementSource
-alpha;NativeApp 
+alpha;NativeApp
 internal;NativeAppLogger
 internal;NoRenderApp
+beta;class NotificationHandler
 public;NotificationManager
 public;NotifyMessageDetails
 internal;NullRenderSystem 
@@ -362,6 +369,7 @@ internal;PlanarClassifierMap = Map
 internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
+beta;PromiseReturnType
 internal;QuadId
 alpha;QuantityFormatsChangedArgs
 alpha;QuantityFormatter 
@@ -382,7 +390,6 @@ internal;RealityTileParams
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 public;RemoteBriefcaseConnection 
-beta;RemoveEventListener = () => void
 beta;class RenderClipVolume 
 public;RenderContext
 internal;RenderDiagnostics
@@ -456,7 +463,6 @@ internal;SpatialTileTreeReferences
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 
-internal;StandaloneConnection 
 public;StandardView
 public;StandardViewId
 public;StandardViewTool 
@@ -588,6 +594,8 @@ public;ViewUndoTool
 public;WalkViewTool 
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
+beta;WebViewerApp
+beta;WebViewerAppOptions
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities
