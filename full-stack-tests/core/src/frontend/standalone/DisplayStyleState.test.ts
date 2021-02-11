@@ -1,9 +1,9 @@
-import { expect } from "chai";
-import { CompressedId64Set } from "@bentley/bentleyjs-core";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { CompressedId64Set } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import {
   BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, FeatureAppearance, PlanarClipMaskMode, PlanarClipMaskSettings,

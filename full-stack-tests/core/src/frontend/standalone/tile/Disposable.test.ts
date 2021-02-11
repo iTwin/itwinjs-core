@@ -1,8 +1,8 @@
-import { assert, expect } from "chai";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
 import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";

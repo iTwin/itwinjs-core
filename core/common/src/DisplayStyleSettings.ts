@@ -742,8 +742,8 @@ export class DisplayStyleSettings {
     return this._modelAppearanceOverrides.size > 0;
   }
 
-  /** Set the planar clip mask for a [[Model]]  drawn by this display style.
- * @param modelId The ID of the [[model]] whose appearance is to be overridden.
+  /** Set the planar clip mask for a persistent reality [[Model]] drawn by this display style.  Masking of BIM models is not supported although they can be used for masking for reality models and background maps.
+ * @param modelId The ID of the persistent reality [[Model]]
  * @param planarClipMask The clip mask to apply to the [[Model]].
  * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideModelPlanarClipMask]] to ensure
  * the changes are promptly visible on the screen.
