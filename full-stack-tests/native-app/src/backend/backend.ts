@@ -7,8 +7,7 @@
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import "./RpcImpl";
 import * as path from "path";
-import { BentleyLoggerCategory, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { BentleyLoggerCategory, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";

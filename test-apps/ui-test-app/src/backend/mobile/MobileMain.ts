@@ -5,7 +5,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { Config, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import { AndroidHost, IOSHost, MobileRpcManager } from "@bentley/mobile-manager/lib/MobileBackend";
 import { Presentation } from "@bentley/presentation-backend";
