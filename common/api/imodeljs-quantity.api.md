@@ -92,7 +92,7 @@ export class Format {
     static formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
     static formatTypeToString(type: FormatType): string;
     fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
-    static getTraitString(trait: FormatTraits): "keepSingleZero" | "zeroEmpty" | "keepDecimalPoint" | "applyRounding" | "fractionDash" | "showUnitLabel" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative";
+    static getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingleZero" | "zeroEmpty" | "keepDecimalPoint" | "applyRounding" | "fractionDash" | "showUnitLabel" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative";
     hasFormatTraitSet(formatTrait: FormatTraits): boolean;
     // (undocumented)
     get hasUnits(): boolean;
