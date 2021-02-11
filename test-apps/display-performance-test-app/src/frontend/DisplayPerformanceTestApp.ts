@@ -3,18 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import {
-  ClientRequestContext, Dictionary, Id64, Id64Arg, Id64String, isElectronRenderer, OpenMode, SortedArray, StopWatch,
-} from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64, Id64Arg, Id64String, OpenMode, ProcessDetector, StopWatch } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
   BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DesktopAuthorizationClientConfiguration, DisplayStyleProps,
-  FeatureAppearance, FeatureAppearanceProps, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager,
-  RenderMode, RpcConfiguration, SnapshotIModelRpcInterface, ViewDefinitionProps,
+  FeatureAppearance, FeatureAppearanceProps, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RpcConfiguration,
+  SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, DesktopAuthorizationClient, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider,
@@ -28,7 +27,6 @@ import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectSha
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
-import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
@@ -38,6 +36,8 @@ const testNamesImages = new Map<string, number>(); // Keep track of test names a
 const testNamesTimings = new Map<string, number>(); // Keep track of test names and how many duplicate names exist for timings
 const defaultHilite = new Hilite.Settings();
 const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
+const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+
 let minimize = false;
 interface Options {
   [key: string]: any; // Add index signature
@@ -72,7 +72,7 @@ function debugPrint(msg: string): void {
 }
 
 async function resolveAfterXMilSeconds(ms: number) {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     setTimeout(() => {
       resolve();
     }, ms);
@@ -134,10 +134,14 @@ function getBrowserName(userAgent: string) {
 }
 
 class DisplayPerfTestApp {
-  public static async startup(opts?: IModelAppOptions): Promise<void> {
-    opts = opts ? opts : {};
-    opts.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
-    await IModelApp.startup(opts);
+  public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
+    iModelApp = iModelApp ?? {};
+    iModelApp.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
+    iModelApp.rpcInterfaces = rpcInterfaces;
+    if (ProcessDetector.isElectronAppFrontend)
+      await ElectronApp.startup({ iModelApp });
+    else
+      await IModelApp.startup(iModelApp);
     IModelApp.animationInterval = undefined;
   }
 }
@@ -588,7 +592,7 @@ function removeOptsFromString(input: string, ignore: string[] | string | undefin
 
 function getImageString(configs: DefaultConfigs, prefix = ""): string {
   const filename = `${getTestName(configs, prefix, true)}.png`;
-  if (MobileRpcConfiguration.isMobileFrontend)
+  if (ProcessDetector.isMobileAppFrontend)
     return filename; // skip path for mobile - we use device's Documents path as determined by mobile backend
   return path.join(configs.outputPath ? configs.outputPath : "", filename);
 }
@@ -672,7 +676,7 @@ class DefaultConfigs {
       this.numRendersToTime = 100;
       this.numRendersToSkip = 50;
       this.outputName = "performanceResults.csv";
-      this.outputPath = MobileRpcConfiguration.isMobileFrontend ? undefined : "D:\\output\\performanceData\\";
+      this.outputPath = ProcessDetector.isMobileAppFrontend ? undefined : "D:\\output\\performanceData\\";
       this.iModelName = "TimingTest_General.bim";
       this.iModelHubProject = "iModel Testing";
       this.viewName = "*"; // If no view is specified, test all views
@@ -974,7 +978,7 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
 async function createOidcClient(requestContext: ClientRequestContext): Promise<FrontendAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
 
-  if (isElectronRenderer) {
+  if (ProcessDetector.isElectronAppFrontend) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
     const oidcConfiguration: DesktopAuthorizationClientConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
@@ -1033,14 +1037,14 @@ async function getAllMatchingSavedViews(testConfig: DefaultConfigs): Promise<str
   }
 
   const allViews = intViews.concat(extViews);
-  return allViews.filter((view) => matchRule(view, testConfig.viewName ?? "*")).sort(); // Filter & alphabatize all view names
+  return allViews.filter((view) => matchRule(view, testConfig.viewName ?? "*")).sort(); // Filter & alphabetize all view names
 }
 
 async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: any[]): Promise<void> {
   activeViewState = new SimpleViewState();
 
   // Open an iModel from a local file
-  let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
+  let openLocalIModel = (testConfig.iModelLocation !== undefined) || ProcessDetector.isMobileAppFrontend;
   if (openLocalIModel) {
     try {
       activeViewState.iModelConnection = await SnapshotConnection.openFile(testConfig.iModelFile!);
@@ -1059,7 +1063,7 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: 
   }
 
   // Open an iModel from iModelHub
-  if (!openLocalIModel && testConfig.iModelHubProject !== undefined && !MobileRpcConfiguration.isMobileFrontend) {
+  if (!openLocalIModel && testConfig.iModelHubProject !== undefined && !ProcessDetector.isMobileAppFrontend) {
     const signedIn: boolean = await signIn();
     if (!signedIn)
       return;
@@ -1434,7 +1438,7 @@ async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
     if (gpuFramesCollected < testConfig.numRendersToTime!) {
       const label = result.label;
       const timings = finalGPUFrameTimings.get(label);
-      finalGPUFrameTimings.set(label, timings ? timings.concat(result.nanoseconds / 1e6) : [result.nanoseconds / 1e6]); // Save as miliseconds
+      finalGPUFrameTimings.set(label, timings ? timings.concat(result.nanoseconds / 1e6) : [result.nanoseconds / 1e6]); // Save as milliseconds
       if (result.children) {
         for (const kid of result.children)
           gpuResultsCallback(kid);
@@ -1664,18 +1668,11 @@ window.onload = async () => {
   RpcConfiguration.developmentMode = true;
   RpcConfiguration.disableRoutingValidation = true;
 
-  const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
-  if (isElectronRenderer) {
-    ElectronFrontend.initialize({ rpcInterfaces });
-  } else if (MobileRpcConfiguration.isMobileFrontend) {
-    MobileRpcManager.initializeClient(rpcInterfaces);
-  } else {
+  if (!ProcessDetector.isElectronAppFrontend && !ProcessDetector.isMobileAppFrontend) {
     const uriPrefix = "http://localhost:3001";
     BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   }
 
-  // ###TODO: Raman added one-time initialization logic IModelApp.startup which replaces a couple of RpcRequest-related functions.
-  // Cheap hacky workaround until that's fixed.
   await DisplayPerfTestApp.startup();
 
   await main();

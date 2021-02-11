@@ -32,7 +32,7 @@ export class EditingSessionTool extends Tool {
 
   private async _run(): Promise<void> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
-    if (!imodel)
+    if (!imodel || !imodel.isBriefcaseConnection())
       return;
 
     const session = InteractiveEditingSession.get(imodel);
@@ -51,7 +51,7 @@ export abstract class UndoRedoTool extends Tool {
   public run(): boolean {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (imodel) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises,deprecation/deprecation
       IModelWriteRpcInterface.getClient().undoRedo(imodel.getRpcProps(), this.isUndo);
     }
 
