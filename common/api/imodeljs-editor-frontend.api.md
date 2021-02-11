@@ -6,12 +6,10 @@
 
 import { PrimitiveTool } from '@bentley/imodeljs-frontend';
 
-// @alpha (undocumented)
-export class EditTool extends PrimitiveTool {
+// @alpha
+export abstract class EditTool extends PrimitiveTool {
     // (undocumented)
     static callCommand(methodName: string, ...args: any[]): Promise<any>;
-    // (undocumented)
-    onRestartTool(): void;
     // (undocumented)
     static startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T>;
 }

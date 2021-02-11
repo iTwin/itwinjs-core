@@ -32,10 +32,10 @@ There are subclasses of `ViewDefinition` to show different types of Models in va
 
 Here are several significant subclasses:
 
-* `ViewDefinition`
-  * `SpatialViewDefinition` - shows a view of one or more 3d SpatialModels
-  * `DrawingViewDefinition` - shows a view of a *single* 2d DrawingModel
-  * `SheetViewDefinition` - shows a view of a *single* 2d SheetModel
+- `ViewDefinition`
+  - `SpatialViewDefinition` - shows a view of one or more 3d SpatialModels
+  - `DrawingViewDefinition` - shows a view of a *single* 2d DrawingModel
+  - `SheetViewDefinition` - shows a view of a *single* 2d SheetModel
 
 For each subclass of `xxxViewDefinition`, there is a corresponding `xxxViewState` class in the frontend.
 
@@ -130,12 +130,12 @@ DisplayStyles describe the *styling* that should be applied to the contents of a
 
 This includes the:
 
-* [ViewFlags]($common)
-* [SubCategoryAppearance]($common) visibility and overrides
-* Background color
-* [RenderMode]($common)
-* [Environment]($frontend)
-* Other view-specific parameters
+- [ViewFlags]($common)
+- [SubCategoryAppearance]($common) visibility and overrides
+- Background color
+- [RenderMode]($common)
+- [Environment]($frontend)
+- Other view-specific parameters
 
 They are loaded in memory in the frontend with the [DisplayStyleState]($frontend) class.
 
@@ -191,11 +191,11 @@ Every view may have a thumbnail that shows an approximation of what it contains.
 
 ### Notes
 
-* The view origin is in world coordinates. It is the point at the lower left of the rectangle at the focus plane, projected onto the back plane.
+- The view origin is in world coordinates. It is the point at the lower left of the rectangle at the focus plane, projected onto the back plane.
 
-* `[delta.x,delta.y]` are on the focus plane and `delta.z` is from the back plane to the front plane.
+- `[delta.x,delta.y]` are on the focus plane and `delta.z` is from the back plane to the front plane.
 
-* The three view vectors come from:
+- The three view vectors come from:
 
  ```cmd
   {vector from eyePoint->targetPoint} : -Z (positive view Z points towards negative world Z)
@@ -205,17 +205,17 @@ Every view may have a thumbnail that shows an approximation of what it contains.
 
   these three vectors form the rows of the view's [Matrix3d]($geometry)
 
-* Objects in space in front of the front plane or behind the back plane are not displayed.
+- Objects in space in front of the front plane or behind the back plane are not displayed.
 
-* The focus plane is not necessarily centered between the front plane and back plane (though it often is.)
+- The focus plane is not necessarily centered between the front plane and back plane (though it often is.)
 It should generally be between the front plane and the back plane.
 
-* targetPoint is not stored in the view parameters. Instead it may be derived from `{origin},{eyePoint},[Matrix3d]` and `focusDist`.
+- targetPoint is not stored in the view parameters. Instead it may be derived from `{origin},{eyePoint},[Matrix3d]` and `focusDist`.
 
-* The ViewState holds the parameters: `{origin}{delta}[Matrix3d]` from which the View frustum is derived.
+- The ViewState holds the parameters: `{origin}{delta}[Matrix3d]` from which the View frustum is derived.
 
-* Cameras hold a "lens angle" value which is defines the field-of-view for the camera in radians.
+- Cameras hold a "lens angle" value which is defines the field-of-view for the camera in radians.
 The lens angle value is not used to compute the perspective transform for a view.
 Instead, the lens angle value can be used to reposition `{eyePoint}` when the view volume or target changes.
 
-* View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope" views, or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.
+- View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope" views, or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.

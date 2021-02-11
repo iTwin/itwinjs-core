@@ -417,12 +417,10 @@ export class UiFramework {
       [{ id: "element", label: "Element" } as PresentationSelectionScope];
   }
 
-  /** @public */
   public static getIsUiVisible() {
     return UiShowHideManager.isUiVisible;
   }
 
-  /** @public */
   public static setIsUiVisible(visible: boolean) {
     if (UiShowHideManager.isUiVisible !== visible) {
       UiShowHideManager.isUiVisible = visible;
@@ -430,27 +428,22 @@ export class UiFramework {
     }
   }
 
-  /** @public */
   public static setColorTheme(theme: string) {
     UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetTheme, payload: theme });
   }
 
-  /** @public */
   public static getColorTheme(): string {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : /* istanbul ignore next */ SYSTEM_PREFERRED_COLOR_THEME;
   }
 
-  /** @public */
   public static setWidgetOpacity(opacity: number) {
     UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetWidgetOpacity, payload: opacity });
   }
 
-  /** @public */
   public static getWidgetOpacity(): number {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : /* istanbul ignore next */ WIDGET_OPACITY_DEFAULT;
   }
 
-  /** @public */
   public static isMobile() {  // eslint-disable-line @bentley/prefer-get
     let mobile = false;
     // istanbul ignore if

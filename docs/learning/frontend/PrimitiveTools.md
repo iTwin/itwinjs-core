@@ -8,9 +8,9 @@ Because Primitive tools often target a specific type of element, it may be undes
 
 When [ToolRegistry.run]($frontend) is called for a Primitive tool, the following sequence of tool methods are called:
 
-* [isCompatibleViewport](#iscompatibleviewport)
-* [onInstall](#oninstall)
-* [onPostInstall](#onpostinstall)
+- [isCompatibleViewport](#iscompatibleviewport)
+- [onInstall](#oninstall)
+- [onPostInstall](#onpostinstall)
 
 ```ts
 [[include:PrimitiveTool_Run]]
@@ -22,9 +22,9 @@ The very first decision the tool must make is whether to continue the install or
 
 The tool is responsible for checking the viewport's compatibility with the tool operation, some examples below:
 
-* Target isn't readonly. Checks [PrimitiveTool.requireWriteableTarget]($frontend), defaults to true; assumption is that *most* Primitive tools will insert/update elements.
-* Only applicable to spatial views.
-* Requires a specific GeometricModel be included in the view's [ModelSelectorState]($frontend).
+- Target isn't readonly. Checks [PrimitiveTool.requireWriteableTarget]($frontend), defaults to true; assumption is that *most* Primitive tools will insert/update elements.
+- Only applicable to spatial views.
+- Requires a specific GeometricModel be included in the view's [ModelSelectorState]($frontend).
 
 If [InteractiveTool.isCompatibleViewport]($frontend) rejects the view, then the current tool remains active and installation of the new tool stops, if the view is accepted, then we proceed to the [onInstall](#oninstall) step.
 
@@ -40,7 +40,7 @@ If [InteractiveTool.isCompatibleViewport]($frontend) rejects the view, then the 
 
 Now that a target view has been accepted for the tool operation, [InteractiveTool.onInstall]($frontend) provides one last chance before being set as the active tool to check any remaining requirements. The type of checks to consider for onInstall as opposed to isCompatibleViewport would be one time only initial conditions that would not be appropriate or necessary to test on a motion event, such as:
 
-* Tool requires an pre-defined [SelectionSet]($frontend) of existing elements.
+- Tool requires an pre-defined [SelectionSet]($frontend) of existing elements.
 
 > Most tools don't need to override onInstall, as long as it returns true, the new tool is set as the active tool, after which [onPostInstall](#onpostinstall) will be called.
 
@@ -54,7 +54,7 @@ Refer to [AccuSnap](#accusnap) and [AccuDraw](#accudraw) for examples showing ho
 
 A Primitive tool is required to provide an implementation for [PrimitiveTool.onRestartTool]($frontend). This method will be called to notify the tool after iModel changes made outside of the tool's purview have occurred which *may* have invalidated the current tool state.
 
-* For example, the user requests an undo of their previous action, an element the tool is currently modifying was created in the last transaction and as such no longer exists. The tool is expected to either install a new tool instance, or exit in response to this event.
+- For example, the user requests an undo of their previous action, an element the tool is currently modifying was created in the last transaction and as such no longer exists. The tool is expected to either install a new tool instance, or exit in response to this event.
 
 Example of typical implementation for onRestartTool:
 
@@ -116,8 +116,8 @@ Example from a simple tool that locates elements and makes them the current sele
 
 Some examples of AccuDraw tool hints:
 
-* Send AccuDraw hint to use polar mode when defining a sweep angle.
-* Send AccuDraw hint to set origin to opposite end point of line segment being modified and orient to segment direction, a new line length can be now easily specified.
+- Send AccuDraw hint to use polar mode when defining a sweep angle.
+- Send AccuDraw hint to set origin to opposite end point of line segment being modified and orient to segment direction, a new line length can be now easily specified.
 
 Upon installing a new Primitive tool as the active tool, AccuDraw's default state is initialized to *inactive*. AccuDraw will upgrade its internal state to *active* automatically if the tool calls [InteractiveTool.beginDynamics]($frontend). Tools that won't start dynamics (might only use view decorations) but still wish to support AccuDraw can explicitly enable it using [AccuDrawHintBuilder.activate]($frontend) or [AccuDrawHintBuilder.sendHints]($frontend). Conversely, tools that show dynamics, but do not want AccuDraw, are required to explicitly disable it by calling [AccuDrawHintBuilder.deactivate]($frontend).
 

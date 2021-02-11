@@ -14,7 +14,7 @@ import {
   BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
   SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
 } from "@bentley/imodeljs-backend";
-import { IModel, IModelError, OpenBriefcaseProps, SubjectProps } from "@bentley/imodeljs-common";
+import { IModel, IModelError, LocalBriefcaseProps, OpenBriefcaseProps, SubjectProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BridgeLoggerCategory } from "./BridgeLoggerCategory";
 import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
@@ -314,7 +314,6 @@ abstract class IModelDbBuilder {
     assert(this._imodel !== undefined);
     return this._imodel;
   }
-
 }
 
 class BriefcaseDbBuilder extends IModelDbBuilder {
@@ -469,7 +468,6 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
   /** This will download the briefcase, open it with the option to update the Db profile, close it, re-open with the option to upgrade core domain schemas */
   public async acquire(): Promise<void> {
-
     // ********
     // ********
     // ******** TODO: Where do we check if the briefcase is already on the local disk??
@@ -483,9 +481,17 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new Error("Must initialize ContextId before using");
     if (this._serverArgs.iModelId === undefined)
       throw new Error("Must initialize IModelId before using");
-
-    // First, download the briefcase
-    const props = await BriefcaseManager.downloadBriefcase(this._requestContext, { contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
+    let props: LocalBriefcaseProps;
+    if (this._bridgeArgs.argsJson && this._bridgeArgs.argsJson.briefcaseId) {
+      props = await BriefcaseManager.downloadBriefcase(this._requestContext, {briefcaseId: this._bridgeArgs.argsJson.briefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
+    } else {
+      props = await BriefcaseManager.downloadBriefcase(this._requestContext, {contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
+      if(this._bridgeArgs.argsJson) {
+        this._bridgeArgs.argsJson.briefcaseId = props.briefcaseId; // don't overwrite other arguments if anything is passed in
+      } else {
+        this._bridgeArgs.argsJson= {briefcaseId: props.briefcaseId};
+      }
+    }
     let briefcaseDb: BriefcaseDb | undefined;
     const openArgs: OpenBriefcaseProps = {
       fileName: props.fileName,
@@ -553,5 +559,4 @@ class SnapshotDbBuilder extends IModelDbBuilder {
     await this._bridge.updateExistingData();
     this._imodel.saveChanges();
   }
-
 }

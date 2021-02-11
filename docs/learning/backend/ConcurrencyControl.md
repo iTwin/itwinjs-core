@@ -156,10 +156,10 @@ Call [ConcurrencyControl.CodesManager.reserve]($backend) to reserve Codes before
 
 ### Acquiring locks and/or codes pessimistically
 
-1.  Call [ConcurrencyControl.LocksManager.lockModels]($backend) to lock models preemptively, if you wish.
-1.  Call [ConcurrencyControl.requestResources]($backend) on the elements and/or models that you intend to insert, update, of delete. This method will request the locks and/or codes that the planned local operations will require. It may send a request to iModelHub.
-1.  If the request fails, cancel the local operation.
-1.  If the request succeeds, go ahead with the local operation, make the planned local changes, and then call [IModelDb.saveChanges]($backend).
+1. Call [ConcurrencyControl.LocksManager.lockModels]($backend) to lock models preemptively, if you wish.
+1. Call [ConcurrencyControl.requestResources]($backend) on the elements and/or models that you intend to insert, update, of delete. This method will request the locks and/or codes that the planned local operations will require. It may send a request to iModelHub.
+1. If the request fails, cancel the local operation.
+1. If the request succeeds, go ahead with the local operation, make the planned local changes, and then call [IModelDb.saveChanges]($backend).
 
 This approach is the safest way to avoid conflicts. It requires that the app must plan ahead before making local changes.
 
@@ -170,10 +170,10 @@ Note that sending a request to iModelHub is a relatively expensive operation. Th
 
 ### Acquiring locks and/or codes optimistically or in bulk mode
 
-1.  Insert or update models and elements.
-1.  Call [ConcurrencyControl.request]($backend) to request the codes that those local operations require.
-1.  If the request fails, call [IModelDb.abandonChanges]($backend) to roll back the local transaction.
-1.  If the request succeeds, call [IModelDb.saveChanges]($backend) to commit the local transaction.
+1. Insert or update models and elements.
+1. Call [ConcurrencyControl.request]($backend) to request the codes that those local operations require.
+1. If the request fails, call [IModelDb.abandonChanges]($backend) to roll back the local transaction.
+1. If the request succeeds, call [IModelDb.saveChanges]($backend) to commit the local transaction.
 
 The optimistic approach is simpler than using the pessimistic approach, but it carries the risk that you must abandon all of your changes in case of a locking or code-reservation conflict. Use this approach only if you know that your changes are isolated such that conflicts are unlikely.
 

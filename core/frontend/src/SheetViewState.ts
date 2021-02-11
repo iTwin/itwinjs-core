@@ -31,7 +31,7 @@ import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";
 import { ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
-import { createDefaultViewFlagOverrides, TileGraphicType, TileTreeSet } from "./tile/internal";
+import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
 
 // cSpell:ignore ovrs
@@ -241,7 +241,7 @@ class ViewAttachments {
     return this._attachments.every((x) => x.areAllTileTreesLoaded);
   }
 
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     for (const attachment of this._attachments)
       trees.disclose(attachment);
   }
@@ -351,7 +351,7 @@ export class SheetViewState extends ViewState2d {
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     if (this._attachments)
       trees.disclose(this._attachments);
@@ -478,7 +478,7 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
 interface Attachment {
   readonly areAllTileTreesLoaded: boolean;
   addToScene: (context: SceneContext) => void;
-  discloseTileTrees: (trees: TileTreeSet) => void;
+  discloseTileTrees: (trees: DisclosedTileTreeSet) => void;
   readonly zDepth: number;
   collectStatistics: (stats: RenderMemory.Statistics) => void;
   viewAttachmentProps: ViewAttachmentProps;
@@ -609,7 +609,7 @@ class OrthographicAttachment {
     this._viewport.dispose();
   }
 
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     trees.disclose(this._viewport);
   }
 
@@ -867,7 +867,7 @@ class RasterAttachment {
     this._viewport.renderFrame();
   }
 
-  public discloseTileTrees(trees: TileTreeSet) {
+  public discloseTileTrees(trees: DisclosedTileTreeSet) {
     if (this._viewport)
       trees.disclose(this._viewport);
   }

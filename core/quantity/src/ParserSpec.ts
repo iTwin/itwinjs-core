@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Format } from "./Formatter/Format";
 import { UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
-import { Parser, ParseResult } from "./Parser";
+import { Parser, QuantityParseResult } from "./Parser";
 
 /** A ParserSpec holds information needed to parse a string into a quantity synchronously.
  * @alpha
@@ -43,7 +43,7 @@ export class ParserSpec {
   }
 
   /** Do the parsing. Done this way to allow Custom Parser Specs to parse custom formatted strings into their quantities. */
-  public parseToQuantityValue(inString: string): ParseResult {
+  public parseToQuantityValue(inString: string): QuantityParseResult {
     return Parser.parseQuantityString(inString, this);
   }
 }

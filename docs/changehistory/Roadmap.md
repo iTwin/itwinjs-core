@@ -45,7 +45,7 @@ Volunteers for help on any or all of these projects are welcome. In particular, 
 ### ET/IT/OT Integration
 
 - Provide working examples and templates for interfacing between engineering content in iModels, enterprise systems, and realtime IOT sensors, cameras, controllers, devices, and processors.
-- Create tools for augmenting data synchronized with bridges from engineering design tools with IOT-link elements.
+- Create tools for augmenting data synchronized with connectors from engineering design tools with IOT-link elements.
 - Enhance BIS schemas for common IOT patterns and query engines.
 
 ### Agent Deployment
@@ -82,9 +82,9 @@ Volunteers for help on any or all of these projects are welcome. In particular, 
 
 - Create examples and templates illustrating usage of iModel-to-iModel transformations and synchronization.
 
-### iModel.js based bridge framework
+### iModel.js based connector framework
 
-- Support for creating multi-process bridges using iModel.js backends. One process links with source application api to read the source application files. It then communicates with another iModel.js process via RPC to update the iModel.
+- Support for creating multi-process connectors using iModel.js backends. One process links with source application api to read the source application files. It then communicates with another iModel.js process via RPC to update the iModel.
 
 ### iModel Editing applications
 

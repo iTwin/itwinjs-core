@@ -10,13 +10,16 @@ alpha;FormatterSpec
 alpha;FormatTraits
 alpha;FormatType
 alpha;FractionalPrecision
+alpha;ParsedQuantity
+alpha;ParseError
+alpha;ParseQuantityError
 alpha;Parser
-alpha;ParseResult
 alpha;ParserSpec
 alpha;PotentialParseUnit
 alpha;Quantity 
 internal;QuantityConstants
 alpha;QuantityError 
+alpha;QuantityParseResult = ParsedQuantity | ParseQuantityError
 alpha;QuantityProps
 alpha;QuantityStatus
 alpha;ScientificType

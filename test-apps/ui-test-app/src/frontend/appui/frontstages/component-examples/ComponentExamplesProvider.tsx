@@ -770,6 +770,8 @@ export class ComponentExamplesProvider {
           <Slider min={0} max={100} values={[50]} step={1} showTooltip tooltipBelow />),
         createComponentExample("Slider w/ min/max", "Slider with showMinMax prop",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax />),
+        createComponentExample("Slider w/ min/max", "Slider with formatMax prop",
+          <Slider min={0} max={1} values={[0.5]} step={0.01} showTooltip showMinMax formatMax={(v: number) => v.toFixed(1)} />),
         createComponentExample("Slider w/ min/max images", "Slider with minImage and maxImage props",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax
             minImage={<Icon iconSpec="icon-placeholder" />} maxImage={<Icon iconSpec="icon-placeholder" />} />),

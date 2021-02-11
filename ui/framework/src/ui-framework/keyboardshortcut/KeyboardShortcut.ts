@@ -6,13 +6,14 @@
  * @module KeyboardShortcut
  */
 
-import { FunctionKey, SpecialKey, UiError } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, FunctionKey, SpecialKey, UiError } from "@bentley/ui-abstract";
 import { CursorInformation } from "../cursor/CursorInformation";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /** Properties for a Keyboard Shortcut
  * @public
@@ -73,6 +74,10 @@ export class KeyboardShortcut extends ItemDefBase {
         this.setLabel(this._item.label);
       if (!this.tooltip)
         this.setTooltip(this._item.tooltip);
+      if (this.isDisabled === undefined)
+        this.isDisabled = this._item.isDisabled;
+      if (this.isHidden === undefined)
+        this.isHidden = this._item.isHidden;
     } else if (props.shortcuts) {
       props.shortcuts.forEach((childProps: KeyboardShortcutProps) => {
         const shortcut = new KeyboardShortcut(childProps);
@@ -220,12 +225,19 @@ export class KeyboardShortcutContainer {
   }
 }
 
+type OnShortcutFunc = (shortcut: KeyboardShortcut) => void;
+
 /** Keyboard Shortcut Manager
  * @public
  */
 export class KeyboardShortcutManager {
 
   private static _shortcuts: KeyboardShortcutContainer = new KeyboardShortcutContainer();
+
+  /** Initialize the Keyboard Shortcut manager */
+  public static initialize(): void {
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(KeyboardShortcutManager._handleSyncUiEvent);
+  }
 
   /** Loads Keyboard Shortcuts into the managed list */
   public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]) {
@@ -299,5 +311,31 @@ export class KeyboardShortcutManager {
   public static get cursorX(): number { return CursorInformation.cursorX; }
   /** Returns the cursor Y position, which is mouseEvent.pageY. */
   public static get cursorY(): number { return CursorInformation.cursorY; }
+
+  private static _handleSyncUiEvent = (args: SyncUiEventArgs) => {
+    const updateBooleanValue = (booleanValue: ConditionalBooleanValue) => {
+      if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, booleanValue.syncEventIds))
+        booleanValue.refresh();
+    };
+    const handleForSyncIds = (shortcut: KeyboardShortcut) => {
+      if (shortcut.isDisabled instanceof ConditionalBooleanValue)
+        updateBooleanValue(shortcut.isDisabled);
+      if (shortcut.isHidden instanceof ConditionalBooleanValue)
+        updateBooleanValue(shortcut.isHidden);
+    };
+
+    KeyboardShortcutManager._traverseShortcuts(KeyboardShortcutManager._shortcuts.getAvailableKeyboardShortcuts(), handleForSyncIds);
+  };
+
+  private static _traverseShortcuts = (shortcuts: KeyboardShortcut[], callback: OnShortcutFunc) => {
+    shortcuts.forEach((shortcut: KeyboardShortcut) => {
+      callback(shortcut);
+
+      if (shortcut.shortcutContainer.areKeyboardShortcutsAvailable()) {
+        const childShortcuts = shortcut.shortcutContainer.getAvailableKeyboardShortcuts();
+        KeyboardShortcutManager._traverseShortcuts(childShortcuts, callback);
+      }
+    });
+  };
 
 }

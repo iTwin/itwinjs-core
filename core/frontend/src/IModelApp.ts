@@ -521,6 +521,11 @@ export class IModelApp {
     }
   }
 
+  /** Strictly for tests. @internal */
+  public static stopEventLoop() {
+    this._wantEventLoop = false;
+  }
+
   /** The main event processing loop for Tools and rendering. */
   private static eventLoop() {
     IModelApp._animationRequested = false;
@@ -654,7 +659,7 @@ export class IModelApp {
     if (undefined !== options.width) {
       modal.style.width = `${options.width}px`;
       // allow the dialog to be smaller than the width
-      modal.style.maxWidth = `clamp(0px, calc(100% - (2 * var(--width-border))), ${options.width}px)`;
+      modal.style.maxWidth = `min(100% - (2 * var(--width-border)), ${options.width}px)`;
     }
     if (options.closeBox) {
       const close = IModelApp.makeHTMLElement("p", { parent: modal, className: "imodeljs-modal-close" });

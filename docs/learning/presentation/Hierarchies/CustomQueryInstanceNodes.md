@@ -31,6 +31,7 @@ Query specifications define the actual results of the `CustomQueryInstanceNodes`
 and [ECProperty value](#ecpropertyvalue).
 
 The queries used in the specifications **must** return `ECClassId` and `ECInstanceId` columns, e.g.:
+
 ```SQL
 SELECT ECClassId, ECInstanceId
   FROM [bis].[Element] e

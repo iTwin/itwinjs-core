@@ -120,6 +120,10 @@ $uicore-menu-top-bottom-padding:  $uicore-menu-padding * 2/3;
         color: $buic-foreground-disabled;
       }
 
+      &.core-context-menu-hidden {
+        display: none;
+      }
+
       > .core-context-menu-icon {
         flex-shrink: 0;
         flex-grow: 0;
