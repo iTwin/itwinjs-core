@@ -327,13 +327,8 @@ internal;ModalReturn
 alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
-<<<<<<< HEAD
 alpha;ModifyElementSource
-alpha;NativeApp 
-=======
-internal;ModifyElementSource
 alpha;NativeApp
->>>>>>> b9a21f42130ba841ee0af10d1f55e523d28768e5
 internal;NativeAppLogger
 internal;NoRenderApp
 beta;class NotificationHandler
