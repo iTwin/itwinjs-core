@@ -41,10 +41,13 @@ Planar clip masks provide a two and a half dimensional method for masking the re
 
 The [PlanarClipMaskProps.mode]($common) specifies how the mask geometry is collected.  [PlanarClipMaskMode]$(common) includes collection of masks by models, subcategories, elements (included or excluded) or by a priority scheme that clips against other models with a higher priority.
 
-#### By masking a reality model with a BIM model we can display the BIM model without the overlapping reality model.
+#### By masking a reality model with a BIM model we can display the BIM model without the overlapping reality model
+
 ![Building and reality model without mask](./assets/PlanarMask_BuildingNoMask.png)
 ![Reality model masked by building](./assets/PlanarMask_BuildingMasked.png)
-#### By masking the background map terrain with the reality model we can display the current state of the quarry without intrusive terrain.
+
+#### By masking the background map terrain with the reality model we can display the current state of the quarry without intrusive terrain
+
 ![Quarry and Background Map Terrain without mask](./assets/PlanarMask_QuarryNoMask.png)
 ![Background Map Terrain masked by quarry reality model](./assets/PlanarMask_QuarryMasked.png)
 
@@ -53,3 +56,9 @@ The [PlanarClipMaskProps.mode]($common) specifies how the mask geometry is colle
 Planar clip masks support transparency.  If a mask is not transparent then the masked geometry is omitted completely, if transparency is included then increasing the transparency will decrease the masking and increase a translucent blending of the masked geometry.  A transparency value of 1 would indicate no masking.  If no transparency is included then the transparency value from the mask elements is used.  In the image below a transparent mask is applied to the reality model to show the underground tunnel.
 
 ![Planar clip mask with transparency](./assets/PlanarMask_TunnelTransparent.png)
+CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
+
+## Breaking API change in quantity package
+
+The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
+New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.

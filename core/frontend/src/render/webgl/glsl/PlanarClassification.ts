@@ -91,7 +91,17 @@ if (doMask) {
     return baseColor;
   }
 
-  bool isClassified = !isOutside && (colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0);
+  vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
+  if (colorTexel.b >= 0.5) {
+    if (u_shaderFlags[kShaderBit_IgnoreNonLocatable]) {
+      discard;
+      return vec4(0.0);
+    }
+    colorTexel.b = (colorTexel.b * 255.0 - 128.0) / 127.0;
+  } else {
+    colorTexel.b *= 255.0 / 127.0;
+  }
+  bool isClassified = colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0;
   float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
   if (kClassifierDisplay_Off == param) {
     discard;
@@ -136,8 +146,39 @@ const applyPlanarClassificationColor = applyPlanarClassificationPrelude + // esl
   return classColor;
 `;
 
+<<<<<<< HEAD
 const applyPlanarClassificationColorForThematic = applyPlanarClassificationPrelude + // eslint-disable-line prefer-template
   `
+=======
+const applyPlanarClassificationColorForThematic = `
+  vec2 classPos = v_pClassPos / v_pClassPosW;
+  if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
+    if (u_pClassColorParams.x > kTextureDrape) {
+      return volClassColor(baseColor, depth);
+    }
+    if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
+      discard;
+
+    vec3 rgb = TEXTURE(s_pClassSampler, classPos.xy).rgb;
+    return vec4(rgb, baseColor.a);
+  }
+
+  vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
+  if (colorTexel.b >= 0.5) {
+    if (u_shaderFlags[kShaderBit_IgnoreNonLocatable]) {
+      discard;
+      return vec4(0.0);
+    }
+    colorTexel.b = (colorTexel.b * 255.0 - 128.0) / 127.0;
+  } else {
+    colorTexel.b *= 255.0 / 127.0;
+  }
+  bool isClassified = colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0;
+  float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
+  if (kClassifierDisplay_Off == param)
+    return vec4(0.0);
+
+>>>>>>> master
   vec4 classColor = baseColor;
 
   if (kClassifierDisplay_Element == param) {

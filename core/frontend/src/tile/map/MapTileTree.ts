@@ -11,8 +11,8 @@ import {
   Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
 } from "@bentley/geometry-core";
 import {
-  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority,
-  TerrainHeightOriginMode, TerrainProviderName,
+  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, TerrainHeightOriginMode,
+  TerrainProviderName,
 } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "../../BackgroundMapGeometry";
@@ -648,6 +648,12 @@ export class MapTileTreeReference extends TileTreeReference {
 
     return this._iModel.tiles.getTileTreeOwner(id, mapTreeSupplier);
   }
+  public getLayerImageryTreeRef(index: number) {
+    const baseLayerIndex = this._baseImageryLayerIncluded ? 1 : 0;
+    const treeIndex = index + baseLayerIndex;
+    return index < 0 || treeIndex >= this._imageryTrees.length ? undefined : this._imageryTrees[treeIndex];
+  }
+
   public initializeImagery(): boolean {
     const tree = this.treeOwner.load() as MapTileTree;
     if (undefined === tree)

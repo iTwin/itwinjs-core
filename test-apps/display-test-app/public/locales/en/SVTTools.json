@@ -115,6 +115,12 @@
     "MoveElements": {
       "keyin": "dta move elements"
     },
+    "RotateElementsByAngle": {
+      "keyin": "dta rotate elements angle"
+    },
+    "RotateElementsByPoints": {
+      "keyin": "dta rotate elements points"
+    },
     "PlaceLineString": {
       "keyin": "dta place line string"
     },

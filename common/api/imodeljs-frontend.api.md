@@ -180,7 +180,6 @@ import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
 import { OrbitGtDataManager } from '@bentley/orbitgt-core';
 import { OrderedComparator } from '@bentley/bentleyjs-core';
 import { PackedFeatureTable } from '@bentley/imodeljs-common';
-import { ParseResult } from '@bentley/imodeljs-quantity';
 import { ParseResults } from '@bentley/ui-abstract';
 import { ParserSpec } from '@bentley/imodeljs-quantity';
 import { Path } from '@bentley/geometry-core';
@@ -208,6 +207,7 @@ import { QPoint2d } from '@bentley/imodeljs-common';
 import { QPoint2dList } from '@bentley/imodeljs-common';
 import { QPoint3d } from '@bentley/imodeljs-common';
 import { QPoint3dList } from '@bentley/imodeljs-common';
+import { QuantityParseResult } from '@bentley/imodeljs-quantity';
 import { QueryLimit } from '@bentley/imodeljs-common';
 import { QueryPriority } from '@bentley/imodeljs-common';
 import { QueryQuota } from '@bentley/imodeljs-common';
@@ -226,6 +226,7 @@ import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RenderTexture } from '@bentley/imodeljs-common';
 import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
+import { Response } from '@bentley/itwin-client';
 import { ResponseHandler } from '@bentley/imodeljs-common';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
@@ -1075,21 +1076,93 @@ export interface AppearanceOverrideProps {
 }
 
 // @internal (undocumented)
+export enum ArcGisErrorCode {
+    // (undocumented)
+    InvalidCredentials = 401,
+    // (undocumented)
+    InvalidToken = 498,
+    // (undocumented)
+    NoTokenService = 1001,
+    // (undocumented)
+    TokenRequired = 499,
+    // (undocumented)
+    UnknownError = 1000
+}
+
+// @internal (undocumented)
+export interface ArcGisGenerateTokenOptions {
+    // (undocumented)
+    client: ArcGisTokenClientType;
+    // (undocumented)
+    expiration?: number;
+    // (undocumented)
+    ip?: string;
+    // (undocumented)
+    referer?: string;
+}
+
+// @internal (undocumented)
+export interface ArcGisToken {
+    // (undocumented)
+    expires: number;
+    // (undocumented)
+    ssl: boolean;
+    // (undocumented)
+    token: string;
+}
+
+// @internal (undocumented)
+export enum ArcGisTokenClientType {
+    // (undocumented)
+    ip = 0,
+    // (undocumented)
+    referer = 1,
+    // (undocumented)
+    requestIp = 2
+}
+
+// @internal (undocumented)
+export class ArcGisTokenGenerator {
+    // (undocumented)
+    static fetchTokenServiceUrl(esriRestServiceUrl: string): Promise<string | undefined>;
+    // (undocumented)
+    static formEncode(str: string): string;
+    // (undocumented)
+    generate(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any>;
+    // (undocumented)
+    static getTokenServiceFromInfoJson(json: any): string | undefined;
+    // (undocumented)
+    getTokenServiceUrl(baseUrl: string): Promise<string | undefined>;
+    // (undocumented)
+    static rfc1738Encode(str: string): string;
+    }
+
+// @internal (undocumented)
+export class ArcGisTokenManager {
+    // (undocumented)
+    static getToken(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any>;
+    // (undocumented)
+    static invalidateToken(esriRestServiceUrl: string, userName: string): boolean;
+    }
+
+// @internal (undocumented)
 export class ArcGisUtilities {
     // (undocumented)
     static getEndpoint(url: string): Promise<any | undefined>;
     // (undocumented)
-    static getFootprintJson(url: string): Promise<any>;
+    static getFootprintJson(url: string, credentials?: RequestBasicCredentials): Promise<any>;
     // (undocumented)
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
     // (undocumented)
-    static getServiceJson(url: string, credentials?: RequestBasicCredentials): Promise<any>;
+    static getServiceJson(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<any>;
     // (undocumented)
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     // (undocumented)
-    static validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation>;
+    static hasTokenError(response: Response): boolean;
+    // (undocumented)
+    static validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
 // @internal
@@ -1435,7 +1508,7 @@ export class BingElevationProvider {
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     constructor(settings: MapLayerSettings);
     // (undocumented)
-    constructUrl(row: number, column: number, zoomLevel: number): string;
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
     getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
@@ -1630,13 +1703,6 @@ export enum ClipEventType {
     New = 0,
     // (undocumented)
     NewPlane = 1
-}
-
-// @internal
-export enum ClipResult {
-    NewElements = 1,
-    NotSupported = 0,
-    OriginalElements = 2
 }
 
 // @public
@@ -2091,6 +2157,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     anyMapLayersVisible(overlay: boolean): boolean;
     // @internal (undocumented)
     attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex?: number): void;
+    // @internal (undocumented)
+    attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex?: number): void;
     // @beta
     attachRealityModel(props: ContextRealityModelProps): void;
     get backgroundColor(): ColorDef;
@@ -2114,6 +2182,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeBaseMapProps(props: MapLayerProps | ColorDef): void;
     // @internal (undocumented)
     changeBaseMapTransparency(transparency: number): void;
+    // (undocumented)
+    changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string): void;
     // @internal (undocumented)
     changeMapLayerProps(props: MapLayerProps, index: number, isOverlay: boolean): void;
     // (undocumented)
@@ -2161,6 +2231,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     } | undefined;
     // @internal (undocumented)
     getIsBackgroundMapVisible(): boolean;
+    // @internal (undocumented)
+    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
     // @internal (undocumented)
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
@@ -2478,25 +2550,18 @@ export namespace EditManipulator {
 // @internal (undocumented)
 export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
     clear(): void;
     // (undocumented)
     get count(): number;
-    // (undocumented)
-    readonly elements: string[];
+    readonly elements: Id64Array;
     find(id: Id64String): boolean;
     getSource(): ModifyElementSource.Unknown | ModifyElementSource;
-    // (undocumented)
     readonly groupMarks: GroupMark[];
-    // (undocumented)
     has(id: string): boolean;
-    hilite(): void;
-    // (undocumented)
-    hilitedState: HilitedState;
-    hiliteOnAdd: boolean;
     // (undocumented)
     iModel: IModelConnection;
     invert(arg: Id64Arg): boolean;
@@ -2504,6 +2569,8 @@ export class ElementAgenda {
     get isEmpty(): boolean;
     // (undocumented)
     get length(): number;
+    // (undocumented)
+    manageHiliteState: boolean;
     popGroup(): void;
     // (undocumented)
     remove(arg: Id64Arg): boolean;
@@ -2584,6 +2651,104 @@ export class ElementPicker {
     viewport?: Viewport;
 }
 
+// @alpha (undocumented)
+export abstract class ElementSetTool extends PrimitiveTool {
+    protected get agenda(): ElementAgenda;
+    protected get allowDragSelect(): boolean;
+    protected get allowGroups(): boolean;
+    protected get allowSelectionSet(): boolean;
+    // (undocumented)
+    protected anchorPoint?: Point3d;
+    // (undocumented)
+    protected buildDragSelectAgenda(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<boolean>;
+    // (undocumented)
+    protected buildLocateAgenda(hit: HitDetail): Promise<boolean>;
+    // (undocumented)
+    protected buildSelectionSetAgenda(ss: SelectionSet): Promise<boolean>;
+    protected chooseNextHit(ev: BeButtonEvent): Promise<EventHandled>;
+    protected get clearSelectionSet(): boolean;
+    protected get controlKeyContinuesSelection(): boolean;
+    protected get controlKeyInvertsSelection(): boolean;
+    protected get currentElementCount(): number;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    protected doLocate(ev: BeButtonEvent, newSearch: boolean): Promise<boolean>;
+    // (undocumented)
+    protected doProcessSelectionSetImmediate(): Promise<void>;
+    // (undocumented)
+    protected dragStartPoint?: Point3d;
+    filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus>;
+    // (undocumented)
+    protected gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
+    protected getLocateCandidates(hit: HitDetail): Promise<Id64Arg>;
+    protected getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg>;
+    // (undocumented)
+    protected initAgendaDynamics(): Promise<boolean>;
+    protected get isControlDown(): boolean;
+    protected isElementIdValid(id: Id64String, source: ModifyElementSource): boolean;
+    protected isElementValidForOperation(hit: HitDetail, _out?: LocateResponse): Promise<boolean>;
+    protected get isSelectByPoints(): boolean;
+    protected get isSelectionSetModify(): boolean;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onPostInstall(): void;
+    protected onProcessComplete(): Promise<void>;
+    // (undocumented)
+    onReinitialize(): void;
+    // (undocumented)
+    onResetButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onUnsuspend(): void;
+    protected processAgenda(_ev: BeButtonEvent): Promise<void>;
+    protected processAgendaImmediate(): Promise<void>;
+    protected processDataButton(ev: BeButtonEvent): Promise<EventHandled>;
+    protected processResetButton(ev: BeButtonEvent): Promise<EventHandled>;
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    protected get requireAcceptForSelectionSetDynamics(): boolean;
+    protected get requireAcceptForSelectionSetOperation(): boolean;
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    protected selectByPointsDecorate(context: DecorateContext): void;
+    // (undocumented)
+    protected selectByPointsEnd(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected selectByPointsStart(ev: BeButtonEvent): Promise<boolean>;
+    protected setPreferredElementSource(): void;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected get shouldEnableLocate(): boolean;
+    // (undocumented)
+    protected get shouldEnableSnap(): boolean;
+    // (undocumented)
+    protected useOverlapSelection(ev: BeButtonEvent): boolean;
+    protected get wantAccuSnap(): boolean;
+    protected get wantAdditionalElements(): boolean;
+    protected get wantAdditionalInput(): boolean;
+    protected get wantDynamics(): boolean;
+    protected wantProcessAgenda(_ev: BeButtonEvent): boolean;
+}
+
 // @public
 export class ElementState extends EntityState implements ElementProps {
     constructor(props: ElementProps, iModel: IModelConnection);
@@ -2596,19 +2761,6 @@ export class ElementState extends EntityState implements ElementProps {
     // @internal (undocumented)
     toJSON(): ElementProps;
     readonly userLabel?: string;
-}
-
-// @internal
-export enum ElemMethod {
-    Add = 0,
-    Invert = 1
-}
-
-// @internal
-export enum ElemSource {
-    Fence = 1,
-    Pick = 0,
-    SelectionSet = 2
 }
 
 // @internal
@@ -2738,15 +2890,6 @@ export class Environment {
     readonly sky: SkyBox;
     // (undocumented)
     toJSON(): EnvironmentProps;
-}
-
-// @internal
-export enum ErrorNums {
-    NoFence = 0,
-    NoFenceElems = 1,
-    NoFenceElemsOutside = 2,
-    NoSSElems = 3,
-    NotSupportedElmType = 4
 }
 
 // @public
@@ -3614,19 +3757,12 @@ export enum GraphicType {
     WorldOverlay = 3
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export interface GroupMark {
     // (undocumented)
     source: ModifyElementSource;
     // (undocumented)
     start: number;
-}
-
-// @internal (undocumented)
-export enum HilitedState {
-    No = 2,
-    Unknown = 0,
-    Yes = 1
 }
 
 // @internal (undocumented)
@@ -3887,6 +4023,8 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
     constructor(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection);
     // (undocumented)
     get castsShadows(): boolean;
+    // (undocumented)
+    get imageryProvider(): MapLayerImageryProvider | undefined;
     // (undocumented)
     iModel: IModelConnection;
     // (undocumented)
@@ -4773,7 +4911,7 @@ export class MapLayerFormat {
     // (undocumented)
     static register(): void;
     // (undocumented)
-    static validateSource(_url: string, _credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation>;
+    static validateSource(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
 // @internal (undocumented)
@@ -4788,7 +4926,7 @@ export class MapLayerFormatRegistry {
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
     // (undocumented)
-    validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation>;
+    validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
 // @internal (undocumented)
@@ -4802,7 +4940,7 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     cartoRange?: MapCartoRectangle;
     // (undocumented)
-    abstract constructUrl(row: number, column: number, zoomLevel: number): string;
+    abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
     protected get _filterByCartoRange(): boolean;
     // (undocumented)
@@ -4819,9 +4957,13 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getEPSG3857Y(latitude: number): number;
     // (undocumented)
+    protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): ImageSource | undefined;
+    // (undocumented)
     getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
-    getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
+    protected getRequestAuthorization(): RequestBasicCredentials | undefined;
+    // (undocumented)
+    getToolTip(_strings: string[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)
@@ -4839,9 +4981,13 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     get mutualExclusiveSubLayer(): boolean;
     // (undocumented)
+    readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
+    // (undocumented)
     protected _requestContext: ClientRequestContext;
     // (undocumented)
     protected readonly _settings: MapLayerSettings;
+    // (undocumented)
+    status: MapLayerImageryProviderStatus;
     // (undocumented)
     testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void): void;
     // (undocumented)
@@ -4858,6 +5004,14 @@ export abstract class MapLayerImageryProvider {
     get usesCachedTiles(): boolean;
     // (undocumented)
     protected _usesCachedTiles: boolean;
+}
+
+// @internal (undocumented)
+export enum MapLayerImageryProviderStatus {
+    // (undocumented)
+    RequireAuth = 1,
+    // (undocumented)
+    Valid = 0
 }
 
 // @beta
@@ -4923,13 +5077,15 @@ export class MapLayerSource implements MapLayerProps {
         transparentBackground: boolean | undefined;
     };
     // (undocumented)
+    toLayerSettings(): MapLayerSettings | undefined;
+    // (undocumented)
     transparentBackground?: boolean | undefined;
     // (undocumented)
     url: string;
     // (undocumented)
     userName?: string | undefined;
     // (undocumented)
-    validateSource(): Promise<MapLayerSourceValidation>;
+    validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
 // @internal
@@ -4951,11 +5107,15 @@ export class MapLayerSources {
 // @internal (undocumented)
 export enum MapLayerSourceStatus {
     // (undocumented)
-    InvalidFormat = 1,
+    InvalidCredentials = 1,
     // (undocumented)
-    InvalidTileTree = 2,
+    InvalidFormat = 2,
     // (undocumented)
-    InvalidUrl = 3,
+    InvalidTileTree = 3,
+    // (undocumented)
+    InvalidUrl = 4,
+    // (undocumented)
+    RequireAuth = 5,
     // (undocumented)
     Valid = 0
 }
@@ -5242,6 +5402,8 @@ export class MapTileTreeReference extends TileTreeReference {
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
+    // (undocumented)
+    getLayerImageryTreeRef(index: number): ImageryMapLayerTreeReference | undefined;
     // (undocumented)
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides;
     // (undocumented)
@@ -5987,11 +6149,9 @@ export class ModelState extends EntityState implements ModelProps {
     toJSON(): ModelProps;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export enum ModifyElementSource {
-    DragSelect = 5,
-    Fence = 3,
-    Group = 4,
+    DragSelect = 3,
     Selected = 1,
     SelectionSet = 2,
     Unknown = 0
@@ -6770,7 +6930,7 @@ export class QuantityFormatter implements UnitsProvider {
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
     // (undocumented)
     protected _overrideFormatPropsByQuantityType: Map<string, OverrideFormatEntry>;
-    parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult;
+    parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult;
     registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
@@ -10503,27 +10663,6 @@ export class UpsampledMapTile extends MapTile {
     get loadableTile(): RealityTile;
 }
 
-// @internal
-export enum UsesDragSelect {
-    Box = 0,
-    Line = 1,
-    None = 2
-}
-
-// @internal
-export enum UsesFence {
-    Check = 0,
-    None = 2,
-    Required = 1
-}
-
-// @internal
-export enum UsesSelection {
-    Check = 0,
-    None = 2,
-    Required = 1
-}
-
 // @beta
 export enum VaryingType {
     Float = 0,
@@ -12464,7 +12603,7 @@ export class WmsCapabilities {
     // (undocumented)
     get cartoRange(): MapCartoRectangle | undefined;
     // (undocumented)
-    static create(url: string, credentials?: RequestBasicCredentials): Promise<WmsCapabilities | undefined>;
+    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmsCapabilities | undefined>;
     // (undocumented)
     get featureInfoFormats(): string[] | undefined;
     // (undocumented)
@@ -12547,7 +12686,7 @@ export class WmtsCapabilities {
     // (undocumented)
     readonly contents?: WmtsCapability.Contents;
     // (undocumented)
-    static create(url: string, credentials?: RequestBasicCredentials): Promise<WmtsCapabilities | undefined>;
+    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmtsCapabilities | undefined>;
     // (undocumented)
     static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined;
     // (undocumented)
