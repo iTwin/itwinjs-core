@@ -812,6 +812,34 @@ export enum GroupingSpecificationTypes {
     SameLabelInstance = "SameLabelInstance"
 }
 
+// @alpha (undocumented)
+export interface HierarchyCompareInfo {
+    // (undocumented)
+    changes: PartialHierarchyModification[];
+    // (undocumented)
+    continuationToken?: {
+        prevHierarchyNode: string;
+        currHierarchyNode: string;
+    };
+}
+
+// @alpha (undocumented)
+export namespace HierarchyCompareInfo {
+    export function fromJSON(json: HierarchyCompareInfoJSON): HierarchyCompareInfo;
+    export function toJSON(obj: HierarchyCompareInfo): HierarchyCompareInfoJSON;
+}
+
+// @alpha (undocumented)
+export interface HierarchyCompareInfoJSON {
+    // (undocumented)
+    changes: PartialHierarchyModificationJSON[];
+    // (undocumented)
+    continuationToken?: {
+        prevHierarchyNode: string;
+        currHierarchyNode: string;
+    };
+}
+
 // @public
 export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
 }
@@ -1524,12 +1552,19 @@ export const PRESENTATION_COMMON_ROOT: string;
 // @alpha
 export interface PresentationDataCompareOptions<TIModel, TNodeKey> extends RequestOptionsWithRuleset<TIModel> {
     // (undocumented)
+    continuationToken?: {
+        prevHierarchyNode: string;
+        currHierarchyNode: string;
+    };
+    // (undocumented)
     expandedNodeKeys?: TNodeKey[];
     // (undocumented)
     prev: {
         rulesetOrId?: Ruleset | string;
         rulesetVariables?: RulesetVariable[];
     };
+    // (undocumented)
+    resultSetSize?: number;
 }
 
 // @alpha
@@ -1542,14 +1577,16 @@ export class PresentationError extends BentleyError {
 }
 
 // @alpha (undocumented)
-export enum PresentationRpcEvents {
-    Update = "OnUpdate"
+export enum PresentationIpcEvents {
+    Update = "presentation.onUpdate"
 }
 
 // @public
 export class PresentationRpcInterface extends RpcInterface {
-    // @alpha
+    // @alpha @deprecated (undocumented)
     compareHierarchies(_token: IModelRpcProps, _options: PresentationDataCompareRpcOptions): PresentationRpcResponse<PartialHierarchyModificationJSON[]>;
+    // @alpha (undocumented)
+    compareHierarchiesPaged(_token: IModelRpcProps, _options: PresentationDataCompareRpcOptions): PresentationRpcResponse<HierarchyCompareInfoJSON>;
     // (undocumented)
     computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
     // @deprecated (undocumented)
@@ -2070,6 +2107,8 @@ export class RpcRequestsHandler implements IDisposable {
     readonly clientId: string;
     // (undocumented)
     compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<PartialHierarchyModificationJSON[]>;
+    // (undocumented)
+    compareHierarchiesPaged(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<HierarchyCompareInfoJSON>;
     // (undocumented)
     computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
     // (undocumented)
