@@ -33,12 +33,11 @@ describe("Tools", () => {
     assert.equal(agenda.getSource(), ModifyElementSource.Selected, "setSource selected");
     const idsSet = new Set([ids[0], ids[1], ids[2], ids[3]]);
     agenda.add(idsSet);
-    agenda.setSource(ModifyElementSource.Group);
+    agenda.setSource(ModifyElementSource.Selected);
     assert.equal(agenda.length, 4, "add with IdSet");
     ids.forEach((id) => assert.isTrue(agenda.has(id)));
     assert.isFalse(agenda.has("0x11"), "should not find");
-    assert.equal(agenda.getSource(), ModifyElementSource.Group, "setSource group");
-    agenda.hilite();
+    assert.equal(agenda.getSource(), ModifyElementSource.Selected, "setSource group");
     assert.equal(imodel.hilited.elements.size, 4, "hilite");
     agenda.remove(ids[0]);
     assert.equal(imodel.hilited.elements.size, 3, "remove unhilites");

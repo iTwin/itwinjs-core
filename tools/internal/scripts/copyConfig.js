@@ -20,18 +20,23 @@ exports.builder = (yargs) =>
 
 exports.handler = async (argv) => {
   const rootDir = __dirname.split("tools")[0];
-  let lastIndex = rootDir.lastIndexOf(path.sep + "imodeljs");
-  let pathDir = rootDir.substring(0, lastIndex + 1);
-  const configDir = path.resolve(pathDir, "imodeljs-config");
-  const envFile = path.resolve(configDir, ".env");
 
-  if (!fs.existsSync(configDir) || !fs.existsSync(envFile)) {
-    console.log("Missing either imodeljs-config directory or .env file");
+  let envFile = process.env.imjs_config_file ? process.env.imjs_config_file : "";
+
+  if (!envFile) {
+    const lastIndex = rootDir.lastIndexOf(path.sep + "imodeljs");
+    const pathDir = rootDir.substring(0, lastIndex + 1);
+    const configDir = path.resolve(pathDir, "imodeljs-config");
+    envFile = path.resolve(configDir, ".env");
+  }
+
+  if (!fs.existsSync(envFile)) {
+    console.log(`The ${envFile} path does not exist.`);
     return;
   }
 
-  for (let destination of argv.out) {
-    const destRoot = path.resolve(rootDir, "test-apps", destination)
+  for (const destination of argv.out) {
+    const destRoot = path.resolve(rootDir, destination)
     if (!fs.existsSync(destRoot)) {
       console.log(`Cannot find the root directory of the destination: ${destRoot}`)
       return;

@@ -1674,7 +1674,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Process the volume classifiers.
     const vcHiliteCmds = commands.getCommands(RenderPass.HiliteClassification);
-    if (0 !== vcHiliteCmds.length) {
+    if (0 !== vcHiliteCmds.length && undefined !== this._vcBranchState) {
       // Set the stencil for the given classifier stencil volume.
       system.frameBufferStack.execute(this._frameBuffers.stencilSet!, false, false, () => {
         this.target.pushState(this._vcBranchState!);

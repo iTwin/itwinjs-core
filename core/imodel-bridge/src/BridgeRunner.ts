@@ -210,7 +210,7 @@ export class BridgeRunner {
 }
 
 abstract class IModelDbBuilder {
-  protected _imodel?: IModelDb;
+  protected _imodel?: BriefcaseDb | SnapshotDb;
   protected _jobSubjectName: string;
   protected _jobSubject?: Subject;
 
@@ -278,7 +278,6 @@ abstract class IModelDbBuilder {
 
   protected _onChangeChannel(_newParentId: Id64String): void {
     assert(this._imodel !== undefined);
-    assert(!this._imodel.txns.hasLocalChanges);
   }
 
   protected abstract _enterChannel(channelRootId: Id64String, lockRoot?: boolean): Promise<void>;

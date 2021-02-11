@@ -15,7 +15,6 @@ import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
 import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
 import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
-import { EventSource } from '@bentley/imodeljs-frontend';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
@@ -264,8 +263,6 @@ export interface PresentationManagerProps {
     // @alpha
     activeUnitSystem?: PresentationUnitSystem;
     clientId?: string;
-    // @internal (undocumented)
-    eventSource?: EventSource;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
 }

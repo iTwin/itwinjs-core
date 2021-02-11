@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-ninezone",
+      "comment": "Floating widget opacity for UI 2.0. Slider formatMin, formatMax props.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "51122937+DanEastBentley@users.noreply.github.com"
+}

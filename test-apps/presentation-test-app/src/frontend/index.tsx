@@ -6,10 +6,9 @@
 import "./index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Config, isElectronRenderer, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration,
-} from "@bentley/imodeljs-common";
+import { Config, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
@@ -19,7 +18,6 @@ import { UiComponents } from "@bentley/ui-components";
 import rpcs from "../common/Rpcs";
 import { MyAppFrontend } from "./api/MyAppFrontend";
 import App from "./components/app/App";
-import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 // initialize logging
 Logger.initializeToConsole();
@@ -28,9 +26,7 @@ Logger.setLevelDefault(LogLevel.Warning);
 // initialize RPC
 (function initRpc() {
   RpcConfiguration.developmentMode = true;
-  if (isElectronRenderer) {
-    ElectronFrontend.initialize({ rpcInterfaces: rpcs });
-  } else {
+  if (!ProcessDetector.isElectronAppFrontend) {
     const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface
     BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
@@ -41,7 +37,7 @@ Logger.setLevelDefault(LogLevel.Warning);
 export class SampleApp {
   private static _ready: Promise<void>;
   public static async startup(): Promise<void> {
-    await IModelApp.startup();
+    await ElectronApp.startup({ iModelApp: { rpcInterfaces: rpcs } });
     const readyPromises = new Array<Promise<void>>();
 
     const localizationNamespace = IModelApp.i18n.registerNamespace("Sample");

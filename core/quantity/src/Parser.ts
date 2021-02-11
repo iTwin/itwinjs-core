@@ -3,21 +3,49 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { QuantityConstants } from "./Constants";
-import { QuantityStatus } from "./Exception";
 import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
 import { PotentialParseUnit, QuantityProps, UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { ParserSpec } from "./ParserSpec";
 import { Quantity } from "./Quantity";
 
+/** Possible parser errors
+ * @alpha
+ */
+export enum ParseError {
+  UnableToGenerateParseTokens = 1,
+  NoValueOrUnitFoundInString,
+  UnitLabelSuppliedButNotMatched,
+  UnknownUnit,
+  UnableToConvertParseTokensToQuantity,
+  InvalidParserSpec,
+}
+
+/** Parse error result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
+ * @alpha
+ */
+export interface ParseQuantityError {
+  /** Union discriminator for [[QuantityParseResult]]. */
+  ok: false;
+  /** The specific error that occurred during parsing. */
+  error: ParseError;
+}
+
+/** Successful result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
+ * @alpha
+ */
+export interface ParsedQuantity {
+  /** Union discriminator for [[QuantityParseResult]]. */
+  ok: true;
+  /** The magnitude of the parsed quantity. */
+  value: number;
+}
+
 /**
  * Defines Results of parsing a string input by a user into its desired value type
  * @alpha
  */
-export interface ParseResult {
-  value?: number | undefined;
-  status: QuantityStatus;
-}
+export type QuantityParseResult = ParsedQuantity | ParseQuantityError;
 
 /** A ParseToken holds either a numeric or string token extracted from a string that represents a quantity value.
  * @alpha
@@ -66,6 +94,15 @@ class FractionToken {
  */
 export class Parser {
   private static _log = false;
+
+  public static isParsedQuantity(item: QuantityParseResult): item is ParsedQuantity {
+    return item.ok;
+  }
+
+  public static isParseError(item: QuantityParseResult): item is ParseQuantityError {
+    return !item.ok;
+  }
+
   private static checkForScientificNotation(index: number, stringToParse: string, uomSeparatorToIgnore: number): ScientificToken {
     let exponentString = "";
     let i = index + 1;
@@ -357,7 +394,7 @@ export class Parser {
     return undefined;
   }
 
-  private static getQuantityValueFromParseTokens(tokens: ParseToken[], format: Format, unitsConversions: UnitConversionSpec[]): ParseResult {
+  private static getQuantityValueFromParseTokens(tokens: ParseToken[], format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
     // common case where single value is supplied
     if (tokens.length === 1) {
@@ -366,18 +403,18 @@ export class Parser {
           const conversion = Parser.tryFindUnitConversion(defaultUnit.label, unitsConversions);
           if (conversion) {
             const value = (tokens[0].value as number) * conversion.factor + conversion.offset;
-            return { value, status: QuantityStatus.Success };
+            return {  ok: true, value };
           }
         }
         // if no conversion or no defaultUnit, just return parsed number
-        return { value: tokens[0].value as number, status: QuantityStatus.UnknownUnit };
+        return {ok: true, value: tokens[0].value as number };
       } else {
         // only the unit label was specified so assume magnitude of 1
         const conversion = Parser.tryFindUnitConversion(tokens[0].value as string, unitsConversions);
         if (undefined !== conversion)
-          return { value: conversion.factor + conversion.offset, status: QuantityStatus.Success };
+          return { ok: true, value: conversion.factor + conversion.offset };
         else
-          return { status: QuantityStatus.NoValueOrUnitFoundInString };
+          return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
       }
     }
 
@@ -387,19 +424,19 @@ export class Parser {
         const conversion = Parser.tryFindUnitConversion(tokens[1].value as string, unitsConversions);
         if (conversion) {
           const value = (tokens[0].value as number) * conversion.factor + conversion.offset;
-          return { value, status: QuantityStatus.Success };
+          return {ok: true, value };
         }
         // if no conversion, just return parsed number and ignore value in second token
-        return { value: tokens[0].value as number, status: QuantityStatus.UnitLabelSuppliedButNotMatched };
+        return {ok: true,  value: tokens[0].value as number };
       } else {  // unit specification comes before value (like currency)
         if (tokens[1].isNumber && tokens[0].isString) {
           const conversion = Parser.tryFindUnitConversion(tokens[0].value as string, unitsConversions);
           if (conversion) {
             const value = (tokens[1].value as number) * conversion.factor + conversion.offset;
-            return { value, status: QuantityStatus.Success };
+            return { ok: true, value };
           }
           // if no conversion, just return parsed number and ignore value in second token
-          return { value: tokens[1].value as number, status: QuantityStatus.UnitLabelSuppliedButNotMatched };
+          return {ok: true, value: tokens[1].value as number };
         }
       }
     }
@@ -419,10 +456,10 @@ export class Parser {
           }
         }
       }
-      return { value: mag, status: QuantityStatus.Success };
+      return {ok: true,  value: mag };
     }
 
-    return { status: QuantityStatus.UnableToConvertParseTokensToQuantity };
+    return {ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
   }
 
   /** Method to generate a Quantity given a string that represents a quantity value.
@@ -430,7 +467,7 @@ export class Parser {
    *  @param parserSpec unit label if not explicitly defined by user. Must have matching entry in supplied array of unitsConversions.
    *  @param defaultValue default value to return if parsing is un successful
    */
-  public static parseQuantityString(inString: string, parserSpec: ParserSpec): ParseResult {
+  public static parseQuantityString(inString: string, parserSpec: ParserSpec): QuantityParseResult {
     return Parser.parseToQuantityValue(inString, parserSpec.format, parserSpec.unitConversions);
   }
 
@@ -439,10 +476,10 @@ export class Parser {
    *  @param format   Defines the likely format of inString. Primary unit serves as a default unit if no unit label found in string.
    *  @param unitsConversions dictionary of conversions used to convert from unit used in inString to output quantity
    */
-  public static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): ParseResult {
+  public static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
     if (tokens.length === 0)
-      return { status: QuantityStatus.UnableToGenerateParseTokens };
+      return {ok: false, error: ParseError.UnableToGenerateParseTokens };
 
     if (Parser._log) {
       // eslint-disable-next-line no-console
