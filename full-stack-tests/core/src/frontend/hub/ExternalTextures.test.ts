@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@bentley/imodeljs-frontend/lib/webgl";
-import { TestUtility } from "./TestUtility";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestUtility } from "./TestUtility";
 
 describe("external texture requests (#integration)", () => {
   const projectName = "iModelJsIntegrationTest";
@@ -35,7 +35,7 @@ describe("external texture requests (#integration)", () => {
     });
     const projectId = await TestUtility.getTestProjectId(projectName);
     const iModelId = await TestUtility.getTestIModelId(projectId, "SmallTex");
-    imodel = await RemoteBriefcaseConnection.open(projectId, iModelId);
+    imodel = await CheckpointConnection.openRemote(projectId, iModelId);
   });
 
   after(async () => {

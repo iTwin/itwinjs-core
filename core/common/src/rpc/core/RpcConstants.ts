@@ -68,15 +68,6 @@ export enum RpcContentType {
   Stream,
 }
 
-/** RPC supported mobile platforms.
- * @beta
- */
-export enum RpcMobilePlatform {
-  Unknown,
-  Android,
-  iOS,
-}
-
 /** Endpoints for RPC protocols.
  * @public
  */

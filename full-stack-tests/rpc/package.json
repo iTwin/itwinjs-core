@@ -25,6 +25,7 @@
     "@bentley/itwin-client": "2.13.0-dev.9",
     "@bentley/imodeljs-common": "2.13.0-dev.9",
     "@bentley/electron-manager": "2.13.0-dev.9",
+    "@bentley/mobile-manager": "2.13.0-dev.9",
     "chai": "^4.1.2",
     "electron": "^11.1.0",
     "express": "^4.16.3",
