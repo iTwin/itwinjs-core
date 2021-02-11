@@ -32,7 +32,7 @@ export class PhysicalModelCombiner extends IModelTransformer {
     } else {
       combiner.importer.simplifyElementGeometry = true;
     }
-    combiner.combine();
+    await combiner.combine();
     combiner.dispose();
     sourceDb.close();
     targetDb.close();
@@ -42,7 +42,6 @@ export class PhysicalModelCombiner extends IModelTransformer {
   private _numSourceRelationships = 0;
   private _numSourceRelationshipsProcessed = 0;
   private readonly _reportingInterval = 1000;
-  // private readonly _autoSaveThreshold = 64 * 1024 * 1024;
   private _targetComponentsModelId: Id64String = Id64.invalid;
   private _targetPhysicalTagsModelId: Id64String = Id64.invalid;
   private _startTime = new Date();
@@ -57,13 +56,13 @@ export class PhysicalModelCombiner extends IModelTransformer {
     });
     Logger.logInfo("Progress", `numSourceRelationships=${this._numSourceRelationships}`);
   }
-  public combine(): void {
+  public async combine(): Promise<void> {
     this.exporter.visitRelationships = false;
     this.initSubCategoryFilter();
-    this.processAll();
+    await this.processAll();
     this.targetDb.saveChanges(`Finished processing elements`);
     this.exporter.visitRelationships = true;
-    this.processRelationships(ElementRefersToElements.classFullName);
+    await this.processRelationships(ElementRefersToElements.classFullName);
     this.targetDb.saveChanges(`Finished processing relationships`);
     this.logElapsedTime();
   }
@@ -136,12 +135,7 @@ export class PhysicalModelCombiner extends IModelTransformer {
     Logger.logInfo("Progress", `Processed ${this._numSourceRelationshipsProcessed} of ${this._numSourceRelationships} relationships`);
     this.logElapsedTime();
     this.logMemoryUsage();
-    // if (IModelHost.platform.DgnDb.getSQLiteMemoryUsed() > this._autoSaveThreshold) {
-    //   Logger.logInfo("Progress", "Saving changes");
-    //   this.targetDb.saveChanges("Auto-save");
-    //   IModelHost.platform.DgnDb.getSQLiteMemoryUsed(true); // reset memory used
-    //   this.logMemoryUsage();
-    // }
+    this.targetDb.saveChanges();
     super.onProgress();
   }
   private logMemoryUsage(suffix?: string): void {
@@ -152,8 +146,6 @@ export class PhysicalModelCombiner extends IModelTransformer {
       values.push(`${key}=${this.toMB(used[key])}MB `);
     }
     Logger.logInfo("Memory", `Memory: ${values.join()}${suffix ?? ""}`);
-    // Logger.logInfo("Memory", `SQLite Pager Cache: ${this.toMB(this.targetDb.nativeDb.getPagerCacheUsed())}MB`);
-    // Logger.logInfo("Memory", `SQLite Memory Used: ${this.toMB(IModelHost.platform.DgnDb.getSQLiteMemoryUsed())}MB`);
   }
   private toMB(numBytes: number): number {
     return Math.round(numBytes / 1024 / 1024 * 100) / 100;
