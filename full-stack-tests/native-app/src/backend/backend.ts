@@ -9,6 +9,7 @@ import "./RpcImpl";
 import * as path from "path";
 import { BentleyLoggerCategory, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { loadEnv } from "@bentley/config-loader";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import { BackendLoggerCategory, IModelHostConfiguration, NativeLoggerCategory } from "@bentley/imodeljs-backend";
@@ -39,7 +40,7 @@ export function setupDebugLogLevels() {
 }
 
 async function init() {
-  IModelJsConfig.init(true, true, Config.App);
+  loadEnv(path.join(__dirname, "..", "..", ".env"));
 
   RpcConfiguration.developmentMode = true;
 

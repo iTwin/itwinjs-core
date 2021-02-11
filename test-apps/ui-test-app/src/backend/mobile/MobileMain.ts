@@ -6,7 +6,6 @@
 import * as fs from "fs";
 import * as path from "path";
 import { Config, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import { AndroidHost, IOSHost, MobileRpcManager } from "@bentley/mobile-manager/lib/MobileBackend";
 import { Presentation } from "@bentley/presentation-backend";
@@ -22,7 +21,6 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
     }
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Trace);
-    IModelJsConfig.init(true /* suppress error */, true /* suppress message */, Config.App);
 
     // initialize imodeljs-backend
     if (ProcessDetector.isIOSAppBackend)
