@@ -10,26 +10,26 @@ For that to work, the localization system needs a dictionary of key-to-string su
 
 For example, suppose you are developing an application called SafetyBase and you want to group information, warning, and error messages into a localization namespace. Name the JSON file SafetyBaseMessages.json, put it into the public/locales/en directory, and put the following JSON in it:
 
- ```json
- {
-   "info": {
-     "login": {
-       "notLoggedIn": "You are not currently logged in.",
-       "loggedIn": "You are logged in as {{userName}}."
-     }
-   },
-   "warning": {
-     "login": {
-       "mustLogin": "That feature is unavailable unless you log.",
-       "notAuthorized": "You are not authorized to access that resource."
-     }
-   },
-   "error": {
-     "loginIncorrect": "The username / password combination is not valid.",
-     "offline": "Network connection not available."
-   }
- }
- ```
+```json
+{
+  "info": {
+    "login": {
+      "notLoggedIn": "You are not currently logged in.",
+      "loggedIn": "You are logged in as {{userName}}."
+    }
+  },
+  "warning": {
+    "login": {
+      "mustLogin": "That feature is unavailable unless you log.",
+      "notAuthorized": "You are not authorized to access that resource."
+    }
+  },
+  "error": {
+    "loginIncorrect": "The username / password combination is not valid.",
+    "offline": "Network connection not available."
+  }
+}
+```
 
 The messages can now be accessed by first registering the namespace, and then using the translate method:
 
@@ -69,28 +69,28 @@ PlaceSprinkler.register(toyToolsNS);
 Then the appropriate entry in the english version of SafetyBaseTools.json file might look like this:
 
 ```json
- {
-   "tools": {
-     "Place": {
-       "Sprinkler": {
-         "keyin": "Place Sprinkler",
-         "flyover": "Place Sprinkler Component.",
-         "description": "Puts a new Sprinkler Component in the SafetyBase System.",
-         "prompt1": "Enter Sprinkler origin.",
-         "prompt2": "Rotate Sprinkler to desired position.",
-         "successStatus": "Sprinkler successfully placed."
-       }
-     }
-   }
- }
- ```
+{
+  "tools": {
+    "Place": {
+      "Sprinkler": {
+        "keyin": "Place Sprinkler",
+        "flyover": "Place Sprinkler Component.",
+        "description": "Puts a new Sprinkler Component in the SafetyBase System.",
+        "prompt1": "Enter Sprinkler origin.",
+        "prompt2": "Rotate Sprinkler to desired position.",
+        "successStatus": "Sprinkler successfully placed."
+      }
+    }
+  }
+}
+```
 
 If you omit the "flyover" key, the keyin property is used for the flyover text. Similarly, if "description" key is not found, the fallback is the value of the flyover property.
 
 In this example, the prompt1 and prompt2 keys are not used by the system - they could be used by your application during the operation of the Place Sprinkler command. They would be retrieved using this code:
 
 ```ts
- const firstPrompt: string = IModelApp.i18n.translate ("SafetyBaseTools:Place.Sprinkler.prompt1");
+const firstPrompt: string = IModelApp.i18n.translate ("SafetyBaseTools:Place.Sprinkler.prompt1");
 ```
 
 Since your code retrieves those localized strings, they do not have to be subkeys of "tools.Place.Sprinkler". They could be separate keys in the same JSON file, or could even be in a different JSON file (in which case the namespace would be different). The convention demonstrated in the example above has the advantage of keeping the localizable strings associated with a particular tool all together, but the disadvantage that prompts or messages that might be usable for multiple tools would be duplicated in each tool.

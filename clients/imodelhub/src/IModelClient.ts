@@ -24,7 +24,7 @@ import { CheckpointV2Handler } from "./imodelhub/CheckpointsV2";
 
 /**
  * Base class that allows access to different iModel related Class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
- * @beta
+ * @public
  */
 export abstract class IModelClient {
   protected _handler: IModelBaseHandler;
@@ -69,6 +69,7 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[HubIModel]].
+   * @beta
    */
   public get iModel(): IModelHandler {
     return new IModelHandler(new IModelsHandler(this._handler, this._fileHandler));
@@ -84,7 +85,6 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[ChangeSet]]s.
-   * @beta
    */
   public get changeSets(): ChangeSetHandler {
     return new ChangeSetHandler(this._handler, this._fileHandler);
@@ -92,7 +92,7 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[Checkpoint]]s.
-   * @alpha
+   * @internal
    */
   public get checkpoints(): CheckpointHandler {
     return new CheckpointHandler(this._handler, this._fileHandler);
@@ -100,7 +100,7 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[CheckpointV2]]s.
-   * @alpha
+   * @internal
    */
   public get checkpointsV2(): CheckpointV2Handler {
     return new CheckpointV2Handler(this._handler);
@@ -108,7 +108,7 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[Lock]]s.
-   * @alpha
+   * @internal
    */
   public get locks(): LockHandler {
     return new LockHandler(this._handler);
@@ -116,7 +116,7 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [Code]($common)s.
-   * @alpha
+   * @internal
    */
   public get codes(): CodeHandler {
     return new CodeHandler(this._handler);
@@ -124,7 +124,6 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[UserInfo]].
-   * @alpha
    */
   public get users(): UserInfoHandler {
     return new UserInfoHandler(this._handler);
@@ -132,7 +131,6 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[Version]]s.
-   * @beta
    */
   public get versions(): VersionHandler {
     return new VersionHandler(this._handler);
@@ -140,7 +138,6 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[Thumbnail]]s.
-   * @alpha
    */
   public get thumbnails(): ThumbnailHandler {
     return new ThumbnailHandler(this._handler);
@@ -180,6 +177,7 @@ export abstract class IModelClient {
   /**
    * Adds a method that will be called for every request to modify HttpRequestOptions.
    * @param func Method that will be used to modify HttpRequestOptions.
+   * @beta
    */
   public use(transformer: HttpRequestOptionsTransformer) {
     this._handler.use(transformer);

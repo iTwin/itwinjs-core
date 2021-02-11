@@ -217,11 +217,11 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     let refreshState = false;
     // istanbul ignore else
     if (this._childSyncIds && this._childSyncIds.size > 0)
-      if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value)))
+      if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value.toLowerCase())))
         this._childRefreshRequired = true;  // this is cleared when render occurs
     let newState: GroupItemState = { ...this.state };
     if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
-      refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase())); // eslint-disable-line deprecation/deprecation
     if (refreshState || this._childRefreshRequired) {
       if (this.props.groupItemDef.stateFunc) // eslint-disable-line deprecation/deprecation
         newState = this.props.groupItemDef.stateFunc(newState) as GroupItemState; // eslint-disable-line deprecation/deprecation

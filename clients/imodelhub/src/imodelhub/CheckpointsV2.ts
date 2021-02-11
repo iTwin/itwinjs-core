@@ -18,7 +18,7 @@ import { addSelectContainerAccessKey } from "./HubQuery";
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /** [[CheckpointV2]] creation state.
- * @alpha
+ * @internal
  */
 export enum CheckpointV2State {
   /** CheckpointV2 creation is in progress. */
@@ -30,7 +30,7 @@ export enum CheckpointV2State {
 }
 
 /** [[CheckpointV2]] generation error id.
- * @alpha
+ * @internal
  */
 export enum CheckpointV2ErrorId {
   UnknownError = 0,
@@ -44,7 +44,7 @@ export enum CheckpointV2ErrorId {
 /**
  * Checkpoint is a copy of the master file, that is intended to be read-only and reduces amount of merging required to get an iModel to a specific previous state.
  * [[CheckpointV2]] is stored as a set of binary blocks, while [[Checkpoint]] is a single binary file.
- * @alpha
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.CheckpointV2", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class CheckpointV2 extends WsgInstance {
@@ -99,7 +99,7 @@ export class CheckpointV2 extends WsgInstance {
 
 /**
  * Query object for getting [[CheckpointV2]]s. You can use this to modify the [[CheckpointV2Handler.get]] results.
- * @alpha
+ * @internal
  */
 export class CheckpointV2Query extends WsgQuery {
   /** Query will return [[CheckpointV2]] with specified [[ChangeSet]] id.
@@ -115,8 +115,8 @@ export class CheckpointV2Query extends WsgQuery {
    * This query returns a closest CheckpointV2 that will reach target ChangeSet by only merging forward. This resets all previously set filters.
    * @returns This query.
    */
-  public precedingCheckpoint(targetChangeSetId: string): this {
-    this.filter(`PrecedingCheckpoint-backward-ChangeSet.Id+eq+'${targetChangeSetId}'`);
+  public precedingCheckpointV2(targetChangeSetId: string): this {
+    this.filter(`PrecedingCheckpointV2-backward-ChangeSet.Id+eq+'${targetChangeSetId}'`);
     return this;
   }
 
@@ -151,14 +151,14 @@ export class CheckpointV2Query extends WsgQuery {
 /**
  * Handler for managing [[CheckpointV2]]s. Use [[IModelClient.checkpointsV2]] to get an instance of this class.
  * In most cases, you should use [BriefcaseDb]($backend) methods instead.
- * @alpha
+ * @internal
  */
 export class CheckpointV2Handler {
   private _handler: IModelBaseHandler;
 
   /** Constructor for CheckpointV2Handler. Use [[IModelClient]] instead of directly constructing this.
    * @param handler Handler for WSG requests.
-   * @alpha
+   * @internal
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;
@@ -167,7 +167,7 @@ export class CheckpointV2Handler {
   /** Get relative url for [[CheckpointV2]] requests.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the checkpoint.
-   * @alpha
+   * @internal
    */
   private getRelativeUrl(iModelId: GuidString, checkpointId?: number) {
     return `/Repositories/iModel--${iModelId}/iModelScope/CheckpointV2/${checkpointId || ""}`;

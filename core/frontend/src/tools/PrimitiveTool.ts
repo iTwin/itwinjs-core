@@ -23,7 +23,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
 
   /** Get the iModel for this tool.
-   * @beta
+   * @internal
    */
   public get iModel(): EditableConnection { return this.targetView!.view.iModel as EditableConnection; }
 

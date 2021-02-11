@@ -2,6 +2,57 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/ui-core_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update components that support providing refs via React.forwardRef to work better with document generation.  "
+          },
+          {
+            "comment": "Add option to use a 'x-small' webfont icon."
+          },
+          {
+            "comment": "Add nested popup support to components that use HOC withOnOutsideClick."
+          },
+          {
+            "comment": "Fix bug processing zero value in Select options."
+          },
+          {
+            "comment": "Fix calling of onClick and onSelect calls when ContextMenuItem is disabled"
+          },
+          {
+            "comment": "Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fi"
+          },
+          {
+            "comment": "updated `ExpandableBlock` component to be able to take in title as JSX.Element and a tooltip, in which title string property can be passed"
+          },
+          {
+            "comment": "updated `ExpandableBlock` component to be able to take in title as JSX.Element and a tooltip, in which title string property can be passed"
+          },
+          {
+            "comment": "Add partial checkbox handling to TreeNode"
+          },
+          {
+            "comment": "Initial implementation of AccuDraw UI"
+          },
+          {
+            "comment": "Added ui-core learning docs content and added Notification.md, Style.md & Tooltip.md ui-core learning doc files."
+          },
+          {
+            "comment": "Added support to ExpandableList for updating the active block programmatically"
+          },
+          {
+            "comment": "Fix controlled/uncontrolled react warning in Select component."
+          },
+          {
+            "comment": "Added disabled support to Select component options"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/ui-core_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

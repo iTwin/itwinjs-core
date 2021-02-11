@@ -10,7 +10,8 @@ import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
-  AbstractMenuItemProps, AbstractToolbarProps, DialogLayoutDataProvider, DialogProps, IMatch, OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc,
+  AbstractMenuItemProps, AbstractToolbarProps, DialogLayoutDataProvider, DialogProps, IMatch,
+  OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc,
   Primitives, PropertyDescription, PropertyRecord, RelativePosition, UiAdmin,
 } from "@bentley/ui-abstract";
 import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager";
@@ -23,6 +24,7 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
 import { UiDataProvidedDialog } from "../dialog/UiDataProvidedDialog";
+import { FrameworkAccuDrawUiAdmin } from "../accudraw/FrameworkAccuDrawUiAdmin";
 
 /** Controls whether localized and/or non-localized key-in strings appear in a KeyinField's auto-completion list.
  * @beta
@@ -53,6 +55,11 @@ export interface KeyinEntry {
  */
 export class FrameworkUiAdmin extends UiAdmin {
   private _localizedKeyinPreference: KeyinFieldLocalization = KeyinFieldLocalization.NonLocalized;
+
+  constructor() {
+    super();
+    this.accuDrawUi = new FrameworkAccuDrawUiAdmin();
+  }
 
   public get localizedKeyinPreference(): KeyinFieldLocalization { return this._localizedKeyinPreference; }
   public set localizedKeyinPreference(preference: KeyinFieldLocalization) { this._localizedKeyinPreference = preference; }
@@ -414,13 +421,13 @@ export class FrameworkUiAdmin extends UiAdmin {
   /** Closes the Tool Settings Ui popup. */
   public closeDialog(dialogId: string): boolean {
     // istanbul ignore else
-    if (ModelessDialogManager.dialogManager.dialogs.findIndex ((info) => info.id === dialogId)) {
+    if (ModelessDialogManager.dialogManager.dialogs.findIndex((info) => info.id === dialogId)) {
       ModelessDialogManager.closeDialog(dialogId);
       return true;
     }
 
     // istanbul ignore else
-    if (ModalDialogManager.dialogManager.dialogs.findIndex ((info) => info.id === dialogId)) {
+    if (ModalDialogManager.dialogManager.dialogs.findIndex((info) => info.id === dialogId)) {
       ModalDialogManager.closeDialog();
       return true;
     }

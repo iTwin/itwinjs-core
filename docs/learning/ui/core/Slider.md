@@ -4,10 +4,10 @@ The [Slider]($ui-core) React component displays a range slider with thumbs for c
 The Slider component also support multiple values.
 The following items may optionally be shown:
 
-* Minimum and maximum labels
-* Minimum and maximum icons
-* Tick marks
-* Tick labels
+- Minimum and maximum labels
+- Minimum and maximum icons
+- Tick marks
+- Tick labels
 
 **Note**: The Slider component uses various components from the [react-compound-slider](https://www.npmjs.com/package/react-compound-slider) package internally.
 
@@ -16,9 +16,9 @@ The following items may optionally be shown:
 The Slider component has numerous properties, as defined in the [SliderProps]($ui-core) interface.
 There are 3 required props:
 
-* min - Minimum value
-* max - Maximum value
-* values - Array of values to set the Slider to initially
+- min - Minimum value
+- max - Maximum value
+- values - Array of values to set the Slider to initially
 
 ### Controlling Interaction
 
@@ -26,9 +26,9 @@ The `step` prop specifies the step value. The default is 0.1.
 
 The `mode` prop specifies the interaction mode. The default is 1. Possible values:
 
-* 1 - allows handles to cross each other.
-* 2 - keeps the sliders from crossing and separated by a step.
-* 3 - makes the handles pushable and keep them a step apart.
+- 1 - allows handles to cross each other.
+- 2 - keeps the sliders from crossing and separated by a step.
+- 3 - makes the handles pushable and keep them a step apart.
 
 The `reversed` prop indicates whether the display of the Slider values is reversed.
 
@@ -155,4 +155,4 @@ The `showTickLabels` prop is added in this example.
 
 ## API Reference
 
-* [Slider]($ui-core:Slider)
+- [Slider]($ui-core:Slider)

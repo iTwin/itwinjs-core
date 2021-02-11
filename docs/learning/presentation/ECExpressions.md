@@ -258,6 +258,7 @@ Symbol                    | Type    | Value
 
 ECInstance expression context provides access to ECInstance property values.
 Example:
+
 ```
 this.PropertyName
 this.StructPropertyName.PropertyName

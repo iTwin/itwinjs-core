@@ -7,8 +7,8 @@ import "./RpcImpl";
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import * as http from "http";
 import * as path from "path";
-import { Config, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { loadEnv } from "@bentley/config-loader";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
@@ -22,7 +22,7 @@ import serveHandler = require("serve-handler");
 /* eslint-disable no-console */
 
 async function init() {
-  IModelJsConfig.init(true, true, Config.App);
+  loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 
   // Bootstrap the cloud environment

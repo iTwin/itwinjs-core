@@ -33,6 +33,12 @@ internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
 public;AppearanceOverrideProps
+internal;ArcGisErrorCode
+internal;ArcGisGenerateTokenOptions
+internal;ArcGisToken
+internal;ArcGisTokenClientType
+internal;ArcGisTokenGenerator
+internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
@@ -75,7 +81,6 @@ beta;ChangeFlags
 public;ChangeViewedModel2dOptions
 public;CheckpointConnection 
 alpha;ClipEventType
-internal;ClipResult
 public;Cluster
 internal;CompassMode
 internal;ContextMode
@@ -106,6 +111,7 @@ alpha;DepthPointSource
 public;DepthRangeNpc
 alpha;DesktopAuthorizationClient 
 internal;DevTools
+beta;DisclosedTileTreeSet 
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
@@ -123,20 +129,18 @@ deprecated;ConcurrencyControl
 deprecated;ModelEditor
 alpha;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
-internal;ElementAgenda
+alpha;ElementAgenda
 alpha;ElementEditor3d
 public;ElementLocateManager
 public;ElementPicker
+alpha;class ElementSetTool 
 public;ElementState 
-internal;ElemMethod
-internal;ElemSource
 internal;EllipsoidTerrainProvider 
 public;EmphasizeElements 
 public;EmphasizeElementsProps
 beta;EngineeringLengthDescription 
 public;EntityState 
 public;Environment
-internal;ErrorNums
 public;EventController
 public;EventHandled
 beta;class Extension
@@ -203,6 +207,8 @@ internal;GltfReaderProps
 internal;GltfReaderResult 
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
+beta;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
+beta;GpuMemoryLimits
 public;GraphicBranch 
 internal;GraphicBranchFrustum
 internal;GraphicBranchOptions
@@ -211,8 +217,7 @@ public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
 public;GraphicType
-internal;GroupMark
-internal;HilitedState
+alpha;GroupMark
 internal;Hilites
 beta;HiliteSet
 public;HitDetail
@@ -275,12 +280,15 @@ internal;LockedStates
 internal;loggerCategory = "imodeljs-frontend.Extension"
 beta;LookAndMoveTool 
 public;LookViewTool 
+internal;LRUTileList
+internal;LRUTileListNode
 alpha;ManipulatorToolEvent
 internal;MapCartoRectangle 
 internal;MapLayerFormat
 internal;MapLayerFormatRegistry
 internal;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
+internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 internal;MapLayerSetting
 internal;MapLayerSettingsService
@@ -319,7 +327,7 @@ internal;ModalReturn
 alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
-internal;ModifyElementSource
+alpha;ModifyElementSource
 alpha;NativeApp
 internal;NativeAppLogger
 internal;NoRenderApp
@@ -476,8 +484,8 @@ internal;TextureDrapeMap = Map
 internal;TextureImage
 internal;ThreeAxes
 beta;class Tile
-alpha;class TileAdmin
-alpha;TileAdmin
+beta;TileAdmin
+beta;TileAdmin
 internal;TileAvailability
 internal;TileBoundingBoxes
 beta;TileContent
@@ -499,7 +507,6 @@ beta;TileTreeLoadStatus
 beta;TileTreeOwner
 beta;TileTreeParams
 beta;class TileTreeReference
-beta;TileTreeSet
 beta;TileTreeSupplier
 beta;TileUsageMarker
 beta;TileVisibility
@@ -535,9 +542,6 @@ beta;UniformParams
 beta;UniformType
 alpha;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
 internal;UpsampledMapTile 
-internal;UsesDragSelect
-internal;UsesFence
-internal;UsesSelection
 beta;VaryingType
 public;ViewAnimationOptions
 public;ViewChangeOptions 
@@ -572,6 +576,8 @@ public;ViewManager
 public;class ViewManip 
 public;class Viewport 
 public;ViewportDecorator
+internal;ViewportIdSet 
+internal;ViewportIdSets 
 public;class ViewPose
 internal;ViewPose2d 
 internal;ViewPose3d 

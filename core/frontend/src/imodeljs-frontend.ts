@@ -182,6 +182,10 @@ export * from "./ViewCreator3d";
  * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
+ * @docs-group-description NativeApp
+ * Classes for working with Native Applications
+ */
+/**
  * @docs-group-description OIDC
  * Classes for working with the OpenID Connect (OIDC) protocol
  */

@@ -46,6 +46,11 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     padding-left: 10px;
   }
 
+  button.map-manager-item-requireAuthIcon {
+    color: $buic-foreground-warning;
+  }
+
+
   button.map-manager-item-visibility {
     background-color: transparent;
     border: none;
@@ -321,6 +326,21 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     margin: 0 2px;
     background-color: $buic-background-1;
     color: $buic-foreground-body;
+
+    &:hover {
+      color: $hovered-icon-color;
+    }
+    &:focus {
+      outline: none;
+      box-shadow: $uicore-button-focus-boxshadow;
+    }
+  }
+
+  button.map-manager-item-requireAuth {
+    background-color: transparent;
+    border: none;
+    color: $buic-foreground-warning;
+    background-color: transparent;
 
     &:hover {
       color: $hovered-icon-color;

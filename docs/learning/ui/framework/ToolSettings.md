@@ -19,15 +19,15 @@ If the 'Active' Tool updates a property that is being displayed by a type editor
 
 The following classes defined within the ui-abstract package are used by the Default Tool Settings Provider.
 
-* [DialogItem]($ui-abstract)
-* [PropertyRecord]($ui-abstract)
-* [PropertyDescription]($ui-abstract)
-* [DialogItemValue]($ui-abstract)
-* [DialogPropertySyncItem]($ui-abstract)
-* [EditorPosition]($ui-abstract)
-* [PropertyEditorParamTypes]($ui-abstract)
-* [PropertyValue]($ui-abstract)
+- [DialogItem]($ui-abstract)
+- [PropertyRecord]($ui-abstract)
+- [PropertyDescription]($ui-abstract)
+- [DialogItemValue]($ui-abstract)
+- [DialogPropertySyncItem]($ui-abstract)
+- [EditorPosition]($ui-abstract)
+- [PropertyEditorParamTypes]($ui-abstract)
+- [PropertyValue]($ui-abstract)
 
 ## API Reference
 
-* [ToolSettings]($ui-framework:ToolSettings)
+- [ToolSettings]($ui-framework:ToolSettings)
