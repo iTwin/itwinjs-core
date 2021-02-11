@@ -66,8 +66,8 @@ export abstract class Tile {
   private _rangeGraphicType: TileBoundingBoxes = TileBoundingBoxes.None;
   /** This tile's renderable content. */
   protected _graphic?: RenderGraphic;
-  /** True if the tile's content was loaded at some point and possibly later unloaded. */
-  protected _wasLoaded = false;
+  /** True if this tile ever had graphics loaded. Used to determine when a tile's graphics were later freed to conserve memory. */
+  protected _hadGraphics = false;
   /** Uniquely identifies this tile's content. */
   protected _contentId: string;
   /** Child tiles are loaded on-demand, potentially asynchronously. This tracks their current loading state. */
@@ -183,7 +183,9 @@ export abstract class Tile {
 
   /** @internal */
   public setIsReady(): void {
-    this._wasLoaded = true;
+    if (this.hasGraphics)
+      this._hadGraphics = true;
+
     this._state = TileState.Ready;
     IModelApp.tileAdmin.onTileContentLoaded(this);
   }
