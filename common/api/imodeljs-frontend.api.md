@@ -9516,7 +9516,6 @@ export abstract class Tile {
     // @internal
     getSizeProjectionCorners(): Point3d[] | undefined;
     protected _graphic?: RenderGraphic;
-    protected _hadGraphics: boolean;
     get hasContentRange(): boolean;
     get hasGraphics(): boolean;
     get iModel(): IModelConnection;
@@ -9574,6 +9573,7 @@ export abstract class Tile {
     readonly usageMarker: TileUsageMarker;
     // @internal
     viewportIds?: ViewportIdSet;
+    protected _wasLoaded: boolean;
 }
 
 // @beta

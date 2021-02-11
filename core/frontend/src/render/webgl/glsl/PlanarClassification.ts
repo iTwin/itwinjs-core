@@ -91,7 +91,17 @@ if (doMask) {
     return baseColor;
   }
 
-  bool isClassified = !isOutside && (colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0);
+  vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
+  if (colorTexel.b >= 0.5) {
+    if (u_shaderFlags[kShaderBit_IgnoreNonLocatable]) {
+      discard;
+      return vec4(0.0);
+    }
+    colorTexel.b = (colorTexel.b * 255.0 - 128.0) / 127.0;
+  } else {
+    colorTexel.b *= 255.0 / 127.0;
+  }
+  bool isClassified = colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0;
   float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
   if (kClassifierDisplay_Off == param) {
     discard;
@@ -100,8 +110,8 @@ if (doMask) {
 `
   ;
 
-// ###TODO Currently we discard if classifier is pure black (acts as clipping mask).
-// Change it so that fully-transparent classifiers do the clipping.
+// Currently we discard if classifier is pure black (acts as clipping mask).
+// These could be more efficiently handled with masks.
 const applyPlanarClassificationColor = applyPlanarClassificationPrelude + // eslint-disable-line prefer-template
   `
   float colorMix = u_pClassPointCloud ? .65 : .35;

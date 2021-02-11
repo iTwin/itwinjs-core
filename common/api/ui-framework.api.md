@@ -231,11 +231,6 @@ export interface AccuDrawDialogProps extends CommonProps {
 }
 
 // @alpha
-export class AccuDrawKeyboardShortcuts {
-    static getDefaultShortcuts(): KeyboardShortcutProps[];
-}
-
-// @alpha
 export class AccuDrawPopupManager {
     // (undocumented)
     static hideCalculator(): boolean;
