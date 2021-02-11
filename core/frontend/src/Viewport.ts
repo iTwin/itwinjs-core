@@ -57,6 +57,7 @@ import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
+import { System } from "./render/webgl/System";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -3122,7 +3123,17 @@ export class ScreenViewport extends Viewport {
       this._webglCanvas = webglCanvas;
 
       // this.canvas has zIndex 10. Make webgl canvas' zIndex lower so that canvas decorations draw on top.
-      this.addChildDiv(this.vpDiv, webglCanvas, 5);
+      if (System.instance.isMobile) {
+        /** The following workaround resolves an issue specific to iOS Safari. We really want this webgl canvas' zIndex to be
+         * lower than this.canvas, but if we do that on iOS Safari, Safari may decide to not redraw the canvas contents once
+         * it is re-added to the parent div after dropping other viewports.
+         * So, first we add the canvas using a zIndex which places it above this.canvas then immediately change zIndex so it is
+         * below the zIndex of this.canvas, which we actually want.
+         */
+        this.addChildDiv(this.vpDiv, webglCanvas, 11);
+        this.vpDiv.style.zIndex = (5).toString();
+      } else
+        this.addChildDiv(this.vpDiv, webglCanvas, 5);
     }
 
     this.target.updateViewRect();
