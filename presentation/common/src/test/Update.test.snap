@@ -1,5 +1,284 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`HierarchyCompareInfo fromJSON deserializes \`HierarchyCompareInfo\` from JSON 1`] = `
+Object {
+  "changes": Array [
+    Object {
+      "node": Object {
+        "backColor": "rgb(
+    191,
+    115,
+    94
+  )",
+        "description": "Et repellat quis est est asperiores temporibus cumque.",
+        "foreColor": undefined,
+        "hasChildren": true,
+        "isCheckboxEnabled": true,
+        "isCheckboxVisible": true,
+        "isChecked": true,
+        "isEditable": true,
+        "isExpanded": false,
+        "isSelectionDisabled": true,
+        "key": Object {
+          "instanceKeys": Array [
+            Object {
+              "className": "Shoes",
+              "id": "0x155f30000011c09",
+            },
+            Object {
+              "className": "SMS",
+              "id": "0xd3f50000016daf",
+            },
+          ],
+          "pathFromRoot": Array [
+            "c2680f08-74c2-48cc-900d-9a8f47408838",
+            "1a9bdf5c-0ec1-4e63-8a9d-5fb57ca52b06",
+          ],
+          "type": "ECInstancesNode",
+        },
+        "label": Object {
+          "displayValue": "Swaziland",
+          "rawValue": "Incredible Steel Pizza",
+          "typeName": "string",
+        },
+      },
+      "position": 123,
+      "type": "Insert",
+    },
+    Object {
+      "changes": Array [
+        Object {
+          "name": "test",
+          "new": "new value",
+          "old": "old value",
+        },
+      ],
+      "node": Object {
+        "backColor": "rgb(
+    244,
+    241,
+    89
+  )",
+        "description": undefined,
+        "foreColor": "#C00C97",
+        "hasChildren": true,
+        "isCheckboxEnabled": false,
+        "isCheckboxVisible": true,
+        "isChecked": false,
+        "isEditable": true,
+        "isExpanded": true,
+        "isSelectionDisabled": true,
+        "key": Object {
+          "instanceKeys": Array [
+            Object {
+              "className": "Advanced",
+              "id": "0xa758000001501f",
+            },
+            Object {
+              "className": "Coordinator",
+              "id": "0x169970000006d19",
+            },
+          ],
+          "pathFromRoot": Array [
+            "208993b4-f58e-46eb-8bc2-d6848985b709",
+            "d9ef8dd8-680a-4a70-bb5e-2d5c60b2ce40",
+          ],
+          "type": "ECInstancesNode",
+        },
+        "label": Object {
+          "displayValue": "Assurance",
+          "rawValue": "systemic",
+          "typeName": "string",
+        },
+      },
+      "type": "Update",
+    },
+    Object {
+      "node": Object {
+        "backColor": undefined,
+        "description": undefined,
+        "foreColor": "#410292",
+        "hasChildren": true,
+        "isCheckboxEnabled": false,
+        "isCheckboxVisible": true,
+        "isChecked": false,
+        "isEditable": true,
+        "isExpanded": true,
+        "isSelectionDisabled": true,
+        "key": Object {
+          "instanceKeys": Array [
+            Object {
+              "className": "Incredible",
+              "id": "0x14e820000005fc6",
+            },
+            Object {
+              "className": "Bedfordshire",
+              "id": "0xda7e00000098b7",
+            },
+          ],
+          "pathFromRoot": Array [
+            "c70f0c9c-7ba5-43f8-b647-85e112778e09",
+            "27c1006f-5b72-4573-9451-3b6b9e1a66cc",
+          ],
+          "type": "ECInstancesNode",
+        },
+        "label": Object {
+          "displayValue": "deposit",
+          "rawValue": "Configuration",
+          "typeName": "string",
+        },
+      },
+      "type": "Delete",
+    },
+  ],
+  "continuationToken": Object {
+    "currHierarchyNode": "currHierarchyNode",
+    "prevHierarchyNode": "prevHierarchyNode",
+  },
+}
+`;
+
+exports[`HierarchyCompareInfo toJSON serializes \`HierarchyCompareInfo\` to JSON 1`] = `
+Object {
+  "changes": Array [
+    Object {
+      "node": Object {
+        "backColor": "rgb(
+    84,
+    200,
+    71
+  )",
+        "description": "Eaque aliquam omnis rem aut.",
+        "foreColor": undefined,
+        "hasChildren": true,
+        "imageId": undefined,
+        "isCheckboxEnabled": false,
+        "isCheckboxVisible": false,
+        "isChecked": true,
+        "isEditable": false,
+        "isExpanded": false,
+        "isSelectionDisabled": true,
+        "key": Object {
+          "instanceKeys": Array [
+            Object {
+              "className": "calculating",
+              "id": "0x290e00000004fb",
+            },
+            Object {
+              "className": "PCI",
+              "id": "0x12dc10000018297",
+            },
+          ],
+          "pathFromRoot": Array [
+            "40445966-a025-41c4-b51e-3c79af24b298",
+            "ea013b1d-aa19-4dab-8516-1da8428818b1",
+          ],
+          "type": "ECInstancesNode",
+        },
+        "labelDefinition": Object {
+          "displayValue": "AGP",
+          "rawValue": "Electronics",
+          "typeName": "string",
+        },
+      },
+      "position": 123,
+      "type": "Insert",
+    },
+    Object {
+      "changes": Array [
+        Object {
+          "name": "test",
+          "new": "new value",
+          "old": "old value",
+        },
+      ],
+      "node": Object {
+        "backColor": undefined,
+        "description": undefined,
+        "foreColor": undefined,
+        "hasChildren": true,
+        "imageId": undefined,
+        "isCheckboxEnabled": false,
+        "isCheckboxVisible": false,
+        "isChecked": true,
+        "isEditable": false,
+        "isExpanded": false,
+        "isSelectionDisabled": true,
+        "key": Object {
+          "instanceKeys": Array [
+            Object {
+              "className": "Pants",
+              "id": "0x66ab0000009c21",
+            },
+            Object {
+              "className": "wireless",
+              "id": "0xab74000001800c",
+            },
+          ],
+          "pathFromRoot": Array [
+            "83658d13-45ce-4096-b0f1-724f9321d8df",
+            "ca1e952b-35e0-409f-ae85-b5c0c4a2deaf",
+          ],
+          "type": "ECInstancesNode",
+        },
+        "labelDefinition": Object {
+          "displayValue": "Oregon",
+          "rawValue": "deposit",
+          "typeName": "string",
+        },
+      },
+      "type": "Update",
+    },
+    Object {
+      "node": Object {
+        "backColor": "rgb(
+    122,
+    163,
+    46
+  )",
+        "description": undefined,
+        "foreColor": "#6682D5",
+        "hasChildren": false,
+        "imageId": undefined,
+        "isCheckboxEnabled": false,
+        "isCheckboxVisible": false,
+        "isChecked": false,
+        "isEditable": true,
+        "isExpanded": false,
+        "isSelectionDisabled": true,
+        "key": Object {
+          "instanceKeys": Array [
+            Object {
+              "className": "purple",
+              "id": "0x3fce0000017ef6",
+            },
+            Object {
+              "className": "Steel",
+              "id": "0x4059000000a6cd",
+            },
+          ],
+          "pathFromRoot": Array [
+            "d3097bf9-1ae1-4b58-ad3b-6bc9a7ccc2bc",
+            "d64e153b-3a16-4e3c-92a0-51e240565b04",
+          ],
+          "type": "ECInstancesNode",
+        },
+        "labelDefinition": Object {
+          "displayValue": "auxiliary",
+          "rawValue": "Steel",
+          "typeName": "string",
+        },
+      },
+      "type": "Delete",
+    },
+  ],
+  "continuationToken": Object {
+    "currHierarchyNode": "currHierarchyNode",
+    "prevHierarchyNode": "prevHierarchyNode",
+  },
+}
+`;
+
 exports[`HierarchyUpdateInfo fromJSON deserializes partial \`HierarchyUpdateInfo\` from JSON 1`] = `
 Array [
   Object {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/bentleyjs-core",
+      "comment": "Adjusted error messages and error when reversing or reinstating schema changesets",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "rschili@users.noreply.github.com"
+}

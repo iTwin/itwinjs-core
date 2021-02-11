@@ -8,7 +8,7 @@ import { IModelConnection, InteractiveEditingSession } from "@bentley/imodeljs-f
 
 export function setTitle(imodel: IModelConnection) {
   let prefix = "";
-  if (OpenMode.ReadWrite === imodel.openMode)
+  if (OpenMode.ReadWrite === imodel.openMode && imodel.isBriefcaseConnection())
     prefix = undefined !== InteractiveEditingSession.get(imodel) ? "[ EDIT ] " : "[ R/W ] ";
 
   document.title = `${prefix}${imodel.key} - Display Test App`;

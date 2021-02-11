@@ -40,6 +40,7 @@
     "@bentley/bentleyjs-core": "^2.13.0-dev.9",
     "@bentley/imodeljs-backend": "^2.13.0-dev.9",
     "@bentley/imodeljs-common": "^2.13.0-dev.9",
+    "@bentley/imodeljs-quantity": "^2.13.0-dev.9",
     "@bentley/presentation-common": "^2.13.0-dev.9"
   },
   "devDependencies": {
@@ -48,6 +49,7 @@
     "@bentley/eslint-plugin": "2.13.0-dev.9",
     "@bentley/imodeljs-backend": "2.13.0-dev.9",
     "@bentley/imodeljs-common": "2.13.0-dev.9",
+    "@bentley/imodeljs-quantity": "2.13.0-dev.9",
     "@bentley/presentation-common": "2.13.0-dev.9",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

@@ -9,6 +9,8 @@ import { IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "..";
 
+/* eslint-disable deprecation/deprecation */
+
 /** Opens External IModel */
 export class ExternalIModel {
   public viewId: Id64String | undefined;
