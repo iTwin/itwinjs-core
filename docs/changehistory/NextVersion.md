@@ -56,6 +56,9 @@ The [PlanarClipMaskProps.mode]($common) specifies how the mask geometry is colle
 Planar clip masks support transparency.  If a mask is not transparent then the masked geometry is omitted completely, if transparency is included then increasing the transparency will decrease the masking and increase a translucent blending of the masked geometry.  A transparency value of 1 would indicate no masking.  If no transparency is included then the transparency value from the mask elements is used.  In the image below a transparent mask is applied to the reality model to show the underground tunnel.
 
 ![Planar clip mask with transparency](./assets/PlanarMask_TunnelTransparent.png)
+
+## Common table expression support in ECSQL
+
 CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
 
 ## Breaking API change in quantity package

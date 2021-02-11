@@ -278,6 +278,7 @@
   },
   "accuDraw": {
     "dialogTitle": "AccuDraw",
+    "subMenu": "AccuDraw",
     "lockSmart": "Smart Lock",
     "lockX": "Lock X",
     "lockY": "Lock Y",
@@ -294,6 +295,7 @@
     "rotateAxes": "Rotate Axes",
     "rotateToElement": "Rotate To Element",
     "defineACSByPoints": "Define ACS By Points",
+    "rotateSubMenu": "AccuDraw Rotate",
     "rotationSet": "AccuDraw rotation mode set to {{rotationString}}",
     "rotation": {
       "top": "top",
