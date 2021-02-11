@@ -380,7 +380,6 @@ export class Formatter {
         else
           formattedMagnitude = formattedMagnitude + spec.format.uomSeparator + spec.unitConversions[0].label;
       }
-
     }
     // add Sign prefix and suffix as necessary
     if ((prefix.length > 0 || suffix.length > 0) && formattedMagnitude.length > 0)

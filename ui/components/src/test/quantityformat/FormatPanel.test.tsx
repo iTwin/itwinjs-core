@@ -77,7 +77,7 @@ async function provideFormatSpec(formatProps: FormatProps, persistenceUnit: Unit
 }
 
 const initialFormatProps: FormatProps = {
-  formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes"],
+  formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
   precision: 4,
   type: "Decimal",
   uomSeparator: " ",
