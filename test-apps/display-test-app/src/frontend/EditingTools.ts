@@ -82,7 +82,7 @@ export class DeleteElementsTool extends ElementSetTool {
   public async processAgendaImmediate(): Promise<void> {
     // TODO: EditCommand...what clears the deleted elements from the selection set?
     try {
-      // eslint-disable-next-line @typescript-eslint/deprecation
+      // eslint-disable-next-line deprecation/deprecation
       await IModelWriteRpcInterface.getClient().deleteElements(this.iModel.getRpcProps(), Array.from(this.agenda.elements));
       await this.iModel.saveChanges();
     } catch (err) {

@@ -3,15 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
-import * as path from "path";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
-import { Config, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
 
 export async function initializeBackend() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
