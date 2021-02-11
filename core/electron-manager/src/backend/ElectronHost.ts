@@ -184,7 +184,8 @@ export class ElectronHost {
    * This method configures the backend for all of the inter-process communication (RPC and IPC) for an
    * Electron app. It should be called from your Electron main function.
    * @param opts Options that control aspects of your backend.
-   * @note This method must only be called from the backend of an Electron app (i.e. when [ProcessDetector.isElectronAppBackend]($bentley) is `true`). */
+   * @note This method must only be called from the backend of an Electron app (i.e. when [ProcessDetector.isElectronAppBackend]($bentley) is `true`).
+   */
   public static async startup(opts?: { electronHost?: ElectronHostOptions, iModelHost?: IModelHostConfiguration }) {
     if (!ProcessDetector.isElectronAppBackend)
       throw new Error("Not running under Electron");

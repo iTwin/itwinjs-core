@@ -301,12 +301,6 @@ export class IModelHost {
     throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). imodeljs-backend requires version (${requiredVersion})`);
   }
 
-  private static validateNodeJsVersion(): void {
-    const requiredVersion = require("../package.json").engines.node; // eslint-disable-line @typescript-eslint/no-var-requires
-    if (!semver.satisfies(process.version, requiredVersion))
-      throw new IModelError(IModelStatus.BadRequest, `Node.js version ${process.version} is not within the range acceptable to imodeljs-backend: (${requiredVersion})`);
-  }
-
   private static setupRpcRequestContext() {
     RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
       // Setup a ClientRequestContext if authorization is NOT required for the RPC operation

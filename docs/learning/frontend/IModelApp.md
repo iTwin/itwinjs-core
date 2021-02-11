@@ -20,9 +20,9 @@ To support the various use cases and platforms for iModel.js frontends, there ar
   * **`WebViewerApp`**: frontend of web viewing apps. May only open iModels readonly, and may not use Ipc. `WebViewerApp.startup` calls [IModelApp.startup]($frontend).
   * **[IpcApp]($frontend)**: for frontends with a dedicated [IpcHost]($backend) backend. [IpcApp.startup]($frontend) calls [IModelApp.startup]($frontend). `IpcApp` is abstract and should not be used directly.
     * **`WebEditApp`**: for the frontend of web editing apps connected to a `WebEditHost` backend. `WebEditApp.startup` calls [IpcApp.startup]($frontend) and must supply the user's credentials.
-    * **[ElectronApp]($electron-manager)**: for the frontend of desktop apps running on Windows, Mac, or Linux connected to a [ElectronHost]($electron-manager) backend. [ElectronApp.startup]($electron-manager) calls [IpcApp.startup]($frontend).
-    * **[MobileApp]($mobile-manager)**: for the frontend of mobile apps. [MobileApp.startup]($mobile-manager) calls [IpcApp.startup]($frontend). `MobileApp` is abstract and should not be used directly.
-      * **[IOSApp]($mobile-manager)**: for the frontend of iOS apps. [IOSApp.startup]($mobile-manager) calls [MobileApp.startup]($mobile-manager).
-      * **[AndroidApp]($mobile-manager)**: for the frontend of Android apps. [AndroidApp.startup]($mobile-manager) calls [MobileApp.startup]($mobile-manager).
+    * **`ElectronApp`**: for the frontend of desktop apps running on Windows, Mac, or Linux connected to an `ElectronHost` backend. `ElectronApp.startup` calls [IpcApp.startup]($frontend).
+    * **`MobileApp`**: for the frontend of mobile apps. `MobileApp.startup` calls [IpcApp.startup]($frontend). `MobileApp` is abstract and should not be used directly.
+      * **`IOSApp`**: for the frontend of iOS apps. `IOSApp.startup` calls `MobileApp.startup`.
+      * **`AndroidApp`**: for the frontend of Android apps. `AndroidApp.startup` calls `MobileApp.startup`.
 
 Applications may customize the behavior of the IModelApp services by providing [IModelAppOptions]($frontend).
