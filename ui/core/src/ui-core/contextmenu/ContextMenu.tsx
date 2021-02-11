@@ -9,7 +9,7 @@
 import "./ContextMenu.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "../utils/Props";
 import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
 import { ContextMenuDirection } from "./ContextMenuDirection";
@@ -44,12 +44,15 @@ export interface ContextMenuProps extends CommonProps {
   parentMenu?: ContextMenu;
   /** @internal */
   parentSubmenu?: ContextSubMenu;
+  /** @internal */
+  ignoreNextKeyUp?: boolean;
 }
 
 /** @internal */
 interface ContextMenuState {
   selectedIndex: number;
   direction: ContextMenuDirection;
+  ignoreNextKeyUp: boolean;
 }
 
 /**
@@ -85,6 +88,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     this.state = {
       selectedIndex: this.props.selectedIndex!,
       direction: props.direction!,
+      ignoreNextKeyUp: props.ignoreNextKeyUp!,
     };
   }
 
@@ -158,7 +162,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   public render(): JSX.Element {
     const {
       opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, // eslint-disable-line @typescript-eslint/no-unused-vars
-      selectedIndex, floating, parentMenu, parentSubmenu, children, className, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+      selectedIndex, floating, parentMenu, parentSubmenu, children, className, ignoreNextKeyUp, // eslint-disable-line @typescript-eslint/no-unused-vars
+      ...props } = this.props;
     const renderDirection = parentMenu === undefined ? this.state.direction : direction;
 
     if (this._lastChildren !== children || this._lastDirection !== renderDirection || this._lastSelectedIndex !== this.state.selectedIndex) {
@@ -246,7 +251,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     // add inheritance data to submenu children
     const ch = React.Children.map(children, (child: React.ReactNode) => {
       // Capture only ContextSubMenus and ContextMenuItems.
-      if (child && typeof child === "object" && "props" in child && !child.props.disabled && (child.type === ContextSubMenu || child.type === ContextMenuItem)) {
+      if (child && typeof child === "object" && "props" in child && (child.type === ContextSubMenu || child.type === ContextMenuItem) &&
+        !ConditionalBooleanValue.getValue(child.props.disabled) && !ConditionalBooleanValue.getValue(child.props.hidden)) {
         const id = index; // get separate id variable so value stays the same when onHover is called later.
         const onHover = () => {
           this.setState({ selectedIndex: id });
@@ -349,6 +355,11 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   };
 
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (this.state.ignoreNextKeyUp) {
+      this.setState({ignoreNextKeyUp: false});
+      return;
+    }
+
     // istanbul ignore else
     if (event.key) {
       for (const [key, value] of this._hotKeyMap) {

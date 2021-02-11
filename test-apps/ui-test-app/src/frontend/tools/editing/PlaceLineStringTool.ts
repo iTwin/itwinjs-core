@@ -5,8 +5,8 @@
 import { IModelJson as GeomJson, LineSegment3d, LineString3d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, GeometryStreamProps, PhysicalElementProps } from "@bentley/imodeljs-common";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
-  NotifyMessageDetails, OutputMessagePriority, SnapStatus,
+  AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, NotifyMessageDetails,
+  OutputMessagePriority, SnapStatus,
 } from "@bentley/imodeljs-frontend";
 import { PrimitiveToolEx } from "./PrimitiveToolEx";
 
@@ -143,12 +143,6 @@ export class PlaceLineStringTool extends PrimitiveToolEx {
     else
       this.setupAndPromptForNextAction();
     return true;
-  }
-
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 
   public onRestartTool(): void {

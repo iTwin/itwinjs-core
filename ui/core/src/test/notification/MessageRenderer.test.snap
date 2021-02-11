@@ -1,5 +1,65 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`MessageRenderer Anchor allows target _blank if it has a noopener rel 1`] = `
+<div
+  dangerouslySetInnerHTML={
+    Object {
+      "__html": "<a rel=\\"noopener\\" target=\\"_blank\\" href=\\"https://itwinjs.org\\"></a>",
+    }
+  }
+/>
+`;
+
+exports[`MessageRenderer Anchor allows target _blank if it has a noreferrer rel 1`] = `
+<div
+  dangerouslySetInnerHTML={
+    Object {
+      "__html": "<a rel=\\"noreferrer\\" target=\\"_blank\\" href=\\"https://itwinjs.org\\"></a>",
+    }
+  }
+/>
+`;
+
+exports[`MessageRenderer Anchor allows target _blank if it has proper relationships 1`] = `
+<div
+  dangerouslySetInnerHTML={
+    Object {
+      "__html": "<a rel=\\"noopener noreferrer\\" target=\\"_blank\\" href=\\"https://itwinjs.org\\"></a>",
+    }
+  }
+/>
+`;
+
+exports[`MessageRenderer Anchor allows target _blank in child nodes if they proper relationships 1`] = `
+<div
+  dangerouslySetInnerHTML={
+    Object {
+      "__html": "<div><div><a rel=\\"noopener noreferrer\\" target=\\"_blank\\" href=\\"https://itwinjs.org\\"></a></div></div>",
+    }
+  }
+/>
+`;
+
+exports[`MessageRenderer Anchor does not allow target _blank if it does have proper relationships 1`] = `
+<div
+  dangerouslySetInnerHTML={
+    Object {
+      "__html": "<a href=\\"https://itwinjs.org\\"></a>",
+    }
+  }
+/>
+`;
+
+exports[`MessageRenderer Anchor does not allow target _blank in child nodes if they do not have proper relationships 1`] = `
+<div
+  dangerouslySetInnerHTML={
+    Object {
+      "__html": "<div><div><a href=\\"https://itwinjs.org\\"></a></div></div>",
+    }
+  }
+/>
+`;
+
 exports[`MessageRenderer Div with React node 1`] = `
 <div>
   <span>

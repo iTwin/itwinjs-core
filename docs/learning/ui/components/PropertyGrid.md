@@ -7,13 +7,13 @@ classes and components for working with a PropertyGrid control.
 
 The following React components comprise the PropertyGrid control.
 
-* [PropertyGrid]($ui-components) - renders property categories
-* [PropertyList]($ui-components) - renders multiple properties within a category as a list
-* [PropertyRenderer]($ui-components) - renders a property
-* [PrimitivePropertyRenderer]($ui-components) - renders a primitive property
-* [NonPrimitivePropertyRenderer]($ui-components) - renders struct and array properties
-* [PropertyView]($ui-components) - renders a property as a label/value pair
-* [PropertyCategoryBlock]($ui-components) - Expandable block for a category; uses [ExpandableBlock]($ui-core) for rendering
+- [PropertyGrid]($ui-components) - renders property categories
+- [PropertyList]($ui-components) - renders multiple properties within a category as a list
+- [PropertyRenderer]($ui-components) - renders a property
+- [PrimitivePropertyRenderer]($ui-components) - renders a primitive property
+- [NonPrimitivePropertyRenderer]($ui-components) - renders struct and array properties
+- [PropertyView]($ui-components) - renders a property as a label/value pair
+- [PropertyCategoryBlock]($ui-components) - Expandable block for a category; uses [ExpandableBlock]($ui-core) for rendering
 
 There are a number of value renderer components for different types that can be found in the [Properties]($ui-components:Properties) category.
 Those components are managed by the [PropertyValueRendererManager]($ui-components).
@@ -107,6 +107,6 @@ const rulesetId = "Default";
 
 ## API Reference
 
-* [PropertyGrid]($ui-components:PropertyGrid)
-* [Properties in @bentley/ui-components]($ui-components:Properties)
-* [Properties in @bentley/ui-abstract]($ui-abstract:Properties)
+- [PropertyGrid]($ui-components:PropertyGrid)
+- [Properties in @bentley/ui-components]($ui-components:Properties)
+- [Properties in @bentley/ui-abstract]($ui-abstract:Properties)

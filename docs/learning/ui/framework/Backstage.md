@@ -31,5 +31,5 @@ See additional info in [Backstage](../../../learning/ui/abstract/Backstage.md).
 Below is an example of defining the ConfigurableUiContent and specifying the backstage, using the component from the above example.
 
 ```tsx
-  <ConfigurableUiContent appBackstage={<AppBackstageComposer />} />
+<ConfigurableUiContent appBackstage={<AppBackstageComposer />} />
 ```

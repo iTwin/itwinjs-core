@@ -12,19 +12,19 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
  * @alpha
  */
 export enum AccuDrawField {
+  Distance,
+  Angle,
   X,
   Y,
   Z,
-  Distance,
-  Angle,
 }
 
 /** AccuDraw Mode
  * @alpha
  */
 export enum AccuDrawMode {
-  Rectangular,
   Polar,
+  Rectangular,
 }
 
 /** @alpha */
@@ -39,6 +39,7 @@ export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusE
 export interface AccuDrawSetFieldValueToUiEventArgs {
   field: AccuDrawField;
   value: number;
+  formattedValue: string;
 }
 
 /** @alpha */
@@ -47,7 +48,6 @@ export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldVa
 /** @alpha */
 export interface AccuDrawSetFieldValueFromUiEventArgs {
   field: AccuDrawField;
-  value: number;
   stringValue: string;
 }
 
@@ -72,6 +72,9 @@ export interface AccuDrawSetModeEventArgs {
 export class AccuDrawSetModeEvent extends BeUiEvent<AccuDrawSetModeEventArgs> { }
 
 /** @alpha */
+export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> { }
+
+/** @alpha */
 export class AccuDrawUiAdmin {
   /** AccuDraw Set Field Focus event. */
   public static readonly onAccuDrawSetFieldFocusEvent = new AccuDrawSetFieldFocusEvent();
@@ -88,14 +91,17 @@ export class AccuDrawUiAdmin {
   /** AccuDraw Set Mode event. */
   public static readonly onAccuDrawSetModeEvent = new AccuDrawSetModeEvent();
 
+  /** AccuDraw Grab Input Focus event. */
+  public static readonly onAccuDrawGrabInputFocusEvent = new AccuDrawGrabInputFocusEvent();
+
   /** AccuDraw Set Field Value to Ui. */
-  public setFieldValueToUi(field: AccuDrawField, value: number): void {
-    AccuDrawUiAdmin.onAccuDrawSetFieldValueToUiEvent.emit({ field, value });
+  public setFieldValueToUi(field: AccuDrawField, value: number, formattedValue: string): void {
+    AccuDrawUiAdmin.onAccuDrawSetFieldValueToUiEvent.emit({ field, value, formattedValue });
   }
 
   /** AccuDraw Set Field Value from Ui. */
-  public setFieldValueFromUi(field: AccuDrawField, value: number, stringValue: string): void {
-    AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.emit({ field, value, stringValue });
+  public setFieldValueFromUi(field: AccuDrawField, stringValue: string): void {
+    AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.emit({ field, stringValue });
   }
 
   /** AccuDraw Set Field Focus. */
@@ -103,11 +109,22 @@ export class AccuDrawUiAdmin {
     AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.emit({ field });
   }
 
+  /** AccuDraw Set Field Lock. */
   public setFieldLock(field: AccuDrawField, lock: boolean): void {
     AccuDrawUiAdmin.onAccuDrawSetFieldLockEvent.emit({ field, lock });
   }
 
+  /** Set AccuDraw Compass Mode. */
   public setMode(mode: AccuDrawMode): void {
     AccuDrawUiAdmin.onAccuDrawSetModeEvent.emit({ mode });
   }
+
+  /** Determine if AccuDraw UI has focus */
+  public get hasInputFocus() { return false; }
+
+  /** Set focus to the AccuDraw UI. */
+  public grabInputFocus() {
+    AccuDrawUiAdmin.onAccuDrawGrabInputFocusEvent.emit({});
+  }
+
 }

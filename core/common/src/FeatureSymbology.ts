@@ -252,12 +252,27 @@ export interface FeatureAppearanceSource {
 }
 
 /** Specifies how to customize the appearance of individual [[Feature]]s, typically within the context of a [Viewport]($frontend).
- * It is possible to override multiple aspects of a Feature. For example, you might specify that all elements belonging to subcategory "A" should be drawn in red, and
- * that the element with Id "0x123" should be drawn with 0.25 transparency. In this case, when drawing a Feature with subcategory "A" and element Id "0x123", the two overrides will
- * be merged, causing the Feature's geometry to draw 25% transparent red. On the other hand, if subcategory "A" is specified to draw in red and element "0x123" to draw in green,
- * the color specified by the element override will take precedence over that specified for the subcategory, resulting in a green Feature.
+ * Individual aspects of a feature's appearance - like visibility, color, and transparency - are overridden by supplying a [[FeatureAppearance]].
+ * Those overrides can be specified on the basis of the feature's model, element, and/or subcategory. A default set of overrides can also be specified to
+ * apply to the appearance of any feature not otherwise overridden.
+ *
+ * It is possible to override multiple aspects of a feature on different bases. For example, you might specify that all features belonging to subcategory "A" should be drawn in red,
+ * and that all features belonging to model "B" should be drawn 50% transparent. In this case, a feature belonging to both subcategory "A" and model "B" will be drawn as 50% transparent red -
+ * the separate overrides are combined to produce the feature's overall appearance.
+ *
+ * In the case of conflicts, there is an order of precedence:
+ *  - Model overrides take highest precedence.
+ *  - Element overrides are of higher precedence than subcategory overrides.
+ *  - Subcategory overrides have lowest precedence.
+ *
+ * For example, you might specify that all features belonging to subcategory "A" should be drawn in red, and all those belonging to model "B" should be drawn in green.
+ * Then a feature belonging to subcategory "A" and model "B" will be drawn in green, because the model overrides take precedence.
+ *
+ * Instances of this class are not typically instantiated by an application directly; instead, an application can implement a [FeatureOverrideProvider]($frontend)
+ * that augments the overrides supplied by a viewport.
  *
  * @see [FeatureSymbology.Overrides]($frontend) to create overrides specific to a [Viewport]($frontend) or [ViewState]($frontend).
+ * @see [FeatureOverrideProvider]($frontend) to customize the appearance of features within a [Viewport]($frontend).
  * @public
  */
 export class FeatureOverrides implements FeatureAppearanceSource {

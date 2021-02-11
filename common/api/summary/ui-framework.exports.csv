@@ -3,7 +3,10 @@ Release Tag;API Item
 alpha;AccuDrawCommandItems
 alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
 alpha;AccuDrawDialogProps 
+alpha;AccuDrawKeyboardShortcuts
 alpha;AccuDrawPopupManager
+alpha;AccuDrawWidget(): JSX.Element
+alpha;AccuDrawWidgetControl 
 public;Action
 internal;ActionButtonItem(props: ActionButtonProps): JSX.Element
 public;class ActionButtonItemDef 
@@ -189,6 +192,7 @@ beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 beta;FrameworkState
+alpha;FrameworkToolAdmin 
 beta;FrameworkUiAdmin 
 alpha;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
 alpha;FrameworkVersion = "1" | "2"
@@ -224,7 +228,7 @@ internal;getBadgeClassName(badgeType: BadgeType | undefined): "uifw-badge-new" |
 alpha;getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise
 internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps
 beta;getFeatureOverrideSyncEventIds(): string[]
-internal;getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined
+internal;getFirstItem: (groupItemDef: GroupItemDef) => import("../shared/CommandItemDef").CommandItemDef | ActionButtonItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined
 internal;getFirstItemId: (groupItemDef: GroupItemDef) => string
 internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>

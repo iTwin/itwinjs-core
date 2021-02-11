@@ -4372,12 +4372,10 @@ export interface MapLayerProps {
     isBase?: boolean;
     maxZoom?: number;
     name?: string;
-    password?: string;
     subLayers?: MapSubLayerProps[];
     transparency?: number;
     transparentBackground?: boolean;
     url?: string;
-    userName?: string;
     visible?: boolean;
 }
 
@@ -4402,7 +4400,9 @@ export class MapLayerSettings {
     // (undocumented)
     readonly name: string;
     // (undocumented)
-    readonly password?: string;
+    password?: string;
+    // (undocumented)
+    setCredentials(userName?: string, password?: string): void;
     subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined;
     // (undocumented)
     readonly subLayers: MapSubLayerSettings[];
@@ -4414,7 +4414,7 @@ export class MapLayerSettings {
     // (undocumented)
     readonly url: string;
     // (undocumented)
-    readonly userName?: string;
+    userName?: string;
     // (undocumented)
     readonly visible: boolean;
 }

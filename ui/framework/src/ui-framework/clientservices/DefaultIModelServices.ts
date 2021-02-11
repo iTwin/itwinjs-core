@@ -176,6 +176,7 @@ export class DefaultIModelServices implements IModelServices {
 
   private createVersionInfo(thisVersion: Version): VersionInfo {
     const createDate: Date = new Date(thisVersion.createdDate!);
+    // eslint-disable-next-line deprecation/deprecation
     const thisVersionInfo: VersionInfo = new VersionInfoImpl(thisVersion.name!, thisVersion.description!, createDate, thisVersion.changeSetId!, thisVersion.userCreated, thisVersion.smallThumbnailId!.toString(), thisVersion.largeThumbnailId!.toString());
     return thisVersionInfo;
   }

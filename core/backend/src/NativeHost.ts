@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module NativeAppBackend
+ * @module NativeApp
  */
 
 import * as path from "path";

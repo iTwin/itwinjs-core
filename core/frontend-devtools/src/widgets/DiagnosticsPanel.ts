@@ -13,6 +13,7 @@ import { FpsTracker } from "./FpsTracker";
 import { GpuProfiler } from "./GpuProfiler";
 import { KeyinField } from "./KeyinField";
 import { MemoryTracker } from "./MemoryTracker";
+import { TileMemoryBreakdown } from "./TileMemoryBreakdown";
 import { TileStatisticsTracker } from "./TileStatisticsTracker";
 import { ToolSettingsTracker } from "./ToolSettingsTracker";
 
@@ -26,6 +27,7 @@ export interface DiagnosticsPanelProps {
     fps?: boolean;
     tileStats?: boolean;
     memory?: boolean;
+    tileMemoryBreakdown?: boolean;
     gpuProfiler?: boolean;
     toolSettings?: boolean;
   };
@@ -39,6 +41,7 @@ export class DiagnosticsPanel {
   private readonly _parentElement?: HTMLElement;
   private readonly _fpsTracker?: FpsTracker;
   private readonly _memoryTracker?: MemoryTracker;
+  private readonly _tileMemoryBreakdown?: TileMemoryBreakdown;
   private readonly _statsTracker?: TileStatisticsTracker;
   private readonly _gpuProfiler?: GpuProfiler;
   private readonly _toolSettingsTracker?: ToolSettingsTracker;
@@ -72,6 +75,11 @@ export class DiagnosticsPanel {
       this.addSeparator();
     }
 
+    if (true !== exclude.tileMemoryBreakdown) {
+      this._tileMemoryBreakdown = new TileMemoryBreakdown(this._element);
+      this.addSeparator();
+    }
+
     if (true !== exclude.memory) {
       this._memoryTracker = new MemoryTracker(this._element, vp);
       this.addSeparator();
@@ -91,6 +99,7 @@ export class DiagnosticsPanel {
   public dispose(): void {
     dispose(this._fpsTracker);
     dispose(this._memoryTracker);
+    dispose(this._tileMemoryBreakdown);
     dispose(this._statsTracker);
     dispose(this._gpuProfiler);
     dispose(this._toolSettingsTracker);

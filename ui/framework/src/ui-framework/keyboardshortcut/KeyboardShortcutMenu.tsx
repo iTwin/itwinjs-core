@@ -9,6 +9,7 @@
 import * as React from "react";
 import { CommonProps, ContextMenuItem, ContextSubMenu, GlobalContextMenu, UiEvent } from "@bentley/ui-core";
 import { KeyboardShortcut } from "./KeyboardShortcut";
+import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 
 /** State for a [[KeyboardShortcutMenuEvent]] and [[KeyboardShortcutMenu]] component
  * @public
@@ -71,6 +72,7 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
           onOutsideClick={onClose}
           edgeLimit={false}
           autoflip={true}
+          ignoreNextKeyUp={true}  // Executing the shortcut on the keydown, so ignore the keyup in the menu
         >
           {items}
         </GlobalContextMenu>
@@ -98,9 +100,10 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
 
   private getShortcutMenuItem(shortcut: KeyboardShortcut, index: number): React.ReactNode {
     const shortcutKey = shortcut.key;
+    const isHidden = ConditionalBooleanValue.getValue(shortcut.isHidden);
 
     // Only pure characters go into the context menu
-    if (shortcutKey !== shortcut.keyMapKey || shortcut.isFunctionKey || shortcut.isSpecialKey)
+    if (shortcutKey !== shortcut.keyMapKey || shortcut.isFunctionKey || shortcut.isSpecialKey || isHidden)
       return null;
 
     let node: React.ReactNode = null;
@@ -114,14 +117,14 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
       const items = this.getShortcutMenuItems(shortcuts);
 
       node = (
-        <ContextSubMenu key={index} icon={iconSpec} label={label}>
+        <ContextSubMenu key={index} icon={iconSpec} label={label} disabled={shortcut.isDisabled}>
           {items}
         </ContextSubMenu>
       );
     } else {
       const sel = () => this._itemPicked(shortcut);
       node = (
-        <ContextMenuItem key={index} onSelect={sel} icon={iconSpec}>
+        <ContextMenuItem key={index} onSelect={sel} icon={iconSpec} disabled={shortcut.isDisabled}>
           {label}
         </ContextMenuItem>
       );

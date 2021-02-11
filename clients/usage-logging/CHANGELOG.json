@@ -2,6 +2,18 @@
   "name": "@bentley/usage-logging-client",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/usage-logging-client_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "improve test data to help with debugging; clarify test error messages"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/usage-logging-client_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

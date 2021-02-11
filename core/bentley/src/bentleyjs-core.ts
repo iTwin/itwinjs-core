@@ -26,6 +26,7 @@ export * from "./ProcessDetector";
 export * from "./ObservableSet";
 export * from "./OneAtATimeAction";
 export * from "./OrderedId64Iterable";
+export * from "./OrderedSet";
 export * from "./partitionArray";
 export * from "./PriorityQueue";
 export * from "./SortedArray";
@@ -70,4 +71,8 @@ export * from "./Time";
 /**
  * @docs-group-description Utils
  * Miscellaneous utility classes.
+ */
+/**
+ * @docs-group-description ProcessDetector
+ * Functions for determining the type of the current JavaScript process.
  */

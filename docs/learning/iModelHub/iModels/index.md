@@ -4,5 +4,5 @@ To work with iModelHub, an [iModel](../../Glossary.md#iModel) has to be created 
 
 ## Working with iModels
 
-* [Creating an iModel](./CreateiModel.md)
-* [Getting an existing iModel](./GetiModel.md)
+- [Creating an iModel](./CreateiModel.md)
+- [Getting an existing iModel](./GetiModel.md)

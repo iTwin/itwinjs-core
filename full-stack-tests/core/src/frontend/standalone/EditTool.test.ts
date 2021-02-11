@@ -22,6 +22,7 @@ let cmdStr: string;
 class TestEditTool1 extends EditTool {
   public static toolId = "TestEditTool1";
   public isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
+  public onRestartTool() { this.exitTool(); }
   public static callCommand<T extends keyof TestCommandIpc>(method: T, ...args: Parameters<TestCommandIpc[T]>): ReturnType<TestCommandIpc[T]> {
     return super.callCommand(method, ...args) as ReturnType<TestCommandIpc[T]>;
   }

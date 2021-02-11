@@ -70,6 +70,5 @@ export function initializeRpcBackend() {
       form.parse(req);
     });
   };
-
 }
 
