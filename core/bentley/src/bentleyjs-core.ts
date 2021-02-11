@@ -72,3 +72,7 @@ export * from "./Time";
  * @docs-group-description Utils
  * Miscellaneous utility classes.
  */
+/**
+ * @docs-group-description ProcessDetector
+ * Functions for determining the type of the current JavaScript process.
+ */
