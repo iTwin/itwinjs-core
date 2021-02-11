@@ -14,7 +14,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 
 /** Set Map Masking by selected models.
- * @alpha
+ * @beta
  */
 export class SetMapHigherPriorityMasking extends Tool {
   public static toolId = "SetMapHigherPriorityMask";
@@ -38,7 +38,7 @@ export class SetMapHigherPriorityMasking extends Tool {
 }
 
 /** Unmask Mask.
- * @alpha
+ * @beta
  */
 export class UnmaskMapTool extends Tool {
   public static toolId = "UnmaskMap";
