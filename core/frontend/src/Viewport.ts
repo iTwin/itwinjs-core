@@ -8,6 +8,7 @@
 
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
+  ProcessDetector,
   StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
@@ -3121,13 +3122,30 @@ export class ScreenViewport extends Viewport {
       assert(undefined === this._webglCanvas); // see getter...
       this._webglCanvas = webglCanvas;
 
-      // this.canvas has zIndex 10. Make webgl canvas' zIndex lower so that canvas decorations draw on top.
       this.addChildDiv(this.vpDiv, webglCanvas, 5);
+
+      /** The following workaround resolves an issue specific to iOS Safari. We really want this webgl canvas' zIndex to be
+       * lower than this.canvas, but if we do that on iOS Safari, Safari may decide to not display the canvas contents once
+       * it is re-added to the parent div after dropping other viewports. It will only display it once resizing the view.
+       * The offending element here is the 2d canvas sitting on top of the webgl canvas. We need to clear its contents
+       * immediately on iOS. Even though the 2d canvas gets cleared in OnScreenTarget.drawOverlayDecorations() in this case,
+       * it looks like iOS needs an immediate clear.
+       */
+      if (ProcessDetector.isIOSBrowser)
+        _clear2dCanvas(this.canvas);
     }
 
     this.target.updateViewRect();
     this.invalidateRenderPlan();
   }
+}
+
+function _clear2dCanvas(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext("2d", { alpha: true })!;
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for clearRect() call below.
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
 }
 
 /** An off-screen viewport is not rendered to the screen. It is never added to the [[ViewManager]], therefore does not participate in
