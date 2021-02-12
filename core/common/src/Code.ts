@@ -47,6 +47,7 @@ export class Code implements CodeProps {
   /** Create an empty, non-unique code with no special meaning. */
   public static createEmpty(): Code { const id: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
   public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
+  public toJSON(): CodeProps { return { spec: this.spec, scope: this.scope, value: this.value }; }
   /** @deprecated Use the [[value]] property instead. */
   public getValue(): string { return this.value; }
   public equals(other: Code): boolean { return Code.equalCodes(this, other); }

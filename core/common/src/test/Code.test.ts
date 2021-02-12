@@ -84,4 +84,10 @@ describe("Code", () => {
     assert.equal(code.value, "");
     assert.equal(code.getValue(), ""); // eslint-disable-line deprecation/deprecation
   });
+
+  it("should roundtrip through JSON", () => {
+    const code = new Code({ spec, scope, value: "Value" });
+    const codeFromJson = new Code(JSON.parse(JSON.stringify(code)));
+    assert.isTrue(Code.equalCodes(code, codeFromJson));
+  });
 });
