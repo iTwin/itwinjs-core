@@ -7,15 +7,15 @@
  */
 
 import { BeEvent, IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { EventSource, IModelConnection, NativeApp } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
   HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
   isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition,
   LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
-  PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationStatus, PresentationUnitSystem,
-  RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
+  PresentationDataCompareOptions, PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RequestPriority,
+  RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { LocalizationHelper } from "./LocalizationHelper";
@@ -80,9 +80,6 @@ export interface PresentationManagerProps {
 
   /** @internal */
   rpcRequestsHandler?: RpcRequestsHandler;
-
-  /** @internal */
-  eventSource?: EventSource;
 }
 
 /**
@@ -129,11 +126,9 @@ export class PresentationManager implements IDisposable {
     this._localizationHelper = new LocalizationHelper();
     this._connections = new Map<IModelConnection, Promise<void>>();
 
-    if (NativeApp.isValid) {
-      // EventSource only works in native apps, so the `onUpdate` callback will only be called there. Adding
-      // under the condition just to avoid an error message being logged.
-      const eventSource = props?.eventSource ?? EventSource.global;
-      this._clearEventListener = eventSource.on(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
+    if (IpcApp.isValid) {
+      // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
+      this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
     }
   }
 
@@ -159,7 +154,7 @@ export class PresentationManager implements IDisposable {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onUpdate = (report: UpdateInfoJSON) => {
+  private onUpdate = (_evt: Event, report: UpdateInfoJSON) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.handleUpdateAsync(UpdateInfo.fromJSON(report));
   };
@@ -192,10 +187,22 @@ export class PresentationManager implements IDisposable {
       return [];
 
     const options = await this.addRulesetAndVariablesToOptions(props);
-    let modifications: PartialHierarchyModification[];
+    let modifications: PartialHierarchyModification[] = [];
+
     try {
-      modifications = (await this.rpcRequestsHandler.compareHierarchies(this.toRpcTokenOptions(options)))
-        .map(PartialHierarchyModification.fromJSON);
+      while (true) {
+        const result = (await this.rpcRequestsHandler.compareHierarchiesPaged(this.toRpcTokenOptions(options)));
+        modifications.push(...result.changes.map(PartialHierarchyModification.fromJSON));
+        if (!result.continuationToken)
+          break;
+
+        if (result.changes.length === 0) {
+          Logger.logError(PresentationFrontendLoggerCategory.Package, "Hierarchy compare returned no changes but has continuation token.");
+          return [];
+        }
+
+        options.continuationToken = result.continuationToken;
+      }
     } catch (e) {
       if (e instanceof PresentationError && e.errorNumber === PresentationStatus.Canceled) {
         modifications = [];

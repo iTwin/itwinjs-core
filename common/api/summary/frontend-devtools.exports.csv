@@ -76,6 +76,7 @@ internal;ExtensionServiceTool
 beta;FadeOutTool 
 beta;FlipImageConfig 
 beta;FlipImageEffect 
+internal;formatMemory(numBytes: number): string
 beta;FpsTracker
 beta;FreezeSceneTool 
 beta;FrontendDevTools
@@ -120,7 +121,7 @@ beta;randomInteger(min: number, max: number): number
 beta;randomIntegerInRange(range: Range1d): number
 beta;randomPositionInRange(range: Range3d): Point3d
 alpha;RealityTransitionTool 
-beta;redrawSelectedView(): void
+beta;refreshViewportsForEffect(effectName: string): void
 beta;class RenderSystemDebugControlTool 
 beta;class RenderTargetDebugControlToggleTool 
 beta;class RenderTargetDebugControlTool 
@@ -135,6 +136,7 @@ beta;SelectElementsByIdTool
 beta;serializeViewState(view: ViewState): ViewStateProps
 internal;SetAASamplesTool 
 alpha;SetAspectRatioSkewTool 
+beta;SetGpuMemoryLimitTool 
 alpha;SetMapBaseTool 
 beta;SetModelColorTool 
 beta;SetModelEmphasizedTool 
@@ -164,6 +166,7 @@ beta;TextBox
 alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
+beta;TileMemoryBreakdown
 beta;TileStatisticsTracker
 alpha;Toggle3dManipulationsTool 
 beta;ToggleDPIForLODTool 

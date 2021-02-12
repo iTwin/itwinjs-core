@@ -10,7 +10,7 @@ import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
 import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { loadEnv } from "@bentley/config-loader";
 import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
@@ -27,7 +27,7 @@ import { initialize as initializeTesting, PresentationTestingInitProps, terminat
 chai.use(sinonChai);
 chai.use(chaiSubset);
 
-IModelJsConfig.init(true);
+loadEnv(path.join(__dirname, "..", ".env"));
 
 const copyBentleyBackendAssets = (outputDir: string) => {
   const bentleyPackagesPath = "node_modules/@bentley";

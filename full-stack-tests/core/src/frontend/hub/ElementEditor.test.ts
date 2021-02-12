@@ -8,7 +8,7 @@ import { IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley
 import { LockLevel } from "@bentley/imodelhub-client";
 import { BisCodeSpec, Code, CodeProps } from "@bentley/imodeljs-common";
 import {
-  BeButtonEvent, BriefcaseConnection, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, RemoteBriefcaseConnection,
+  BeButtonEvent, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, RemoteBriefcaseConnection,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { PlacementTestTool } from "./TestPrimitiveTools";
@@ -52,7 +52,8 @@ async function createAssembly(editor: ElementEditor3d, model: Id64String, catego
   return parentId!;
 }
 
-async function checkAssembly(iModel: IModelConnection, parentId: Id64String, nExpected: number[]): Promise<Id64Array> {
+/* eslint-disable deprecation/deprecation */
+async function checkAssembly(iModel: RemoteBriefcaseConnection, parentId: Id64String, nExpected: number[]): Promise<Id64Array> {
   await iModel.saveChanges(""); // TODO: Move this after select statement when we fix the problem with querying uncommitted changes
 
   const nParentQres = await iModel.queryRows("select count(*) as n from bis.GeometricElement3d where ecinstanceid=?", [parentId]);
@@ -72,7 +73,7 @@ async function countElementsInModel(iModel: IModelConnection, modelId: Id64Strin
 }
 
 describe("Element editor tests (#integration)", async () => {
-  let iModel: BriefcaseConnection;
+  let iModel: RemoteBriefcaseConnection;
   let contextId: string;
 
   before(async () => {
@@ -84,6 +85,7 @@ describe("Element editor tests (#integration)", async () => {
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     };
+    await IModelApp.shutdown();
     await IModelApp.startup(options);
 
     // NB: Call IModelApp.startup and set the authorizationClient *before* calling any other functions that might query the server.

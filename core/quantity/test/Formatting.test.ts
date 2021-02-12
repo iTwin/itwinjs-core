@@ -6,6 +6,7 @@ import { assert } from "chai";
 import { QuantityError } from "../src/Exception";
 import { Format } from "../src/Formatter/Format";
 import { DecimalPrecision, FormatTraits } from "../src/Formatter/FormatEnums";
+import { FormatProps } from "../src/Formatter/Interfaces";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
 process.on("unhandledRejection", (reason, p) => {
@@ -750,6 +751,72 @@ describe("Formatting tests:", () => {
         assert.isTrue(formatData.showSignOption!.toUpperCase() === jsonData.showSignOption!.toUpperCase());
       }
     }
+  });
+
+  it("isFormatTraitSetInProps works properly", () => {
+    const formatProps: FormatProps = {
+      type: "decimal",
+      formatTraits: [
+        "keepSingleZero",
+        "zeroEmpty",
+        "keepDecimalPoint",
+        "applyRounding",
+        "fractionDash",
+        "showUnitLabel",
+        "prependUnitLabel",
+        "use1000Separator",
+        "exponentOnlyNegative",
+      ],
+    };
+
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes) === false);
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty));
+  });
+
+  it("isFormatTraitSetInProps works properly", () => {
+    const formatProps: FormatProps = {
+      type: "decimal",
+      formatTraits: [
+        "trailZeroes",
+      ],
+    };
+
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator));
+    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes));
+  });
+
+  it("show old/optional trait format works properly", () => {
+    const formatProps: FormatProps = {
+      type: "decimal",
+      formatTraits: "trailZeroes,keepSingleZero,zeroEmpty,keepDecimalPoint,applyRounding,fractionDash,showUnitLabel,prependUnitLabel,use1000Separator,exponentOnlyNegative"
+    };
+
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator));
+    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty));
   });
 
 });

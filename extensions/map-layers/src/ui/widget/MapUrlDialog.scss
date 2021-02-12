@@ -13,6 +13,7 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   width: 100%;
   display: grid;
   grid-template-columns: auto 1fr;
+  grid-column-gap: 10px;
   align-items: center;
 
   .map-layer-source-label{
@@ -34,4 +35,37 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   .map-layer-warning-icon{
     margin-left: 3%;
   }
+
+}
+
+.map-layer-source-progressBar {
+  margin-top: 10px;
+}
+
+.map-layer-source-placeholder {
+  white-space: pre-wrap;
+}
+
+.map-layer-source-warnMessage {
+  margin-top: 5px;
+
+  .map-layer-source-warnMessage-label {
+    margin-left: 5px;
+  }
+
+  .map-layer-source-warnMessage-icon {
+    background-color: transparent;
+    border: none;
+    color: $buic-foreground-warning;
+    background-color: transparent;
+
+    &:hover {
+      color: $hovered-icon-color;
+    }
+    &:focus {
+      outline: none;
+      box-shadow: $uicore-button-focus-boxshadow;
+    }
+  }
+
 }

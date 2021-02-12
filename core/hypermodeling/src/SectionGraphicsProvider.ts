@@ -10,9 +10,9 @@ import { assert, compareBooleans, compareStrings, Id64 } from "@bentley/bentleyj
 import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import {
-  CategorySelectorState, DisplayStyle2dState, DrawingViewState,
+  CategorySelectorState, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,
   FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelApp, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
-  TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier, Viewport, ViewState2d,
+  TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, Viewport, ViewState2d,
 } from "@bentley/imodeljs-frontend";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
@@ -129,7 +129,7 @@ class ProxyTreeReference extends TileTreeReference {
     return undefined !== proxiedTree ? proxiedTree.ref : undefined;
   }
 
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     const ref = this._proxiedRef;
     if (undefined !== ref)
@@ -203,7 +203,6 @@ abstract class ProxyTree extends TileTree {
     return this.isDisplayed ? [this.rootTile] : [];
   }
 
-  public forcePrune(): void { }
   public prune(): void {
     // Our single tile is only a proxy. Our proxied tree(s) will be pruned separately
   }

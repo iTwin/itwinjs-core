@@ -37,11 +37,13 @@ import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import { ChangeCameraTool } from "./tools/ViewportTools";
+import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
 import { ClearEffectsTool } from "./effects/EffectTools";
 import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
 import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
 import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
 import { SaturationConfig, SaturationEffect } from "./effects/Saturation";
+import { VignetteConfig, VignetteEffect } from "./effects/Vignette";
 import { SnowEffect } from "./effects/Snow";
 import { ExplosionEffect } from "./effects/Explosion";
 
@@ -160,9 +162,12 @@ export class FrontendDevTools {
       UnsharpenEffect,
       ViewportAddRealityModel,
       ViewportTileSizeModifierTool,
+      VignetteConfig,
+      VignetteEffect,
       AttachRealityModelTool,
       DetachRealityModelTool,
       SaveRealityModelTool,
+      SetGpuMemoryLimitTool,
       SetRealityModelLocateTool,
       SetRealityModelEmphasizedTool,
       SetRealityModelTransparencyTool,

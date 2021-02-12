@@ -277,14 +277,6 @@ export namespace AreaPattern {
     }
 }
 
-// @beta
-export type AsyncFunction = (...args: any) => Promise<any>;
-
-// @beta
-export type AsyncMethodsOf<T> = {
-    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
-}[keyof T];
-
 export { AuthStatus }
 
 // @public
@@ -339,16 +331,6 @@ export class B3dmHeader extends TileHeader {
 // @public (undocumented)
 export class BackendError extends IModelError {
     constructor(errorNumber: number, name: string, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
-}
-
-// @beta
-export class BackendIpc {
-    static addListener(channel: string, listener: IpcListener): RemoveFunction;
-    static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
-    static initialize(ipc: IpcSocketBackend): void;
-    static get isValid(): boolean;
-    static removeListener(channel: string, listener: IpcListener): void;
-    static send(channel: string, ...data: any[]): void;
 }
 
 // @public
@@ -640,6 +622,23 @@ export interface BriefcaseDownloader {
 export interface BriefcaseProps {
     briefcaseId: number;
     iModelId: GuidString;
+}
+
+// @internal (undocumented)
+export interface BriefcasePushAndPullNotifications {
+    // (undocumented)
+    notifyPulledChanges: (arg: {
+        parentChangeSetId: string;
+    }) => void;
+    // (undocumented)
+    notifyPushedChanges: (arg: {
+        parentChangeSetId: string;
+    }) => void;
+    // (undocumented)
+    notifySavedChanges: (arg: {
+        hasPendingTxns: boolean;
+        time: number;
+    }) => void;
 }
 
 export { BriefcaseStatus }
@@ -1601,9 +1600,6 @@ export interface DecorationGeometryProps {
 // @alpha
 export const defaultDesktopAuthorizationClientExpiryBuffer: number;
 
-// @alpha
-export const defaultMobileAuthorizationClientExpiryBuffer: number;
-
 // @internal (undocumented)
 export const defaultTileOptions: TileOptions;
 
@@ -2090,7 +2086,7 @@ export class EdgeArgs {
     get numEdges(): number;
 }
 
-// @alpha
+// @alpha @deprecated
 export abstract class Editor3dRpcInterface extends RpcInterface {
     // (undocumented)
     applyTransform(_tokenProps: IModelRpcProps, _editorId: GuidString, _tprops: TransformProps): Promise<any>;
@@ -2386,16 +2382,6 @@ export interface EnvironmentProps {
     ground?: GroundPlaneProps;
     // (undocumented)
     sky?: SkyBoxProps;
-}
-
-// @internal
-export namespace Events {
-    // (undocumented)
-    export namespace NativeApp {
-        const // (undocumented)
-        namespace = "NativeApp";
-        const modelGeometryChanges = "modelGeometryChanges";
-    }
 }
 
 // @alpha
@@ -2738,17 +2724,6 @@ export interface FormDataCommon {
     append(name: string, value: string | Blob | Buffer, fileName?: string): void;
 }
 
-// @beta
-export class FrontendIpc {
-    static addListener(channel: string, handler: IpcListener): RemoveFunction;
-    static callBackend(channelName: string, methodName: string, ...args: any[]): Promise<any>;
-    static initialize(ipc: IpcSocketFrontend): void;
-    static invoke(channel: string, ...args: any[]): Promise<any>;
-    static get isValid(): boolean;
-    static removeListener(channel: string, listener: IpcListener): void;
-    static send(channel: string, ...data: any[]): void;
-}
-
 // @public
 export class Frustum {
     constructor();
@@ -2910,6 +2885,12 @@ export interface GeometryAppearanceProps {
     subCategory?: Id64String;
     transparency?: number;
     weight?: number;
+}
+
+// @internal
+export interface GeometryChangeNotifications {
+    // (undocumented)
+    notifyGeometryChanged: (models: ModelGeometryChangesProps[]) => void;
 }
 
 // @public
@@ -3753,8 +3734,6 @@ export abstract class IModel implements IModelProps {
     getConnectionProps(): IModelConnectionProps;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
     getEcefTransform(): Transform;
-    // @internal (undocumented)
-    protected abstract getEventSourceProps(): IModelEventSourceProps;
     getRpcProps(): IModelRpcProps;
     get globalOrigin(): Point3d;
     set globalOrigin(org: Point3d);
@@ -3784,7 +3763,7 @@ export abstract class IModel implements IModelProps {
 }
 
 // @alpha (undocumented)
-export type IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps;
+export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
 // @beta
 export interface IModelCoordinatesRequestProps {
@@ -3810,12 +3789,6 @@ export interface IModelEncryptionProps {
 // @public
 export class IModelError extends BentleyError {
     constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
-}
-
-// @alpha
-export interface IModelEventSourceProps {
-    // (undocumented)
-    eventSourceName: string;
 }
 
 // @public
@@ -3958,24 +3931,35 @@ export class IModelVersion {
     }
 
 // @public
-export interface IModelVersionProps {
-    // (undocumented)
-    afterChangeSetId?: GuidString;
-    // (undocumented)
-    first?: boolean;
-    // (undocumented)
-    latest?: boolean;
-    // (undocumented)
-    versionName?: string;
-}
+export type IModelVersionProps = {
+    first: true;
+    latest?: never;
+    afterChangeSetId?: never;
+    versionName?: never;
+} | {
+    latest: true;
+    first?: never;
+    afterChangeSetId?: never;
+    versionName?: never;
+} | {
+    afterChangeSetId: GuidString;
+    first?: never;
+    latest?: never;
+    versionName?: never;
+} | {
+    versionName: string;
+    first?: never;
+    latest?: never;
+    afterChangeSetId?: never;
+};
 
 // @internal
 export abstract class IModelWriteRpcInterface extends RpcInterface {
-    // (undocumented)
+    // @deprecated (undocumented)
     createAndInsertPhysicalModel(_tokenProps: IModelRpcProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String>;
-    // (undocumented)
+    // @deprecated (undocumented)
     createAndInsertSpatialCategory(_tokenProps: IModelRpcProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void>;
     // (undocumented)
     doConcurrencyControlRequest(_tokenProps: IModelRpcProps): Promise<void>;
@@ -3993,7 +3977,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     static interfaceVersion: string;
     // (undocumented)
     lockModel(_tokenProps: IModelRpcProps, _modelId: Id64String, _level: LockLevel): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     openForWrite(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
     // (undocumented)
     pullAndMergeChanges(_tokenProps: IModelRpcProps): Promise<IModelConnectionProps>;
@@ -4009,7 +3993,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     saveThumbnail(_iModelToken: IModelRpcProps, _val: Uint8Array): Promise<void>;
     // (undocumented)
     synchConcurrencyControlResourcesCache(_tokenProps: IModelRpcProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     undoRedo(_rpc: IModelRpcProps, _undo: boolean): Promise<IModelStatus>;
     // (undocumented)
     updateProjectExtents(_iModelToken: IModelRpcProps, _newExtents: AxisAlignedBox3dProps): Promise<void>;
@@ -4051,10 +4035,40 @@ export const Interpolation: {
 // @beta (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
-// @beta
-export abstract class IpcHandler {
-    abstract get channelName(): string;
-    static register(): RemoveFunction;
+// @internal (undocumented)
+export enum IpcAppChannel {
+    // (undocumented)
+    Functions = "ipc-app",
+    // (undocumented)
+    GeometryChanges = "geometry-changes",
+    // (undocumented)
+    PushPull = "push-pull"
+}
+
+// @internal
+export interface IpcAppFunctions {
+    cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
+    cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
+    closeIModel: (key: string) => Promise<void>;
+    hasPendingTxns: (key: string) => Promise<boolean>;
+    // (undocumented)
+    isInteractiveEditingSupported: (key: string) => Promise<boolean>;
+    log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
+    openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+    openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
+    // (undocumented)
+    pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
+    // (undocumented)
+    pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
+    // (undocumented)
+    reinstateTxn: (key: string) => Promise<IModelStatus>;
+    // (undocumented)
+    reverseAllTxn: (key: string) => Promise<IModelStatus>;
+    // (undocumented)
+    reverseSingleTxn: (key: string) => Promise<IModelStatus>;
+    saveChanges: (key: string, description?: string) => Promise<void>;
+    // (undocumented)
+    toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
 }
 
 // @internal
@@ -4364,12 +4378,10 @@ export interface MapLayerProps {
     isBase?: boolean;
     maxZoom?: number;
     name?: string;
-    password?: string;
     subLayers?: MapSubLayerProps[];
     transparency?: number;
     transparentBackground?: boolean;
     url?: string;
-    userName?: string;
     visible?: boolean;
 }
 
@@ -4394,7 +4406,9 @@ export class MapLayerSettings {
     // (undocumented)
     readonly name: string;
     // (undocumented)
-    readonly password?: string;
+    password?: string;
+    // (undocumented)
+    setCredentials(userName?: string, password?: string): void;
     subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined;
     // (undocumented)
     readonly subLayers: MapSubLayerSettings[];
@@ -4406,7 +4420,7 @@ export class MapLayerSettings {
     // (undocumented)
     readonly url: string;
     // (undocumented)
-    readonly userName?: string;
+    userName?: string;
     // (undocumented)
     readonly visible: boolean;
 }
@@ -4556,86 +4570,6 @@ export class MeshPolylineList extends Array<MeshPolyline> {
 }
 
 // @alpha
-export interface MobileAuthorizationClientConfiguration {
-    clientId: string;
-    expiryBuffer?: number;
-    redirectUri: string;
-    scope: string;
-}
-
-// @beta (undocumented)
-export type MobileRpcChunks = Array<string | Uint8Array>;
-
-// @beta
-export abstract class MobileRpcConfiguration extends RpcConfiguration {
-    static get args(): any;
-    static get isIOSFrontend(): any;
-    static get isMobileBackend(): boolean;
-    static get isMobileFrontend(): boolean;
-    static get platform(): RpcMobilePlatform;
-    // (undocumented)
-    abstract protocol: MobileRpcProtocol;
-    // @internal (undocumented)
-    static setup: {
-        obtainPort: () => number;
-        checkPlatform: () => boolean;
-    };
-}
-
-// @beta (undocumented)
-export interface MobileRpcGateway {
-    // (undocumented)
-    connectionId: number;
-    // (undocumented)
-    handler: (payload: ArrayBuffer | string, connectionId: number) => void;
-    // (undocumented)
-    port: number;
-    // (undocumented)
-    sendBinary: (message: Uint8Array, connectionId: number) => void;
-    // (undocumented)
-    sendString: (message: string, connectionId: number) => void;
-}
-
-// @beta
-export class MobileRpcManager {
-    static initializeClient(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
-    static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
-    // @internal (undocumented)
-    static ready(): Promise<void>;
-}
-
-// @beta
-export class MobileRpcProtocol extends RpcProtocol {
-    constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint);
-    // (undocumented)
-    static encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks>;
-    // (undocumented)
-    static encodeResponse(fulfillment: RpcRequestFulfillment): MobileRpcChunks;
-    // (undocumented)
-    static obtainInterop(): MobileRpcGateway;
-    // (undocumented)
-    requests: Map<string, MobileRpcRequest>;
-    // (undocumented)
-    readonly requestType: typeof MobileRpcRequest;
-    // (undocumented)
-    sendToBackend(message: MobileRpcChunks): void;
-    // (undocumented)
-    sendToFrontend(message: MobileRpcChunks, connection?: number): void;
-    // (undocumented)
-    socket: WebSocket;
-    }
-
-// @beta (undocumented)
-export class MobileRpcRequest extends RpcRequest {
-    protected load(): Promise<RpcSerializedValue>;
-    // @internal (undocumented)
-    notifyResponse(fulfillment: RpcRequestFulfillment): void;
-    readonly protocol: MobileRpcProtocol;
-    protected send(): Promise<number>;
-    protected setHeader(_name: string, _value: string): void;
-}
-
-// @alpha
 export class ModelClipGroup {
     clip?: ClipVector;
     clone(): ModelClipGroup;
@@ -4744,25 +4678,14 @@ export enum MonochromeMode {
 export const nativeAppChannel = "nativeApp";
 
 // @internal
-export interface NativeAppIpc {
+export interface NativeAppFunctions {
     acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
-    authGetAccessToken: () => Promise<string>;
-    authInitialize: (_issuer: string, _config: any) => Promise<void>;
-    authSignIn: () => Promise<void>;
-    authSignOut: () => Promise<void>;
-    cancelElementGraphicsRequests: (_rpcProps: IModelRpcProps, _requestIds: string[]) => Promise<void>;
-    cancelTileContentRequests: (_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
-    closeBriefcase: (_key: string) => Promise<void>;
     deleteBriefcaseFiles: (_fileName: string) => Promise<void>;
     downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean) => Promise<LocalBriefcaseProps>;
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
     getConfig: () => Promise<any>;
-    // (undocumented)
-    isInteractiveEditingSupported: (_tokenProps: IModelRpcProps) => Promise<boolean>;
-    log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
-    open: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
     storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
@@ -4773,16 +4696,12 @@ export interface NativeAppIpc {
     storageRemove: (_storageId: string, _key: string) => Promise<void>;
     storageRemoveAll: (_storageId: string) => Promise<void>;
     storageSet: (_storageId: string, _key: string, _value: StorageValue) => Promise<void>;
-    // (undocumented)
-    toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
 }
 
 // @internal
-export interface NativeAppResponse {
+export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
-    // (undocumented)
-    notifyMemoryWarning: () => void;
     // (undocumented)
     notifyUserStateChanged: (arg: {
         accessToken: any;
@@ -4791,7 +4710,7 @@ export interface NativeAppResponse {
 }
 
 // @internal (undocumented)
-export const nativeAppResponse = "nativeApp-notify";
+export const nativeAppNotify = "nativeApp-notify";
 
 // @public
 export interface NavigationBindingValue {
@@ -5380,9 +5299,6 @@ export enum ProfileOptions {
 }
 
 // @beta
-export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
-
-// @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 // @beta
@@ -5661,14 +5577,6 @@ export enum QueryResponseStatus {
     Timeout = 4
 }
 
-// @internal
-export interface QueuedEvent {
-    data: any;
-    eventId: number;
-    eventName: string;
-    namespace: string;
-}
-
 // @public
 export enum Rank {
     Application = 2,
@@ -5911,12 +5819,6 @@ export interface RequestNewBriefcaseProps {
     contextId: GuidString;
     fileName?: string;
     iModelId: GuidString;
-}
-
-// @beta
-export abstract class ResponseHandler {
-    static register(): RemoveFunction;
-    abstract get responseChannel(): string;
 }
 
 // @public (undocumented)
@@ -6177,16 +6079,6 @@ export class RpcManager {
 export class RpcMarshaling {
     static deserialize(protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
     static serialize(protocol: RpcProtocol | undefined, value: any): Promise<RpcSerializedValue>;
-}
-
-// @beta
-export enum RpcMobilePlatform {
-    // (undocumented)
-    Android = 1,
-    // (undocumented)
-    iOS = 2,
-    // (undocumented)
-    Unknown = 0
 }
 
 // @internal
@@ -6974,17 +6866,6 @@ export namespace SpatialClassificationProps {
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     // (undocumented)
     modelSelectorId: Id64String;
-}
-
-// @internal
-export abstract class StandaloneIModelRpcInterface extends RpcInterface {
-    // (undocumented)
-    close(_iModelRpcProps: IModelRpcProps): Promise<boolean>;
-    static getClient(): StandaloneIModelRpcInterface;
-    static readonly interfaceName = "StandaloneIModelRpcInterface";
-    static interfaceVersion: string;
-    // (undocumented)
-    openFile(_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions): Promise<IModelConnectionProps>;
 }
 
 // @beta
