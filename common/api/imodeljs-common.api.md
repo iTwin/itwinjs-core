@@ -5156,17 +5156,11 @@ export type PlacementProps = Placement2dProps | Placement3dProps;
 
 // @beta
 export enum PlanarClipMaskMode {
-    // (undocumented)
     ExcludeElements = 5,
-    // (undocumented)
     IncludeElements = 4,
-    // (undocumented)
     IncludeSubCategories = 3,
-    // (undocumented)
     Models = 2,
-    // (undocumented)
     None = 0,
-    // (undocumented)
     Priority = 1
 }
 
