@@ -34,52 +34,59 @@ jobs:
 
       - template: ../templates/docs-build.yaml
 
+      - task: PublishPipelineArtifact@1
+        displayName: Publish Pipeline Artifact - Docs build
+        inputs:
+          targetPath: $(Agent.BuildDirectory)/tempDocsBuild/public_build/
+          artifact: DocsBuild
+        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+
       # The rest of the file is needed to release the documentation.
-      - task: Npm@1
-        displayName: npm audit
-        inputs:
-          command: custom
-          verbose: false
-          customCommand: "audit --registry=https://registry.npmjs.org/ --audit-level=high"
-        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
+      # - task: Npm@1
+      #   displayName: npm audit
+      #   inputs:
+      #     command: custom
+      #     verbose: false
+      #     customCommand: "audit --registry=https://registry.npmjs.org/ --audit-level=high"
+      #   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
 
-      - task: ms-codeanalysis.vss-microsoft-security-code-analysis-devops.build-task-credscan.CredScan@2
-        displayName: Run Credential Scanner
-        inputs:
-          scanFolder: $(Agent.BuildDirectory)/tempDocsBuild
-        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
+      # - task: ms-codeanalysis.vss-microsoft-security-code-analysis-devops.build-task-credscan.CredScan@2
+      #   displayName: Run Credential Scanner
+      #   inputs:
+      #     scanFolder: $(Agent.BuildDirectory)/tempDocsBuild
+      #   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
 
-      - task: PublishPipelineArtifact@1
-        displayName: Publish Pipeline Artifact - Credential Scanner
-        inputs:
-          targetPath: $(Build.ArtifactStagingDirectory)/../_sdt/logs/CredentialScanner
-          artifact: CredentialScanner
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+      # - task: PublishPipelineArtifact@1
+      #   displayName: Publish Pipeline Artifact - Credential Scanner
+      #   inputs:
+      #     targetPath: $(Build.ArtifactStagingDirectory)/../_sdt/logs/CredentialScanner
+      #     artifact: CredentialScanner
+      #   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
-      - task: DeleteFiles@1
-        displayName: Delete files from $(Agent.BuildDirectory)/tempDocsBuild/public_build
-        inputs:
-          SourceFolder: $(Agent.BuildDirectory)/tempDocsBuild/public_build/
-          Contents: index.html
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+      # - task: DeleteFiles@1
+      #   displayName: Delete files from $(Agent.BuildDirectory)/tempDocsBuild/public_build
+      #   inputs:
+      #     SourceFolder: $(Agent.BuildDirectory)/tempDocsBuild/public_build/
+      #     Contents: index.html
+      #   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
-      - task: NuGetToolInstaller@0
-        displayName: Use NuGet 4.9.2
-        inputs:
-          versionSpec: 4.9.2
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+      # - task: NuGetToolInstaller@0
+      #   displayName: Use NuGet 4.9.2
+      #   inputs:
+      #     versionSpec: 4.9.2
+      #   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
-      - task: NuGetCommand@2
-        displayName: NuGet pack
-        inputs:
-          command: pack
-          packagesToPack: $(Agent.BuildDirectory)/DocsNugetSpecFile/NugetPackage.nuspec
-          versioningScheme: byBuildNumber
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
+      # - task: NuGetCommand@2
+      #   displayName: NuGet pack
+      #   inputs:
+      #     command: pack
+      #     packagesToPack: $(Agent.BuildDirectory)/DocsNugetSpecFile/NugetPackage.nuspec
+      #     versioningScheme: byBuildNumber
+      #   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
 
-      - task: PublishPipelineArtifact@1
-        displayName: "Publish Pipeline Artifact - iModel.js Documentation .nupkg"
-        inputs:
-          targetPath: $(Build.ArtifactStagingDirectory)/iModeljs.Documentation.$(Build.BuildNumber).nupkg
-          artifact: iModeljsDocumentationFiles_$(Build.BuildNumber)
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
+      # - task: PublishPipelineArtifact@1
+      #   displayName: "Publish Pipeline Artifact - iModel.js Documentation .nupkg"
+      #   inputs:
+      #     targetPath: $(Build.ArtifactStagingDirectory)/iModeljs.Documentation.$(Build.BuildNumber).nupkg
+      #     artifact: iModeljsDocumentationFiles_$(Build.BuildNumber)
+      #   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
