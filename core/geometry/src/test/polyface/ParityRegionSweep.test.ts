@@ -27,7 +27,7 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 
 /* eslint-disable no-console */
 describe("ParityRegionSweep", () => {
-  it.only("Hello", () => {
+  it("Hello", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const regionC = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
