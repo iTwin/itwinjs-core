@@ -144,3 +144,29 @@ The above example creates content for `ECDbMeta.ECClassDef` instances by selecti
 that are of given `ECDbMeta.ECClassDef` instances.
 
 Previously this was not possible, because there is no ECRelationship between `ECDbMeta.ECClassDef` and `BisCore.Element`.
+
+### ECInstance ECExpression context method enhancements
+
+Added lambda versions for [ECInstance ECExpression context](../learning/presentation/ECExpressions.md#ecinstance) methods: `GetRelatedInstancesCount`,
+`HasRelatedInstance`, `GetRelatedValue`. This allows using those methods without the need of an ECRelationship between "current" ECInstance
+and related ECInstance. Example:
+
+```json
+{
+  "ruleType": "RootNodes",
+  "specifications": [
+    {
+      "specType": "InstanceNodesOfSpecificClasses",
+      "classes": {
+        "schemaName": "ECDbMeta",
+        "classNames": ["ECClassDef"]
+      },
+      "instanceFilter": "this.HasRelatedInstance(\"BisCore:Element\", el => el.IsOfClass(this.ECInstanceId))",
+      "groupByClass": false,
+      "groupByLabel": false
+    }
+  ]
+}
+```
+
+The above example returns `ECDbMeta:ECClassDef` instances only there are `BisCore:Elements` of those classes.
