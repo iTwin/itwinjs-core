@@ -4,9 +4,11 @@ ECExpressions is a very basic language that allows customizing presentation
 rules' behavior.
 
 Symbols that can be used depend on current context. Example:
+
 ```
 this.GetContextB().ContextC.DoSomething()
 ```
+
 Here, symbol `this` returns a context which has a function symbol
 `GetContextB()`. This function returns a context which has a property
 symbol `ContextC`. And the property value is a context that contains a
@@ -265,17 +267,24 @@ this.StructPropertyName.PropertyName
 this.StructArray[1].Struct.PropertyName
 ```
 
-Additionally, when evaluating ECInstance contexts, the below symbols are
-available:
+Additionally, when evaluating ECInstance contexts, the below symbols are available:
 
 Symbol                              | Type    | Value
 ------------------------------------|---------|----------
-<code>GetRelatedInstance("RelationshipName:0&#124;1:RelatedClassName")</code> | [ECInstance context](#ecinstance) | Returns related instance context
 <code>GetRelatedInstancesCount("RelationshipSchemaName:RelationshipName", "Forward&#124;Backward", "RelatedClassSchemaName:RelatedClassName")</code> | number | Number of related instances following the specified relationship
+<code>GetRelatedInstancesCount("RelatedClassSchemaName:RelatedClassName", lambda_for_filtering_related_instances)</code> | number | Number of related instances that match criteria described by given [lambda](#lambda-operator)
 <code>HasRelatedInstance("RelationshipSchemaName:RelationshipName", "Forward&#124;Backward", "RelatedClassSchemaName:RelatedClassName")</code> | bool | Does this instance has a related instance following the specified relationship
+<code>HasRelatedInstance("RelatedClassSchemaName:RelatedClassName", lambda_for_filtering_related_instances)</code> | bool | Does this instance has a related instance that matches criteria described by given [lambda](#lambda-operator)
 <code>GetRelatedValue("RelationshipSchemaName:RelationshipName", "Forward&#124;Backward", "RelatedClassSchemaName:RelatedClassName", "PropertyName")</code> | any | Returns property value of the related instance
+<code>GetRelatedValue("RelatedClassSchemaName:RelatedClassName", lambda_for_filtering_related_instances, "PropertyName")</code> | any | Returns property value of related instance that matches criteria described by given [lambda](#lambda-operator)
 <code>IsOfClass("SchemaName", "ClassName"))</code> | bool | Returns <code>true</code> if the instance is of a class with given schema and class names
 <code>IsOfClass(SomeECClassId))</code> | bool | Returns <code>true</code> if the instance is of a class with specified ECClass ID
+
+Deprecated symbols:
+
+Symbol                              | Type    | Value
+------------------------------------|---------|----------
+<code>GetRelatedInstance("RelationshipName:0&#124;1:RelatedClassName")</code> | [ECInstance context](#ecinstance) | Returns related instance context. **Not available when evaluating instance filters.**
 
 ### ECInstance Key
 
@@ -314,6 +323,7 @@ Symbol                                | Type     | Value
 Comparison of formatted property values in ECExpressions can be done using
 `GetFormattedValue` function. Specific unit system can be passed as a second argument
 to function or omitted to use default presentation format:
+
 ```
 GetFormattedValue(this.Length, "Metric") = "10.0 m"
 GetFormattedValue(this.Length) = "10.0 m"

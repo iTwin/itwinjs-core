@@ -93,3 +93,80 @@ New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can b
 ### IModelHostConfiguration.applicationType
 
 The type of the internal member `IModelHostConfiguration.applicationType` had a redundant declaration in `IModelHost.ts`. It is now correctly declared to be of type `IModelJsNative.ApplicationType`. The names of the members were the same, so this will not likely cause problems.
+
+## Presentation
+
+### Setting up default formats
+
+A new feature was introduced, which allows supplying default unit formats to use for formatting properties that don't have a presentation unit for requested unit system. The formats are set when initializing [Presentation]($presentation-backend) and passing [PresentationManagerProps.defaultFormats]($presentation-backend).
+Example:
+
+```ts
+Presentation.initialize({
+  defaultFormats: {
+    length: {
+      unitSystems: [PresentationUnitSystem.BritishImperial],
+      format: MY_DEFAULT_FORMAT_FOR_LENGTHS_IN_BRITISH_IMPERIAL_UNITS,
+    },
+    area: {
+      unitSystems: [PresentationUnitSystem.UsCustomary, PresentationUnitSystem.UsSurvey],
+      format: MY_DEFAULT_FORMAT_FOR_AREAS_IN_US_UNITS,
+    },
+  },
+});
+```
+
+### Accessing selection in instance filter of content specifications
+
+Added a way to create and filter content that's related to given input through some ID type of property that is not part of a relationship. That can be done by
+using [ContentInstancesOfSpecificClasses specification](../learning/presentation/content/ContentInstancesOfSpecificClasses.md) with an instance filter that makes use
+of the newly added [SelectedInstanceKeys](../learning/presentation/content/ECExpressions.md#instance=filter) ECExpression symbol. Example:
+
+```json
+{
+  "ruleType": "Content",
+  "condition": "SelectedNode.IsOfClass(\"ECClassDef\", \"ECDbMeta\")",
+  "specifications": [
+    {
+      "specType": "ContentInstancesOfSpecificClasses",
+      "classes": {
+        "schemaName": "BisCore",
+        "classNames": ["Element"]
+      },
+      "arePolymorphic": true,
+      "instanceFilter": "SelectedInstanceKeys.AnyMatches(x => this.IsOfClass(x.ECInstanceId))"
+    }
+  ]
+}
+```
+
+The above example creates content for `ECDbMeta.ECClassDef` instances by selecting all `BisCore.Element` instances
+that are of given `ECDbMeta.ECClassDef` instances.
+
+Previously this was not possible, because there is no ECRelationship between `ECDbMeta.ECClassDef` and `BisCore.Element`.
+
+### ECInstance ECExpression context method enhancements
+
+Added lambda versions for [ECInstance ECExpression context](../learning/presentation/ECExpressions.md#ecinstance) methods: `GetRelatedInstancesCount`,
+`HasRelatedInstance`, `GetRelatedValue`. This allows using those methods without the need of an ECRelationship between "current" ECInstance
+and related ECInstance. Example:
+
+```json
+{
+  "ruleType": "RootNodes",
+  "specifications": [
+    {
+      "specType": "InstanceNodesOfSpecificClasses",
+      "classes": {
+        "schemaName": "ECDbMeta",
+        "classNames": ["ECClassDef"]
+      },
+      "instanceFilter": "this.HasRelatedInstance(\"BisCore:Element\", el => el.IsOfClass(this.ECInstanceId))",
+      "groupByClass": false,
+      "groupByLabel": false
+    }
+  ]
+}
+```
+
+The above example returns `ECDbMeta:ECClassDef` instances only if there are `BisCore:Elements` of those classes.
