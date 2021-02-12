@@ -90,6 +90,10 @@ CTE are now supported in ECSQL. For more information read [Common Table Expressi
 The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
 New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.
 
+### Frontend package
+
+The alpha class QuantityFormatter now registers its own standard QuantityTypeDefinitions during initialization. CustomQuantityTypeDefinitions must now be registered to support additional QuantityTypes. This replaces the use of FormatterParserSpecsProvider to provide custom quantity types. Removed koq methods that were never implemented.
+
 ### IModelHostConfiguration.applicationType
 
 The type of the internal member `IModelHostConfiguration.applicationType` had a redundant declaration in `IModelHost.ts`. It is now correctly declared to be of type `IModelJsNative.ApplicationType`. The names of the members were the same, so this will not likely cause problems.
