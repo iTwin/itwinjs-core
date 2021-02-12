@@ -8,6 +8,7 @@
 
 import { BeEvent, DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { ModelGeometryChangesProps } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
@@ -31,6 +32,32 @@ export interface ValidationError {
   /** Optional description of what went wrong. */
   message?: string;
 }
+
+// export class TxnCommitRow {
+//   private _stmt: IModelJsNative.SqliteStatement;
+//   public get elementId(): Id64String { return this._stmt.getValueId(0); }
+//   public get modelId(): Id64String { return this._stmt.getValueId(1); }
+//   public get changeType(): { return this._stmt.getValueId(1); }
+
+//   // }
+//   // public get className(): string {
+
+//   // }
+//   // public get changeType(): Id64String {
+
+//   public constructor(stmt: IModelJsNative.SqliteStatement) {
+//   this._stmt = stmt;
+// }
+// }
+
+// export class TxnValidation {
+//   private _iModel: IModelDb;
+//   public iterateChanges(fn: (row: TxnCommitRow) => boolean) {
+//     this._iModel.withPreparedSqliteStatement("SELECT ElementId,ModelId,ChangeType,ECClassId FROM temp.txn_Elements", (stmt: SqliteStatement) => {
+//     }
+
+//     }
+// }
 
 /**
  * Manages local changes to an iModel via [Txns]($docs/learning/InteractiveEditing.md)
@@ -207,4 +234,5 @@ export class TxnManager {
 
   /** Query if there are un-saved or un-pushed local changes. */
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
+
 }

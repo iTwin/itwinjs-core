@@ -1,7 +1,7 @@
 {
   "name": "@bentley/mobile-manager",
   "version": "2.13.0-dev.9",
-  "description": "iTwin.js MobileHost and MobileApp",
+  "description": "tools for creating iTwin.js applications for mobile devices",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <13.0"
@@ -22,7 +22,8 @@
   },
   "keywords": [
     "Bentley",
-    "BIM",
+    "digital-twin",
+    "iTwin",
     "iModel"
   ],
   "author": {
@@ -40,10 +41,6 @@
     "ws": "^7.2.0",
     "js-base64": "^2.4.5"
   },
-  "//devDependencies": [
-    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
-    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
-  ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.13.0-dev.9",
     "@bentley/frontend-authorization-client": "2.13.0-dev.9",
