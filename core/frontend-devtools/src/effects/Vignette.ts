@@ -8,7 +8,7 @@
 
 import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "../tools/parseArgs";
-import { AddEffectTool } from "./EffectTools";
+import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 
 /** Applies a [vignette](https://en.wikipedia.org/wiki/Vignetting) effect to the viewport.
  * From https://github.com/TyLindberg/glsl-vignette/blob/master/advanced.glsl.
@@ -103,6 +103,8 @@ export class VignetteConfig extends Tool {
     config.size[1] = height ?? config.size[1];
     config.roundness = roundness ?? config.roundness;
     config.smoothness = smoothness ?? config.smoothness;
+
+    refreshViewportsForEffect("fdt Vignette");
     return true;
   }
 
