@@ -11,13 +11,6 @@ import {
   IModelApp, ScreenSpaceEffectBuilder, ScreenSpaceEffectSource, Tool,
 } from "@bentley/imodeljs-frontend";
 
-/** Requests that the selected viewport redraw on the next frame. Useful after changing the configuration of a screen-space effect.
- * @beta
- */
-export function redrawSelectedView(): void {
-  IModelApp.viewManager.selectedView?.requestRedraw();
-}
-
 /** Adds a screen-space effect to the selected viewport.
  * @beta
  */
@@ -71,4 +64,19 @@ export class ClearEffectsTool extends Tool {
     IModelApp.viewManager.selectedView?.removeScreenSpaceEffects();
     return true;
   }
+}
+
+/** Requests that any viewport to which the specified effect has been applied redraw its contents.
+ * Used by tools like [[VignetteConfig]] to update the view after the effect parameters are modified.
+ * @beta
+ */
+export function refreshViewportsForEffect(effectName: string): void {
+  IModelApp.viewManager.forEachViewport((vp) => {
+    for (const vpEffectName of vp.screenSpaceEffects) {
+      if (vpEffectName === effectName) {
+        vp.requestRedraw();
+        break;
+      }
+    }
+  });
 }
