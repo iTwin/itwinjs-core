@@ -192,7 +192,7 @@
     },
     {
       "name": "@bentley/projectshare-client",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/rbac-client",
@@ -852,7 +852,7 @@
     },
     {
       "name": "request-promise-native",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "require-dir",
