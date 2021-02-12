@@ -1293,13 +1293,13 @@ export class FilterByViewTransformer extends IModelTransformer {
     return super.shouldExportElement(sourceElement);
   }
   /** Override of IModelTransformer.processAll that does additional logging after completion. */
-  public processAll(): void {
-    super.processAll();
+  public async processAll(): Promise<void> {
+    await super.processAll();
     Logger.logInfo(BackendLoggerCategory.IModelTransformer, `processAll complete with ${this._deferredElementIds.size} deferred elements remaining`);
   }
   /** Override of IModelTransformer.processDeferredElements that catches all exceptions and keeps going. */
-  public processDeferredElements(numRetries: number = 3): void {
-    try { super.processDeferredElements(numRetries); } catch (error) { }
+  public async processDeferredElements(numRetries: number = 3): Promise<void> {
+    try { await super.processDeferredElements(numRetries); } catch (error) { }
   }
 }
 
@@ -1577,11 +1577,11 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.exporter.registerHandler(this);
     this.exporter.wantGeometry = false;
   }
-  public export(): void {
+  public async export(): Promise<void> {
     this._shouldIndent = true;
-    this.exporter.exportSchemas();
+    await this.exporter.exportSchemas();
     this.writeSeparator();
-    this.exporter.exportAll();
+    await this.exporter.exportAll();
   }
   public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     this._shouldIndent = false;
@@ -1691,8 +1691,8 @@ export class ClassCounter extends IModelExportHandler {
     this.exporter.registerHandler(this);
     this.exporter.wantGeometry = false;
   }
-  public count(): void {
-    this.exporter.exportAll();
+  public async count(): Promise<void> {
+    await this.exporter.exportAll();
     this.outputAllClassCounts();
   }
   private incrementClassCount(map: Map<string, number>, classFullName: string): void {
