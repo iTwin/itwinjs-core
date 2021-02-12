@@ -20,7 +20,7 @@ import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { SweepContour } from "../../solid/SweepContour";
-import { HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
@@ -188,21 +188,23 @@ describe("Triangulation", () => {
         if (Checker.noisy.squareWaves)
           console.log(name, "Rotation angle ", degrees, " numPhase", numPhase);
         const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
-        const pfA = PolyfaceBuilder.graphToPolyface(graph);
-        Triangulator.flipTriangles(graph);
+        if (ck.testType<HalfEdgeGraph>(graph)){
+          const pfA = PolyfaceBuilder.graphToPolyface(graph);
+          Triangulator.flipTriangles(graph);
 
-        GraphChecker.verifyMaskAroundFaces(ck, graph, HalfEdgeMask.EXTERIOR);
-        const pfB = PolyfaceBuilder.graphToPolyface(graph);
-        // const pfC = PolyfaceBuilder.graphToPolyface(graph);
-        const ls = LineString3d.create(points);
-        const ls1 = LineString3d.create(Point3d.create(), pointA);
-        ls.tryTranslateInPlace(x0, y0);
-        pfA.tryTranslateInPlace(x0 + yShiftVector.x, y0 + yShiftVector.y, 0);
-        pfB.tryTranslateInPlace(x0 + 2 * yShiftVector.x, y0 + 2 * yShiftVector.y, 0);
-        // pfC.tryTranslateInPlace(x0 + 4 * yShiftVector.x, y0 + 4 * yShiftVector.y, 0);
+          GraphChecker.verifyMaskAroundFaces(ck, graph, HalfEdgeMask.EXTERIOR);
+          const pfB = PolyfaceBuilder.graphToPolyface(graph);
+          // const pfC = PolyfaceBuilder.graphToPolyface(graph);
+          const ls = LineString3d.create(points);
+          const ls1 = LineString3d.create(Point3d.create(), pointA);
+          ls.tryTranslateInPlace(x0, y0);
+          pfA.tryTranslateInPlace(x0 + yShiftVector.x, y0 + yShiftVector.y, 0);
+          pfB.tryTranslateInPlace(x0 + 2 * yShiftVector.x, y0 + 2 * yShiftVector.y, 0);
+          // pfC.tryTranslateInPlace(x0 + 4 * yShiftVector.x, y0 + 4 * yShiftVector.y, 0);
 
-        ls1.tryTranslateInPlace(x0, y0);
-        GeometryCoreTestIO.captureGeometry(allGeometry, [ls1, ls, pfA, pfB], x0, y0);
+          ls1.tryTranslateInPlace(x0, y0);
+          GeometryCoreTestIO.captureGeometry(allGeometry, [ls1, ls, pfA, pfB], x0, y0);
+          }
         y0 += 3 + 4 * numPhase;
       }
       x0 += 100.0;
@@ -545,7 +547,7 @@ describe("Triangulation", () => {
       x0 += r;
       for (let rotation = 0; rotation < points.length; rotation += (rotation < 4 ? 1 : numThetaSkip)) {
         const pointsB = rotateArray(points, rotation);
-        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(pointsB);
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(pointsB)!;
         const faceSummary = HalfEdgeGraphSearch.collectFaceAreaSummary(graph, false);
         ck.testExactNumber(1, faceSummary.numNegative, "Exactly one outer loop after triangulation");
         ck.testExactNumber(0, faceSummary.numZero, " no slivers");
@@ -585,7 +587,7 @@ describe("Triangulation", () => {
         }
         points.push(points[0].clone());
         x0 += 2.0 * r;
-        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points)!;
         ck.testExactNumber(n - 1, graph.countFaceLoops());
         if (graph)
           GeometryCoreTestIO.captureGeometry(savedMeshes, PolyfaceBuilder.graphToPolyface(graph), x0, y0, 0);
@@ -684,7 +686,7 @@ describe("Triangulation", () => {
         for (let j = 0; j < basePoints.length; j++)
           shiftedPoints.push(basePoints[(startIndex + j) % basePoints.length]);
 
-        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints);
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints)!;
         GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(shiftedPoints), dx, dy += step);
         GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, dy += step);
         dx += step;
@@ -712,7 +714,7 @@ describe("Triangulation", () => {
         for (let j = 0; j < basePoints.length; j++)
           shiftedPoints.push(basePoints[(startIndex + j) % basePoints.length]);
 
-        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints);
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints)!;
         GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(shiftedPoints), dx, dy += step);
         GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, dy += step);
         dx += step;
@@ -768,7 +770,7 @@ describe("Triangulation", () => {
       }
     }
     for (const points of loops) {
-      const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+      const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points)!;
       GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), dx, dy);
       GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, dy + 10);
       GraphChecker.verifyMaskAroundFaces(ck, graph, HalfEdgeMask.EXTERIOR);

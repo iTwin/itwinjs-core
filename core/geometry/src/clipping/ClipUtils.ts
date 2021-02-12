@@ -25,6 +25,7 @@ import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { LineStringOffsetClipperContext } from "./internalContexts/LineStringOffsetClipperContext";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
+import { XAndY } from "../geometry3d/XYZProps";
 
 /** Enumerated type for describing where geometry lies with respect to clipping planes.
  * @public
@@ -531,4 +532,66 @@ export class ClipUtilities {
     else
       cache.dropToCache(data);
   }
+/**
+ * Find the portion of a line within a half-plane clip.
+ * * The half-plane clip is to the left of the line from clipA to clipB.
+ * * The original clipped segment has fractions 0 and 1 at respective segment points.
+ * * Caller initializes the interval
+ * * This method reduces the interval size.
+ * * See clipSegmentToCCWTriangleXY for typical use.
+ * @param linePointA First point of clip line
+ * @param linePointB Second point of clip line
+ * @param segmentPoint0 First point of clipped segment
+ * @param segmentPoint1 Second point of clipped segment
+ * @param interval Live interval.
+ */
+public static clipSegmentToLLeftOfLineXY(linePointA: XAndY, linePointB: XAndY, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d){
+  const ux = linePointB.x - linePointA.x;
+  const uy = linePointB.y - linePointA.y;
+  // negative is in positive is out ...
+  const h0 = -(ux * (segmentPoint0.y - linePointA.y) - uy * (segmentPoint0.x - linePointA.x));
+  const h1 = -(ux * (segmentPoint1.y - linePointA.y) - uy * (segmentPoint1.x - linePointA.x));
+  if (h0 * h1 > 0.0) {
+    if (h0 > 0.0)
+      interval.setNull ();
+  } else if (h0 * h1 < 0.0) {
+  // strict crossing with safe fraction . . .
+  const fraction = -h0 / (h1 - h0);
+  if (h0 < 0.0){
+    return interval.intersectRangeXYInPlace (0.0, fraction);
+    }else {
+      return interval.intersectRangeXYInPlace (fraction, 1.0);
+    }
+  } else {
+    // There is an exact hit at one end, possibly non-zero at the other ... the sign of either determines which side is in play
+    // A zero and a zero or negative is entirely in, which does not alter the prior clip.
+    if (h0 > 0.0) {
+      interval.intersectRangeXYInPlace(1.0, 1.0);
+    } else if (h1 > 0.0) {
+      interval.intersectRangeXYInPlace(0.0, 0.0);
+    }
+  }
+}
+  /**
+   * Clip an interval of a line segment to a triangle.
+   * * Triangle is assumed CCW
+   * @param pointA point of triangle.
+   * @param pointB point of triangle.
+   * @param pointC point of triangle.
+   * @param segment0 start of segment
+   * @param segment1 end of segment
+   * @param interval Pre-initialized interval of live part of segment
+   */
+  public static clipSegmentToCCWTriangleXY(pointA: XAndY, pointB: XAndY, pointC: XAndY, segment0: XAndY, segment1: XAndY, interval: Range1d) {
+    if (!interval.isNull) {
+      this.clipSegmentToLLeftOfLineXY(pointA, pointB, segment0, segment1, interval);
+      if (!interval.isNull) {
+        this.clipSegmentToLLeftOfLineXY(pointB, pointC, segment0, segment1, interval);
+        if (!interval.isNull) {
+          this.clipSegmentToLLeftOfLineXY(pointC, pointA, segment0, segment1, interval);
+        }
+      }
+    }
+  }
+
 }
