@@ -4061,6 +4061,12 @@ export interface IpcAppFunctions {
     pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
     // (undocumented)
     pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
+    // (undocumented)
+    reinstateTxn: (key: string) => Promise<IModelStatus>;
+    // (undocumented)
+    reverseAllTxn: (key: string) => Promise<IModelStatus>;
+    // (undocumented)
+    reverseSingleTxn: (key: string) => Promise<IModelStatus>;
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
     toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;

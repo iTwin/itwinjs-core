@@ -70,7 +70,7 @@ describe("IModelTransformer", () => {
       const targetImporter = new RecordingIModelImporter(targetDb);
       const transformer = new TestIModelTransformer(sourceDb, targetImporter);
       assert.isTrue(transformer.context.isBetweenIModels);
-      transformer.processAll();
+      await transformer.processAll();
       assert.isAtLeast(targetImporter.numModelsInserted, 1);
       assert.equal(targetImporter.numModelsUpdated, 0);
       assert.isAtLeast(targetImporter.numElementsInserted, 1);
@@ -106,14 +106,14 @@ describe("IModelTransformer", () => {
       const exportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source-Export.txt");
       assert.isFalse(IModelJsFs.existsSync(exportFileName));
       const exporter = new IModelToTextFileExporter(sourceDb, exportFileName);
-      exporter.export();
+      await exporter.export();
       assert.isTrue(IModelJsFs.existsSync(exportFileName));
 
       // test #2 - count occurrences of classFullNames
       const classCountsFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source-Counts.txt");
       assert.isFalse(IModelJsFs.existsSync(classCountsFileName));
       const classCounter = new ClassCounter(sourceDb, classCountsFileName);
-      classCounter.count();
+      await classCounter.count();
       assert.isTrue(IModelJsFs.existsSync(classCountsFileName));
     }
 
@@ -124,7 +124,7 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "=================");
       const targetImporter = new RecordingIModelImporter(targetDb);
       const transformer = new TestIModelTransformer(sourceDb, targetImporter);
-      transformer.processAll();
+      await transformer.processAll();
       assert.equal(targetImporter.numModelsInserted, 0);
       assert.equal(targetImporter.numModelsUpdated, 0);
       assert.equal(targetImporter.numElementsInserted, 0);
@@ -151,7 +151,7 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "===============================");
       const targetImporter = new RecordingIModelImporter(targetDb);
       const transformer = new TestIModelTransformer(sourceDb, targetImporter);
-      transformer.processAll();
+      await transformer.processAll();
       assert.equal(targetImporter.numModelsInserted, 0);
       assert.equal(targetImporter.numModelsUpdated, 0);
       assert.equal(targetImporter.numElementsInserted, 1);
@@ -195,7 +195,7 @@ describe("IModelTransformer", () => {
 
     // Ensure that master to branch synchronization did not add any new Elements or Relationships, but did add ExternalSourceAspects
     const masterToBranchTransformer = new IModelTransformer(masterDb, branchDb, { wasSourceIModelCopiedToTarget: true }); // Note use of `wasSourceIModelCopiedToTarget` flag
-    masterToBranchTransformer.processAll();
+    await masterToBranchTransformer.processAll();
     masterToBranchTransformer.dispose();
     branchDb.saveChanges();
     assert.equal(numMasterElements, count(branchDb, Element.classFullName));
@@ -225,7 +225,7 @@ describe("IModelTransformer", () => {
 
     // Synchronize changes from branch back to master
     const branchToMasterTransformer = new IModelTransformer(branchDb, masterDb, { isReverseSynchronization: true, noProvenance: true });
-    branchToMasterTransformer.processAll();
+    await branchToMasterTransformer.processAll();
     branchToMasterTransformer.dispose();
     masterDb.saveChanges();
     IModelTransformerUtils.assertUpdatesInDb(masterDb, false);
@@ -270,44 +270,52 @@ describe("IModelTransformer", () => {
     const targetDrawingListModelId = DocumentListModel.insert(targetDb, IModel.rootSubjectId, "Drawings");
     const targetDrawingId = Drawing.insert(targetDb, targetDrawingListModelId, "Drawing1");
     const cloner = new TemplateModelCloner(componentLibraryDb, targetDb);
-    assert.throws(() => cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, Placement3d.fromJSON())); // expect error since category not remapped
+    try {
+      await cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, Placement3d.fromJSON());
+      assert.fail("Expected error to be thrown since category not remapped");
+    } catch (error) {
+    }
     cloner.context.remapElement(sourceSpatialCategoryId, targetSpatialCategoryId);
     const cylinderLocations: Point3d[] = [
       Point3d.create(10, 10), Point3d.create(20, 10), Point3d.create(30, 10),
       Point3d.create(10, 20), Point3d.create(20, 20), Point3d.create(30, 20),
       Point3d.create(10, 30), Point3d.create(20, 30), Point3d.create(30, 30),
     ];
-    cylinderLocations.forEach((location: Point3d) => {
+    for (const location of cylinderLocations) {
       const placement = new Placement3d(location, new YawPitchRollAngles(), new Range3d());
-      const sourceIdToTargetIdMap = cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, placement);
+      const sourceIdToTargetIdMap = await cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, placement);
       for (const sourceElementId of sourceIdToTargetIdMap.keys()) {
         const sourceElement = componentLibraryDb.elements.getElement(sourceElementId);
         const targetElement = targetDb.elements.getElement(sourceIdToTargetIdMap.get(sourceElementId)!);
         assert.equal(sourceElement.classFullName, targetElement.classFullName);
       }
-    });
+    }
     const assemblyLocations: Point3d[] = [Point3d.create(-10, 0), Point3d.create(-20, 0), Point3d.create(-30, 0)];
-    assemblyLocations.forEach((location: Point3d) => {
+    for (const location of assemblyLocations) {
       const placement = new Placement3d(location, new YawPitchRollAngles(), new Range3d());
-      const sourceIdToTargetIdMap = cloner.placeTemplate3d(assemblyTemplateId, targetPhysicalModelId, placement);
+      const sourceIdToTargetIdMap = await cloner.placeTemplate3d(assemblyTemplateId, targetPhysicalModelId, placement);
       for (const sourceElementId of sourceIdToTargetIdMap.keys()) {
         const sourceElement = componentLibraryDb.elements.getElement(sourceElementId);
         const targetElement = targetDb.elements.getElement(sourceIdToTargetIdMap.get(sourceElementId)!);
         assert.equal(sourceElement.classFullName, targetElement.classFullName);
         assert.equal(sourceElement.parent?.id ? true : false, targetElement.parent?.id ? true : false);
       }
-    });
-    assert.throws(() => cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, Placement2d.fromJSON())); // expect error since category not remapped
+    }
+    try {
+      await cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, Placement2d.fromJSON());
+      assert.fail("Expected error to be thrown since category not remapped");
+    } catch (error) {
+    }
     cloner.context.remapElement(sourceDrawingCategoryId, targetDrawingCategoryId);
     const drawingGraphicLocations: Point2d[] = [
       Point2d.create(10, 10), Point2d.create(20, 10), Point2d.create(30, 10),
       Point2d.create(10, 20), Point2d.create(20, 20), Point2d.create(30, 20),
       Point2d.create(10, 30), Point2d.create(20, 30), Point2d.create(30, 30),
     ];
-    drawingGraphicLocations.forEach((location: Point2d) => {
+    for (const location of drawingGraphicLocations) {
       const placement = new Placement2d(location, Angle.zero(), new Range2d());
-      cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, placement);
-    });
+      await cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, placement);
+    }
     cloner.dispose();
     componentLibraryDb.close();
     targetDb.close();
@@ -349,7 +357,7 @@ describe("IModelTransformer", () => {
     transformer.context.remapElement(sourceModelId1, targetModelId);
     transformer.context.remapElement(sourceModelId2, targetModelId);
     transformer.importer.doNotUpdateElementIds.add(targetModelId); // don't want the target partition CodeValue, etc. to be updated from either source partition
-    transformer.processAll();
+    await transformer.processAll();
     targetDb.saveChanges();
 
     const targetElement11 = targetDb.elements.getElement(transformer.context.findTargetElementId(sourceElementId11));
@@ -384,9 +392,9 @@ describe("IModelTransformer", () => {
     targetDb.saveChanges();
     // Import from beneath source Subject into target Subject
     const transformer = new TestIModelTransformer(sourceDb, targetDb);
-    transformer.processFonts();
-    transformer.processSubject(sourceSubjectId, targetSubjectId);
-    transformer.processRelationships(ElementRefersToElements.classFullName);
+    await transformer.processFonts();
+    await transformer.processSubject(sourceSubjectId, targetSubjectId);
+    await transformer.processRelationships(ElementRefersToElements.classFullName);
     transformer.dispose();
     targetDb.saveChanges();
     IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb, "Target Subject");
@@ -411,7 +419,7 @@ describe("IModelTransformer", () => {
     iModelDb.saveChanges();
     // Import from beneath source Subject into target Subject
     const transformer = new IModelTransformer(iModelDb, iModelDb);
-    transformer.processSubject(sourceSubjectId, targetSubjectId);
+    await transformer.processSubject(sourceSubjectId, targetSubjectId);
     transformer.dispose();
     iModelDb.saveChanges();
     iModelDb.close();
@@ -439,7 +447,7 @@ describe("IModelTransformer", () => {
     // import
     const transformer = new IModelTransformer(sourceDb, targetDb);
     await transformer.processSchemas(new BackendRequestContext());
-    transformer.processAll();
+    await transformer.processAll();
     transformer.dispose();
     const numTargetElements: number = count(targetDb, Element.classFullName);
     assert.isAtLeast(numTargetElements, numSourceElements);
@@ -480,7 +488,7 @@ describe("IModelTransformer", () => {
     // transform
     const transform3d: Transform = Transform.createTranslation(new Point3d(100, 200));
     const transformer = new IModelTransformer3d(sourceDb, targetDb, transform3d);
-    transformer.processAll();
+    await transformer.processAll();
     const targetModelId: Id64String = transformer.context.findTargetElementId(sourceModelId);
     const targetModel: PhysicalModel = targetDb.models.getModel<PhysicalModel>(targetModelId);
     const targetModelExtents: AxisAlignedBox3d = targetModel.queryExtents();
@@ -525,7 +533,7 @@ describe("IModelTransformer", () => {
     assert.isTrue(Id64.isValidId64(targetModelId));
     targetDb.saveChanges();
     const consolidator = new PhysicalModelConsolidator(sourceDb, targetDb, targetModelId);
-    consolidator.processAll();
+    await consolidator.processAll();
     consolidator.dispose();
     assert.equal(1, count(targetDb, PhysicalModel.classFullName));
     const targetPartition = targetDb.elements.getElement<PhysicalPartition>(targetModelId);
@@ -559,7 +567,7 @@ describe("IModelTransformer", () => {
       const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "A");
       const transformerA2S = new IModelTransformer(iModelExporterA, iModelShared, { targetScopeElementId: subjectId });
       transformerA2S.context.remapElement(IModel.rootSubjectId, subjectId);
-      transformerA2S.processAll();
+      await transformerA2S.processAll();
       transformerA2S.dispose();
       IModelTransformerUtils.dumpIModelInfo(iModelA);
       iModelA.close();
@@ -575,7 +583,7 @@ describe("IModelTransformer", () => {
       const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "B");
       const transformerB2S = new IModelTransformer(iModelExporterB, iModelShared, { targetScopeElementId: subjectId });
       transformerB2S.context.remapElement(IModel.rootSubjectId, subjectId);
-      transformerB2S.processAll();
+      await transformerB2S.processAll();
       transformerB2S.dispose();
       IModelTransformerUtils.dumpIModelInfo(iModelB);
       iModelB.close();
@@ -598,12 +606,12 @@ describe("IModelTransformer", () => {
       const physicalC: Id64String = IModelTransformerUtils.queryPhysicalPartitionId(iModelConsolidated, IModel.rootSubjectId, "Consolidated");
       transformerS2C.context.remapElement(physicalA, physicalC);
       transformerS2C.context.remapElement(physicalB, physicalC);
-      transformerS2C.processModel(definitionA);
-      transformerS2C.processModel(definitionB);
-      transformerS2C.processModel(physicalA);
-      transformerS2C.processModel(physicalB);
-      transformerS2C.processDeferredElements();
-      transformerS2C.processRelationships(ElementRefersToElements.classFullName);
+      await transformerS2C.processModel(definitionA);
+      await transformerS2C.processModel(definitionB);
+      await transformerS2C.processModel(physicalA);
+      await transformerS2C.processModel(physicalB);
+      await transformerS2C.processDeferredElements();
+      await transformerS2C.processRelationships(ElementRefersToElements.classFullName);
       transformerS2C.dispose();
       IModelTransformerUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");
       IModelTransformerUtils.dumpIModelInfo(iModelConsolidated);
@@ -655,7 +663,7 @@ describe("IModelTransformer", () => {
     await targetDb.importSchemas(new BackendRequestContext(), [cloneTestSchema101]);
 
     const transformer = new IModelTransformer(sourceDb, targetDb);
-    transformer.processElement(sourceElementId);
+    await transformer.processElement(sourceElementId);
     targetDb.saveChanges();
 
     const targetElementId = transformer.context.findTargetElementId(sourceElementId);
@@ -694,12 +702,12 @@ describe("IModelTransformer", () => {
     exporter.iModelExporter.visitElements = false;
     exporter.iModelExporter.visitRelationships = false;
     // call various methods to make sure the onExport* callbacks don't assert
-    exporter.iModelExporter.exportAll();
-    exporter.iModelExporter.exportElement(IModel.rootSubjectId);
-    exporter.iModelExporter.exportChildElements(IModel.rootSubjectId);
-    exporter.iModelExporter.exportRepositoryLinks();
-    exporter.iModelExporter.exportModelContents(IModel.repositoryModelId);
-    exporter.iModelExporter.exportRelationships(ElementRefersToElements.classFullName);
+    await exporter.iModelExporter.exportAll();
+    await exporter.iModelExporter.exportElement(IModel.rootSubjectId);
+    await exporter.iModelExporter.exportChildElements(IModel.rootSubjectId);
+    await exporter.iModelExporter.exportRepositoryLinks();
+    await exporter.iModelExporter.exportModelContents(IModel.repositoryModelId);
+    await exporter.iModelExporter.exportRelationships(ElementRefersToElements.classFullName);
     // make sure the exporter actually visited something
     assert.isAtLeast(exporter.modelCount, 4);
     sourceDb.close();
@@ -783,7 +791,7 @@ describe("IModelTransformer", () => {
 
     const transformer = new FilterByViewTransformer(sourceDb, targetDb, exportViewId);
     await transformer.processSchemas(new BackendRequestContext());
-    transformer.processAll();
+    await transformer.processAll();
     transformer.dispose();
 
     targetDb.saveChanges();
@@ -812,7 +820,7 @@ describe("IModelTransformer", () => {
       const transformer = new IModelTransformer(campusDb, mergedDb, { targetScopeElementId: campusSubjectId });
       await transformer.processSchemas(new BackendRequestContext());
       transformer.context.remapElement(IModel.rootSubjectId, campusSubjectId);
-      transformer.processAll();
+      await transformer.processAll();
       transformer.dispose();
       mergedDb.saveChanges("Imported Campus");
       IModelTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
@@ -826,7 +834,7 @@ describe("IModelTransformer", () => {
       IModelTransformerUtils.dumpIModelInfo(garageDb);
       const transformer = new IModelTransformer(garageDb, mergedDb, { targetScopeElementId: garageSubjectId });
       transformer.context.remapElement(IModel.rootSubjectId, garageSubjectId);
-      transformer.processAll();
+      await transformer.processAll();
       transformer.dispose();
       mergedDb.saveChanges("Imported Garage");
       IModelTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
@@ -841,7 +849,7 @@ describe("IModelTransformer", () => {
       const transformer = new IModelTransformer(buildingDb, mergedDb, { targetScopeElementId: buildingSubjectId });
       await transformer.processSchemas(new BackendRequestContext());
       transformer.context.remapElement(IModel.rootSubjectId, buildingSubjectId);
-      transformer.processAll();
+      await transformer.processAll();
       transformer.dispose();
       mergedDb.saveChanges("Imported Building");
       IModelTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes

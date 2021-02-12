@@ -13,14 +13,17 @@ export class BasicUnit implements UnitProps {
   public unitFamily = "";
   public isValid = false;
   public alternateLabels?: string[];
+  public system: string = "unknown";
 
-  constructor(name: string, label: string, unitFamily: string, alternateLabels?: string[]) {
+  constructor(name: string, label: string, unitFamily: string, alternateLabels?: string[], system?: string) {
     if (name && name.length > 0 && label && label.length > 0 && unitFamily && unitFamily.length > 0) {
       this.name = name;
       this.label = label;
       this.unitFamily = unitFamily;
       this.alternateLabels = alternateLabels;
       this.isValid = true;
+      if (system)
+        this.system = system;
     }
   }
 }
@@ -33,4 +36,5 @@ export class BadUnit implements UnitProps {
   public label = "";
   public unitFamily = "";
   public isValid = false;
+  public system = "unknown";
 }

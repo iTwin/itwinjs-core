@@ -12,11 +12,11 @@ class CodeExporter extends IModelExportHandler {
   public outputFileName: string;
 
   /** Initiate the export of codes. */
-  public static exportCodes(iModelDb: IModelDb, outputFileName: string): void {
+  public static async exportCodes(iModelDb: IModelDb, outputFileName: string): Promise<void> {
     const exporter = new IModelExporter(iModelDb);
     const exportHandler = new CodeExporter(outputFileName);
     exporter.registerHandler(exportHandler);
-    exporter.exportAll();
+    await exporter.exportAll();
   }
 
   /** Construct a new CodeExporter */
@@ -44,7 +44,7 @@ describe("IModelExporter", () => {
   before(() => { iModelDb = IModelTestUtils.openSnapshotFromSeed("test.bim"); });
   after(() => { iModelDb.close(); });
 
-  it("call CodeExporter example code", () => {
+  it("call CodeExporter example code", async () => {
     const outputDirName = path.join(__dirname, "output");
     const outputFileName = path.join(outputDirName, "test.bim.codes.csv");
     if (!fs.existsSync(outputDirName)) {
@@ -53,6 +53,6 @@ describe("IModelExporter", () => {
     if (fs.existsSync(outputFileName)) {
       fs.removeSync(outputFileName);
     }
-    CodeExporter.exportCodes(iModelDb, outputFileName);
+    await CodeExporter.exportCodes(iModelDb, outputFileName);
   });
 });
