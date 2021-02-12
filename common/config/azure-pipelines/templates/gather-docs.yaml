@@ -12,14 +12,6 @@ parameters:
     default: $(System.ArtifactsDirectory)/staging/
 
 steps:
-  ## Why is this needed??
-  - task: PublishPipelineArtifact@1
-    displayName: Publish Pipeline Artifact - TypeDoc json
-    inputs:
-      targetPath: ${{ parameters.workingDir }}/generated-docs
-      artifact: TypeDoc json
-    enabled: false
-
   - script: |
       mkdir -p -v $${{ parameters.stagingDir }}/reference/
 
@@ -57,9 +49,9 @@ steps:
       TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
   # The .updated.json is cached in order to let BeMetalsmith know what needs to be re-built.
-  - task: DownloadPipelineArtifact@2
-    displayName: Download Pipeline Artifact - .updated.json
-    inputs:
-      runVersion: latestFromBranch
-      artifactName: .updated.json
-      targetPath: ${{ parameters.stagingDir }}/config/
+  # - task: DownloadPipelineArtifact@2
+  #   displayName: Download Pipeline Artifact - .updated.json
+  #   inputs:
+  #     runVersion: latestFromBranch
+  #     artifactName: .updated.json
+  #     targetPath: ${{ parameters.stagingDir }}/config/
