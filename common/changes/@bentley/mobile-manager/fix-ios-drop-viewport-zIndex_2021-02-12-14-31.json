@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/mobile-manager",
+      "comment": "Remove unused code.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/mobile-manager",
+  "email": "47000437+markschlosseratbentley@users.noreply.github.com"
+}
