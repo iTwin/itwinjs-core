@@ -105,7 +105,7 @@ describe("IModelConnection (#integration)", () => {
     assert.isAtLeast(viewDefinitions.length, 1);
     viewState = await iModel.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
-    assert.equal(viewState.code.getValue(), viewDefinitions[0].name);
+    assert.equal(viewState.code.value, viewDefinitions[0].name);
     assert.equal(viewState.classFullName, viewDefinitions[0].class);
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.classFullName);
     assert.equal(viewState.displayStyle.classFullName, DisplayStyle2dState.classFullName);

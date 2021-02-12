@@ -431,7 +431,7 @@ describe("IModelTransformer", () => {
       IModelJsFs.removeSync(targetDbFile);
     }
     const targetDbProps: CreateIModelProps = {
-      rootSubject: { name: `Cloned target of ${sourceDb.elements.getRootSubject().code.getValue()}` },
+      rootSubject: { name: `Cloned target of ${sourceDb.elements.getRootSubject().code.value}` },
       ecefLocation: sourceDb.ecefLocation,
     };
     const targetDb = SnapshotDb.createEmpty(targetDbFile, targetDbProps);
@@ -529,7 +529,7 @@ describe("IModelTransformer", () => {
     consolidator.dispose();
     assert.equal(1, count(targetDb, PhysicalModel.classFullName));
     const targetPartition = targetDb.elements.getElement<PhysicalPartition>(targetModelId);
-    assert.equal(targetPartition.code.getValue(), "PhysicalModel", "Target PhysicalModel name should not be overwritten during consolidation");
+    assert.equal(targetPartition.code.value, "PhysicalModel", "Target PhysicalModel name should not be overwritten during consolidation");
     assert.equal(125, count(targetDb, PhysicalObject.classFullName));
     const aspects = targetDb.elements.getAspects(targetPartition.id, ExternalSourceAspect.classFullName);
     assert.isAtLeast(aspects.length, 5, "Provenance should be recorded for each source PhysicalModel");

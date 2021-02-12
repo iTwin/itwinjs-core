@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ IModelExporter_CodeExporter.code
 
-import { CodeSpec } from "@bentley/imodeljs-common";
+import { Code, CodeSpec } from "@bentley/imodeljs-common";
 import { Element, IModelJsFs as fs, IModelDb, IModelExporter, IModelExportHandler, SnapshotDb } from "@bentley/imodeljs-backend";
 
 /** CodeExporter creates a CSV output file containing all Codes from the specified iModel. */
@@ -27,10 +27,9 @@ class CodeExporter extends IModelExportHandler {
 
   /** Override of IModelExportHandler.onExportElement that outputs a line of a CSV file when the Element has a Code. */
   protected onExportElement(element: Element, isUpdate: boolean | undefined): void {
-    const codeValue: string = element.code.getValue();
-    if ("" !== codeValue) { // only output when Element has a Code
+    if (!Code.isEmpty(element.code)) { // only output when Element has a Code
       const codeSpec: CodeSpec = element.iModel.codeSpecs.getById(element.code.spec);
-      fs.appendFileSync(this.outputFileName, `${element.id}, ${codeSpec.name}, ${codeValue}\n`);
+      fs.appendFileSync(this.outputFileName, `${element.id}, ${codeSpec.name}, ${element.code.value}\n`);
     }
     super.onExportElement(element, isUpdate);
   }

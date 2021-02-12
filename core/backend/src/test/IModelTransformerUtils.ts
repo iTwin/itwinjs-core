@@ -903,7 +903,7 @@ export namespace IModelTransformerUtils {
     const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
     assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
     assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
-    assert.isTrue(physicalObject1.code.getValue() === "");
+    assert.isTrue(physicalObject1.code.value === "");
     assert.equal(physicalObject1.category, teamSpatialCategoryId);
     const physicalObjectId2: Id64String = queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
     const physicalObject2: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId2);
@@ -924,7 +924,7 @@ export namespace IModelTransformerUtils {
       const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
       assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
       assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
-      assert.isTrue(physicalObject1.code.getValue() === "");
+      assert.isTrue(physicalObject1.code.value === "");
       assert.equal(physicalObject1.category, teamSpatialCategoryId);
       assert.equal(1, iModelDb.elements.getAspects(physicalObjectId1, ExternalSourceAspect.classFullName).length);
       assert.equal(1, iModelDb.elements.getAspects(teamSpatialCategoryId, ExternalSourceAspect.classFullName).length);
@@ -1187,7 +1187,7 @@ export namespace IModelTransformerUtils {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const viewDefinitionId: Id64String = statement.getValue(0).getId();
         const viewDefinition: ViewDefinition = iModelDb.elements.getElement<ViewDefinition>(viewDefinitionId);
-        IModelJsFs.appendFileSync(outputFileName, `${viewDefinitionId}, ${viewDefinition.code.getValue()}, ${viewDefinition.classFullName}\n`);
+        IModelJsFs.appendFileSync(outputFileName, `${viewDefinitionId}, ${viewDefinition.code.value}, ${viewDefinition.classFullName}\n`);
       }
     });
     IModelJsFs.appendFileSync(outputFileName, "\n=== Elements ===\n");

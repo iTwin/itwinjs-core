@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import { Code, CodeProps } from "../Code";
 
-describe.only("Code", () => {
+describe("Code", () => {
   const spec = "0x1";
   const scope = "0x1";
 
@@ -36,20 +36,24 @@ describe.only("Code", () => {
     assert.isTrue(Code.isEmpty(undefinedValue));
     assert.equal(new Code(undefinedValue).value, "");
     assert.equal(new Code(undefinedValue).getValue(), ""); // eslint-disable-line deprecation/deprecation
+    assert.isTrue(Code.equalCodes(new Code(undefinedValue), emptyCode));
 
     const fromUndefined = Code.fromJSON();
     assert.isTrue(Code.isValid(fromUndefined));
     assert.isTrue(Code.isEmpty(fromUndefined));
+    assert.isTrue(Code.equalCodes(fromUndefined, emptyCode));
 
     const fromEmpty = Code.fromJSON(Code.createEmpty());
     assert.isTrue(Code.isValid(fromEmpty));
     assert.isTrue(Code.isEmpty(fromEmpty));
+    assert.isTrue(Code.equalCodes(fromEmpty, emptyCode));
 
     const fromWhitespace = new Code({ spec, scope, value: "  \t\n  "});
     assert.isTrue(Code.isValid(fromWhitespace));
     assert.isTrue(Code.isEmpty(fromWhitespace));
     assert.equal(fromWhitespace.value, "");
     assert.equal(fromWhitespace.getValue(), ""); // eslint-disable-line deprecation/deprecation
+    assert.isTrue(Code.equalCodes(fromWhitespace, emptyCode));
   });
 
   it("should set and clear Code value", () => {
