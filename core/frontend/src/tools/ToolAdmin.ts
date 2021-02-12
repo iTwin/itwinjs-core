@@ -1277,9 +1277,9 @@ export class ToolAdmin {
       return false;
     if (IModelStatus.Success !== await IpcApp.callIpcHost("reverseSingleTxn", imodel.key))
       return false;
-    // ### TODO Restart of active tool should be handled by Txn event listener...
-    if (activeTool instanceof PrimitiveTool)
-      activeTool.onRestartTool();
+    // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
+    if (undefined !== this._primitiveTool)
+      this._primitiveTool.onRestartTool();
     return true;
   }
 
@@ -1296,9 +1296,9 @@ export class ToolAdmin {
       return false;
     if (IModelStatus.Success !== await IpcApp.callIpcHost("reinstateTxn", imodel.key))
       return false;
-    // ### TODO Restart of active tool should be handled by Txn event listener...
-    if (activeTool instanceof PrimitiveTool)
-      activeTool.onRestartTool();
+    // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
+    if (undefined !== this._primitiveTool)
+      this._primitiveTool.onRestartTool();
     return true;
   }
 
