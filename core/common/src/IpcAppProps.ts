@@ -87,15 +87,10 @@ export interface IpcAppFunctions {
    */
   cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
 
-  /** @internal */
   toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
-  /** @internal */
   isInteractiveEditingSupported: (key: string) => Promise<boolean>;
-  /** @internal */
   reverseSingleTxn: (key: string) => Promise<IModelStatus>;
-  /** @internal */
   reverseAllTxn: (key: string) => Promise<IModelStatus>;
-  /** @internal */
   reinstateTxn: (key: string) => Promise<IModelStatus>;
 }
 
