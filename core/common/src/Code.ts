@@ -36,9 +36,8 @@ export class Code implements CodeProps {
 
   constructor(codeProps: CodeProps) {
     this.spec = Id64.fromJSON(codeProps.spec);
-    this.scope = JsonUtils.asString(codeProps.scope, "");
-    this.value = JsonUtils.asString(codeProps.value);
-    this.value?.trim();
+    this.scope = JsonUtils.asString(codeProps.scope);
+    this.value = JsonUtils.asString(codeProps.value?.trim());
   }
 
   /** Create an empty, non-unique code with no special meaning. */
