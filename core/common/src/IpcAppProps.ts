@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
@@ -87,9 +87,10 @@ export interface IpcAppFunctions {
    */
   cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
 
-  /** @internal */
   toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
-  /** @internal */
   isInteractiveEditingSupported: (key: string) => Promise<boolean>;
+  reverseSingleTxn: (key: string) => Promise<IModelStatus>;
+  reverseAllTxn: (key: string) => Promise<IModelStatus>;
+  reinstateTxn: (key: string) => Promise<IModelStatus>;
 }
 
