@@ -29,17 +29,22 @@ export class ProcessDetector {
   /** Is this process the backend of an Electron app? */
   public static get isElectronAppBackend() { return typeof process === "object" && process.versions.hasOwnProperty("electron"); }
 
-  /** Is this process running in a browser on an iOS device?
-   * @note This method will return `true` for any frontend running on an iOS device, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
-  */
-  public static get isIOSBrowser() { return this.isBrowserProcess && (/(iphone|ipod|ipad)/i.test(window.navigator.userAgent) || this.isIpadBrowser); }
-
   /** Is this process running in a browser on an iPad?
    * @note This method will return `true` for any frontend running on an iPad, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
    */
-  public static get isIpadBrowser() {
+  public static get isIPadBrowser() {
     return this.isBrowserProcess && window.navigator.platform === "iPad" || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 0 && !window.MSStream);
   }
+
+  /** Is this process running in a browser on an iPhone?
+   * @note This method will return `true` for any frontend running on an iPhone, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
+   */
+  public static get isIPhoneBrowser() { return this.isBrowserProcess && (/(iphone|ipod)/i.test(window.navigator.userAgent)); }
+
+  /** Is this process running in a browser on an iOS device?
+   * @note This method will return `true` for any frontend running on an iOS device, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
+  */
+  public static get isIOSBrowser() { return this.isIPadBrowser || this.isIPhoneBrowser; }
 
   /** Is this process running in a browser on an Android device?
    * @note This method will return `true` for any frontend running on an Android device, whether it is a user-launched web browser (e.g. Chrome) or the frontend of a mobile app.
@@ -49,7 +54,7 @@ export class ProcessDetector {
   /** Is this process running in a browser on a mobile device?
    * @note This method will return `true` for any frontend running on a mobile device, whether it is a user-launched web browser or the frontend of a mobile app.
   */
-  public static get isMobileBrowser() { return this.isIOSBrowser || this.isAndroidBrowser || this.isIpadBrowser; }
+  public static get isMobileBrowser() { return this.isIOSBrowser || this.isAndroidBrowser; }
 
   /** Is this process the frontend of an iTwin mobile application?
    * @note this indicates that this is a browser process started by an iTwin mobile application.
