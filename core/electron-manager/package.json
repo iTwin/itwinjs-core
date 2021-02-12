@@ -1,7 +1,7 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "2.13.0-dev.7",
-  "description": "iModel.js electron utilities",
+  "version": "2.13.0-dev.10",
+  "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <13.0"
@@ -10,8 +10,8 @@
     "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronBackend.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=ElectronBackend",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=__DOC_ONLY__",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "cover": ""
@@ -30,9 +30,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.13.0-dev.7",
-    "@bentley/imodeljs-common": "^2.13.0-dev.7",
-    "@bentley/imodeljs-backend": "^2.13.0-dev.7",
+    "@bentley/bentleyjs-core": "^2.13.0-dev.10",
+    "@bentley/imodeljs-common": "^2.13.0-dev.10",
+    "@bentley/imodeljs-frontend": "^2.13.0-dev.10",
+    "@bentley/imodeljs-backend": "^2.13.0-dev.10",
+    "@bentley/itwin-client": "^2.13.0-dev.10",
     "electron": "^11.1.0"
   },
   "//devDependencies": [
@@ -40,12 +42,13 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.13.0-dev.7",
-    "@bentley/build-tools": "2.13.0-dev.7",
-    "@bentley/eslint-plugin": "2.13.0-dev.7",
-    "@bentley/imodeljs-backend": "2.13.0-dev.7",
-    "@bentley/imodeljs-common": "2.13.0-dev.7",
-    "@bentley/itwin-client": "2.13.0-dev.7",
+    "@bentley/bentleyjs-core": "2.13.0-dev.10",
+    "@bentley/build-tools": "2.13.0-dev.10",
+    "@bentley/eslint-plugin": "2.13.0-dev.10",
+    "@bentley/imodeljs-backend": "2.13.0-dev.10",
+    "@bentley/imodeljs-frontend": "2.13.0-dev.10",
+    "@bentley/imodeljs-common": "2.13.0-dev.10",
+    "@bentley/itwin-client": "2.13.0-dev.10",
     "@types/node": "10.14.1",
     "electron": "^11.1.0",
     "eslint": "^6.8.0",

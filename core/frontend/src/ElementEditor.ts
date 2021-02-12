@@ -12,6 +12,8 @@ import { Editor3dRpcInterface, Editor3dRpcInterfaceWriteOptions, Editor3dRpcInte
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelConnection } from "./IModelConnection";
 
+/* eslint-disable deprecation/deprecation */
+
 const LOGGING_CATEGORY = FrontendLoggerCategory.EditorConnection;
 
 /**

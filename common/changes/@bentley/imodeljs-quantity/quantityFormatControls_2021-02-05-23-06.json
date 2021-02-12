@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-quantity",
+      "comment": "Fix station formatting and provide helper functions for working with FormatProps. Add support for custom props.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-quantity",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

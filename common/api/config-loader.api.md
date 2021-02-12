@@ -4,10 +4,13 @@
 
 ```ts
 
-// @public
+// @public @deprecated
 export class IModelJsConfig {
     static init(suppressException?: boolean, suppressErrorMessage?: boolean, config?: any): any;
     }
+
+// @internal
+export function loadEnv(envFile: string): void;
 
 
 // (No @packageDocumentation comment for this package)

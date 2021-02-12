@@ -33,9 +33,17 @@ internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
 public;AppearanceOverrideProps
+internal;ArcGisErrorCode
+internal;ArcGisGenerateTokenOptions
+internal;ArcGisToken
+internal;ArcGisTokenClientType
+internal;ArcGisTokenGenerator
+internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
+beta;AsyncFunction = (...args: any) => Promise
+beta;AsyncMethodsOf
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -56,9 +64,10 @@ public;BeWheelEvent
 public;BeWheelEventProps 
 internal;BingElevationProvider
 internal;BingMapsImageryLayerProvider 
-beta;BlankConnection 
-beta;BlankConnectionProps
-public;class BriefcaseConnection 
+public;BlankConnection 
+public;BlankConnectionProps
+public;BriefcaseConnection 
+beta;class BriefcaseNotificationHandler 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -70,13 +79,13 @@ public;CategorySelectorState
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
+alpha;CheckboxFormatPropEditorSpec 
+public;CheckpointConnection 
 alpha;ClipEventType
-internal;ClipResult
 public;Cluster
 internal;CompassMode
 internal;ContextMode
 beta;ContextRealityModelState
-alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
@@ -90,6 +99,8 @@ internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferencePro
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;CurrentInputState
 internal;CurrentState
+alpha;CustomFormatPropEditorSpec
+alpha;CustomQuantityTypeDefinition 
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
@@ -112,28 +123,28 @@ public;DrawingModelState
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
+alpha;EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection
 alpha;EditingFunctions
 alpha;EditingFunctions
+deprecated;CategoryEditor
+deprecated;ConcurrencyControl
+deprecated;ModelEditor
 alpha;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
-internal;ElementAgenda
+alpha;ElementAgenda
 alpha;ElementEditor3d
 public;ElementLocateManager
 public;ElementPicker
+alpha;class ElementSetTool 
 public;ElementState 
-internal;ElemMethod
-internal;ElemSource
 internal;EllipsoidTerrainProvider 
 public;EmphasizeElements 
 public;EmphasizeElementsProps
 beta;EngineeringLengthDescription 
 public;EntityState 
 public;Environment
-internal;ErrorNums
 public;EventController
 public;EventHandled
-beta;EventListener = (eventData: any) => void
-beta;EventSource 
 beta;class Extension
 beta;ExtensionAdmin
 beta;ExtensionAdminProps
@@ -159,10 +170,8 @@ alpha;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IMode
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
-internal;FormatPropsByUnitSystem = Map
 beta;class FormattedQuantityDescription 
 alpha;FormatterParserSpecsProvider
-internal;FormatterSpecByQuantityType = Map
 alpha;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
@@ -190,6 +199,7 @@ beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, m
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
+beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 alpha;GlobalLocation
 alpha;GlobalLocationArea
 internal;GlobeAnimator 
@@ -208,8 +218,7 @@ public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
 public;GraphicType
-internal;GroupMark
-internal;HilitedState
+alpha;GroupMark
 internal;Hilites
 beta;HiliteSet
 public;HitDetail
@@ -252,17 +261,22 @@ internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModel
 public;class InputCollector 
 public;InputSource
 internal;InstancedGraphicParams
-alpha;InteractiveEditingSession
+alpha;InteractiveEditingSession 
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
+beta;IpcApp
+beta;IpcAppOptions
+alpha;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
+alpha;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
+alpha;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
+alpha;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
 beta;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
-alpha;LocalBriefcaseConnection 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -279,6 +293,7 @@ internal;MapLayerFormat
 internal;MapLayerFormatRegistry
 internal;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
+internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 internal;MapLayerSetting
 internal;MapLayerSettingsService
@@ -311,17 +326,17 @@ public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
 internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number
-alpha;MobileAuthorizationClient 
 internal;MockRender
 internal;ModalOptions
 internal;ModalReturn
 alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
-internal;ModifyElementSource
-alpha;NativeApp 
+alpha;ModifyElementSource
+alpha;NativeApp
 internal;NativeAppLogger
 internal;NoRenderApp
+beta;class NotificationHandler
 public;NotificationManager
 public;NotifyMessageDetails
 internal;NullRenderSystem 
@@ -359,11 +374,14 @@ internal;PlanarClassifierMap = Map
 internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
+beta;PromiseReturnType
 internal;QuadId
 alpha;QuantityFormatsChangedArgs
 alpha;QuantityFormatter 
 beta;QuantityType
-alpha;QuantityTypeArg = QuantityType | string
+beta;QuantityTypeArg = QuantityType | string
+alpha;QuantityTypeDefinition
+beta;QuantityTypeKey = string
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
@@ -379,7 +397,6 @@ internal;RealityTileParams
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 public;RemoteBriefcaseConnection 
-beta;RemoveEventListener = () => void
 beta;class RenderClipVolume 
 public;RenderContext
 internal;RenderDiagnostics
@@ -453,7 +470,6 @@ internal;SpatialTileTreeReferences
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 
-internal;StandaloneConnection 
 public;StandardView
 public;StandardViewId
 public;StandardViewTool 
@@ -471,6 +487,8 @@ internal;TerrainDisplayOverrides
 internal;class TerrainMeshProvider
 internal;TerrainTexture
 internal;TerrainTileContent 
+alpha;TextInputFormatPropEditorSpec 
+alpha;TextSelectFormatPropEditorSpec 
 internal;TextureDrapeMap = Map
 internal;TextureImage
 internal;ThreeAxes
@@ -533,9 +551,6 @@ beta;UniformParams
 beta;UniformType
 alpha;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
 internal;UpsampledMapTile 
-internal;UsesDragSelect
-internal;UsesFence
-internal;UsesSelection
 beta;VaryingType
 public;ViewAnimationOptions
 public;ViewChangeOptions 
@@ -588,6 +603,8 @@ public;ViewUndoTool
 public;WalkViewTool 
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
+beta;WebViewerApp
+beta;WebViewerAppOptions
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities
