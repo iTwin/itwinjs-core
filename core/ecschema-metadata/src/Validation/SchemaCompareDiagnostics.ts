@@ -65,6 +65,12 @@ export const SchemaCompareCodes = {
   SchemaReferenceDelta: "SC-128",
 };
 
+// TODO: Remove once 'import() types' are supported by api-extractor. https://github.com/microsoft/rushstack/pull/1916
+import { DiagnosticCategory, DiagnosticType } from "./Diagnostic";
+import { StructClass } from "../Metadata/Class";
+import { AnyProperty, RelationshipConstraint } from "../ecschema-metadata"
+import { CustomAttributeContainerProps } from "../Metadata/CustomAttribute"
+
 /**
  * The list of [[IDiagnostic]] implementation classes used by the Schema comparison framework.
  * @beta
