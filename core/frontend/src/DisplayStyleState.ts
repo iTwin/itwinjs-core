@@ -24,7 +24,7 @@ import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { MapTileTreeReference, TileTreeReference, getCesiumOSMBuildingsUrl, RealityModelTileTree, MapLayerImageryProvider, MapCartoRectangle, MapTileTree } from "./tile/internal";
+import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapLayerImageryProvider, MapTileTree, MapTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
 

@@ -6,19 +6,30 @@
  * @module DisplayStyles
  */
 
-import { compareNumbersOrUndefined, compareStringsOrUndefined, CompressedId64Set, Id64Set } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64Set } from "@bentley/bentleyjs-core";
 
-/** The [[planarClipMask]] values that describe how planar clip masks geometry is collected
+/** The [[planarClipMask]] values that describe how planar clip masks geometry are collected.
  * @see [[PlanarClipMaskProps]]
  * @see [[PlanarClipMaskSettings]]
  * @beta
  */
 export enum PlanarClipMaskMode {
+  /** None indicates that no masking is performed.   */
   None = 0,
+  /** Priority indicates that masking should occur for all models with a higher priority.  Various model types have default priorities as enumerated in [[PlanarClipMaskModelPriority]]. As background maps have
+   * lowest priority they are masked by all other model types, followed by global and nonglobal reality models.  BIM models have highest priority and are never masked.  Reality models priority can be overriden by setting
+   * a value in the [[PlanarClipMask]] object to cause reality models to mask each other.  This can be useful if more than one overlapping reality model is present.
+   */
   Priority = 1,
+  /**  Models indicates that masking should occur by all models indicated by [[PlanarClipMaskProps.modelIds]], in this case the model does not have to be displayed in the view participate in masking.
+   * if [[PlanarClipMaskProps.modelIds]] is not defined then all viewed models will mask.
+   */
   Models = 2,
+  /** IncludeSubCategories indicates that masks should be produced only by the subcategories included in the [[PlanarClipMaskProps.subCategoryOrElementIds]] array. */
   IncludeSubCategories = 3,
+  /** IncludeElements indicates that masks should be produced only by the elements included in the [[PlanarClipMaskProps.subCategoryOrElementIds]] array.  */
   IncludeElements = 4,
+  /** ExcludeElements indicates that masks should be produced only by the elements NOT included in the [[PlanarClipMaskProps.subCategoryOrElementIds]] array.  */
   ExcludeElements = 5,
 }
 
@@ -112,10 +123,10 @@ export class PlanarClipMaskSettings {
 
   public equals(other: PlanarClipMaskSettings): boolean {
     return this.mode === other.mode &&
-      compareNumbersOrUndefined(this.priority, other.priority) === 0 &&
-      compareNumbersOrUndefined(this.transparency, other.transparency) === 0 &&
-      compareStringsOrUndefined(this.modelIds, other.modelIds) === 0 &&
-      compareStringsOrUndefined(this.subCategoryOrElementIds, other.subCategoryOrElementIds) === 0;
+      this.priority === other.priority &&
+      this.transparency === other.transparency &&
+      this.modelIds === other.modelIds  &&
+      this.subCategoryOrElementIds ===  other.subCategoryOrElementIds;
   }
   /** Create a copy of this TerrainSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
