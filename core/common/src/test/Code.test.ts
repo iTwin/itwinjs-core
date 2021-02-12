@@ -34,8 +34,8 @@ describe.only("Code", () => {
     const undefinedValue: CodeProps = { spec, scope };
     assert.isTrue(Code.isValid(undefinedValue));
     assert.isTrue(Code.isEmpty(undefinedValue));
-    assert.equal(new Code(undefinedValue).getValue(), "");
     assert.equal(new Code(undefinedValue).value, "");
+    assert.equal(new Code(undefinedValue).getValue(), ""); // eslint-disable-line deprecation/deprecation
 
     const fromUndefined = Code.fromJSON();
     assert.isTrue(Code.isValid(fromUndefined));
@@ -48,7 +48,36 @@ describe.only("Code", () => {
     const fromWhitespace = new Code({ spec, scope, value: "  \t\n  "});
     assert.isTrue(Code.isValid(fromWhitespace));
     assert.isTrue(Code.isEmpty(fromWhitespace));
-    assert.equal(fromWhitespace.getValue(), "");
     assert.equal(fromWhitespace.value, "");
+    assert.equal(fromWhitespace.getValue(), ""); // eslint-disable-line deprecation/deprecation
+  });
+
+  it("should set and clear Code value", () => {
+    const value = "Value";
+    const code = new Code({ spec, scope, value });
+    assert.isTrue(Code.isValid(code));
+    assert.equal(value, code.value);
+    assert.equal(value, code.getValue()); // eslint-disable-line deprecation/deprecation
+
+    const newValue = "NewValue";
+    code.value = newValue;
+    assert.isTrue(Code.isValid(code));
+    assert.equal(newValue, code.value);
+    assert.equal(newValue, code.getValue()); // eslint-disable-line deprecation/deprecation
+
+    code.value = "  \t\n  Value  \t\n  ";
+    assert.isTrue(Code.isValid(code));
+    assert.equal(value, code.value);
+    assert.equal(value, code.getValue()); // eslint-disable-line deprecation/deprecation
+
+    code.value = "";
+    assert.isTrue(Code.isValid(code));
+    assert.isTrue(Code.isEmpty(code));
+
+    (code as any).value = undefined;
+    assert.isTrue(Code.isValid(code));
+    assert.isTrue(Code.isEmpty(code));
+    assert.equal(code.value, "");
+    assert.equal(code.getValue(), ""); // eslint-disable-line deprecation/deprecation
   });
 });

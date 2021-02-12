@@ -974,13 +974,14 @@ export class Code implements CodeProps {
     equals(other: Code): boolean;
     // (undocumented)
     static fromJSON(json?: any): Code;
-    // (undocumented)
+    // @deprecated (undocumented)
     getValue(): string;
     static isEmpty(c: CodeProps): boolean;
     static isValid(c: CodeProps): boolean;
     scope: string;
     spec: Id64String;
-    value?: string;
+    get value(): string;
+    set value(val: string);
 }
 
 // @public
