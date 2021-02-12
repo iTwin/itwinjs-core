@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Parser } from "@bentley/imodeljs-quantity";
 import { assert } from "chai";
-import { Format, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps } from "@bentley/imodeljs-quantity";
-import { FormatterParserSpecsProvider, QuantityFormatter, QuantityType, QuantityTypeArg, UnitSystemKey } from "../QuantityFormatter";
+
+import { QuantityFormatter, QuantityType, QuantityTypeArg } from "../QuantityFormatter";
+import { BearingQuantityType } from "./BearingQuantityType";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {
   const tol: number = undefined !== tolerance ? tolerance : 0.1e-6;
@@ -17,13 +19,20 @@ describe("Quantity formatter", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
     quantityFormatter = new QuantityFormatter();
+    await quantityFormatter.onInitialized();
   });
 
-  it("Length", async () => {
-    await quantityFormatter.onInitialized();
+  it("Length should be cached during onInitialized processing", async () => {
+    const expected = `405'-0 1/2"`;
+    const newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    assert(newFormatterSpec !== undefined);
+    const actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
+    assert.equal(actual, expected);
+  });
+
+  it("Length format spec retrieved asynchronously", async () => {
     const expected = `405'-0 1/2"`;
     const newFormatterSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
-
     const actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
     assert.equal(actual, expected);
   });
@@ -371,105 +380,41 @@ describe("Quantity formatter", async () => {
   });
 });
 
-// ==========================================================================================================
-class DummyFormatterSpec extends FormatterSpec {
-  constructor(name: string, format: Format, conversions?: UnitConversionSpec[]) {
-    super(name, format, conversions);
-  }
-
-  public applyFormatting(magnitude: number): string {
-    return magnitude.toFixed(6);
-  }
-
-  public static async createSpec(unitSystem: UnitSystemKey): Promise<DummyFormatterSpec> {
-    if (unitSystem === "imperial")
-      return new DummyFormatterSpec("dummy-imperial", new Format("formatName"));
-    else if (unitSystem === "usCustomary")
-      return new DummyFormatterSpec("dummy-usCustomary", new Format("formatName"));
-    else if (unitSystem === "usSurvey")
-      return new DummyFormatterSpec("dummy-usSurvey", new Format("formatName"));
-    else
-      return new DummyFormatterSpec("dummy-metric", new Format("formatName"));
-  }
-}
-
-// ==========================================================================================================
-// Register and test FormatterParserSpecsProvider
-// ==========================================================================================================
-class DummyParserSpec extends ParserSpec {
-  constructor(outUnit: UnitProps, format: Format, conversions?: UnitConversionSpec[]) {
-    super(outUnit, format, conversions ?? []);
-  }
-
-  public parseToQuantityValue(inString: string): QuantityParseResult {
-    return Parser.parseToQuantityValue(inString, this.format, this.unitConversions);
-  }
-
-  public static async createParserSpec(unitSystem: UnitSystemKey): Promise<DummyParserSpec> {
-    const quantityFormatter = new QuantityFormatter();
-    const formatterSpec = await DummyFormatterSpec.createSpec(unitSystem);
-    if (unitSystem === "imperial" || unitSystem === "usCustomary" || unitSystem === "usSurvey") {
-      const outUnit = await quantityFormatter.findUnitByName("Units.FT");
-      const conversions = await Parser.createUnitConversionSpecsForUnit(quantityFormatter, outUnit);
-      return new DummyParserSpec(outUnit, formatterSpec.format, conversions);
-    } else {
-      const outUnit = await quantityFormatter.findUnitByName("Units.M");
-      const conversions = await Parser.createUnitConversionSpecsForUnit(quantityFormatter, outUnit);
-      return new DummyParserSpec(outUnit, formatterSpec.format, conversions);
-    }
-  }
-}
-
-describe("Custom FormatterSpecs", async () => {
+describe("Test Custom QuantityType", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
     quantityFormatter = new QuantityFormatter();
     await quantityFormatter.onInitialized();
   });
 
-  it("QuantityFormatter should register properly", async () => {
-    assert.isTrue(quantityFormatter.useImperialFormats); // eslint-disable-line deprecation/deprecation
-    assert.isTrue(quantityFormatter.activeUnitSystem === "imperial");
+  it("QuantityFormatter should handle unit system changes properly", async () => {
+    const persistenceUnit = await quantityFormatter.findUnitByName("Units.RAD");
+    const quantityTypeDefinition = new BearingQuantityType(persistenceUnit);
 
-    const customFormatterParserSpecsProvider: FormatterParserSpecsProvider = {
-      quantityType: "DummyQuantity",
-      createFormatterSpec: DummyFormatterSpec.createSpec,
-      createParserSpec: DummyParserSpec.createParserSpec,
-    };
+    let wasRegistered = await quantityFormatter.registerQuantityType (quantityTypeDefinition);
+    assert.equal(wasRegistered, true);
+    // only allow a single registration
+    wasRegistered = await quantityFormatter.registerQuantityType (quantityTypeDefinition);
+    assert.equal(wasRegistered, false);
 
-    let foundFormatterSpec: FormatterSpec | undefined;
-    foundFormatterSpec = await quantityFormatter.getFormatterSpecByQuantityType("DummyQuantity");
-    assert.isUndefined(foundFormatterSpec);
+    const formatterSpec = await quantityFormatter.getFormatterSpecByQuantityType("Bearing");
+    assert.isDefined(formatterSpec);
 
-    assert.isTrue(await quantityFormatter.registerFormatterParserSpecsProviders(customFormatterParserSpecsProvider));
-    assert.isFalse(await quantityFormatter.registerFormatterParserSpecsProviders(customFormatterParserSpecsProvider), "Can't register a provider twice");
+    const rad45 = Math.PI/4;
+    const formattedAngle=formatterSpec!.applyFormatting (rad45);
+    assert.equal (formattedAngle, `N 45°0'0" E`);
 
-    foundFormatterSpec = await quantityFormatter.getFormatterSpecByQuantityType("DummyQuantity")!;
-    assert.instanceOf(foundFormatterSpec, DummyFormatterSpec);
+    const parserSpec = await quantityFormatter.getParserSpecByQuantityType("Bearing");
+    assert.isDefined(parserSpec);
 
-    const formattedValue = quantityFormatter.formatQuantity(1.234567891234, foundFormatterSpec);
-    assert.strictEqual(formattedValue, "1.234568");
-
-    const parserSpec = await quantityFormatter.getParserSpecByQuantityType("DummyQuantity")!;
-    assert.instanceOf(parserSpec, DummyParserSpec);
-
-    // results should be in feet because we are set to imperial
-    if (parserSpec) {
-      const meterToImperialResult = parserSpec.parseToQuantityValue("12.192 m");
-      const feetToImperialResult = parserSpec.parseToQuantityValue("40 ft");
-      assert (Parser.isParsedQuantity(feetToImperialResult));
-      assert (Parser.isParsedQuantity(meterToImperialResult));
-      if (Parser.isParsedQuantity(feetToImperialResult) && Parser.isParsedQuantity(meterToImperialResult) ) {
-        assert(withinTolerance(40.0, feetToImperialResult.value));
-        assert(withinTolerance(meterToImperialResult.value, feetToImperialResult.value));
-      }
-
-    }
+    const parsedRadians = parserSpec!.parseToQuantityValue ("n45e");
+    assert (Parser.isParsedQuantity(parsedRadians));
+    if (Parser.isParsedQuantity(parsedRadians))
+      assert.equal (parsedRadians.value, rad45);
   });
-
 });
 
-describe("Custom FormatterSpecs", async () => {
+describe("Test Formatted Quantities", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
     quantityFormatter = new QuantityFormatter();
@@ -504,6 +449,7 @@ describe("Custom FormatterSpecs", async () => {
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "1000 m");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "1000 m");
     await testFormatting(QuantityType.Stationing, 1000.0, "1+000.00");
+    await testFormatting(QuantityType.Stationing, 15918.01 , "15+918.01");
     await testFormatting(QuantityType.Volume, 1000.0, "1000 m³");
 
     await quantityFormatter.setActiveUnitSystem("usCustomary");
