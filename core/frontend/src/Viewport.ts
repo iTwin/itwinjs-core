@@ -8,6 +8,7 @@
 
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
+  ProcessDetector,
   StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
@@ -57,7 +58,6 @@ import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
-import { System } from "./render/webgl/System";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -3131,7 +3131,7 @@ export class ScreenViewport extends Viewport {
        * immediately on iOS. Even though the 2d canvas gets cleared in OnScreenTarget.drawOverlayDecorations() in this case,
        * it looks like iOS needs an immediate clear.
        */
-      if (System.instance.isMobile)
+      if (ProcessDetector.isIOSBrowser)
         _clear2dCanvas(this.canvas);
     }
 
