@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { ClientRequestContext, Id64, Id64Arg, Id64String, isElectronRenderer, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import {
+  ClientRequestContext, Dictionary, Id64, Id64Arg, Id64String, isElectronRenderer, OpenMode, SortedArray, StopWatch,
+} from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import {
   BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
@@ -388,6 +390,37 @@ function getViewFlagsString(): string {
   return vfString;
 }
 
+/* A formatted string containing the Ids of all the tiles that were selected for display by the last call to waitForTilesToLoad(), of the format:
+ *  Selected Tiles:
+ *    TreeId1: tileId1,tileId2,...
+ *    TreeId2: tileId1,tileId2,...
+ *    ...
+ * Sorted by tree Id and then by tile Id so that the output is consistent from run to run unless the set of selected tiles changed between runs.
+ */
+let formattedSelectedTileIds = "Selected tiles:\n";
+function formatSelectedTileIds(viewport: Viewport): void {
+  formattedSelectedTileIds = "Selected tiles:\n";
+  const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
+  const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
+  if (!selected)
+    return;
+
+  for (const tile of selected) {
+    const treeId = tile.tree.id;
+    let tileIds = dict.get(treeId);
+    if (!tileIds)
+      dict.set(treeId, tileIds = new SortedArray<string>((lhs, rhs) => lhs.localeCompare(rhs)));
+
+    tileIds.insert(tile.contentId);
+  }
+
+  for (const kvp of dict) {
+    const contentIds = kvp.value.extractArray().join(",");
+    const line = `  ${kvp.key}: ${contentIds}`;
+    formattedSelectedTileIds = `${formattedSelectedTileIds}${line}\n`;
+  }
+}
+
 async function waitForTilesToLoad(modelLocation?: string) {
   if (modelLocation) {
     removeFilesFromDir(modelLocation, ".Tiles");
@@ -418,10 +451,14 @@ async function waitForTilesToLoad(modelLocation?: string) {
 
     await resolveAfterXMilSeconds(100);
   }
+
   theViewport!.continuousRendering = false;
   theViewport!.renderFrame();
   timer.stop();
   curTileLoadingTime = timer.current.milliseconds;
+
+  // Record the Ids of all the tiles that were selected for display.
+  formatSelectedTileIds(theViewport!);
 }
 
 // ###TODO this should be using Viewport.devicePixelRatio.
@@ -1564,6 +1601,8 @@ async function testModel(configs: DefaultConfigs, modelData: any, logFileName: s
       await writeExternalFile(testConfig.outputPath!, logFileName, true, `${outStr}\n`);
 
       await runTest(testConfig, extViews);
+
+      await writeExternalFile(testConfig.outputPath!, logFileName, true, formattedSelectedTileIds);
     }
   }
   if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
