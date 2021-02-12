@@ -980,6 +980,8 @@ export class Code implements CodeProps {
     static isValid(c: CodeProps): boolean;
     scope: string;
     spec: Id64String;
+    // (undocumented)
+    toJSON(): CodeProps;
     get value(): string;
     set value(val: string);
 }
