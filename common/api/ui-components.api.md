@@ -24,6 +24,8 @@ import { DateFormatter } from '@bentley/ui-abstract';
 import { DndComponentClass } from 'react-dnd';
 import { EnumerationChoice } from '@bentley/ui-abstract';
 import { Face } from '@bentley/ui-core';
+import { FormatProps } from '@bentley/imodeljs-quantity';
+import { FormatterSpec } from '@bentley/imodeljs-quantity';
 import { GenericUiEventArgs } from '@bentley/ui-abstract';
 import { GlobalContextMenuProps } from '@bentley/ui-core';
 import { GlobalDialogProps } from '@bentley/ui-core';
@@ -57,7 +59,7 @@ import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyValue } from '@bentley/ui-abstract';
 import * as PropTypes from 'prop-types';
-import { QuantityType } from '@bentley/imodeljs-frontend';
+import { QuantityTypeArg } from '@bentley/imodeljs-frontend';
 import { RatioChangeResult } from '@bentley/ui-core';
 import * as React from 'react';
 import ReactDataGrid = require('react-data-grid');
@@ -70,6 +72,8 @@ import { TimeDisplay } from '@bentley/ui-abstract';
 import { TimeFormat } from '@bentley/ui-core';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
+import { UnitProps } from '@bentley/imodeljs-quantity';
+import { UnitsProvider } from '@bentley/imodeljs-quantity';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
@@ -1985,6 +1989,94 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
 // @internal
 export function formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined;
 
+// @alpha
+export function FormatPanel(props: FormatPanelProps): JSX.Element;
+
+// @alpha
+export interface FormatPanelProps extends CommonProps {
+    // (undocumented)
+    enableMinimumProperties?: boolean;
+    // (undocumented)
+    initialFormat: FormatProps;
+    // (undocumented)
+    initialMagnitude?: number;
+    // (undocumented)
+    onFormatChange?: (format: FormatProps) => void;
+    // (undocumented)
+    persistenceUnit: Promise<UnitProps> | UnitProps;
+    // (undocumented)
+    provideFormatSpec?: (formatProps: FormatProps, persistenceUnit: UnitProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
+    // (undocumented)
+    providePrimaryChildren?: (formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
+    // (undocumented)
+    provideSecondaryChildren?: (formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
+    // (undocumented)
+    showSample?: boolean;
+    // (undocumented)
+    unitsProvider: UnitsProvider;
+}
+
+// @alpha
+export function FormatPrecision(props: FormatPrecisionProps): JSX.Element;
+
+// @alpha
+export interface FormatPrecisionProps extends CommonProps {
+    // (undocumented)
+    formatProps: FormatProps;
+    // (undocumented)
+    onChange?: (format: FormatProps) => void;
+}
+
+// @alpha
+export function FormatSample(props: FormatSampleProps): JSX.Element;
+
+// @alpha
+export interface FormatSampleProps extends CommonProps {
+    // (undocumented)
+    formatSpec?: FormatterSpec;
+    // (undocumented)
+    hideLabels?: boolean;
+    // (undocumented)
+    initialMagnitude?: number;
+}
+
+// @alpha
+export function FormatTypeOption(props: FormatTypeOptionProps): JSX.Element;
+
+// @alpha
+export interface FormatTypeOptionProps extends CommonProps {
+    // (undocumented)
+    formatProps: FormatProps;
+    // (undocumented)
+    onChange?: (format: FormatProps) => void;
+}
+
+// @alpha
+export function FormatUnitLabel(props: FormatUnitLabelProps): JSX.Element;
+
+// @alpha
+export interface FormatUnitLabelProps extends CommonProps {
+    // (undocumented)
+    formatProps: FormatProps;
+    // (undocumented)
+    onUnitLabelChange?: (format: FormatProps) => void;
+}
+
+// @alpha
+export function FormatUnits(props: FormatUnitsProps): JSX.Element;
+
+// @alpha
+export interface FormatUnitsProps extends CommonProps {
+    // (undocumented)
+    initialFormat: FormatProps;
+    // (undocumented)
+    onUnitsChange?: (format: FormatProps) => void;
+    // (undocumented)
+    persistenceUnit?: UnitProps;
+    // (undocumented)
+    unitsProvider: UnitsProvider;
+}
+
 // @public
 export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
 
@@ -2586,6 +2678,25 @@ export interface MilestoneRange {
     end: Date;
     // (undocumented)
     start: Date;
+}
+
+// @alpha
+export function MiscFormatOptions(props: MiscFormatOptionsProps): JSX.Element;
+
+// @alpha
+export interface MiscFormatOptionsProps extends CommonProps {
+    // (undocumented)
+    children?: React.ReactNode;
+    // (undocumented)
+    enableMinimumProperties?: boolean;
+    // (undocumented)
+    formatProps: FormatProps;
+    // (undocumented)
+    onChange?: (format: FormatProps) => void;
+    // (undocumented)
+    onShowHideOptions: (show: boolean) => void;
+    // (undocumented)
+    showOptions: boolean;
 }
 
 // @internal
@@ -3527,6 +3638,22 @@ export interface PropertyViewProps extends SharedRendererProps {
     valueElementRenderer?: () => React.ReactNode;
 }
 
+// @alpha
+export function QuantityFormatPanel(props: QuantityFormatPanelProps): JSX.Element;
+
+// @alpha
+export interface QuantityFormatPanelProps extends CommonProps {
+    // (undocumented)
+    enableMinimumProperties?: boolean;
+    // (undocumented)
+    initialMagnitude?: number;
+    // (undocumented)
+    onFormatChange?: (format: FormatProps) => void;
+    // (undocumented)
+    quantityType: QuantityTypeArg;
+    showSample?: boolean;
+}
+
 // @beta
 export function QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element;
 
@@ -3534,7 +3661,7 @@ export function QuantityInput({ initialValue, quantityType, readonly, className,
 export interface QuantityProps extends CommonProps {
     initialValue: number;
     onQuantityChange: (newQuantityValue: number) => void;
-    quantityType: QuantityType;
+    quantityType: QuantityTypeArg;
     readonly?: boolean;
     ref?: React.Ref<HTMLInputElement>;
 }
