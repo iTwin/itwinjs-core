@@ -733,10 +733,11 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("Should be able to recover after changeSet deletion (#integration)", async () => {
-    const userContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager); // todo: substitute with a valid user
+    // TODO: fix the block below to use the new user with the right feature flag enabled in QA
+    const userContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     const testIModelName = "Delete changeSet test";
     const testUtility = new TestChangeSetUtility(userContext, testIModelName);
-    testUtility.projectId = testProjectId; // todo remove
+    testUtility.projectId = testProjectId;
 
     // Acquire briefcase and push 1 changeSet
     var iModel = await testUtility.createTestIModel();
