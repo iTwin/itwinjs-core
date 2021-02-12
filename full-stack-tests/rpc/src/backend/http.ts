@@ -28,6 +28,7 @@ async function init() {
   console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
   initializeAttachedInterfacesTest(rpcConfig);
+
   await initializeMockMobileTest();
 
   // eslint-disable-next-line no-console

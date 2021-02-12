@@ -5,9 +5,9 @@
 export * from "./Assert";
 export * from "./AsyncMutex";
 export * from "./BeEvent";
-export * from "./BeSQLite";
 export * from "./BentleyError";
 export * from "./BentleyLoggerCategory";
+export * from "./BeSQLite";
 export * from "./ByteStream";
 export * from "./ClientRequestContext";
 export * from "./Compare";
@@ -20,11 +20,13 @@ export * from "./Id";
 export * from "./IndexMap";
 export * from "./InstanceOf";
 export * from "./JsonUtils";
-export * from "./LRUMap";
 export * from "./Logger";
+export * from "./LRUMap";
+export * from "./ProcessDetector";
 export * from "./ObservableSet";
 export * from "./OneAtATimeAction";
 export * from "./OrderedId64Iterable";
+export * from "./OrderedSet";
 export * from "./partitionArray";
 export * from "./PriorityQueue";
 export * from "./SortedArray";
@@ -69,4 +71,8 @@ export * from "./Time";
 /**
  * @docs-group-description Utils
  * Miscellaneous utility classes.
+ */
+/**
+ * @docs-group-description ProcessDetector
+ * Functions for determining the type of the current JavaScript process.
  */

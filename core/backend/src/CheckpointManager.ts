@@ -54,13 +54,13 @@ export interface DownloadRequest {
   /** name of local file to hold the downloaded data. */
   localFile: string;
 
-  /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names, it is
+  /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names,
    * no download is performed and `localFile` is updated to reflect the fact that the file exists with that name.
    * This can be used, for example, to look for checkpoints from previous versions if the naming strategy changes.
    */
   aliasFiles?: string[];
 
-  /** Properties of the checkpoint to be being downloaded */
+  /** Properties of the checkpoint to be downloaded */
   checkpoint: CheckpointProps;
 
   /** If present, this function will be called to indicate progress as the briefcase is downloaded. If this

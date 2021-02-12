@@ -13,7 +13,6 @@ Name | Required? | Type | Default | Meaning
 `targetClass` | No | `SingleSchemaClassSpecification` | Other end of relationship | Specification of the related class.
 `count` | No | `number \| "*"` | 1 | Number of times the relationship should be traversed. `"*"` makes the step optional, so results of previous step are also included in results of this step, no matter if this step has any output of its own or not.
 
-
 ## Example
 
 A single-step relationship path which simply jumps from *current* ECClass to *BisCore.PhysicalElement* through *BisCore.ModelModelsElement* relationship:

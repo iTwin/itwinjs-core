@@ -37,15 +37,14 @@ class SampleModalPage extends React.Component {
 
 The following code instantiates a modal frontstage and calls `FrontstageManager.openModalFrontstage` to open the modal frontstage.
 
-```TS
-    const modalFrontstage = new SampleModalFrontstage();
-    FrontstageManager.openModalFrontstage(modalFrontstage);
-
+```ts
+const modalFrontstage = new SampleModalFrontstage();
+FrontstageManager.openModalFrontstage(modalFrontstage);
 ```
 
 ## API Reference
 
-* [ModalFrontstage]($ui-framework)
-* [ModalFrontstageInfo]($ui-framework)
-* [FrontstageManager]($ui-framework)
-* [Frontstage]($ui-framework:Frontstage)
+- [ModalFrontstage]($ui-framework)
+- [ModalFrontstageInfo]($ui-framework)
+- [FrontstageManager]($ui-framework)
+- [Frontstage]($ui-framework:Frontstage)

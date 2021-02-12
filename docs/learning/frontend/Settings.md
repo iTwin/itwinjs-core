@@ -12,20 +12,20 @@ The methods on SettingsAdmin allow saving and retrieving settings that are eithe
 
 User-specific settings can be:
 
-* Specific to an application (for example, the user's particular application preferences)
-* Specific to an application and Project (for example, the user's most recently opened iModel when using the application)
-* Specific to an application and iModel (for example, the user's application-specific session data)
-* Specific to a Project (for example, the user's list of favorite iModels in that project)
-* Specific to an iModel (for example, the user's list of favorite views in that iModel)
-* Specific only to the user (for example, a list of favorite applications)
+- Specific to an application (for example, the user's particular application preferences)
+- Specific to an application and Project (for example, the user's most recently opened iModel when using the application)
+- Specific to an application and iModel (for example, the user's application-specific session data)
+- Specific to a Project (for example, the user's list of favorite iModels in that project)
+- Specific to an iModel (for example, the user's list of favorite views in that iModel)
+- Specific only to the user (for example, a list of favorite applications)
 
 Non-user-specific settings can be:
 
-* Specific to an application (for example, default application preferences)
-* Specific to an application and Project (for example, the default iModel for the project when the application is opened)
-* Specific to an application and iModel (for example, the default views for the iModel when the application is opened)
-* Specific to a Project (for example, a message of the day for all users of that Project)
-* Specific to an iModel (for example, default basic preferences relevant to all applications)
+- Specific to an application (for example, default application preferences)
+- Specific to an application and Project (for example, the default iModel for the project when the application is opened)
+- Specific to an application and iModel (for example, the default views for the iModel when the application is opened)
+- Specific to a Project (for example, a message of the day for all users of that Project)
+- Specific to an iModel (for example, default basic preferences relevant to all applications)
 
 To save a non-user-specific setting, administrative privileges are required. That makes such settings ideal for parameters that should be fixed per-iModel or per-Project by an administrator, and used by every user.
 

@@ -9,8 +9,7 @@
 import "./ControlledTree.scss";
 import classnames from "classnames";
 import * as React from "react";
-import AutoSizer, { Size } from "react-virtualized-auto-sizer";
-import { areEqual, ListChildComponentProps, VariableSizeList } from "react-window";
+import { areEqual, ListChildComponentProps } from "react-window";
 import { concat } from "rxjs/internal/observable/concat";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { timer } from "rxjs/internal/observable/timer";
@@ -18,10 +17,10 @@ import { assert } from "@bentley/bentleyjs-core";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
 import { createContextWithMandatoryProvider } from "../../../common/UseContextWithMandatoryProvider";
 import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
+import { VirtualizedList, VirtualizedListAttributes } from "../internal/VirtualizedList";
 import { TreeActions } from "../TreeActions";
 import {
-  isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, TreeModelNode, TreeModelNodePlaceholder,
-  VisibleTreeNodes,
+  isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes,
 } from "../TreeModel";
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
@@ -153,16 +152,16 @@ export class TreeRenderer extends React.Component<TreeRendererProps> implements 
 
 // eslint-disable-next-line react/display-name
 const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererProps>((props, ref) => {
-  const variableSizeListRef = React.useRef<VariableSizeList>(null);
-  useTreeRendererAttributes(ref, variableSizeListRef, props.visibleNodes);
+  const virtualizedListRef = React.useRef<VirtualizedListAttributes>(null);
+  useTreeRendererAttributes(ref, virtualizedListRef, props.visibleNodes);
 
   const previousVisibleNodes = usePrevious(props.visibleNodes);
   const previousNodeHeight = usePrevious(props.nodeHeight);
   if ((previousVisibleNodes !== undefined && previousVisibleNodes !== props.visibleNodes)
     || (previousNodeHeight !== undefined && previousNodeHeight !== props.nodeHeight)) {
     /* istanbul ignore else */
-    if (variableSizeListRef.current) {
-      variableSizeListRef.current.resetAfterIndex(0, false);
+    if (virtualizedListRef.current) {
+      virtualizedListRef.current.resetAfterIndex(0, false);
     }
   }
 
@@ -213,7 +212,7 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
   const { nodeHighlightingProps } = props;
   React.useEffect(() => {
     const highlightedNodeId = getHighlightedNodeId(nodeHighlightingProps);
-    if (!highlightedNodeId || !variableSizeListRef.current)
+    if (!highlightedNodeId)
       return;
 
     let index = 0;
@@ -223,7 +222,9 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
 
       index++;
     }
-    variableSizeListRef.current.scrollToItem(index);
+
+    assert(virtualizedListRef.current !== null);
+    virtualizedListRef.current.scrollToItem(index);
   }, [nodeHighlightingProps]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const innerElementType = React.useCallback(
@@ -249,27 +250,19 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
   return (
     <TreeRendererContextProvider value={rendererContext}>
       <CoreTree ref={coreTreeRef} className="components-controlledTree" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-        <AutoSizer>
-          {({ width, height }: Size) => {
-            onTreeSizeChanged(width);
-            return (
-              <VariableSizeList
-                ref={variableSizeListRef}
-                className={"ReactWindow__VariableSizeList"}
-                width={width}
-                height={height}
-                itemCount={props.visibleNodes.getNumNodes()}
-                itemSize={itemSize}
-                estimatedItemSize={25}
-                overscanCount={10}
-                itemKey={itemKey}
-                innerElementType={innerElementType}
-              >
-                {Node}
-              </VariableSizeList>
-            );
-          }}
-        </AutoSizer>
+        <VirtualizedList
+          ref={virtualizedListRef}
+          className={"ReactWindow__VariableSizeList"}
+          onTreeSizeChanged={onTreeSizeChanged}
+          itemCount={props.visibleNodes.getNumNodes()}
+          itemSize={itemSize}
+          estimatedItemSize={25}
+          overscanCount={10}
+          itemKey={itemKey}
+          innerElementType={innerElementType}
+        >
+          {Node}
+        </VirtualizedList>
       </CoreTree>
     </TreeRendererContextProvider>
   );
@@ -362,7 +355,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-li
 
 function useTreeRendererAttributes(
   ref: React.Ref<TreeRendererAttributes>,
-  variableSizeListRef: React.RefObject<VariableSizeList>,
+  variableSizeListRef: React.RefObject<VirtualizedListAttributes>,
   visibleNodes: VisibleTreeNodes,
 ) {
   React.useImperativeHandle(

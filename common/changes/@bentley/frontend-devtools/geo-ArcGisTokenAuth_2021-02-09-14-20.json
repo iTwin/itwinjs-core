@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-devtools",
+      "comment": "Improved MapLayerSource validation for authentification errors.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "mdastous-bentley@users.noreply.github.com"
+}

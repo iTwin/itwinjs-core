@@ -10,6 +10,6 @@ React is a fast and lightweight library for user interface development. The fact
 
 **Tooling** - React and Redux are supported by widely-available tools, including:
 
-* VS Code – Visual Studio Code provides great support for TypeScript, React components and TSX/JSX.
-* React Developer Tools for Chrome – these provide terrific support for the virtual DOM, showing component Props, allows dynamic changing of Props, etc.
-* Redux DevTools for Chrome – Redux time travel support; you can completely control the currently running application’s actions/state
+- VS Code – Visual Studio Code provides great support for TypeScript, React components and TSX/JSX.
+- React Developer Tools for Chrome – these provide terrific support for the virtual DOM, showing component Props, allows dynamic changing of Props, etc.
+- Redux DevTools for Chrome – Redux time travel support; you can completely control the currently running application’s actions/state

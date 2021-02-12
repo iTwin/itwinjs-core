@@ -23,4 +23,4 @@ In addition to showing an 'on' or 'off' state, the `indeterminate` prop indicate
 
 ## API Reference
 
-* [Checkbox]($ui-core:Checkbox)
+- [Checkbox]($ui-core:Checkbox)
