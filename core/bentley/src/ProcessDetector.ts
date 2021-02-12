@@ -6,6 +6,8 @@
  * @module ProcessDetector
  */
 
+// Portions modified from package 'detect-gpu': https://github.com/TimvanScherpenzeel/detect-gpu/blob/master/src/index.ts
+
 /** Functions to determine the type of JavaScript process currently executing
  * @beta
  */
@@ -28,24 +30,24 @@ export class ProcessDetector {
   public static get isElectronAppBackend() { return typeof process === "object" && process.versions.hasOwnProperty("electron"); }
 
   /** Is this process running in a browser on an iOS device?
-   * @note This method will return `true ` for any frontend running on an iOS device, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
+   * @note This method will return `true` for any frontend running on an iOS device, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
   */
-  public static get isIOSBrowser() { return this.isBrowserProcess && /(iphone|ipod|ipad)/i.test(window.navigator.userAgent); }
+  public static get isIOSBrowser() { return this.isBrowserProcess && (/(iphone|ipod|ipad)/i.test(window.navigator.userAgent) || this.isIpadBrowser); }
 
   /** Is this process running in a browser on an iPad?
-   * @note This method will return `true ` for any frontend running on an iPad, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
+   * @note This method will return `true` for any frontend running on an iPad, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
    */
   public static get isIpadBrowser() {
     return this.isBrowserProcess && window.navigator.platform === "iPad" || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 0 && !window.MSStream);
   }
 
   /** Is this process running in a browser on an Android device?
-   * @note This method will return `true ` for any frontend running on an Android device, whether it is a user-launched web browser (e.g. Chrome) or the frontend of a mobile app.
+   * @note This method will return `true` for any frontend running on an Android device, whether it is a user-launched web browser (e.g. Chrome) or the frontend of a mobile app.
   */
   public static get isAndroidBrowser() { return this.isBrowserProcess && /android/i.test(window.navigator.userAgent); }
 
   /** Is this process running in a browser on a mobile device?
-   * @note This method will return `true ` for any frontend running on a mobile device, whether it is a user-launched web browser or the frontend of a mobile app.
+   * @note This method will return `true` for any frontend running on a mobile device, whether it is a user-launched web browser or the frontend of a mobile app.
   */
   public static get isMobileBrowser() { return this.isIOSBrowser || this.isAndroidBrowser || this.isIpadBrowser; }
 
