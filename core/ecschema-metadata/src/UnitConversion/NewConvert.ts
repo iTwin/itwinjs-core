@@ -34,10 +34,27 @@ export function mapUnits(
 ): Conversion {
   let from = recursiveConvert(fromUnit.name);
   let to = recursiveConvert(toUnit.name);
-  console.log(from, to);
+  to = solveSystemOfEquations(to);
   return {
-    multiplier: from.multiplier / to.multiplier,
-    offset: from.offset + to.offset,
+    multiplier: from.multiplier * to.multiplier,
+    offset: from.offset * to.multiplier + to.offset,
+  };
+}
+
+function solveSystemOfEquations(toConversion: Conversion): Conversion {
+  // Any x1 and x2 would work
+  let x1 = 3;
+  let x2 = 42;
+  let y1 = x1 * toConversion.multiplier + toConversion.offset;
+  let y2 = x2 * toConversion.multiplier + toConversion.offset;
+
+  // Solve for new slope and offset
+  let newOffset = (x2 - (y2 / y1) * x1) / (1 - y2 / y1);
+  let newMultiplier = (x2 - newOffset) / y2;
+
+  return {
+    multiplier: newMultiplier,
+    offset: newOffset,
   };
 }
 
