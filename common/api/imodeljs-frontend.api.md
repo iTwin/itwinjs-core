@@ -1717,6 +1717,16 @@ export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
 }
 
+// @alpha
+export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec {
+    // (undocumented)
+    editorType: "checkbox";
+    // (undocumented)
+    getBool: (props: FormatProps) => boolean;
+    // (undocumented)
+    setBool: (props: FormatProps, isChecked: boolean) => FormatProps;
+}
+
 // @public
 export class CheckpointConnection extends IModelConnection {
     close(): Promise<void>;
@@ -1809,14 +1819,6 @@ export class ContextRealityModelState {
     get treeRef(): TileTreeReference;
     // (undocumented)
     readonly url: string;
-}
-
-// @alpha
-export class ConversionData implements UnitConversion {
-    // (undocumented)
-    factor: number;
-    // (undocumented)
-    offset: number;
 }
 
 // @public (undocumented)
@@ -1967,6 +1969,21 @@ export enum CurrentState {
     Inactive = 2,
     // (undocumented)
     NotEnabled = 0
+}
+
+// @alpha
+export interface CustomFormatPropEditorSpec {
+    // (undocumented)
+    editorType: "checkbox" | "text" | "select";
+    // (undocumented)
+    label: string;
+}
+
+// @alpha
+export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
+    isCompatibleFormatProps: (formatProps: FormatProps) => boolean;
+    primaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
+    secondaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
 }
 
 // @internal (undocumented)
@@ -3177,9 +3194,6 @@ export class FlyViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @internal
-export type FormatPropsByUnitSystem = Map<UnitSystemKey, FormatProps>;
-
 // @beta
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
     constructor(name: string, displayLabel: string, iconSpec?: string);
@@ -3206,9 +3220,6 @@ export interface FormatterParserSpecsProvider {
     // (undocumented)
     quantityType: QuantityTypeArg;
 }
-
-// @internal
-export type FormatterSpecByQuantityType = Map<QuantityTypeKey, FormatterSpec>;
 
 // @alpha
 export interface FormattingUnitSystemChangedArgs {
@@ -3457,6 +3468,9 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 
 // @public
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
+
+// @beta
+export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
 // @alpha
 export interface GlobalLocation {
@@ -4681,6 +4695,18 @@ export class IpcApp {
 export interface IpcAppOptions {
     ipc: IpcSocketFrontend;
 }
+
+// @alpha
+export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec;
+
+// @alpha
+export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition;
+
+// @alpha
+export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec;
+
+// @alpha
+export const isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec;
 
 // @alpha (undocumented)
 export enum ItemField {
@@ -6868,51 +6894,63 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     clearAllOverrideFormats(): Promise<void>;
     // (undocumented)
-    clearOverrideFormats(type: QuantityType): Promise<void>;
+    clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
-    protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
-    findParserSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): ParserSpec | undefined;
-    findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
-    findUnitByName(unitName: string): Promise<UnitProps>;
+    findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
     // (undocumented)
-    protected findUnitDefinition(name: string): UnitDefinition | undefined;
+    findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
+    // (undocumented)
+    findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
     // (undocumented)
-    protected _formatSpecProviders: FormatterParserSpecsProvider[];
+    generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
     // (undocumented)
-    protected _formatSpecsByKoq: Map<string, FormatterSpec[]>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
+    // (undocumented)
+    getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
     getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
-    protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
-    protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
+    getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
     getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
-    protected getPersistenceUnitByQuantityType(type: QuantityTypeKey): Promise<UnitProps>;
+    // (undocumented)
+    getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined>;
+    // (undocumented)
+    getQuantityDefiniton(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
-    protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
+    // (undocumented)
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     // (undocumented)
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
-    // @deprecated
-    loadFormatAndParsingMaps(useImperial: boolean, _restartActiveTool?: boolean): Promise<void>;
+    // (undocumented)
+    protected initializeQuantityTypesRegistry(): Promise<void>;
     // @internal
     protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
-    protected loadKoqFormatSpecs(koq: string): Promise<void>;
     readonly onActiveFormattingUnitSystemChanged: BeUiEvent<FormattingUnitSystemChangedArgs>;
     // @deprecated
     readonly onActiveUnitSystemChanged: BeUiEvent<{
         useImperial: boolean;
     }>;
-    // (undocumented)
+    // @internal
     onInitialized(): Promise<void>;
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
+    readonly onUnitsProviderChanged: BeUiEvent<void>;
     // (undocumented)
-    protected _overrideFormatPropsByQuantityType: Map<string, OverrideFormatEntry>;
+    protected _overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<string, FormatProps>>;
     parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult;
-    registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean>;
+    // (undocumented)
+    protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition>;
+    // (undocumented)
+    get quantityTypesRegistry(): Map<string, QuantityTypeDefinition>;
+    // (undocumented)
+    registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
-    setOverrideFormats(type: QuantityType, overrideEntry: OverrideFormatEntry): Promise<void>;
+    setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
+    // (undocumented)
+    setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
+    // (undocumented)
+    get unitsProvider(): UnitsProvider;
+    set unitsProvider(unitsProvider: UnitsProvider);
     // @deprecated (undocumented)
     get useImperialFormats(): boolean;
     set useImperialFormats(useImperial: boolean);
@@ -6940,8 +6978,24 @@ export enum QuantityType {
     Volume = 4
 }
 
-// @alpha
+// @beta
 export type QuantityTypeArg = QuantityType | string;
+
+// @alpha
+export interface QuantityTypeDefinition {
+    description: string;
+    generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
+    generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
+    // (undocumented)
+    getDefaultFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
+    readonly key: QuantityTypeKey;
+    label: string;
+    readonly persistenceUnit: UnitProps;
+    readonly type: QuantityTypeArg;
+}
+
+// @beta
+export type QuantityTypeKey = string;
 
 // @internal
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
@@ -9406,6 +9460,31 @@ export interface TerrainTileContent extends TileContent {
         geometry?: RenderTerrainMeshGeometry;
         mesh?: TerrainMeshPrimitive;
     };
+}
+
+// @alpha
+export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
+    // (undocumented)
+    editorType: "text";
+    // (undocumented)
+    getString: (props: FormatProps) => string;
+    // (undocumented)
+    setString: (props: FormatProps, value: string) => FormatProps;
+}
+
+// @alpha
+export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSpec {
+    // (undocumented)
+    editorType: "select";
+    // (undocumented)
+    getString: (props: FormatProps) => string;
+    // (undocumented)
+    selectOptions: {
+        label: string;
+        value: string;
+    }[];
+    // (undocumented)
+    setString: (props: FormatProps, value: string) => FormatProps;
 }
 
 // @internal (undocumented)
