@@ -169,4 +169,4 @@ and related ECInstance. Example:
 }
 ```
 
-The above example returns `ECDbMeta:ECClassDef` instances only there are `BisCore:Elements` of those classes.
+The above example returns `ECDbMeta:ECClassDef` instances only if there are `BisCore:Elements` of those classes.
