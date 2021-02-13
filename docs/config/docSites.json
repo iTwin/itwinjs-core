@@ -85,7 +85,7 @@
       "usage-logging-client": "usage-logging-client",
       "webgl-compatibility": "webgl-compatibility"
     },
-    "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
+    "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"itwinjs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
     "ogShareImage": "assets/twitter-share.png",
     "katexOptions": {
       "macros": {
