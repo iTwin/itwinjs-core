@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Fix iOS problem where a viewport would not redraw until resizing after closing multiple viewports.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "47000437+markschlosseratbentley@users.noreply.github.com"
+}

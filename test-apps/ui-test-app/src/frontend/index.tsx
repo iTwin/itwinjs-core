@@ -48,6 +48,7 @@ import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import getSupportedRpcs from "../common/rpcs";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
+import { BearingQuantityType } from "./api/BearingQuantityType";
 import { ErrorHandling } from "./api/ErrorHandling";
 import { AppUi } from "./appui/AppUi";
 import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
@@ -770,6 +771,10 @@ async function main() {
 
   // wait for both our i18n namespaces to be read.
   await SampleAppIModelApp.initialize();
+
+  // register new QuantityType
+  await BearingQuantityType.registerQuantityType ();
+
   ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
 }
 

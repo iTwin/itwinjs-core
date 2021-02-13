@@ -1,8 +1,8 @@
-import { assert, expect } from "chai";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { Guid, Id64, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
@@ -116,7 +116,7 @@ describe("IModelConnection (#integration)", () => {
 
   });
 
-  it("should be able to re-establish IModelConnection if the backend is shut down", async () => {
+  it.skip("should be able to re-establish IModelConnection if the backend is shut down", async () => {
     let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
     assert.equal(iModel.elements.rootSubjectId, Id64.fromJSON(elementProps[0].id));
