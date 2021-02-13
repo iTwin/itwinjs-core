@@ -15,7 +15,7 @@ We will use the following themes (that may be adjusted from time-to-time accordi
 
 ## Release 3.0
 
-We plan to release `iTwin.js 3.0` in 2Q21. The projects listed below will comprise the priorities during the 3.0 development cycle. However it's likely that some may not be fully functional, or even beta-ready by the release deadline. In that case they will become candidates for the 4.0 cycle.
+We plan to release `iTwin.js 3.0` in 2H21. The projects listed below will comprise the priorities during the 3.0 development cycle. However it's likely that some may not be fully functional, or even beta-ready by the release deadline. In that case they will become candidates for the 4.0 cycle.
 
 Volunteers for help on any or all of these projects are welcome. In particular, the iTwin.js team always benefits from real-world use cases and data sets. If you would like to work together with us on any of these projects, particularly those that describe creating examples and templates for interfacing to external systems, please let us know.
 
@@ -84,7 +84,7 @@ Volunteers for help on any or all of these projects are welcome. In particular, 
 
 ### iTwin.js based connector framework
 
-- Support for creating multi-process connectors using iTwin.js backends. One process links with source application api to read the source application files. It then communicates with another iTwin.js process via RPC to update the iModel.
+- Support for creating multi-process connectors using iTwin.js backends. One process links with source application api to read the source application files. It then communicates with another iTwin.js process via IPC to update the iModel.
 
 ### iModel Editing applications
 

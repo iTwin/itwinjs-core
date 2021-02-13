@@ -49,4 +49,4 @@ The `@bentley/imodeljs-native` module is written in C++, is delivered as a platf
 
 `@bentley/imodeljs-native` implements the authentication and access enforcement expressed by iModel owners for (non-Snapshot) iModels. User authentication and access rights are a service of Bentley Systems, as a part of if its iTwin Services offerings. Bentley may also license third parties to supply similar services. **This is Bentley Systems' commercial motivation for creating iTwin.js**. Any attempt to circumvent or disrupt this checking is a violation of the [license agreement](https://github.com/imodeljs/imodeljs/blob/master/core/backend/src/imodeljs-native-LICENSE.md).
 
-> Note that only the imodeljs-backend module has a dependency on imodeljs-native. Frontend applications do not require a right-to-run (the iTwin.js libraries are MIT Licensed), though they always connect to a backend that does.
+> Note that only the imodeljs-backend module has a dependency on imodeljs-native. Frontend applications do not require a right-to-run (the iTwin.js libraries are MIT Licensed), though they may connect to a backend that does.
