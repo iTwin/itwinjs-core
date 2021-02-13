@@ -1,8 +1,8 @@
-# iModel.js Types used in [ECSQL](./ECSQL.md) Parameter Bindings
+# iTwin.js Types used in [ECSQL](./ECSQL.md) Parameter Bindings
 
-The following table list which iModel.js type you can use for binding values to [ECSQL parameters](./ECSQL.md#ecsql-parameters).
+The following table list which iTwin.js type you can use for binding values to [ECSQL parameters](./ECSQL.md#ecsql-parameters).
 
-ECSQL Parameter Type | iModel.js Type
+ECSQL Parameter Type | iTwin.js Type
 ------------- | ----------
 Boolean       | boolean
 Blob          | Uint8Array
