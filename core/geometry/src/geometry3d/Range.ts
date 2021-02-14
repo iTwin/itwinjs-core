@@ -1029,10 +1029,14 @@ export class Range1d extends RangeBase {
   public intersectsRange(other: Range1d): boolean {
     return !(this.low > other.high || other.low > this.high);
   }
-/** Restrict the interval to  x0 <= x < x1
+/**
+ * Intersect this range with a range defined by parameters x0 and x1
+ * * For x1 > x0, that range is null, and the intersection is null.
+ * * For x0 <= x1, the input is a non-null range.
+ * * The intersection range replaces the contents of this.
  *
  */
-  public intersectRangeXYInPlace(x0: number, x1: number){
+  public intersectRangeXXInPlace(x0: number, x1: number){
     if (x1 < x0 || x1 < this.low || x0 > this.high) {
       this.setNull();
     } else {
