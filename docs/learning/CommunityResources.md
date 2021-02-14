@@ -21,7 +21,7 @@ Programming questions and requests for programming advice are best asked on [Sta
 We frequently post helpful iTwin.js videos and articles:
 
 - [YouTube Channel](https://www.youtube.com/channel/UCs4HxiWI4o4bzayG5QnxaIA/featured)
-- [Blog](https://medium.com/imodeljs)
+- [Blog](https://medium.com/itwinjs)
 
 ### Notifications and Updates
 

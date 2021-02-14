@@ -53,10 +53,9 @@ Edit imodeljs-samples/interactive-app/basic-viewport-app/.env.local
 
 ### [Follow tutorials to dive deeper into iTwin.js]($docs/learning/tutorials/index.md)
 
-### [iTwin.js Blog](https://medium.com/imodeljs)
+### [iTwin.js Blog](https://medium.com/itwinjs)
 
 ### Read [imodeljs-samples](https://github.com/imodeljs/imodeljs-samples) READMEs, and review code
-
 
 <style>
   article#main h3:after {

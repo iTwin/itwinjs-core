@@ -40,7 +40,7 @@ The starter application is located in the [desktop-starter](https://github.com/i
 
 ### [Follow tutorials to dive deeper into iTwin.js]($docs/learning/tutorials/index.md)
 
-### [iTwin.js Blog](https://medium.com/imodeljs)
+### [iTwin.js Blog](https://medium.com/itwinjs)
 
 <style>
   article#main h3:after {
