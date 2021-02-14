@@ -5,7 +5,7 @@ publish: false
 
 ## The iModel.js Project Is Renamed iTwin.js
 
-The version begins the process of renaming our project from **iModel.js** to **iTwin.js** to better reflect its purpose as *the platform for infrastructure digital twins*.
+The version begins the process of renaming our project from **iModel.js** to **iTwin.js** to better reflect its purpose as the *platform for infrastructure digital twins*.
 
 iModels are of course a big part of iTwins, so much of the api remains iModel-centric, and many packages within this repository are appropriately named with the `imodeljs` prefix. But, many parts that don't have a direct relationship to iModels will use the term iTwin going forward to avoid confusion.
 
@@ -111,8 +111,6 @@ The type of the internal member `IModelHostConfiguration.applicationType` had a 
 ### IModelTransformer and IModelExporter APIs are now async
 
 The *export* methods of [IModelExporter]($backend) and the *process* methods of [IModelTransformer]($backend) are now `async`. This is a breaking API change.
-While exporting and transforming should generally be considered *batch* operations, changing these methods to `async` makes progress reporting and process health monitoring much easier.
-This is particularly important when processing large iModels.
+While exporting and transforming should generally be considered *batch* operations, changing these methods to `async` makes progress reporting and process health monitoring much easier. This is particularly important when processing large iModels.
 
-To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from within an `async` method.
-No internal logic was changed, so that should be the only changes required.
+To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from within an `async` method. No internal logic was changed, so that should be the only changes required.
