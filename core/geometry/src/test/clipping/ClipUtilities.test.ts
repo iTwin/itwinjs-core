@@ -12,7 +12,7 @@ import { Range1d } from "../../geometry3d/Range";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 
 describe("ParityRegionSweep", () => {
-it.only("triangleClip", () => {
+it("triangleClip", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const pointA = Point3d.create (-10,4);
