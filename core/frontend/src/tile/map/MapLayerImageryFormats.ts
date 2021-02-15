@@ -26,7 +26,7 @@ import {
   WmtsCapabilities,
 } from "../internal";
 
-/** Base class imagery map layer formats.  Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
+/** Base class imagery map layer formats. Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
  * @internal
  */
 export class ImageryMapLayerFormat extends MapLayerFormat {
