@@ -22,7 +22,7 @@
     "@bentley/orbitgt-core": "2.13.0-dev.13",
     "request-promise-native": "^1.0.5",
     "request": "^2.88.0",
-    "yargs": "^15.0.0"
+    "yargs": "^16.0.0"
   },
   "devDependencies": {
     "@bentley/build-tools": "2.13.0-dev.13",

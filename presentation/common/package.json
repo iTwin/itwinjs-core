@@ -79,7 +79,7 @@
     "typemoq": "^2.1.0",
     "typescript": "~3.7.4",
     "typescript-json-schema": "^0.43.0",
-    "yargs": "^15.0.0"
+    "yargs": "^16.0.0"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",
