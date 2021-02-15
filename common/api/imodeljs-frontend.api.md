@@ -2597,7 +2597,7 @@ export namespace EditManipulator {
 // @internal (undocumented)
 export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
 
-// @alpha (undocumented)
+// @alpha
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -2698,38 +2698,30 @@ export class ElementPicker {
     viewport?: Viewport;
 }
 
-// @alpha (undocumented)
+// @alpha
 export abstract class ElementSetTool extends PrimitiveTool {
     protected get agenda(): ElementAgenda;
     protected get allowDragSelect(): boolean;
     protected get allowGroups(): boolean;
     protected get allowSelectionSet(): boolean;
-    // (undocumented)
     protected anchorPoint?: Point3d;
-    // (undocumented)
     protected buildDragSelectAgenda(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<boolean>;
-    // (undocumented)
     protected buildLocateAgenda(hit: HitDetail): Promise<boolean>;
-    // (undocumented)
     protected buildSelectionSetAgenda(ss: SelectionSet): Promise<boolean>;
     protected chooseNextHit(ev: BeButtonEvent): Promise<EventHandled>;
     protected get clearSelectionSet(): boolean;
     protected get controlKeyContinuesSelection(): boolean;
     protected get controlKeyInvertsSelection(): boolean;
     protected get currentElementCount(): number;
-    // (undocumented)
     decorate(context: DecorateContext): void;
     protected doLocate(ev: BeButtonEvent, newSearch: boolean): Promise<boolean>;
-    // (undocumented)
     protected doProcessSelectionSetImmediate(): Promise<void>;
-    // (undocumented)
     protected dragStartPoint?: Point3d;
     filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus>;
-    // (undocumented)
     protected gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined>;
-    // (undocumented)
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
+    protected getGroupIds(id: Id64String): Promise<Id64Arg>;
     protected getLocateCandidates(hit: HitDetail): Promise<Id64Arg>;
     protected getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg>;
     // (undocumented)
@@ -2739,32 +2731,23 @@ export abstract class ElementSetTool extends PrimitiveTool {
     protected isElementValidForOperation(hit: HitDetail, _out?: LocateResponse): Promise<boolean>;
     protected get isSelectByPoints(): boolean;
     protected get isSelectionSetModify(): boolean;
-    // (undocumented)
     protected onAgendaModified(): Promise<void>;
-    // (undocumented)
     onCleanup(): void;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
     onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onPostInstall(): void;
     protected onProcessComplete(): Promise<void>;
-    // (undocumented)
     onReinitialize(): void;
     // (undocumented)
     onResetButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onUnsuspend(): void;
     protected processAgenda(_ev: BeButtonEvent): Promise<void>;
     protected processAgendaImmediate(): Promise<void>;
@@ -2774,20 +2757,15 @@ export abstract class ElementSetTool extends PrimitiveTool {
     protected get requireAcceptForSelectionSetDynamics(): boolean;
     protected get requireAcceptForSelectionSetOperation(): boolean;
     protected get requiredElementCount(): number;
-    // (undocumented)
     protected selectByPointsDecorate(context: DecorateContext): void;
-    // (undocumented)
     protected selectByPointsEnd(ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
     protected selectByPointsStart(ev: BeButtonEvent): Promise<boolean>;
     protected setPreferredElementSource(): void;
-    // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
     protected get shouldEnableLocate(): boolean;
     // (undocumented)
     protected get shouldEnableSnap(): boolean;
-    // (undocumented)
     protected useOverlapSelection(ev: BeButtonEvent): boolean;
     protected get wantAccuSnap(): boolean;
     protected get wantAdditionalElements(): boolean;
