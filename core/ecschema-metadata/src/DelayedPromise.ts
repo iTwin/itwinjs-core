@@ -128,6 +128,8 @@ export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMe
   }
 }) as DelayedPromiseWithPropsConstructor;
 
+/* eslint-disable @typescript-eslint/no-redeclare */
+
 /** Define the type of a DelayedPromiseWithProps instance
  * @beta
  */

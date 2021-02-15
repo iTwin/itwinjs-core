@@ -152,7 +152,7 @@ jobs:
 
       - bash: |
           echo  The current version is $(version)
-          officialVersion=$(sed -e 's/-dev.*$//' <<<"$(version)")
+          officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$version")
 
           branchName="release/"$officialVersion
 
@@ -217,7 +217,7 @@ jobs:
           $sourceFile = 'docs/changehistory/NextVersion.md'
 
           # Overwrite everything with just the header
-          "---`nignore: true`n---`n# NextVersion`n" | Set-Content $sourceFile
+          "---`npublish: false`n---`n# NextVersion`n" | Set-Content $sourceFile
         displayName: 'Clear current NextVersion.md'
 
       - bash: git add .

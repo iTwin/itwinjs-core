@@ -6,7 +6,7 @@
  * @module Properties
  */
 
-import { FormatterSpec, ParserSpec, QuantityStatus } from "@bentley/imodeljs-quantity";
+import { FormatterSpec, Parser, ParserSpec } from "@bentley/imodeljs-quantity";
 import { BaseQuantityDescription, ParseResults } from "@bentley/ui-abstract";
 import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../QuantityFormatter";
@@ -32,8 +32,8 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
 
   protected parseString(userInput: string): ParseResults {
     if (this.parserSpec) {
-      const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, this.parserSpec);
-      if (parseResult.status === QuantityStatus.Success) {
+      const parseResult = IModelApp.quantityFormatter.parseToQuantityValue(userInput, this.parserSpec);
+      if (Parser.isParsedQuantity(parseResult)) {
         return { value: parseResult.value };
       } else {
         return { parseError: this.parseError };

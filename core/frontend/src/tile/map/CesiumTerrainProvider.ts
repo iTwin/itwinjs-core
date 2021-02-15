@@ -61,9 +61,8 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey
 }
 
 /** @internal */
-export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined> {
+export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined> {
   const requestContext = new ClientRequestContext("");
-  const requestNormals = false;   // We currently are not supporting terrain lighting - omit normals to reduce tile payload.
   let layers;
 
   const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
@@ -102,7 +101,7 @@ export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId
   }
 
   let tileUrlTemplate = accessTokenAndEndpointUrl.url + layers.tiles[0].replace("{version}", layers.version);
-  if (requestNormals)
+  if (wantNormals)
     tileUrlTemplate = tileUrlTemplate.replace("?", "?extensions=octvertexnormals-watermask-metadata&");
 
   const maxDepth = JsonUtils.asInt(layers.maxzoom, 19);
@@ -330,8 +329,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
         const normalIndex = i * 2;
         OctEncodedNormal.decodeValue(encodedNormalsBuffer[normalIndex + 1] << 8 | encodedNormalsBuffer[normalIndex], CesiumTerrainProvider._scratchNormal);
         worldToEcef.multiplyTransposeVector(CesiumTerrainProvider._scratchNormal, CesiumTerrainProvider._scratchNormal);
-        CesiumTerrainProvider._scratchNormal.negate(CesiumTerrainProvider._scratchNormal);
-        mesh.addVertex(CesiumTerrainProvider._scratchPoint, CesiumTerrainProvider._scratchQPoint2d, CesiumTerrainProvider._scratchNormal);   // Needs work... normal.
+        mesh.addVertex(CesiumTerrainProvider._scratchPoint, CesiumTerrainProvider._scratchQPoint2d, OctEncodedNormal.fromVector(CesiumTerrainProvider._scratchNormal));
       } else {
         mesh.addVertex(CesiumTerrainProvider._scratchPoint, CesiumTerrainProvider._scratchQPoint2d);
       }
@@ -342,10 +340,11 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       eastIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
       northIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
       southIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
-      this.generateSkirts(mesh, westIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale);
-      this.generateSkirts(mesh, eastIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale);
-      this.generateSkirts(mesh, southIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale);
-      this.generateSkirts(mesh, northIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale);
+      const wantNormals = (encodedNormalsBuffer !== undefined);
+      this.generateSkirts(mesh, westIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale, wantNormals);
+      this.generateSkirts(mesh, eastIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale, wantNormals);
+      this.generateSkirts(mesh, southIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale, wantNormals);
+      this.generateSkirts(mesh, northIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale, wantNormals);
     }
     return mesh;
   }
@@ -356,12 +355,17 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     mesh.indices.push(i2);
   }
 
-  private generateSkirts(mesh: TerrainMeshPrimitive, indices: Uint16Array | Uint32Array, projection: MapTileProjection, skirtOffset: number, heightBuffer: Uint16Array, minHeight: number, heightScale: number) {
+  private generateSkirts(mesh: TerrainMeshPrimitive, indices: Uint16Array | Uint32Array, projection: MapTileProjection, skirtOffset: number, heightBuffer: Uint16Array, minHeight: number, heightScale: number, wantNormals: boolean) {
     for (let i = 0; i < indices.length; i++) {
       const index = indices[i];
       const height = minHeight + heightBuffer[index] * heightScale;
       const uv = mesh.uvParams.unquantize(index, CesiumTerrainProvider._scratchPoint2d);
-      mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), mesh.uvParams.list[index]);
+      if (wantNormals) {
+        const normVal = mesh.normals[index].value;
+        mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), mesh.uvParams.list[index], new OctEncodedNormal(normVal));
+      } else {
+        mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), mesh.uvParams.list[index]);
+      }
 
       if (i) {
         this.addTriangle(mesh, index, indices[i - 1], mesh.points.length - 2);

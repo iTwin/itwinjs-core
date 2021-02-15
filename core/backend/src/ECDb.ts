@@ -6,8 +6,8 @@
  * @module ECDb
  */
 
-import { assert, ClientRequestContext, DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError, IModelStatus, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus } from "@bentley/imodeljs-common";
+import { assert, ClientRequestContext, DbResult, IDisposable, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
@@ -322,7 +322,7 @@ export class ECDb implements IDisposable {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @internal
    */
-  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse> {
+  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
     const stats = this._concurrentQueryStats;
     const config = IModelHost.configuration!.concurrentQuery;
     stats.lastActivityTime = Date.now();
@@ -403,7 +403,7 @@ export class ECDb implements IDisposable {
       if (sessionRestartToken !== "")
         sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
 
-      const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!, sessionRestartToken);
+      const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
       if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
         resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
@@ -453,14 +453,14 @@ export class ECDb implements IDisposable {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
+  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any> {
     let result: QueryResponse;
     let offset: number = 0;
     let rowsToGet = limitRows ? limitRows : -1;
     do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
+      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
       while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
+        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
       }
 
       if (result.status === QueryResponseStatus.Error) {

@@ -8,9 +8,10 @@
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings,
-  MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
+  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps,
+  DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode,
+  GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps,
+  SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -22,9 +23,17 @@ import { IModelConnection } from "./IModelConnection";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTree, MapTileTreeReference, TileTreeReference } from "./tile/internal";
+import {
+  getCesiumOSMBuildingsUrl, MapCartoRectangle, MapLayerImageryProvider, MapTileTree, MapTileTreeReference, TileTreeReference,
+} from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
+
+/** @internal */
+export class TerrainDisplayOverrides {
+  public wantSkirts?: boolean;
+  public wantNormals?: boolean;
+}
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]].
  * @public
@@ -43,7 +52,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public abstract get settings(): DisplayStyleSettings;
 
   /** @internal */
-  public abstract overrideTerrainSkirtDisplay(): boolean | undefined;
+  public abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
 
   /** Construct a new DisplayStyleState from its JSON representation.
    * @param props JSON representation of the display style.
@@ -54,7 +63,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const styles = this.jsonProperties.styles;
     const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || {});
     const mapImagery = MapImagerySettings.fromJSON(styles?.mapImagery, mapSettings.toJSON());
-    this._backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, false, () => this.overrideTerrainSkirtDisplay());
+    this._backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, false, () => this.overrideTerrainDisplay());
     this._overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, iModel, true, false);
     this._backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, iModel, false, true);
 
@@ -407,11 +416,21 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
+  public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined {
+    const layers = this.getMapLayers(isOverlay);
+    if (index < 0 || index >= layers.length)
+      return undefined;
+
+    const imageryTreeRef = isOverlay ? this._overlayMap.getLayerImageryTreeRef(index) : this._backgroundMap.getLayerImageryTreeRef(index);
+    return imageryTreeRef?.imageryProvider;
+  }
+
+  /** @internal */
   public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
 
   /** @internal */
-  public attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex = -1): void {
-    const layerSettings = MapLayerSettings.fromJSON(props);
+  public attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex = -1): void {
+    const layerSettings = settings.clone({});
     if (undefined === layerSettings)
       return;
 
@@ -424,6 +443,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     this._synchBackgroundMapImagery();
+  }
+
+  /** @internal */
+  public attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex = -1): void {
+    const layerSettings = MapLayerSettings.fromJSON(props);
+    if (undefined === layerSettings)
+      return;
+
+    this.attachMapLayerSettings(layerSettings, isOverlay, insertIndex);
   }
 
   /** @internal */
@@ -502,6 +530,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (index < 0 || index >= layers.length)
       return;
     layers[index] = layers[index].clone(props);
+    this._synchBackgroundMapImagery();
+  }
+
+  public changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string,) {
+    const layers = this.getMapLayers(isOverlay);
+    if (index < 0 || index >= layers.length)
+      return;
+    layers[index].setCredentials(userName, password);
     this._synchBackgroundMapImagery();
   }
 
@@ -782,7 +818,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
   public get settings(): DisplayStyleSettings { return this._settings; }
 
   /** @internal */
-  public overrideTerrainSkirtDisplay(): boolean | undefined { return undefined; }
+  public overrideTerrainDisplay(): TerrainDisplayOverrides | undefined { return undefined; }
 
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
@@ -881,22 +917,23 @@ export namespace SkyBox { // eslint-disable-line no-redeclare
 
 /** A [[SkyBox]] drawn as a sphere with a gradient mapped to its interior surface.
  * @see [[SkyBox.createFromJSON]]
+ * @see [SkyBoxProps]($common) for descriptions of the color and exponent properties.
  * @public
  */
 export class SkyGradient extends SkyBox {
-  /** If true, a 2-color gradient is used (ground & sky colors only), if false a 4-color gradient is used, defaults to false. */
+  /** If true, a 2-color gradient is used (nadir and zenith colors only); if false a 4-color gradient is used. Defaults to false. */
   public readonly twoColor: boolean = false;
-  /** The color of the sky (for 4-color gradient is sky color at horizon), defaults to (143, 205, 255). */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly skyColor: ColorDef;
-  /** The color of the ground (for 4-color gradient is ground color at horizon), defaults to (120, 143, 125). */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly groundColor: ColorDef;
-  /** For 4-color gradient is color of sky at zenith (shown when looking straight up), defaults to (54, 117, 255). */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly zenithColor: ColorDef;
-  /** For 4-color gradient is color of ground at nadir (shown when looking straight down), defaults to (40, 15, 0). */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly nadirColor: ColorDef;
-  /** Controls speed of gradient change from skyColor to zenithColor (4-color SkyGradient only), defaults to 4.0. */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly skyExponent: number = 4.0;
-  /** Controls speed of gradient change from groundColor to nadirColor (4-color SkyGradient only), defaults to 4.0. */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly groundExponent: number = 4.0;
 
   /** Construct a SkyGradient from its JSON representation. */
@@ -1125,7 +1162,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   private _settings: DisplayStyle3dSettings;
 
   /** @internal */
-  public clone(iModel: IModelConnection): this {
+  public clone(iModel?: IModelConnection): this {
     const clone = super.clone(iModel);
     if (undefined === iModel || this.iModel === iModel) {
       clone._skyBoxParams = this._skyBoxParams;
@@ -1241,9 +1278,14 @@ export class DisplayStyle3dState extends DisplayStyleState {
   }
 
   /** @internal */
-  public overrideTerrainSkirtDisplay(): boolean | undefined {
+  public overrideTerrainDisplay(): TerrainDisplayOverrides | undefined {
     if (undefined !== this.settings.thematic) {
-      return (this.viewFlags.thematicDisplay && ThematicGradientMode.IsoLines === this.settings.thematic.gradientSettings.mode) ? false : undefined;
+      const ovr = new TerrainDisplayOverrides();
+      if (this.viewFlags.thematicDisplay && ThematicGradientMode.IsoLines === this.settings.thematic.gradientSettings.mode)
+        ovr.wantSkirts = false;
+      if (this.viewFlags.thematicDisplay && (ThematicDisplayMode.Slope === this.settings.thematic.displayMode || ThematicDisplayMode.HillShade === this.settings.thematic.displayMode))
+        ovr.wantNormals = true;
+      return ovr;
     }
     return undefined;
   }

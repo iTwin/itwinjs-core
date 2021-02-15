@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
+import * as detect from "detect-port";
 import * as express from "express";
+import * as http from "http";
 import * as path from "path";
 
 const app = express();
@@ -52,9 +54,34 @@ app.use("*", (req, resp) => {
   resp.sendStatus(404);
 });
 
-// Run the server...
-app.set("port", process.env.CERTA_PORT || 3000);
-app.listen(app.get("port"), () => {
-  console.log(`Certa web frontend now listening on port ${app.get("port")}`);
-  process.send!("Ready");
+// Once the server actually starts, we should log and send the actual port back to the parent process
+let port = parseInt(process.env.CERTA_PORT ?? "3000", 10);
+const server = http.createServer(app);
+server.on("listening", async () => {
+  console.log(`Certa web frontend now listening on port ${port}`);
+  process.send!(port);
 });
+
+// The preferred port (process.env.CERTA_PORT) may be in use.  If that happens detect a free port and try again.
+// Even though we detect a free port, there can still be race conditions when many certa processes run simultaneously.
+// Therefore, we'll retry up to 4 times with a new free port.
+const maxRetries = 4;
+let numRetries = 0;
+server.on("error", async (e: any) => {
+  if (e.code !== "EADDRINUSE" || numRetries >= maxRetries) {
+    console.error(e);
+    process.exit(1);
+  }
+  try {
+    numRetries++;
+    port = await detect(port);
+    server.close();
+    server.listen(port);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+});
+
+// Run the server...
+server.listen(port);

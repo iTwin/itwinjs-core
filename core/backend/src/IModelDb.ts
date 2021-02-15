@@ -9,8 +9,9 @@
 // cspell:ignore ulas postrc pollrc CANTOPEN
 
 import {
-  BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, JsonUtils,
-  Logger, OpenMode,
+  assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  IModelStatus,
+  JsonUtils, Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
@@ -19,11 +20,11 @@ import {
   CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,
-  IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
+  IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelTileTreeProps, IModelVersion, LocalBriefcaseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
-  PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps,
-  SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
-  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SchemaState, SheetProps, SnapRequestProps,
+  SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureLoadProps, ThumbnailProps, UpgradeOptions,
+  ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -37,21 +38,16 @@ import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity, EntityClassType } from "./Entity";
-import { EventSink } from "./EventSink";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
-import { Relationship, RelationshipProps, Relationships } from "./Relationship";
+import { Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
+import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
-
-/** A string that identifies a Txn.
- * @public
- */
-export type TxnIdString = string;
 
 /** Options for [[IModelDb.Models.updateModel]]
  * @public
@@ -102,8 +98,6 @@ export abstract class IModelDb extends IModel {
   public readonly elements = new IModelDb.Elements(this);
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
-  /** @beta */
-  public readonly txns = new TxnManager(this);
   private _relationships?: Relationships;
   private _concurrentQueryInitialized: boolean = false;
   private readonly _statementCache = new ECSqlStatementCache();
@@ -113,7 +107,6 @@ export abstract class IModelDb extends IModel {
   protected _fontMap?: FontMap;
   protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
-  private readonly _eventSink: EventSink;
 
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
@@ -122,11 +115,6 @@ export abstract class IModelDb extends IModel {
     this._changeSetId = this.nativeDb.getReversedChangeSetId() ?? this.nativeDb.getParentChangeSetId();
     this.onChangesetApplied.raiseEvent();
   }
-
-  /** Emits push events to the frontend.
-   * @internal
-   */
-  public get eventSink(): EventSink { return this._eventSink; }
 
   public readFontJson(): string { return this.nativeDb.readFontMap(); }
   public get fontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
@@ -153,9 +141,6 @@ export abstract class IModelDb extends IModel {
     this._nativeDb = nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
-
-    this._eventSink = new EventSink(this._fileKey);
-    this.nativeDb.setEventSink(this._eventSink);
     IModelDb._openDbs.set(this._fileKey, this);
   }
 
@@ -181,18 +166,12 @@ export abstract class IModelDb extends IModel {
     this.onBeforeClose.raiseEvent();
     this.clearCaches();
     this._concurrentQueryStats.dispose();
-    this._eventSink.dispose();
   }
 
   /** @internal */
   protected initializeIModelDb() {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     super.initialize(props.rootSubject.name, props);
-  }
-
-  /** @internal */
-  protected getEventSourceProps(): IModelEventSourceProps {
-    return { eventSourceName: this._eventSink.id };
   }
 
   /** Type guard for instanceof [[BriefcaseDb]] */
@@ -331,7 +310,7 @@ export abstract class IModelDb extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @internal
    */
-  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse> {
+  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
     const stats = this._concurrentQueryStats;
     const config = IModelHost.configuration!.concurrentQuery;
     stats.lastActivityTime = Date.now();
@@ -415,7 +394,7 @@ export abstract class IModelDb extends IModel {
         if (sessionRestartToken !== "")
           sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
 
-        const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!, sessionRestartToken);
+        const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
         if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
           resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
@@ -467,14 +446,14 @@ export abstract class IModelDb extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [[IModelError]] If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
+  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any> {
     let result: QueryResponse;
     let offset: number = 0;
     let rowsToGet = limitRows ? limitRows : -1;
     do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
+      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
       while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
+        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
       }
 
       if (result.status === QueryResponseStatus.Error) {
@@ -746,7 +725,7 @@ export abstract class IModelDb extends IModel {
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
-   * @param requestContext The client request context
+   * @param requestContext Context used for logging and authorization (if applicable)
    * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
@@ -794,7 +773,7 @@ export abstract class IModelDb extends IModel {
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
-   * @param requestContext The client request context
+   * @param requestContext Context used for logging and authorization (if applicable)
    * @param serializedXmlSchemas  The xml string(s) created from a serialized ECSchema.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
@@ -859,7 +838,7 @@ export abstract class IModelDb extends IModel {
   public static findByKey(key: string): IModelDb {
     const iModelDb = this.tryFindByKey(key);
     if (undefined === iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not open", () => ({ key }));
+      Logger.logError(loggerCategory, "IModelDb not open or wrong type", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return iModelDb;
@@ -888,6 +867,59 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(status, `Could not open iModel ${file.path}`, Logger.logError, loggerCategory);
 
     return nativeDb;
+  }
+
+  /**
+   * Determines if the schemas in the Db must or can be upgraded by comparing them with those included in the
+   * current version of the software.
+   * @param filePath Full name of the briefcase including path
+   * @param forReadWrite Pass true if validating for read-write scenarios - note that the schema version requirements
+   * for opening the DgnDb read-write is more stringent than when opening the database read-only
+   * @throws [[IModelError]] If the Db was in an invalid state and that causes a problem with validating schemas
+   * @see [[BriefcaseDb.upgradeSchemas]] or [[StandaloneDb.upgradeSchemas]]
+   * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
+   */
+  public static validateSchemas(filePath: string, forReadWrite: boolean): SchemaState {
+    const openMode = forReadWrite ? OpenMode.ReadWrite : OpenMode.Readonly;
+    const file = { path: filePath };
+    let result: DbResult = DbResult.BE_SQLITE_OK;
+    try {
+      const upgradeOptions: UpgradeOptions = {
+        domain: DomainOptions.CheckRecommendedUpgrades,
+      };
+      const nativeDb = this.openDgnDb(file, openMode, upgradeOptions);
+      nativeDb.closeIModel();
+    } catch (err) {
+      result = err.errorNumber;
+    }
+
+    let schemaState: SchemaState = SchemaState.UpToDate;
+    switch (result) {
+      case DbResult.BE_SQLITE_OK:
+        schemaState = SchemaState.UpToDate;
+        break;
+      case DbResult.BE_SQLITE_ERROR_ProfileTooOld:
+      case DbResult.BE_SQLITE_ERROR_ProfileTooOldForReadWrite:
+      case DbResult.BE_SQLITE_ERROR_SchemaTooOld:
+        schemaState = SchemaState.TooOld;
+        break;
+      case DbResult.BE_SQLITE_ERROR_ProfileTooNew:
+      case DbResult.BE_SQLITE_ERROR_ProfileTooNewForReadWrite:
+      case DbResult.BE_SQLITE_ERROR_SchemaTooNew:
+        schemaState = SchemaState.TooNew;
+        break;
+      case DbResult.BE_SQLITE_ERROR_SchemaUpgradeRecommended:
+        schemaState = SchemaState.UpgradeRecommended;
+        break;
+      case DbResult.BE_SQLITE_ERROR_SchemaUpgradeRequired:
+        schemaState = SchemaState.UpgradeRequired;
+        break;
+      case DbResult.BE_SQLITE_ERROR_InvalidProfileVersion:
+        throw new IModelError(DbResult.BE_SQLITE_ERROR_InvalidProfileVersion, "The profile of the Db is invalid. Cannot upgrade or open the Db.");
+      default:
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Error validating schemas. Cannot upgrade or open the Db.");
+    }
+    return schemaState;
   }
 
   /** Get the ClassMetaDataRegistry for this iModel.
@@ -1037,6 +1069,13 @@ export abstract class IModelDb extends IModel {
     });
   }
 
+  /** Retrieve a named texture image from this iModel, as a Uint8Array.
+   * @param props the texture load properties which must include the name of the texture to load
+   * @returns the Uint8Array or undefined if the texture image is not present.
+   * @alpha
+   */
+  public getTextureImage(props: TextureLoadProps): Uint8Array | undefined { return this.nativeDb.getTextureImage(props); }
+
   /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */
@@ -1084,7 +1123,7 @@ export abstract class IModelDb extends IModel {
           if (ret.error !== undefined)
             reject(new Error(ret.error.message));
           else
-            resolve(ret.result);
+            resolve(ret.result!); // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
         });
       }
     });
@@ -1112,7 +1151,7 @@ export abstract class IModelDb extends IModel {
           if (ret.error !== undefined)
             reject(new Error(ret.error.message));
           else
-            resolve(ret.result);
+            resolve(ret.result!); // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
         });
       }
     });
@@ -1595,7 +1634,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Update some properties of an existing element.
+     * To support clearing a property value, every property name that is present in the `elProps` object will be updated even if the value is `undefined`.
+     * To keep an individual element property unchanged, it should either be excluded from the `elProps` parameter or set to its current value.
      * @param elProps the properties of the element to update.
+     * @note As described above, this is a special case where there is a difference between a property being excluded and a property being present in `elProps` but set to `undefined`.
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
@@ -2087,183 +2129,14 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   }
 }
 
-/** @public */
-export enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
-
-/** An error generated during dependency validation.
- * @beta
- */
-export interface ValidationError {
-  /** If true, txn is aborted. */
-  fatal: boolean;
-  /** The type of error. */
-  errorType: string;
-  /** Optional description of what went wrong. */
-  message?: string;
-}
-
-/** Local Txns in an IModelDb. Local Txns persist only until [[BriefcaseDb.pushChanges]] is called.
- * @beta
- */
-export class TxnManager {
-  constructor(private _iModel: IModelDb) { }
-  /** Array of errors from dependency propagation */
-  public readonly validationErrors: ValidationError[] = [];
-
-  private get _nativeDb() { return this._iModel.nativeDb; }
-  private _getElementClass(elClassName: string): typeof Element { return this._iModel.getJsClass(elClassName) as unknown as typeof Element; }
-  private _getRelationshipClass(relClassName: string): typeof Relationship { return this._iModel.getJsClass<typeof Relationship>(relClassName); }
-
-  /** @internal */
-  protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void { (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel); }
-  /** @internal */
-  protected _onAllInputsHandled(elClassName: string, elId: Id64String): void { (this._getElementClass(elClassName) as any).onAllInputsHandled(elId, this._iModel); }
-
-  /** @internal */
-  protected _onRootChanged(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel); }
-  /** @internal */
-  protected _onValidateOutput(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onValidateOutput(props, this._iModel); }
-  /** @internal */
-  protected _onDeletedDependency(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onDeletedDependency(props, this._iModel); }
-
-  /** @internal */
-  protected _onBeginValidate() { this.validationErrors.length = 0; }
-  /** @internal */
-  protected _onEndValidate() { }
-
-  /** Dependency handlers may call method this to report a validation error.
-   * @param error The error. If error.fatal === true, the transaction will cancel rather than commit.
-   */
-  public reportError(error: ValidationError) { this.validationErrors.push(error); this._nativeDb.logTxnError(error.fatal); }
-
-  /** Determine whether any fatal validation errors have occurred during dependency propagation.  */
-  public get hasFatalError(): boolean { return this._nativeDb.hasFatalTxnError(); }
-
-  /** Event raised before a commit operation is performed. Initiated by a call to [[IModelDb.saveChanges]] */
-  public readonly onCommit = new BeEvent<() => void>();
-  /** Event raised after a commit operation has been performed. Initiated by a call to [[IModelDb.saveChanges]] */
-  public readonly onCommitted = new BeEvent<() => void>();
-  /** Event raised after a ChangeSet has been applied to this briefcase */
-  public readonly onChangesApplied = new BeEvent<() => void>();
-  /** Event raised before an undo/redo operation is performed. */
-  public readonly onBeforeUndoRedo = new BeEvent<() => void>();
-  /** Event raised after an undo/redo operation has been performed.
-   * @param _action The action that was performed.
-   */
-  public readonly onAfterUndoRedo = new BeEvent<(_action: TxnAction) => void>();
-
-  /** Determine whether undo is possible, optionally permitting undoing txns from previous sessions.
-   * @param allowCrossSessions if true, allow undoing from previous sessions.
-   */
-  public checkUndoPossible(allowCrossSessions?: boolean) { return this._nativeDb.isUndoPossible(allowCrossSessions); }
-
-  /** Determine if there are currently any reversible (undoable) changes from this editing session. */
-  public get isUndoPossible(): boolean { return this._nativeDb.isUndoPossible(); }
-
-  /** Determine if there are currently any reinstatable (redoable) changes */
-  public get isRedoPossible(): boolean { return this._nativeDb.isRedoPossible(); }
-
-  /** Get the description of the operation that would be reversed by calling reverseTxns(1).
-   * This is useful for showing the operation that would be undone, for example in a menu.
-   * @param allowCrossSessions if true, allow undo from previous sessions.
-   */
-  public getUndoString(allowCrossSessions?: boolean): string { return this._nativeDb.getUndoString(allowCrossSessions); }
-
-  /** Get a description of the operation that would be reinstated by calling reinstateTxn.
-   * This is useful for showing the operation that would be redone, in a pull-down menu for example.
-   */
-  public getRedoString(): string { return this._nativeDb.getRedoString(); }
-
-  /** Begin a new multi-Txn operation. This can be used to cause a series of Txns, that would normally
-   * be considered separate actions for undo, to be grouped into a single undoable operation. This means that when reverseTxns(1) is called,
-   * the entire group of changes are undone together. Multi-Txn operations can be nested, and until the outermost operation is closed,
-   * all changes constitute a single operation.
-   * @note This method must always be paired with a call to endMultiTxnAction.
-   */
-  public beginMultiTxnOperation(): DbResult { return this._nativeDb.beginMultiTxnOperation(); }
-
-  /** End a multi-Txn operation */
-  public endMultiTxnOperation(): DbResult { return this._nativeDb.endMultiTxnOperation(); }
-
-  /** Return the depth of the multi-Txn stack. Generally for diagnostic use only. */
-  public getMultiTxnOperationDepth(): number { return this._nativeDb.getMultiTxnOperationDepth(); }
-
-  /** Reverse (undo) the most recent operation(s) to this IModelDb.
-   * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
-   *  be reinstated together when/if ReinstateTxn is called.
-   * @param allowCrossSessions if true, allow undo from previous sessions.
-   * @note If there are any outstanding uncommitted changes, they are reversed.
-   * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
-   * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
-   * @note If numOperations is too large only the operations are reversible are reversed.
-   */
-  public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {
-    return this._iModel.reverseTxns(numOperations, allowCrossSessions);
-  }
-
-  /** Reverse the most recent operation. */
-  public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }
-
-  /** Reverse all changes back to the beginning of the session. */
-  public reverseAll(): IModelStatus { return this._nativeDb.reverseAll(); }
-
-  /** Reverse all changes back to a previously saved TxnId.
-   * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
-   * @param allowCrossSessions if true, allow undo from previous sessions.
-   * @returns Success if the transactions were reversed, error status otherwise.
-   * @see  [[getCurrentTxnId]] [[cancelTo]]
-   */
-  public reverseTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus { return this._nativeDb.reverseTo(txnId, allowCrossSessions); }
-
-  /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
-   * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
-   * @param allowCrossSessions if true, allow undo from previous sessions.
-   * @returns Success if the transactions were reversed and cleared, error status otherwise.
-   */
-  public cancelTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus { return this._nativeDb.cancelTo(txnId, allowCrossSessions); }
-
-  /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
-   * may take multiple calls to this method to reinstate all reversed operations.
-   * @returns Success if a reversed transaction was reinstated, error status otherwise.
-   * @note If there are any outstanding uncommitted changes, they are canceled before the Txn is reinstated.
-   */
-  public reinstateTxn(): IModelStatus { return this._iModel.reinstateTxn(); }
-
-  /** Get the Id of the first transaction, if any.
-   * @param allowCrossSessions if true, allow undo from previous sessions.
-   */
-  public queryFirstTxnId(allowCrossSessions?: boolean): TxnIdString { return this._nativeDb.queryFirstTxnId(allowCrossSessions); }
-
-  /** Get the successor of the specified TxnId */
-  public queryNextTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryNextTxnId(txnId); }
-
-  /** Get the predecessor of the specified TxnId */
-  public queryPreviousTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryPreviousTxnId(txnId); }
-
-  /** Get the Id of the current (tip) transaction.  */
-  public getCurrentTxnId(): TxnIdString { return this._nativeDb.getCurrentTxnId(); }
-
-  /** Get the description that was supplied when the specified transaction was saved. */
-  public getTxnDescription(txnId: TxnIdString): string { return this._nativeDb.getTxnDescription(txnId); }
-
-  /** Test if a TxnId is valid */
-  public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
-
-  /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
-  public get hasPendingTxns(): boolean { return this._nativeDb.hasPendingTxns(); }
-
-  /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
-  public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
-
-  /** Query if there are un-saved or un-pushed local changes. */
-  public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
-}
-
 /** A local copy of an iModel from iModelHub that can pull and potentially push changesets.
  * BriefcaseDb raises a set of events to allow apps and subsystems to track its object life cycle, including [[onOpen]] and [[onOpened]].
  * @public
  */
 export class BriefcaseDb extends IModelDb {
+  /** @beta */
+  public readonly txns = new TxnManager(this);
+
   /** Returns `true` if this is a briefcase can be used to make changesets */
   public readonly allowLocalChanges: boolean;
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
@@ -2336,7 +2209,7 @@ export class BriefcaseDb extends IModelDb {
   private constructor(nativeDb: IModelJsNative.DgnDb, token: IModelRpcProps, openMode: OpenMode) {
     super(nativeDb, token, openMode);
     this.concurrencyControl = new ConcurrencyControl(this);
-    this.concurrencyControl.setPolicy(ConcurrencyControl.PessimisticPolicy);
+    this.concurrencyControl.setPolicy(new ConcurrencyControl.PessimisticPolicy());
     this.briefcaseId = this.nativeDb.getBriefcaseId();
     this.allowLocalChanges = this.openMode === OpenMode.ReadWrite && this.briefcaseId !== 0;
   }
@@ -2356,33 +2229,110 @@ export class BriefcaseDb extends IModelDb {
       this.concurrencyControl.onSavedChanges();
   }
 
-  private async lockSchema(requestContext: AuthorizedClientRequestContext): Promise<void> {
+  private static async lockSchema(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: GuidString, briefcaseId: number): Promise<void> {
     requestContext.enter();
     const lock = new Lock();
-    lock.briefcaseId = this.briefcaseId;
+    lock.briefcaseId = briefcaseId;
     lock.lockLevel = LockLevel.Exclusive;
     lock.lockType = LockType.Schemas;
     lock.objectId = "0x1";
-    lock.releasedWithChangeSet = this._changeSetId;
-    lock.seedFileId = this.iModelId;
+    lock.releasedWithChangeSet = changeSetId;
+    lock.seedFileId = iModelId;
 
     Logger.logTrace(loggerCategory, `lockSchema`);
-    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this.iModelId, [lock]);
+    const res = await IModelHost.iModelClient.locks.update(requestContext, iModelId, [lock]);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive)
-      throw new IModelError(IModelStatus.UpgradeFailed, "Could not acquire schema lock", Logger.logError, loggerCategory, () => this.getRpcProps());
+      throw new IModelError(IModelStatus.UpgradeFailed, "Could not acquire schema lock", Logger.logError, loggerCategory, () => ({ iModelId, changeSetId, briefcaseId }));
+  }
+
+  /**
+   * Upgrades the profile or domain schemas and returns the new change set id
+   */
+  private static async upgradeProfileOrDomainSchemas(requestContext: AuthorizedClientRequestContext, briefcaseProps: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, changeSetDescription: string): Promise<GuidString> {
+    requestContext.enter();
+
+    // Lock schemas
+    await this.lockSchema(requestContext, briefcaseProps.iModelId, briefcaseProps.changeSetId, briefcaseProps.briefcaseId);
+    requestContext.enter();
+
+    // Upgrade and validate
+    try {
+      // openDgnDb performs the upgrade
+      const nativeDb = this.openDgnDb({ path: briefcaseProps.fileName, key: briefcaseProps.key }, OpenMode.ReadWrite, upgradeOptions);
+
+      // Validate
+      try {
+        assert(!nativeDb.hasUnsavedChanges(), "Expected schema upgrade to have saved any changes made");
+        assert(nativeDb.getReversedChangeSetId() === undefined, "Expected schema upgrade to have failed if there were reversed changes in the briefcase");
+        const localBriefcaseProps = {
+          iModelId: nativeDb.getDbGuid(),
+          contextId: nativeDb.queryProjectGuid(),
+          changeSetId: nativeDb.getParentChangeSetId(),
+        };
+        if (localBriefcaseProps.iModelId !== briefcaseProps.iModelId || localBriefcaseProps.contextId !== briefcaseProps.contextId || localBriefcaseProps.changeSetId !== briefcaseProps.changeSetId)
+          throw new IModelError(BentleyStatus.ERROR, "Local briefcase does not match the briefcase properties passed in to upgrade", Logger.logError, loggerCategory, () => ({ briefcaseProps, nativeBriefcaseProps: localBriefcaseProps }));
+        if (!nativeDb.hasPendingTxns())
+          return briefcaseProps.changeSetId; // No changes made due to the upgrade
+      } finally {
+        nativeDb.closeIModel();
+      }
+    } catch (err) {
+      await IModelHost.iModelClient.locks.deleteAll(requestContext, briefcaseProps.iModelId, briefcaseProps.briefcaseId);
+      throw err;
+    }
+
+    // Push changes
+    const briefcaseDb = await BriefcaseDb.open(requestContext, { ...briefcaseProps, readonly: false });
+    try {
+      // Sync the concurrencyControl cache so that it includes the schema lock we requested before the open
+      await briefcaseDb.concurrencyControl.syncCache(requestContext);
+
+      await briefcaseDb.pushChanges(requestContext, changeSetDescription, ChangesType.Schema);
+      requestContext.enter();
+      return briefcaseDb.changeSetId;
+    } finally {
+      briefcaseDb.close();
+    }
+  }
+
+  /** Upgrades the schemas in the iModel based on the current version of the software. Follows a sequence of operations -
+   * * Acquires a schema lock to prevent other users from making a concurrent upgrade
+   * * Updates the local briefcase with the schema changes.
+   * * Pushes the resulting change set(s) to the iModel Hub.
+   * Note that the upgrade requires that the local briefcase be closed, and may result in one or two change sets depending on whether both
+   * profile and domain schemas need to get upgraded. At the end of the call, the local database is left back in the closed state.
+   * @param requestContext The context for authorization to push upgraded change sets
+   * @param briefcaseProps Properties of the downloaded briefcase and any additional parameters needed to open the briefcase. @see [[BriefcaseManager.downloadBriefcase]]
+   * @throws [[IModelError]] If there was a problem with upgrading schemas
+   * @see [[BriefcaseDb.validateSchemas]]
+   * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
+  */
+  public static async upgradeSchemas(requestContext: AuthorizedClientRequestContext, briefcaseProps: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void> {
+    requestContext.enter();
+
+    // Note: For admins we do not care about translations and keep description consistent, but we do need to enhance this to
+    // include more information on versions
+    const profileUpgradeDescription: string = "Upgraded profile";
+    const changeSetId = await this.upgradeProfileOrDomainSchemas(requestContext, briefcaseProps, { profile: ProfileOptions.Upgrade }, profileUpgradeDescription);
+    requestContext.enter();
+
+    const domainSchemaUpgradeDescription = "Upgraded domain schemas";
+    await this.upgradeProfileOrDomainSchemas(requestContext, { ...briefcaseProps, changeSetId }, { domain: DomainOptions.Upgrade }, domainSchemaUpgradeDescription);
+    requestContext.enter();
   }
 
   /** Open a briefcase file and return a new BriefcaseDb to interact with it.
-   * @param requestContext the ClientRequestContext for authorization for acquiring locks
+   * @param requestContext The context for authorization to acquire locks
    * @param args parameters that specify the file name, and options for opening the briefcase file
    */
   public static async open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb> {
     requestContext.enter();
+
     const file = { path: args.fileName, key: args.key };
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const nativeDb = this.openDgnDb(file, openMode, args.upgrade);
+    const nativeDb = this.openDgnDb(file, openMode);
     const token: IModelRpcProps = {
-      key: file.key!,
+      key: file.key ?? Guid.createValue(),
       iModelId: nativeDb.getDbGuid(),
       contextId: nativeDb.queryProjectGuid(),
       changeSetId: nativeDb.getReversedChangeSetId() ?? nativeDb.getParentChangeSetId(),
@@ -2396,21 +2346,6 @@ export class BriefcaseDb extends IModelDb {
       if (!(requestContext instanceof AuthorizedClientRequestContext))
         throw new IModelError(BentleyStatus.ERROR, "local changes requires authorization", Logger.logError, loggerCategory, () => token);
       await briefcaseDb.concurrencyControl.onOpened(requestContext);
-
-      if (args.upgrade?.domain === DomainOptions.Upgrade || args.upgrade?.profile === ProfileOptions.Upgrade) {
-        try {
-          await briefcaseDb.lockSchema(requestContext);
-
-          // Sync the concurrencyControl cache so that it includes the schema lock we requested before the open
-          await briefcaseDb.concurrencyControl.syncCache(requestContext);
-          // Note: We assume that at this point there cannot be any changes to elements or models through the
-          // native or typescript code - so we do not request any additional locks.
-        } catch (err) {
-          requestContext.enter();
-          briefcaseDb.abandonChanges();
-          throw err;
-        }
-      }
     }
 
     BriefcaseManager.logUsage(requestContext, token);
@@ -2426,7 +2361,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Pull and Merge changes from iModelHub
-   * @param requestContext The client request context.
+   * @param requestContext Context used for authorization to pull change sets
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
    */
@@ -2445,7 +2380,7 @@ export class BriefcaseDb extends IModelDb {
 
   /** Push changes to iModelHub. Locks are released and codes are marked as used as part of a successful push.
    * If there are no changes, then locks are released and reserved codes are released.
-   * @param requestContext The client request context.
+   * @param requestContext Context used for authorization to push change sets
    * @param description The changeset description
    * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
    * @note This function is a no-op if there are no changes to push.
@@ -2472,7 +2407,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Reverse a previously merged set of changes
-   * @param requestContext The client request context.
+   * @param requestContext Context used for authorization to pull change sets
    * @param version Version to reverse changes to.
    * @throws [[IModelError]] If the reversal fails.
    */
@@ -2665,22 +2600,27 @@ export class SnapshotDb extends IModelDb {
   }
 }
 
-/** Standalone iModels are read/write files that are not managed by nor synchronized with iModelHub.
- * They are relevant for single-practitioner scenarios where team collaboration requirements may not be important.
- * However, Standalone iModels are designed such that the API interaction between Standalone iModels and Briefcase iModels (those synchronized with iModelHub) are as similar and consistent as possible.
+/** Standalone iModels are read/write files that are not managed by iModelHub.
+ * They are relevant only for single-practitioner scenarios where team collaboration is necessary.
+ * However, Standalone iModels are designed such that the API interaction between Standalone iModels and Briefcase
+ * iModels (those synchronized with iModelHub) are as similar and consistent as possible.
  * This leads to a straightforward process where the practitioner can optionally choose to upgrade to iModelHub.
  *
- * Some additional details:
- * - Standalone iModels are known to the application developer and end user as unmanaged files
- * - Standalone iModels can be read/write
- * - Cannot apply a changeset to nor generate a changeset from a Standalone iModel
- * - Standalone iModels can optionally support undo/redo via txns
- * - The Standalone iModel capability is only available to authorized applications
- *
+ * Some additional details. Standalone iModels:
+ * - always have [Guid.empty]($bentley) for their contextId (they are "unassociated" files)
+ * - always have BriefcaseId === [BriefcaseIdValue.Standalone]($backend)
+ * - are connected to the frontend via [BriefcaseConnection.openStandalone]($frontend)
+ * - may be opened without supplying any user credentials
+ * - may be opened read/write
+ * - may optionally support undo/redo via [[TxmManager]]
+ * - cannot apply a changeset to nor generate a changesets
+ * - are only available to authorized applications
  * @internal
  */
 export class StandaloneDb extends IModelDb {
-  /** The full path to the snapshot iModel file.
+  /** @beta */
+  public readonly txns: TxnManager;
+  /** The full path to the standalone iModel file.
    * @deprecated use pathName
    */
   public get filePath(): string { return this.pathName; }
@@ -2699,8 +2639,9 @@ export class StandaloneDb extends IModelDb {
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), openMode };
+    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), openMode, contextId: Guid.empty };
     super(nativeDb, iModelRpcProps, openMode);
+    this.txns = new TxnManager(this);
   }
 
   /** Create an *empty* standalone iModel.
@@ -2712,31 +2653,59 @@ export class StandaloneDb extends IModelDb {
     const argsString = JSON.stringify(args);
     let status = nativeDb.createIModel(filePath, argsString);
     if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, "Could not create standalone iModel", Logger.logError, loggerCategory, () => ({ filePath }));
+      throw new IModelError(status, `Could not create standalone iModel: ${filePath}`, Logger.logError, loggerCategory);
 
     nativeDb.saveLocalValue(IModelDb._edit, undefined === args.allowEdit ? "" : args.allowEdit);
+    nativeDb.saveProjectGuid(Guid.empty);
 
     status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, "Could not set briefcaseId", Logger.logError, loggerCategory, () => ({ filePath }));
+    if (DbResult.BE_SQLITE_OK !== status) {
+      nativeDb.closeIModel();
+      throw new IModelError(status, `Could not set briefcaseId for iModel:  ${filePath}`, Logger.logError, loggerCategory);
+    }
 
     nativeDb.saveChanges();
     return new StandaloneDb(nativeDb, Guid.createValue());
+  }
+
+  /**
+   * Upgrades the schemas in the standalone iModel file.
+   * Note that the upgrade requires that the file be closed, and will leave it back in the closed state.
+   * @param filePath Full path name of the standalone iModel file.
+   * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
+   * @see [[StandaloneDb.validateSchemas]]
+   */
+  public static upgradeSchemas(filePath: string) {
+    let nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade });
+    assert(!nativeDb.hasUnsavedChanges(), "Expected schema upgrade to have saved any changes made");
+    nativeDb.closeIModel();
+
+    nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
+    assert(!nativeDb.hasUnsavedChanges(), "Expected schema upgrade to have saved any changes made");
+    nativeDb.closeIModel();
   }
 
   /** Open a standalone iModel file.
    * @param filePath The path of the standalone iModel file.
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
    * @returns a new StandaloneDb if the file is not currently open, and the existing StandaloneDb if it is already
-   * @throws [[IModelError]]
+   * @throws [[IModelError]] if the file is not a standalone iModel.
    */
   public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
     const file = { path: filePath, key: options?.key };
-    const nativeDb = this.openDgnDb(file, openMode, options);
+    const nativeDb = this.openDgnDb(file, openMode);
 
-    if (openMode === OpenMode.ReadWrite && (!BriefcaseManager.isStandaloneBriefcaseId(nativeDb.getBriefcaseId()) || undefined === nativeDb.queryLocalValue(IModelDb._edit))) {
+    try {
+      const projectId = nativeDb.queryProjectGuid();
+      const briefcaseId = nativeDb.getBriefcaseId();
+      if (projectId !== Guid.empty || !BriefcaseManager.isStandaloneBriefcaseId(briefcaseId))
+        throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone db. projectId=${projectId}, briefcaseId=${briefcaseId}`, Logger.logError, loggerCategory);
+
+      if (openMode === OpenMode.ReadWrite && (undefined === nativeDb.queryLocalValue(IModelDb._edit)))
+        throw new IModelError(IModelStatus.ReadOnly, `${filePath} is not editable`, Logger.logError, loggerCategory);
+    } catch (error) {
       nativeDb.closeIModel();
-      throw new IModelError(IModelStatus.ReadOnly, `${filePath} is not an editable Standalone db`, Logger.logError, loggerCategory);
+      throw error;
     }
 
     return new StandaloneDb(nativeDb, file.key!);

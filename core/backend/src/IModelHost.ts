@@ -10,10 +10,14 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import {
-  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel,
+  AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient,
+  RequestHost,
+} from "@bentley/backend-itwin-client";
+import {
+  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector,
 } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
@@ -33,15 +37,10 @@ import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
-import { NativeAppRpcImpl } from "./rpc-impl/NativeAppRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
-import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
-import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient, RequestHost } from "@bentley/backend-itwin-client";
-import { MobileFileHandler } from "./MobileFileHandler";
-import { EventSink } from "./EventSink";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -79,21 +78,15 @@ export interface CrashReportingConfig {
   /** Upload crash dump and node-reports to Bentley's crash-reporting service? Defaults to false */
   uploadToBentley?: boolean;
 }
-/**
- * Type of the backend application
- * @alpha
- */
-export enum ApplicationType {
-  WebAgent,
-  WebApplicationBackend,
-  NativeApp,
-}
 
 /** Configuration of imodeljs-backend.
  * @public
  */
 export class IModelHostConfiguration {
-  /** The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
+  /**
+   * The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically.
+   * @deprecated - this is unused
+   */
   public nativePlatform?: any;
 
   /**
@@ -197,10 +190,10 @@ export class IModelHostConfiguration {
   };
 
   /**
-   * Application (host) type
-   * @alpha
+   * Application (host) type for native logging
+   * @internal
    */
-  public applicationType?: ApplicationType;
+  public applicationType?: IModelJsNative.ApplicationType;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -208,6 +201,7 @@ export class IModelHostConfiguration {
  * @public
  */
 export class IModelHost {
+  private constructor() { }
   private static _authorizationClient?: AuthorizationClient;
   /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for backend applications */
   /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
@@ -224,16 +218,12 @@ export class IModelHost {
   /** @alpha */
   public static readonly telemetry: TelemetryManager = new TelemetryManager();
 
-  private static _nativeAppBackend: boolean;
   public static backendVersion = "";
   private static _cacheDir = "";
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
   public static get platform(): typeof IModelJsNative { return this._platform!; }
-
-  /** @internal */
-  public static get isNativeAppBackend(): boolean { return IModelHost._nativeAppBackend; }
 
   public static configuration?: IModelHostConfiguration;
   /** Event raised just after the backend IModelHost was started */
@@ -277,10 +267,14 @@ export class IModelHost {
   }
 
   /** @internal */
-  public static loadNative(region: number, applicationType?: ApplicationType, iModelClientType?: IModelClient): void {
+  public static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void {
     const platform = Platform.load();
     this.registerPlatform(platform);
-    this.initializeUsageLogging(platform, region, applicationType, iModelClientType);
+
+    const iModelClientType = iModelClient && iModelClient instanceof IModelBankClient
+      ? IModelJsNative.IModelClientType.IModelBank
+      : IModelJsNative.IModelClientType.IModelHub;
+    platform.NativeUlasClient.initialize(region, applicationType, iModelClientType);
   }
 
   private static registerPlatform(platform: typeof IModelJsNative): void {
@@ -288,27 +282,14 @@ export class IModelHost {
     if (undefined === platform)
       return;
 
-    if (!Platform.isMobile)
+    if (!ProcessDetector.isMobileAppBackend)
       this.validateNativePlatformVersion();
 
     platform.logger = Logger;
   }
 
-  private static initializeUsageLogging(platform: typeof IModelJsNative, region: number, applicationType?: ApplicationType, iModelClient?: IModelClient): void {
-    const nativeApplicationType = applicationType === ApplicationType.WebAgent
-      ? IModelJsNative.ApplicationType.WebAgent
-      : applicationType === ApplicationType.NativeApp
-        ? IModelJsNative.ApplicationType.NativeApp
-        : IModelJsNative.ApplicationType.WebApplicationBackend;
-    const iModelClientType = !!iModelClient && iModelClient instanceof IModelBankClient
-      ? IModelJsNative.IModelClientType.IModelBank
-      : IModelJsNative.IModelClientType.IModelHub;
-
-    platform.NativeUlasClient.initialize(region, nativeApplicationType, iModelClientType);
-  }
-
   private static validateNativePlatformVersion(): void {
-    const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"];
+    const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
     const thisVersion = this.platform.version;
     if (semver.satisfies(thisVersion, requiredVersion))
       return;
@@ -318,12 +299,6 @@ export class IModelHost {
     }
     this._platform = undefined;
     throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). imodeljs-backend requires version (${requiredVersion})`);
-  }
-
-  private static validateNodeJsVersion(): void {
-    const requiredVersion = require("../package.json").engines.node;
-    if (!semver.satisfies(process.version, requiredVersion))
-      throw new IModelError(IModelStatus.BadRequest, `Node.js version ${process.version} is not within the range acceptable to imodeljs-backend: (${requiredVersion})`);
   }
 
   private static setupRpcRequestContext() {
@@ -361,26 +336,26 @@ export class IModelHost {
   public static tileUploader: CloudStorageTileUploader;
 
   public static get iModelClient(): IModelClient {
-    if (!IModelHost.configuration) {
-      throw new IModelError(BentleyStatus.ERROR, "startup must be called first");
-    }
-    if (!IModelHost._imodelClient) {
-      IModelHost._imodelClient = new IModelHubClient(MobileRpcConfiguration.isMobileBackend ? new MobileFileHandler() : new AzureFileHandler());
-    }
+    if (!IModelHost._imodelClient)
+      IModelHost._imodelClient = new IModelHubClient(new AzureFileHandler());
+
     return IModelHost._imodelClient;
   }
   public static get isUsingIModelBankClient(): boolean {
     return IModelHost.iModelClient instanceof IModelBankClient;
   }
 
+  private static _isValid = false;
+  public static get isValid() { return this._isValid; }
   /** This method must be called before any iModel.js services are used.
    * @param configuration Host configuration data.
    * Raises [[onAfterStartup]].
    * @see [[shutdown]].
    */
   public static async startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()): Promise<void> {
-    if (IModelHost.configuration)
-      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggerCategory, () => (configuration));
+    if (this._isValid)
+      return; // we're already initialized
+    this._isValid = true;
 
     if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
     if (!IModelHost.applicationVersion) IModelHost.applicationVersion = "1.0.0"; // Default to placeholder version.
@@ -389,36 +364,24 @@ export class IModelHost {
 
     await RequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
 
-    if (configuration.applicationType && configuration.applicationType === ApplicationType.NativeApp) {
-      this._nativeAppBackend = true;
-    }
-
     // Setup a current context for all requests that originate from this backend
     const requestContext = new BackendRequestContext();
     requestContext.enter();
 
-    if (!MobileRpcConfiguration.isMobileBackend) {
-      this.validateNodeJsVersion();
-    }
-    this.backendVersion = require("../package.json").version;
+    this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();
 
     const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     if (!this._isNativePlatformLoaded) {
       try {
-        if (configuration.nativePlatform !== undefined) {
-          this.registerPlatform(configuration.nativePlatform);
-        } else {
-          this.loadNative(region, configuration.applicationType, configuration.imodelClient);
-        }
+        this.loadNative(region, configuration.applicationType, configuration.imodelClient);
       } catch (error) {
         Logger.logError(loggerCategory, "Error registering/loading the native platform API", () => (configuration));
         throw error;
       }
     }
-    this.initializeUsageLogging(IModelHost.platform, region, configuration.applicationType, configuration.imodelClient);
 
-    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
+    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
 
       Logger.logTrace(loggerCategory, "Configured crash reporting", () => ({
@@ -453,11 +416,9 @@ export class IModelHost {
       IModelTileRpcImpl,
       IModelWriteRpcImpl,
       SnapshotIModelRpcImpl,
-      StandaloneIModelRpcImpl,
       WipRpcImpl,
       DevToolsRpcImpl,
       Editor3dRpcImpl,
-      NativeAppRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 
     [
@@ -480,7 +441,7 @@ export class IModelHost {
       this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
     }
 
-    if (!IModelHost.isUsingIModelBankClient && configuration.applicationType !== ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
+    if (!IModelHost.isUsingIModelBankClient && configuration.applicationType !== IModelJsNative.ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
       const usageLoggingClient = new BackendFeatureUsageTelemetryClient({ backendApplicationId: this.applicationId, backendApplicationVersion: this.applicationVersion, backendMachineName: os.hostname(), clientAuthManager: this._clientAuthIntrospectionManager });
       this.telemetry.addClient(usageLoggingClient);
     }
@@ -527,13 +488,12 @@ export class IModelHost {
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
   public static async shutdown(): Promise<void> {
-    if (!IModelHost.configuration)
+    if (!this._isValid)
       return;
+    this._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
-    EventSink.clearGlobal();
     IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;
-    IModelHost._nativeAppBackend = false;
   }
 
   /**
@@ -624,41 +584,34 @@ export class IModelHost {
  * @public
  */
 export class Platform {
-  /** The imodeljs mobile info object, if this is running in the imodeljs mobile platform.
-   * @beta
-   */
-  public static get imodeljsMobile(): any { return (typeof (self) !== "undefined") ? (self as any).imodeljsMobile : undefined; }
-
-  /** Get the name of the platform. Possible return values are: "win32", "linux", "darwin", "ios", "android", or "uwp". */
-  public static get platformName(): string {
-    return process.platform;
+  /** Get the name of the platform. */
+  public static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp" {
+    return process.platform as any;
   }
 
-  /** The Electron info object, if this is running in Electron.
-   * @beta
+  /** Query if this is an electron backend
+   * @deprecated use ProcessDetector.isElectronAppBackend
    */
-  public static get electron(): any {
-    if ((typeof (process) !== "undefined") && ("electron" in process.versions)) {
-      // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
-      try {
-        return require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
-      } catch (error) { }
-    }
-    return undefined;
-  }
+  public static get isElectron(): boolean { return ProcessDetector.isElectronAppBackend; }
 
-  /** Query if this is a desktop configuration */
-  public static get isDesktop(): boolean { return Platform.electron !== undefined; }
+  /** Query if this is a desktop backend
+   * @deprecated use ProcessDetector.isElectronAppBackend
+   */
+  public static get isDesktop(): boolean { return ProcessDetector.isElectronAppBackend; }
 
-  /** Query if this is a mobile configuration */
-  public static get isMobile(): boolean { return typeof (process) !== "undefined" && (process.platform as any) === "ios"; }
+  /** Query if this is a mobile backend
+   * @deprecated use ProcessDetector.isMobileAppBackend
+   */
+  public static get isMobile(): boolean { return ProcessDetector.isMobileAppBackend; }
 
-  /** Query if this is running in Node.js  */
-  public static get isNodeJs(): boolean { return !Platform.isMobile; } // currently we use nodejs for all non-mobile backend apps
+  /** Query if this is backend running in Node.js
+   * @deprecated use ProcessDetector.isNodeProcess
+   */
+  public static get isNodeJs(): boolean { return ProcessDetector.isNodeProcess; }
 
   /** @internal */
   public static load(): typeof IModelJsNative {
-    return this.isMobile ? (process as any)._linkedBinding("iModelJsNative") : NativeLibrary.load();
+    return ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") : NativeLibrary.load();
   }
 }
 

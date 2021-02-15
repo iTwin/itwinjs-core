@@ -27,6 +27,9 @@ export class EnvironmentEditor {
   private readonly _eeGroundExponent: Slider;
   private readonly _eeBackgroundColor: ColorInput;
   private _id = 0;
+  private _removeEnvironmentListener?: VoidFunction;
+  private _removeDisplayStyleListener?: VoidFunction;
+  private _updatingEnvironment = false;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
@@ -66,9 +69,7 @@ export class EnvironmentEditor {
     });
     this._eeBackgroundColor.div.style.textAlign = "right";
 
-    this._vp.onDisplayStyleChanged.addListener((viewport) => {
-      this.updateEnvironmentEditorUI(viewport.view);
-    });
+    this.listen();
 
     let currentEnvironment: SkyGradient | undefined;
     const eeDiv = document.createElement("div");
@@ -225,8 +226,38 @@ export class EnvironmentEditor {
       update(view);
   }
 
+  private listen(): void {
+    this.listenForEnvironment();
+    if (this._removeDisplayStyleListener) {
+      this._removeDisplayStyleListener();
+      this._removeDisplayStyleListener = undefined;
+    }
+
+    if (this._vp.view.is3d())
+      this._removeDisplayStyleListener = this._vp.view.onDisplayStyleChanged.addListener(() => this.listen());
+  }
+
+  private listenForEnvironment(): void {
+    if (this._removeEnvironmentListener) {
+      this._removeEnvironmentListener();
+      this._removeEnvironmentListener = undefined;
+    }
+
+    if (this._vp.view.is3d()) {
+      this._removeEnvironmentListener = this._vp.view.displayStyle.settings.onEnvironmentChanged.addListener(() => {
+        this.updateEnvironmentEditorUI(this._vp.view);
+      });
+    }
+  }
+
   private updateEnvironment(newEnv: SkyBoxProps): void {
-    const oldEnv = (this._vp.view as ViewState3d).getDisplayStyle3d().environment;
+    if (this._updatingEnvironment || !this._vp.view.is3d())
+      return;
+
+    // We don't want our event listeners to respond to events we ourselves produced.
+    this._updatingEnvironment = true;
+
+    const oldEnv = this._vp.view.displayStyle.environment;
     const oldSkyEnv = oldEnv.sky as SkyGradient;
     newEnv = {
       display: (oldSkyEnv as SkyBox).display,
@@ -238,15 +269,25 @@ export class EnvironmentEditor {
       skyExponent: undefined !== newEnv.skyExponent ? newEnv.skyExponent : oldSkyEnv.skyExponent,
       groundExponent: undefined !== newEnv.groundExponent ? newEnv.groundExponent : oldSkyEnv.groundExponent,
     };
-    (this._vp.view as ViewState3d).getDisplayStyle3d().environment = new Environment(
-      {
-        sky: new SkyGradient(newEnv).toJSON(),
-        ground: oldEnv.ground.toJSON(),
-      });
+
+    this._vp.view.displayStyle.environment = new Environment({
+      sky: new SkyGradient(newEnv).toJSON(),
+      ground: oldEnv.ground.toJSON(),
+    });
+
     this.sync();
+
+    this._updatingEnvironment = false;
   }
 
   private updateEnvironmentEditorUI(view: ViewState): void {
+    if (this._updatingEnvironment)
+      return;
+
+    // Setting the values of UI controls below will trigger callbacks that call updateEnvironment().
+    // We don't want to do that when we're modifying the controls ourselves.
+    this._updatingEnvironment = true;
+
     this._eeBackgroundColor.input.value = view.backgroundColor.toHexString();
     if (view.is2d())
       return;
@@ -261,6 +302,8 @@ export class EnvironmentEditor {
     this._eeNadirColor.input.value = skyEnvironment.nadirColor.toHexString();
     this._eeSkyExponent.slider.value = skyEnvironment.skyExponent.toString();
     this._eeGroundExponent.slider.value = skyEnvironment.groundExponent.toString();
+
+    this._updatingEnvironment = false;
   }
 
   private resetEnvironmentEditor(): void {

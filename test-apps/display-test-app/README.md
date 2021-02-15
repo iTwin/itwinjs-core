@@ -145,7 +145,7 @@ You can use these environment variables to alter the default behavior of various
 * SVT_DISABLE_EDGE_DISPLAY
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 * SVT_USE_WEBGL2
-  * If defined, the system will attempt to create a WebGL2 context.
+  * Unless set to "0" or "false", the system will attempt to create a WebGL2 context before possibly falling back to WebGL1.
 * SVT_MAX_TILES_TO_SKIP
   * The number of levels of iModel tile trees to skip before loading graphics.
 * SVT_DISABLE_IDLE_WORK
@@ -160,6 +160,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, TileAdmin.Props.alwaysSubdivideIncompleteTiles will be initialized to `true`.
 * SVT_MIN_SPATIAL_TOLERANCE
   * See TileAdmin.Props.minimumSpatialTolerance.
+* SVT_NO_EXTERNAL_TEXTURES
+  * If defined, the backend will embed all texture image data directly in the tiles.
 
 ## Key-ins
 

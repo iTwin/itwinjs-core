@@ -54,13 +54,13 @@ export interface DownloadRequest {
   /** name of local file to hold the downloaded data. */
   localFile: string;
 
-  /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names, it is
+  /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names,
    * no download is performed and `localFile` is updated to reflect the fact that the file exists with that name.
    * This can be used, for example, to look for checkpoints from previous versions if the naming strategy changes.
    */
   aliasFiles?: string[];
 
-  /** Properties of the checkpoint to be being downloaded */
+  /** Properties of the checkpoint to be downloaded */
   checkpoint: CheckpointProps;
 
   /** If present, this function will be called to indicate progress as the briefcase is downloaded. If this
@@ -123,7 +123,7 @@ export class V2CheckpointManager {
     }
 
     const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
-    const checkpoints = await BriefcaseManager.imodelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
+    const checkpoints = await IModelHost.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
     requestContext.enter();
 
     if (checkpoints.length < 1)
@@ -270,9 +270,18 @@ export class V1CheckpointManager {
         const dbChangeSetId = nativeDb.getParentChangeSetId();
         if (dbChangeSetId !== checkpoint.mergedChangeSetId)
           throw new IModelError(IModelStatus.ValidationFailed, "ParentChangeSetId of the checkpoint was not correctly setup", Logger.logError, loggerCategory, () => ({ ...traceInfo, ...checkpoint, dbChangeSetId }));
+
+        const dbGuid = Guid.normalize(nativeDb.getDbGuid());
+        if (dbGuid !== Guid.normalize(requestedCkp.iModelId)) {
+          Logger.logWarning(loggerCategory, "iModelId is not properly setup in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, ...checkpoint, dbGuid }));
+          nativeDb.setDbGuid(Guid.normalize(requestedCkp.iModelId));
+          // Required to reset the ChangeSetId because setDbGuid clears the value.
+          nativeDb.saveLocalValue("ParentChangeSetId", dbChangeSetId);
+        }
+
         const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
         if (dbContextGuid !== Guid.normalize(requestedCkp.contextId))
-          throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly setup in the briefcase", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbContextGuid }));
+          throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly setup in the checkpoint", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbContextGuid }));
 
         // Apply change sets if necessary
         if (dbChangeSetId !== requestedCkp.changeSetId) {

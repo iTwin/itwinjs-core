@@ -48,7 +48,7 @@ export class GeometryOptions {
   public get wantEdges(): boolean { return this.edges === GenerateEdges.Yes; }
 
   public static createForGraphicBuilder(params: GraphicBuilder, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No): GeometryOptions {
-    return new GeometryOptions(normals, surfaces, (params.isOverlay || params.isViewBackground) ? PreserveOrder.Yes : PreserveOrder.No, params.isSceneGraphic ? GenerateEdges.Yes : GenerateEdges.No);
+    return new GeometryOptions(normals, surfaces, params.preserveOrder ? PreserveOrder.Yes : PreserveOrder.No, params.isSceneGraphic ? GenerateEdges.Yes : GenerateEdges.No);
   }
 }
 

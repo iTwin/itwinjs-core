@@ -1,8 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ToolSettingsContent should render 1`] = `
-<div>
-  Hello World
+<div
+  class="nz-widget-content"
+>
+  <div>
+    Hello World
+  </div>
 </div>
 `;
 
@@ -60,42 +64,18 @@ exports[`ToolSettingsDockedContent should render settings 1`] = `
 `;
 
 exports[`ToolSettingsGrid should render 1`] = `
-<FrameworkVersionSwitch
-  v1={
-    <div
-      className="uifw-standard-toolsettings-two-column-grid"
-    >
-      <UNDEFINED>
-        <span
-          className="uifw-standard-toolsettings-label-entry"
-        >
-          Date
-        </span>
-        <input
-          type="date"
-        />
-      </UNDEFINED>
-    </div>
-  }
-  v2={
-    <UNDEFINED>
-      <div
-        className="uifw-standard-toolsettings-two-column-grid"
-      >
-        <UNDEFINED>
-          <span
-            className="uifw-standard-toolsettings-label-entry"
-          >
-            Date
-          </span>
-          <input
-            type="date"
-          />
-        </UNDEFINED>
-      </div>
-    </UNDEFINED>
-  }
-/>
+<div
+  className="uifw-standard-toolsettings-two-column-grid"
+>
+  <span
+    className="uifw-standard-toolsettings-label-entry"
+  >
+    Date
+  </span>
+  <input
+    type="date"
+  />
+</div>
 `;
 
 exports[`WidgetPanelsToolSettings should not render w/o tool settings top center zone 1`] = `""`;

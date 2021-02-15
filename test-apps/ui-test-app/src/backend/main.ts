@@ -3,32 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { app as electron } from "electron";
-import * as os from "os";
 import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
+import { BackendApplicationInsightsClient } from "@bentley/backend-application-insights-client";
 import { Config, Logger } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Presentation } from "@bentley/presentation-backend";
 import getSupportedRpcs from "../common/rpcs";
 import { initializeLogging } from "./web/BackendServer";
-import { BackendApplicationInsightsClient } from "@bentley/backend-application-insights-client";
-
-if (electron) {
-  require("@bentley/electron-manager"); // static electron manager initialization
-}
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
     // Load .env file first so it's added to `Config.App` below when it parses the environment variables.
     if (fs.existsSync(path.join(process.cwd(), ".env"))) {
       require("dotenv-expand")( // eslint-disable-line @typescript-eslint/no-var-requires
-        require("dotenv").config(),
+        require("dotenv").config(), // eslint-disable-line @typescript-eslint/no-var-requires
       );
     }
-
-    IModelJsConfig.init(true /* suppress error */, true /* suppress message */, Config.App);
 
     if (!electron) {
       initializeLogging();

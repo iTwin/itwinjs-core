@@ -7,6 +7,7 @@
  */
 
 import * as React from "react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, SizeProps } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -15,7 +16,6 @@ import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Properties that must be specified for an [[ActionItemButton]] component
  * @public
@@ -70,7 +70,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     }
 
     if (!refreshState && this.props.actionItem.stateSyncIds && this.props.actionItem.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
-      refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase())); // eslint-disable-line deprecation/deprecation
 
     if (refreshState) {
       if (this.props.actionItem.stateFunc) // eslint-disable-line deprecation/deprecation

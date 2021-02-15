@@ -61,7 +61,7 @@ Step by step instructions to:
   * [Web app](./WriteAnInteractiveWebApp.md)
   * [Desktop app](./WriteAnInteractiveDesktopApp.md)
   * [Mobile app](./WriteAnInteractiveMobileApp.md)
-* [Write a bridge](./WriteABridge.md)
+* [Write a connector](./WriteAConnector.md)
 
 Tutorials:
 

@@ -7,7 +7,7 @@
  */
 
 import { Matrix4d } from "@bentley/geometry-core";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { Matrix4 } from "./Matrix";
 import { desync, sync } from "./Sync";
 

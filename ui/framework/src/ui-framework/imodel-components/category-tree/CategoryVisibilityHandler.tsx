@@ -10,7 +10,8 @@ import * as React from "react";
 import { IModelConnection, PerModelCategoryVisibility, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import { TreeNodeItem, useAsyncValue } from "@bentley/ui-components";
-import { IVisibilityHandler, VisibilityStatus } from "../VisibilityTreeEventHandler";
+import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 /**
  * Loads categories from viewport or uses provided list of categories.
@@ -63,7 +64,6 @@ export interface CategoryVisibilityHandlerParams {
   categories: Category[];
   activeView?: Viewport;
   allViewports?: boolean;
-  onVisibilityChange?: () => void;
 }
 
 /** @internal */
@@ -71,7 +71,6 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
   private _viewManager: ViewManager;
   private _imodel: IModelConnection;
   private _pendingVisibilityChange: any | undefined;
-  private _onVisibilityChange?: () => void;
   private _activeView?: Viewport;
   private _useAllViewports: boolean;
   private _categories: Category[];
@@ -83,7 +82,6 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     // istanbul ignore next
     this._useAllViewports = params.allViewports ?? false;
     this._categories = params.categories;
-    this._onVisibilityChange = params.onVisibilityChange;
     if (this._activeView) {
       this._activeView.onDisplayStyleChanged.addListener(this.onDisplayStyleChanged);
       this._activeView.onViewedCategoriesChanged.addListener(this.onViewedCategoriesChanged);
@@ -98,16 +96,11 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     clearTimeout(this._pendingVisibilityChange);
   }
 
-  public get onVisibilityChange() {
-    return this._onVisibilityChange;
-  }
-  public set onVisibilityChange(callback: (() => void) | undefined) {
-    this._onVisibilityChange = callback;
-  }
+  public onVisibilityChange = new BeEvent<VisibilityChangeListener>();
 
   public getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus {
     const instanceId = CategoryVisibilityHandler.getInstanceIdFromTreeNodeKey(nodeKey);
-    return { isDisplayed: node.parentId ? this.isSubCategoryVisible(instanceId) : this.isCategoryVisible(instanceId) };
+    return { state: node.parentId ? this.getSubCategoryVisibility(instanceId) : this.getCategoryVisibility(instanceId) };
   }
 
   public async changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void> {
@@ -129,15 +122,19 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     CategoryVisibilityHandler.enableCategory(this._viewManager, this._imodel, [instanceId], shouldDisplay, true);
   }
 
-  public isSubCategoryVisible(id: string): boolean {
+  public getSubCategoryVisibility(id: string) {
     const parentItem = this.getParent(id);
     if (!parentItem || !this._activeView)
-      return false;
-    return this._activeView.view.viewsCategory(parentItem.key) && this._activeView.isSubCategoryVisible(id);
+      return "hidden";
+
+    const isVisible = this._activeView.view.viewsCategory(parentItem.key) && this._activeView.isSubCategoryVisible(id);
+    return isVisible ? "visible" : "hidden";
   }
 
-  public isCategoryVisible(id: string): boolean {
-    return (this._activeView) ? this._activeView.view.viewsCategory(id) : false;
+  public getCategoryVisibility(id: string) {
+    if (!this._activeView)
+      return "hidden";
+    return this._activeView.view.viewsCategory(id) ? "visible" : "hidden";
   }
 
   public getParent(key: string): Category | undefined {
@@ -167,7 +164,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
       return;
 
     this._pendingVisibilityChange = setTimeout(() => {
-      this._onVisibilityChange && this._onVisibilityChange();
+      this.onVisibilityChange.raiseEvent();
       this._pendingVisibilityChange = undefined;
     }, 0);
   }

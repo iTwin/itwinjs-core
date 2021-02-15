@@ -19,7 +19,73 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   }
 }
 
+.map-manager-top-header {
+
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding-top: 5px;
+  padding-bottom: 4px;
+  margin-bottom: 15px;
+    //background: $buic-background-3;
+/* Full Black border, looks weird
+   border-style: solid;
+  border-width: thin;
+  border-color: black;
+ */
+ border-bottom-color: #ccc;
+ border-bottom-style: solid;
+ border-bottom-width: 1px;
+
+
+  .map-manager-header-label {
+    font-size: $uicore-font-size;
+    width: auto;
+    white-space: nowrap;
+    flex: 1 1 auto;
+    padding-left: 10px;
+  }
+
+  button.map-manager-item-requireAuthIcon {
+    color: $buic-foreground-warning;
+  }
+
+
+  button.map-manager-item-visibility {
+    background-color: transparent;
+    border: none;
+    //margin: 0 2px;
+    color: $buic-foreground-body;
+    background-color: transparent;
+
+    &:hover {
+      color: $hovered-icon-color;
+    }
+    &:focus {
+      outline: none;
+      box-shadow: $uicore-button-focus-boxshadow;
+    }
+  }
+
+  .map-manager-header-buttons-group {
+    margin-left: auto;
+    border: none;
+    flex: 1 1 auto;
+    text-align: right;
+    padding-right: 5px;
+  }
+
+  .map-manager-toggle {
+    height: 22px;
+    width : 48px;
+  }
+}
+
+
 .map-manager-container {
+  margin: 10px 6px 0px 6px;
+  //border: 1px solid #ccc;
+
   * {
     box-sizing: border-box;
   }
@@ -30,10 +96,15 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     width: 100%;
   }
 
+  .map-manager-layer-wrapper {
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+  }
   .map-manager-underlays, .map-manager-overlays  {
     display: flex;
     align-content: center;
     margin-top: 8px;
+    padding-left: 10px;
 
     .map-manager-attach-layer-button {
       background-color: transparent;
@@ -89,17 +160,13 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     margin-bottom: 4px;
   }
 
-  .map-manager-no-layers-label {
+
+  .map-manager-no-layers-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 2.5em;
-    width: 100%;
-    padding-left: 4px;
-    padding-right: 4px;
-    border-width: 0 0 1px 0;
-    border-style: solid;
+    padding: 10px;
     border-color: $uicore-gray-a;
     background-color: $buic-background-1;
     overflow: hidden;
@@ -108,6 +175,15 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     text-align: center;
     color: $buic-foreground-muted;
     font-style: italic;
+    border-style: dotted;
+    border-width: 2px;
+    margin: 6px;
+    width: auto;
+    height: 6.5em    // Avoid container resize when dragging layer the first time.
+  }
+
+  .map-manager-no-layers-label {
+    margin-bottom: 10px;
   }
 
   .map-manager-item-divider {
@@ -250,6 +326,21 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     margin: 0 2px;
     background-color: $buic-background-1;
     color: $buic-foreground-body;
+
+    &:hover {
+      color: $hovered-icon-color;
+    }
+    &:focus {
+      outline: none;
+      box-shadow: $uicore-button-focus-boxshadow;
+    }
+  }
+
+  button.map-manager-item-requireAuth {
+    background-color: transparent;
+    border: none;
+    color: $buic-foreground-warning;
+    background-color: transparent;
 
     &:hover {
       color: $hovered-icon-color;

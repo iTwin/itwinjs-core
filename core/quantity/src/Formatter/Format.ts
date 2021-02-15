@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
-import { UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
+import { UnitProps, UnitsProvider } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
-import { FormatProps } from "./Interfaces";
+import { CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -31,6 +31,7 @@ export class Format {
   protected _spacer: string = " "; // optional; default is " "
   protected _includeZero: boolean = true; // optional; default is true
   protected _units?: Array<[UnitProps, string | undefined]>;
+  protected _customProps?: any;  // used by custom formatters and parsers
 
   /** Constructor
    *  @param name     The name of a format specification. TODO: make optional or remove
@@ -56,6 +57,7 @@ export class Format {
   public get includeZero(): boolean | undefined { return this._includeZero; }
   public get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
   public get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
+  public get customProps(): any { return this._customProps; }
 
   // parse and toString methods
   public static scientificTypeToString(scientificType: ScientificType): string {
@@ -67,7 +69,7 @@ export class Format {
 
   /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid ScientificType. Throws exception if not valid. */
   public static parseScientificType(scientificType: string, formatName: string): ScientificType {
-    switch (scientificType) {
+    switch (scientificType.toLowerCase()) {
       case "normalized":
         return ScientificType.Normalized;
       case "zeronormalized":
@@ -107,19 +109,55 @@ export class Format {
     }
   }
 
+  public static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits) {
+    if (!formatProps.formatTraits)
+      return false;
+    const formatTraits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+    const traitStr = Format.getTraitString(trait);
+    return formatTraits.find((traitEntry) => traitStr === traitEntry) ? true : false;
+  }
+
+  /** Get string used in FormatProps  */
+  public static getTraitString(trait: FormatTraits) {
+    switch (trait) {
+      case FormatTraits.TrailZeroes:
+        return "trailZeroes";
+      case FormatTraits.KeepSingleZero:
+        return "keepSingleZero";
+      case FormatTraits.ZeroEmpty:
+        return "zeroEmpty";
+      case FormatTraits.KeepDecimalPoint:
+        return "keepDecimalPoint";
+      case FormatTraits.ApplyRounding:
+        return "applyRounding";
+      case FormatTraits.FractionDash:
+        return "fractionDash";
+      case FormatTraits.ShowUnitLabel:
+        return "showUnitLabel";
+      case FormatTraits.PrependUnitLabel:
+        return "prependUnitLabel";
+      case FormatTraits.Use1000Separator:
+        return "use1000Separator";
+      case FormatTraits.ExponentOnlyNegative:
+      default:
+        return "exponentOnlyNegative";
+    }
+  }
+
   /** Method used when generating a JSON object that represents this Format. */
   public static formatTraitsToArray(currentFormatTrait: FormatTraits): string[] {
     const formatTraitsArr = Array<string>();
-    if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes) formatTraitsArr.push("trailZeroes");
-    if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero) formatTraitsArr.push("keepSingleZero");
-    if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty) formatTraitsArr.push("zeroEmpty");
-    if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint) formatTraitsArr.push("keepDecimalPoint");
-    if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding) formatTraitsArr.push("applyRounding");
-    if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash) formatTraitsArr.push("fractionDash");
-    if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel) formatTraitsArr.push("showUnitLabel");
-    if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel) formatTraitsArr.push("prependUnitLabel");
-    if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator) formatTraitsArr.push("use1000Separator");
-    if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative) formatTraitsArr.push("exponentOnlyNegative");
+    if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes) formatTraitsArr.push(Format.getTraitString(FormatTraits.TrailZeroes));
+    if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero) formatTraitsArr.push(Format.getTraitString(FormatTraits.KeepSingleZero));
+    if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty) formatTraitsArr.push(Format.getTraitString(FormatTraits.ZeroEmpty));
+    if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint) formatTraitsArr.push(Format.getTraitString(FormatTraits.KeepDecimalPoint));
+    if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding) formatTraitsArr.push(Format.getTraitString(FormatTraits.ApplyRounding));
+    if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash) formatTraitsArr.push(Format.getTraitString(FormatTraits.FractionDash));
+    if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel) formatTraitsArr.push(Format.getTraitString(FormatTraits.ShowUnitLabel));
+    if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel) formatTraitsArr.push(Format.getTraitString(FormatTraits.PrependUnitLabel));
+    if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator) formatTraitsArr.push(Format.getTraitString(FormatTraits.Use1000Separator));
+    // NOTE: the formatter does not current use trait ExponentOnlyNegative
+    if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative) formatTraitsArr.push(Format.getTraitString(FormatTraits.ExponentOnlyNegative));
 
     return formatTraitsArr;
   }
@@ -130,11 +168,11 @@ export class Format {
       case "trailzeroes":
         return currentFormatTrait | FormatTraits.TrailZeroes;
       case "keepsinglezero":
-        return currentFormatTrait | FormatTraits.KeepSingleZero;
+        return currentFormatTrait | FormatTraits.KeepSingleZero; // keep single when format type is Decimal
       case "zeroempty":
         return currentFormatTrait | FormatTraits.ZeroEmpty;
       case "keepdecimalpoint":
-        return currentFormatTrait | FormatTraits.KeepDecimalPoint;
+        return currentFormatTrait | FormatTraits.KeepDecimalPoint; // add decimal point when no fractional part and format type is Decimal
       case "applyrounding":
         return currentFormatTrait | FormatTraits.ApplyRounding;
       case "fractiondash":
@@ -150,6 +188,22 @@ export class Format {
       default:
         throw new QuantityError(QuantityStatus.InvalidJson, `Format has an invalid 'formatTraits' option.`);
     }
+  }
+
+  /** Get FormatTrait from entry in FormatProps */
+  public static parseFormatTraits(formatTraitsFromJson: string | string[] | undefined) {
+    if (!formatTraitsFromJson)
+      return undefined;
+
+    const formatTraits = Array.isArray(formatTraitsFromJson) ? formatTraitsFromJson : formatTraitsFromJson.split(/,|;|\|/);
+    let traits = 0;
+    for (const traitStr of formatTraits) {
+      traits = Format.parseFormatTrait(traitStr, traits);
+    }
+    if (0 === traits)
+      return undefined;
+
+    return traits as FormatTraits;
   }
 
   /** Method used when generating a JSON object that represents this Format. */
@@ -281,6 +335,9 @@ export class Format {
   }
 
   private loadFormatProperties(jsonObj: FormatProps) {
+    if (isCustomFormatProps(jsonObj))
+      this._customProps = jsonObj.custom;
+
     if (undefined === jsonObj.type) // type is required
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} does not have the required 'type' attribute.`);
     if (typeof (jsonObj.type) !== "string")
@@ -376,7 +433,7 @@ export class Format {
   /**
    * Populates this Format with the values from the provided.
    */
-  public async fromJson(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void> {
+  public async fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void> {
     this.loadFormatProperties(jsonObj);
 
     if (undefined !== jsonObj.composite) { // optional
@@ -415,10 +472,17 @@ export class Format {
     }
   }
 
+  /** Create a Format from FormatProps */
+  public static async createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps) {
+    const actualFormat = new Format(name);
+    await actualFormat.fromJSON(unitsProvider, formatProps);
+    return actualFormat;
+  }
+
   /**
    * Returns a JSON object that contain the specification for this Format.
    */
-  public toJson(): FormatProps {
+  public toJSON(): FormatProps {
     let composite;
     if (this.units) {
       const units = this.units.map((value) => {
@@ -435,7 +499,25 @@ export class Format {
       };
     }
 
-    const schemaJson: FormatProps = {
+    if (this.customProps)
+      return {
+        type: Format.formatTypeToString(this.type),
+        precision: this.precision,
+        roundFactor: this.roundFactor,
+        minWidth: this.minWidth,
+        showSignOption: Format.showSignOptionToString(this.showSignOption),
+        formatTraits: Format.formatTraitsToArray(this.formatTraits),
+        decimalSeparator: this.decimalSeparator,
+        thousandSeparator: this.thousandSeparator,
+        uomSeparator: this.uomSeparator,
+        scientificType: this.scientificType ? Format.scientificTypeToString(this.scientificType) : undefined,
+        stationOffsetSize: this.stationOffsetSize,
+        stationSeparator: this.stationSeparator,
+        composite,
+        custom: this.customProps,
+      } as CustomFormatProps;
+
+    return {
       type: Format.formatTypeToString(this.type),
       precision: this.precision,
       roundFactor: this.roundFactor,
@@ -450,67 +532,5 @@ export class Format {
       stationSeparator: this.stationSeparator,
       composite,
     };
-    return schemaJson;
-  }
-}
-
-/** A class that contains both formatting information and the conversion factors necessary to convert from an input unit to the units specified in the format.
- * @alpha
- */
-export class FormatterSpec {
-  private _name = "";
-  private _conversions: UnitConversionSpec[] = [];  // max four entries
-  private _format: Format;
-
-  /** Constructor
-   *  @param name     The name of a format specification.
-   *  @param format   Defines the output format for the quantity value.
-   *  @param conversions An array of conversion factors necessary to convert from an input unit to the units specified in the format..
-   */
-  constructor(name: string, format: Format, conversions?: UnitConversionSpec[]) {
-    this._name = name;
-    this._format = format;
-    if (conversions) this._conversions = conversions;
-  }
-
-  public get name(): string { return this._name; }
-  /** Returns an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
-  public get unitConversions(): UnitConversionSpec[] { return this._conversions; }
-  public get format(): Format { return this._format; }
-
-  /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
-   * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
-   * async calls to lookup unit definitions.
-   *  @param name     The name of a format specification.
-   *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
-   *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
-   */
-  public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
-    const conversions: UnitConversionSpec[] = [];
-
-    if (format.units) {
-      let convertFromUnit = inputUnit;
-      for (const unit of format.units) {
-        let unitConversion: UnitConversion;
-        if (convertFromUnit) {
-          unitConversion = await unitsProvider.getConversion(convertFromUnit, unit[0]);
-        } else {
-          unitConversion = ({ factor: 1.0, offset: 0.0 }) as UnitConversion;
-        }
-        const unitLabel = (unit[1] && unit[1]!.length > 0) ? unit[1]! : unit[0].label;
-        const spec = ({ name: unit[0].name, label: unitLabel, conversion: unitConversion }) as UnitConversionSpec;
-
-        conversions.push(spec);
-        convertFromUnit = unit[0];
-      }
-    } else {
-      // if format is only numeric and a input unit is defined set spec to use the input unit as the format unit
-      if (inputUnit) {
-        const spec: UnitConversionSpec = { name: inputUnit.name, label: inputUnit.label, conversion: { factor: 1.0, offset: 0.0 } };
-        conversions.push(spec);
-      }
-    }
-
-    return new FormatterSpec(name, format, conversions);
   }
 }

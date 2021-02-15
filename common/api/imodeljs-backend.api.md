@@ -15,6 +15,7 @@ import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BRepGeometryCreate } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
+import { BriefcasePushAndPullNotifications } from '@bentley/imodeljs-common';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
 import { CategoryProps } from '@bentley/imodeljs-common';
@@ -38,7 +39,6 @@ import { CodeScopeProps } from '@bentley/imodeljs-common';
 import { CodeScopeSpec } from '@bentley/imodeljs-common';
 import { CodeSpec } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
-import { ContextRegistryClient } from '@bentley/context-registry-client';
 import { CreateEmptySnapshotIModelProps } from '@bentley/imodeljs-common';
 import { CreateEmptyStandaloneIModelProps } from '@bentley/imodeljs-common';
 import { CreateIModelProps } from '@bentley/imodeljs-common';
@@ -61,7 +61,6 @@ import { ElementGeometryRequest } from '@bentley/imodeljs-common';
 import { ElementGeometryUpdate } from '@bentley/imodeljs-common';
 import { ElementLoadProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
-import { EmitOptions } from '@bentley/imodeljs-native';
 import { EntityMetaData } from '@bentley/imodeljs-common';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
@@ -78,6 +77,7 @@ import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
 import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
+import { GeometryChangeNotifications } from '@bentley/imodeljs-common';
 import { GeometryContainmentRequestProps } from '@bentley/imodeljs-common';
 import { GeometryContainmentResponseProps } from '@bentley/imodeljs-common';
 import { GeometryPartProps } from '@bentley/imodeljs-common';
@@ -94,11 +94,10 @@ import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
-import { IModelEventSourceProps } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcOpenProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
-import { IModelStatus } from '@bentley/imodeljs-common';
+import { IModelStatus } from '@bentley/bentleyjs-core';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
@@ -106,6 +105,8 @@ import { IndexedPolyface } from '@bentley/geometry-core';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { IntrospectionClient } from '@bentley/backend-itwin-client';
+import { IpcListener } from '@bentley/imodeljs-common';
+import { IpcSocketBackend } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LineStyleProps } from '@bentley/imodeljs-common';
@@ -118,10 +119,11 @@ import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { MapImageryProps } from '@bentley/imodeljs-common';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
-import { MobileAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
+import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
 import { ModelLoadProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
+import { NativeAppNotifications } from '@bentley/imodeljs-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
@@ -149,11 +151,13 @@ import { Rank } from '@bentley/imodeljs-common';
 import { Readable } from 'stream';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RelationshipProps } from '@bentley/imodeljs-common';
+import { RemoveFunction } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { RequestNewBriefcaseProps } from '@bentley/imodeljs-common';
 import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
+import { SchemaState } from '@bentley/imodeljs-common';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
 import { SectionLocationProps } from '@bentley/imodeljs-common';
@@ -175,6 +179,7 @@ import { SubjectProps } from '@bentley/imodeljs-common';
 import { TelemetryEvent } from '@bentley/telemetry-client';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TextureFlags } from '@bentley/imodeljs-common';
+import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
@@ -223,16 +228,6 @@ export class AnnotationElement2d extends GraphicalElement2d {
 // @beta
 export interface AppActivityMonitor {
     isIdle: boolean;
-}
-
-// @alpha
-export enum ApplicationType {
-    // (undocumented)
-    NativeApp = 2,
-    // (undocumented)
-    WebAgent = 0,
-    // (undocumented)
-    WebApplicationBackend = 1
 }
 
 // @public
@@ -440,6 +435,9 @@ export class BriefcaseDb extends IModelDb {
     saveChanges(description?: string): void;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
+    // @beta (undocumented)
+    readonly txns: TxnManager;
+    static upgradeSchemas(requestContext: AuthorizedClientRequestContext, briefcaseProps: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void>;
 }
 
 // @public
@@ -460,8 +458,6 @@ export enum BriefcaseIdValue {
 export class BriefcaseManager {
     static acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number>;
     static get cacheDir(): string;
-    // @internal
-    static get connectClient(): ContextRegistryClient;
     static create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString>;
     // @internal (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
@@ -492,8 +488,6 @@ export class BriefcaseManager {
     static getCompatibilityPath(iModelId: GuidString): string;
     static getFileName(briefcase: BriefcaseProps): string;
     static getIModelPath(iModelId: GuidString): string;
-    // @internal (undocumented)
-    static get imodelClient(): IModelClient;
     static initialize(cacheRootDir: string, compatibilityDir: string): void;
     static isStandaloneBriefcaseId(id: BriefcaseId): boolean;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
@@ -594,7 +588,7 @@ export class ChangedElementsDb implements IDisposable {
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult>;
+    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
 // @internal
@@ -654,6 +648,7 @@ export class ChangeSummaryManager {
             className: string;
         };
     }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string;
+    // @deprecated
     static detachChangeCache(iModel: IModelDb): void;
     // (undocumented)
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]>;
@@ -1000,7 +995,8 @@ export namespace ConcurrencyControl {
         conflictResolution: ConflictResolutionPolicy;
     }
     export class PessimisticPolicy {
-    }
+        constructor();
+        }
     // (undocumented)
     export interface RelationshipAndOpcode {
         // (undocumented)
@@ -1449,10 +1445,10 @@ export class ECDb implements IDisposable {
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(ecsql: string): ECSqlStatement;
-    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
+    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
-    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse>;
+    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     saveChanges(changeSetName?: string): void;
     // @internal
@@ -1653,7 +1649,7 @@ export class Element extends Entity implements ElementProps {
     buildConcurrencyControlRequest(opcode: DbOpcode): void;
     // @internal (undocumented)
     static get className(): string;
-    readonly code: Code;
+    code: Code;
     // @alpha
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     delete(): void;
@@ -1861,18 +1857,6 @@ export class Entity implements EntityProps {
 export type EntityClassType<T> = Function & {
     prototype: T;
 };
-
-// @internal
-export class EventSink implements IDisposable {
-    constructor(id: string);
-    static clearGlobal(): void;
-    dispose(): void;
-    emit(namespace: string, eventName: string, data: any, options?: EmitOptions): void;
-    static get global(): EventSink;
-    // (undocumented)
-    readonly id: string;
-    get isDisposed(): boolean;
-    }
 
 // @public
 export namespace ExportGraphics {
@@ -2455,8 +2439,6 @@ export abstract class IModelDb extends IModel {
     readonly elements: IModelDb.Elements;
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
-    // @internal
-    get eventSink(): EventSink;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static findByFilename(fileName: string): IModelDb | undefined;
@@ -2467,8 +2449,6 @@ export abstract class IModelDb extends IModel {
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     getBriefcaseId(): BriefcaseId;
-    // @internal (undocumented)
-    protected getEventSourceProps(): IModelEventSourceProps;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
     // @beta
     getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
@@ -2478,6 +2458,8 @@ export abstract class IModelDb extends IModel {
     // @beta
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
+    // @alpha
+    getTextureImage(props: TextureLoadProps): Uint8Array | undefined;
     get iModelId(): GuidString;
     importSchemas(requestContext: ClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @alpha
@@ -2516,14 +2498,14 @@ export abstract class IModelDb extends IModel {
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
-    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
+    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
-    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse>;
+    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
     querySchemaVersion(schemaName: string): string | undefined;
     // (undocumented)
     readFontJson(): string;
@@ -2541,11 +2523,10 @@ export abstract class IModelDb extends IModel {
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
-    // @beta (undocumented)
-    readonly txns: TxnManager;
     updateEcefLocation(ecef: EcefLocation): void;
     updateIModelProps(): void;
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
+    static validateSchemas(filePath: string, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
     // @internal
@@ -2642,23 +2623,23 @@ export class IModelExporter {
     excludeElementCategory(categoryId: Id64String): void;
     excludeElementClass(classFullName: string): void;
     excludeRelationshipClass(classFullName: string): void;
-    exportAll(): void;
+    exportAll(): Promise<void>;
     exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
-    exportChildElements(elementId: Id64String): void;
-    exportCodeSpecById(codeSpecId: Id64String): void;
-    exportCodeSpecByName(codeSpecName: string): void;
-    exportCodeSpecs(): void;
-    exportElement(elementId: Id64String): void;
-    exportFontByName(fontName: string): void;
-    exportFontByNumber(fontNumber: number): void;
-    exportFonts(): void;
-    exportModel(modeledElementId: Id64String): void;
-    exportModelContents(modelId: Id64String, elementClassFullName?: string): void;
-    exportRelationship(relClassFullName: string, relInstanceId: Id64String): void;
-    exportRelationships(baseRelClassFullName: string): void;
-    exportRepositoryLinks(): void;
-    exportSchemas(): void;
-    exportSubModels(parentModelId: Id64String): void;
+    exportChildElements(elementId: Id64String): Promise<void>;
+    exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
+    exportCodeSpecByName(codeSpecName: string): Promise<void>;
+    exportCodeSpecs(): Promise<void>;
+    exportElement(elementId: Id64String): Promise<void>;
+    exportFontByName(fontName: string): Promise<void>;
+    exportFontByNumber(fontNumber: number): Promise<void>;
+    exportFonts(): Promise<void>;
+    exportModel(modeledElementId: Id64String): Promise<void>;
+    exportModelContents(modelId: Id64String, elementClassFullName?: string): Promise<void>;
+    exportRelationship(relClassFullName: string, relInstanceId: Id64String): Promise<void>;
+    exportRelationships(baseRelClassFullName: string): Promise<void>;
+    exportRepositoryLinks(): Promise<void>;
+    exportSchemas(): Promise<void>;
+    exportSubModels(parentModelId: Id64String): Promise<void>;
     protected get handler(): IModelExportHandler;
     progressInterval: number;
     registerHandler(handler: IModelExportHandler): void;
@@ -2718,12 +2699,12 @@ export class IModelHost {
     static get iModelClient(): IModelClient;
     // @alpha (undocumented)
     static get introspectionClient(): IntrospectionClient | undefined;
-    // @internal (undocumented)
-    static get isNativeAppBackend(): boolean;
     // (undocumented)
     static get isUsingIModelBankClient(): boolean;
+    // (undocumented)
+    static get isValid(): boolean;
     // @internal (undocumented)
-    static loadNative(region: number, applicationType?: ApplicationType, iModelClientType?: IModelClient): void;
+    static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
@@ -2757,8 +2738,8 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: string;
-    // @alpha
-    applicationType?: ApplicationType;
+    // @internal
+    applicationType?: IModelJsNative.ApplicationType;
     // @deprecated
     briefcaseCacheDir?: string;
     cacheDir?: string;
@@ -2778,6 +2759,7 @@ export class IModelHostConfiguration {
     logTileLoadTimeThreshold: number;
     // @internal
     logTileSizeThreshold: number;
+    // @deprecated
     nativePlatform?: any;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
@@ -2887,8 +2869,8 @@ export class IModelTransformer extends IModelExportHandler {
     constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
     readonly context: IModelCloneContext;
     protected _deferredElementIds: Set<string>;
-    detectElementDeletes(): void;
-    detectRelationshipDeletes(): void;
+    detectElementDeletes(): Promise<void>;
+    detectRelationshipDeletes(): Promise<void>;
     dispose(): void;
     readonly exporter: IModelExporter;
     protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
@@ -2908,19 +2890,19 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
-    processAll(): void;
+    processAll(): Promise<void>;
     processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
-    processChildElements(sourceElementId: Id64String): void;
-    processCodeSpec(codeSpecName: string): void;
-    processCodeSpecs(): void;
-    processDeferredElements(numRetries?: number): void;
-    processElement(sourceElementId: Id64String): void;
-    processFonts(): void;
-    processModel(sourceModeledElementId: Id64String): void;
-    processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): void;
-    processRelationships(baseRelClassFullName: string): void;
+    processChildElements(sourceElementId: Id64String): Promise<void>;
+    processCodeSpec(codeSpecName: string): Promise<void>;
+    processCodeSpecs(): Promise<void>;
+    processDeferredElements(numRetries?: number): Promise<void>;
+    processElement(sourceElementId: Id64String): Promise<void>;
+    processFonts(): Promise<void>;
+    processModel(sourceModeledElementId: Id64String): Promise<void>;
+    processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): Promise<void>;
+    processRelationships(baseRelClassFullName: string): Promise<void>;
     processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
-    processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void;
+    processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
     protected shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     protected shouldExportElement(_sourceElement: Element): boolean;
     protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
@@ -2929,14 +2911,16 @@ export class IModelTransformer extends IModelExportHandler {
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
     readonly targetScopeElementId: Id64String;
-}
+    }
 
 // @beta
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
+    isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
     targetScopeElementId?: Id64String;
+    wasSourceIModelCopiedToTarget?: boolean;
 }
 
 // @internal @deprecated
@@ -3015,6 +2999,37 @@ export interface InstanceChange {
     opCode: ChangeOpCode;
     // (undocumented)
     summaryId: Id64String;
+}
+
+// @beta
+export abstract class IpcHandler {
+    abstract get channelName(): string;
+    static register(): RemoveFunction;
+}
+
+// @beta
+export class IpcHost {
+    static addListener(channel: string, listener: IpcListener): RemoveFunction;
+    static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
+    static get isValid(): boolean;
+    // @internal (undocumented)
+    static notifyGeometryChanges<T extends keyof GeometryChangeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<GeometryChangeNotifications[T]>): void;
+    // @internal (undocumented)
+    static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>): void;
+    static removeListener(channel: string, listener: IpcListener): void;
+    static send(channel: string, ...data: any[]): void;
+    // (undocumented)
+    static shutdown(): Promise<void>;
+    // (undocumented)
+    static startup(opt?: {
+        ipcHost?: IpcHostOptions;
+        iModelHost?: IModelHostConfiguration;
+    }): Promise<void>;
+}
+
+// @beta
+export interface IpcHostOptions {
+    socket?: IpcSocketBackend;
 }
 
 // @public
@@ -3221,20 +3236,6 @@ export class MetaDataRegistry {
     find(classFullName: string): EntityMetaData | undefined;
     }
 
-// @alpha
-export class MobileAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: MobileAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message?: string | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-}
-
 // @public
 export class Model extends Entity implements ModelProps {
     // @internal
@@ -3302,15 +3303,22 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     toJSON(): ModelSelectorProps;
 }
 
-// @internal
-export class NativeAppBackend {
+// @beta
+export class NativeHost {
     static get appSettingsCacheDir(): string;
     static checkInternetConnectivity(): InternetConnectivityStatus;
+    // (undocumented)
+    static get isValid(): boolean;
+    // (undocumented)
+    static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
     static shutdown(): Promise<void>;
-    static startup(configuration?: IModelHostConfiguration): Promise<void>;
+    static startup(opt?: {
+        ipcHost?: IpcHostOptions;
+        iModelHost?: IModelHostConfiguration;
+    }): Promise<void>;
 }
 
 export { NativeLoggerCategory }
@@ -3419,16 +3427,37 @@ export class PlanCallout extends Callout {
 
 // @public
 export class Platform {
-    // @beta
-    static get electron(): any;
-    // @beta
-    static get imodeljsMobile(): any;
+    // @deprecated
     static get isDesktop(): boolean;
+    // @deprecated
+    static get isElectron(): boolean;
+    // @deprecated
     static get isMobile(): boolean;
+    // @deprecated
     static get isNodeJs(): boolean;
     // @internal (undocumented)
     static load(): typeof IModelJsNative;
-    static get platformName(): string;
+    static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp";
+}
+
+// @internal
+export interface ProcessChangesetOptions {
+    // (undocumented)
+    endChangesetId: string;
+    // (undocumented)
+    filterSpatial?: boolean;
+    // (undocumented)
+    rulesetDir?: string;
+    // (undocumented)
+    rulesetId: string;
+    // (undocumented)
+    startChangesetId: string;
+    // (undocumented)
+    tempDir?: string;
+    // (undocumented)
+    wantParents?: boolean;
+    // (undocumented)
+    wantPropertyChecksums?: boolean;
 }
 
 // @beta
@@ -3883,6 +3912,9 @@ export class StandaloneDb extends IModelDb {
     static openFile(filePath: string, openMode?: OpenMode, options?: StandaloneOpenOptions): StandaloneDb;
     // (undocumented)
     static tryFindByKey(key: string): StandaloneDb | undefined;
+    // @beta (undocumented)
+    readonly txns: TxnManager;
+    static upgradeSchemas(filePath: string): void;
 }
 
 // @internal
@@ -3943,14 +3975,19 @@ export class SubjectOwnsSubjects extends ElementOwnsChildElements {
 export class TemplateModelCloner extends IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
     protected onTransformElement(sourceElement: Element): ElementProps;
-    placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Map<Id64String, Id64String>;
+    placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Promise<Map<Id64String, Id64String>>;
+    placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Promise<Map<Id64String, Id64String>>;
     }
 
-// @internal
+// @beta
 export class TemplateRecipe2d extends RecipeDefinitionElement {
+    // @internal
     constructor(props: ElementProps, iModel: IModelDb);
-    // (undocumented)
+    // @internal (undocumented)
     static get className(): string;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe2d;
+    static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code;
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
 }
 
 // @beta
@@ -4047,7 +4084,8 @@ export type TxnIdString = string;
 
 // @beta
 export class TxnManager {
-    constructor(_iModel: IModelDb);
+    // @internal
+    constructor(_iModel: BriefcaseDb | StandaloneDb);
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus;
     checkUndoPossible(allowCrossSessions?: boolean): boolean;
@@ -4079,6 +4117,10 @@ export class TxnManager {
     protected _onDeletedDependency(props: RelationshipProps): void;
     // @internal (undocumented)
     protected _onEndValidate(): void;
+    // (undocumented)
+    readonly onGeometryChanged: BeEvent<(models: ModelGeometryChangesProps[]) => void>;
+    // @internal (undocumented)
+    protected _onGeometryChanged(models: ModelGeometryChangesProps[]): void;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     // @internal (undocumented)

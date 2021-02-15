@@ -22,7 +22,7 @@ export interface ScrollableWidgetContentProps {
 /** Component that enables widget content scrolling.
  * @internal future
  */
-export const ScrollableWidgetContent = React.memo<ScrollableWidgetContentProps>(function ScrollableWidgetContent(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
+export const ScrollableWidgetContent = React.memo<ScrollableWidgetContentProps>(function ScrollableWidgetContent(props) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const scrollPosition = React.useRef(new Point());
   const ref = React.useRef<HTMLDivElement>(null);
   const onSave = React.useCallback(() => {

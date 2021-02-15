@@ -365,6 +365,47 @@ export class BackgroundMapGeometry {
 }
 
 /** @internal */
+export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise<Transform | undefined> {
+  const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
+  if (geoConverter === undefined)
+    return undefined;
+
+  const origin = Point3d.create(originIn.x, originIn.y, 0);   // Always Test at zero.
+  const eastPoint = origin.plusXYZ(1, 0, 0);
+  const northPoint = origin.plusXYZ(0, 1, 0);
+
+  const response = await geoConverter.getGeoCoordinatesFromIModelCoordinates([origin, northPoint, eastPoint]);
+  if (response.geoCoords[0].s !== GeoCoordStatus.Success || response.geoCoords[1].s !== GeoCoordStatus.Success || response.geoCoords[2].s !== GeoCoordStatus.Success)
+    return undefined;
+
+  const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
+  const geoNorth = Point3d.fromJSON(response.geoCoords[1].p);
+  const geoEast = Point3d.fromJSON(response.geoCoords[2].p);
+  const ecefOrigin = Cartographic.fromDegrees(geoOrigin.x, geoOrigin.y, geoOrigin.z).toEcef()!;
+  const ecefNorth = Cartographic.fromDegrees(geoNorth.x, geoNorth.y, geoNorth.z).toEcef()!;
+  const ecefEast = Cartographic.fromDegrees(geoEast.x, geoEast.y, geoEast.z).toEcef()!;
+
+  const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
+  const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
+  const zVector = xVector.unitCrossProduct(yVector);
+  if (undefined === zVector) {
+    assert(false);            // Should never occur.
+    return undefined;
+  }
+  const matrix = Matrix3d.createColumns(xVector, yVector, zVector);
+  if (matrix === undefined)
+    return undefined;
+
+  const inverse = matrix.inverse();
+  if (inverse === undefined) {
+    assert(false);               // Should never occur.
+    return undefined;
+  }
+
+  return Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse()!;
+}
+
+/** @internal */
 export class BackgroundMapLocation {
   private _ecefToDb?: Transform;
   private _ecefValidated = false;
@@ -390,54 +431,18 @@ export class BackgroundMapLocation {
       this._ecefToDb = Transform.createIdentity();
       return;
     }
-
-    const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
-    if (geoConverter === undefined) {
-      this._ecefValidated = true;     // No GCS... trust the input transform...
+    const projectExtents = iModel.projectExtents;
+    const origin = projectExtents.localXYZToWorld(.5, .5, .5);
+    if (!origin) {
+      this._ecefToDb = Transform.createIdentity();
       return;
     }
-
-    const projectExtents = iModel.projectExtents;
-    const origin = projectExtents.localXYZToWorld(.5, .5, .5)!;
 
     origin.z = 0; // always use ground plane
-    const eastPoint = origin.plusXYZ(1, 0, 0);
-    const northPoint = origin.plusXYZ(0, 1, 0);
+    const ecefToDb = await calculateEcefToDbTransformAtLocation(origin, iModel);
+    if (undefined !== ecefToDb)
+      this._ecefToDb = ecefToDb;
 
-    const response = await geoConverter.getGeoCoordinatesFromIModelCoordinates([origin, northPoint, eastPoint]);
-    if (response.geoCoords[0].s !== GeoCoordStatus.Success || response.geoCoords[1].s !== GeoCoordStatus.Success || response.geoCoords[2].s !== GeoCoordStatus.Success) {
-      this._ecefValidated = true;   // No GCS... trust the input transform...
-      return;
-    }
-
-    const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
-    const geoNorth = Point3d.fromJSON(response.geoCoords[1].p);
-    const geoEast = Point3d.fromJSON(response.geoCoords[2].p);
-    const ecefOrigin = Cartographic.fromDegrees(geoOrigin.x, geoOrigin.y, geoOrigin.z).toEcef()!;
-    const ecefNorth = Cartographic.fromDegrees(geoNorth.x, geoNorth.y, geoNorth.z).toEcef()!;
-    const ecefEast = Cartographic.fromDegrees(geoEast.x, geoEast.y, geoEast.z).toEcef()!;
-
-    const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
-    const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
-    const zVector = xVector.unitCrossProduct(yVector);
-    if (undefined === zVector) {
-      assert(false);            // Should never occur.
-      this._ecefValidated = true;
-      return;
-    }
-    const matrix = Matrix3d.createColumns(xVector, yVector, zVector);
-    if (matrix === undefined) {
-      this._ecefValidated = true;   // This is bad - somehow the reprojection failed.  - Just use the GCS directly.
-      return;
-    }
-    const inverse = matrix.inverse();
-    if (inverse === undefined) {
-      assert(false);               // Should never occur.
-      this._ecefValidated = true;
-      return;
-    }
-
-    this._ecefToDb = Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse()!;
     this._ecefValidated = true;
   }
   public getMapEcefToDb(bimElevationBias: number): Transform {

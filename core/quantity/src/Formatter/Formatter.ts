@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
-import { FormatterSpec } from "./Format";
+import { FormatterSpec } from "./FormatterSpec";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
 
 /**  rounding additive
@@ -197,7 +197,7 @@ export class Formatter {
       const currentLabel = spec.unitConversions[i].label;
       const unitConversion = spec.unitConversions[i].conversion;
 
-      if (unitConversion.factor < 1.0)
+      if (i > 0 && unitConversion.factor < 1.0)
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
       if (i > 0 && unitConversion.offset !== 0)
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
@@ -276,9 +276,10 @@ export class Formatter {
 
       formattedValue = Formatter.integerPartToText(wholePart, spec);
       if (isPrecisionZero) {
-        if (isKeepSingleZero) {
+        if (spec.format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint) && !isKeepSingleZero)
+          formattedValue = formattedValue + spec.format.decimalSeparator;
+        else if (isKeepSingleZero)
           formattedValue = `${formattedValue + spec.format.decimalSeparator}0`;
-        }
       } else {
         fractionPart = Math.floor(fractionPart) / precisionScale;
         let fractionString = fractionPart.toFixed(spec.format.precision);
@@ -315,11 +316,13 @@ export class Formatter {
       const hiPart = Math.floor(tVal / denominator);
       const lowPart = tVal - hiPart * denominator;
       const fract = posMagnitude - tVal;
-      const fractionPart = Math.floor(0.5 + fract * precisionScale);
+      const fractionPart = Math.floor(fract * precisionScale + FPV_ROUNDFACTOR);
       const stationString = hiPart.toFixed(0) + spec.format.stationSeparator + lowPart.toFixed(0).padStart(spec.format.stationOffsetSize!, "0");
       let fractionString = "";
       if (fractionPart > 0) {
-        fractionString = fractionPart.toFixed(0).padEnd(spec.format.precision, "0");
+        fractionString = (fractionPart/precisionScale).toFixed(spec.format.precision);
+        // remove leading "0."
+        fractionString = fractionString.substr(2).padEnd(spec.format.precision, "0");
         if (!isKeepTrailingZeroes) fractionString = Formatter.trimTrailingZeroes(fractionString);
         formattedValue = stationString + spec.format.decimalSeparator + fractionString;
       } else {
@@ -377,7 +380,6 @@ export class Formatter {
         else
           formattedMagnitude = formattedMagnitude + spec.format.uomSeparator + spec.unitConversions[0].label;
       }
-
     }
     // add Sign prefix and suffix as necessary
     if ((prefix.length > 0 || suffix.length > 0) && formattedMagnitude.length > 0)

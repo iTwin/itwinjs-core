@@ -95,6 +95,9 @@ export enum IModelStatus {
   NoGeoLocation = IMODEL_ERROR_BASE + 66,
   ServerTimeout = IMODEL_ERROR_BASE + 67,
   NoContent = IMODEL_ERROR_BASE + 68,
+  NotRegistered = IMODEL_ERROR_BASE + 69,
+  FunctionNotFound = IMODEL_ERROR_BASE + 70,
+  NoActiveCommand = IMODEL_ERROR_BASE + 71,
 }
 
 /** Error status from various briefcase operations
@@ -168,8 +171,8 @@ export enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSe
   CouldNotOpenDgnDb = CHANGESET_ERROR_BASE + 19,
   /** Cannot merge changes in in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
   MergeSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 20,
-  /** Cannot reverse or reinstate schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
-  ReverseOrReinstateSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 21,
+  /** Cannot reverse or reinstate schema changes. */
+  ReverseOrReinstateSchemaChanges = CHANGESET_ERROR_BASE + 21,
   /** Cannot process changes schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
   ProcessSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 22,
   /** Cannot merge changes into a Readonly DgnDb. */
@@ -611,7 +614,7 @@ export class BentleyError extends Error {
       case ChangeSetStatus.WrongDgnDb: return "ChangeSet originated in a different Db";
       case ChangeSetStatus.CouldNotOpenDgnDb: return "Could not open the DgnDb to merge change set";
       case ChangeSetStatus.MergeSchemaChangesOnOpen: return "Cannot merge changes in in an open DgnDb. Close the DgnDb, and process the operation when it is opened";
-      case ChangeSetStatus.ReverseOrReinstateSchemaChangesOnOpen: return "Cannot reverse or reinstate schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened";
+      case ChangeSetStatus.ReverseOrReinstateSchemaChanges: return "Cannot reverse or reinstate schema changes.";
       case ChangeSetStatus.ProcessSchemaChangesOnOpen: return "Cannot process changes schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened";
       case ChangeSetStatus.CannotMergeIntoReadonly: return "Cannot merge changes into a Readonly DgnDb";
       case ChangeSetStatus.CannotMergeIntoMaster: return "Cannot merge changes into a Master DgnDb";

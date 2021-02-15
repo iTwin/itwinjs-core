@@ -104,6 +104,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
       const props: NodeCheckboxRenderProps = {
         label: "",
         checked: this.props.checkboxProps.state === CheckBoxState.On,
+        indeterminate: this.props.checkboxProps.state === CheckBoxState.Partial,
         disabled: this.props.checkboxProps.isDisabled,
         title: this.props.checkboxProps.tooltip,
         onClick: this._onCheckboxClick,

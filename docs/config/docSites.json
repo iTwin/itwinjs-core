@@ -37,7 +37,7 @@
       "Samples": "sample-showcase",
       "Learning": "learning",
       "API": "reference",
-      "v2.9.0": "changehistory"
+      "v2.11.0": "changehistory"
     },
     "archivedVersions": [
       {
@@ -46,25 +46,27 @@
       }
     ],
     "packageAliases": {
+      "analytical-backend": "analytical-backend",
+      "backend-itwin-client": "backend-itwin-client",
       "backend": "imodeljs-backend",
       "bentley": "bentleyjs-core",
-      "backend-itwin-client": "backend-itwin-client",
       "common": "imodeljs-common",
       "context-registry-client": "context-registry-client",
       "ecschema-metadata": "ecschema-metadata",
+      "electron-manager": "electron-manager",
+      "mobile-manager": "mobile-manager",
       "extension-client": "extension-client",
-      "frontend": "imodeljs-frontend",
       "frontend-authorization-client": "frontend-authorization-client",
       "frontend-devtools": "frontend-devtools",
+      "frontend": "imodeljs-frontend",
       "geometry": "geometry-core",
+      "hypermodeling": "hypermodeling-frontend",
       "i18n": "imodeljs-i18n",
       "imodelhub-client": "imodelhub-client",
       "itwin-client": "itwin-client",
-      "markup": "imodeljs-markup",
-      "hypermodeling": "hypermodeling-frontend",
-      "analytical-backend": "analytical-backend",
       "linear-referencing-backend": "linear-referencing-backend",
       "linear-referencing-common": "linear-referencing-common",
+      "markup": "imodeljs-markup",
       "physical-material-backend": "physical-material-backend",
       "presentation-backend": "presentation-backend",
       "presentation-common": "presentation-common",

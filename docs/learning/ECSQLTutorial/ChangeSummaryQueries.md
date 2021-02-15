@@ -2,7 +2,7 @@
 
 *Change Summaries* are summaries of changes of ECInstances in an *iModel Changeset*. **Please read [Change Summaries](../ChangeSummaries.md) first, before doing this section of the tutorial.**
 
-[!alert text="<img src="./media/wip.svg" style="width:2%;height:2%;"> The console does not support write operations, this functionality has been deprecated. This page is kept for historical and educational purposes kind="warning"]
+[!alert text="<img src="./media/wip.svg" style="width:2%;height:2%;"> The console does not support write operations, this functionality has been deprecated. This page is kept for historical and educational purposes" kind="warning"]
 
 ## Generate the Change Summaries
 
@@ -109,6 +109,7 @@ also serves to return the ECInstanceIds of the corresponding Change Summaries wh
 > ordered from oldest to newest.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT Summary.Id, WsgId, Description, PushDate, UserCreated, ParentWsgId FROM imodelchange.Changeset ORDER BY PushDate
 > ```
@@ -131,6 +132,7 @@ Now that we know what changesets there are, let us look what instances were chan
 > for each change.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId, ChangedInstance.Id, ChangedInstance.ClassId, OpCode FROM ecchange.change.InstanceChange WHERE Summary.Id=0x35
 > ```
@@ -155,6 +157,7 @@ For the sake of readability we modify the query by joining to the [ECDbMeta ECSc
 > for each change.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ic.ECInstanceId, ic.ChangedInstance.Id,  s.Name || '.' || c.Name ChangedClass, ic.OpCode FROM ecchange.change.InstanceChange ic
 > JOIN main.meta.ECClassDef c ON ic.ChangedInstance.ClassId=c.ECInstanceId
@@ -192,6 +195,7 @@ out what properties were modified.
 > *Goal:* Return the names of the properties that were modified in the InstanceChange `0x48`.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT AccessString FROM change.PropertyValueChange WHERE InstanceChange.Id=0x48
 > ```
@@ -214,6 +218,7 @@ from the previous query. As always we can use a join, if we only know the id of 
 > *Goal:* Return the names of the properties that were modified in Device `0x20000000001` in Change Summary `0x35`.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT AccessString FROM change.PropertyValueChange pc JOIN change.InstanceChange ic ON pc.InstanceChange.Id=ic.ECInstanceId WHERE ic.ChangedInstance.Id=0x20000000001 AND ic.ChangedInstance.ClassId=0x100 AND ic.Summary.Id=0x35
 > ```
@@ -234,6 +239,7 @@ Now that we looked at this, let's modify the previous query and use the Change S
 > *Goal:* Return the names of the properties of Device `0x20000000001` that were affected in Change Summary `0x1`.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT AccessString FROM change.PropertyValueChange pc JOIN change.InstanceChange ic ON pc.InstanceChange.Id=ic.ECInstanceId WHERE ic.ChangedInstance.Id=0x20000000001 AND ic.ChangedInstance.ClassId=0x100 AND ic.Summary.Id=0x1
 > ```
@@ -275,6 +281,7 @@ that tells us what kind of change this was, i.e. what the OpCode of that change 
 > *Goal:* Return the OpCode for the change of Device `0x20000000001` in Change Summary `0x1`.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT OpCode FROM change.InstanceChange WHERE Summary.Id=0x1 AND ChangedInstance.Id=0x20000000001 AND ChangedInstance.ClassId=0x100
 > ```
@@ -310,6 +317,7 @@ Before looking at how the Devices have changed over the time, let's look at the 
 > *Goal:* Return id, CodeValue and UserLabel of all Devices.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId,CodeValue,UserLabel FROM mydomain.Device
 > ```
@@ -338,6 +346,7 @@ Before looking at how the Devices have changed over the time, let's look at the 
 > *Goal:* Return id, CodeValue and UserLabel of the Devices that were **inserted** in Change Summary `0x6c`.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId,CodeValue,UserLabel FROM mydomain.Device.Changes(0x6c,'AfterInsert')
 > ```
@@ -357,6 +366,7 @@ Now let's change the [ChangedValueState]($common) argument in the query.
 > *Goal:* Return id, CodeValue and UserLabel of the Devices that were **updated** in Change Summary `0x6c`.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId,CodeValue,UserLabel FROM mydomain.Device.Changes(0x6c,'AfterUpdate')
 > ```
@@ -381,6 +391,7 @@ From the previous queries we know that in this changeset a new Device with code 
 > *Goal:* Return id, CodeValue and UserLabel of the Devices that were **inserted** in Change Summary `0x35`.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId,CodeValue,UserLabel FROM mydomain.Device.Changes(0x35,'AfterInsert')
 > ```
@@ -399,6 +410,7 @@ Note: `NULL` is returned for `CodeValue` because it was not affected by this cha
 > *Goal:* Return id, CodeValue and UserLabel of the Devices **before** they were **updated** in Change Summary `0x35`.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId,CodeValue,UserLabel FROM mydomain.Device.Changes(0x35,'BeforeUpdate')
 > ```
@@ -414,6 +426,7 @@ Note: `NULL` is returned for `CodeValue` because it was not affected by this cha
 > *Goal:* Return id, CodeValue and UserLabel of the Devices **after** they were **updated** in Change Summary `0x35`.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId,CodeValue,UserLabel FROM mydomain.Device.Changes(0x35,'AfterUpdate')
 > ```
@@ -433,6 +446,7 @@ In the third changeset the Device with code `DEV-A-G-3` which was inserted in th
 > *Goal:* Return id, CodeValue and UserLabel of the Devices **before** they were **deleted** in Change Summary `0x1`.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId,CodeValue,UserLabel FROM mydomain.Device.Changes(0x1,'BeforeDelete')
 > ```
@@ -445,4 +459,4 @@ In the third changeset the Device with code `DEV-A-G-3` which was inserted in th
 
 ---
 
-[**< Previous**](./MetaQueries.md)
+[**< Previous**](./MetaQueries.md) &nbsp; | &nbsp; [**Next >**](./TypeFilter.md)

@@ -58,7 +58,7 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
       return;
 
     /* istanbul ignore else */
-    if (this.props.eventIds.some((value: string): boolean => args.eventIds.has(value))) {
+    if (this.props.eventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
       const boolValue = this.props.boolFunc();
       /* istanbul ignore else */
       if (this.state.boolValue !== boolValue) {

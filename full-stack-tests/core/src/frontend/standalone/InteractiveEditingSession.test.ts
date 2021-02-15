@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-const expect = chai.expect;
-import * as path from "path";
 import * as chaiAsPromised from "chai-as-promised";
-chai.use(chaiAsPromised);
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { ElectronRpcConfiguration, IModelError } from "@bentley/imodeljs-common";
-import { IModelApp, InteractiveEditingSession, StandaloneConnection } from "@bentley/imodeljs-frontend";
+import * as path from "path";
+import { OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { IModelError } from "@bentley/imodeljs-common";
+import { BriefcaseConnection, InteractiveEditingSession } from "@bentley/imodeljs-frontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
-if (ElectronRpcConfiguration.isElectron) {
+const expect = chai.expect;
+chai.use(chaiAsPromised);
+if (ProcessDetector.isElectronAppFrontend) {
   describe("InteractiveEditingSession", () => {
-    let imodel: StandaloneConnection | undefined;
+    let imodel: BriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
     const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
     // Editable; BisCore version == 1.0.11
@@ -27,12 +28,12 @@ if (ElectronRpcConfiguration.isElectron) {
     }
 
     before(async () => {
-      await IModelApp.startup();
+      await ElectronApp.startup();
     });
 
     after(async () => {
       await closeIModel();
-      await IModelApp.shutdown();
+      await ElectronApp.shutdown();
     });
 
     afterEach(async () => {
@@ -40,37 +41,37 @@ if (ElectronRpcConfiguration.isElectron) {
     });
 
     it("should not be supported for read-only connections", async () => {
-      imodel = await StandaloneConnection.openFile(oldFilePath, OpenMode.Readonly);
+      imodel = await BriefcaseConnection.openStandalone(oldFilePath, OpenMode.Readonly);
       expect(imodel.openMode).to.equal(OpenMode.Readonly);
       expect(await InteractiveEditingSession.isSupported(imodel)).to.be.false;
       await expect(InteractiveEditingSession.begin(imodel)).to.be.rejectedWith(IModelError);
     });
 
     it("should not be supported for iModels with BisCore < 1.0.11", async () => {
-      imodel = await StandaloneConnection.openFile(oldFilePath);
+      imodel = await BriefcaseConnection.openStandalone(oldFilePath);
       expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
       expect(await InteractiveEditingSession.isSupported(imodel)).to.be.false;
       await expect(InteractiveEditingSession.begin(imodel)).to.be.rejectedWith(IModelError);
     });
 
     it("should not be supported for read-only iModels with BisCore >= 1.0.11", async () => {
-      imodel = await StandaloneConnection.openFile(newFilePath, OpenMode.Readonly);
+      imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.Readonly);
       expect(imodel.openMode).to.equal(OpenMode.Readonly);
       expect(await InteractiveEditingSession.isSupported(imodel)).to.be.false;
       await expect(InteractiveEditingSession.begin(imodel)).to.be.rejectedWith(IModelError);
     });
 
     it("should be supported for writable iModels with BisCore >= 1.0.11", async () => {
-      imodel = await StandaloneConnection.openFile(newFilePath, OpenMode.ReadWrite);
+      imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
       expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
       expect(await InteractiveEditingSession.isSupported(imodel)).to.be.true;
       const session = await InteractiveEditingSession.begin(imodel);
       await session.end();
     });
 
-    async function openWritable(): Promise<StandaloneConnection> {
+    async function openWritable(): Promise<BriefcaseConnection> {
       expect(imodel).to.be.undefined;
-      return StandaloneConnection.openFile(newFilePath, OpenMode.ReadWrite);
+      return BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
     }
 
     it("throws if begin is called repeatedly", async () => {

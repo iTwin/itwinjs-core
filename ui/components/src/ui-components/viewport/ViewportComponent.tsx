@@ -11,8 +11,11 @@ import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Point3d, Transform } from "@bentley/geometry-core";
 import { NpcCenter } from "@bentley/imodeljs-common";
 import {
-  IModelApp, IModelConnection, ScreenViewport, TentativePoint, ToolSettings, ViewManager, Viewport, ViewState,
+  IModelApp, IModelConnection, ScreenViewport,
+  TentativePoint, ToolSettings, ViewManager,
+  Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
+
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import {
@@ -163,13 +166,15 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       if (!viewState) {
         Logger.logError(UiComponents.loggerCategory(this), `View state failed to load`);
         return undefined;
+      } else {
+        return viewState;
       }
     } else {
       Logger.logError(UiComponents.loggerCategory(this), `Either viewDefinitionId or viewState must be provided as a ViewportComponent Prop`);
       return undefined;
     }
 
-    return viewState;
+    return viewState.clone();
   }
 
   private _handleDrawingViewportChangeEvent = (args: DrawingViewportChangeEventArgs) => {

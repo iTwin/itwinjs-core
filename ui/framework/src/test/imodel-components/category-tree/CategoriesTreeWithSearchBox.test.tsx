@@ -18,6 +18,7 @@ import { fireEvent, render, waitForElement } from "@testing-library/react";
 import { CategoryTreeWithSearchBox } from "../../../ui-framework/imodel-components/category-tree/CategoriesTreeWithSearchBox";
 import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
 import TestUtils from "../../TestUtils";
+import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
 
 describe("CategoryTreeWithSearchBox", () => {
 
@@ -83,14 +84,11 @@ describe("CategoryTreeWithSearchBox", () => {
 
   describe("<CategoryTreeWithSearchBox />", () => {
     const visibilityHandler = moq.Mock.ofType<CategoryVisibilityHandler>();
-    const visibilityChangeSpy = sinon.spy();
     let enableCategoryStub: sinon.SinonStub<[ViewManager, IModelConnection, string[], boolean, boolean, (boolean | undefined)?], void>;
     let dataProvider: IPresentationTreeDataProvider;
 
     beforeEach(() => {
       enableCategoryStub = sinon.stub(CategoryVisibilityHandler, "enableCategory");
-      visibilityHandler.reset();
-      visibilityChangeSpy.resetHistory();
       dataProvider = {
         imodel: imodelMock.object,
         rulesetId: "",
@@ -103,7 +101,9 @@ describe("CategoryTreeWithSearchBox", () => {
         loadHierarchy: async () => { },
       };
 
-      visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: true, isDisabled: false }));
+      visibilityHandler.reset();
+      visibilityHandler.setup((x) => x.onVisibilityChange).returns(() => new BeEvent<VisibilityChangeListener>());
+      visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false }));
     });
 
     const setupDataProvider = (nodes: TreeNodeItem[]) => {

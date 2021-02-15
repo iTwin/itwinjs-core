@@ -318,6 +318,7 @@ export class SelectionTool extends PrimitiveTool {
     const vp = ev.viewport;
     if (!vp)
       return;
+
     const pts: Point2d[] = [];
     pts[0] = new Point2d(Math.floor(origin.x + 0.5), Math.floor(origin.y + 0.5));
     pts[1] = new Point2d(Math.floor(corner.x + 0.5), Math.floor(corner.y + 0.5));
@@ -325,6 +326,8 @@ export class SelectionTool extends PrimitiveTool {
 
     const rect = new ViewRect();
     rect.initFromRange(range);
+    const allowTransients = this.wantPickableDecorations();
+
     vp.readPixels(rect, Pixel.Selector.Feature, (pixels) => {
       if (undefined === pixels)
         return;
@@ -333,8 +336,27 @@ export class SelectionTool extends PrimitiveTool {
       sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.low.x), vp.cssPixelsToDevicePixels(range.low.y)));
       sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.high.x), vp.cssPixelsToDevicePixels(range.high.y)));
 
+      pts[0].x = vp.cssPixelsToDevicePixels(pts[0].x);
+      pts[0].y = vp.cssPixelsToDevicePixels(pts[0].y);
+
+      pts[1].x = vp.cssPixelsToDevicePixels(pts[1].x);
+      pts[1].y = vp.cssPixelsToDevicePixels(pts[1].y);
+
       let contents = new Set<string>();
       const testPoint = Point2d.createZero();
+
+      const getPixelElementId = (pixel: Pixel.Data) => {
+        if (undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
+          return undefined; // no geometry at this location...
+
+        if (!allowTransients && Id64.isTransient(pixel.elementId))
+          return undefined; // tool didn't request pickable decorations...
+
+        if (!vp.isPixelSelectable(pixel))
+          return undefined; // reality model, terrain, etc - not selectable
+
+        return pixel.elementId;
+      };
 
       if (SelectionMethod.Box === method) {
         const outline = overlap ? undefined : new Set<string>();
@@ -343,16 +365,14 @@ export class SelectionTool extends PrimitiveTool {
         for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
           for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
             const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-            if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
-              continue; // no geometry at this location...
-
-            if (!vp.isPixelSelectable(pixel))
-              continue; // reality model, terrain, etc - not selectable
+            const elementId = getPixelElementId(pixel);
+            if (undefined === elementId)
+              continue;
 
             if (undefined !== outline && !offset.containsPoint(testPoint))
-              outline.add(pixel.elementId.toString());
+              outline.add(elementId.toString());
             else
-              contents.add(pixel.elementId.toString());
+              contents.add(elementId.toString());
           }
         }
         if (undefined !== outline && 0 !== outline.size) {
@@ -365,18 +385,17 @@ export class SelectionTool extends PrimitiveTool {
         for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
           for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
             const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-            if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
-              continue; // no geometry at this location...
+            const elementId = getPixelElementId(pixel);
+            if (undefined === elementId)
+              continue;
+
             const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
             pts[0].interpolate(fraction, pts[1], closePoint);
             if (closePoint.distance(testPoint) < 1.5)
-              contents.add(pixel.elementId.toString());
+              contents.add(elementId.toString());
           }
         }
       }
-
-      if (!this.wantPickableDecorations())
-        contents.forEach((id) => { if (Id64.isTransient(id)) contents.delete(id); });
 
       if (0 === contents.size) {
         if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev))

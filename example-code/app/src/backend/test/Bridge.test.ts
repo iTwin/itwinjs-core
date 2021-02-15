@@ -5,7 +5,7 @@
 import * as path from "path";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Project } from "@bentley/context-registry-client";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import {
@@ -50,17 +50,18 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
     RobotWorldEngine.insertRobot(briefcase, modelId, robot.name, Point3d.fromJSON(robot.location));
   }
 }
+
 // __PUBLISH_EXTRACT_END__
 
 async function queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
-  return BriefcaseManager.connectClient.getProject(requestContext, {
+  return (new ContextRegistryClient()).getProject(requestContext, {
     $select: "*",
     $filter: `Name+eq+'${projectName}'`,
   });
 }
 
 async function queryIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
-  const client = BriefcaseManager.imodelClient as IModelHubClient;
+  const client = IModelHost.iModelClient as IModelHubClient;
   const iModels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   if (iModels.length === 0)
     return undefined;
@@ -73,11 +74,11 @@ async function createIModel(requestContext: AuthorizedClientRequestContext, proj
   try {
     const existingid = await queryIModelByName(requestContext, projectId, name);
     if (existingid !== undefined && !!existingid.id)
-      BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, existingid.id); // eslint-disable-line @typescript-eslint/no-floating-promises
+      IModelHost.iModelClient.iModels.delete(requestContext, projectId, existingid.id); // eslint-disable-line @typescript-eslint/no-floating-promises
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
-  const imodelRepository: HubIModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, name, { path: seedFile });
+  const imodelRepository: HubIModel = await IModelHost.iModelClient.iModels.create(requestContext, projectId, name, { path: seedFile });
   // __PUBLISH_EXTRACT_END__
   return imodelRepository;
 }

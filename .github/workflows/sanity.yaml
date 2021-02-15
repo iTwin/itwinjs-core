@@ -20,5 +20,6 @@ jobs:
         uses: mszostok/codeowners-validator@v0.5.0
         with:
           checks: "files,duppatterns,syntax"
+          experimental_checks: "notowned"
           # GitHub access token is required only if the `owners` check is enabled
           github_access_token: "${{ secrets.OWNERS_VALIDATOR_GITHUB_SECRET }}"

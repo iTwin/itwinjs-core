@@ -81,14 +81,14 @@ A [WidgetDef]($ui-framework) object is created for each Widget component in the 
 
 The following example demonstrates how to open a widget programmatically. The example assumes an `id` prop of "VerticalPropertyGrid" has been provided on the Widget component.
 
-```TS
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-    if (activeFrontstageDef) {
-      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
-      if (widgetDef) {
-        widgetDef.setWidgetState(WidgetState.Open);
-      }
-    }
+```ts
+const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+if (activeFrontstageDef) {
+  const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+  if (widgetDef) {
+    widgetDef.setWidgetState(WidgetState.Open);
+  }
+}
 ```
 
 ## Tool Widget
@@ -148,10 +148,11 @@ function SampleNavigationWidget () {
       horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Horizontal} />}
       verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />}
     />
-  ```
+  );
+```
 
 There is an extensible Navigation Widget named [BasicNavigationWidget]($ui-framework) in the ui-framework package. It provides basic view manipulation tools and supports the specification of additional horizontal and vertical toolbar items via props.
 
 ## API Reference
 
-* [Widget]($ui-framework:Widget)
+- [Widget]($ui-framework:Widget)

@@ -7,7 +7,8 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { CompassMode, IModelApp, IModelAppOptions, MockRender } from "@bentley/imodeljs-frontend";
 import { SpecialKey } from "@bentley/ui-abstract";
-import TestUtils from "../TestUtils";
+import { Orientation } from "@bentley/ui-core";
+import { TestUtils } from "../TestUtils";
 import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
 import { AccuDrawDialog } from "../../ui-framework/accudraw/AccuDrawDialog";
 import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
@@ -33,7 +34,7 @@ describe("AccuDrawDialog", () => {
 
   it("should render Polar", () => {
     IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
-    render(<AccuDrawDialog opened={true} dialogId="accudraw" />);
+    render(<AccuDrawDialog opened={true} dialogId="accudraw" orientation={Orientation.Horizontal} />);
   });
 
   it("should set focus to Home on Esc key", () => {

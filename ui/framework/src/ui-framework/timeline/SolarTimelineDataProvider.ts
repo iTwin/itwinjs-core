@@ -19,15 +19,17 @@ import { BaseSolarDataProvider } from "@bentley/ui-components";
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
   protected _viewState: ViewState;
 
+  protected get _displayStyle3d(): DisplayStyle3dState | undefined {
+    return undefined !== this._viewport && this._viewport.view.is3d() ? this._viewport.view.displayStyle : undefined;
+  }
+
   /** constructor that takes an optional viewport and optional position on globe that is used if the imodel is not "GeoLocated"  */
   constructor(viewState: ViewState, viewport?: ScreenViewport, longitude?: number, latitude?: number) {
     super(viewport, longitude, latitude);
     this._viewState = viewState;
 
     if (viewState.is3d()) {
-      const displayStyle = viewState.displayStyle as DisplayStyle3dState;
-      if (displayStyle)
-        this.supportsTimelineAnimation = true;
+      this.supportsTimelineAnimation = true;
       this._cartographicCenter = this.getCartographicCenter(viewState.iModel);
     } else {
       this._cartographicCenter = Cartographic.fromDegrees(this.longitude, this.latitude, 0.0);
@@ -35,42 +37,25 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
   }
 
   public get shouldShowTimeline() {
-    if (this._viewport) {
-      const displayStyle = this._viewport.view.displayStyle as DisplayStyle3dState;
-      if (displayStyle && displayStyle.viewFlags.shadows) {
-        return true;
-      }
-    }
-    return false;
+    const style = this._displayStyle3d;
+    return undefined !== style && style.viewFlags.shadows;
   }
 
   public onTimeChanged = (time: Date) => {
     this.timeOfDay = time;
-    // istanbul ignore else
-    if (this._viewport) {
-      const displayStyle = this._viewport.view.displayStyle as DisplayStyle3dState;
-      if (displayStyle) {
-        displayStyle.setSunTime(time.getTime());
-        this._viewport.invalidateScene();
-      }
+    if (this._viewport && this._viewport.view.is3d()) {
+      this._viewport.view.displayStyle.setSunTime(time.getTime());
+      this._viewport.invalidateScene();
     }
   };
 
   public get shadowColor(): ColorDef {
-    if (this._viewport) {
-      const displayStyle = this._viewport.view.displayStyle as DisplayStyle3dState;
-      if (displayStyle) {
-        return displayStyle.settings.solarShadows.color.toColorDef();
-      }
-    }
-    return ColorDef.create(ColorByName.gray);
+    const style = this._displayStyle3d;
+    return style ? style.settings.solarShadows.color.toColorDef() : ColorDef.create(ColorByName.gray);
   }
 
   public set shadowColor(color: ColorDef) {
-    if (!this._viewport)
-      return;
-
-    const displayStyle = this._viewport.view.displayStyle as DisplayStyle3dState;
+    const displayStyle = this._displayStyle3d;
     if (!displayStyle)
       return;
 
@@ -85,6 +70,5 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
 
     newSettings.color = color.tbgr;
     displayStyle.settings.solarShadows = SolarShadowSettings.fromJSON(newSettings);
-    this._viewport.invalidateScene();
   }
 }

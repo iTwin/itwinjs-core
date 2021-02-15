@@ -2397,6 +2397,11 @@ export class Matrix3d implements BeJSONFunctions {
     axisOrder: AxisOrder = AxisOrder.XYZ,
     result?: Matrix3d): Matrix3d | undefined {
     result = source.clone(result);
+    const maxAbs = result.maxAbs();
+    if (Geometry.isSmallMetricDistance(maxAbs))
+      return undefined;
+    const scale = 1.0 / maxAbs;
+    result.scaleColumnsInPlace(scale, scale, scale);
     result.axisOrderCrossProductsInPlace(axisOrder);
     if (result.normalizeColumnsInPlace())
       return result;

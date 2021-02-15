@@ -1,36 +1,38 @@
 # RpcInterface
 
+This article discusses RPC communication in iModel.js. See also [RPC vs IPC](./RpcVsIpc.md).
+
 Table of Contents:
 
-* [Overview](#overview)
-* Implementing RpcInterfaces
-  * [RpcInterfaces are Typescript Classes](#rpcinterfaces-are-typescript-classes)
-  * [RpcInterface Performance](#rpcinterface-performance)
-  * [Define the Interface](#define-the-interface)
-  * [Client Stub](#client-stub)
-  * [Server Implementation](#server-implementation)
-* Configuring RpcInterfaces
-  * [Server-side Configuration](#server-side-configuration)
-  * [Client-side Configuration](#client-side-configuration)
-* [Serve the Interfaces](#serve-the-interfaces)
-* [Asynchronous Nature of RpcInterfaces](#asynchronous-nature-of-rpcinterfaces)
-* [Logging and ActivityIds](#logging-and-activityids)
+- [Overview](#overview)
+- Implementing RpcInterfaces
+  - [RpcInterfaces are Typescript Classes](#rpcinterfaces-are-typescript-classes)
+  - [RpcInterface Performance](#rpcinterface-performance)
+  - [Define the Interface](#define-the-interface)
+  - [Client Stub](#client-stub)
+  - [Server Implementation](#server-implementation)
+- Configuring RpcInterfaces
+  - [Server-side Configuration](#server-side-configuration)
+  - [Client-side Configuration](#client-side-configuration)
+- [Serve the Interfaces](#serve-the-interfaces)
+- [Asynchronous Nature of RpcInterfaces](#asynchronous-nature-of-rpcinterfaces)
+- [Logging and ActivityIds](#logging-and-activityids)
 
 ## Overview
 
-As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iModel.js app is typically implemented in separate components that run in different threads, processes, and/or machines. These components communicate through interfaces, which are called *RpcInterfaces* because they use remote procedure calls, or [RPC](../learning/Glossary.md#RPC).
+As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iModel.js app is typically implemented in separate components that run in different processes, potentially on different machines. These components communicate through interfaces. These interfaces can either be implemented as [Rpc or Ipc](./RpcVsIpc.md). For web applications, iModel.js uses *RpcInterfaces* or [RPC](../learning/Glossary.md#RPC).
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC1.png)
 
-The diagram above shows an app frontend requesting operations from some backend. The frontend in this case is the client and the backend is the server. In general, the terms *client* and *server* specify the two *roles* in an RpcInterface:
+The diagram above shows an app frontend requesting operations from some backend. The terms *client* and *server* specify the two *roles* of an RpcInterface:
 
-* *client* -- the code that uses an RpcInterface and calls its methods. A client could be the [frontend of an app](./App.md#app-frontend), the [backend of an app](./App.md#app-backend), a [service](./App.md#imodel-services), or an [agent](./App.md#imodel-agents). A client could be [frontend code](../learning/Glossary.md#frontend) or [backend code](../learning/Glossary.md#backend).
+- *client* -- the code that runs on the frontend, and calls methods on an RpcInterface.
 
-* *server* -- the code that implements and exposes an RpcInterface to clients. A server could the [backend of an app](./App.md#app-backend) or a [service](./App.md#imodel-services). A server is always [backend code](../learning/Glossary.md#backend).
+- *server* -- the code that runs on the backend, and implements the RpcInterface.
 
-An `RpcInterface` is defined as a set of operations exposed by a server that a client can call, using configurable protocols, in a platform-independent way.
+Classes that derive from [RpcInterface]($common) define a set of operations implemented by a server, callable from a client.
 
-As shown, client and server work with the *RpcManager* to use an RpcInterface. RpcManager exposes a client "stub" on the client side. This stub forwards the request. On the other end, RpcManager uses a server dispatch mechanism to relay the request to the implementation in the server. In between the two is a transport mechanism that marshalls calls from the client to the server over an appropriate communications channel. The transport mechanism is encapsulated in a *configuration* that is applied at runtime.
+As shown, client and server work with the [RpcManager]($common) to manage the available RpcInterfaces. RpcManager exposes a client "stub" on the client side that forwards RPC requests. On the other end, RpcManager uses a server dispatch mechanism to relay the request to the implementation in the server. In between the two is a transport mechanism that marshalls the data passed from the client to the serverover an appropriate communications channel. The transport mechanism is encapsulated in a *configuration* that is applied at runtime.
 
 A typical app frontend will use more than one remote component. Likewise, a server can contain and expose more than one component. For example, the app frontend might need two interfaces, Interface 1 and Interface 2. In this example, both are implemented in Backend A.
 
@@ -46,25 +48,25 @@ As noted above, the client of an RPC interface can be frontend or backend code. 
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC4.png)
 
-# Implementing an RpcInterface
+## Implementing an RpcInterface
 
-## RpcInterfaces are TypeScript Classes
+### RpcInterfaces are TypeScript Classes
 
 An RpcInterface is a normal TypeScript class. A client requests a server operation by calling an ordinary TypeScript method, passing parameters and getting a result as ordinary TypeScript objects. The client gets the TypeScript interface object from the RpcManager. As noted above, the client  does not deal with communication
 
 Likewise, a server implements and exposes operations by writing normal TypeScript classes. A server registers its implementation objects with RcpManager. And, RpcManager dispatches in-coming requests from clients to those implementation objects.
 
-## Parameter and Return Types
+### Parameter and Return Types
 
 RpcInterface methods can take and return only primitive types and objects that are composed of primitive types or other such objects.
 
-## RpcInterface Performance
+### RpcInterface Performance
 
 Apps must be designed with remote communication in mind. In the case where a server or app backend is accessed over the Internet, both bandwidth and latency can vary widely. Therefore, care must be taken to limit number and size of round-trips between clients and servers. RpcInterface methods must be "chunky" and not "chatty".
 
 Also see [best practices](./backend/BestPractices.md).
 
-## Define the Interface
+### Define the Interface
 
 To define an interface, write a TypeScript class that extends [RpcInterface]($common).
 
@@ -93,7 +95,7 @@ A best practice is that an interface definition class should be marked as `abstr
 
 In a real interface definition class, each method and parameter should be commented, to provide documentation to client app developers that will try to use the interface.
 
-## Client Stub
+### Client Stub
 
 The client stub is an implementation of the interface that forwards method calls to the RPC mechanism. Each method in the client stub is exactly the same single line of code:
 
@@ -103,7 +105,7 @@ return this.forward(arguments);
 
 The forward property is implemented by the base class, and its forward method sends the call and its arguments through the configured RPC mechanism to the server. As shown in the previous example, the client stub code is incorporated into the interface definition class.
 
-## Server Implementation
+### Server Implementation
 
 The server-side implementation is also known as the "impl". An impl is always [backend code](./Glossary.md#backend).
 
@@ -127,21 +129,21 @@ A best practice is that an impl should be a thin layer on top of normal classes 
 
 Impls must be registered at runtime, as explained next.
 
-## RPC Configuration
+### RPC Configuration
 
 The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram shows the role of RpcInterfaces in supporting portable, reusable app components. A different *transport mechanism* is used in each configuration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces.
 
-## Web RPC configuration
+### Web RPC configuration
 
 The Web RPC configuration transforms client calls on an RpcInterface into HTTP requests. Provides endpoint-processing and call dispatching in the server process. The iModel.js cloud RPC configuration is highly parameterized and can be adapted for use in many environments. This configuration is designed to cooperate with routing and authentication infrastructure. See [Web architecture](./SoftwareArchitecture.md#web).
 
 iModel.js comes with an implementation of a Web RPC configuration that works with the Bentley Cloud infrastructure. It is relatively straightforward for developers to write custom Web RPC configurations that works with other infrastructures.
 
-## Desktop RPC configuration
+### Desktop RPC configuration
 
 The iModel.js desktop RPC configuration is specific to the Electron framework. It marshalls calls on an RpcInterface through high-bandwidth, low-latency pipes between cooperating processes on the same computer. It provides endpoint-processing and call dispatching in the backend process. See [Desktop architecture](./SoftwareArchitecture.md#desktop).
 
-## In-process RPC configuration
+### In-process RPC configuration
 
 The in-process RPC configuration marshalls calls on an RpcInterface across threads within a single process. It also provides call dispatching in the backend thread. See [Mobile architecture](./SoftwareArchitecture.md#mobile).
 
@@ -169,23 +171,23 @@ The server must decide which interfaces it wants to expose. A server can expose 
 [[include:RpcInterface.selectInterfacesToExpose]]
 ```
 
-### Configure Interfaces
+## Configure Interfaces
 
 The server must choose the appropriate RPC configuration for the interfaces that it exposes to clients.
 If the server is an app backend, the RPC configuration must correspond to the app configuration.
 If the server is a [service](./App.md#imodel-services), it must always use a [Web RPC configuration](#web-rpc-configuration) for its interfaces.
 A backend should configure its RpcInterfaces in its [configuration-specific main](./AppTailoring.md#configuration-specific-main).
 
-*Desktop Example:*
+*Electron Example:*
 
 ``` ts
-[[include:RpcInterface.initializeImplDesktop]]
+[[include:RpcInterface.initializeBackendForElectron]]
 ```
 
 *Web Example:*
 
 ``` ts
-[[include:RpcInterface.initializeImplBentleyCloud]]
+[[include:RpcInterface.initializeForCloud]]
 ```
 
 ### Serve the Interfaces
@@ -202,7 +204,7 @@ webServer.post("*", async (request, response) => {
 
 It is this simple because the server should be concerned *only* with serving its RpcInterfaces and not with static resources or any other kind of API.
 
-## Client-side Configuration
+### Client-side Configuration
 
 The client must specify *what* interfaces it plans to use and *where* those interfaces are found.
 The configuration for all app-specific RpcInterfaces must agree with the app's overall configuration.
@@ -215,7 +217,7 @@ A desktop app must use a desktop configuration.
 *Desktop Example:*
 
 ``` ts
-[[include:RpcInterface.initializeClientDesktop]]
+[[include:RpcInterface.initializeFrontendForElectron]]
 ```
 
 ### Web Configuration

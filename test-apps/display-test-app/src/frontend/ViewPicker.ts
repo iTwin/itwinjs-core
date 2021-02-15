@@ -5,7 +5,7 @@
 
 import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { DisplayStyle3dState, IModelConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
 
 interface ViewSpec extends IModelConnection.ViewSpec {
   isPrivate: boolean;
@@ -115,7 +115,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     const blankView = SpatialViewState.createBlank(iModel, ext.low, ext.high.minus(ext.low));
 
     // turn on the background map
-    const style = blankView.displayStyle as DisplayStyle3dState;
+    const style = blankView.displayStyle;
     const viewFlags = style.viewFlags;
     viewFlags.backgroundMap = true;
     style.viewFlags = viewFlags; // call to accessor to get the json properties to reflect the changes to ViewFlags

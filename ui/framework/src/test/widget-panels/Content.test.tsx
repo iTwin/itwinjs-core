@@ -49,7 +49,7 @@ describe("WidgetContent", () => {
         </WidgetStateContext.Provider>
       </NineZoneProvider>,
     );
-    (container.firstChild === null)!.should.true;
+    container.firstChild!.should.matchSnapshot();
   });
 
   it("should render w/o widgetDef", () => {
@@ -69,6 +69,6 @@ describe("WidgetContent", () => {
         </WidgetStateContext.Provider>
       </NineZoneProvider>,
     );
-    (container.firstChild === null).should.true;
+    container.firstChild!.should.matchSnapshot();
   });
 });

@@ -3,18 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, NoRenderApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ClientRequestContext, Id64, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { Angle, Point3d } from "@bentley/geometry-core";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import {
-  GeometricElement3dProps, IModel, IModelReadRpcInterface, IModelRpcProps, IModelWriteRpcInterface, SnapshotIModelRpcInterface, TestRpcManager,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, GeometricElement3dProps, IModel, IModelReadRpcInterface, IModelWriteRpcInterface,
+  RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager,
 } from "@bentley/imodeljs-common";
+import { BriefcaseConnection, NullRenderSystem } from "@bentley/imodeljs-frontend";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { ClientRequestContext, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelTestUtils } from "./Utils";
-import { Angle, Point3d } from "@bentley/geometry-core";
 import { RobotWorld } from "../RobotWorldSchema";
+import { KnownTestLocations } from "./KnownTestLocations";
+import { IModelTestUtils } from "./Utils";
 
 const requestContext = new ClientRequestContext();
 
@@ -39,34 +41,34 @@ async function setUpTest() {
   iModel.close();
 }
 
-describe("RobotWorldRpc", () => {
+if (ProcessDetector.isElectronAppFrontend) {
+  describe("RobotWorldRpc", () => {
 
-  // This node-based implementation of XHR is *not* required by our RPC mechanism. It is required by our
-  // I18n module (specifically the i18next package).
-  (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
+    // This node-based implementation of XHR is *not* required by our RPC mechanism. It is required by our
+    // I18n module (specifically the i18next package).
+    (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
-  it("should run robotWorld through RPC as a client", async () => {
-    // Simulate the deployment of the backend server
-    await simulateBackendDeployment();
+    it("should run robotWorld through Ipc as a client", async () => {
+      // Simulate the deployment of the backend server
+      await simulateBackendDeployment();
 
-    await setUpTest();  // tricky: do this after simulateBackendDeployment, as that function has the side effect of initializing IModelHost
+      await setUpTest();  // tricky: do this after simulateBackendDeployment, as that function has the side effect of initializing IModelHost
 
-    await NoRenderApp.startup();
+      await ElectronApp.startup({ iModelApp: { renderSys: new NullRenderSystem() } });
 
-    // expose interfaces using a direct call mechanism
-    TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, IModelWriteRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);
-    const roWrite = RobotWorldWriteRpcInterface.getClient();
-    const roRead = RobotWorldReadRpcInterface.getClient();
+      // expose interfaces using a direct call mechanism
+      TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, IModelWriteRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);
+      const roWrite = RobotWorldWriteRpcInterface.getClient();
+      const roRead = RobotWorldReadRpcInterface.getClient();
 
-    const iModel: IModelConnection = await SnapshotConnection.openFile(`${KnownTestLocations.outputDir}/` + `RobotWorldRpc.bim`);
-    assert.isTrue(iModel !== undefined);
-    const iToken: IModelRpcProps = iModel.getRpcProps();
+      const iModel = await BriefcaseConnection.openFile({ fileName: `${KnownTestLocations.outputDir}/` + `RobotWorldRpc.bim` });
+      assert.isTrue(iModel !== undefined);
+      const iToken = iModel.getRpcProps();
 
-    let modelId!: Id64String;
-    for (const modelStr of await iModel.queryEntityIds({ from: "bis:element", where: "CodeValue='test'" }))
-      modelId = Id64.fromString(modelStr);
+      let modelId!: Id64String;
+      for (const modelStr of await iModel.queryEntityIds({ from: "bis:element", where: "CodeValue='test'" }))
+        modelId = Id64.fromString(modelStr);
 
-    if (false) { // WIP: Invalid to modify a snapshot!
       //  Initial placement: Robot1 is not touching any barrier (or other robot)
       //
       //  |
@@ -109,19 +111,17 @@ describe("RobotWorldRpc", () => {
         assert.equal(barriersHit.length, 1, "expect a collision");
         assert.equal(barriersHit[0].toString(), barrier1.id);
       }
-    }
 
-    await iModel.close();
+      await iModel.close();
 
-    await IModelApp.shutdown();
+      await ElectronApp.shutdown();
 
-    await simulateBackendShutdown();
+      await simulateBackendShutdown();
+    });
   });
-});
+}
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudApp
-/* eslint-disable no-duplicate-imports */ // The imports are intentionally separated in this case.
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]) {
   const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };
@@ -136,10 +136,9 @@ export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefiniti
 }
 // __PUBLISH_EXTRACT_END__
 
-// __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientDesktop
-import { ElectronRpcManager } from "@bentley/imodeljs-common";
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeFrontendForElectron
 
-export function initializeRpcClientDesktop(interfaces: RpcInterfaceDefinition[]) {
-  ElectronRpcManager.initializeClient({}, interfaces);
+export async function initializeElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
+  await ElectronApp.startup({ iModelApp: { rpcInterfaces } });
 }
 // __PUBLISH_EXTRACT_END__

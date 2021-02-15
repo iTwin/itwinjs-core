@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, NativeAppRpcInterface, RpcInterfaceDefinition,
+  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
@@ -23,8 +23,7 @@ export default function getSupportedRpcs(): RpcInterfaceDefinition[] {
       SnapshotIModelRpcInterface,
       PresentationRpcInterface,
       IModelWriteRpcInterface,
-      Editor3dRpcInterface,
-      NativeAppRpcInterface,
+      Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
     ];
   }
 

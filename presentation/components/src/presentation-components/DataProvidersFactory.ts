@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Omit, RulesetsFactory } from "@bentley/presentation-common";
+import { Omit, PrimitivePropertyValue, RulesetsFactory } from "@bentley/presentation-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TypeConverterManager } from "@bentley/ui-components";
 import { findField } from "./common/Utils";
@@ -36,9 +36,9 @@ export class DataProvidersFactory {
     this._rulesetsFactory = props && props.rulesetsFactory ? props.rulesetsFactory : new RulesetsFactory();
   }
 
-  private async computeDisplayValue(typename: string, value: string | number | boolean | { x: number, y: number, z?: number } | undefined, displayValue: string): Promise<string> {
+  private async computeDisplayValue(typename: string, value: PrimitivePropertyValue, displayValue: string): Promise<string> {
     if (typename === "navigation") {
-      // note: type converters can't convert raw navigation value (ECInstanceId) to
+      // note: type converters can't convert raw navigation value (InstanceKey) to
       // display value - we have to use what's stored in the property record (supplied
       // display value)
       return displayValue;

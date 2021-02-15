@@ -3,30 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { OpenDialogReturnValue } from "electron";
-import { assert, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { getIModelElectronApi } from "@bentley/imodeljs-common";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { OpenDialogOptions } from "electron";
 
 export interface BrowserFileSelector {
   input: HTMLInputElement;
   directory: string;
 }
 
-const selectForElectron = async () => {
-  const options = {
-    properties: ["openFile"],
-    filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
-  };
-
-  const api = getIModelElectronApi();
-  assert(api !== undefined);
-  const val = (await api.invoke("imodeljs.dta.openFile", options)) as OpenDialogReturnValue; // eslint-disable-line @typescript-eslint/await-thenable
-  return val.canceled ? undefined : val.filePaths[0];
-};
-
 export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
-  if (isElectronRenderer)
-    return selectForElectron();
+  if (ProcessDetector.isElectronAppFrontend) {
+    const opts: OpenDialogOptions = {
+      properties: ["openFile"],
+      filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
+
+    };
+    const val = await ElectronApp.callDialog("showOpenDialog", opts);
+    return val.canceled ? undefined : val.filePaths[0];
+  }
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   if (undefined === selector || !document.createEvent) {

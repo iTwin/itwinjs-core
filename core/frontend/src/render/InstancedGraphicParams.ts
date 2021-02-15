@@ -35,9 +35,8 @@ export interface InstancedGraphicParams {
   /** If defined, an array of little-endian 24-bit unsigned integers containing the feature ID of each instance. */
   readonly featureIds?: Uint8Array;
 
-  /**
-   * If defined, as array of bytes (8 per instance) encoding the symbology overrides for each instance. The encoding matches that used by FeatureOverrides, though only the RGB, alpha, line weight, and line code are used.
-   * @internal
+  /** If defined, as array of bytes (8 per instance) encoding the symbology overrides for each instance.
+   * The encoding matches that used by FeatureOverrides, though only the RGB, alpha, line weight, and line code are used.
    */
   readonly symbologyOverrides?: Uint8Array;
 }

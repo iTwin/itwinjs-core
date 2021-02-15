@@ -73,9 +73,7 @@ export class CursorPrompt {
   };
 
   private _handleCursorUpdated = (args: CursorUpdatedEventArgs) => {
-    setTimeout(() => {
-      CursorPopupManager.updatePosition(args.newPt);
-    });
+    CursorPopupManager.updatePosition(args.newPt);
   };
 
 }

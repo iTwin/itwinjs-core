@@ -2,19 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
+import { BentleyStatus, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
+import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { expect } from "chai";
 import * as path from "path";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-
-import { BridgeTestUtils, TestIModelInfo } from "../BridgeTestUtils";
-import { BriefcaseDb, BriefcaseManager, IModelJsFs } from "@bentley/imodeljs-backend";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BentleyStatus, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
-import { KnownTestLocations } from "../KnownTestLocations";
 import { BridgeJobDefArgs, BridgeRunner } from "../../BridgeRunner";
-import { HubUtility } from "./HubUtility";
 import { ServerArgs } from "../../IModelHubUtils";
+import { BridgeTestUtils, TestIModelInfo } from "../BridgeTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
+import { HubUtility } from "./HubUtility";
 
 describe("IModelBridgeFwk (#integration)", () => {
   let testProjectId: string;
@@ -52,7 +50,7 @@ describe("IModelBridgeFwk (#integration)", () => {
   after(async () => {
     // Clean up the iModel
     try {
-      await BriefcaseManager.imodelClient.iModels.delete(requestContext, testProjectId, readWriteTestIModel.id);
+      await IModelHost.iModelClient.iModels.delete(requestContext, testProjectId, readWriteTestIModel.id);
     } catch (err) {
     }
 

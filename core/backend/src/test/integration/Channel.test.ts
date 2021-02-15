@@ -2,18 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
 import { DbOpcode, Id64String } from "@bentley/bentleyjs-core";
-import { HubIModel } from "@bentley/imodelhub-client";
 import { IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { SpatialCategory } from "../../Category";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { InformationPartitionElement, Subject } from "../../Element";
 import { BriefcaseDb, IModelDb } from "../../IModelDb";
-import { AuthorizedBackendRequestContext, ChannelRootAspect } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, ChannelRootAspect, IModelHost } from "../../imodeljs-backend";
 import { DictionaryModel } from "../../Model";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -43,10 +42,10 @@ describe("Channel Control (#integration)", () => {
     managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     testProjectId = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
     readWriteTestIModelName = HubUtility.generateUniqueName("ChannelControlIModel");
-    const existingIModel: HubIModel | undefined = await HubUtility.queryIModelByName(managerRequestContext, testProjectId, readWriteTestIModelName);
+    const existingIModel = await HubUtility.queryIModelByName(managerRequestContext, testProjectId, readWriteTestIModelName);
     if (existingIModel !== undefined && existingIModel.id !== undefined)
-      await BriefcaseManager.imodelClient.iModels.delete(managerRequestContext, testProjectId, existingIModel.id);
-    await BriefcaseManager.imodelClient.iModels.create(managerRequestContext, testProjectId, readWriteTestIModelName, { description: "Channel Control Test" });
+      await IModelHost.iModelClient.iModels.delete(managerRequestContext, testProjectId, existingIModel.id);
+    await IModelHost.iModelClient.iModels.create(managerRequestContext, testProjectId, readWriteTestIModelName, { description: "Channel Control Test" });
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(managerRequestContext, testProjectId, readWriteTestIModelName);
 
     // Purge briefcases that are close to reaching the acquire limit
@@ -65,7 +64,7 @@ describe("Channel Control (#integration)", () => {
     managerRequestContext.enter();
     const imodel1 = await BriefcaseDb.open(managerRequestContext, { fileName: props.fileName });
     managerRequestContext.enter();
-    imodel1.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+    imodel1.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     imodel1.concurrencyControl.startBulkMode();
 
     // We are currently in NO channel

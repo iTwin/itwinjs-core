@@ -28,6 +28,13 @@ describe("<ColorPickerPopup/>", () => {
   it("should render", () => {
     const renderedComponent = render(<ColorPickerPopup initialColor={colorDef} />);
     expect(renderedComponent).not.to.be.undefined;
+    expect(renderedComponent.container.querySelector(".components-caret")).to.be.null;
+  });
+
+  it("should render with caret", () => {
+    const renderedComponent = render(<ColorPickerPopup initialColor={colorDef} showCaret />);
+    expect(renderedComponent).not.to.be.undefined;
+    expect(renderedComponent.container.querySelector(".components-caret")).not.to.be.null;
   });
 
   it("button press should open popup and allow color selection", async () => {

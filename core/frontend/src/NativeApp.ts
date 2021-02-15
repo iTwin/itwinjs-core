@@ -6,23 +6,21 @@
  * @module NativeApp
  */
 
-import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, Config, GuidString, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, Events, IModelError, IModelVersion, InternetConnectivityStatus,
-  LocalBriefcaseProps,
-  NativeAppRpcInterface, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, RpcRegistry, StorageValue, SyncMode,
+  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
+  NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
-import { ProgressCallback, ProgressInfo, RequestGlobalOptions } from "@bentley/itwin-client";
-import { EventSource } from "./EventSource";
+import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
-import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { LocalBriefcaseConnection } from "./IModelConnection";
+import { IModelAppOptions } from "./imodeljs-frontend";
+import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
 /**
  * Options to download a briefcase
- * @internal
+ * @alpha
  */
 export interface DownloadBriefcaseOptions {
   /** This setting defines the operations allowed when synchronizing changes between the briefcase and iModelHub */
@@ -30,11 +28,28 @@ export interface DownloadBriefcaseOptions {
   fileName?: string;
 }
 
+/** receive notifications from backend */
+class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNotifications {
+  public get channelName() { return nativeAppNotify; }
+  public notifyInternetConnectivityChanged(status: InternetConnectivityStatus) {
+    Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
+    NativeApp.onInternetConnectivityChanged.raiseEvent(status);
+  }
+  public notifyUserStateChanged(arg: { accessToken: any, err?: string }) {
+    NativeApp.onUserStateChanged.raiseEvent(arg);
+  }
+}
+
 /**
- * This should be called instead of IModelApp.startup() for native apps.
- * @internal
+ * The frontend of a native application
+ * @see [Native Applications]($docs/learning/NativeApps.md)
+ * @alpha
  */
 export class NativeApp {
+  public static async callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
+    return IpcApp.callIpcChannel(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
+  }
+
   private static _storages = new Map<string, Storage>();
   private static _onOnline = async () => {
     await NativeApp.setConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Online);
@@ -44,9 +59,8 @@ export class NativeApp {
   };
   private static async setConnectivity(by: OverriddenBy, status: InternetConnectivityStatus) {
     RequestGlobalOptions.online = (status === InternetConnectivityStatus.Online);
-    await NativeAppRpcInterface.getClient().overrideInternetConnectivity(by, status);
+    await this.callNativeHost("overrideInternetConnectivity", by, status);
   }
-  private constructor() { }
   private static hookBrowserConnectivityEvents() {
     if (typeof window === "object" && window.ononline && window.onoffline) {
       window.addEventListener("online", this._onOnline);
@@ -59,71 +73,64 @@ export class NativeApp {
       window.removeEventListener("offline", this._onOffline);
     }
   }
-  public static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void> = new BeEvent<(status: InternetConnectivityStatus) => void>();
-  public static onMemoryWarning: BeEvent<() => void> = new BeEvent<() => void>();
+  public static onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
+  public static onUserStateChanged = new BeEvent<(_arg: { accessToken: any, err?: string }) => void>();
+
   public static async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
-    return NativeAppRpcInterface.getClient().checkInternetConnectivity();
+    return this.callNativeHost("checkInternetConnectivity");
   }
   public static async overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void> {
-    return NativeApp.setConnectivity(OverriddenBy.User, status);
+    return this.callNativeHost("overrideInternetConnectivity", OverriddenBy.User, status);
   }
-  public static async startup(opts?: IModelAppOptions) {
-    Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
-    if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
-      throw new IModelError(IModelStatus.BadArg, "NativeAppRpcInterface must be registered");
-    }
-    await IModelApp.startup(opts);
-    (IModelApp as any)._nativeApp = true;
-    const backendConfig = await NativeAppRpcInterface.getClient().getConfig();
-    Config.App.merge(backendConfig);
+  private static _isValid = false;
+  public static get isValid(): boolean { return this._isValid; }
+
+  /**
+   * This is called by either ElectronApp.startup or MobileApp.startup - it should not be called directly
+   * @internal
+   */
+  public static async startup(opts: { ipcApp?: IpcAppOptions, iModelApp?: IModelAppOptions }) {
+    await IpcApp.startup(opts);
+    if (this._isValid)
+      return;
+    this._isValid = true;
+
+    NativeAppNotifyHandler.register(); // receives notifications from backend
+
+    Config.App.merge(await this.callNativeHost("getConfig"));
     NativeApp.hookBrowserConnectivityEvents();
-    // initialize current state.
-    if (typeof window === "object" && typeof window.navigator === "object" && window.navigator.onLine) {
+
+    // initialize current online state.
+    if (window.navigator.onLine) {
       RequestGlobalOptions.online = window.navigator.onLine;
-      await NativeApp.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
+      await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
-    EventSource.global.on(Events.NativeApp.namespace, Events.NativeApp.onMemoryWarning, () => {
-      Logger.logWarning(FrontendLoggerCategory.NativeApp, "Low memory warning");
-      if (NativeApp.onMemoryWarning.numberOfListeners === 0) {
-        alert("Low memory warning");
-      }
-      NativeApp.onMemoryWarning.raiseEvent();
-    });
-    EventSource.global.on(Events.NativeApp.namespace, Events.NativeApp.onInternetConnectivityChanged, (args: any) => {
-      Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
-      NativeApp.onInternetConnectivityChanged.raiseEvent(args.status);
-    });
   }
 
   public static async shutdown() {
     NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
-    await IModelApp.shutdown();
+    await IpcApp.shutdown();
+    this._isValid = false;
   }
 
   public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
     asOf: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {
-    if (!IModelApp.initialized)
-      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling requestDownloadBriefcase");
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
-    const rpc = NativeAppRpcInterface.getClient();
     let stopProgressEvents = () => { };
-    const reportProgress = progress !== undefined;
-    if (reportProgress) {
-      stopProgressEvents = EventSource.global.on(
-        Events.NativeApp.namespace,
-        `${Events.NativeApp.onBriefcaseDownloadProgress}-${iModelId}`, (data: any) => {
-          progress!(data.progress as ProgressInfo);
-        });
+    if (progress !== undefined) {
+      stopProgressEvents = IpcApp.addListener(`nativeApp.progress-${iModelId}`, (_evt: Event, data: { loaded: number, total: number }) => {
+        progress(data);
+      });
     }
 
-    const briefcaseId = downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await rpc.acquireNewBriefcaseId(iModelId);
+    const briefcaseId = downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.callNativeHost("acquireNewBriefcaseId", iModelId);
     requestContext.enter();
 
-    const fileName = downloadOptions.fileName ?? await rpc.getBriefcaseFileName({ briefcaseId, iModelId });
+    const fileName = downloadOptions.fileName ?? await this.callNativeHost("getBriefcaseFileName", { briefcaseId, iModelId });
     requestContext.enter();
 
     const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, contextId, asOf: asOf.toJSON(), fileName };
@@ -133,20 +140,16 @@ export class NativeApp {
       locRequestContext.enter();
       try {
         locRequestContext.useContextForRpc = true;
-        await rpc.downloadBriefcase(requestProps, reportProgress);
+        await this.callNativeHost("downloadBriefcase", requestProps, progress !== undefined);
       } finally {
         stopProgressEvents();
       }
     };
 
     const requestCancel = async (): Promise<boolean> => {
-      const locRequestContext = new FrontendRequestContext();
-      locRequestContext.enter();
-      let status = false;
-      status = await rpc.requestCancelDownloadBriefcase(fileName);
-      if (status) {
+      const status = await this.callNativeHost("requestCancelDownloadBriefcase", fileName);
+      if (status)
         stopProgressEvents();
-      }
       return status;
     };
 
@@ -154,37 +157,17 @@ export class NativeApp {
   }
 
   public static async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
-    return NativeAppRpcInterface.getClient().getBriefcaseFileName(props);
+    return this.callNativeHost("getBriefcaseFileName", props);
   }
 
   /** Delete an existing briefcase
    * @param fileName the briefcase fileName
    */
   public static async deleteBriefcase(fileName: string): Promise<void> {
-    if (!IModelApp.initialized)
-      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.requestDownloadBriefcase first");
-
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
     requestContext.useContextForRpc = true;
-    await NativeAppRpcInterface.getClient().deleteBriefcaseFiles(fileName);
-  }
-
-  public static async openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
-    if (!IModelApp.initialized)
-      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling openBriefcase");
-    return LocalBriefcaseConnection.open(briefcaseProps);
-  }
-
-  public static async closeBriefcase(connection: LocalBriefcaseConnection): Promise<void> {
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
-    if (!IModelApp.initialized)
-      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
-    requestContext.useContextForRpc = true;
-    await NativeAppRpcInterface.getClient().closeBriefcase(connection.key);
+    await this.callNativeHost("deleteBriefcaseFiles", fileName);
   }
 
   /**
@@ -192,10 +175,7 @@ export class NativeApp {
    * @returns list of BriefcaseProps in cache
    */
   public static async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
-    if (!IModelApp.initialized)
-      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
-
-    return NativeAppRpcInterface.getClient().getCachedBriefcases(iModelId);
+    return this.callNativeHost("getCachedBriefcases", iModelId);
   }
 
   /**
@@ -207,7 +187,7 @@ export class NativeApp {
     if (this._storages.has(name)) {
       return this._storages.get(name)!;
     }
-    const storage = new Storage(await NativeAppRpcInterface.getClient().storageMgrOpen(name));
+    const storage = new Storage(await this.callNativeHost("storageMgrOpen", name));
     this._storages.set(storage.id, storage);
     return storage;
   }
@@ -221,7 +201,7 @@ export class NativeApp {
     if (!this._storages.has(storage.id)) {
       throw new Error(`Storage [Id=${storage.id}] not found`);
     }
-    await NativeAppRpcInterface.getClient().storageMgrClose(storage.id, deleteId);
+    await this.callNativeHost("storageMgrClose", storage.id, deleteId);
     (storage as any)._isOpen = false;
     this._storages.delete(storage.id);
   }
@@ -231,13 +211,14 @@ export class NativeApp {
    * @returns return list of storage available on disk.
    */
   public static async getStorageNames(): Promise<string[]> {
-    return NativeAppRpcInterface.getClient().storageMgrNames();
+    return NativeApp.callNativeHost("storageMgrNames");
   }
 }
 
 /**
- * Storage allow [[NativeApp]] to data to disk. This data is considered cached and therefore its not ensured to exist permanently
- * @internal
+ *  A local disk-based cache for key value pairs available for NativeApps.
+ * @note This should be used only for local caching, since its not guaranteed to exist permanently.
+ * @alpha
  */
 export class Storage {
   constructor(public readonly id: string, private _isOpen: boolean = true) { }
@@ -252,7 +233,7 @@ export class Storage {
     if (!this._isOpen) {
       throw new Error(`Storage [Id=${this.id}] is not open`);
     }
-    return NativeAppRpcInterface.getClient().storageGet(this.id, key);
+    return NativeApp.callNativeHost("storageGet", this.id, key);
   }
 
   /**
@@ -265,7 +246,7 @@ export class Storage {
     if (!this._isOpen) {
       throw new Error(`Storage [Id=${this.id}] is not open`);
     }
-    return NativeAppRpcInterface.getClient().storageSet(this.id, key, value);
+    return NativeApp.callNativeHost("storageSet", this.id, key, value);
   }
 
   /**
@@ -277,7 +258,7 @@ export class Storage {
     if (!this._isOpen) {
       throw new Error(`Storage [Id=${this.id}] is not open`);
     }
-    return NativeAppRpcInterface.getClient().storageKeys(this.id);
+    return NativeApp.callNativeHost("storageKeys", this.id);
   }
 
   /**
@@ -288,7 +269,7 @@ export class Storage {
     if (!this._isOpen) {
       throw new Error(`Storage [Id=${this.id}] is not open`);
     }
-    return NativeAppRpcInterface.getClient().storageRemove(this.id, key);
+    return NativeApp.callNativeHost("storageRemove", this.id, key);
   }
 
   /**
@@ -299,7 +280,7 @@ export class Storage {
     if (!this._isOpen) {
       throw new Error(`Storage [Id=${this.id}] is not open`);
     }
-    return NativeAppRpcInterface.getClient().storageRemoveAll(this.id);
+    return NativeApp.callNativeHost("storageRemoveAll", this.id);
   }
 
   /**
@@ -314,7 +295,7 @@ export class Storage {
   }
 
   /**
-   * Can be check to see if the storage is still open on frontend
+   * Can be check to see if the storage is still open
    */
   public get isOpen(): boolean {
     return this._isOpen;

@@ -18,6 +18,13 @@ describe("<ColorPickerButton/>", () => {
   it("should render", () => {
     const renderedComponent = render(<ColorPickerButton initialColor={colorDef} />);
     expect(renderedComponent).not.to.be.undefined;
+    expect(renderedComponent.container.querySelector(".components-caret")).to.be.null;
+  });
+
+  it("should render with caret", () => {
+    const renderedComponent = render(<ColorPickerButton initialColor={colorDef} showCaret />);
+    expect(renderedComponent).not.to.be.undefined;
+    expect(renderedComponent.container.querySelector(".components-caret")).not.to.be.null;
   });
 
   it("should re-render properly when initial color prop changes", () => {

@@ -7,6 +7,7 @@
 // should use the abstractions supplied in /render/*, not the implementations in
 // /render/webgl/* which are subject to change at any time.
 
+export * from "./render/webgl/AttributeBuffers";
 export * from "./render/webgl/AttributeMap";
 export * from "./render/webgl/BatchState";
 export * from "./render/webgl/BatchUniforms";
@@ -25,7 +26,6 @@ export * from "./render/webgl/FrameBuffer";
 export * from "./render/webgl/FrustumUniforms";
 export * from "./render/webgl/GL";
 export * from "./render/webgl/Graphic";
-export * from "./render/webgl/Handle";
 export * from "./render/webgl/LineCode";
 export * from "./render/webgl/Matrix";
 export * from "./render/webgl/Mesh";
@@ -52,5 +52,6 @@ export * from "./render/webgl/Technique";
 export * from "./render/webgl/TechniqueFlags";
 export * from "./render/webgl/TechniqueId";
 export * from "./render/webgl/Texture";
+export * from "./render/webgl/UniformHandle";
 export * from "./render/webgl/VertexLUT";
 export * from "./render/webgl/ViewRectUniforms";

@@ -7,15 +7,15 @@ From the same JavaScript codebase, it is possible to create:
   * [Web Apps](#web-apps) that run in web browsers and communicate with backend code running in Web servers
   * [Desktop Apps](#desktop-apps) that run on personal computers
   * [Mobile Apps](#mobile-apps) that run on tablets and phones
-* [Bridges](../learning/WriteABridge.md)
+* [Connectors](../learning/WriteAConnector.md)
 
 ## Agents and Services
 
-iModel agents and services are apps that have no interactive user interface. They are generally deployed on servers, often in the cloud using containers (e.g. Docker) and managed using a cloud orchestration framework (e.g. Kubernetes.) Agents and services are always hosted by NodeJs.
+iModel agents and services are apps that have no interactive user interface. They are generally deployed on servers, often in the cloud using containers (e.g. Docker) and managed using a cloud orchestration framework (e.g. Kubernetes.) Agents and services are always hosted by [Node.js](https://nodejs.org/).
 
 Agents and services are [backend](../learning/Glossary.md#Backend) code. Their main concern is to access and process the content of iModels. They use [briefcases](../learning/Glossary.md#Briefcase) to access iModels.
 
-Agents and services are written in TypeScript/JavaScript and depend on the `@bentley/imodeljs-backend` package. They may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. They frequently also use third-party JavaScript packages, as well as the services built into nodejs.
+Agents and services are written in TypeScript and depend on the `@bentley/imodeljs-backend` package. They may also depend on utility packages such as imodeljs-common, bentleyjs-core, or geometry-core. They frequently also use third-party JavaScript packages, as well as the services built into Node.js.
 
 Agents and Services use [logging](../learning/common/Logging.md) to enable users to monitor their operations and to help with diagnosing problems.
 
@@ -57,7 +57,7 @@ When configured as a Web app, the [frontend](#app-frontend) will run in a Web br
 
 #### Desktop Apps
 
-[Electron](https://electronjs.org/) is used to package an iModel.js app as a desktop app. In this case, the [frontend](#app-frontend) and [backend](#app-backend) will be in the same install set. There are still two processes, one for the backend and one for the frontend, but they physically reside on the same computer. The app will use the [desktop configuration](./RpcInterface.md#desktop-rpc-configuration) for efficient local calls on app-specific RpcInterfaces and a [Web configuration](./RpcInterface.md#web-rpc-configuration) for remote services. See the [diagram of a desktop app](./SoftwareArchitecture.md#desktop) for an overview. Also see [app tailoring](./AppTailoring.md).
+[Electron](https://electronjs.org/) is used to package an iModel.js app as a desktop app. In this case, the [frontend](#app-frontend) and [backend](#app-backend) will be in the same install set. There are still two processes, one for the backend and one for the frontend, but they always reside on the same computer. The app will use the [desktop configuration](./RpcInterface.md#desktop-rpc-configuration) for efficient local calls on app-specific RpcInterfaces and a [Web configuration](./RpcInterface.md#web-rpc-configuration) for remote services. See the [diagram of a desktop app](./SoftwareArchitecture.md#desktop) for an overview. Also see [app tailoring](./AppTailoring.md).
 
 ![>](./next.png) [How to write an interactive desktop app](../learning/WriteAnInteractiveDesktopApp.md).
 
@@ -73,7 +73,7 @@ The two concerns of an interactive app are cleanly separated in the [iModel.js a
 
 #### App Backend
 
-The data-access part of an app is called the [backend](https://en.wikipedia.org/wiki/Front_and_back_ends).
+The data-access part of an app is called the [backend](https://en.wikipedia.org/wiki/Front_and_back_ends) and always runs under [Node.js](https://nodejs.org/).
 
 An app can use a pre-existing or general-purpose [service](#imodel-services) as its backend. For example, a family of viewing apps can use a general-purpose service that handles requests for data from a given iModel.
 
@@ -87,9 +87,9 @@ See [the learning article](./backend/index.md) for how to write backend code.
 
 #### App Frontend
 
-The UI-specific part of an app is called the [frontend](https://en.wikipedia.org/wiki/Front_and_back_ends). The frontend should be concerned only with display and user interaction.
+The UI-specific part of an app is called the [frontend](https://en.wikipedia.org/wiki/Front_and_back_ends) and always runs in a browser. The frontend should be concerned only with display and user interaction.
 
-The frontend must be written in TypeScript or JavaScript. The frontend should use Web technologies only, including HTML, CSS, and JavaScript. The frontend can use any Web app framework, such as React or Angular.
+The frontend is written in TypeScript or JavaScript. The frontend should use Web technologies only, including HTML, CSS, and JavaScript. The frontend can use any Web app framework, such as React or Angular.
 
 The frontend makes requests on backend services to access iModel content. The frontend uses [RpcInterfaces](./RpcInterface.md) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. It may also depend on Web-specific packages. Both the UI and functionality of the app frontend [can be tailored](./AppTailoring.md) to best fit each desired configuration and target platform.
 

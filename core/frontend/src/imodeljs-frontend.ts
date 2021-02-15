@@ -5,6 +5,7 @@
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
+export * from "./BriefcaseConnection";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
 export * from "./ContextRealityModelState";
@@ -13,39 +14,40 @@ export * from "./DevTools";
 export * from "./DisplayStyleState";
 export * from "./DrawingViewState";
 export * from "./EditingFunctions";
+export * from "./ElementEditor";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
-export * from "./EventSource";
 export * from "./FeatureLogBatchClient";
 export * from "./FeatureOverrideProvider";
 export * from "./FeatureTrackingManager";
 export * from "./FrontendLoggerCategory";
 export * from "./FrontendRequestContext";
+export * from "./Frustum2d";
 export * from "./FrustumAnimator";
 export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./GlobeAnimator";
 export * from "./HitDetail";
+export * from "./ImageUtil";
 export * from "./IModelApp";
-export * from "./InteractiveEditingSession";
-export * from "./NativeApp";
-export * from "./NativeAppLogger";
 export * from "./IModelConnection";
 export * from "./IModelRoutingContext";
-export * from "./ElementEditor";
-export * from "./Frustum2d";
-export * from "./ImageUtil";
+export * from "./InteractiveEditingSession";
+export * from "./IpcApp";
 export * from "./LinePlaneIntersect";
 export * from "./MarginPercent";
 export * from "./Marker";
 export * from "./ModelSelectorState";
 export * from "./ModelState";
+export * from "./NativeApp";
+export * from "./NativeAppLogger";
 export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./QuantityFormatter";
 export * from "./RenderScheduleState";
+export * from "./CheckpointConnection";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialClassifiers";
@@ -58,16 +60,16 @@ export * from "./Tiles";
 export * from "./TwoWayViewportSync";
 export * from "./ViewAnimation";
 export * from "./ViewContext";
+export * from "./ViewGlobalLocation";
 export * from "./ViewingSpace";
 export * from "./ViewManager";
+export * from "./Viewport";
 export * from "./ViewPose";
 export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
-export * from "./Viewport";
-export * from "./ViewGlobalLocation";
+export * from "./WebViewerApp";
 export * from "./oidc/DesktopAuthorizationClient";
-export * from "./oidc/MobileAuthorizationClient";
 export * from "./oidc/OidcBrowserClient";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";
@@ -83,6 +85,7 @@ export * from "./render/GraphicBranch";
 export * from "./render/GraphicBuilder";
 export * from "./render/InstancedGraphicParams";
 export * from "./render/MockRender";
+export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";
@@ -177,6 +180,10 @@ export * from "./ViewCreator3d";
  * @docs-group-description SelectionSet
  * Classes for working with the set of selected elements.
  * See [the learning articles]($docs/learning/frontend/index.md).
+ */
+/**
+ * @docs-group-description NativeApp
+ * Classes for working with Native Applications
  */
 /**
  * @docs-group-description OIDC

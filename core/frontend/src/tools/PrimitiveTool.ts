@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
+import { EditableConnection } from "../InteractiveEditingSession";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { Viewport } from "../Viewport";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
@@ -22,8 +22,10 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public targetModelId?: string;
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
 
-  /** Get the iModel the tool is operating against. */
-  public get iModel(): IModelConnection { return this.targetView!.view.iModel; }
+  /** Get the iModel for this tool.
+   * @internal
+   */
+  public get iModel(): EditableConnection { return this.targetView!.view.iModel as EditableConnection; }
 
   /**
    * Establish this tool as the active PrimitiveTool.
@@ -49,8 +51,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
     const view = vp.view;
     const iModel = view.iModel;
+
     if (this.requireWriteableTarget() && iModel.isReadonly)
-      return false; // Tool can't be used when iModel is read only.
+      return false; // this Tool can't be used when iModel is read only.
 
     if (undefined === this.targetView || (!this.targetIsLocked && isSelectedViewChange))
       this.targetView = vp; // Update target to new view if undefined or still free to change.
@@ -177,9 +180,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
     return true;
   }
+
   /**
    * Tools need to call SaveChanges to commit any elements they have added/changes they have made.
    * This helper method supplies the tool name for the undo string to iModel.saveChanges.
    */
-  public async saveChanges(): Promise<void> { return this.iModel.saveChanges(this.toolId); }
+  public async saveChanges(): Promise<void> {
+    return this.iModel.saveChanges(this.toolId);
+  }
 }

@@ -7,13 +7,13 @@
  */
 
 import { Store } from "redux";
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
+import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiComponents } from "@bentley/ui-components";
 import { LocalUiSettings, UiEvent, UiSettings } from "@bentley/ui-core";
@@ -22,37 +22,36 @@ import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
 import { IModelServices } from "./clientservices/IModelServices";
 import { ProjectServices } from "./clientservices/ProjectServices";
+import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
 import { ConfigurableUiActionId } from "./configurableui/state";
 import { FrameworkState } from "./redux/FrameworkState";
 import { CursorMenuData, PresentationSelectionScope, SessionStateActionId } from "./redux/SessionState";
 import { StateManager } from "./redux/StateManager";
+import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
 import { SyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
-import { TelemetryEvent } from "@bentley/telemetry-client";
+import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
+import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
-import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
-import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
-import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
-import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 
 // cSpell:ignore Mobi
 
 /** UiVisibility Event Args interface.
  * @public
- */
+ */
 export interface UiVisibilityEventArgs {
   visible: boolean;
 }
 
 /** UiVisibility Event class.
  * @public
- */
+ */
 export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
 
 /** FrameworkVersion Changed Event Args interface.
  * @internal
- */
+ */
 export interface FrameworkVersionChangedEventArgs {
   oldVersion: string;
   version: string;
@@ -60,7 +59,7 @@ export interface FrameworkVersionChangedEventArgs {
 
 /** FrameworkVersion Changed Event class.
  * @internal
- */
+ */
 export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChangedEventArgs> { }
 
 /** TrackingTime time argument used by our feature tracking manager as an option argument to the TelemetryClient
@@ -89,6 +88,7 @@ export class UiFramework {
   private static _uiVersion = "";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
   private static _uiSettings: UiSettings;
+  private static _escapeToHome = false;
 
   /** Get Show Ui event.
    * @public
@@ -371,7 +371,7 @@ export class UiFramework {
   /** @beta */
   public static getUiSettings(): UiSettings {
     if (undefined === UiFramework._uiSettings)
-      UiFramework._uiSettings= new LocalUiSettings();
+      UiFramework._uiSettings = new LocalUiSettings();
     return UiFramework._uiSettings;
   }
 
@@ -416,12 +416,10 @@ export class UiFramework {
       [{ id: "element", label: "Element" } as PresentationSelectionScope];
   }
 
-  /** @public */
   public static getIsUiVisible() {
     return UiShowHideManager.isUiVisible;
   }
 
-  /** @public */
   public static setIsUiVisible(visible: boolean) {
     if (UiShowHideManager.isUiVisible !== visible) {
       UiShowHideManager.isUiVisible = visible;
@@ -429,38 +427,24 @@ export class UiFramework {
     }
   }
 
-  /** @public */
   public static setColorTheme(theme: string) {
     UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetTheme, payload: theme });
   }
 
-  /** @public */
   public static getColorTheme(): string {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : /* istanbul ignore next */ SYSTEM_PREFERRED_COLOR_THEME;
   }
 
-  /** @public */
   public static setWidgetOpacity(opacity: number) {
     UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetWidgetOpacity, payload: opacity });
   }
 
-  /** @public */
   public static getWidgetOpacity(): number {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : /* istanbul ignore next */ WIDGET_OPACITY_DEFAULT;
   }
 
-  /** @public */
   public static isMobile() {  // eslint-disable-line @bentley/prefer-get
-    let mobile = false;
-    // istanbul ignore if
-    if ((/Mobi|Android/i.test(navigator.userAgent))) {
-      mobile = true;
-    } else /* istanbul ignore next */ if (/Mobi|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
-      mobile = true;
-    } else {
-      mobile = MobileRpcConfiguration.isMobileFrontend;
-    }
-    return mobile;
+    return ProcessDetector.isMobileBrowser;
   }
 
   /** Returns the Ui Version.
@@ -507,5 +491,19 @@ export class UiFramework {
       ConfigurableUiManager.closeUi();
     }
   };
+
+  /** Determines if Escape sends focus to Home
+   * @alpha
+   */
+  public static get escapeToHome(): boolean { return UiFramework._escapeToHome; }
+  public static set escapeToHome(v: boolean) { UiFramework._escapeToHome = v; }
+
+  /** Determines whether a ContextMenu is open
+   * @alpha
+   * */
+  public static get isContextMenuOpen(): boolean {
+    const contextMenu = document.querySelector("div.core-context-menu-opened");
+    return contextMenu !== null && contextMenu !== undefined;
+  }
 
 }

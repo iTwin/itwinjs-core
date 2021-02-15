@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { ElectronRpcConfiguration, RpcProtocolEvent, RpcRequest } from "@bentley/imodeljs-common";
+import { RpcProtocolEvent, RpcRequest } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { TestRpcInterface3 } from "../common/TestRpcInterface";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 
 // N.B.: These tests only run in electron!
-if (ElectronRpcConfiguration.isElectron) {
+if (ProcessDetector.isElectronAppFrontend) {
   describe("Rpc.ElectronProtocol", () => {
     it("should generate one response per request", async () => {
       let received = 0;

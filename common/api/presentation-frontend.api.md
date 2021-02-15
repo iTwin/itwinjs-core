@@ -8,13 +8,13 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { Content } from '@bentley/presentation-common';
 import { ContentDescriptorRequestOptions } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
+import { ContentUpdateInfo } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
 import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
 import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
 import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
-import { EventSource } from '@bentley/imodeljs-frontend';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
@@ -134,6 +134,20 @@ export interface IFavoritePropertiesStorage {
     savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
 }
 
+// @alpha
+export interface IModelContentChangeEventArgs {
+    imodelKey: string;
+    rulesetId: string;
+    updateInfo: ContentUpdateInfo;
+}
+
+// @alpha
+export interface IModelHierarchyChangeEventArgs {
+    imodelKey: string;
+    rulesetId: string;
+    updateInfo: HierarchyUpdateInfo;
+}
+
 // @public
 export interface ISelectionProvider {
     getSelection(imodel: IModelConnection, level: number): Readonly<KeySet>;
@@ -232,15 +246,9 @@ export class PresentationManager implements IDisposable {
     // @alpha
     loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
     // @alpha
-    onIModelContentChanged: BeEvent<(args: {
-        ruleset: Ruleset;
-        updateInfo: "FULL";
-    }) => void>;
+    onIModelContentChanged: BeEvent<(args: IModelContentChangeEventArgs) => void>;
     // @alpha
-    onIModelHierarchyChanged: BeEvent<(args: {
-        ruleset: Ruleset;
-        updateInfo: HierarchyUpdateInfo;
-    }) => void>;
+    onIModelHierarchyChanged: BeEvent<(args: IModelHierarchyChangeEventArgs) => void>;
     // @internal
     onNewiModelConnection(_: IModelConnection): Promise<void>;
     // @internal (undocumented)
@@ -255,8 +263,6 @@ export interface PresentationManagerProps {
     // @alpha
     activeUnitSystem?: PresentationUnitSystem;
     clientId?: string;
-    // @internal (undocumented)
-    eventSource?: EventSource;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
 }

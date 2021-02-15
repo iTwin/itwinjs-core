@@ -10,5 +10,8 @@
   },
   "property-grid": {
     "too-many-elements-selected": "Too many elements selected"
+  },
+  "instance-key-value-renderer": {
+    "select-instance": "Select element"
   }
 }

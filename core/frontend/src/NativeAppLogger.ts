@@ -6,8 +6,8 @@
  * @module NativeApp
  */
 
-import { GetMetaDataFunction, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelError, NativeAppRpcInterface, RpcRegistry } from "@bentley/imodeljs-common";
+import { GetMetaDataFunction, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { IpcApp } from "./IpcApp";
 
 /**
  * Describe log message
@@ -21,7 +21,7 @@ interface LogMessage {
   metaData: any;
 }
 /**
- * NativeAppLogger send log message from frontend to backend. It work on native app only.
+ * NativeAppLogger send log message from frontend to backend. It works on native app only.
  * @internal
  */
 export class NativeAppLogger {
@@ -39,7 +39,7 @@ export class NativeAppLogger {
     try {
       while (messages.length > 0) {
         const msg: LogMessage = messages.shift()!;
-        await NativeAppRpcInterface.getClient().log(msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
+        await IpcApp.callIpcHost("log", msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
       }
     } finally {
       // Put back unsent messages.
@@ -75,9 +75,6 @@ export class NativeAppLogger {
     }
   }
   public static initialize() {
-    if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
-      throw new IModelError(IModelStatus.BadArg, "NativeAppRpcInterface must be registered");
-    }
     const errCb = (category: string, message: string, getMetaData?: GetMetaDataFunction) => this.logError(category, message, getMetaData);
     const warnCb = (category: string, message: string, getMetaData?: GetMetaDataFunction) => this.logWarning(category, message, getMetaData);
     const infoCb = (category: string, message: string, getMetaData?: GetMetaDataFunction) => this.logInfo(category, message, getMetaData);

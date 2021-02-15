@@ -38,6 +38,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.
       NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
+  /** @deprecated use BriefcaseConnection with IpcHost/IpcApp */
   public async openForWrite(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
   public async saveChanges(_iModelToken: IModelRpcProps, _description?: string): Promise<void> { return this.forward(arguments); }
   public async hasUnsavedChanges(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
@@ -65,10 +66,14 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
 
   public async getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]> { return this.forward(arguments); }
 
+  /** @deprecated use BriefcaseConnection with IpcHost/IpcApp */
   public async deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void> { return this.forward(arguments); }
+  /** @deprecated use BriefcaseConnection with IpcHost/IpcApp */
   public async createAndInsertPhysicalModel(_tokenProps: IModelRpcProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String> { return this.forward(arguments); }
+  /** @deprecated use BriefcaseConnection with IpcHost/IpcApp */
   public async createAndInsertSpatialCategory(_tokenProps: IModelRpcProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String> { return this.forward(arguments); }
 
+  /** @deprecated use BriefcaseConnection with IpcHost/IpcApp */
   public async undoRedo(_rpc: IModelRpcProps, _undo: boolean): Promise<IModelStatus> {
     return this.forward(arguments);
   }

@@ -8,7 +8,7 @@
 
 import { ColorDef, LightSettings, RgbColor } from "@bentley/imodeljs-common";
 import { FloatRgb } from "./FloatRGBA";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 
 /** Maintains state of uniforms associated with a DisplayStyle3dState's LightSettings.

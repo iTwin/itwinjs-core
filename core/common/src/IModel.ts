@@ -8,7 +8,6 @@
 
 import { GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, AxisIndex, AxisOrder, Constant, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
-import { UpgradeOptions } from "./BriefcaseTypes";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
@@ -77,15 +76,8 @@ export interface IModelProps {
   name?: string;
 }
 
-/** Supplies the name of the [EventSource]($frontend) through which the backend pushes notifications to the frontend.
- * @internal
- */
-export interface IModelEventSourceProps {
-  eventSourceName: string;
-}
-
-/** @internal */
-export type IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps;
+/** @alpha */
+export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
 /** The properties that can be supplied when creating a *new* iModel.
  * @public
@@ -114,7 +106,7 @@ export interface IModelEncryptionProps {
  * Keys must be unique - that is there can never be two IModelDbs opened with the same key at any given time.
  * If no key is supplied in a call to open an IModelDb, one is generated and returned.
  * It is only necessary to supply a key if you have some reason to assign a specific value to identify an IModelDb.
- * If you don't supply the key, you must use the returned value for RPC communications.
+ * If you don't supply the key, you must use the returned value for Rpc and Ipc communications.
  * @public
  */
 export interface OpenDbKey {
@@ -127,12 +119,14 @@ export interface OpenDbKey {
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   /** @internal */
   lazyBlockCache?: boolean;
+  /** @internal */
+  autoUploadBlocks?: boolean;
 }
 
 /** Options that can be supplied when opening an existing StandaloneDb.
  * @beta
  */
-export type StandaloneOpenOptions = OpenDbKey & UpgradeOptions;
+export type StandaloneOpenOptions = OpenDbKey;
 
 /** Options that can be supplied when creating snapshot iModels.
  * @public
@@ -289,9 +283,6 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @internal */
-  protected abstract getEventSourceProps(): IModelEventSourceProps;
-
-  /** @internal */
   public getConnectionProps(): IModelConnectionProps {
     return {
       name: this.name,
@@ -301,7 +292,6 @@ export abstract class IModel implements IModelProps {
       ecefLocation: this.ecefLocation,
       geographicCoordinateSystem: this.geographicCoordinateSystem,
       ... this.getRpcProps(),
-      ...this.getEventSourceProps(),
     };
   }
 
@@ -314,7 +304,7 @@ export abstract class IModel implements IModelProps {
    * @internal
    */
   protected _fileKey: string;
-  /** Get the key that was used to open this iModel. This is the value used for RPC communications. */
+  /** Get the key that was used to open this iModel. This is the value used for Rpc and Ipc communications. */
   public get key() { return this._fileKey; }
 
   /** @internal */

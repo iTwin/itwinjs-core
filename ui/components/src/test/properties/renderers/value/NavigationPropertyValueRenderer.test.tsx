@@ -6,24 +6,18 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
 import { render } from "@testing-library/react";
 import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
 
-function createNavigationProperty(value: Primitives.Hexadecimal, displayValue?: string) {
-  const property = TestUtils.createPrimitiveStringProperty("Category", "", displayValue);
-  property.property.typename = "navigation";
-  (property.value as PrimitiveValue).value = value;
-  return property;
-}
-
 describe("NavigationPropertyValueRenderer", () => {
+  const instanceKey = { className: "", id: Id64.fromUint32Pair(1, 0) };
+
   describe("render", () => {
     it("renders navigation property from display value", () => {
       const renderer = new NavigationPropertyValueRenderer();
-      const property = createNavigationProperty(Id64.fromUint32Pair(1, 0), "Rod");
+      const property = TestUtils.createNavigationProperty("Category", instanceKey, "Rod");
 
       const element = renderer.render(property);
       const elementRender = render(<>{element}</>);
@@ -33,7 +27,7 @@ describe("NavigationPropertyValueRenderer", () => {
 
     it("renders navigation property from raw value", () => {
       const renderer = new NavigationPropertyValueRenderer();
-      const property = createNavigationProperty(Id64.fromUint32Pair(1, 0), "");
+      const property = TestUtils.createNavigationProperty("Category", instanceKey, "");
 
       const element = renderer.render(property);
       const elementRender = render(<>{element}</>);
@@ -79,7 +73,7 @@ describe("NavigationPropertyValueRenderer", () => {
   describe("canRender", () => {
     it("returns true for a navigation property", () => {
       const renderer = new NavigationPropertyValueRenderer();
-      const property = createNavigationProperty(Id64.fromUint32Pair(1, 0));
+      const property = TestUtils.createNavigationProperty("Category", instanceKey);
       expect(renderer.canRender(property)).to.be.true;
     });
 

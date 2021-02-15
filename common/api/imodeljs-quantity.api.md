@@ -15,12 +15,14 @@ export class BadUnit implements UnitProps {
     // (undocumented)
     name: string;
     // (undocumented)
+    system: string;
+    // (undocumented)
     unitFamily: string;
 }
 
 // @alpha
 export class BasicUnit implements UnitProps {
-    constructor(name: string, label: string, unitFamily: string, alternateLabels?: string[]);
+    constructor(name: string, label: string, unitFamily: string, alternateLabels?: string[], system?: string);
     // (undocumented)
     alternateLabels?: string[];
     // (undocumented)
@@ -30,7 +32,15 @@ export class BasicUnit implements UnitProps {
     // (undocumented)
     name: string;
     // (undocumented)
+    system: string;
+    // (undocumented)
     unitFamily: string;
+}
+
+// @alpha
+export interface CustomFormatProps extends FormatProps {
+    // (undocumented)
+    readonly custom: any;
 }
 
 // @alpha (undocumented)
@@ -66,6 +76,11 @@ export enum DecimalPrecision {
 // @alpha
 export class Format {
     constructor(name: string);
+    static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
+    // (undocumented)
+    get customProps(): any;
+    // (undocumented)
+    protected _customProps?: any;
     // (undocumented)
     get decimalSeparator(): string;
     // (undocumented)
@@ -76,7 +91,8 @@ export class Format {
     protected _formatTraits: FormatTraits;
     static formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
     static formatTypeToString(type: FormatType): string;
-    fromJson(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
+    fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
+    static getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingleZero" | "zeroEmpty" | "keepDecimalPoint" | "applyRounding" | "fractionDash" | "showUnitLabel" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative";
     hasFormatTraitSet(formatTrait: FormatTraits): boolean;
     // (undocumented)
     get hasUnits(): boolean;
@@ -85,6 +101,8 @@ export class Format {
     // (undocumented)
     protected _includeZero: boolean;
     // (undocumented)
+    static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits): boolean;
+    // (undocumented)
     get minWidth(): number | undefined;
     // (undocumented)
     protected _minWidth?: number;
@@ -92,6 +110,7 @@ export class Format {
     get name(): string;
     static parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision;
     static parseFormatTrait(stringToCheck: string, currentFormatTrait: number): FormatTraits;
+    static parseFormatTraits(formatTraitsFromJson: string | string[] | undefined): FormatTraits | undefined;
     static parseFormatType(jsonObjType: string, formatName: string): FormatType;
     static parseFractionalPrecision(jsonObjPrecision: number, formatName: string): FractionalPrecision;
     static parsePrecision(precision: number, formatName: string, type: FormatType): DecimalPrecision | FractionalPrecision;
@@ -132,7 +151,7 @@ export class Format {
     get thousandSeparator(): string;
     // (undocumented)
     protected _thousandSeparator: string;
-    toJson(): FormatProps;
+    toJSON(): FormatProps;
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
@@ -191,12 +210,24 @@ export class Formatter {
 
 // @alpha
 export class FormatterSpec {
-    constructor(name: string, format: Format, conversions?: UnitConversionSpec[]);
+    constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps);
+    applyFormatting(magnitude: number): string;
+    // (undocumented)
+    protected _conversions: UnitConversionSpec[];
     static create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec>;
     // (undocumented)
     get format(): Format;
     // (undocumented)
+    protected _format: Format;
+    static getUnitConversions(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<UnitConversionSpec[]>;
+    // (undocumented)
     get name(): string;
+    // (undocumented)
+    protected _name: string;
+    // (undocumented)
+    get persistenceUnit(): UnitProps;
+    // (undocumented)
+    protected _persistenceUnit: UnitProps;
     get unitConversions(): UnitConversionSpec[];
 }
 
@@ -259,22 +290,49 @@ export enum FractionalPrecision {
 }
 
 // @alpha
+export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps;
+
+// @alpha
+export interface ParsedQuantity {
+    ok: true;
+    value: number;
+}
+
+// @alpha
+export enum ParseError {
+    // (undocumented)
+    InvalidParserSpec = 6,
+    // (undocumented)
+    NoValueOrUnitFoundInString = 2,
+    // (undocumented)
+    UnableToConvertParseTokensToQuantity = 5,
+    // (undocumented)
+    UnableToGenerateParseTokens = 1,
+    // (undocumented)
+    UnitLabelSuppliedButNotMatched = 3,
+    // (undocumented)
+    UnknownUnit = 4
+}
+
+// @alpha
+export interface ParseQuantityError {
+    error: ParseError;
+    ok: false;
+}
+
+// @alpha
 export class Parser {
     static createUnitConversionSpecs(unitsProvider: UnitsProvider, outUnitName: string, potentialParseUnits: PotentialParseUnit[]): Promise<UnitConversionSpec[]>;
     static createUnitConversionSpecsForUnit(unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<UnitConversionSpec[]>;
+    // (undocumented)
+    static isParsedQuantity(item: QuantityParseResult): item is ParsedQuantity;
+    // (undocumented)
+    static isParseError(item: QuantityParseResult): item is ParseQuantityError;
     static parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps>;
-    static parseIntoQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): ParseResult;
     static parseQuantitySpecification(quantitySpecification: string, format: Format): ParseToken[];
-    static parseQuantityString(inString: string, parserSpec: ParserSpec): ParseResult;
+    static parseQuantityString(inString: string, parserSpec: ParserSpec): QuantityParseResult;
+    static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult;
     }
-
-// @alpha
-export interface ParseResult {
-    // (undocumented)
-    status: QuantityStatus;
-    // (undocumented)
-    value?: number | undefined;
-}
 
 // @alpha
 export class ParserSpec {
@@ -284,6 +342,7 @@ export class ParserSpec {
     get format(): Format;
     // (undocumented)
     get outUnit(): UnitProps;
+    parseToQuantityValue(inString: string): QuantityParseResult;
     get unitConversions(): UnitConversionSpec[];
 }
 
@@ -359,6 +418,9 @@ export class QuantityError extends BentleyError {
 }
 
 // @alpha
+export type QuantityParseResult = ParsedQuantity | ParseQuantityError;
+
+// @alpha
 export interface QuantityProps {
     // (undocumented)
     readonly isValid: boolean;
@@ -432,6 +494,7 @@ export interface UnitProps {
     readonly isValid: boolean;
     readonly label: string;
     readonly name: string;
+    readonly system: string;
     readonly unitFamily: string;
 }
 

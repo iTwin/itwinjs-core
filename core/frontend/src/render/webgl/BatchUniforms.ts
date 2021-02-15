@@ -9,7 +9,7 @@
 import { BatchState } from "./BatchState";
 import { FeatureOverrides } from "./FeatureOverrides";
 import { Batch } from "./Graphic";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 import { Target } from "./Target";
 import { FeatureMode } from "./TechniqueFlags";

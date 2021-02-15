@@ -14,7 +14,7 @@ import {
   BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
   SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
 } from "@bentley/imodeljs-backend";
-import { DomainOptions, IModel, IModelError, OpenBriefcaseProps, ProfileOptions, SubjectProps } from "@bentley/imodeljs-common";
+import { IModel, IModelError, LocalBriefcaseProps, OpenBriefcaseProps, SubjectProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BridgeLoggerCategory } from "./BridgeLoggerCategory";
 import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
@@ -52,6 +52,8 @@ export class BridgeJobDefArgs {
   public argsJson: any;
   /** Synchronizes a snapshot imodel, outside of iModelHub */
   public isSnapshot: boolean = false;
+  /** The synchronizer will automatically delete any element that wasn't visited. Some bridges do not visit each element on every run. Set this to false to disable automatic deletion */
+  public doDetectDeletedElements: boolean = true;
 }
 
 class StaticTokenStore {
@@ -208,7 +210,7 @@ export class BridgeRunner {
 }
 
 abstract class IModelDbBuilder {
-  protected _imodel?: IModelDb;
+  protected _imodel?: BriefcaseDb | SnapshotDb;
   protected _jobSubjectName: string;
   protected _jobSubject?: Subject;
 
@@ -217,12 +219,12 @@ abstract class IModelDbBuilder {
     this._jobSubjectName = this._bridge.getJobSubjectName(this._bridgeArgs.sourcePath!);
   }
 
-  public async abstract initialize(): Promise<void>;
-  public async abstract acquire(): Promise<void>;
+  public abstract initialize(): Promise<void>;
+  public abstract acquire(): Promise<void>;
 
-  protected async abstract _updateExistingData(): Promise<void>;
-  protected async abstract _initDomainSchema(): Promise<void>;
-  protected async abstract _importDefinitions(): Promise<void>;
+  protected abstract _updateExistingData(): Promise<void>;
+  protected abstract _initDomainSchema(): Promise<void>;
+  protected abstract _importDefinitions(): Promise<void>;
 
   protected getRevisionComment(pushComments: string): string {
     let comment = "";
@@ -276,14 +278,15 @@ abstract class IModelDbBuilder {
 
   protected _onChangeChannel(_newParentId: Id64String): void {
     assert(this._imodel !== undefined);
-    assert(!this._imodel.txns.hasLocalChanges);
   }
 
-  protected abstract async _enterChannel(channelRootId: Id64String, lockRoot?: boolean): Promise<void>;
+  protected abstract _enterChannel(channelRootId: Id64String, lockRoot?: boolean): Promise<void>;
 
   public async updateExistingData(): Promise<void> {
     await this._updateExistingData();
-    this._bridge.synchronizer.detectDeletedElements();
+    if (this._bridgeArgs.doDetectDeletedElements) {
+      this._bridge.synchronizer.detectDeletedElements();
+    }
 
     const options: ComputeProjectExtentsOptions = {
       reportExtentsWithOutliers: false,
@@ -310,7 +313,6 @@ abstract class IModelDbBuilder {
     assert(this._imodel !== undefined);
     return this._imodel;
   }
-
 }
 
 class BriefcaseDbBuilder extends IModelDbBuilder {
@@ -465,7 +467,6 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
   /** This will download the briefcase, open it with the option to update the Db profile, close it, re-open with the option to upgrade core domain schemas */
   public async acquire(): Promise<void> {
-
     // ********
     // ********
     // ******** TODO: Where do we check if the briefcase is already on the local disk??
@@ -479,30 +480,25 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new Error("Must initialize ContextId before using");
     if (this._serverArgs.iModelId === undefined)
       throw new Error("Must initialize IModelId before using");
-
-    // First, download the briefcase
-    const props = await BriefcaseManager.downloadBriefcase(this._requestContext, { contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
+    let props: LocalBriefcaseProps;
+    if (this._bridgeArgs.argsJson && this._bridgeArgs.argsJson.briefcaseId) {
+      props = await BriefcaseManager.downloadBriefcase(this._requestContext, {briefcaseId: this._bridgeArgs.argsJson.briefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
+    } else {
+      props = await BriefcaseManager.downloadBriefcase(this._requestContext, {contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
+      if(this._bridgeArgs.argsJson) {
+        this._bridgeArgs.argsJson.briefcaseId = props.briefcaseId; // don't overwrite other arguments if anything is passed in
+      } else {
+        this._bridgeArgs.argsJson= {briefcaseId: props.briefcaseId};
+      }
+    }
     let briefcaseDb: BriefcaseDb | undefined;
     const openArgs: OpenBriefcaseProps = {
       fileName: props.fileName,
     };
-    if (this._bridgeArgs.updateDbProfile) {
-      openArgs.upgrade = { profile: ProfileOptions.Upgrade };
+    if (this._bridgeArgs.updateDbProfile || this._bridgeArgs.updateDomainSchemas)
+      await BriefcaseDb.upgradeSchemas(this._requestContext, props);
+    if (briefcaseDb === undefined || !briefcaseDb.isOpen)
       briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
-      await briefcaseDb.pushChanges(this._requestContext, "Open with Db Profile update");
-      if (this._bridgeArgs.updateDomainSchemas)
-        briefcaseDb.close();
-    }
-
-    if (this._bridgeArgs.updateDomainSchemas) {
-      openArgs.upgrade = { domain: DomainOptions.Upgrade };
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
-      await briefcaseDb.pushChanges(this._requestContext, "Open with Domain Schema update");
-    }
-
-    if (briefcaseDb === undefined || !briefcaseDb.isOpen) {
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
-    }
 
     this._imodel = briefcaseDb;
     const synchronizer = new Synchronizer(briefcaseDb, this._bridge.supportsMultipleFilesPerChannel(), this._requestContext);
@@ -562,5 +558,4 @@ class SnapshotDbBuilder extends IModelDbBuilder {
     await this._bridge.updateExistingData();
     this._imodel.saveChanges();
   }
-
 }

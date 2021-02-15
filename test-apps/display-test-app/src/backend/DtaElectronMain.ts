@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { app, dialog, ipcMain } from "electron";
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronManagerOptions, IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
-import { ElectronRpcManager } from "@bentley/imodeljs-common";
+import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
+import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
+import { IpcHandler } from "@bentley/imodeljs-backend";
 
 const getWindowSize = () => {
   let width = 1280;
@@ -29,48 +29,51 @@ const getWindowSize = () => {
   return { width, height };
 };
 
-/** This is the function that gets called when we start display-test-app via `electron DtaElectronMain.js` from the command line.
+class DtaHandler extends IpcHandler implements DtaIpcInterface {
+  public get channelName() { return dtaChannel; }
+  public async sayHello() {
+    return "Hello from backend";
+  }
+}
+
+/**
+ * This is the function that gets called when we start display-test-app via `electron DtaElectronMain.js` from the command line.
  * It runs in the Electron main process and hosts the iModeljs backend (IModelHost) code. It starts the render (frontend) process
  * that starts from the file "index.ts". That launches the iModel.js frontend (IModelApp).
  */
 const dtaElectronMain = async () => {
-  // first initialize display-test-app backend
-  await initializeDtaBackend();
-
-  // Initialize rpcs for the backend
-  ElectronRpcManager.initializeImpl({}, getRpcInterfaces("native"));
-
-  const opts: ElectronManagerOptions = {
+  const opts: ElectronHostOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
+    rpcInterfaces: getRpcInterfaces(),
+    ipcHandlers: [DtaHandler],
+    developmentServer: process.env.NODE_ENV === "development",
   };
 
-  const manager = (process.env.NODE_ENV === "development") ?
-    new WebpackDevServerElectronManager(opts) : // port should match the port of the local dev server
-    new IModelJsElectronManager(opts);
+  await initializeDtaBackend(opts);
 
   const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
   const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
   // after backend is initialized, start display-test-app frontend process and open the window
-  await manager.initialize({ ...getWindowSize(), show: !maximizeWindow, title: "Display Test App" });
-  assert(manager.mainWindow !== undefined);
+  await ElectronHost.openMainWindow({ ...getWindowSize(), show: !maximizeWindow, title: "Display Test App" });
+  assert(ElectronHost.mainWindow !== undefined);
 
   if (maximizeWindow) {
-    manager.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
-    manager.mainWindow.show();
+    ElectronHost.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
+    ElectronHost.mainWindow.show();
   }
 
   if (autoOpenDevTools)
-    manager.mainWindow.webContents.toggleDevTools();
+    ElectronHost.mainWindow.webContents.toggleDevTools();
 
   // Handle custom keyboard shortcuts
-  app.on("web-contents-created", (_e, wc) => {
+  ElectronHost.app.on("web-contents-created", (_e, wc) => {
     wc.on("before-input-event", (event, input) => {
       // CTRL + SHIFT + I  ==> Toggle DevTools
       if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
-        if (manager.mainWindow)
-          manager.mainWindow.webContents.toggleDevTools();
+        if (ElectronHost.mainWindow)
+          ElectronHost.mainWindow.webContents.toggleDevTools();
 
         event.preventDefault();
       }
@@ -80,15 +83,13 @@ const dtaElectronMain = async () => {
   const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
   const configuration = require(configPathname); // eslint-disable-line @typescript-eslint/no-var-requires
   if (configuration.useIModelBank) {
-    app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
+    ElectronHost.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
       // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
       event.preventDefault();
       callback(true);
     });
   }
 
-  // handler for the "openFile" ipc request from the frontend
-  ipcMain.handle("imodeljs.dta.openFile", async (_event, options) => dialog.showOpenDialog(options));
 };
 
 // execute this immediately when we load

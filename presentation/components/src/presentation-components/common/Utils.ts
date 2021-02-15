@@ -10,6 +10,8 @@ import * as React from "react";
 import { Descriptor, Field, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { IPropertyValueRenderer, PropertyValueRendererManager } from "@bentley/ui-components";
+import { InstanceKeyValueRenderer } from "../properties/InstanceKeyValueRenderer";
 import { FIELD_NAMES_SEPARATOR } from "./ContentBuilder";
 
 /**
@@ -53,6 +55,26 @@ const localizationNamespaceName = "PresentationComponents";
 export const initializeLocalization = async () => {
   await Presentation.i18n.registerNamespace(localizationNamespaceName).readFinished;
   return () => Presentation.i18n.unregisterNamespace(localizationNamespaceName);
+};
+
+/**
+ * Registers custom property value renderers and returns cleanup callback that unregisters them.
+ * @internal
+ */
+export const initializePropertyValueRenderers = async () => {
+  const customRenderers: Array<{ name: string, renderer: IPropertyValueRenderer }> = [
+    { name: "SelectableInstance", renderer: new InstanceKeyValueRenderer() },
+  ];
+
+  for (const { name, renderer } of customRenderers) {
+    PropertyValueRendererManager.defaultManager.registerRenderer(name, renderer);
+  }
+
+  return () => {
+    for (const { name } of customRenderers) {
+      PropertyValueRendererManager.defaultManager.unregisterRenderer(name);
+    }
+  };
 };
 
 /**

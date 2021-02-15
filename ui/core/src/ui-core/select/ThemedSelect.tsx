@@ -6,21 +6,21 @@
  * @module Select
  */
 
+import "./themed-select.scss";
+import classnames from "classnames";
 import * as React from "react";
 import Component, { components } from "react-select";
-import classnames from "classnames";
-import { getParentSelector } from "./modalHelper";
-import { MenuProps } from "react-select/src/components/Menu";
-import { ActionMeta, FocusEventHandler, InputActionMeta, KeyboardEventHandler, ValueType } from "react-select/src/types";
 import { formatGroupLabel, getOptionLabel, getOptionValue } from "react-select/src/builtins";
 import { SelectComponentsConfig } from "react-select/src/components/index";
-import { getCssVariableAsNumber } from "../utils/getCssVariable";
+import { MenuProps } from "react-select/src/components/Menu";
+import { ActionMeta, FocusEventHandler, InputActionMeta, KeyboardEventHandler, ValueType } from "react-select/src/types";
 import { UiCore } from "../UiCore";
+import { getCssVariableAsNumber } from "../utils/getCssVariable";
+import { getParentSelector } from "./modalHelper";
 
-import "./themed-select.scss";
+// cspell:ignore reactselect builtins
 
-// cspell:ignore reactselect
-/* eslint-disable no-shadow, @typescript-eslint/consistent-type-definitions, @typescript-eslint/array-type */
+/* eslint-disable @typescript-eslint/no-shadow, @typescript-eslint/consistent-type-definitions, @typescript-eslint/array-type */
 type FormatOptionLabelContext = "menu" | "value";
 type FormatOptionLabelMeta = {
   context: FormatOptionLabelContext;
@@ -230,7 +230,7 @@ export function ThemedSelect(props: ThemedSelectProps) {
         classNamePrefix="react-select"
         noOptionsMessage={noOptionFunction}
         menuPortalTarget={portalTarget}
-        styles={ selectStyles }
+        styles={selectStyles}
         // eslint-disable-next-line @typescript-eslint/naming-convention
         components={{ Menu: ThemedMenu, ...props.components }}
         {...otherProps}

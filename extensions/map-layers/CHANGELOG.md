@@ -1,6 +1,39 @@
 # Change Log - @bentley/map-layers
 
-This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Refreshed MapLayerManager UI. Fixed minor issues with layer dragging order.  Code refactoring.
+- Correctly handle WMTS layers (only one layer can be visible at a time)
+- Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fix compile errors for later versions.
+
+## 2.10.3
+Fri, 08 Jan 2021 18:34:03 GMT
+
+_Version update only_
+
+## 2.10.2
+Fri, 08 Jan 2021 14:52:02 GMT
+
+_Version update only_
+
+## 2.10.1
+Tue, 22 Dec 2020 00:53:38 GMT
+
+### Updates
+
+- Correctly handle WMTS layers (only one layer can be visible at a time)
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- Move dependencies to peerDependencies
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT

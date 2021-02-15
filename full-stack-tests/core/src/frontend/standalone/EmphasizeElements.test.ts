@@ -197,6 +197,62 @@ describe("EmphasizeElements tests", () => {
     EmphasizeElements.clear(vp);
   });
 
+  it("Clear color overrides test", async () => {
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
+    EmphasizeElements.clear(vp);
+    const emph = EmphasizeElements.getOrCreate(vp);
+    const redIds = new Set<string>();
+    const blueIds = new Set<string>();
+    const redKey = emph.createOverrideKey(ColorDef.red, FeatureOverrideType.ColorOnly);
+    const blueKey = emph.createOverrideKey(ColorDef.blue, FeatureOverrideType.ColorOnly);
+    assert.isFalse(undefined === redKey);
+    assert.isFalse(undefined === blueKey);
+
+    redIds.add("0x1"); redIds.add("0x2"); redIds.add("0x3");
+    let status = emph.overrideElements(redIds, vp, ColorDef.red, FeatureOverrideType.ColorOnly, true);
+    assert.isTrue(status);
+    let currRedIds = emph.getOverriddenElementsByKey(redKey!);
+    assert.isTrue(undefined !== currRedIds && redIds.size === currRedIds.size);
+
+    blueIds.add("0x11"); blueIds.add("0x21");
+    status = emph.overrideElements(blueIds, vp, ColorDef.blue, FeatureOverrideType.ColorOnly, true);
+    assert.isTrue(status);
+    let currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
+    assert.isTrue(undefined !== currBlueIds && blueIds.size === currBlueIds.size);
+
+    let currMap = emph.getOverriddenElements();
+    assert.isTrue(undefined !== currMap && 2 === currMap.size);
+
+    status = emph.clearOverriddenElements(vp, ["0x21", "0x2"]); // Clear some elements with red and blue overrides...
+    assert.isTrue(status);
+
+    currRedIds = emph.getOverriddenElementsByKey(redKey!);
+    assert.isTrue(undefined !== currRedIds && 2 === currRedIds.size);
+
+    currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
+    assert.isTrue(undefined !== currBlueIds && 1 === currBlueIds.size);
+
+    status = emph.clearOverriddenElements(vp, redIds); // Clear remaining red overrides by element ids...
+    assert.isTrue(status);
+
+    currRedIds = emph.getOverriddenElementsByKey(redKey!);
+    assert.isTrue(undefined === currRedIds);
+
+    currMap = emph.getOverriddenElements();
+    assert.isTrue(undefined !== currMap && 1 === currMap.size);
+
+    status = emph.clearOverriddenElements(vp, blueKey); // Clear blue overrides by key...
+    assert.isTrue(status);
+
+    currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
+    assert.isTrue(undefined === currBlueIds);
+
+    currMap = emph.getOverriddenElements();
+    assert.isTrue(undefined === currMap);
+
+    EmphasizeElements.clear(vp);
+  });
+
   it("Applies correct overrides", () => {
     const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);

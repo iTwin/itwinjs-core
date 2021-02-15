@@ -4,7 +4,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, BriefcaseManager, ConcurrencyControl, SpatialCategory } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, ConcurrencyControl, IModelHost, SpatialCategory } from "@bentley/imodeljs-backend";
 import { ColorDef, IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { HubUtility } from "./HubUtility";
@@ -84,6 +84,6 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await IModelTestUtils.closeAndDeleteBriefcaseDb(this.requestContext, this._iModel);
-    await BriefcaseManager.imodelClient.iModels.delete(this.requestContext, this.projectId, this.iModelId);
+    await IModelHost.iModelClient.iModels.delete(this.requestContext, this.projectId, this.iModelId);
   }
 }

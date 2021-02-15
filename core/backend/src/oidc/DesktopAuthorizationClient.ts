@@ -69,7 +69,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
    * @return AccessToken if it's possible to get a valid access token, and undefined otherwise.
    */
   private async loadAccessToken(requestContext: ClientRequestContext): Promise<AccessToken | undefined> {
-    const tokenResponse: TokenResponse | undefined = await this._tokenStore.load();
+    const tokenResponse = await this._tokenStore.load();
     if (tokenResponse === undefined || tokenResponse.refreshToken === undefined)
       return undefined;
     try {
@@ -129,7 +129,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
       requestContext.enter();
       Logger.logTrace(loggerCategory, "Authorization listener invoked", () => ({ authRequest, authResponse, authError }));
 
-      const tokenResponse: TokenResponse | undefined = await this._onAuthorizationResponse(requestContext, authRequest, authResponse, authError);
+      const tokenResponse = await this._onAuthorizationResponse(requestContext, authRequest, authResponse, authError);
 
       authorizationEvents.onAuthorizationResponseCompleted.raiseEvent(authError ? authError : undefined);
 
@@ -215,7 +215,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
       return;
     }
 
-    const accessToken: AccessToken = await this.createAccessTokenFromResponse(requestContext, tokenResponse);
+    const accessToken = await this.createAccessTokenFromResponse(requestContext, tokenResponse);
     requestContext.enter();
 
     this._tokenResponse = tokenResponse;
@@ -232,7 +232,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
   private async refreshAccessToken(requestContext: ClientRequestContext, refreshToken: string): Promise<AccessToken> {
     requestContext.enter();
 
-    const tokenResponse: TokenResponse = await this.makeRefreshAccessTokenRequest(requestContext, refreshToken);
+    const tokenResponse = await this.makeRefreshAccessTokenRequest(requestContext, refreshToken);
 
     Logger.logTrace(loggerCategory, "Refresh token completed, and issued access token");
     await this.setTokenResponse(requestContext, tokenResponse);

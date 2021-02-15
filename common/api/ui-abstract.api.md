@@ -98,23 +98,27 @@ export interface AbstractWidgetProps extends ProvidedItem {
 // @alpha
 export enum AccuDrawField {
     // (undocumented)
-    Angle = 4,
+    Angle = 1,
     // (undocumented)
-    Distance = 3,
+    Distance = 0,
     // (undocumented)
-    X = 0,
+    X = 2,
     // (undocumented)
-    Y = 1,
+    Y = 3,
     // (undocumented)
-    Z = 2
+    Z = 4
+}
+
+// @alpha (undocumented)
+export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
 }
 
 // @alpha
 export enum AccuDrawMode {
     // (undocumented)
-    Polar = 1,
+    Polar = 0,
     // (undocumented)
-    Rectangular = 0
+    Rectangular = 1
 }
 
 // @alpha (undocumented)
@@ -149,8 +153,6 @@ export interface AccuDrawSetFieldValueFromUiEventArgs {
     field: AccuDrawField;
     // (undocumented)
     stringValue: string;
-    // (undocumented)
-    value: number;
 }
 
 // @alpha (undocumented)
@@ -161,6 +163,8 @@ export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldVa
 export interface AccuDrawSetFieldValueToUiEventArgs {
     // (undocumented)
     field: AccuDrawField;
+    // (undocumented)
+    formattedValue: string;
     // (undocumented)
     value: number;
 }
@@ -177,17 +181,18 @@ export interface AccuDrawSetModeEventArgs {
 
 // @alpha (undocumented)
 export class AccuDrawUiAdmin {
+    grabInputFocus(): void;
+    get hasInputFocus(): boolean;
+    static readonly onAccuDrawGrabInputFocusEvent: AccuDrawGrabInputFocusEvent;
     static readonly onAccuDrawSetFieldFocusEvent: AccuDrawSetFieldFocusEvent;
     static readonly onAccuDrawSetFieldLockEvent: AccuDrawSetFieldLockEvent;
     static readonly onAccuDrawSetFieldValueFromUiEvent: AccuDrawSetFieldValueFromUiEvent;
     static readonly onAccuDrawSetFieldValueToUiEvent: AccuDrawSetFieldValueToUiEvent;
     static readonly onAccuDrawSetModeEvent: AccuDrawSetModeEvent;
     setFieldFocus(field: AccuDrawField): void;
-    // (undocumented)
     setFieldLock(field: AccuDrawField, lock: boolean): void;
-    setFieldValueFromUi(field: AccuDrawField, value: number, stringValue: string): void;
-    setFieldValueToUi(field: AccuDrawField, value: number): void;
-    // (undocumented)
+    setFieldValueFromUi(field: AccuDrawField, stringValue: string): void;
+    setFieldValueToUi(field: AccuDrawField, value: number, formattedValue: string): void;
     setMode(mode: AccuDrawMode): void;
 }
 
@@ -1402,6 +1407,12 @@ export namespace Primitives {
     export type Enum = number | string;
     export type Float = number | string;
     export type Hexadecimal = Id64String;
+    export interface InstanceKey {
+        // (undocumented)
+        className: string;
+        // (undocumented)
+        id: Id64String;
+    }
     export type Int = number | string;
     export type Numeric = Float | Int;
     export type Point = Point2d | Point3d;
@@ -1418,7 +1429,7 @@ export namespace Primitives {
     export type String = string;
     export type Text = string;
     // (undocumented)
-    export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite;
+    export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite | InstanceKey;
 }
 
 // @beta

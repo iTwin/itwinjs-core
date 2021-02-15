@@ -16,9 +16,9 @@ ChangeSet id is a 40 characters SHA1 hash that is used to validate ChangeSet. Th
 
 Each Briefcase has a unique 24bit integer id. Briefcase id is written into the iModel file after download and is used to identify where changes have occurred.
 
-* Every Element id contains the id Briefcase where it was created.
-* Every ChangeSet has an id of the Briefcase that pushed it.
-* [Locks and Codes](../backend/ConcurrencyControl.md) contain an id of the Briefcase that they belong to.
+- Every Element id contains the id Briefcase where it was created.
+- Every ChangeSet has an id of the Briefcase that pushed it.
+- [Locks and Codes](../backend/ConcurrencyControl.md) contain an id of the Briefcase that they belong to.
 
 > Since Briefcase ids are limited, it is recommended to reuse briefcases instead of acquiring new ones. There are limits how many Briefcases a single user can acquire per minute/total to prevent users accidentally acquiring too many Briefcases.
 
@@ -26,6 +26,6 @@ Each Briefcase has a unique 24bit integer id. Briefcase id is written into the i
 
 To work with Briefcases, [BriefcaseDb]($backend) methods should be used instead of calling iModelHub API directly:
 
-* [Acquiring and opening a briefcase](../backend/IModelDb.md)
-* [Pulling changes](../backend/IModelDbSync.md)
-* [Creating and pushing changes](../backend/IModelDbReadwrite.md)
+- [Acquiring and opening a briefcase](../backend/IModelDb.md)
+- [Pulling changes](../backend/IModelDbSync.md)
+- [Creating and pushing changes](../backend/IModelDbReadwrite.md)

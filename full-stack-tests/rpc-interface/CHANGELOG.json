@@ -2,6 +2,36 @@
   "name": "@bentley/rpcinterface-full-stack-tests",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/rpcinterface-full-stack-tests_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.3",
+      "tag": "@bentley/rpcinterface-full-stack-tests_v2.10.3",
+      "date": "Fri, 08 Jan 2021 18:34:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.2",
+      "tag": "@bentley/rpcinterface-full-stack-tests_v2.10.2",
+      "date": "Fri, 08 Jan 2021 14:52:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.1",
+      "tag": "@bentley/rpcinterface-full-stack-tests_v2.10.1",
+      "date": "Tue, 22 Dec 2020 00:53:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.0",
+      "tag": "@bentley/rpcinterface-full-stack-tests_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.9.9",
       "tag": "@bentley/rpcinterface-full-stack-tests_v2.9.9",
       "date": "Sun, 13 Dec 2020 19:00:03 GMT",

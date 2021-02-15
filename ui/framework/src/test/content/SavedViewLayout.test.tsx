@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
-import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   CategorySelectorProps, DisplayStyleProps, EcefLocation, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -34,6 +34,7 @@ describe("SavedViewLayout", () => {
   imodelMock.setup((x) => x.models).returns(() => new IModelConnection.Models(imodelMock.object));
   imodelMock.setup((x) => x.backgroundMapLocation).returns(() => new BackgroundMapLocation());
   imodelMock.setup((x) => x.ecefLocation).returns(() => new EcefLocation({ origin: Point3d.createZero(), orientation: YawPitchRollAngles.createRadians(0, 0, 0) }));
+  imodelMock.setup((x) => x.projectExtents).returns(() => Range3d.create(Point3d.createZero()));
 
   const viewDefinitionProps1: SpatialViewDefinitionProps = {
     cameraOn: false, origin, extents,

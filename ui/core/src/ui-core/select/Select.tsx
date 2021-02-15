@@ -89,13 +89,13 @@ export function Select(props: SelectProps) {
   const showPlaceholder = React.useMemo(() => props.placeholder && (undefined === selectValue || selectValue === placeholderValue.current) && !defaultValue, [defaultValue, selectValue, props.placeholder]);
   const isRequired = React.useMemo(() => showPlaceholder || required, [required, showPlaceholder]);
   const currentDefaultValue = React.useMemo(() => getCurrentDefaultValue(defaultValue, showPlaceholder ? placeholderValue.current : undefined), [defaultValue, showPlaceholder]);
-
+  const value = (!isInitialMount.current && undefined === selectValue) ? currentDefaultValue : selectValue;
   return (
     <select ref={selectElement} {...otherProps}
       required={isRequired}
       className={classnames("uicore-inputs-select", className)}
-      value={(!isInitialMount.current && undefined === selectValue) ? currentDefaultValue : selectValue}
-      defaultValue={currentDefaultValue}>
+      value={value}
+      defaultValue={value === undefined ? currentDefaultValue : undefined}>
       {showPlaceholder &&
         <option className="placeholder" disabled key="" value={placeholderValue.current}>{props.placeholder}</option>
       }

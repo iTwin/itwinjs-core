@@ -10,6 +10,7 @@ beta;AbstractStatusBarLabelItem
 beta;AbstractToolbarProps
 beta;AbstractWidgetProps 
 alpha;AccuDrawField
+alpha;AccuDrawGrabInputFocusEvent 
 alpha;AccuDrawMode
 alpha;AccuDrawSetFieldFocusEvent 
 alpha;AccuDrawSetFieldFocusEventArgs

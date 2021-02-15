@@ -18,7 +18,7 @@ import { ButtonType, getButtonTypeClassName } from "../button/Button";
 // TODO: implement
 /** @internal */
 export enum SplitButtonActionType {
-  ContextMenu, // eslint-disable-line no-shadow
+  ContextMenu, // eslint-disable-line @typescript-eslint/no-shadow
   List,
 }
 

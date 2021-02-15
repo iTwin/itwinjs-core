@@ -41,4 +41,4 @@ private _handleWeightChange = (value: number) => {
 
 ## API Reference
 
-* [LineWeight]($ui-components:LineWeight)
+- [LineWeight]($ui-components:LineWeight)
