@@ -10,10 +10,12 @@ import { assert, BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { Range2d } from "@bentley/geometry-core";
 import { ImageSource, MapLayerSettings } from "@bentley/imodeljs-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
-import { IModelApp } from "../../IModelApp";
-import { ScreenViewport } from "../../Viewport";
-import { MapLayerImageryProvider, MapTile, MapTilingScheme, Tile, WebMercatorTilingScheme } from "../internal";
-import { QuadId } from "./QuadId";
+import { IModelApp } from "../../../IModelApp";
+import { ScreenViewport } from "../../../Viewport";
+import {
+  MapLayerImageryProvider, MapTile, MapTilingScheme, QuadId,
+  Tile, WebMercatorTilingScheme,
+} from "../../internal";
 
 /** Represents one range of geography and tile zoom levels for a bing data provider
  * @internal
