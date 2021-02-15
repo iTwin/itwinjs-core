@@ -66,10 +66,12 @@ export const SchemaCompareCodes = {
 };
 
 // TODO: Remove once 'import() types' are supported by api-extractor. https://github.com/microsoft/rushstack/pull/1916
+/* eslint-disable no-duplicate-imports, @typescript-eslint/no-unused-vars */
 import { DiagnosticCategory, DiagnosticType } from "./Diagnostic";
 import { StructClass } from "../Metadata/Class";
-import { AnyProperty, RelationshipConstraint } from "../ecschema-metadata"
-import { CustomAttributeContainerProps } from "../Metadata/CustomAttribute"
+import { AnyProperty, RelationshipConstraint } from "../ecschema-metadata";
+import { CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
+/* eslint-enable no-duplicate-imports, @typescript-eslint/no-unused-vars */
 
 /**
  * The list of [[IDiagnostic]] implementation classes used by the Schema comparison framework.

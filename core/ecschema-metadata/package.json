@@ -70,8 +70,7 @@
     "extends": "plugin:@bentley/imodeljs-recommended",
     "rules": {
       "radix": "warn",
-      "@typescript-eslint/explicit-member-accessibility": "warn",
-      "@typescript-eslint/no-shadow": "warn"
+      "@typescript-eslint/explicit-member-accessibility": "warn"
     }
   }
 }
