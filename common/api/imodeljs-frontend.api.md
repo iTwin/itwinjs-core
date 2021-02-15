@@ -1103,6 +1103,36 @@ export interface ArcGisGenerateTokenOptions {
 }
 
 // @internal (undocumented)
+export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    protected get _filterByCartoRange(): boolean;
+    // (undocumented)
+    protected getLayerString(prefix?: string): string;
+    // (undocumented)
+    getLogo(_vp: ScreenViewport): HTMLTableRowElement;
+    // (undocumented)
+    getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
+    // (undocumented)
+    initialize(): Promise<void>;
+    // (undocumented)
+    loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
+    // (undocumented)
+    get maximumZoomLevel(): number;
+    // (undocumented)
+    serviceJson: any;
+    // (undocumented)
+    protected _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void): void;
+    // (undocumented)
+    uintToString(uintArray: any): {
+        type: "Buffer";
+        data: any[];
+    };
+}
+
+// @internal (undocumented)
 export interface ArcGisToken {
     // (undocumented)
     expires: number;
@@ -1268,6 +1298,15 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     toJSON(): AuxCoordSystemProps;
     // (undocumented)
     type: number;
+}
+
+// @internal (undocumented)
+export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(y: number, x: number, zoom: number): Promise<string>;
+    // (undocumented)
+    getLogo(_vp: ScreenViewport): HTMLTableRowElement;
 }
 
 // @internal
@@ -4888,6 +4927,25 @@ export enum ManipulatorToolEvent {
     // (undocumented)
     Unsuspend = 4
 }
+
+// @internal
+export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    getLogo(_vp: ScreenViewport): HTMLTableRowElement | undefined;
+    // (undocumented)
+    initialize(): Promise<void>;
+    // (undocumented)
+    get maximumZoomLevel(): number;
+    // (undocumented)
+    get minimumZoomLevel(): number;
+    // (undocumented)
+    get tileHeight(): number;
+    // (undocumented)
+    get tileWidth(): number;
+    }
 
 // @internal
 export class MapCartoRectangle extends Range2d {
@@ -10132,6 +10190,15 @@ export interface TileTreeSupplier {
     readonly isEcefDependent?: true;
 }
 
+// @internal
+export class TileUrlImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, level: number): Promise<string>;
+    // (undocumented)
+    static validateUrlTemplate(template: string): MapLayerSourceValidation;
+}
+
 // @beta
 export class TileUsageMarker {
     constructor();
@@ -12700,6 +12767,17 @@ export namespace WmsCapability {
 }
 
 // @internal (undocumented)
+export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
+    // (undocumented)
+    initialize(): Promise<void>;
+    }
+
+// @internal (undocumented)
 export class WmsUtilities {
     // (undocumented)
     static getBaseUrl(url: string): string;
@@ -12958,6 +13036,17 @@ export namespace WmtsCapability {
         static readonly XLINK_HREF = "xlink:href";
     }
 }
+
+// @internal (undocumented)
+export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    initialize(): Promise<void>;
+    // (undocumented)
+    get mutualExclusiveSubLayer(): boolean;
+    }
 
 // @public
 export interface ZoomToOptions {
