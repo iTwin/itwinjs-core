@@ -33,22 +33,22 @@ export interface ValidationError {
   message?: string;
 }
 
-// export class TxnCommitRow {
-//   private _stmt: IModelJsNative.SqliteStatement;
-//   public get elementId(): Id64String { return this._stmt.getValueId(0); }
-//   public get modelId(): Id64String { return this._stmt.getValueId(1); }
-//   public get changeType(): { return this._stmt.getValueId(1); }
+export class TxnCommitRow {
+  public constructor(private _stmt: IModelJsNative.SqliteStatement, private _db: IModelJsNative.DgnDb) { }
+  public get elementId(): Id64String { return this._stmt.getValueId(0); }
+  public get modelId(): Id64String { return this._stmt.getValueId(1); }
+  public get changeType() {
+    switch (this._stmt.getValueInteger(2)) {
+      case 0: return "insert";
+      case 1: return "update";
+      case 2: return "delete";
+    }
+    throw new Error("illegal value");
+  }
 
-//   // }
-//   // public get className(): string {
-
-//   // }
-//   // public get changeType(): Id64String {
-
-//   public constructor(stmt: IModelJsNative.SqliteStatement) {
-//   this._stmt = stmt;
-// }
-// }
+  public get classId(): Id64String { return this._stmt.getValueId(3); }
+  public get className(): string { return this._db.classIdToName(this.classId); }
+}
 
 // export class TxnValidation {
 //   private _iModel: IModelDb;
