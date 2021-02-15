@@ -35,6 +35,7 @@ beta;Animator
 public;AppearanceOverrideProps
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
+internal;ArcGISMapLayerImageryProvider 
 internal;ArcGisToken
 internal;ArcGisTokenClientType
 internal;ArcGisTokenGenerator
@@ -49,6 +50,7 @@ public;AuxCoordSystem2dState
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
+internal;AzureMapsLayerImageryProvider 
 internal;B3dmReader 
 internal;BackgroundMapGeometry
 internal;BackgroundMapLocation
@@ -288,6 +290,7 @@ public;LookViewTool
 internal;LRUTileList
 internal;LRUTileListNode
 alpha;ManipulatorToolEvent
+internal;MapBoxLayerImageryProvider 
 internal;MapCartoRectangle 
 internal;MapLayerFormat
 internal;MapLayerFormatRegistry
@@ -517,6 +520,7 @@ beta;TileTreeOwner
 beta;TileTreeParams
 beta;class TileTreeReference
 beta;TileTreeSupplier
+internal;TileUrlImageryProvider 
 beta;TileUsageMarker
 beta;TileVisibility
 public;Tool
@@ -609,8 +613,10 @@ internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities
 internal;WmsCapability
+internal;WmsMapLayerImageryProvider 
 internal;WmsUtilities
 internal;WmtsCapabilities
 internal;WmtsCapability
+internal;WmtsMapLayerImageryProvider 
 public;ZoomToOptions
 public;ZoomViewTool 
