@@ -145,7 +145,7 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
               target={this.state.tooltipTarget}
               visible
             >
-              {formatTime(new Date(dayStartMs + value).getTime())}
+              {formatTime(dayStartMs + value)}
             </Tooltip>
           </div>
         ) : null}
@@ -525,6 +525,8 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     this._totalPlayTime = ((sunOffsetMs - sunRiseOffsetMs) / (sunDeltaMs)) * ((adjustedDuration) ? adjustedDuration : this.state.adjustedDuration);
   }
 
+  /** note the day passed in is in the time of the current user not in project time because the date picker works in
+   * local time  */
   private _onDayClick = (day: Date) => {
     const adjustedDate = new Date(day.getTime()+this.state.currentTimeOffsetMs);
 
