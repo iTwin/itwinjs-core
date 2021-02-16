@@ -84,7 +84,7 @@ describe("<SolarTimeline />", () => {
     const philadelphiaDate = new Date("May 03 2019 12:00:00 GMT -0500");
     const sunRiseTime = new Date("May 03 2019 04:59 GMT -0500");
     const sunSetTime = new Date("May 03 2019 18:57 GMT -0500");
-    philadelphiaDataProvider.timeOfDay = philadelphiaDate;
+    philadelphiaDataProvider.setDateAndTime (philadelphiaDate, true);
     expect(philadelphiaDataProvider.timeOfDay.getTime() === philadelphiaDate.getTime());
     expect(philadelphiaDataProvider.sunrise.getTime() === sunRiseTime.getTime());
     expect(philadelphiaDataProvider.sunset.getTime() === sunSetTime.getTime());
@@ -96,7 +96,7 @@ describe("<SolarTimeline />", () => {
     const philadelphiaDate = new Date("Sep 03 2019 12:00:00 GMT -0500");
     const sunRiseTime = new Date("Sep 03 2019 05:30 GMT -0500");
     const sunSetTime = new Date("Sep 03 2019 18:29 GMT -0500");
-    philadelphiaDataProvider.timeOfDay = philadelphiaDate;
+    philadelphiaDataProvider.setDateAndTime (philadelphiaDate, true);
     expect(philadelphiaDataProvider.timeOfDay.getTime() === philadelphiaDate.getTime());
     expect(philadelphiaDataProvider.sunrise.getTime() === sunRiseTime.getTime());
     expect(philadelphiaDataProvider.sunset.getTime() === sunSetTime.getTime());
@@ -109,7 +109,7 @@ describe("<SolarTimeline />", () => {
     const melbourneDate = new Date("May 03 2019 12:00:00 GMT +1000");
     const sunRiseTime = new Date("May 03 2019 7:01 GMT +1000");
     const sunSetTime = new Date("May 03 2019 17:30 GMT +1000");
-    melbourneDataProvider.timeOfDay = melbourneDate;
+    melbourneDataProvider.setDateAndTime (melbourneDate, true);
     expect(melbourneDataProvider.timeOfDay.getTime() === melbourneDate.getTime());
     expect(melbourneDataProvider.sunrise.getTime() === sunRiseTime.getTime());
     expect(melbourneDataProvider.sunset.getTime() === sunSetTime.getTime());
@@ -120,6 +120,7 @@ describe("<SolarTimeline />", () => {
     const algeriaDataProvider = new TestSolarDataProvider(undefined, 2.54882812, 27.761329);
 
     const algeriaDate = new Date("May 03 2019 12:00:00 GMT -0000");
+    algeriaDataProvider.setDateAndTime (algeriaDate, true);
     expect(algeriaDataProvider.timeOfDay.getTime() === algeriaDate.getTime());
   });
 

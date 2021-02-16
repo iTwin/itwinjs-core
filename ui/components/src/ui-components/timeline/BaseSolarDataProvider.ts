@@ -88,10 +88,6 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     return this._projectTimeZoneOffset;
   }
 
-  public get timeZoneOffsetMs(): number {
-    return this._zoneOffsetMs;
-  }
-
   public get shadowColor(): ColorDef {
     return this._shadowColor;
   }
@@ -104,30 +100,19 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     return false;
   }
 
-  /** Get current Time at project */
+  /** Get time at project location */
   public get timeOfDay(): Date {
     return this._projectDateTime;
   }
 
-  /** Set current Time at project */
-  public set timeOfDay(timeVal: Date) {
-    this.setNewDay(timeVal, true );
-  }
-
-  /** User Day Start */
-  public get userTime(): Date {
-    const userOffset = this._projectDateTime.getTimezoneOffset() * millisecPerMinute;
-    const userTime = new Date(this._projectDateTime.getTime() + userOffset + (this._zoneOffsetMs));
-    return userTime;
-  }
-
-  public setNewDay(day: Date, isProjectDate?: boolean) {
-    let userDay = day;
+  /** Set date and time - date can be in project time or based on user current locale */
+  public setDateAndTime(date: Date, isProjectDate?: boolean) {
+    let userDay = date;
 
     // convert date from user date to project location
     if (isProjectDate) {
-      const userOffset = day.getTimezoneOffset() * millisecPerMinute;
-      userDay = new Date(day.getTime() - userOffset - this._zoneOffsetMs);
+      const userOffset = date.getTimezoneOffset() * millisecPerMinute;
+      userDay = new Date(date.getTime() - userOffset - this._zoneOffsetMs);
     }
 
     this.initializeData(this._projectTimeZoneOffset, userDay);

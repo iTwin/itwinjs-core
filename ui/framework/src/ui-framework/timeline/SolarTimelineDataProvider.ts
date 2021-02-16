@@ -37,6 +37,7 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
 
     this._projectTimeZoneOffset = this.getZone(this._cartographicCenter);
     this.initializeData(this._projectTimeZoneOffset);
+    this.onTimeChanged(this.timeOfDay);
   }
 
   public get shouldShowTimeline() {

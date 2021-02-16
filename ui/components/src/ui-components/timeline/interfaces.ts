@@ -180,11 +180,7 @@ export interface SolarDataProvider {
   /** Starting time for day in milliseconds */
   readonly dayStartMs: number;
   /** Time of day for sun */
-  timeOfDay: Date;
-  /** UTC to project offset in ms */
-  timeZoneOffsetMs: number;
-  /** Time of day as if in users timezone */
-  readonly userTime: Date;
+  readonly timeOfDay: Date;
   /** Called during playback to update animation */
   onTimeChanged?: SolarPlaybackProgressHandler;
   /** viewport to show animation */
@@ -198,5 +194,5 @@ export interface SolarDataProvider {
   /** timezone offset for local project time */
   readonly timeZoneOffset: number;
   /** set date for shadow study */
-  setNewDay: (day: Date, isProjectDate?: boolean) => void;
+  setDateAndTime: (day: Date, isProjectDate?: boolean) => void;
 }
