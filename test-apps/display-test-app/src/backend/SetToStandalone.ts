@@ -27,7 +27,9 @@ import { IModelError } from "@bentley/imodeljs-common";
   }
 
   nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+  nativeDb.saveChanges();
   nativeDb.closeIModel();
+
   console.log(`[${iModelName}] successfully set as standalone iModel`);
   await IModelHost.shutdown();
 }
