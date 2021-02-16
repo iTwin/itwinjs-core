@@ -169,7 +169,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** The name of this DisplayStyle */
-  public get name(): string { return this.code.getValue(); }
+  public get name(): string { return this.code.value; }
 
   /** @internal */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this._scheduleScript; }

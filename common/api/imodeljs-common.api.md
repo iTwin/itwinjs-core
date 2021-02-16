@@ -966,7 +966,7 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
 
 // @public
 export class Code implements CodeProps {
-    constructor(val: CodeProps);
+    constructor(codeProps: CodeProps);
     static createEmpty(): Code;
     // @internal (undocumented)
     static equalCodes(c1: CodeProps, c2: CodeProps): boolean;
@@ -974,13 +974,16 @@ export class Code implements CodeProps {
     equals(other: Code): boolean;
     // (undocumented)
     static fromJSON(json?: any): Code;
-    // (undocumented)
+    // @deprecated (undocumented)
     getValue(): string;
     static isEmpty(c: CodeProps): boolean;
     static isValid(c: CodeProps): boolean;
     scope: string;
     spec: Id64String;
-    value?: string;
+    // (undocumented)
+    toJSON(): CodeProps;
+    get value(): string;
+    set value(val: string);
 }
 
 // @public
