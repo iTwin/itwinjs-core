@@ -17,7 +17,7 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, PlanarClipMaskSettings, SolarShadowSettings, SubCategoryAppearance,
+  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
   SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -35,7 +35,6 @@ import { IModelConnection } from "./IModelConnection";
 import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ToolTipOptions } from "./NotificationManager";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
-import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -746,44 +745,6 @@ export abstract class Viewport implements IDisposable {
     return this.displayStyle.getRealityModelIndexFromTransientId(id);
   }
 
-  /** Override the planar clip  for a reality model displayed by this viewport.
-  * @param planarClipMask The planar clip mask.
-  * @param modelIdOrIndex The Id of the [[model]] if the attached to the view or the index if it is a context model displayed by this viewport.
-  * @returns true if clip masks are successfully applied.
-  * @beta
-  */
-  public overrideRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number, planarClipMask: PlanarClipMaskSettings): boolean {
-    const changed = this.displayStyle.overrideRealityModelPlanarClipMask(modelIdOrIndex, planarClipMask);
-    if (changed) {
-      this._changeFlags.setDisplayStyle();
-      this.invalidateRenderPlan();
-    }
-    return changed;
-  }
-
-  /** Drop the planar clip mask for a "contextual" reality model displayed by this viewport.
-    * @param modelIdOrIndex The Id of the [[model]] if the attached to the view or the index if it is a context model displayed by this viewport.
-   * @returns true if planar clip masks are successfully dropped.
-   * @beta
-   */
-  public dropRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): boolean {
-    const changed = this.displayStyle.dropRealityModelPlanarClipMask(modelIdOrIndex);
-    if (changed) {
-      this._changeFlags.setDisplayStyle();
-      this.invalidateRenderPlan();
-    }
-    return changed;
-  }
-
-  /** Obtain the planar clip mask applied to a "contextual" reality model displayed in this viewport.
-   * @param modelIdOrIndex The Id of the [[model]] if the attached to the view or the index if it is a context model displayed by this viewport.
-   * @returns The corresponding PlanarClipMask, or undefined if the Model's does not have a planar clip mask.
-   * @see [[overrideRealityModelAppearance]]
-   * @beta
-   */
-  public getRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): PlanarClipMaskState | undefined {
-    return this.displayStyle.getRealityModelPlanarClipMask(modelIdOrIndex);
-  }
   /** @beta
    * Set the display of the OpenStreetMap worldwide building layer in this viewport by attaching or detaching the reality model displaying the buildings.
    * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>

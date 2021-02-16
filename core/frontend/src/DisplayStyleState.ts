@@ -418,8 +418,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Override the planar clip mask for a reality model.
    * @param modelIdOrIndex The ID of the [[model]] if the attached to the view or the index if it is a context model displayed by this style.
    * @param planarClipMask The planar clip mask to apply to the [[Model]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideRealityModelPlanarClipMask]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[dropRealityModelPlanarClipMask]
    * @beta
    */
@@ -444,8 +442,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Drop the planar clip mask for a reality model.
    * @param modelIdOrIndex The ID of the [[model]] if the attached to the view or the index if it is a context model displayed by this style.
    * @returns true if overrides are successfully dropped.
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropRealityModelPlanarClipMask]] to ensure
-   * the changes are promptly visible on the screen.
    * @beta
    */
   public dropRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): boolean {

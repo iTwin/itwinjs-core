@@ -253,7 +253,7 @@ export class MaskRealityModelByElementTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency)!);
+    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency)!);
   }
 }
 
@@ -272,7 +272,7 @@ export class MaskRealityModelByExcludedElementTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.ExcludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency)!);
+    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.ExcludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency)!);
   }
 }
 
@@ -293,7 +293,7 @@ export class MaskRealityModelByModelTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.Models, this._acceptedModelIds, undefined,  this._transparency)!);
+    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.Models, this._acceptedModelIds, undefined,  this._transparency)!);
   }
 }
 
@@ -313,7 +313,7 @@ export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelBySubCategoryTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeSubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds, this._transparency)!);
+    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeSubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds, this._transparency)!);
   }
 }
 
@@ -333,7 +333,7 @@ export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new UnmaskRealityModelTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.createByPriority(PlanarClipMaskPriority.RealityModel + this._priority, this._transparency)!);
+    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.createByPriority(PlanarClipMaskPriority.RealityModel + this._priority, this._transparency)!);
   }
 
   public parseAndRun(...args: string[]): boolean {
@@ -356,13 +356,13 @@ export class UnmaskRealityModelTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new UnmaskRealityModelTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeSubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds)!);
+    vp.displayStyle.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeSubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds)!);
   }
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (hit?.modelId) {
       const realityIndex = hit.viewport.getRealityModelIndexFromTransientId(hit.modelId);
-      hit.viewport.dropRealityModelPlanarClipMask(realityIndex >= 0 ? realityIndex : hit.modelId);
+      hit.viewport.displayStyle.dropRealityModelPlanarClipMask(realityIndex >= 0 ? realityIndex : hit.modelId);
       this.onRestartTool();
     }
 
