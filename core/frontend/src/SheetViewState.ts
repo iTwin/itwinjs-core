@@ -217,7 +217,9 @@ class ViewAttachments {
     for (const info of infos) {
       const drawAsRaster = info.jsonProperties?.displayOptions?.drawAsRaster || info.attachedView.isCameraEnabled();
       const ctor = drawAsRaster ? RasterAttachment : OrthographicAttachment;
-      this._attachments.push(new ctor(info.attachedView, info, sheetView));
+      const attachment = new ctor(info.attachedView, info, sheetView);
+      this._attachments.push(attachment);
+      this.maxDepth = Math.max(this.maxDepth, attachment.zDepth);
     }
   }
 
