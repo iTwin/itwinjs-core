@@ -93,7 +93,7 @@ imodel1.concurrencyControl.startBulkMode();
 // Create the channel root. Note that, initially, we are in the repository channel.
 const channel3 = imodel1.elements.insertElement(Subject.create(imodel1, imodel1.elements.getRootSubject().id, "channel3"));
 const channel3Info = "this is channel3"; // could be an object or anything you like
-ChannelRootAspect.insert(imodel1, channel3, channel3Info); // Create one of the channels using the new aspect in the way iModel.js apps would set them up.
+ChannelRootAspect.insert(imodel1, channel3, channel3Info); // Create one of the channels using the new aspect in the way iTwin.js apps would set them up.
 
 // Push the change to the repository channel.
 await imodel1.concurrencyControl.request(requestContext);

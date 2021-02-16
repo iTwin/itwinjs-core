@@ -1,6 +1,6 @@
 # Frontend Administration with IModelApp
 
-An instance of [IModelApp]($frontend) provides the services needed by the [frontend](../../learning/App.md#app-frontend) in an [interactive](../WriteAnInteractiveApp.md) iModel.js app. Services include:
+An instance of [IModelApp]($frontend) provides the services needed by the [frontend](../../learning/App.md#app-frontend) in an [interactive](../WriteAnInteractiveApp.md) iTwin.js app. Services include:
 
 * Connecting to an [IModelHost]($backend) to access iModels.
 * Management of Views using [ViewManager](./Views.md)
@@ -12,7 +12,7 @@ An instance of [IModelApp]($frontend) provides the services needed by the [front
 
 ## IModelApp Specializations
 
-To support the various use cases and platforms for iModel.js frontends, there are specialized "apps" that should be used where appropriate.
+To support the various use cases and platforms for iTwin.js frontends, there are specialized "apps" that should be used where appropriate.
 
 > For a given frontend, you will pick *one* class from the following list, and call its `startup` method. The type of `IModelApp` should match the type of [IModelHost](../backend/IModelHost.md) running on your backend.
 

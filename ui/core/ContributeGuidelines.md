@@ -1,10 +1,10 @@
-# Guidelines for Contributing to iModel.js UI Source Code
+# Guidelines for Contributing to iTwin.js UI Source Code
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-In order to maintain consistency in the iModel.js UI source code, please abide by the following guidelines for classes and React components.
+In order to maintain consistency in the iTwin.js UI source code, please abide by the following guidelines for classes and React components.
 
 ## Guidelines
 
