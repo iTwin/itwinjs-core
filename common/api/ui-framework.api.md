@@ -1938,6 +1938,9 @@ export interface ExtensibleToolbarProps {
     usage: ToolbarUsage;
 }
 
+// @beta
+export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>): BaseItemState;
+
 // @public
 export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
     // (undocumented)
