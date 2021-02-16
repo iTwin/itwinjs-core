@@ -184,7 +184,7 @@ describe("MomentData", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("WireMoments", () => {
+  it("WireMoments", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const y0 = 0.0;
