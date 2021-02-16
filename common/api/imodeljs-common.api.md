@@ -1851,9 +1851,9 @@ export class DisplayStyleSettings {
     // @beta
     readonly onOverridesApplied: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
     // @beta
-    readonly onPlanarClipMaskOverridesChanged: BeEvent<(modelId: string, newSettings: PlanarClipMaskSettings | undefined) => void>;
-    // @beta
     readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: string, newSettings: PlanProjectionSettings | undefined) => void>;
+    // @beta
+    readonly onRealityModelPlanarClipMaskChanged: BeEvent<(idOrIndex: string | number, newSettings: PlanarClipMaskSettings | undefined) => void>;
     // @internal
     readonly onScheduleScriptPropsChanged: BeEvent<(newProps: readonly RenderSchedule.ModelTimelineProps[] | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
@@ -1867,6 +1867,8 @@ export class DisplayStyleSettings {
     // @beta
     overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMaskSettings): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+    // @internal (undocumented)
+    raiseRealityModelPlanarClipMaskChangedEvent(idOrIndex: Id64String | number, ovr?: PlanarClipMaskSettings): void;
     // @internal (undocumented)
     get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
     set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined);

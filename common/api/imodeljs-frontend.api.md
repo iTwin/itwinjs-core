@@ -11839,8 +11839,6 @@ export abstract class Viewport implements IDisposable {
     dropModelAppearanceOverride(id: Id64String): void;
     // @beta
     dropRealityModelAppearanceOverride(index: number): void;
-    // @beta
-    dropRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): boolean;
     dropSubCategoryOverride(id: Id64String): void;
     // @beta
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
@@ -11889,8 +11887,6 @@ export abstract class Viewport implements IDisposable {
     getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined;
     // @beta
     getRealityModelIndexFromTransientId(id: Id64String): number;
-    // @beta
-    getRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): PlanarClipMaskState | undefined;
     // @internal (undocumented)
     getSubCategories(categoryId: Id64String): Id64Set | undefined;
     getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
@@ -11976,8 +11972,6 @@ export abstract class Viewport implements IDisposable {
     overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void;
     // @beta
     overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
-    // @beta
-    overrideRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number, planarClipMask: PlanarClipMaskSettings): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @beta
     get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides;
