@@ -9,8 +9,23 @@ import { DbResult, Guid, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelHost } from "@bentley/imodeljs-backend";
 import { IModelError } from "@bentley/imodeljs-common";
 
-(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+/**
+ * This utility will change an existing iModel file to be a standalone iModel. It does so by
+ * clearing the ProjectGuid, and resetting the briefcaseId to 0.
+ *
+ * This should only be done for testing and requires the project owner's permission.
+ *
+ * To run:
+```
+  cd imodeljs\test-apps\display-test-app
+  node lib\backend\SetToStandalone.js [iModel-filename]
+```
+*/
+const setToStandalone = async () => {
   await IModelHost.startup();
+
+  if (process.argv.length < 3)
+    throw new Error("usage: SetToStandalone.js [iModel-filename]");
 
   const iModelName = process.argv[2];
   console.log(`setting [${iModelName}] as a standalone iModel`);
@@ -32,5 +47,15 @@ import { IModelError } from "@bentley/imodeljs-common";
 
   console.log(`[${iModelName}] successfully set as standalone iModel`);
   await IModelHost.shutdown();
+};
+
+async function run() {
+  try {
+    await setToStandalone();
+  } catch (err) {
+    console.log(err.message);
+  }
 }
-)();
+
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+run();
