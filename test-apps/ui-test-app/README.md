@@ -1,8 +1,8 @@
 ﻿# ui-test-app Test Application
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
-The ui-test-app iModel.js test application provides an easy way to test the React components in the iModel.js UI packages, including the 9-zone components, along with other iModel.js packages.
+The ui-test-app iTwin.js test application provides an easy way to test the React components in the iTwin.js UI packages, including the 9-zone components, along with other iTwin.js packages.
 
 ## Development setup
 
@@ -28,7 +28,7 @@ To start the application, simply install its dependencies and run it:
 
 4. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
 
-5. You can rebuild any of the iModel.js packages independently using `npm run build` in the appropriate folder then refresh the browser to pick up those changes and restart the application.
+5. You can rebuild any of the iTwin.js packages independently using `npm run build` in the appropriate folder then refresh the browser to pick up those changes and restart the application.
 
 ## Snapshot file support
 
