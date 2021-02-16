@@ -1,3 +1,7 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import "./index.scss";
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
@@ -6,10 +10,6 @@ import reactAxe from "react-axe";
 import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
@@ -501,8 +501,12 @@ export class SampleAppIModelApp {
     return undefined;
   }
 
+  public static isEnvVarOn(envVar: string): boolean {
+    return Config.App.has(envVar) && Config.App.get(envVar) === "1";
+  }
+
   public static get allowWrite() {
-    return (Config.App.has("imjs_TESTAPP_ALLOW_WRITE") && (Config.App.get("imjs_TESTAPP_ALLOW_WRITE") === "1"));
+    return SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_ALLOW_WRITE");
   }
 
   public static setTestProperty(value: string, immediateSync = false) {
@@ -725,15 +729,12 @@ async function main() {
   // Logger.setLevel("ui-framework.DefaultToolSettings", LogLevel.Trace);  // used to show detailed output calculating default toolsettings
 
   // retrieve, set, and output the global configuration variable
-  if (!isElectronRenderer) {
-    SampleAppIModelApp.testAppConfiguration = {
-      snapshotPath: process.env.imjs_TESTAPP_SNAPSHOT_FILEPATH,
-      startWithSnapshots: process.env.imjs_TESTAPP_START_WITH_SNAPSHOTS,
-      reactAxeConsole: process.env.imjs_TESTAPP_REACT_AXE_CONSOLE,
-      useLocalSettings: process.env.imjs_TESTAPP_USE_LOCAL_SETTINGS,
-    } as TestAppConfiguration;
-    Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
-  }
+  SampleAppIModelApp.testAppConfiguration = {};
+  SampleAppIModelApp.testAppConfiguration.snapshotPath = process.env.imjs_TESTAPP_SNAPSHOT_FILEPATH;
+  SampleAppIModelApp.testAppConfiguration.startWithSnapshots = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_START_WITH_SNAPSHOTS");
+  SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_REACT_AXE_CONSOLE");
+  SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_USE_LOCAL_SETTINGS");
+  Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 
   const rpcInterfaces = getSupportedRpcs();
   if (isElectronRenderer) {
