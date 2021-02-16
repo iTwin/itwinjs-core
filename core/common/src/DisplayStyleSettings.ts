@@ -454,7 +454,7 @@ export class DisplayStyleSettings {
   /** Event raised just before changing the planar clip mask overrides for an attached reality  model.
    * @beta
    */
-  public readonly onPlanarClipMaskOverridesChanged = new BeEvent<(modelId: Id64String, newSettings: PlanarClipMaskSettings | undefined) => void>();
+  public readonly onRealityModelPlanarClipMaskChanged = new BeEvent<(idOrIndex: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => void>();
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -1101,8 +1101,13 @@ export class DisplayStyleSettings {
     }
   }
 
+  /** @internal */
+  public raiseRealityModelPlanarClipMaskChangedEvent(idOrIndex: Id64String | number, ovr?: PlanarClipMaskSettings) {
+    this.onRealityModelPlanarClipMaskChanged.raiseEvent(idOrIndex, ovr);
+  }
+
   private changePlanarClipMaskOverride(id: Id64String, updateJson: boolean, ovr?: PlanarClipMaskSettings): boolean {
-    this.onPlanarClipMaskOverridesChanged.raiseEvent(id, ovr);
+    this.raiseRealityModelPlanarClipMaskChangedEvent(id, ovr);
     if (undefined === ovr) {
       // undefined => drop the override if present.
       this._planarClipMaskOverrides.delete(id);
