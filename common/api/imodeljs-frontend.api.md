@@ -1105,6 +1105,36 @@ export interface ArcGisGenerateTokenOptions {
 }
 
 // @internal (undocumented)
+export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    protected get _filterByCartoRange(): boolean;
+    // (undocumented)
+    protected getLayerString(prefix?: string): string;
+    // (undocumented)
+    getLogo(_vp: ScreenViewport): HTMLTableRowElement;
+    // (undocumented)
+    getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
+    // (undocumented)
+    initialize(): Promise<void>;
+    // (undocumented)
+    loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
+    // (undocumented)
+    get maximumZoomLevel(): number;
+    // (undocumented)
+    serviceJson: any;
+    // (undocumented)
+    protected _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void): void;
+    // (undocumented)
+    uintToString(uintArray: any): {
+        type: "Buffer";
+        data: any[];
+    };
+}
+
+// @internal (undocumented)
 export interface ArcGisToken {
     // (undocumented)
     expires: number;
@@ -1270,6 +1300,15 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     toJSON(): AuxCoordSystemProps;
     // (undocumented)
     type: number;
+}
+
+// @internal (undocumented)
+export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(y: number, x: number, zoom: number): Promise<string>;
+    // (undocumented)
+    getLogo(_vp: ScreenViewport): HTMLTableRowElement;
 }
 
 // @internal
@@ -1719,6 +1758,16 @@ export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
 }
 
+// @alpha
+export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec {
+    // (undocumented)
+    editorType: "checkbox";
+    // (undocumented)
+    getBool: (props: FormatProps) => boolean;
+    // (undocumented)
+    setBool: (props: FormatProps, isChecked: boolean) => FormatProps;
+}
+
 // @public
 export class CheckpointConnection extends IModelConnection {
     close(): Promise<void>;
@@ -1814,14 +1863,6 @@ export class ContextRealityModelState {
     get treeRef(): TileTreeReference;
     // (undocumented)
     readonly url: string;
-}
-
-// @alpha
-export class ConversionData implements UnitConversion {
-    // (undocumented)
-    factor: number;
-    // (undocumented)
-    offset: number;
 }
 
 // @public (undocumented)
@@ -1975,6 +2016,21 @@ export enum CurrentState {
     Inactive = 2,
     // (undocumented)
     NotEnabled = 0
+}
+
+// @alpha
+export interface CustomFormatPropEditorSpec {
+    // (undocumented)
+    editorType: "checkbox" | "text" | "select";
+    // (undocumented)
+    label: string;
+}
+
+// @alpha
+export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
+    isCompatibleFormatProps: (formatProps: FormatProps) => boolean;
+    primaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
+    secondaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
 }
 
 // @internal (undocumented)
@@ -2596,7 +2652,7 @@ export namespace EditManipulator {
 // @internal (undocumented)
 export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
 
-// @alpha (undocumented)
+// @alpha
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -2697,38 +2753,30 @@ export class ElementPicker {
     viewport?: Viewport;
 }
 
-// @alpha (undocumented)
+// @alpha
 export abstract class ElementSetTool extends PrimitiveTool {
     protected get agenda(): ElementAgenda;
     protected get allowDragSelect(): boolean;
     protected get allowGroups(): boolean;
     protected get allowSelectionSet(): boolean;
-    // (undocumented)
     protected anchorPoint?: Point3d;
-    // (undocumented)
     protected buildDragSelectAgenda(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<boolean>;
-    // (undocumented)
     protected buildLocateAgenda(hit: HitDetail): Promise<boolean>;
-    // (undocumented)
     protected buildSelectionSetAgenda(ss: SelectionSet): Promise<boolean>;
     protected chooseNextHit(ev: BeButtonEvent): Promise<EventHandled>;
     protected get clearSelectionSet(): boolean;
     protected get controlKeyContinuesSelection(): boolean;
     protected get controlKeyInvertsSelection(): boolean;
     protected get currentElementCount(): number;
-    // (undocumented)
     decorate(context: DecorateContext): void;
     protected doLocate(ev: BeButtonEvent, newSearch: boolean): Promise<boolean>;
-    // (undocumented)
     protected doProcessSelectionSetImmediate(): Promise<void>;
-    // (undocumented)
     protected dragStartPoint?: Point3d;
     filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus>;
-    // (undocumented)
     protected gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined>;
-    // (undocumented)
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
+    protected getGroupIds(id: Id64String): Promise<Id64Arg>;
     protected getLocateCandidates(hit: HitDetail): Promise<Id64Arg>;
     protected getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg>;
     // (undocumented)
@@ -2738,32 +2786,23 @@ export abstract class ElementSetTool extends PrimitiveTool {
     protected isElementValidForOperation(hit: HitDetail, _out?: LocateResponse): Promise<boolean>;
     protected get isSelectByPoints(): boolean;
     protected get isSelectionSetModify(): boolean;
-    // (undocumented)
     protected onAgendaModified(): Promise<void>;
-    // (undocumented)
     onCleanup(): void;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
     onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onPostInstall(): void;
     protected onProcessComplete(): Promise<void>;
-    // (undocumented)
     onReinitialize(): void;
     // (undocumented)
     onResetButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onUnsuspend(): void;
     protected processAgenda(_ev: BeButtonEvent): Promise<void>;
     protected processAgendaImmediate(): Promise<void>;
@@ -2773,20 +2812,15 @@ export abstract class ElementSetTool extends PrimitiveTool {
     protected get requireAcceptForSelectionSetDynamics(): boolean;
     protected get requireAcceptForSelectionSetOperation(): boolean;
     protected get requiredElementCount(): number;
-    // (undocumented)
     protected selectByPointsDecorate(context: DecorateContext): void;
-    // (undocumented)
     protected selectByPointsEnd(ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
     protected selectByPointsStart(ev: BeButtonEvent): Promise<boolean>;
     protected setPreferredElementSource(): void;
-    // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
     protected get shouldEnableLocate(): boolean;
     // (undocumented)
     protected get shouldEnableSnap(): boolean;
-    // (undocumented)
     protected useOverlapSelection(ev: BeButtonEvent): boolean;
     protected get wantAccuSnap(): boolean;
     protected get wantAdditionalElements(): boolean;
@@ -3193,9 +3227,6 @@ export class FlyViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @internal
-export type FormatPropsByUnitSystem = Map<UnitSystemKey, FormatProps>;
-
 // @beta
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
     constructor(name: string, displayLabel: string, iconSpec?: string);
@@ -3222,9 +3253,6 @@ export interface FormatterParserSpecsProvider {
     // (undocumented)
     quantityType: QuantityTypeArg;
 }
-
-// @internal
-export type FormatterSpecByQuantityType = Map<QuantityTypeKey, FormatterSpec>;
 
 // @alpha
 export interface FormattingUnitSystemChangedArgs {
@@ -3473,6 +3501,9 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 
 // @public
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
+
+// @beta
+export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
 // @alpha
 export interface GlobalLocation {
@@ -4698,6 +4729,18 @@ export interface IpcAppOptions {
     ipc: IpcSocketFrontend;
 }
 
+// @alpha
+export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec;
+
+// @alpha
+export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition;
+
+// @alpha
+export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec;
+
+// @alpha
+export const isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec;
+
 // @alpha (undocumented)
 export enum ItemField {
     // (undocumented)
@@ -4900,6 +4943,25 @@ export enum ManipulatorToolEvent {
     // (undocumented)
     Unsuspend = 4
 }
+
+// @internal
+export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    getLogo(_vp: ScreenViewport): HTMLTableRowElement | undefined;
+    // (undocumented)
+    initialize(): Promise<void>;
+    // (undocumented)
+    get maximumZoomLevel(): number;
+    // (undocumented)
+    get minimumZoomLevel(): number;
+    // (undocumented)
+    get tileHeight(): number;
+    // (undocumented)
+    get tileWidth(): number;
+    }
 
 // @internal
 export class MapCartoRectangle extends Range2d {
@@ -6915,51 +6977,63 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     clearAllOverrideFormats(): Promise<void>;
     // (undocumented)
-    clearOverrideFormats(type: QuantityType): Promise<void>;
+    clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
-    protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
-    findParserSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): ParserSpec | undefined;
-    findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
-    findUnitByName(unitName: string): Promise<UnitProps>;
+    findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
     // (undocumented)
-    protected findUnitDefinition(name: string): UnitDefinition | undefined;
+    findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
+    // (undocumented)
+    findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
     // (undocumented)
-    protected _formatSpecProviders: FormatterParserSpecsProvider[];
+    generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
     // (undocumented)
-    protected _formatSpecsByKoq: Map<string, FormatterSpec[]>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
+    // (undocumented)
+    getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
     getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
-    protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
-    protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
+    getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
     getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
-    protected getPersistenceUnitByQuantityType(type: QuantityTypeKey): Promise<UnitProps>;
+    // (undocumented)
+    getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined>;
+    // (undocumented)
+    getQuantityDefiniton(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
-    protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
+    // (undocumented)
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     // (undocumented)
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
-    // @deprecated
-    loadFormatAndParsingMaps(useImperial: boolean, _restartActiveTool?: boolean): Promise<void>;
+    // (undocumented)
+    protected initializeQuantityTypesRegistry(): Promise<void>;
     // @internal
     protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
-    protected loadKoqFormatSpecs(koq: string): Promise<void>;
     readonly onActiveFormattingUnitSystemChanged: BeUiEvent<FormattingUnitSystemChangedArgs>;
     // @deprecated
     readonly onActiveUnitSystemChanged: BeUiEvent<{
         useImperial: boolean;
     }>;
-    // (undocumented)
+    // @internal
     onInitialized(): Promise<void>;
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
+    readonly onUnitsProviderChanged: BeUiEvent<void>;
     // (undocumented)
-    protected _overrideFormatPropsByQuantityType: Map<string, OverrideFormatEntry>;
+    protected _overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<string, FormatProps>>;
     parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult;
-    registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean>;
+    // (undocumented)
+    protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition>;
+    // (undocumented)
+    get quantityTypesRegistry(): Map<string, QuantityTypeDefinition>;
+    // (undocumented)
+    registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
-    setOverrideFormats(type: QuantityType, overrideEntry: OverrideFormatEntry): Promise<void>;
+    setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
+    // (undocumented)
+    setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
+    // (undocumented)
+    get unitsProvider(): UnitsProvider;
+    set unitsProvider(unitsProvider: UnitsProvider);
     // @deprecated (undocumented)
     get useImperialFormats(): boolean;
     set useImperialFormats(useImperial: boolean);
@@ -6987,8 +7061,24 @@ export enum QuantityType {
     Volume = 4
 }
 
-// @alpha
+// @beta
 export type QuantityTypeArg = QuantityType | string;
+
+// @alpha
+export interface QuantityTypeDefinition {
+    description: string;
+    generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
+    generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
+    // (undocumented)
+    getDefaultFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
+    readonly key: QuantityTypeKey;
+    label: string;
+    readonly persistenceUnit: UnitProps;
+    readonly type: QuantityTypeArg;
+}
+
+// @beta
+export type QuantityTypeKey = string;
 
 // @internal
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
@@ -9472,6 +9562,31 @@ export interface TerrainTileContent extends TileContent {
     };
 }
 
+// @alpha
+export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
+    // (undocumented)
+    editorType: "text";
+    // (undocumented)
+    getString: (props: FormatProps) => string;
+    // (undocumented)
+    setString: (props: FormatProps, value: string) => FormatProps;
+}
+
+// @alpha
+export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSpec {
+    // (undocumented)
+    editorType: "select";
+    // (undocumented)
+    getString: (props: FormatProps) => string;
+    // (undocumented)
+    selectOptions: {
+        label: string;
+        value: string;
+    }[];
+    // (undocumented)
+    setString: (props: FormatProps, value: string) => FormatProps;
+}
+
 // @internal (undocumented)
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
@@ -10140,6 +10255,15 @@ export interface TileTreeSupplier {
     compareTileTreeIds(lhs: any, rhs: any): number;
     createTileTree(id: any, iModel: IModelConnection): Promise<TileTree | undefined>;
     readonly isEcefDependent?: true;
+}
+
+// @internal
+export class TileUrlImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, level: number): Promise<string>;
+    // (undocumented)
+    static validateUrlTemplate(template: string): MapLayerSourceValidation;
 }
 
 // @beta
@@ -12718,6 +12842,17 @@ export namespace WmsCapability {
 }
 
 // @internal (undocumented)
+export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
+    // (undocumented)
+    initialize(): Promise<void>;
+    }
+
+// @internal (undocumented)
 export class WmsUtilities {
     // (undocumented)
     static getBaseUrl(url: string): string;
@@ -12976,6 +13111,17 @@ export namespace WmtsCapability {
         static readonly XLINK_HREF = "xlink:href";
     }
 }
+
+// @internal (undocumented)
+export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    initialize(): Promise<void>;
+    // (undocumented)
+    get mutualExclusiveSubLayer(): boolean;
+    }
 
 // @public
 export interface ZoomToOptions {

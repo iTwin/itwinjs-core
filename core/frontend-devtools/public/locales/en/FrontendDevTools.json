@@ -333,6 +333,12 @@
     "SaturationEffect": {
       "keyin": "fdt effect add saturation"
     },
+    "VignetteEffect": {
+      "keyin": "fdt effect add vignette"
+    },
+    "VignetteConfig": {
+      "keyin": "fdt effect config vignette"
+    },
     "SnowEffect": {
       "keyin": "fdt particle snow"
     },

@@ -14,6 +14,7 @@ import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
 import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
 import { SaturationConfig, SaturationEffect } from "./effects/Saturation";
 import { SnowEffect } from "./effects/Snow";
+import { VignetteConfig, VignetteEffect } from "./effects/Vignette";
 import {
   ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, MaskBackgroundMapByElementTool,
   MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool,
@@ -55,12 +56,12 @@ import {
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
 import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
 import { SelectElementsByIdTool } from "./tools/SelectionTools";
+import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
 import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from "./tools/SourceAspectIdTools";
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import { ChangeCameraTool } from "./tools/ViewportTools";
-import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -177,6 +178,8 @@ export class FrontendDevTools {
       UnsharpenEffect,
       ViewportAddRealityModel,
       ViewportTileSizeModifierTool,
+      VignetteConfig,
+      VignetteEffect,
       AttachRealityModelTool,
       DetachRealityModelTool,
       SaveRealityModelTool,

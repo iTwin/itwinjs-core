@@ -35,6 +35,7 @@ beta;Animator
 public;AppearanceOverrideProps
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
+internal;ArcGISMapLayerImageryProvider 
 internal;ArcGisToken
 internal;ArcGisTokenClientType
 internal;ArcGisTokenGenerator
@@ -49,6 +50,7 @@ public;AuxCoordSystem2dState
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
+internal;AzureMapsLayerImageryProvider 
 internal;B3dmReader 
 internal;BackgroundMapGeometry
 internal;BackgroundMapLocation
@@ -79,13 +81,13 @@ public;CategorySelectorState
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
+alpha;CheckboxFormatPropEditorSpec 
 public;CheckpointConnection 
 alpha;ClipEventType
 public;Cluster
 internal;CompassMode
 internal;ContextMode
 beta;ContextRealityModelState
-alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
@@ -100,6 +102,8 @@ internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferencePro
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;CurrentInputState
 internal;CurrentState
+alpha;CustomFormatPropEditorSpec
+alpha;CustomQuantityTypeDefinition 
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
@@ -169,10 +173,8 @@ alpha;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IMode
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
-internal;FormatPropsByUnitSystem = Map
 beta;class FormattedQuantityDescription 
 alpha;FormatterParserSpecsProvider
-internal;FormatterSpecByQuantityType = Map
 alpha;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
@@ -200,6 +202,7 @@ beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, m
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
+beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 alpha;GlobalLocation
 alpha;GlobalLocationArea
 internal;GlobeAnimator 
@@ -267,6 +270,10 @@ internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
 beta;IpcApp
 beta;IpcAppOptions
+alpha;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
+alpha;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
+alpha;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
+alpha;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
 beta;KeyinParseError
 internal;KeyinStatus
@@ -284,6 +291,7 @@ public;LookViewTool
 internal;LRUTileList
 internal;LRUTileListNode
 alpha;ManipulatorToolEvent
+internal;MapBoxLayerImageryProvider 
 internal;MapCartoRectangle 
 internal;MapLayerFormat
 internal;MapLayerFormatRegistry
@@ -377,7 +385,9 @@ internal;QuadId
 alpha;QuantityFormatsChangedArgs
 alpha;QuantityFormatter 
 beta;QuantityType
-alpha;QuantityTypeArg = QuantityType | string
+beta;QuantityTypeArg = QuantityType | string
+alpha;QuantityTypeDefinition
+beta;QuantityTypeKey = string
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
@@ -483,6 +493,8 @@ internal;TerrainDisplayOverrides
 internal;class TerrainMeshProvider
 internal;TerrainTexture
 internal;TerrainTileContent 
+alpha;TextInputFormatPropEditorSpec 
+alpha;TextSelectFormatPropEditorSpec 
 internal;TextureDrapeMap = Map
 internal;TextureImage
 internal;ThreeAxes
@@ -511,6 +523,7 @@ beta;TileTreeOwner
 beta;TileTreeParams
 beta;class TileTreeReference
 beta;TileTreeSupplier
+internal;TileUrlImageryProvider 
 beta;TileUsageMarker
 beta;TileVisibility
 public;Tool
@@ -603,8 +616,10 @@ internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities
 internal;WmsCapability
+internal;WmsMapLayerImageryProvider 
 internal;WmsUtilities
 internal;WmtsCapabilities
 internal;WmtsCapability
+internal;WmtsMapLayerImageryProvider 
 public;ZoomToOptions
 public;ZoomViewTool 

@@ -1260,7 +1260,8 @@ export class ProcessDetector {
     static get isIOSAppBackend(): boolean;
     static get isIOSAppFrontend(): boolean;
     static get isIOSBrowser(): boolean;
-    static get isIpadBrowser(): boolean;
+    static get isIPadBrowser(): boolean;
+    static get isIPhoneBrowser(): boolean;
     static get isMobileAppBackend(): boolean;
     static get isMobileAppFrontend(): boolean;
     static get isMobileBrowser(): boolean;
