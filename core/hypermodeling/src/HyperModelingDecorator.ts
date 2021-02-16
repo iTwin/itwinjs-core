@@ -165,9 +165,6 @@ export class HyperModelingDecorator implements Decorator {
   }
 
   /** @internal */
-  public readonly useCachedDecorations = true;
-
-  /** @internal */
   public decorate(context: DecorateContext): void {
     if (this.viewport.view.is3d())
       this.markers.addDecoration(context);
@@ -391,7 +388,9 @@ export class HyperModelingDecorator implements Decorator {
     this._needSync = false;
     if (this.viewport.view.is3d() && this.updateMarkerVisibility()) {
       this.markers.markDirty();
-      this.viewport.invalidateCachedDecorations(this);
+      // this.viewport.invalidateCachedDecorations(this);
+      // ###TODO cached decorations aren't working properly. Invalidate all decorations.
+      this.viewport.invalidateDecorations();
     }
   }
 
