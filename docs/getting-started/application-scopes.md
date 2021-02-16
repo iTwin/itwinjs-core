@@ -13,8 +13,8 @@ This list contains all the OAuth scopes that are required for an application to 
 | organization             | Required to get the user’s organization information                                          |
 | email                    | Required to get the email of the user                                                        |
 | imodelhub                | Required to access iModelHub, the service that allows access to the iModels                  |
-| imodeljs-router                     | Access any iModel.js backend hosted by Bentley (i.e. the General Purpose Backend) |
-| general-purpose-imodeljs-backend    | Required to access the iModel.js General Purpose Backend                          |
+| imodeljs-router                     | Access any iTwin.js backend hosted by Bentley (i.e. the General Purpose Backend) |
+| general-purpose-imodeljs-backend    | Required to access the iTwin.js General Purpose Backend                          |
 | rbac-user:external-client           | Required to get the user's role-based permissions                                 |
 | urlps-third-party                   | Required to report usage data to Bentley's usage logging service                  |
 | context-registry-service:read-only  | Required to access the Context Registry, the service that allows access to an iTwin project |

@@ -1,4 +1,4 @@
-# Executing ECSQL with the iModel.js Backend
+# Executing ECSQL with the iTwin.js Backend
 
 ECSQL by itself is described in detail here: [ECSQL](../ECSQL.md)
 

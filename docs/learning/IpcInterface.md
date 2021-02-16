@@ -1,10 +1,10 @@
 # Implementing Ipc Interfaces
 
-This article discusses IPC communication in iModel.js. See also [RPC vs IPC](./RpcVsIpc.md).
+This article discusses IPC communication in iTwin.js. See also [RPC vs IPC](./RpcVsIpc.md).
 
 ## Overview
 
-[IPC](https://en.wikipedia.org/wiki/Inter-process_communication) (Inter-Process Communication)) is a direct-connect communication technique used in iModel.js when the frontend and backend processes are paired one-to-one. IPC is most commonly used for [native apps](./NativeApps.md) where both processes are always on the same computer, but may also be used by web apps with a "dedicated" backend.
+[IPC](https://en.wikipedia.org/wiki/Inter-process_communication) (Inter-Process Communication)) is a direct-connect communication technique used in iTwin.js when the frontend and backend processes are paired one-to-one. IPC is most commonly used for [native apps](./NativeApps.md) where both processes are always on the same computer, but may also be used by web apps with a "dedicated" backend.
 
 ## IpcSocket Interface
 
@@ -32,7 +32,7 @@ TODO: mobile initialization
 
 ## IpcApp and IpcHost
 
-Generally, iModel.js programmers won't need to work with the low-level `IpcSocket` interface.
+Generally, iTwin.js programmers won't need to work with the low-level `IpcSocket` interface.
 
 On the frontend, the class [IpcApp]($frontend) must be initialized at startup with the platform-specific implementation of `IpcSocketFrontend` and contains the method [IpcApp.addListener]($frontend) to supply a handler for notification messages sent from the backend to the frontend.
 
@@ -44,7 +44,7 @@ Since Ipc is only enabled in situations where a dedicated backend is available, 
 
 To enable type-safe cross-process method calls using IPC, there are three required pieces:
 
-1. Define the method signatures in an interface. This must be in a file that can be `import`ed from both your frontend code and backend code. In iModel.js we use the convention of a folder named `common` for this purpose. Note that all methods in your interface must return a `Promise`. In the same file, define a variable that has a string with a unique name for the _ipc channel_ your interface will use. If you'd like, you can incorporate a version identifier in the channel name (e.g. append "-1").
+1. Define the method signatures in an interface. This must be in a file that can be `import`ed from both your frontend code and backend code. In iTwin.js we use the convention of a folder named `common` for this purpose. Note that all methods in your interface must return a `Promise`. In the same file, define a variable that has a string with a unique name for the _ipc channel_ your interface will use. If you'd like, you can incorporate a version identifier in the channel name (e.g. append "-1").
 
 ```ts
 const myChannel = "my-interface-v1.2";

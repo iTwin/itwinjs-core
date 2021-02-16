@@ -1,12 +1,12 @@
-﻿# iModel.js RPC Interface Integration Tests
+﻿# iTwin.js RPC Interface Integration Tests
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
-This package contains the iModel.js RPC Interface integration tests and configuration setup to run them against a deployed backend.
+This package contains the iTwin.js RPC Interface integration tests and configuration setup to run them against a deployed backend.
 
 ## Prerequisites
 
-Refer to the iModel.js [prerequisites](https://github.com/imodeljs/imodeljs#prerequisites)
+Refer to the iTwin.js [prerequisites](https://github.com/imodeljs/imodeljs#prerequisites)
 
 ## Running the tests
 
@@ -40,7 +40,7 @@ if you wish to use JWTs instead, you may set the `oidc_client_id` environment va
 
 In order to run the integration tests they need to have a valid OIDC client id which can be obtains by performing the following steps:
 
-1. Go to [Registration Dashboard](https://www.imodeljs.org/getting-started/registration-dashboard/) and sign in
+1. Go to [Registration Dashboard](https://www.itwinjs.org/getting-started/registration-dashboard/) and sign in
 1. Click 'New App'
 1. Select "SPA" application
 1. Specify a client name (can be anything you want)
