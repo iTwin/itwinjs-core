@@ -73,7 +73,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     const args = {
       ...request,
       abort: 0,
-      onProgress: (_a: number, _b: number) => args.abort,
+      onProgress: (_a: number, _b: number) => checkAbort(),
     };
 
     if (reportProgress) {
@@ -82,9 +82,14 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
           Events.NativeApp.namespace,
           `${Events.NativeApp.onBriefcaseDownloadProgress}-${request.iModelId}`,
           { loaded, total }, { strategy: EmitStrategy.PurgeOlderEvents });
-        return args.abort;
+        return checkAbort();
       };
     }
+
+    const checkAbort = () => {
+      const job = Downloads.isInProgress(args.fileName!);
+      return (job && (job.request as any).abort === 1) ? 1 : 0;
+    };
 
     return BriefcaseManager.downloadBriefcase(requestContext, args);
   }
