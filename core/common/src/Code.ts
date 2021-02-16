@@ -29,21 +29,27 @@ export interface CodeProps {
 export class Code implements CodeProps {
   /** The id of the [CodeSpec]($docs/bis/intro/codes.md#codespec) of the Element */
   public spec: Id64String;
-  /** the [CodeScope]($docs/bis/intro/codes.md#codescope-property) of the Element */
+  /** The [CodeScope]($docs/bis/intro/codes.md#codescope-property) of the Element */
   public scope: string;
-  /** the [CodeValue]($docs/bis/intro/codes.md#codevalue-property) of the Element */
-  public value?: string;
+  /** The [CodeValue]($docs/bis/intro/codes.md#codevalue-property) of the Element
+   * @note Leading and trailing whitespace is invalid so is automatically trimmed.
+   */
+  public get value() { return this._value ?? ""; }
+  public set value(val: string) { this._value = val?.trim(); }
+  private _value?: string;
 
-  constructor(val: CodeProps) {
-    this.spec = Id64.fromJSON(val.spec);
-    this.scope = JsonUtils.asString(val.scope, "");
-    this.value = JsonUtils.asString(val.value);
+  constructor(codeProps: CodeProps) {
+    this.spec = Id64.fromJSON(codeProps.spec);
+    this.scope = JsonUtils.asString(codeProps.scope);
+    this.value = JsonUtils.asString(codeProps.value);
   }
 
   /** Create an empty, non-unique code with no special meaning. */
   public static createEmpty(): Code { const id: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
   public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
-  public getValue(): string { return this.value ? this.value : ""; }
+  public toJSON(): CodeProps { return { spec: this.spec, scope: this.scope, value: this.value }; }
+  /** @deprecated Use the [[value]] property instead. */
+  public getValue(): string { return this.value; }
   public equals(other: Code): boolean { return Code.equalCodes(this, other); }
   /** @internal */
   public static equalCodes(c1: CodeProps, c2: CodeProps): boolean {
