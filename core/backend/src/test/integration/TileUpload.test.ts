@@ -24,8 +24,8 @@ describe("TileUpload (#integration)", () => {
   const testTileProps: TileContentRequestProps = {
     treeId: "17_1-E:0_0x20000000024",
     contentId: "-3-0-0-0-0-1",
-    guid: "912c1c83ef5529214b66a4bd6fca9c5e28d250ac_82f852eccdc338a6"
-  }
+    guid: "912c1c83ef5529214b66a4bd6fca9c5e28d250ac_82f852eccdc338a6",
+  };
   let testIModelId: GuidString;
   let testProjectId: GuidString;
   let testChangeSetId: GuidString;
@@ -41,9 +41,10 @@ describe("TileUpload (#integration)", () => {
       service: "azure",
       account: "tilemetadatatest",
       accessKey: "",
-    }
+    };
 
     await IModelHost.startup(config);
+    assert.isTrue(IModelHost.usingExternalTileCache);
     IModelHost.applicationId = "TestApplication";
 
     RpcManager.initializeInterface(IModelTileRpcInterface);
@@ -55,9 +56,9 @@ describe("TileUpload (#integration)", () => {
     testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
 
     // Get URL for cached tile
-    const credentials = new Azure.SharedKeyCredential(IModelHost.configuration!.tileCacheCredentials!.account, IModelHost.configuration!.tileCacheCredentials!.accessKey)
+    const credentials = new Azure.SharedKeyCredential(IModelHost.configuration!.tileCacheCredentials!.account, IModelHost.configuration!.tileCacheCredentials!.accessKey);
     const pipeline = Azure.StorageURL.newPipeline(credentials);
-    const serviceUrl = new Azure.ServiceURL(`https://${credentials.accountName}.blob.core.windows.net`, pipeline)
+    const serviceUrl = new Azure.ServiceURL(`https://${credentials.accountName}.blob.core.windows.net`, pipeline);
     const containerUrl = Azure.ContainerURL.fromServiceURL(serviceUrl, testIModelId);
     const blobUrl = Azure.BlobURL.fromContainerURL(containerUrl, `tiles/${testTileProps.treeId}/${testTileProps.guid}/${testTileProps.contentId}`);
     blockBlobUrl = Azure.BlockBlobURL.fromBlobURL(blobUrl);
@@ -65,7 +66,6 @@ describe("TileUpload (#integration)", () => {
     // Open and close the iModel to ensure it works and is closed
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(testChangeSetId).toJSON() });
     assert.isDefined(iModel);
-    assert.isTrue(IModelHost.usingExternalTileCache);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
   });
 

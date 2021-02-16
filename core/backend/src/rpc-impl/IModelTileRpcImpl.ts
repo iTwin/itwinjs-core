@@ -137,8 +137,10 @@ async function getTileContent(props: TileContentRequestProps): Promise<TileConte
   return {
     content: tile.content,
     metadata: {
-      tileGenerationTime: tile.elapsedSeconds.toString()
-    }
+      backendName: IModelHost.applicationId,
+      tileGenerationTime: tile.elapsedSeconds.toString(),
+      tileSize: tile.content.byteLength.toString(),
+    },
   };
 }
 

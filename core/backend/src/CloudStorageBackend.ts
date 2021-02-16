@@ -8,7 +8,7 @@ import * as Azure from "@azure/storage-blob";
 import { Logger, PerfLogger } from "@bentley/bentleyjs-core";
 import {
   BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, CloudStorageTileCache, IModelError, IModelRpcProps,
-  TileContentIdentifier
+  TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
@@ -33,7 +33,7 @@ export abstract class CloudStorageService {
   public terminate(): void { }
   public abstract id: CloudStorageProvider;
   public abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
-  public abstract upload(container: string, name: string, data: Uint8Array, metadata?: any, options?: CloudStorageUploadOptions): Promise<string>;
+  public abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
   public async download(_name: string): Promise<Readable | undefined> { return undefined; }
 
   protected makeDescriptor(id: CloudStorageContainerDescriptor) {
@@ -107,7 +107,7 @@ export class AzureBlobStorage extends CloudStorageService {
     });
   }
 
-  public async upload(container: string, name: string, data: Uint8Array, metadata?: object, options?: CloudStorageUploadOptions): Promise<string> {
+  public async upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string> {
     return new Promise(async (resolve, reject) => {
       try {
         await this.ensureContainer(container);
@@ -116,21 +116,17 @@ export class AzureBlobStorage extends CloudStorageService {
         const blob = Azure.BlobURL.fromContainerURL(containerUrl, name);
         const blocks = Azure.BlockBlobURL.fromBlobURL(blob);
         const blobHTTPHeaders = {
-          blobContentType: (options && options.type) ? options.type : "application/octet-stream",
-          blobCacheControl: (options && options.cacheControl) ? options.cacheControl : "private, max-age=31536000, immutable",
-        }
+          blobContentType: options?.type ?? "application/octet-stream",
+          blobCacheControl: options?.cacheControl ?? "private, max-age=31536000, immutable",
+        };
 
         const blobOptions: Azure.IUploadStreamToBlockBlobOptions = metadata ?
           {
             blobHTTPHeaders,
-            metadata: {
-              ...metadata,
-              backendName: IModelHost.applicationId,
-              tileSize: data.byteLength.toString()
-            }
+            metadata: { ...metadata },
           } : {
-            blobHTTPHeaders
-          }
+            blobHTTPHeaders,
+          };
 
         const dataStream = new PassThrough();
         dataStream.end(data);
@@ -188,7 +184,7 @@ export class CloudStorageTileUploader {
     this._activeUploads.delete(containerKey + resourceKey);
   }
 
-  public cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid?: string, metadata?: object) {
+  public cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object) {
     const id: TileContentIdentifier = { tokenProps, treeId, contentId, guid };
 
     const cache = CloudStorageTileCache.getCache();

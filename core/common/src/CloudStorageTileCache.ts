@@ -15,7 +15,7 @@ export interface TileContentIdentifier {
   tokenProps: IModelRpcProps;
   treeId: string;
   contentId: string;
-  guid?: string;
+  guid: string | undefined;
 }
 
 /** @beta */
