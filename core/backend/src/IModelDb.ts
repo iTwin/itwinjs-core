@@ -1587,7 +1587,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this._iModel.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, code.spec);
         stmt.bindId(2, Id64.fromString(code.scope));
-        stmt.bindString(3, code.value!);
+        stmt.bindString(3, code.value);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
           return undefined;
 
