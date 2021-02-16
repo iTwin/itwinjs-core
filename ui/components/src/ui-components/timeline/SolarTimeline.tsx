@@ -24,7 +24,7 @@ import { ColorSwatch } from "../color/Swatch";
 import { SolarDataProvider } from "./interfaces";
 import { PlayButton } from "./PlayerButton";
 import { SpeedTimeline } from "./SpeedTimeline";
-import { DatePicker } from "../datepicker/DatePicker";
+import { adjustDateToTimezone, DatePicker } from "../datepicker/DatePicker";
 import { TimeField, TimeSpec } from "../datepicker/TimeField";
 
 // cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline
@@ -526,7 +526,9 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   }
 
   private _onDayClick = (day: Date) => {
-    this.props.dataProvider.day = day;
+    const adjustedDate = new Date(day.getTime()+this.state.currentTimeOffsetMs);
+
+    this.props.dataProvider.setNewDay (adjustedDate);
     const dayStartMs = this.props.dataProvider.dayStartMs;
     const sunRiseOffsetMs = this.props.dataProvider.sunrise.getTime() - dayStartMs;
     const sunSetOffsetMs = this.props.dataProvider.sunset.getTime() - dayStartMs;
@@ -535,10 +537,9 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     const sunOffsetMs = this.ensureRange(this.state.currentTimeOffsetMs, sunRiseOffsetMs, sunSetOffsetMs);
     this.setPlaybackTimeBySunTime(sunOffsetMs, sunRiseOffsetMs, sunDeltaMs);
 
-    if (this.props.dataProvider.onTimeChanged) {
-      const newSunTime = new Date(dayStartMs + sunOffsetMs);
-      this.props.dataProvider.onTimeChanged(newSunTime);
-    }
+    /** call dataProvider to update display style */
+    if (this.props.dataProvider.onTimeChanged)
+      this.props.dataProvider.onTimeChanged(this.props.dataProvider.timeOfDay);
 
     this.setState({ dayStartMs, sunRiseOffsetMs, sunSetOffsetMs, currentTimeOffsetMs: sunOffsetMs, sunDeltaMs, isDateOpened: false }, () => {
       this._timeLastCycle = new Date().getTime();
@@ -640,7 +641,9 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
   private _formatTime = (millisec: number) => {
     const date = new Date(millisec);
-    let hours = date.getUTCHours();
+    // convert project date to browser locale date
+    const localTime = adjustDateToTimezone (date, this.props.dataProvider.timeZoneOffset*60);
+    let hours = localTime.getHours();
     const minutes = addZero(date.getUTCMinutes());
     const abbrev = (hours < 12) ? this._amLabel : (hours === 24) ? this._amLabel : this._pmLabel;
     hours = (hours > 12) ? hours - 12 : hours;
@@ -697,10 +700,10 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
           </button>
           <Popup style={{ border: "none" }} offset={11} target={this._datePicker} isOpen={this.state.isDateOpened} onClose={this._onCloseDayPicker} position={RelativePosition.Top}>
             <div className="components-date-picker-calendar-popup-panel" data-testid="components-date-picker-calendar-popup-panel">
-              <DatePicker selected={this.props.dataProvider.day} onDateChange={this._onDayClick} showFocusOutline={false} />
+              <DatePicker selected={this.props.dataProvider.userTime} onDateChange={this._onDayClick} showFocusOutline={false} />
               <div className="time-container">
                 <BodyText className="time-label">{this._timeLabel}</BodyText>
-                <TimeField time={{ hours: currentDate.getUTCHours(), minutes: currentDate.getUTCMinutes(), seconds: 0 }} timeDisplay={TimeDisplay.H12MC} onTimeChange={this._onTimeChanged} />
+                <TimeField time={{ hours: this.props.dataProvider.userTime.getHours(), minutes: this.props.dataProvider.userTime.getMinutes(), seconds: 0 }} timeDisplay={TimeDisplay.H12MC} onTimeChange={this._onTimeChanged} />
               </div>
             </div>
           </Popup>
