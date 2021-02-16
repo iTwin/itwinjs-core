@@ -3,6 +3,16 @@ publish: false
 ---
 # NextVersion
 
+## The iModel.js Project Is Renamed iTwin.js
+
+The version begins the process of renaming our project from **iModel.js** to **iTwin.js** to better reflect its purpose as the *platform for infrastructure digital twins*.
+
+iModels are of course a big part of iTwins, so much of the api remains iModel-centric, and many packages within this repository are appropriately named with the `imodeljs` prefix. But, many parts that don't have a direct relationship to iModels will use the term iTwin going forward to avoid confusion.
+
+The full conversion will be made gradually and incrementally, and will likely take several major release cycles to complete. We will not rename packages, classes, methods, etc. unless they are substantially replaced. That may leave some permanent historical vestiges of this transition, but as they say, c'est la vie.
+
+This version begins the process by redirecting `www.imodeljs.org` to `www.itwinjs.org`, and updating references to the project name in markdown files.
+
 ## GPU memory limits
 
 The [RenderGraphic]($frontend)s used to represent a [Tile]($frontend)'s contents consume WebGL resources - chiefly, GPU memory. If the amount of GPU memory consumed exceeds that available, the WebGL context will be lost, causing an error dialog to be displayed and all rendering to cease. The [TileAdmin]($frontend) can now be configured with a strategy for managing the amount of GPU memory consumed and avoiding context loss. Each strategy defines a maximum amount of GPU memory permitted to be allocated to tile graphics; when that limit is exceeded, graphics for tiles that are not currently being displayed by any [Viewport]($frontend) are discarded one by one until the limit is satisfied or no more tiles remain to be discarded. Graphics are discarded in order from least-recently- to most-recently-displayed, and graphics currently being displayed will not be discarded. The available strategies are:
@@ -37,7 +47,7 @@ This feature replaces the `@alpha` `TileAdmin.Props.mobileExpirationMemoryThresh
 
 ## IModelHost and IModelApp Initialization Changes
 
-Initialization processing of iModel.js applications, and in particular the order of individual steps for frontend and backend classes has been complicated and vague, involving several steps that vary depending on application type and platform. This release attempts to clarify and simplify that process, while maintaining backwards compatibility. In general, if your code uses [IModelHost.startup]($backend) and [IModelApp.startup]($frontend) for web visualization, it will continue to work without changes. However, for native (desktop and mobile) apps, some refactoring may be necessary. See [IModelHost documentation]($docs/learning/backend/IModelHost.md) for appropriate backend initialization, and [IModelApp documentation]($docs/learning/frontend/IModelApp.md) for frontend initialization.
+Initialization processing of iTwin.js applications, and in particular the order of individual steps for frontend and backend classes has been complicated and vague, involving several steps that vary depending on application type and platform. This release attempts to clarify and simplify that process, while maintaining backwards compatibility. In general, if your code uses [IModelHost.startup]($backend) and [IModelApp.startup]($frontend) for web visualization, it will continue to work without changes. However, for native (desktop and mobile) apps, some refactoring may be necessary. See [IModelHost documentation]($docs/learning/backend/IModelHost.md) for appropriate backend initialization, and [IModelApp documentation]($docs/learning/frontend/IModelApp.md) for frontend initialization.
 
 The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes `ElectronHost` and `ElectronApp`.
 
@@ -101,11 +111,9 @@ The type of the internal member `IModelHostConfiguration.applicationType` had a 
 ### IModelTransformer and IModelExporter APIs are now async
 
 The *export* methods of [IModelExporter]($backend) and the *process* methods of [IModelTransformer]($backend) are now `async`. This is a breaking API change.
-While exporting and transforming should generally be considered *batch* operations, changing these methods to `async` makes progress reporting and process health monitoring much easier.
-This is particularly important when processing large iModels.
+While exporting and transforming should generally be considered *batch* operations, changing these methods to `async` makes progress reporting and process health monitoring much easier. This is particularly important when processing large iModels.
 
-To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from within an `async` method.
-No internal logic was changed, so that should be the only changes required.
+To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from within an `async` method. No internal logic was changed, so that should be the only changes required.
 
 ## Presentation
 

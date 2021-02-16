@@ -19,7 +19,7 @@ The tutorial makes reference to the **iModelConsole** application.  Use the app 
 
 ### Sample iModel
 
-The ECSQL examples in the tutorial work with the "House Sample" iModel. You can explore the imodels [here](https://imodeljs.org/sample-showcase/).
+The ECSQL examples in the tutorial work with the "House Sample" iModel. You can explore the imodels [here](https://itwinjs.org/sample-showcase/).
 
 ### BIS
 
