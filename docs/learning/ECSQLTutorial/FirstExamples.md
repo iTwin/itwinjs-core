@@ -171,10 +171,10 @@ some class, you can let ECSQL do calculations. The following example uses ECSQL 
 >
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT 10 Radius, (2 *3.1415* 10) Perimeter, (3.1415 *10* 10) Area FROM bis.Element LIMIT 1"></iframe>
 
-Using **aliases** is also helpful when working with the iModel.js API. The API returns query results as JavaScript object literals where
+Using **aliases** is also helpful when working with the iTwin.js API. The API returns query results as JavaScript object literals where
 each expression of the SELECT clause becomes the member of the object.
 
-If you, for example, used the [Element Count example](#element-count) with the iModel.js API, you would get this JavaScript object literal:
+If you, for example, used the [Element Count example](#element-count) with the iTwin.js API, you would get this JavaScript object literal:
 
 ```ts
 { "count(*)" : 27 }
@@ -205,7 +205,7 @@ iModelDb.withPreparedStatement("SELECT count(*) elementCount FROM bis.SpatialEle
 
 ## Parametrizing the ECSQL
 
-To reuse the same ECSQL statement with different values, parameters can be used. Reusing ECSQL statements should always be considered because preparing an ECSQL statement can be costly. See the [ECSQL Reference](../ECSQL.md#ecsql-parameters) for details and some examples. Values for the parameters are bound to the statement via the iModel.js API.
+To reuse the same ECSQL statement with different values, parameters can be used. Reusing ECSQL statements should always be considered because preparing an ECSQL statement can be costly. See the [ECSQL Reference](../ECSQL.md#ecsql-parameters) for details and some examples. Values for the parameters are bound to the statement via the iTwin.js API.
 
 **Not binding a value to a parameter is like binding NULL to it.**
 
@@ -272,7 +272,7 @@ And to illustrate the difference, the same query using = NULL does not return an
 
 ## SQL Functions
 
-Any SQL function can be used in ECSQL. This includes functions built into SQLite (see [SQLite Functions overview](https://www.sqlite.org/lang_corefunc.html)) or functions built into iModel.js, like the [geometry functions](../GeometrySqlFuncs.md) which you can use for [spatial queries](../SpatialQueries.md).
+Any SQL function can be used in ECSQL. This includes functions built into SQLite (see [SQLite Functions overview](https://www.sqlite.org/lang_corefunc.html)) or functions built into iTwin.js, like the [geometry functions](../GeometrySqlFuncs.md) which you can use for [spatial queries](../SpatialQueries.md).
 
 > **Try it yourself**
 >
