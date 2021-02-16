@@ -40,7 +40,7 @@ For example, a physical valve will have its serial number permanently affixed to
 ## CodeSpec
 
 A `CodeSpec` (aka **Code Specification**) captures the rules for encoding and decoding significant business information into and from a Code.
-A `CodeSpec` is associated to an Element subclass via configuration of the system that edits the BIS Repository, such as the iModel.js library, which can collaborate with a shared service (e.g. by an 'Identification Code Service') to generate and validate Codes.
+A `CodeSpec` is associated to an Element subclass via configuration of the system that edits the BIS Repository, such as the iTwin.js library, which can collaborate with a shared service (e.g. by an 'Identification Code Service') to generate and validate Codes.
 
 The CodeSpec can also dictate that Codes for instances of the Element class should be null. This is appropriate when the modeled real-world entities don’t have a meaningful real-world identifier (e.g. a piece of baseboard, a pile of dirt, an average bolt).
 

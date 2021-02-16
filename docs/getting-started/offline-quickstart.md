@@ -2,18 +2,18 @@
 
 ## 1. Get the tools
 
-Writing an iModel.js application requires the following software:
+Writing an iTwin.js application requires the following software:
 
 - [Node.js](https://nodejs.org) (12.x LTS version)
   - This provides the backend JavaScript runtime.
   - The installation also includes the `npm` command line tool.
 - [Git](https://git-scm.com/downloads)
-  - This is the source code control system for the iModel.js repositories.
+  - This is the source code control system for the iTwin.js repositories.
 
 ### Suggested IDE
 
 - [Visual Studio Code](https://code.visualstudio.com/)
-  - This is the recommended editor and debugger for iModel.js applications.
+  - This is the recommended editor and debugger for iTwin.js applications.
   - VS Code also supplies a GUI for working with Git.
 
 ## 2. Get the code
@@ -42,9 +42,9 @@ Desktop apps can also open cloud hosted iModels. If you do not have access to on
 
 > Open your snapshot iModel in the desktop-starter app by clicking the home button in the upper left and clicking "Select snapshot".
 
-### [Follow tutorials to dive deeper into iModel.js]($docs/learning/tutorials/index.md)
+### [Follow tutorials to dive deeper into iTwin.js]($docs/learning/tutorials/index.md)
 
-### [iModel.js Blog](https://medium.com/imodeljs)
+### [iTwin.js Blog](https://medium.com/itwinjs)
 
 <style>
   article#main h3:after {

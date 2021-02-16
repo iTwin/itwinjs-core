@@ -1,6 +1,6 @@
 # @bentley/ui-ninezone
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
@@ -8,7 +8,7 @@ The __@bentley/ui-ninezone__ package contains React components for 9-Zone UI and
 
 ## Documentation
 
-See the [iModel.js](https://www.imodeljs.org) documentation for more information.
+See the [iTwin.js](https://www.itwinjs.org) documentation for more information.
 
 ## Usage
 
