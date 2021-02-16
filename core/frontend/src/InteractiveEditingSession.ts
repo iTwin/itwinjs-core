@@ -9,12 +9,12 @@
 import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
-  ElementGeometryChange, GeometryChangeNotifications, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
+  ElementGeometryChange, ElementsChanged, IModelChangeNotifications, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseConnection";
+import { RemoteBriefcaseConnection } from "./CheckpointConnection";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
-import { RemoteBriefcaseConnection } from "./CheckpointConnection";
 
 let initialized = false;
 const sessions: InteractiveEditingSession[] = [];
@@ -44,8 +44,8 @@ export type EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection
  * @note iModels with older versions of the BisCore ECSchema (prior to version 0.1.11) do not support interactive editing.
  * @alpha
  */
-export class InteractiveEditingSession extends BriefcaseNotificationHandler implements GeometryChangeNotifications {
-  public get briefcaseChannelName() { return IpcAppChannel.GeometryChanges; }
+export class InteractiveEditingSession extends BriefcaseNotificationHandler implements IModelChangeNotifications {
+  public get briefcaseChannelName() { return IpcAppChannel.IModelChanges; }
 
   /** Maps model Id to accumulated changes to geometric elements within the associated model. */
   private readonly _geometryChanges = new Map<Id64String, ModelChanges>();
@@ -187,6 +187,9 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     const index = sessions.indexOf(this);
     if (-1 !== index)
       sessions.splice(index);
+  }
+
+  public notifyElementsChanged(_changed: ElementsChanged) {
   }
 
   public notifyGeometryChanged(props: ModelGeometryChangesProps[]) {

@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, MutableCompressedId64Set } from "@bentley/bentleyjs-core";
-import { ModelGeometryChangesProps } from "@bentley/imodeljs-common";
+import { ElementsChanged, ModelGeometryChangesProps } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -34,29 +34,6 @@ export interface ValidationError {
   message?: string;
 }
 
-export interface ElementsChanged {
-  inserted?: CompressedId64Set;
-  deleted?: CompressedId64Set;
-  updated?: CompressedId64Set;
-}
-
-export class TxnChangedElement {
-  public constructor(private _stmt: IModelJsNative.SqliteStatement, private _db: IModelJsNative.DgnDb) { }
-  public get elementId(): Id64String { return this._stmt.getValueId(0); }
-  public get modelId(): Id64String { return this._stmt.getValueId(1); }
-  public get changeType() {
-    switch (this._stmt.getValueInteger(2)) {
-      case 0: return "insert";
-      case 1: return "update";
-      case 2: return "delete";
-    }
-    throw new Error("illegal value");
-  }
-
-  public get classId(): Id64String { return this._stmt.getValueId(3); }
-  public get className(): string { return this._db.classIdToName(this.classId); }
-}
-
 /**
  * Manages local changes to an iModel via [Txns]($docs/learning/InteractiveEditing.md)
  * @beta
@@ -64,16 +41,6 @@ export class TxnChangedElement {
 export class TxnManager {
   /** @internal */
   constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
-
-  private _iterateChanges(fn: (element: TxnChangedElement) => boolean) {
-    this._iModel.withPreparedSqliteStatement("SELECT ElementId,ModelId,ChangeType,ECClassId FROM temp.txn_Elements", (stmt: SqliteStatement) => {
-      const row = new TxnChangedElement(stmt.stmt!, this._iModel.nativeDb);
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        if (fn(row))
-          return;
-      }
-    });
-  }
 
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];
@@ -111,38 +78,39 @@ export class TxnManager {
   /** @internal */
   protected _onEndValidate() {
     this.onEndValidation.raiseEvent();
-    if (this.onElementsChanged.numberOfListeners === 0)
-      return;
     const deleted = new MutableCompressedId64Set();
     const inserted = new MutableCompressedId64Set();
     const updated = new MutableCompressedId64Set();
-    this._iterateChanges((el) => {
-      const id = el.elementId;
-      switch (el.changeType) {
-        case "delete":
-          deleted.add(id);
-          break;
-        case "insert":
-          inserted.add(id);
-          break;
-        case "update":
-          updated.add(id);
-          break;
+    this._iModel.withPreparedSqliteStatement("SELECT ElementId,ChangeType FROM temp.txn_Elements", (sql: SqliteStatement) => {
+      const stmt = sql.stmt!;
+      while (sql.step() === DbResult.BE_SQLITE_ROW) {
+        const id = stmt.getValueId(0);
+        switch (stmt.getValueInteger(1)) {
+          case 0:
+            inserted.add(id);
+            break;
+          case 1:
+            updated.add(id);
+            break;
+          case 2:
+            deleted.add(id);
+            break;
+        }
       }
-      return false;
-
     });
-    this.onElementsChanged.raiseEvent({
+    const changes = {
       inserted: inserted.isEmpty ? undefined : inserted.ids,
       deleted: deleted.isEmpty ? undefined : deleted.ids,
       updated: updated.isEmpty ? undefined : updated.ids,
-    });
+    };
+    this.onElementsChanged.raiseEvent(changes); // for backend listeners
+    IpcHost.notifyIModelChanges(this._iModel, "notifyElementsChanged", changes); // send to frontend
   }
 
   /** @internal */
-  protected _onGeometryChanged(models: ModelGeometryChangesProps[]) {
-    this.onGeometryChanged.raiseEvent(models);
-    IpcHost.notifyGeometryChanges(this._iModel, "notifyGeometryChanged", models); // send to frontend
+  protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]) {
+    this.onGeometryChanged.raiseEvent(modelProps);
+    IpcHost.notifyIModelChanges(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
   }
 
   /** Dependency handlers may call method this to report a validation error.

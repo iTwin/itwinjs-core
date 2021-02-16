@@ -9,6 +9,12 @@
 import { assert, CompressedId64Set, DbOpcode, GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 
+export interface ElementsChanged {
+  inserted?: CompressedId64Set;
+  deleted?: CompressedId64Set;
+  updated?: CompressedId64Set;
+}
+
 /** Compact wire format representing geometric changes to a set of elements as part of a [[ModelGeometryChangesProps]].
  * All of the elements belong to the same model.
  * The number of [[ids]] and [[ranges]] are guaranteed to be the same.
