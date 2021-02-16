@@ -1,5 +1,5 @@
 ---
-browserTabTitle: iModel.js Tutorials
+browserTabTitle: iTwin.js Tutorials
 ---
 
 ### Creating a test iModel
@@ -24,7 +24,7 @@ Test iModels can be used for local development. There are a few different ways t
 [!bwc tile heading="Web viewer" linkTo="develop-web-viewer" contents="Create a web based viewer" icon="network.svg" step="13" width="28%" ]
 [!bwc tile heading="Desktop viewer" linkTo="develop-desktop-viewer" contents="Create a desktop viewer" icon="computer.svg" step="13" width="28%"]
 [!bwc tile heading="Agent application" linkTo="develop-agent" contents="Create an agent application" icon="notification.svg" step="13" width="28%"]
-[!bwc tile heading="Extension" linkTo="gettingstarted subPath=/frontend/extensions" contents="Create an iModel.js Extension" icon="puzzle.svg" step="13" width="28%"]
+[!bwc tile heading="Extension" linkTo="gettingstarted subPath=/frontend/extensions" contents="Create an iTwin.js Extension" icon="puzzle.svg" step="13" width="28%"]
 
 ### Registering Applications
 

@@ -2,7 +2,7 @@
 
 ## About this Application
 
-The application contained within this directory provides a test environment for developers working on the frontend functionality of iModel.js. It is **not** intended to serve as an example or template for the design of "real" iModel.js applications.
+The application contained within this directory provides a test environment for developers working on the frontend functionality of iTwin.js. It is **not** intended to serve as an example or template for the design of "real" iTwin.js applications.
 
 * package.json
   * Provides the npm start script for the application
@@ -73,10 +73,10 @@ The notifications window can be focused by pressing Ctrl-n. Pressing Ctrl-n agai
 
 ## Debugging
 
-Debugging display-test-app can be accomplished using the following procedures, depending on which packages of iModel.js you would like to step through:
+Debugging display-test-app can be accomplished using the following procedures, depending on which packages of iTwin.js you would like to step through:
 
 * frontend
-  * The frontend and common iModel.js core packages may be debugged simply by starting the addon using the steps listed in [Getting Started](#Getting\ Started), and then setting breakpoints within the Chrome developer tools window which will open automatically.
+  * The frontend and common iTwin.js core packages may be debugged simply by starting the addon using the steps listed in [Getting Started](#Getting\ Started), and then setting breakpoints within the Chrome developer tools window which will open automatically.
 * backend
   * Calls to the imodeljs-backend functionality may be debugged by opening Visual Studio Code to the root of this repository, navigating to the debug tab, and selecting either 'display-test-app Electron (backend)' or 'display-test-app Browser (backend)' from the launch configuration dropdown. Note that in the browser configuration, only the web server will be started, and you must still manually navigate to the URL of the application in the browser (which is printed to the debug console). Any breakpoints for backend functionality set in Visual Studio Code will now be hit.
 
