@@ -51,6 +51,9 @@
     "widgetOpacityTitle": "Widget Opacity",
     "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets"
   },
+  "QuantityFormatModalFrontstage": {
+    "QuantityFormatStage": "Quantity Format Overrides"
+  },
   "backstage": {
     "command": "Command",
     "testFrontstage1": "Panels Showcase",
@@ -62,6 +65,7 @@
     "viewIModel": "View iModel",
     "editIModel": "Edit iModel",
     "testFrontstage6": "Settings",
+    "quantityFormat": "Quantity Formats",
     "iModelStage": "Review iModel",
     "editStage": "Edit and Modify iModel",
     "task1": "Test 1 Frontstage via Task",
@@ -400,5 +404,17 @@
   },
   "property-grid": {
     "too-many-elements-selected": "Too many elements selected"
+  },
+  "BearingQuantityType": {
+    "label": "Bearing",
+    "description": "Bearing",
+    "bearingGap": {
+      "label": "Add Direction Gap"
+    },
+    "bearingAngleDirection": {
+      "label": "Angle Direction",
+      "clockwise": "Clockwise",
+      "counter-clockwise": "Counter-Clockwise"
+    }
   }
 }

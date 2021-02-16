@@ -85,10 +85,12 @@ This package supplies several examples of screen-space post-processing effects t
 * `fdt effect add` - append the specified effect to the selected viewport's list of effects. Effects are applied in the order in which they appear in that list. Available effect names are:
   * "lensdistortion" - simulates the "fish-eye" distortion produced by real-world cameras with very wide fields of view.
   * "saturation" - adjusts the saturation of each pixel in the image.
+  * "vignette" - applies a vignette effect.
   * "flip" - mostly useless except for demonstration purposes: flips the image horizontally and/or vertically, and/or inverts the color of each pixel.
   * Six "convolution kernel" effects that alter the image by blending neighboring pixels in different ways: "blur", "sharpen", "unsharpen", "emboss", "edgedetect", and "sharpness".
 * `fdt effect clear` - remove all effects from the selected viewport.
 * `fdt effect config saturation` - configure the saturation effect. Accepts one argument of the form `multiplier=x` where `x` is a floating point number by which to multiply each color's saturation. The default multiplier is 2.0.
+* `fdt effect config vignette` - configure the vignette effect - see `VignetteConfig` for details on the setting. Accepts any combination of the following arguments where each takes a floating point value in [0..1]; if an argument is omitted then the corresponding setting retains its current value: "width", "height", "smoothness", "roundness". e.g., `fdt effect config vignette smoothness=0.5`.
 * `fdt effect config flip` - configure the "flip" effect. Accepts any combination of the following arguments; any argument omitted defaults to 0.
   * "horizontal=0|1" - 1 to flip horizontally.
   * "vertical=0|1" - 1  to flip vertically.
