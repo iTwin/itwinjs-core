@@ -193,6 +193,7 @@ export interface SolarDataProvider {
   shadowColor: ColorDef;
   /** timezone offset for local project time */
   readonly timeZoneOffset: number;
-  /** set date for shadow study */
+  /** set date for shadow study. If isProjectDate is false the is assume to be in users
+   * current time and the value is adjusted to be the same date and time at the project location. */
   setDateAndTime: (day: Date, isProjectDate?: boolean) => void;
 }

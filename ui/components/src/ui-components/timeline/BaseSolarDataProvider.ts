@@ -105,7 +105,8 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     return this._projectDateTime;
   }
 
-  /** Set date and time - date can be in project time or based on user current locale */
+  /** The date can be in project time or if isProjectDate is false, it is assumed to be users current local time
+   *  which will be adjusted to the same time at project location. */
   public setDateAndTime(date: Date, isProjectDate?: boolean) {
     let userDay = date;
 
