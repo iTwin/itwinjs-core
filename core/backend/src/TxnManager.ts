@@ -6,12 +6,13 @@
  * @module iModels
  */
 
-import { BeEvent, DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, MutableCompressedId64Set } from "@bentley/bentleyjs-core";
 import { ModelGeometryChangesProps } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { BriefcaseDb, StandaloneDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
+import { SqliteStatement } from "./SqliteStatement";
 
 /** @public */
 export enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
@@ -33,7 +34,13 @@ export interface ValidationError {
   message?: string;
 }
 
-export class TxnCommitRow {
+export interface ElementsChanged {
+  inserted?: CompressedId64Set;
+  deleted?: CompressedId64Set;
+  updated?: CompressedId64Set;
+}
+
+export class TxnChangedElement {
   public constructor(private _stmt: IModelJsNative.SqliteStatement, private _db: IModelJsNative.DgnDb) { }
   public get elementId(): Id64String { return this._stmt.getValueId(0); }
   public get modelId(): Id64String { return this._stmt.getValueId(1); }
@@ -50,15 +57,6 @@ export class TxnCommitRow {
   public get className(): string { return this._db.classIdToName(this.classId); }
 }
 
-// export class TxnValidation {
-//   private _iModel: IModelDb;
-//   public iterateChanges(fn: (row: TxnCommitRow) => boolean) {
-//     this._iModel.withPreparedSqliteStatement("SELECT ElementId,ModelId,ChangeType,ECClassId FROM temp.txn_Elements", (stmt: SqliteStatement) => {
-//     }
-
-//     }
-// }
-
 /**
  * Manages local changes to an iModel via [Txns]($docs/learning/InteractiveEditing.md)
  * @beta
@@ -67,7 +65,16 @@ export class TxnManager {
   /** @internal */
   constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
 
-  public readonly onGeometryChanged = new BeEvent<(models: ModelGeometryChangesProps[]) => void>();
+  private _iterateChanges(fn: (element: TxnChangedElement) => boolean) {
+    this._iModel.withPreparedSqliteStatement("SELECT ElementId,ModelId,ChangeType,ECClassId FROM temp.txn_Elements", (stmt: SqliteStatement) => {
+      const row = new TxnChangedElement(stmt.stmt!, this._iModel.nativeDb);
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        if (fn(row))
+          return;
+      }
+    });
+  }
+
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];
 
@@ -100,8 +107,38 @@ export class TxnManager {
   }
   /** @internal */
   protected _onBeginValidate() { this.validationErrors.length = 0; }
+
   /** @internal */
-  protected _onEndValidate() { }
+  protected _onEndValidate() {
+    this.onEndValidation.raiseEvent();
+    if (this.onElementsChanged.numberOfListeners === 0)
+      return;
+    const deleted = new MutableCompressedId64Set();
+    const inserted = new MutableCompressedId64Set();
+    const updated = new MutableCompressedId64Set();
+    this._iterateChanges((el) => {
+      const id = el.elementId;
+      switch (el.changeType) {
+        case "delete":
+          deleted.add(id);
+          break;
+        case "insert":
+          inserted.add(id);
+          break;
+        case "update":
+          updated.add(id);
+          break;
+      }
+      return false;
+
+    });
+    this.onElementsChanged.raiseEvent({
+      inserted: inserted.isEmpty ? undefined : inserted.ids,
+      deleted: deleted.isEmpty ? undefined : deleted.ids,
+      updated: updated.isEmpty ? undefined : updated.ids,
+    });
+  }
+
   /** @internal */
   protected _onGeometryChanged(models: ModelGeometryChangesProps[]) {
     this.onGeometryChanged.raiseEvent(models);
@@ -116,6 +153,10 @@ export class TxnManager {
   /** Determine whether any fatal validation errors have occurred during dependency propagation.  */
   public get hasFatalError(): boolean { return this._nativeDb.hasFatalTxnError(); }
 
+  public readonly onEndValidation = new BeEvent<() => void>();
+  public readonly onElementsChanged = new BeEvent<(changes: ElementsChanged) => void>();
+
+  public readonly onGeometryChanged = new BeEvent<(models: ModelGeometryChangesProps[]) => void>();
   /** Event raised before a commit operation is performed. Initiated by a call to [[IModelDb.saveChanges]] */
   public readonly onCommit = new BeEvent<() => void>();
   /** Event raised after a commit operation has been performed. Initiated by a call to [[IModelDb.saveChanges]] */
