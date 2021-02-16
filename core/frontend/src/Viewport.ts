@@ -343,6 +343,7 @@ export abstract class Viewport implements IDisposable {
    */
   public requestRedraw(): void {
     this._redrawPending = true;
+    IModelApp.requestNextAnimation();
   }
 
   private _animator?: Animator;
