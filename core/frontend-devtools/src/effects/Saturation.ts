@@ -8,7 +8,7 @@
 
 import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "../tools/parseArgs";
-import { AddEffectTool } from "./EffectTools";
+import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 
 /** Adjusts the saturation of colors in a viewport.
  * @beta
@@ -78,6 +78,7 @@ export class SaturationConfig extends Tool {
 
   public run(multiplier?: number): boolean {
     SaturationConfig.multiplier = multiplier ?? 2.0;
+    refreshViewportsForEffect("fdt Saturation");
     return true;
   }
 

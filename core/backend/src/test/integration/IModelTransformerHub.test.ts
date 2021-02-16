@@ -314,7 +314,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // import sourceDb changes into targetDb
       const transformer = new IModelTransformer(new IModelExporter(sourceDb), targetDb);
-      transformer.processAll();
+      await transformer.processAll();
       transformer.dispose();
       IModelTransformerUtils.assertTeamIModelContents(targetDb, "Test");
       await targetDb.concurrencyControl.request(requestContext);

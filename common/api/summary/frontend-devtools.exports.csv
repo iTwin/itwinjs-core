@@ -121,7 +121,7 @@ beta;randomInteger(min: number, max: number): number
 beta;randomIntegerInRange(range: Range1d): number
 beta;randomPositionInRange(range: Range3d): Point3d
 alpha;RealityTransitionTool 
-beta;redrawSelectedView(): void
+beta;refreshViewportsForEffect(effectName: string): void
 beta;class RenderSystemDebugControlTool 
 beta;class RenderTargetDebugControlToggleTool 
 beta;class RenderTargetDebugControlTool 

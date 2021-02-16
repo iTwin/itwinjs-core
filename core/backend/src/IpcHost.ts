@@ -186,7 +186,6 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     await iModelDb.pushChanges(requestContext, description);
     return iModelDb.getConnectionProps();
   }
-
   public async toggleInteractiveEditingSession(key: string, startSession: boolean): Promise<boolean> {
     const imodel = IModelDb.findByKey(key);
     const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = imodel.nativeDb.setGeometricModelTrackingEnabled(startSession);
@@ -198,6 +197,18 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async isInteractiveEditingSupported(key: string): Promise<boolean> {
     const imodel = IModelDb.findByKey(key);
     return imodel.nativeDb.isGeometricModelTrackingSupported();
+  }
+  public async reverseSingleTxn(key: string): Promise<IModelStatus> {
+    const imodel = IModelDb.findByKey(key);
+    return imodel.nativeDb.reverseTxns(1);
+  }
+  public async reverseAllTxn(key: string): Promise<IModelStatus> {
+    const imodel = IModelDb.findByKey(key);
+    return imodel.nativeDb.reverseAll();
+  }
+  public async reinstateTxn(key: string): Promise<IModelStatus> {
+    const imodel = IModelDb.findByKey(key);
+    return imodel.nativeDb.reinstateTxn();
   }
 }
 
