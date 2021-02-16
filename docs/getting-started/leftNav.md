@@ -22,11 +22,8 @@
 
 ##### [2. Get a sample iModel](./online-quickstart.md#2-get-a-sample-imodel)
 
-##### [3. Get the sample code](./online-quickstart.md#3-get-the-sample-code)
+##### [3. Get, build, and develop code](./online-quickstart.md#3-get-build-and-develop-code)
 
-##### [4. Configure](./online-quickstart.md#4-configure)
-
-##### [5. Build and run a sample app](./online-quickstart.md#5-build-and-run-a-sample-app)
 
 ---
 
