@@ -539,22 +539,23 @@ describe("ClipPrimitive", () => {
       }
 
       const polygonGraph = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
-      Triangulator.flipTriangles(polygonGraph);
+      if (ck.testDefined (polygonGraph) && polygonGraph){
+        Triangulator.flipTriangles(polygonGraph);
 
-      polygonGraph.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
-        if (!edge.getMask(HalfEdgeMask.EXTERIOR)) {
-          const subTrianglePoints: Point3d[] = [];
-          edge.collectAroundFace((node: HalfEdge) => {
-            subTrianglePoints.push(Point3d.create(node.x, node.y, 0));
-          });
-          ck.testExactNumber(3, subTrianglePoints.length, "Length clipped polygon piece after further triangulation must be 3");
-          clippedPolygonArea += triangleAreaXY(subTrianglePoints[0], subTrianglePoints[1], subTrianglePoints[2]);
-        }
-        return true;
-      });
-    }
+        polygonGraph.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
+          if (!edge.getMask(HalfEdgeMask.EXTERIOR)) {
+            const subTrianglePoints: Point3d[] = [];
+            edge.collectAroundFace((node: HalfEdge) => {
+              subTrianglePoints.push(Point3d.create(node.x, node.y, 0));
+            });
+            ck.testExactNumber(3, subTrianglePoints.length, "Length clipped polygon piece after further triangulation must be 3");
+            clippedPolygonArea += triangleAreaXY(subTrianglePoints[0], subTrianglePoints[1], subTrianglePoints[2]);
+          }
+          return true;
+        });
+      }
     ck.testCoordinate(clippedPolygonArea, clipShapeArea, "Polygon that completely encompasses clipShape should have same area as clipShape after clipping.");
-
+}
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });
@@ -569,17 +570,19 @@ describe("ClipPrimitive", () => {
 
     for (const polygon of clippedPolygons) {
       const polygonGraph = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
-      Triangulator.flipTriangles(polygonGraph);
+      if (ck.testType <HalfEdgeGraph> (polygonGraph)){
+        Triangulator.flipTriangles(polygonGraph);
 
-      polygonGraph.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
-        if (!edge.getMask(HalfEdgeMask.EXTERIOR)) {
-          const subTrianglePoints: Point3d[] = [];
-          edge.collectAroundFace((node: HalfEdge) => {
-            subTrianglePoints.push(Point3d.create(node.x, node.y, 0));
-          });
-        }
-        return true;
-      });
+        polygonGraph.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
+          if (!edge.getMask(HalfEdgeMask.EXTERIOR)) {
+            const subTrianglePoints: Point3d[] = [];
+            edge.collectAroundFace((node: HalfEdge) => {
+              subTrianglePoints.push(Point3d.create(node.x, node.y, 0));
+            });
+          }
+          return true;
+        });
+      }
     }
 
     ck.checkpoint();

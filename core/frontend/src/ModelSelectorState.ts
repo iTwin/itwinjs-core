@@ -44,7 +44,7 @@ export class ModelSelectorState extends ElementState {
   }
 
   /** The name of this ModelSelector */
-  public get name(): string { return this.code.getValue(); }
+  public get name(): string { return this.code.value; }
 
   public toJSON(): ModelSelectorProps {
     const val: any = super.toJSON();
