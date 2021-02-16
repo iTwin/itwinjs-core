@@ -1,4 +1,4 @@
-# Setting Up iModel.js Presentation Library
+# Setting Up iTwin.js Presentation Library
 
 In addition to setting up *imodeljs-core* there are some steps that API
 consumers must do before the library can be used.
