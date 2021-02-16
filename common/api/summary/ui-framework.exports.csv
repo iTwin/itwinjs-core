@@ -185,6 +185,7 @@ beta;ExpandableSection
 beta;ExpandableSectionProps 
 internal;expandWidget: 
 beta;ExtensibleToolbarProps
+beta;featureOverridesActiveStateFunc(state: Readonly
 public;FooterModeField 
 public;FooterModeFieldProps 
 alpha;FrameworkAccuDraw 
