@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyRegion } from "../../curve/CurveChain";
-import { CurveChain } from "../../curve/CurveCollection";
+import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -184,7 +184,7 @@ describe("MomentData", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("WireMoments", () => {
+  it.only("WireMoments", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const y0 = 0.0;
@@ -193,7 +193,8 @@ describe("MomentData", () => {
     let x0 = 0;
     for (const sampleSet of [
       Sample.createSmoothCurvePrimitives(),
-      Sample.createBsplineCurves(true)]) {
+      Sample.createBsplineCurves(true),
+      Sample.createSimpleParityRegions()]) {
       for (const g of sampleSet) {
         const range = g.range();
         const dy = range.yLength() * 2.0;
@@ -201,7 +202,12 @@ describe("MomentData", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, g, x0, y0, 0);
         GeometryCoreTestIO.showMomentData(allGeometry, rawSums, true, x0, y0, 0);
         // GeometryCoreTestIO.showMomentData(allGeometry, principalMoments, true, x0, y0, 0);
-        if (g instanceof CurvePrimitive) {
+        if (g instanceof CurveCollection) {
+          const strokes = g.cloneStroked(strokeOptions);
+          const strokeSums = RegionOps.computeXYZWireMomentSums(strokes)!;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokes, x0, y0 + dy, 0);
+          GeometryCoreTestIO.showMomentData(allGeometry, strokeSums, true, x0, y0 + dy, 0);
+        } else if (g instanceof CurvePrimitive) {
           const strokes = LineString3d.create();
           g.emitStrokes(strokes, strokeOptions);
           const strokeSums = RegionOps.computeXYZWireMomentSums(strokes)!;
