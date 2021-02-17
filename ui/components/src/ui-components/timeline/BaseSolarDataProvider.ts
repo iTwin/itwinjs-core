@@ -13,7 +13,6 @@ import { SolarDataProvider } from "./interfaces";
 
 const millisecPerMinute = 1000 * 60;
 const millisecPerHour = millisecPerMinute * 60;
-const millisecPerDay = millisecPerHour * 24;
 
 // the interface and class are in alpha state - it may change after usability testing - test coverage not complete
 /* istanbul ignore file */
