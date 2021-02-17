@@ -1,10 +1,10 @@
 # @bentley/frontend-devtools
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iModel.js front-end display system. It is intended chiefly for use by developers.
+The __@bentley/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iTwin.js front-end display system. It is intended chiefly for use by developers.
 
 Because this is a developer-only package, its functionality is not expected to ever be promoted from "beta" to "public".
 
@@ -85,10 +85,12 @@ This package supplies several examples of screen-space post-processing effects t
 * `fdt effect add` - append the specified effect to the selected viewport's list of effects. Effects are applied in the order in which they appear in that list. Available effect names are:
   * "lensdistortion" - simulates the "fish-eye" distortion produced by real-world cameras with very wide fields of view.
   * "saturation" - adjusts the saturation of each pixel in the image.
+  * "vignette" - applies a vignette effect.
   * "flip" - mostly useless except for demonstration purposes: flips the image horizontally and/or vertically, and/or inverts the color of each pixel.
   * Six "convolution kernel" effects that alter the image by blending neighboring pixels in different ways: "blur", "sharpen", "unsharpen", "emboss", "edgedetect", and "sharpness".
 * `fdt effect clear` - remove all effects from the selected viewport.
 * `fdt effect config saturation` - configure the saturation effect. Accepts one argument of the form `multiplier=x` where `x` is a floating point number by which to multiply each color's saturation. The default multiplier is 2.0.
+* `fdt effect config vignette` - configure the vignette effect - see `VignetteConfig` for details on the setting. Accepts any combination of the following arguments where each takes a floating point value in [0..1]; if an argument is omitted then the corresponding setting retains its current value: "width", "height", "smoothness", "roundness". e.g., `fdt effect config vignette smoothness=0.5`.
 * `fdt effect config flip` - configure the "flip" effect. Accepts any combination of the following arguments; any argument omitted defaults to 0.
   * "horizontal=0|1" - 1 to flip horizontally.
   * "vertical=0|1" - 1  to flip vertically.
@@ -155,7 +157,7 @@ This package supplies a couple of examples illustrating how to implement particl
 * `fdt gpu mem limit` - Changes the value of `TileAdmin.gpuMemoryLimit` controlling how much GPU memory can be allocated to tile graphics before graphics of least-recently-drawn tiles begin to be discarded. Accepts one integer greater than or equal to zero representing the amount of memory in bytes; or one of "default", "relaxed", "aggressive", or "none". Any other input is treated as "none".
 * `fdt tilesize default` - Changes the default tile size modifier used by viewports that don't explicitly override it. Accepts a floating point number greater than zero.
 * `fdt tilesize viewport` - Overrides the tile size modifier for the selected viewport (if a floating point number is supplied) or clears the override (if the string "reset" is supplied). The modifier must be greater than zero.
-* `fdt webgl report compatibility` - Opens a modal dialog with information about the client's level of support for various features of the iModel.js display system.
+* `fdt webgl report compatibility` - Opens a modal dialog with information about the client's level of support for various features of the iTwin.js display system.
 * `fdt webgl lose context` - Force a webgl context loss.
 * `fdt compile shaders` - Compile all un-compiled registered shader programs and report whether any errors occurred. Useful for testing/debugging platform-specific shader issues.
 * `fdt animation interval` - Changes the `IModelApp.animationInterval` settings. Specify milliseconds in non-negative milliseconds; or anything not parseable as an integer to disable the interval callback entirely.

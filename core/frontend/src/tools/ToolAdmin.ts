@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AbandonedError, BeEvent, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { AbandonedError, BeEvent, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { Easing, GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
@@ -15,6 +15,7 @@ import { LocateOptions } from "../ElementLocateManager";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
+import { IpcApp } from "../IpcApp";
 import { linePlaneIntersect } from "../LinePlaneIntersect";
 import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
 import { CanvasDecoration } from "../render/CanvasDecoration";
@@ -1271,8 +1272,15 @@ export class ToolAdmin {
       if (await activeTool.undoPreviousStep())
         return true;
     }
-    // ### TODO Request TxnManager undo and restart this.primitiveTool...
-    return false;
+    const imodel = IModelApp.viewManager.selectedView?.view.iModel;
+    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
+      return false;
+    if (IModelStatus.Success !== await IpcApp.callIpcHost("reverseSingleTxn", imodel.key))
+      return false;
+    // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
+    if (undefined !== this._primitiveTool)
+      this._primitiveTool.onRestartTool();
+    return true;
   }
 
   /** Called to redo previous data button for primitive tools or undo last write operation. */
@@ -1283,8 +1291,15 @@ export class ToolAdmin {
       if (await activeTool.redoPreviousStep())
         return true;
     }
-    // ### TODO Request TxnManager undo and restart this.primitiveTool...
-    return false;
+    const imodel = IModelApp.viewManager.selectedView?.view.iModel;
+    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
+      return false;
+    if (IModelStatus.Success !== await IpcApp.callIpcHost("reinstateTxn", imodel.key))
+      return false;
+    // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
+    if (undefined !== this._primitiveTool)
+      this._primitiveTool.onRestartTool();
+    return true;
   }
 
   private onUnsuspendTool() {

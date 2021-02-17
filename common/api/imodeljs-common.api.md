@@ -966,7 +966,7 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
 
 // @public
 export class Code implements CodeProps {
-    constructor(val: CodeProps);
+    constructor(codeProps: CodeProps);
     static createEmpty(): Code;
     // @internal (undocumented)
     static equalCodes(c1: CodeProps, c2: CodeProps): boolean;
@@ -974,13 +974,16 @@ export class Code implements CodeProps {
     equals(other: Code): boolean;
     // (undocumented)
     static fromJSON(json?: any): Code;
-    // (undocumented)
+    // @deprecated (undocumented)
     getValue(): string;
     static isEmpty(c: CodeProps): boolean;
     static isValid(c: CodeProps): boolean;
     scope: string;
     spec: Id64String;
-    value?: string;
+    // (undocumented)
+    toJSON(): CodeProps;
+    get value(): string;
+    set value(val: string);
 }
 
 // @public
@@ -4060,6 +4063,12 @@ export interface IpcAppFunctions {
     pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
     // (undocumented)
     pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
+    // (undocumented)
+    reinstateTxn: (key: string) => Promise<IModelStatus>;
+    // (undocumented)
+    reverseAllTxn: (key: string) => Promise<IModelStatus>;
+    // (undocumented)
+    reverseSingleTxn: (key: string) => Promise<IModelStatus>;
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
     toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;

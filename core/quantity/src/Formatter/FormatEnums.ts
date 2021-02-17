@@ -13,7 +13,7 @@ export enum FormatTraits {
   ShowUnitLabel = 0x40,
   PrependUnitLabel = 0x80,
   Use1000Separator = 0x100,
-  ExponentOnlyNegative = 0x200,
+  ExponentOnlyNegative = 0x200, // NOTE: the formatter does not current use this trait
 }
 
 /** @alpha */

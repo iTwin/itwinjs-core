@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ IModelExporter_CodeExporter.code
 
-import { CodeSpec } from "@bentley/imodeljs-common";
+import { Code, CodeSpec } from "@bentley/imodeljs-common";
 import { Element, IModelJsFs as fs, IModelDb, IModelExporter, IModelExportHandler, SnapshotDb } from "@bentley/imodeljs-backend";
 
 /** CodeExporter creates a CSV output file containing all Codes from the specified iModel. */
@@ -12,11 +12,11 @@ class CodeExporter extends IModelExportHandler {
   public outputFileName: string;
 
   /** Initiate the export of codes. */
-  public static exportCodes(iModelDb: IModelDb, outputFileName: string): void {
+  public static async exportCodes(iModelDb: IModelDb, outputFileName: string): Promise<void> {
     const exporter = new IModelExporter(iModelDb);
     const exportHandler = new CodeExporter(outputFileName);
     exporter.registerHandler(exportHandler);
-    exporter.exportAll();
+    await exporter.exportAll();
   }
 
   /** Construct a new CodeExporter */
@@ -27,10 +27,9 @@ class CodeExporter extends IModelExportHandler {
 
   /** Override of IModelExportHandler.onExportElement that outputs a line of a CSV file when the Element has a Code. */
   protected onExportElement(element: Element, isUpdate: boolean | undefined): void {
-    const codeValue: string = element.code.getValue();
-    if ("" !== codeValue) { // only output when Element has a Code
+    if (!Code.isEmpty(element.code)) { // only output when Element has a Code
       const codeSpec: CodeSpec = element.iModel.codeSpecs.getById(element.code.spec);
-      fs.appendFileSync(this.outputFileName, `${element.id}, ${codeSpec.name}, ${codeValue}\n`);
+      fs.appendFileSync(this.outputFileName, `${element.id}, ${codeSpec.name}, ${element.code.value}\n`);
     }
     super.onExportElement(element, isUpdate);
   }
@@ -45,7 +44,7 @@ describe("IModelExporter", () => {
   before(() => { iModelDb = IModelTestUtils.openSnapshotFromSeed("test.bim"); });
   after(() => { iModelDb.close(); });
 
-  it("call CodeExporter example code", () => {
+  it("call CodeExporter example code", async () => {
     const outputDirName = path.join(__dirname, "output");
     const outputFileName = path.join(outputDirName, "test.bim.codes.csv");
     if (!fs.existsSync(outputDirName)) {
@@ -54,6 +53,6 @@ describe("IModelExporter", () => {
     if (fs.existsSync(outputFileName)) {
       fs.removeSync(outputFileName);
     }
-    CodeExporter.exportCodes(iModelDb, outputFileName);
+    await CodeExporter.exportCodes(iModelDb, outputFileName);
   });
 });

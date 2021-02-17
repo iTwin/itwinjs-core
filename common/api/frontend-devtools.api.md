@@ -1246,7 +1246,7 @@ export class RealityTransitionTool extends Tool {
 }
 
 // @beta
-export function redrawSelectedView(): void;
+export function refreshViewportsForEffect(effectName: string): void;
 
 // @beta
 export abstract class RenderSystemDebugControlTool extends Tool {
