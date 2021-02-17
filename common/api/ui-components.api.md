@@ -883,6 +883,7 @@ export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | n
 
 // @beta
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+    captureClicks?: boolean;
     colorDefs?: ColorDef[];
     disabled?: boolean;
     initialColor: ColorDef;
