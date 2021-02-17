@@ -1,8 +1,8 @@
 # Creating an Extension
 
-All iModel.js Extensions must sub-class [Extension]($frontend) and implement the two required methods,`onLoad` and `onExecute`.
+All iTwin.js Extensions must sub-class [Extension]($frontend) and implement the two required methods,`onLoad` and `onExecute`.
 
-An Extension is not required to rely on any specific UI framework (React, Angular, Vue.js, etc), much like iModel.js itself. Instead, to support adding UI into an iModel.js application, agnostic of the UI framework, the [ui&#8209;abstract](../../ui/abstract/index.md) package can be used to support several ways of extend an app without using knowing the UI technology used within the hosting app.
+An Extension is not required to rely on any specific UI framework (React, Angular, Vue.js, etc), much like iTwin.js itself. Instead, to support adding UI into an iTwin.js application, agnostic of the UI framework, the [ui&#8209;abstract](../../ui/abstract/index.md) package can be used to support several ways of extend an app without using knowing the UI technology used within the hosting app.
 
 However, if the host app's UI framework is known then an Extension can freely use those technologies as well.
 

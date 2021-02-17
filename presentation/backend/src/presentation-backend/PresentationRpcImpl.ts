@@ -12,12 +12,12 @@ import { IModelRpcProps } from "@bentley/imodeljs-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions,
   DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON,
-  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
-  InstanceKeyJSON, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions, isExtendedContentRequestOptions,
-  isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON,
-  NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
-  PartialHierarchyModificationJSON, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse,
-  PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
+  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyCompareInfo,
+  HierarchyCompareInfoJSON, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
+  isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
+  LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions,
+  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcInterface,
+  PresentationRpcResponse, PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
@@ -250,7 +250,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
         this.getManager(requestOptions.clientId).getContent(options),
       ]);
       if (content)
-        return { size: size!, content: content.toJSON() };
+        return { size, content: content.toJSON() };
       return { size: 0, content: undefined };
     });
   }
@@ -283,7 +283,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
       return {
         descriptor: content.descriptor.toJSON(),
         contentSet: {
-          total: size!,
+          total: size,
           items: content.contentSet.map((i) => i.toJSON()),
         },
       };
@@ -364,16 +364,33 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
         ...(options.expandedNodeKeys ? { expandedNodeKeys: options.expandedNodeKeys.map(NodeKey.fromJSON) } : undefined),
       };
       const result = await this.getManager(requestOptions.clientId).compareHierarchies(options);
-      return result.map(PartialHierarchyModification.toJSON);
+      return result.changes.map(PartialHierarchyModification.toJSON);
+    });
+  }
+
+  public async compareHierarchiesPaged(token: IModelRpcProps, requestOptions: PresentationDataCompareRpcOptions): PresentationRpcResponse<HierarchyCompareInfoJSON> {
+    return this.makeRequest(token, "compareHierarchies", requestOptions, async (options) => {
+      options = {
+        ...options,
+        ...(options.expandedNodeKeys ? { expandedNodeKeys: options.expandedNodeKeys.map(NodeKey.fromJSON) } : undefined),
+        resultSetSize: getValidPageSize(requestOptions.resultSetSize),
+      };
+      const result = await this.getManager(requestOptions.clientId).compareHierarchies(options);
+      return HierarchyCompareInfo.toJSON(result);
     });
   }
 }
 
 const enforceValidPageSize = <TOptions extends Paged<object>>(requestOptions: TOptions): TOptions & { paging: PageOptions } => {
-  const requestedPageSize = requestOptions.paging?.size ?? 0;
-  if (requestedPageSize === 0 || requestedPageSize > MAX_ALLOWED_PAGE_SIZE)
-    return { ...requestOptions, paging: { ...requestOptions.paging, size: MAX_ALLOWED_PAGE_SIZE } };
+  const validPageSize = getValidPageSize(requestOptions.paging?.size);
+  if (!requestOptions.paging || requestOptions.paging.size !== validPageSize)
+    return { ...requestOptions, paging: { ...requestOptions.paging, size: validPageSize } };
   return requestOptions as (TOptions & { paging: PageOptions });
+};
+
+const getValidPageSize = (size: number | undefined) => {
+  const requestedSize = size ?? 0;
+  return (requestedSize === 0 || requestedSize > MAX_ALLOWED_PAGE_SIZE) ? MAX_ALLOWED_PAGE_SIZE : requestedSize;
 };
 
 const nodeKeyFromJson = (json: NodeKeyJSON | undefined): NodeKey | undefined => {

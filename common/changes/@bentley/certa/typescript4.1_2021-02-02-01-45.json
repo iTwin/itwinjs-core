@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/certa",
+      "comment": "Updated to use TypeScript 4.1",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/certa",
+  "email": "33036725+wgoehrig@users.noreply.github.com"
+}

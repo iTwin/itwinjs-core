@@ -31,7 +31,7 @@ There are two kinds of schemas that typically get upgraded:
 - [Domain schemas](../../bis/intro/schemas-domains) - the ECSchema-s that define the information for specific [Domains](../../bis/intro/glossary/#domain)
 - *Profile schemas* - the Schemas of database tables that are either not mapped to domain schemas, or are otherwise used to store meta-data about the mapping of database tables to domain schemas.
 
-The iModel.js API provides for a way to validate (check compatibility) and upgrade all the schemas in the iModel. To upgrade -
+The iTwin.js API provides for a way to validate (check compatibility) and upgrade all the schemas in the iModel. To upgrade -
 
 - Download a local copy of the iModel as a briefcase with [BriefcaseManager.downloadBriefcase]($backend)
 - Call [BriefcaseDb.validateSchemas]($backend) to validate the schemas in the iModel.

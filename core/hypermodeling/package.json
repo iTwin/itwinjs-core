@@ -1,6 +1,6 @@
 {
   "name": "@bentley/hypermodeling-frontend",
-  "version": "2.13.0-dev.8",
+  "version": "2.13.0-dev.14",
   "description": "iModel.js hypermodeling package",
   "main": "lib/hypermodeling-frontend.js",
   "imodeljsSharedLibrary": true,
@@ -34,23 +34,23 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.13.0-dev.8",
-    "@bentley/geometry-core": "^2.13.0-dev.8",
-    "@bentley/imodeljs-common": "^2.13.0-dev.8",
-    "@bentley/imodeljs-frontend": "^2.13.0-dev.8",
-    "@bentley/imodeljs-i18n": "^2.13.0-dev.8",
-    "@bentley/ui-abstract": "^2.13.0-dev.8"
+    "@bentley/bentleyjs-core": "^2.13.0-dev.14",
+    "@bentley/geometry-core": "^2.13.0-dev.14",
+    "@bentley/imodeljs-common": "^2.13.0-dev.14",
+    "@bentley/imodeljs-frontend": "^2.13.0-dev.14",
+    "@bentley/imodeljs-i18n": "^2.13.0-dev.14",
+    "@bentley/ui-abstract": "^2.13.0-dev.14"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.13.0-dev.8",
-    "@bentley/build-tools": "2.13.0-dev.8",
-    "@bentley/certa": "2.13.0-dev.8",
-    "@bentley/eslint-plugin": "2.13.0-dev.8",
-    "@bentley/geometry-core": "2.13.0-dev.8",
-    "@bentley/imodeljs-common": "2.13.0-dev.8",
-    "@bentley/imodeljs-frontend": "2.13.0-dev.8",
-    "@bentley/imodeljs-i18n": "2.13.0-dev.8",
-    "@bentley/ui-abstract": "2.13.0-dev.8",
+    "@bentley/bentleyjs-core": "2.13.0-dev.14",
+    "@bentley/build-tools": "2.13.0-dev.14",
+    "@bentley/certa": "2.13.0-dev.14",
+    "@bentley/eslint-plugin": "2.13.0-dev.14",
+    "@bentley/geometry-core": "2.13.0-dev.14",
+    "@bentley/imodeljs-common": "2.13.0-dev.14",
+    "@bentley/imodeljs-frontend": "2.13.0-dev.14",
+    "@bentley/imodeljs-i18n": "2.13.0-dev.14",
+    "@bentley/ui-abstract": "2.13.0-dev.14",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -62,7 +62,7 @@
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~3.7.4",
+    "typescript": "~4.1.0",
     "webpack": "4.42.0"
   },
   "nyc": {

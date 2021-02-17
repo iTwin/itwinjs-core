@@ -710,7 +710,7 @@ describe("iModel", () => {
     const rootSubject = imodel1.elements.getRootSubject();
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
-    assert.isAtLeast(rootSubject.code.getValue().length, 1);
+    assert.isAtLeast(rootSubject.code.value.length, 1);
     assert.isFalse(imodel1.elements.hasSubModel(IModel.rootSubjectId));
 
     try {
@@ -863,7 +863,7 @@ describe("iModel", () => {
         assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
         if (defaultSubCategory instanceof SubCategory) {
           assert.isTrue(defaultSubCategory.parent!.id === categoryId, "defaultSubCategory id should be prescribed value");
-          assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.getValue(), "DefaultSubcategory name should match that of Category");
+          assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.value, "DefaultSubcategory name should match that of Category");
           assert.isTrue(defaultSubCategory.isDefaultSubCategory, "isDefaultSubCategory should return true");
         }
 
@@ -1947,10 +1947,10 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.pathName, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneDb1.key), "Should be in the list of open StandaloneDbs");
     assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
-    assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
+    assert.equal(standaloneDb1.elements.getRootSubject().code.value, standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
-    assert.isUndefined(standaloneDb1.contextId);
+    assert.equal(standaloneDb1.contextId, Guid.empty);
     assert.isUndefined(standaloneDb1.changeSetId);
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
@@ -1978,9 +1978,6 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb3.isSnapshot);
-    assert.isFalse(snapshotDb1.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb2.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb3.txns.hasPendingTxns);
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");
@@ -2003,10 +2000,10 @@ describe("iModel", () => {
     const iModelGuid3: GuidString = snapshotDb3.getGuid();
     assert.notEqual(iModelGuid1, iModelGuid2, "Expect different iModel GUIDs for each snapshot");
     assert.notEqual(iModelGuid2, iModelGuid3, "Expect different iModel GUIDs for each snapshot");
-    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.getValue();
-    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.getValue();
-    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.getValue();
-    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.getValue();
+    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.value;
+    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.value;
+    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.value;
+    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.value;
     assert.equal(rootSubjectName1, snapshotRootSubjectName);
     assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
     assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
@@ -2283,7 +2280,7 @@ describe("iModel", () => {
     element = imodel4.elements.getElement<InformationRecordElement>(elementId, InformationRecordElement);
     assert.isTrue(Code.isValid(element.code));
     assert.isFalse(Code.isEmpty(element.code));
-    assert.equal(element.code.getValue(), codeValue);
+    assert.equal(element.code.value, codeValue);
   });
 
   it("should update UserLabel", () => {

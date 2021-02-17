@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/context-registry-client",
+      "comment": "Updated to use TypeScript 4.1",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/context-registry-client",
+  "email": "33036725+wgoehrig@users.noreply.github.com"
+}
