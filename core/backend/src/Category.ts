@@ -42,7 +42,7 @@ export class SubCategory extends DefinitionElement {
   }
 
   /** Get the SubCategory's name (its Code value). */
-  public getSubCategoryName(): string { return this.code.getValue(); }
+  public getSubCategoryName(): string { return this.code.value; }
   /** Get the Id of the SubCategory. */
   public getSubCategoryId(): Id64String { return this.id; }
   /** Get the Id of this SubCategory's parent Category. */
