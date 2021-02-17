@@ -23,7 +23,6 @@ import { ViewChangeOptions } from "../ViewAnimation";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { ViewStatus } from "../ViewStatus";
-import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
@@ -1228,10 +1227,7 @@ export class ToolAdmin {
   }
 
   /** Process shortcut key events */
-  public processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
-    if (wentDown && IModelApp.accuDraw.isEnabled)
-      return AccuDrawShortcuts.processShortcutKey(keyEvent);
-
+  public processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): boolean {
     return false;
   }
 
