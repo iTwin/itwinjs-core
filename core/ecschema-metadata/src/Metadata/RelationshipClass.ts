@@ -445,7 +445,7 @@ export abstract class MutableRelationshipClass extends RelationshipClass {
   public get target() { return this._target as MutableRelationshipConstraint; }
   public abstract setStrength(strength: StrengthType): void;
   public abstract setStrengthDirection(direction: StrengthDirection): void;
-  public abstract async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
+  public abstract createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
   public abstract createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
   public abstract setDisplayLabel(displayLabel: string): void;
 }

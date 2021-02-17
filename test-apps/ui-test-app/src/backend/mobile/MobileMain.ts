@@ -5,9 +5,9 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { NativeAppBackend } from "@bentley/imodeljs-backend";
-import { IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcManager, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import { AndroidHost, IOSHost, MobileRpcManager } from "@bentley/mobile-manager/lib/MobileBackend";
 import { Presentation } from "@bentley/presentation-backend";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
@@ -23,7 +23,10 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
     Logger.setLevelDefault(LogLevel.Trace);
 
     // initialize imodeljs-backend
-    await NativeAppBackend.startup();
+    if (ProcessDetector.isIOSAppBackend)
+      await IOSHost.startup();
+    else
+      await AndroidHost.startup();
 
     // initialize presentation-backend
     Presentation.initialize({
@@ -33,6 +36,7 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
       enableSchemasPreload: true,
       updatesPollInterval: 100,
     });
+
     MobileRpcManager.initializeImpl([
       IModelReadRpcInterface,
       IModelTileRpcInterface,

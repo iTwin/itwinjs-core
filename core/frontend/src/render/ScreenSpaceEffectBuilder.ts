@@ -175,9 +175,10 @@ export interface ScreenSpaceEffectContext {
  * @see [[RenderSystem.createScreenSpaceEffectBuilder]] to create and register a new effect.
  * @see [[ScreenSpaceEffectBuilderParams]] to define the initial state of the builder.
  * @see [[Viewport.screenSpaceEffects]], [[Viewport.addScreenSpaceEffect]], and [[Viewport.removeScreenSpaceEffects]] to change the effects applied to a viewport.
- * @see [ConvolutionEffect]($frontend-devtools) for examples of effects like blur, sharpen, and emboss.
  * @see [LensDistortionEffect]($frontend-devtools) for an simulation of the fish-eye distortion produced by real-world cameras with very wide fields of view.
  * @see [SaturationEffect]($frontend-devtools) for an example of an effect that adjusts the saturation of the original image.
+ * @see [VignetteEffect]($frontend-devtools) for an example of an effect that applies [vignetting](https://en.wikipedia.org/wiki/Vignetting) to the original image.
+ * @see [ConvolutionEffect]($frontend-devtools) for examples of effects like blur, sharpen, and emboss.
  * @see [FlipImageEffect]($frontend-devtools) for a very simple example of an effect that shifts pixels from their original locations.
  * @beta
  */
