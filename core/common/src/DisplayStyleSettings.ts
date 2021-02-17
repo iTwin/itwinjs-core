@@ -664,7 +664,7 @@ export class DisplayStyleSettings {
     return this._subCategoryOverrides.get(id);
   }
 
-  /** Returns true if an [[SubCategoryOverride]s are defined by this style. */
+/** Returns true if an [[SubCategoryOverride]]s are defined by this style. */
   public get hasSubCategoryOverride(): boolean {
     return this._subCategoryOverrides.size > 0;
   }

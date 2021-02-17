@@ -14,7 +14,7 @@ import { Point3d, Range3d, Transform, XYZProps } from "@bentley/geometry-core";
  */
 export type ImageGraphicCornersProps = [ XYZProps, XYZProps, XYZProps, XYZProps ];
 
-/** JSON representation of an [[ImageGraphic].
+/** JSON representation of an [[ImageGraphic]].
  * @see [[GeometryStreamEntryProps]].
  * @beta
  */
