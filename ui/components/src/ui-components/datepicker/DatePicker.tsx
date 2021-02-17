@@ -25,7 +25,7 @@ function isSameDay(a: Date, b: Date) {
 }
 
 /**
- * Adjust a Data object to show time in one time zone as if it is in the local time zone.
+ * Adjust a Date object to show time in one time zone as if it is in the local time zone.
  * This is useful when showing sunrise and sunset times for a project location in a different time zone
  * and the time displayed should appear as if the user is seeing clock in project location.
  * Example 1:
