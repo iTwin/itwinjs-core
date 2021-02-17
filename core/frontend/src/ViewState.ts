@@ -270,7 +270,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Get the name of the [[ViewDefinition]] from which this ViewState originated. */
-  public get name(): string { return this.code.getValue(); }
+  public get name(): string { return this.code.value; }
 
   /** Get this view's background color. */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }

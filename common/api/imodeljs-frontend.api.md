@@ -1103,6 +1103,36 @@ export interface ArcGisGenerateTokenOptions {
 }
 
 // @internal (undocumented)
+export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    protected get _filterByCartoRange(): boolean;
+    // (undocumented)
+    protected getLayerString(prefix?: string): string;
+    // (undocumented)
+    getLogo(_vp: ScreenViewport): HTMLTableRowElement;
+    // (undocumented)
+    getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
+    // (undocumented)
+    initialize(): Promise<void>;
+    // (undocumented)
+    loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
+    // (undocumented)
+    get maximumZoomLevel(): number;
+    // (undocumented)
+    serviceJson: any;
+    // (undocumented)
+    protected _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void): void;
+    // (undocumented)
+    uintToString(uintArray: any): {
+        type: "Buffer";
+        data: any[];
+    };
+}
+
+// @internal (undocumented)
 export interface ArcGisToken {
     // (undocumented)
     expires: number;
@@ -1268,6 +1298,15 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     toJSON(): AuxCoordSystemProps;
     // (undocumented)
     type: number;
+}
+
+// @internal (undocumented)
+export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(y: number, x: number, zoom: number): Promise<string>;
+    // (undocumented)
+    getLogo(_vp: ScreenViewport): HTMLTableRowElement;
 }
 
 // @internal
@@ -2597,7 +2636,7 @@ export namespace EditManipulator {
 // @internal (undocumented)
 export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
 
-// @alpha (undocumented)
+// @alpha
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -2698,38 +2737,30 @@ export class ElementPicker {
     viewport?: Viewport;
 }
 
-// @alpha (undocumented)
+// @alpha
 export abstract class ElementSetTool extends PrimitiveTool {
     protected get agenda(): ElementAgenda;
     protected get allowDragSelect(): boolean;
     protected get allowGroups(): boolean;
     protected get allowSelectionSet(): boolean;
-    // (undocumented)
     protected anchorPoint?: Point3d;
-    // (undocumented)
     protected buildDragSelectAgenda(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<boolean>;
-    // (undocumented)
     protected buildLocateAgenda(hit: HitDetail): Promise<boolean>;
-    // (undocumented)
     protected buildSelectionSetAgenda(ss: SelectionSet): Promise<boolean>;
     protected chooseNextHit(ev: BeButtonEvent): Promise<EventHandled>;
     protected get clearSelectionSet(): boolean;
     protected get controlKeyContinuesSelection(): boolean;
     protected get controlKeyInvertsSelection(): boolean;
     protected get currentElementCount(): number;
-    // (undocumented)
     decorate(context: DecorateContext): void;
     protected doLocate(ev: BeButtonEvent, newSearch: boolean): Promise<boolean>;
-    // (undocumented)
     protected doProcessSelectionSetImmediate(): Promise<void>;
-    // (undocumented)
     protected dragStartPoint?: Point3d;
     filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus>;
-    // (undocumented)
     protected gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined>;
-    // (undocumented)
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
+    protected getGroupIds(id: Id64String): Promise<Id64Arg>;
     protected getLocateCandidates(hit: HitDetail): Promise<Id64Arg>;
     protected getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg>;
     // (undocumented)
@@ -2739,32 +2770,23 @@ export abstract class ElementSetTool extends PrimitiveTool {
     protected isElementValidForOperation(hit: HitDetail, _out?: LocateResponse): Promise<boolean>;
     protected get isSelectByPoints(): boolean;
     protected get isSelectionSetModify(): boolean;
-    // (undocumented)
     protected onAgendaModified(): Promise<void>;
-    // (undocumented)
     onCleanup(): void;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
     onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onPostInstall(): void;
     protected onProcessComplete(): Promise<void>;
-    // (undocumented)
     onReinitialize(): void;
     // (undocumented)
     onResetButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onUnsuspend(): void;
     protected processAgenda(_ev: BeButtonEvent): Promise<void>;
     protected processAgendaImmediate(): Promise<void>;
@@ -2774,20 +2796,15 @@ export abstract class ElementSetTool extends PrimitiveTool {
     protected get requireAcceptForSelectionSetDynamics(): boolean;
     protected get requireAcceptForSelectionSetOperation(): boolean;
     protected get requiredElementCount(): number;
-    // (undocumented)
     protected selectByPointsDecorate(context: DecorateContext): void;
-    // (undocumented)
     protected selectByPointsEnd(ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
     protected selectByPointsStart(ev: BeButtonEvent): Promise<boolean>;
     protected setPreferredElementSource(): void;
-    // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
     protected get shouldEnableLocate(): boolean;
     // (undocumented)
     protected get shouldEnableSnap(): boolean;
-    // (undocumented)
     protected useOverlapSelection(ev: BeButtonEvent): boolean;
     protected get wantAccuSnap(): boolean;
     protected get wantAdditionalElements(): boolean;
@@ -4912,6 +4929,25 @@ export enum ManipulatorToolEvent {
 }
 
 // @internal
+export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    getLogo(_vp: ScreenViewport): HTMLTableRowElement | undefined;
+    // (undocumented)
+    initialize(): Promise<void>;
+    // (undocumented)
+    get maximumZoomLevel(): number;
+    // (undocumented)
+    get minimumZoomLevel(): number;
+    // (undocumented)
+    get tileHeight(): number;
+    // (undocumented)
+    get tileWidth(): number;
+    }
+
+// @internal
 export class MapCartoRectangle extends Range2d {
     constructor(west?: number, south?: number, east?: number, north?: number);
     // (undocumented)
@@ -6208,7 +6244,7 @@ export class NativeApp {
     // (undocumented)
     static onUserStateChanged: BeEvent<(_arg: {
         accessToken: any;
-        err?: string | undefined;
+        err?: string;
     }) => void>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
@@ -6823,7 +6859,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
     // (undocumented)
     targetIsLocked: boolean;
     // (undocumented)
-    targetModelId?: string;
+    get targetModelId(): string | undefined;
+    set targetModelId(v: string | undefined);
     // (undocumented)
     targetView?: Viewport;
     // @internal (undocumented)
@@ -10154,6 +10191,15 @@ export interface TileTreeSupplier {
     readonly isEcefDependent?: true;
 }
 
+// @internal
+export class TileUrlImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, level: number): Promise<string>;
+    // (undocumented)
+    static validateUrlTemplate(template: string): MapLayerSourceValidation;
+}
+
 // @beta
 export class TileUsageMarker {
     constructor();
@@ -12722,6 +12768,17 @@ export namespace WmsCapability {
 }
 
 // @internal (undocumented)
+export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
+    // (undocumented)
+    initialize(): Promise<void>;
+    }
+
+// @internal (undocumented)
 export class WmsUtilities {
     // (undocumented)
     static getBaseUrl(url: string): string;
@@ -12980,6 +13037,17 @@ export namespace WmtsCapability {
         static readonly XLINK_HREF = "xlink:href";
     }
 }
+
+// @internal (undocumented)
+export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: MapLayerSettings);
+    // (undocumented)
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    initialize(): Promise<void>;
+    // (undocumented)
+    get mutualExclusiveSubLayer(): boolean;
+    }
 
 // @public
 export interface ZoomToOptions {

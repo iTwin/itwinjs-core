@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@bentley/imodeljs-markup__ package contains classes for creating and editing SVG-based markup for iModel.js Viewports.
+The __@bentley/imodeljs-markup__ package contains classes for creating and editing SVG-based markup for iTwin.js Viewports.
 
 ## Documentation
 

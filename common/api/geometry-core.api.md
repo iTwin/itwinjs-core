@@ -155,7 +155,10 @@ export type AngleSweepProps = AngleSweep | {
     degrees: [number, number];
 } | {
     radians: [number, number];
-} | [number, number];
+} | [
+    number,
+    number
+];
 
 // @internal
 export class AnnotatedLineString3d {
@@ -1092,6 +1095,10 @@ export class ClipUtilities {
     static captureOrDrop(data: GrowableXYZArray, minLength: number, destination: GrowableXYZArray[], cache: GrowableXYZArrayCache): void;
     static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipPrimitive): Point3d[][];
     static clipPolygonToClipShapeReturnGrowableXYZArrays(polygon: Point3d[], clipShape: ClipPrimitive): GrowableXYZArray[];
+    static clipSegmentBelowPlanesXY(planes: Plane3dByOriginAndUnitNormal[], segment0: XAndY, segment1: XAndY, interval: Range1d, signedAltitude?: number): void;
+    static clipSegmentBelowPlaneXY(plane: Plane3dByOriginAndUnitNormal, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d, absoluteTolerance?: number): void;
+    static clipSegmentToCCWTriangleXY(pointA: XAndY, pointB: XAndY, pointC: XAndY, segment0: XAndY, segment1: XAndY, interval: Range1d, absoluteTolerance?: number): void;
+    static clipSegmentToLLeftOfLineXY(linePointA: XAndY, linePointB: XAndY, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d, absoluteTolerance?: number): void;
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
     // @alpha
     static createXYOffsetClipFromLineString(points: Point3d[] | IndexedXYZCollection, leftOffset: number, rightOffset: number, z0: number, z1: number): UnionOfConvexClipPlaneSets;
@@ -2262,6 +2269,8 @@ export class HalfEdge {
     get faceSuccessor(): HalfEdge;
     static filterIsMaskOff(node: HalfEdge, mask: HalfEdgeMask): boolean;
     static filterIsMaskOn(node: HalfEdge, mask: HalfEdgeMask): boolean;
+    findAroundFace(other: HalfEdge): boolean;
+    findAroundVertex(other: HalfEdge): boolean;
     fractionAlongAndPerpendicularToPoint2d(fractionAlong: number, fractionPerpendicular: number, result?: Point2d): Point2d;
     fractionToPoint2d(fraction: number, result?: Point2d): Point2d;
     fractionToPoint3d(fraction: number, result?: Point3d): Point3d;
@@ -3614,11 +3623,13 @@ export class PathFragment {
 export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltitudeEvaluator {
     altitude(spacePoint: Point3d): number;
     altitudeToPoint(altitude: number, result?: Point3d): Point3d;
+    altitudeXY(x: number, y: number): number;
     altitudeXYZ(x: number, y: number, z: number): number;
     altitudeXYZW(x: number, y: number, z: number, w: number): number;
     clone(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal;
     cloneTransformed(transform: Transform, inverse?: boolean): Plane3dByOriginAndUnitNormal | undefined;
     static create(origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined;
+    static createOriginAndTargetXY(origin: XAndY, target: XAndY, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined;
     static createPointPointVectorInPlane(pointA: Point3d, pointB: Point3d, vector: Vector3d): Plane3dByOriginAndUnitNormal | undefined;
     static createXYAngle(x: number, y: number, normalAngleFromX: Angle, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal;
     static createXYPlane(origin?: Point3d): Plane3dByOriginAndUnitNormal;
@@ -4288,6 +4299,7 @@ export class Range1d extends RangeBase {
     static fromJSON<T extends Range1d>(json?: Range1dProps): T;
     high: number;
     intersect(other: Range1d, result?: Range1d): Range1d;
+    intersectRangeXXInPlace(x0: number, x1: number): void;
     intersectsRange(other: Range1d): boolean;
     isAlmostEqual(other: Range1d): boolean;
     get isAlmostZeroLength(): boolean;
@@ -4345,6 +4357,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     static createXY<T extends Range2d>(x: number, y: number, result?: T): T;
     static createXYXY<T extends Range2d>(xA: number, yA: number, xB: number, yB: number, result?: T): T;
     static createXYXYOrCorrectToNull<T extends Range2d>(xA: number, yA: number, xB: number, yB: number, result?: T): T;
+    static createXYXYXY<T extends Range2d>(xA: number, yA: number, xB: number, yB: number, xC: number, yC: number, result?: T): T;
     diagonal(result?: Vector2d): Vector2d;
     diagonalFractionToPoint(fraction: number, result?: Point2d): Point2d;
     distanceToPoint(point: XAndY): number;
@@ -5093,6 +5106,8 @@ export class SweepContour {
     purgeFacets(): void;
     sweepToUnionOfConvexClipPlaneSets(sweepVector?: Vector3d, cap0?: boolean, cap1?: boolean): UnionOfConvexClipPlaneSets | undefined;
     tryTransformInPlace(transform: Transform): boolean;
+    // (undocumented)
+    get xyStrokes(): AnyCurve | undefined;
     }
 
 // @internal
@@ -5246,16 +5261,19 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
 
 // @internal
 export class Triangulator {
+    static claimDebugGraph(): HalfEdgeGraph | undefined;
+    static clearAndEnableDebugGraphCapture(value: boolean): void;
     static computeInCircleDeterminantIsStrongPositive(nodeA: HalfEdge): boolean;
     static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined;
     static createFaceLoopFromCoordinatesAndMasks(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, maskForBothSides: HalfEdgeMask, maskForOtherSide: HalfEdgeMask): HalfEdge | undefined;
     static createTriangulatedGraphFromLoops(loops: GrowableXYZArray[] | XAndY[][]): HalfEdgeGraph | undefined;
     static createTriangulatedGraphFromPoints(points: Point3d[]): HalfEdgeGraph | undefined;
-    static createTriangulatedGraphFromSingleLoop(data: XAndY[] | GrowableXYZArray): HalfEdgeGraph;
+    static createTriangulatedGraphFromSingleLoop(data: XAndY[] | GrowableXYZArray): HalfEdgeGraph | undefined;
     static directCreateChainsFromCoordinates(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, id?: number): HalfEdge[];
     static directCreateFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant): HalfEdge | undefined;
     static flipTriangles(graph: HalfEdgeGraph): number;
     static flipTrianglesInEdgeSet(graph: HalfEdgeGraph, edgeSet: MarkedEdgeSet): number;
+    static setDebugGraph(graph: HalfEdgeGraph | undefined): void;
     static triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): boolean;
     static triangulateSingleMonotoneFace(graph: HalfEdgeGraph, start: HalfEdge): boolean;
 }
