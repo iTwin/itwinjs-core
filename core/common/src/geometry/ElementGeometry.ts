@@ -495,7 +495,7 @@ export namespace ElementGeometry {
     }
   }
 
-  /** Return whether the supplied entry is displayable geometry [[GeometryQuery]], [[BRepEntity.DataProps]], [[TextString], or [[ImageGraphic]] */
+  /** Return whether the supplied entry is displayable geometry [[GeometryQuery]], [[BRepEntity.DataProps]], [[TextString]], or [[ImageGraphic]] */
   export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean {
     switch (entry.opcode) {
       case ElementGeometryOpcode.BRep:

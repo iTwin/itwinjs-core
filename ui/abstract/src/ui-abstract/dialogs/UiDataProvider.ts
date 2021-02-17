@@ -14,7 +14,7 @@ import { DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
  */
 export class SyncPropertiesChangeEvent extends BeUiEvent<SyncPropertiesChangeEventArgs> { }
 
-/** [[UiDataProvider ]] Abstract class that allows property values to be passed between hosting API and UI.
+/** [[UiDataProvider]] Abstract class that allows property values to be passed between hosting API and UI.
  * @beta
  */
 // istanbul ignore next
