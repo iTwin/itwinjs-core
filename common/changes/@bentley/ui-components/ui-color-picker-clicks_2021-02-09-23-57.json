@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Add a captureClicks prop to ColorPickerPopup that will stop propagation of click events from the popup.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}
