@@ -725,6 +725,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note [[processSchemas]] is not called automatically since the target iModel may want a different collection of schemas.
    */
   public async processAll(): Promise<void> {
+    Logger.logTrace(loggerCategory, "processAll()");
     this.logSettings();
     this.initFromExternalSourceAspects();
     await this.exporter.exportCodeSpecs();
@@ -751,6 +752,7 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public async processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     requestContext.enter();
+    Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(requestContext, startChangeSetId);

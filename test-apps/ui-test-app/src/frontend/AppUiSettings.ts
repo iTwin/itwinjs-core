@@ -18,6 +18,7 @@ export class AppUiSettings {
   public frameworkVersion: UiSetting<string>;
   public escapeToHome: UiSetting<boolean>;
   public accuDrawNotifications: UiSetting<boolean>;
+  public widgetOpacity: UiSetting<number>;
 
   constructor() {
     this._settings = [];
@@ -54,6 +55,10 @@ export class AppUiSettings {
     this.accuDrawNotifications = new UiSetting<boolean>(AppUiSettings._settingNamespace, "AccuDrawNotifications",
       () => FrameworkAccuDraw.displayNotifications, (value: boolean) => FrameworkAccuDraw.displayNotifications = value);
     this._settings.push(this.accuDrawNotifications);
+
+    this.widgetOpacity = new UiSetting<number>(AppUiSettings._settingNamespace, "WidgetOpacity",
+      () => UiFramework.getWidgetOpacity(), (value: number) => UiFramework.setWidgetOpacity(value));
+    this._settings.push(this.widgetOpacity);
   }
 
   public async apply(uiSettings: UiSettings): Promise<void> {

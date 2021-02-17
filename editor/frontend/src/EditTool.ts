@@ -6,20 +6,17 @@
  * @module Editing
  */
 
-import { FrontendIpc } from "@bentley/imodeljs-common";
 import { editorChannel } from "@bentley/imodeljs-editor-common";
-import { PrimitiveTool } from "@bentley/imodeljs-frontend";
+import { IpcApp, PrimitiveTool } from "@bentley/imodeljs-frontend";
 
-/** @alpha */
-export class EditTool extends PrimitiveTool {
-
-  public onRestartTool() { }
-
+/** @alpha TODO: Make namespace instead of PrimitiveTool sub-class, ex. InputCollector for modify handles is an edit tool...
+*/
+export abstract class EditTool extends PrimitiveTool {
   public static async startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T> {
-    return FrontendIpc.callBackend(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
+    return IpcApp.callIpcChannel(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
   }
 
   public static async callCommand(methodName: string, ...args: any[]): Promise<any> {
-    return FrontendIpc.callBackend(editorChannel, "callMethod", methodName, ...args);
+    return IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
   }
 }

@@ -11,6 +11,7 @@ import {
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
+import { findFieldByLabel } from "../Utils";
 
 import sinon = require("sinon");
 
@@ -408,7 +409,7 @@ describe("Content", () => {
 
   describe("when request in the backend exceeds the backend timeout time", () => {
 
-    let raceStub: sinon.SinonStub<[Iterable<unknown>], Promise<unknown>>;
+    let raceStub: sinon.SinonStub<[readonly unknown[]], Promise<unknown>>;
 
     beforeEach(async () => {
       // re-initialize to set backend response timeout to 500 ms
@@ -573,27 +574,4 @@ class ECClassHierarchy {
       derivedClassIds: this.getAllDerivedClassIds(id),
     };
   }
-}
-
-function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
-  const isTopLevel = (undefined === allFields);
-  if (!allFields)
-    allFields = new Array<Field>();
-  for (const field of fields) {
-    if (field.label === label)
-      return field;
-
-    if (field.isNestedContentField()) {
-      const nestedMatchingField = findFieldByLabel(field.nestedFields, label, allFields);
-      if (nestedMatchingField)
-        return nestedMatchingField;
-    }
-
-    allFields.push(field);
-  }
-  if (isTopLevel) {
-    // eslint-disable-next-line no-console
-    console.error(`Field '${label}' not found. Available fields: [${allFields.map((f) => `"${f.label}"`).join(", ")}]`);
-  }
-  return undefined;
 }

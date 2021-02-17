@@ -1,10 +1,10 @@
 # webpack-tools-core
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
-The __webpack-tools-core__ contains a set of webpack [loaders](https://webpack.js.org/concepts/loaders/) and [plugins](https://webpack.js.org/concepts/plugins/) used to build iModel.js backend and frontends.
+The __webpack-tools-core__ contains a set of webpack [loaders](https://webpack.js.org/concepts/loaders/) and [plugins](https://webpack.js.org/concepts/plugins/) used to build iTwin.js backend and frontends.
 
-The main entry point for building an iModel.js backend is the __@bentley/backend-webpack__ package and iModel.js frontends should use __@bentley/webpack-tools__.
+The main entry point for building an iTwin.js backend is the __@bentley/backend-webpack__ package and iTwin.js frontends should use __@bentley/webpack-tools__.
 
 This package contains the following Loaders and Plugins:
 
@@ -18,7 +18,7 @@ This package contains the following Loaders and Plugins:
 
 | Name | Description |
 | - | - |
-| BackendDefaultsPlugin | Combines a set of Webpack plugins to use as defaults when building an iModel.js backend.  (Used in @bentley/backend-webpack). |
+| BackendDefaultsPlugin | Combines a set of Webpack plugins to use as defaults when building an iTwin.js backend.  (Used in @bentley/backend-webpack). |
 | BanImportsPlugin | Bans any import that crosses the frontend/backend boundary |
 | CopyBentleyStaticResourcesPlugin | Copies static resources from '@bentley' scoped packages into the output folder.  Used to copy "assets", "public" and other resource files. |
 | CopyExternalsPlugin | Copies all npm packages containing an [external](https://webpack.js.org/configuration/externals/) module (and their direct dependencies) to a `node_modules` directory next to the webpack output. |

@@ -8,8 +8,6 @@ alpha;AnalysisStyleProps
 internal;AntiAliasPref
 public;AreaFillProps
 public;AreaPattern
-beta;AsyncFunction = (...args: any) => Promise
-beta;AsyncMethodsOf
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
 public;AuxCoordSystemProps 
@@ -17,7 +15,6 @@ public;AxisAlignedBox3d = Range3d
 public;AxisAlignedBox3dProps = Range3dProps
 internal;B3dmHeader 
 public;BackendError 
-beta;BackendIpc
 public;BackgroundFill
 public;BackgroundMapProps
 public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
@@ -46,6 +43,7 @@ alpha;BRepRoundProps
 alpha;BRepThickenProps
 beta;BriefcaseDownloader
 beta;BriefcaseProps
+internal;BriefcasePushAndPullNotifications
 beta;calculateSolarAngles(date: Date, location: Cartographic):
 beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 beta;calculateSolarDirectionFromAngles(azimuthElevation:
@@ -103,7 +101,6 @@ beta;CutStyle
 beta;CutStyleProps
 beta;DecorationGeometryProps
 alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
-alpha;defaultMobileAuthorizationClientExpiryBuffer: number
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 alpha;DeletedElementGeometryChange
@@ -157,7 +154,6 @@ beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
 public;EnvironmentProps
-internal;Events
 alpha;ExtantElementGeometryChange
 public;ExternalSourceAspectProps 
 public;Feature
@@ -180,7 +176,6 @@ public;FontMapProps
 public;FontProps
 public;FontType
 internal;FormDataCommon
-beta;FrontendIpc
 public;Frustum
 internal;FrustumPlanes
 internal;FrustumPlanes
@@ -196,6 +191,7 @@ public;GeometricModel2dProps
 public;GeometricModel3dProps 
 public;GeometricModelProps 
 public;GeometryAppearanceProps
+internal;GeometryChangeNotifications
 public;GeometryClass
 beta;GeometryContainmentRequestProps
 beta;GeometryContainmentResponseProps
@@ -253,12 +249,11 @@ public;ImageSourceFormat
 internal;ImdlFlags
 internal;ImdlHeader 
 public;class IModel 
-alpha;IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps
+alpha;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
 public;IModelEncryptionProps
 public;IModelError 
-alpha;IModelEventSourceProps
 public;IModelNotFoundResponse 
 public;IModelProps
 internal;class IModelReadRpcInterface 
@@ -269,7 +264,7 @@ internal;IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId
 internal;iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string
 internal;IModelTileTreeProps 
 public;IModelVersion
-public;IModelVersionProps
+public;IModelVersionProps =
 internal;class IModelWriteRpcInterface 
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
@@ -277,7 +272,8 @@ internal;INSTANCE: unique symbol
 beta;InternetConnectivityStatus
 beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
-beta;class IpcHandler
+internal;IpcAppChannel
+internal;IpcAppFunctions
 internal;IpcInvokeReturn =
 beta;IpcListener = (evt: Event, ...args: any[]) => void
 beta;IpcSocket
@@ -321,13 +317,6 @@ internal;MeshEdge
 internal;MeshEdges
 internal;MeshPolyline
 internal;MeshPolylineList 
-alpha;MobileAuthorizationClientConfiguration
-beta;MobileRpcChunks = Array
-beta;class MobileRpcConfiguration 
-beta;MobileRpcGateway
-beta;MobileRpcManager
-beta;MobileRpcProtocol 
-beta;MobileRpcRequest 
 alpha;ModelClipGroup
 internal;ModelClipGroupProps
 alpha;ModelClipGroups
@@ -340,9 +329,9 @@ public;ModelQueryParams
 public;ModelSelectorProps 
 public;MonochromeMode
 internal;nativeAppChannel = "nativeApp"
-internal;NativeAppIpc
-internal;NativeAppResponse
-internal;nativeAppResponse = "nativeApp-notify"
+internal;NativeAppFunctions
+internal;NativeAppNotifications
+internal;nativeAppNotify = "nativeApp-notify"
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number
@@ -395,7 +384,6 @@ internal;PolylineTypeFlags
 internal;PrimaryTileTreeId
 beta;PrimitiveTypeCode
 beta;ProfileOptions
-beta;PromiseReturnType
 beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
 beta;PropertyMetaDataProps
@@ -411,7 +399,6 @@ public;QueryPriority
 public;QueryQuota
 public;QueryResponse
 public;QueryResponseStatus
-internal;QueuedEvent
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
@@ -429,7 +416,6 @@ beta;class RenderTexture
 beta;RenderTexture
 public;RepositoryLinkProps 
 beta;RequestNewBriefcaseProps
-beta;class ResponseHandler
 public;ResponseLike 
 public;RgbColor
 public;RgbColorProps
@@ -452,7 +438,6 @@ public;RpcInvocation
 public;RpcInvocationCallback_T = (invocation: RpcInvocation) => void
 public;RpcManager
 internal;RpcMarshaling
-beta;RpcMobilePlatform
 internal;RpcMultipart
 public;RpcNotFoundResponse 
 internal;RpcOpenAPIDescription
@@ -520,7 +505,6 @@ public;SolarShadowSettingsProps
 public;SourceAndTarget
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
-internal;class StandaloneIModelRpcInterface 
 beta;StandaloneOpenOptions = OpenDbKey
 beta;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance

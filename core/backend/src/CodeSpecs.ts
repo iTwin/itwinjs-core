@@ -6,8 +6,8 @@
  * @module Codes
  */
 
-import { DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { CodeScopeSpec, CodeSpec, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { DbResult, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { CodeScopeSpec, CodeSpec, IModelError } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";

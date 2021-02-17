@@ -23,11 +23,11 @@ Install/update VS Code extension "Remote - Containers".
 
 ## How to use the container
 
-Open your iModel.js repo in VS Code, click the green area in the status bar, and select VS Code command 'Remote-Containers: Reopen Folder in Container'. Once connected, the green section of the status bar should say something like "Dev Container: imodeljs-linux".
+Open your iTwin.js repo in VS Code, click the green area in the status bar, and select VS Code command 'Remote-Containers: Reopen Folder in Container'. Once connected, the green section of the status bar should say something like "Dev Container: imodeljs-linux".
 
 The *first time* you "open" the container, you must clone the source code into the working directory, e.g. in VS Code's Terminal, `git clone URL /workspace/imodeljs`. If you use a custom NPM package source, you must also configure that (e.g. `npm config set ...`).
 
-As with any copy of the code, you must build iModel.js inside the container. Use VS Code's Terminal to perform normal build commands such as `rush install`, `rush rebuild`, and `rush test`. You should also have access to the same launch profiles in VS Code for debugging.
+As with any copy of the code, you must build iTwin.js inside the container. Use VS Code's Terminal to perform normal build commands such as `rush install`, `rush rebuild`, and `rush test`. You should also have access to the same launch profiles in VS Code for debugging.
 
 When you are done, click the green area in the status bar, and select 'Remote-Containers: Reopen Folder Locally' to switch back to a local view on your host.
 

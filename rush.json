@@ -428,6 +428,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/mobile-manager",
+      "projectFolder": "core/mobile-manager",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/express-server",
       "projectFolder": "core/express-server",
       "reviewCategory": "backend",
