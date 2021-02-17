@@ -1719,7 +1719,7 @@ export namespace IModelJson {
       // assemble the contents in alphabetical order.
       const contents: { [k: string]: any } = {};
       if (pf.expectedClosure  !== 0)
-        contents.expectedClosure = 0;
+        contents.expectedClosure = pf.expectedClosure;
       if (pf.twoSided)
         contents.twoSided = true;
       if (pf.data.auxData)

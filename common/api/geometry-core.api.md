@@ -3972,6 +3972,8 @@ export abstract class Polyface extends GeometryQuery {
     static areIndicesValid(indices: number[] | undefined, indexPositionA: number, indexPositionB: number, data: any | undefined, dataLength: number): boolean;
     abstract createVisitor(_numWrap: number): PolyfaceVisitor;
     data: PolyfaceData;
+    get expectedClosure(): number;
+    set expectedClosure(value: number);
     readonly geometryCategory = "polyface";
     abstract get isEmpty(): boolean;
     get twoSided(): boolean;
@@ -4088,6 +4090,8 @@ export class PolyfaceData {
     copyParamTo(i: number, dest: Point2d): void;
     copyPointTo(i: number, dest: Point3d): void;
     edgeVisible: boolean[];
+    get expectedClosure(): number;
+    set expectedClosure(value: number);
     face: FacetFaceData[];
     get faceCount(): number;
     gatherIndexedData(other: PolyfaceData, index0: number, index1: number, numWrap: number): void;
