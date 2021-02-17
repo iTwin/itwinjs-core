@@ -91,7 +91,18 @@ export abstract class Client {
 
     const resolvedRegion = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     const searchKey: string = this.getUrlSearchKey();
-    const configuredUrl: string = Config.App.query(`imjs_url_${resolvedRegion}_${searchKey}`) ?? this.baseUrl;
+    let configuredUrl: string = Config.App.query(`imjs_url_${resolvedRegion}_${searchKey}`);
+    if (!configuredUrl && this.baseUrl) {
+      const prefix = Config.App.query("imjs_url_prefix");
+      if (prefix) {
+        const baseUrl = new URL(this.baseUrl);
+        baseUrl.hostname = prefix + baseUrl.hostname;
+        configuredUrl = baseUrl.href;
+      } else {
+        configuredUrl = this.baseUrl;
+      }
+    }
+
     if (configuredUrl) {
       this._url = configuredUrl;
       return this._url;
