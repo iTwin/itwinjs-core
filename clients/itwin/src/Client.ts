@@ -89,28 +89,23 @@ export abstract class Client {
       return this._url;
     }
 
-    const resolvedRegion = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
-    const searchKey: string = this.getUrlSearchKey();
-    let configuredUrl: string = Config.App.query(`imjs_url_${resolvedRegion}_${searchKey}`);
-    if (!configuredUrl && this.baseUrl) {
+    if (this.baseUrl) {
       const prefix = Config.App.query("imjs_url_prefix");
       if (prefix) {
         const baseUrl = new URL(this.baseUrl);
         baseUrl.hostname = prefix + baseUrl.hostname;
-        configuredUrl = baseUrl.href;
+        this._url = baseUrl.href;
       } else {
-        configuredUrl = this.baseUrl;
+        this._url = this.baseUrl;
       }
-    }
 
-    if (configuredUrl) {
-      this._url = configuredUrl;
       return this._url;
     }
 
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
+    const searchKey: string = this.getUrlSearchKey();
     try {
-      const url = await urlDiscoveryClient.discoverUrl(requestContext, searchKey, resolvedRegion);
+      const url = await urlDiscoveryClient.discoverUrl(requestContext, searchKey, undefined);
       this._url = url;
       return this._url; // TODO: On the server this really needs a lifetime!!
     } catch (error) {
