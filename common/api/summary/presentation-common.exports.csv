@@ -104,6 +104,9 @@ public;GroupingRule
 public;GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup
 public;GroupingSpecificationBase
 public;GroupingSpecificationTypes
+alpha;HierarchyCompareInfo
+alpha;HierarchyCompareInfo
+alpha;HierarchyCompareInfoJSON
 public;HierarchyRequestOptions
 public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
 alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | PartialHierarchyModification[]
@@ -201,7 +204,7 @@ internal;PRESENTATION_COMMON_ROOT: string
 alpha;PresentationDataCompareOptions
 alpha;PresentationDataCompareRpcOptions = PresentationRpcRequestOptions
 public;PresentationError 
-alpha;PresentationRpcEvents
+alpha;PresentationIpcEvents
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
 public;PresentationStatus

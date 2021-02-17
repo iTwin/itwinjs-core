@@ -23,9 +23,10 @@ all the ECExpression symbols are available.
 
 The below table lists all of them:
 
-| Symbol | Type                                                 | Value                                                                      |
-|--------|------------------------------------------------------|----------------------------------------------------------------------------|
-| `this` | [ECInstance context](../ECExpressions.md#ecinstance) | ECInstance expression context of ECInstance that's currently being handled |
+| Symbol | Type | Value
+|--------|------|------
+| `this` | [ECInstance context](../ECExpressions.md#ecinstance) | ECInstance expression context of ECInstance that's currently being handled
+| `SelectedInstanceKeys` | [ECInstanceKey context](../ECExpressions.md#ecinstance-key)[] | A [value list](../ECExpressions.md#symbols) of [primary ECInstance](./Terminology.md#primary-instance) keys
 
 Additionally, [User Setting symbols](../ECExpressions.md#symbols-in-global-context) are
 available as well.

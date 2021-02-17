@@ -163,6 +163,12 @@
       "keyin": "fdt elemId from sourceId"
     },
     "AttachMapLayerTool": {
+      "Messages": {
+        "MapLayerAttached": "Map layer {{sourceName}} attached from URL: {{sourceUrl}}",
+        "MapLayerAttachedRequiresAuth": "Map layer {{sourceName}} attached, but requires credentials to be provided",
+        "MapLayerValidationFailed": "Map layer validation failed for URL: {{sourceUrl}}",
+        "MapLayerAttachError": "Error '{{error}}' occurred attaching MapLayer from URL: {{sourceUrl}}"
+      },
       "keyin": "fdt attach maplayer"
     },
     "AttachMapOverlayTool": {
@@ -326,6 +332,12 @@
     },
     "SaturationEffect": {
       "keyin": "fdt effect add saturation"
+    },
+    "VignetteEffect": {
+      "keyin": "fdt effect add vignette"
+    },
+    "VignetteConfig": {
+      "keyin": "fdt effect config vignette"
     },
     "SnowEffect": {
       "keyin": "fdt particle snow"

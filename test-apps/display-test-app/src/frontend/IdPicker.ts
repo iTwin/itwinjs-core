@@ -67,7 +67,7 @@ export abstract class IdPicker extends ToolBarDropDown {
     }
   }
 
-  protected abstract async _populate(): Promise<void>;
+  protected abstract _populate(): Promise<void>;
   public async populate(): Promise<void> {
     this._availableIds.clear();
     this._checkboxes.length = 0;

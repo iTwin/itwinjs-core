@@ -306,7 +306,7 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options, ids, scopeId));
     });
 
-    it("forwards compareHierarchies call", async () => {
+    it("[deprecated] forwards compareHierarchies call", async () => {
       const options: PresentationDataCompareRpcOptions = {
         prev: {
           rulesetOrId: "test1",
@@ -314,7 +314,20 @@ describe("PresentationRpcInterface", () => {
         rulesetOrId: "test2",
         expandedNodeKeys: [],
       };
-      await rpcInterface.compareHierarchies(token, options);
+      await rpcInterface.compareHierarchies(token, options); // eslint-disable-line deprecation/deprecation
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
+    });
+
+    it("forwards compareHierarchiesPaged call", async () => {
+      const options: PresentationDataCompareRpcOptions = {
+        prev: {
+          rulesetOrId: "test1",
+        },
+        rulesetOrId: "test2",
+        expandedNodeKeys: [],
+        resultSetSize: 10,
+      };
+      await rpcInterface.compareHierarchiesPaged(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 

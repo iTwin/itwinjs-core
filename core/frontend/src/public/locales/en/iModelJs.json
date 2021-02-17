@@ -114,5 +114,49 @@
   },
   "RealityModelNames": {
     "OSMBuildings": "OpenStreetMap Buildings"
+  },
+  "QuantityType": {
+    "Length": {
+      "label": "Architectural Length",
+      "description": "Architectural Lengths"
+    },
+    "LengthEngineering": {
+      "label": "Engineering Length",
+      "description": "Engineering Lengths"
+    },
+    "Coordinate": {
+      "label": "Coordinate Value",
+      "description": "Coordinate Values"
+    },
+    "Stationing": {
+      "label": "Stationing",
+      "description": "Stationing Values"
+    },
+    "LengthSurvey": {
+      "label": "Survey Length",
+      "description": "Survey Length Values"
+    },
+    "Angle": {
+      "label": "Angle",
+      "description": "Angle Values"
+    },
+    "LatLong": {
+      "label": "Lat/Long",
+      "description": "Latitude/Longitude Values"
+    },
+    "Area": {
+      "label": "Area",
+      "description": "Area Values"
+    },
+    "Volume": {
+      "label": "Volume",
+      "description": "Volume Values"
+    }
+  },
+  "MapLayers": {
+    "Messages": {
+      "LoadTileTokenError": "An authentication error occurred while loading tiles for layer '{{layerName}}'",
+      "FetchTooltipTokenError": "An authentication error occurred while fetching tooltip for layer '{{layerName}}'"
+    }
   }
 }

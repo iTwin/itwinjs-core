@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-common",
+      "comment": "Added HierarchyCompareInfo object that describes hierarchy changes and next step from which comparison should be continued.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "24278440+saskliutas@users.noreply.github.com"
+}

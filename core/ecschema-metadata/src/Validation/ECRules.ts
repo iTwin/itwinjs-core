@@ -92,6 +92,12 @@ export const DiagnosticCodes = {
   AbstractConstraintMustExistWithMultipleConstraints: getCode(1601),
 };
 
+// TODO: Remove once 'import() types' are supported by api-extractor. https://github.com/microsoft/rushstack/pull/1916
+/* eslint-disable no-duplicate-imports, @typescript-eslint/no-unused-vars */
+import { DiagnosticCategory, DiagnosticType } from "./Diagnostic";
+import { SchemaItem } from "../Metadata/SchemaItem";
+/* eslint-enable no-duplicate-imports, @typescript-eslint/no-unused-vars */
+
 /**
  * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
  * @beta
