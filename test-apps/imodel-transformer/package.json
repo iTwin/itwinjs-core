@@ -1,9 +1,8 @@
 {
-  "name": "transformer",
+  "name": "imodel-transformer",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
   "license": "MIT",
-  "version": "0.0.1",
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",

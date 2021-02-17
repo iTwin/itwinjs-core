@@ -45,6 +45,7 @@ dependencies:
   '@rush-temp/imodel-from-geojson': 'file:projects/imodel-from-geojson.tgz_request@2.88.2'
   '@rush-temp/imodel-from-orbitgt-pointcloud': 'file:projects/imodel-from-orbitgt-pointcloud.tgz'
   '@rush-temp/imodel-from-reality-model': 'file:projects/imodel-from-reality-model.tgz'
+  '@rush-temp/imodel-transformer': 'file:projects/imodel-transformer.tgz_request@2.88.2'
   '@rush-temp/imodelhub-client': 'file:projects/imodelhub-client.tgz'
   '@rush-temp/imodelhub-client-tests': 'file:projects/imodelhub-client-tests.tgz'
   '@rush-temp/imodeljs-backend': 'file:projects/imodeljs-backend.tgz_debug@2.6.9'
@@ -86,7 +87,6 @@ dependencies:
   '@rush-temp/telemetry-client': 'file:projects/telemetry-client.tgz'
   '@rush-temp/test-apps-analysis-importer': 'file:projects/test-apps-analysis-importer.tgz'
   '@rush-temp/test-apps-synchro-schedule-importer': 'file:projects/test-apps-synchro-schedule-importer.tgz'
-  '@rush-temp/transformer': 'file:projects/transformer.tgz_request@2.88.2'
   '@rush-temp/ui-abstract': 'file:projects/ui-abstract.tgz'
   '@rush-temp/ui-components': 'file:projects/ui-components.tgz'
   '@rush-temp/ui-core': 'file:projects/ui-core.tgz_72617a30872f136388aa9fd1d9ea6c56'
@@ -19787,6 +19787,28 @@ packages:
       integrity: sha512-krDeBPJCNZwlnBZN+2EQ0mvD8eVRgUR27VnIALswkQQgEkin2imqCcBEmcDQMzhOw77/QHWhSaaVInP/SlbdcA==
       tarball: 'file:projects/imodel-from-reality-model.tgz'
     version: 0.0.0
+  'file:projects/imodel-transformer.tgz_request@2.88.2':
+    dependencies:
+      '@types/fs-extra': 4.0.11
+      '@types/lodash': 4.14.168
+      '@types/node': 10.14.1
+      '@types/request-promise-native': 1.0.17
+      '@types/yargs': 12.0.19
+      eslint: 6.8.0
+      fs-extra: 8.1.0
+      request-promise-native: 1.0.9_request@2.88.2
+      rimraf: 3.0.2
+      typescript: 4.1.5
+      yargs: 15.4.1
+    dev: false
+    id: 'file:projects/imodel-transformer.tgz'
+    name: '@rush-temp/imodel-transformer'
+    peerDependencies:
+      request: '*'
+    resolution:
+      integrity: sha512-s4oh8ofDz9/ckEOfrW2aDE6HeHfzY7Wv78ivh2ScoFANAL4Js4kzW8v4yPrS+WdQXWFjEBj7QqSZLO5qkbTR2g==
+      tarball: 'file:projects/imodel-transformer.tgz'
+    version: 0.0.0
   'file:projects/imodelhub-client-tests.tgz':
     dependencies:
       '@types/chai': 4.2.15
@@ -20838,28 +20860,6 @@ packages:
       integrity: sha512-PbvF4xqCygNIa2VEZs8UWtid6yw0ZVZaaHSbhkb0dR/FQmyjnqLFDAVLFqDgxQTqjBe+OlR+xaQiRFsh/YKLYw==
       tarball: 'file:projects/test-apps-synchro-schedule-importer.tgz'
     version: 0.0.0
-  'file:projects/transformer.tgz_request@2.88.2':
-    dependencies:
-      '@types/fs-extra': 4.0.11
-      '@types/lodash': 4.14.168
-      '@types/node': 10.14.1
-      '@types/request-promise-native': 1.0.17
-      '@types/yargs': 12.0.19
-      eslint: 6.8.0
-      fs-extra: 8.1.0
-      request-promise-native: 1.0.9_request@2.88.2
-      rimraf: 3.0.2
-      typescript: 4.1.5
-      yargs: 15.4.1
-    dev: false
-    id: 'file:projects/transformer.tgz'
-    name: '@rush-temp/transformer'
-    peerDependencies:
-      request: '*'
-    resolution:
-      integrity: sha512-g8ZPZqX2H0mvlOD1bD9Ug9rm0E1dTuxTVC6lkrp+s2gohK8qd3dcYXU4hmHSUzTVdn27e5sawh+ZIuHNa1ol1w==
-      tarball: 'file:projects/transformer.tgz'
-    version: 0.0.0
   'file:projects/ui-abstract.tgz':
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.32
@@ -21314,6 +21314,7 @@ packages:
       integrity: sha512-7uVsFd8Pc4xpv7xLS7nF917bZyn8aSX5ncqWGOHQKE840YEmQIWiHbn5r0RYsGZEteE5ZKdpoLiMG8z2DJs6JA==
       tarball: 'file:projects/webpack-tools-core.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@azure/storage-blob': 10.4.0
   '@babel/core': 7.7.4
@@ -21361,6 +21362,7 @@ specifiers:
   '@rush-temp/imodel-from-geojson': 'file:./projects/imodel-from-geojson.tgz'
   '@rush-temp/imodel-from-orbitgt-pointcloud': 'file:./projects/imodel-from-orbitgt-pointcloud.tgz'
   '@rush-temp/imodel-from-reality-model': 'file:./projects/imodel-from-reality-model.tgz'
+  '@rush-temp/imodel-transformer': 'file:./projects/imodel-transformer.tgz'
   '@rush-temp/imodelhub-client': 'file:./projects/imodelhub-client.tgz'
   '@rush-temp/imodelhub-client-tests': 'file:./projects/imodelhub-client-tests.tgz'
   '@rush-temp/imodeljs-backend': 'file:./projects/imodeljs-backend.tgz'
@@ -21402,7 +21404,6 @@ specifiers:
   '@rush-temp/telemetry-client': 'file:./projects/telemetry-client.tgz'
   '@rush-temp/test-apps-analysis-importer': 'file:./projects/test-apps-analysis-importer.tgz'
   '@rush-temp/test-apps-synchro-schedule-importer': 'file:./projects/test-apps-synchro-schedule-importer.tgz'
-  '@rush-temp/transformer': 'file:./projects/transformer.tgz'
   '@rush-temp/ui-abstract': 'file:./projects/ui-abstract.tgz'
   '@rush-temp/ui-components': 'file:./projects/ui-components.tgz'
   '@rush-temp/ui-core': 'file:./projects/ui-core.tgz'

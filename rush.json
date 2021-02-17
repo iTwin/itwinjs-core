@@ -531,8 +531,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "transformer",
-      "projectFolder": "test-apps/transformer",
+      "packageName": "imodel-transformer",
+      "projectFolder": "test-apps/imodel-transformer",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
