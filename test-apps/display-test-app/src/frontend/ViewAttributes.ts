@@ -527,6 +527,7 @@ export class ViewAttributes {
     };
 
     const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
+    const mapVisible = this.addCheckbox("Visible", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0 : 1 }), backgroundSettingsDiv).checkbox;
     const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv).checkbox;
     const locatable = this.addCheckbox("Locatable", (enabled) => this.updateBackgroundMap({ nonLocatable: !enabled }), backgroundSettingsDiv).checkbox;
     backgroundSettingsDiv.appendChild(document.createElement("hr")!);
@@ -547,6 +548,7 @@ export class ViewAttributes {
       imageryProviders.value = map.providerName;
       types.value = map.mapType.toString();
       terrainCheckbox.checked = map.applyTerrain;
+      mapVisible.checked = (false !== map.transparency && map.transparency < 1);
       transCheckbox.checked = false !== map.transparency;
       locatable.checked = map.locatable;
       globeModes.value = map.globeMode.toString();
