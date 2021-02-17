@@ -6,7 +6,7 @@
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
-  AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, NativeApp, SelectionTool, SnapMode, TileAdmin, Tool,
+  AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, NativeApp, SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -39,6 +39,15 @@ class DisplayTestAppAccuSnap extends AccuSnap {
     this._activeSnaps.length = snaps.length;
     for (let i = 0; i < snaps.length; i++)
       this._activeSnaps[i] = snaps[i];
+  }
+}
+
+class DisplayTestAppToolAdmin extends ToolAdmin {
+  /** Process shortcut key events */
+  public processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
+    if (wentDown && IModelApp.accuDraw.isEnabled)
+      return AccuDrawShortcuts.processShortcutKey(keyEvent);
+    return false;
   }
 }
 
@@ -126,6 +135,7 @@ export class DisplayTestApp {
     opts.accuSnap = new DisplayTestAppAccuSnap();
     opts.notifications = new Notifications();
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
+    opts.toolAdmin = new DisplayTestAppToolAdmin();
     opts.uiAdmin = new UiManager();
     if (MobileRpcConfiguration.isMobileFrontend)
       await NativeApp.startup(opts);
