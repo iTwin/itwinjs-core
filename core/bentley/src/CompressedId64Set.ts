@@ -331,7 +331,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
     return set;
   }
 
-  /** Decompress the compact string representation of an [[Id64Set]] into an [[Id64Array].
+  /** Decompress the compact string representation of an [[Id64Set]] into an [[Id64Array]].
    * @param compressedIds The compact string representation.
    * @param out If supplied, the Ids will be appended to this array rather than allocating and returning a new array.
    * @returns The array containing the decompressed Ids.
