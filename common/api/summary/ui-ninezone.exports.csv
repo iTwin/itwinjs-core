@@ -420,20 +420,16 @@ internal;useIsDraggedType(type: DragItem["type"]): boolean
 internal;useIsMainPanelWidget(): boolean
 internal;useLabel(labelKey: keyof NineZoneLabels): string | undefined
 internal;useMode(widgetId: string): "fit" | "fill" | "minimized"
-internal;useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray
 internal;usePanelsAutoCollapse
-internal;usePanelTarget
 internal;UsePanelTargetArgs
 internal;usePointerCaptor: 
 internal;useResizeGrip: 
 beta;UserProfile 
 beta;UserProfileProps 
-internal;useTabTarget
 internal;UseTabTargetArgs
 internal;useTabTransientState(tabId: string, onSave?: () => void, onRestore?: () => void): void
 internal;useToolSettingsEntry(): DockedToolSettingsEntryContextArgs
 internal;useTransientState(onSave?: () => void, onRestore?: () => void): void
-internal;useWidgetTarget
 internal;UseWidgetTargetArgs
 beta;VerticalAnchor
 internal;VerticalAnchorHelpers

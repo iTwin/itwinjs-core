@@ -155,7 +155,10 @@ export type AngleSweepProps = AngleSweep | {
     degrees: [number, number];
 } | {
     radians: [number, number];
-} | [number, number];
+} | [
+    number,
+    number
+];
 
 // @internal
 export class AnnotatedLineString3d {
