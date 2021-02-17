@@ -11,7 +11,7 @@ import {
   Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import {
-  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode,
+  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalWebViewerApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode,
   TileAdmin, Tool, ToolAdmin, WebViewerApp,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -167,14 +167,16 @@ export class DisplayTestApp {
       },
     };
 
-    if (ProcessDetector.isElectronAppFrontend)
+    if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
-    else if (ProcessDetector.isIOSAppFrontend)
+    } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);
-    else if (ProcessDetector.isAndroidAppFrontend)
+    } else if (ProcessDetector.isAndroidAppFrontend) {
       await AndroidApp.startup(opts);
-    else
+    } else {
       await WebViewerApp.startup(opts);
+      await LocalWebViewerApp.initializeIpc(3002);
+    }
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
