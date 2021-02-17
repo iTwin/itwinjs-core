@@ -6,15 +6,7 @@
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
-<<<<<<< HEAD
-  AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, NativeApp, SelectionTool, SnapMode, TileAdmin, Tool,
-=======
-  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
-import {
-  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode,
-  TileAdmin, Tool, ToolAdmin, WebViewerApp,
->>>>>>> a2419858f8... UI/fix accudraw shortcuts for DR (#784)
+  AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, NativeApp, SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -138,49 +130,15 @@ export class DisplayTestApp {
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
 
-<<<<<<< HEAD
   public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuSnap = new DisplayTestAppAccuSnap();
     opts.notifications = new Notifications();
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
+    opts.toolAdmin = new DisplayTestAppToolAdmin();
     opts.uiAdmin = new UiManager();
     if (MobileRpcConfiguration.isMobileFrontend)
       await NativeApp.startup(opts);
-=======
-  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
-    const opts = {
-      iModelApp: {
-        accuSnap: new DisplayTestAppAccuSnap(),
-        notifications: new Notifications(),
-        tileAdmin: TileAdmin.create(DisplayTestApp.tileAdminProps),
-        toolAdmin: new DisplayTestAppToolAdmin(),
-        uiAdmin: new UiManager(),
-        renderSys,
-        rpcInterfaces: [
-          DtaRpcInterface,
-          Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
-          IModelReadRpcInterface,
-          IModelTileRpcInterface,
-          IModelWriteRpcInterface,
-          SnapshotIModelRpcInterface,
-        ],
-      },
-      webViewerApp: {
-        rpcParams: {
-          uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001",
-          info: { title: "DisplayTestApp", version: "v1.0" },
-        },
-      },
-    };
-
-    if (ProcessDetector.isElectronAppFrontend)
-      await ElectronApp.startup(opts);
-    else if (ProcessDetector.isIOSAppFrontend)
-      await IOSApp.startup(opts);
-    else if (ProcessDetector.isAndroidAppFrontend)
-      await AndroidApp.startup(opts);
->>>>>>> a2419858f8... UI/fix accudraw shortcuts for DR (#784)
     else
       await IModelApp.startup(opts);
 
