@@ -4777,6 +4777,12 @@ export interface LoadedExtensionProps {
     props: ExtensionProps;
 }
 
+// @alpha (undocumented)
+export class LocalWebViewerApp {
+    // (undocumented)
+    static initializeIpc(port: number): Promise<void>;
+}
+
 // @public
 export enum LocateAction {
     // (undocumented)

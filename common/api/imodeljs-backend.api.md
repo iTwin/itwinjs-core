@@ -3230,6 +3230,12 @@ export class LinkPartition extends InformationPartitionElement {
     static get className(): string;
 }
 
+// @alpha (undocumented)
+export class LocalWebViewerHost {
+    // (undocumented)
+    static initializeIpc(port: number): Promise<void>;
+}
+
 // @internal
 export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
