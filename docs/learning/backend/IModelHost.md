@@ -1,10 +1,10 @@
 # IModelHost
 
-Every iModel.js [backend](../Glossary.md#backend) must call [IModelHost.startup]($backend) (usually indirectly via a specialized host, see below) before using any backend services. [IModelHost]($backend) initializes imodeljs-backend so that it may access iModels and serve [IModelApp]($frontend)s.
+Every iTwin.js [backend](../Glossary.md#backend) must call [IModelHost.startup]($backend) (usually indirectly via a specialized host, see below) before using any backend services. [IModelHost]($backend) initializes imodeljs-backend so that it may access iModels and serve [IModelApp]($frontend)s.
 
 ## IModelHost Specializations
 
-To support the various use cases and platforms for iModel.js backends, there are specialized "hosts" that should be used where appropriate. Each specialization supplies static methods that may be used for its relevant services.
+To support the various use cases and platforms for iTwin.js backends, there are specialized "hosts" that should be used where appropriate. Each specialization supplies static methods that may be used for its relevant services.
 
 > For a given backend, you will pick *one* class from the following list, and call its `startup` method. The type of host running on the backend determines the type of [IModelApp](../frontend/IModelApp.md) that can be used on the frontend.
 

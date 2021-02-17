@@ -1,6 +1,6 @@
-# iModel.js TypeScript Coding Guidelines
+# iTwin.js TypeScript Coding Guidelines
 
-These are the TypeScript coding guidelines that we expect all iModel.js contributors to follow.
+These are the TypeScript coding guidelines that we expect all iTwin.js contributors to follow.
 Where possible, these guidelines are enforced through our TSLint configuration file (tslint.json).
 
 ## Names

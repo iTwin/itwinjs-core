@@ -18,7 +18,7 @@ One simple way to understand the difference between a *Linear GeoLocation* iMode
 
 ## The IModel class
 
-Information about GeoLocation is available in iModel.js from the [IModel]($common) class, on instances of it subclasses:
+Information about GeoLocation is available in iTwin.js from the [IModel]($common) class, on instances of it subclasses:
 
 - [IModelConnection]($frontend) in the frontend
 - [IModelDb]($backend) in the backend
@@ -69,7 +69,7 @@ A projected iModel stores information used to convert its spatial coordinates to
 
 > For historical reasons, some applications such as MicroStation store a GCS, even for a Linear GeoLocation. This means that some iModels that are really Linear iModels instead appear as being Projected. This does not generally cause problems, since a Linear iModel cannot be very large geographically, and hence the projection "warping" throughout the project extents is negligible, if it is ever applied.
 
-## How Geographic Coordinates are used in iModel.js
+## How Geographic Coordinates are used in iTwin.js
 
 For display purposes, Geographic coordinates are only relevant for Spatial views. They are obviously used for showing Cartographic coordinates to users.
 

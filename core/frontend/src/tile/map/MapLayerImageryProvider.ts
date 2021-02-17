@@ -44,7 +44,7 @@ export abstract class MapLayerImageryProvider {
     });
   }
   protected _requestContext = new ClientRequestContext("");
-  public abstract async constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+  public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
 
   public getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined { return undefined; }
   protected _missingTileData?: Uint8Array;

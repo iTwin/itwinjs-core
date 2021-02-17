@@ -1,6 +1,6 @@
 # Accessing Elements in an IModelDb
 
-An iModel.js [Element]($backend) is an in-memory representation of a [BIS Element](../../bis/intro/element-fundamentals.md). An Element object provides easy access to a set of properties and [Aspects](../Glossary.md#elementaspect).
+An iTwin.js [Element]($backend) is an in-memory representation of a [BIS Element](../../bis/intro/element-fundamentals.md). An Element object provides easy access to a set of properties and [Aspects](../Glossary.md#elementaspect).
 
 [IModelDb.elements]($backend) represents the collection of Elements in an iModel.
 

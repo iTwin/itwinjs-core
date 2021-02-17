@@ -50,7 +50,7 @@ describe("Useful ECSQL queries", () => {
     assert.isNotEmpty(partitionIds);
     assert.equal(partitionIds.size, 1);
     for (const eidStr of partitionIds) {
-      assert.equal(iModel.elements.getElement(eidStr).code.getValue(), "Physical");
+      assert.equal(iModel.elements.getElement(eidStr).code.value, "Physical");
     }
     // __PUBLISH_EXTRACT_END__
   });
@@ -61,7 +61,7 @@ describe("Useful ECSQL queries", () => {
     // iModel or if you have some way of filtering results, you could do a direct query
     // for just its code value using the IModelDb.queryEntityIds convenience method.
     for (const eidStr of iModel.queryEntityIds({ from: PhysicalPartition.classFullName, where: "CodeValue='Physical'" })) {
-      assert.equal(iModel.elements.getElement(eidStr).code.getValue(), "Physical");
+      assert.equal(iModel.elements.getElement(eidStr).code.value, "Physical");
     }
     // __PUBLISH_EXTRACT_END__
   });

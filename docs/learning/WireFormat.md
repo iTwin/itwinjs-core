@@ -10,7 +10,7 @@ Here is some sample code that dumps the entire iModel to JSON.
 
 -------------------------------------------------
 
-Below are examples of wire formats for a few interesting iModel.js classes.
+Below are examples of wire formats for a few interesting iTwin.js classes.
 
 ## Root Subject
 
