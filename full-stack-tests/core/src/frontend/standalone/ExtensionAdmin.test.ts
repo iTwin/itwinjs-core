@@ -17,7 +17,7 @@ describe("ExtensionAdmin tests", () => {
 
       await IModelApp.extensionAdmin.loadExtension("loadingTestExtension");
 
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         IModelApp.extensionAdmin.onExtensionLoaded.addListener((extName) => {
           if (extName === "loadingTestExtension")
             resolve();
