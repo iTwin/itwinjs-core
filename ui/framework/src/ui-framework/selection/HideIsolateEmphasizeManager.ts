@@ -162,42 +162,42 @@ export abstract class HideIsolateEmphasizeActionHandler {
   /**
    * Function run when `IsolateSelectedElementsModel` tool button is pressed
    */
-  public abstract async processIsolateSelectedElementsModel(): Promise<void>;
+  public abstract processIsolateSelectedElementsModel(): Promise<void>;
   /**
    * Function run when `IsolateSelectedElementsModel` tool button is pressed
    */
 
-  public abstract async processIsolateSelectedElementsCategory(): Promise<void>;
+  public abstract processIsolateSelectedElementsCategory(): Promise<void>;
 
   /**
    * Function run when `HideSelectedElementsModel` tool button is pressed
    */
-  public abstract async processIsolateSelected(): Promise<void>;
+  public abstract processIsolateSelected(): Promise<void>;
 
   /**
    * Function run when `HideSelectedElementsModel` tool button is pressed
    */
-  public abstract async processHideSelectedElementsModel(): Promise<void>;
+  public abstract processHideSelectedElementsModel(): Promise<void>;
 
   /**
    * Function that is run when `HideSelectedElementsCategory` tool button is pressed
    */
-  public abstract async processHideSelectedElementsCategory(): Promise<void>;
+  public abstract processHideSelectedElementsCategory(): Promise<void>;
 
   /**
    * Function that is run when `HideSelected` tool button is pressed
    */
-  public abstract async processHideSelected(): Promise<void>;
+  public abstract processHideSelected(): Promise<void>;
 
   /**
    * Function that is run when `EmphasizeSelected` tool button is pressed
    */
-  public abstract async processEmphasizeSelected(): Promise<void>;
+  public abstract processEmphasizeSelected(): Promise<void>;
 
   /**
    * Function that is run when `ClearEmphasize` tool button is pressed
    */
-  public abstract async processClearEmphasize(): Promise<void>;
+  public abstract processClearEmphasize(): Promise<void>;
 
   /**
    * Function that informs called if Hide, Isolate, or Emphasize of elements is active.
