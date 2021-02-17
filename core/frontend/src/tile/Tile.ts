@@ -86,7 +86,7 @@ export abstract class Tile {
   public readonly range: ElementAlignedBox3d;
   /** The parent of this tile, or undefined if it is the [[TileTree]]'s root tile. */
   public readonly parent: Tile | undefined;
-/** The depth of this tile within its [[TileTree]]. The root tile has a depth of zero. */
+  /** The depth of this tile within its [[TileTree]]. The root tile has a depth of zero. */
   public readonly depth: number;
   /** The point at the center of this tile's volume. */
   public readonly center: Point3d;

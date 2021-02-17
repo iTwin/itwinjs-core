@@ -763,7 +763,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public dropSubCategoryOverride(id: Id64String) { this.settings.dropSubCategoryOverride(id); }
 
-/** Returns true if an [[SubCategoryOverride]]s are defined by this style. */
+  /** Returns true if an [[SubCategoryOverride]]s are defined by this style. */
   public get hasSubCategoryOverride() { return this.settings.hasSubCategoryOverride; }
 
   /** Obtain the overrides applied to a [[SubCategoryAppearance]] by this style.
