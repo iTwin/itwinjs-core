@@ -155,6 +155,6 @@ describe("<Node />", () => {
     const content = wrapper.find("div.contents");
     content.simulate("contextmenu");
     expect(callback).to.be.calledOnce;
-    });
+  });
 
 });
