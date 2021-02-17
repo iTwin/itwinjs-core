@@ -102,7 +102,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory",
         label: "Child",
         expand: true,
-        parentCategory,
       };
       parentCategory.childCategories = [childCategory];
       dataProvider = {
@@ -353,7 +352,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory1",
         label: "Child",
         expand: true,
-        parentCategory: rootCategory1,
       };
       rootCategory1.childCategories = [childCategory1];
       const rootCategory2: PropertyCategory = {
@@ -365,7 +363,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory2",
         label: "Child",
         expand: true,
-        parentCategory: rootCategory2,
       };
       rootCategory2.childCategories = [childCategory2];
       dataProvider = {
@@ -423,7 +420,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory1",
         label: "Child1",
         expand: false,
-        parentCategory: rootCategory1,
       };
       rootCategory1.childCategories = [childCategory1];
       const rootCategory2: PropertyCategory = {
@@ -435,7 +431,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory2",
         label: "Child2",
         expand: true,
-        parentCategory: rootCategory2,
       };
       rootCategory2.childCategories = [childCategory2];
       dataProvider = {
@@ -912,13 +907,11 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory1",
         label: "Child",
         expand: true,
-        parentCategory,
       };
       const childCategory2: PropertyCategory = {
         name: "ChildCategory2",
         label: "Child",
         expand: true,
-        parentCategory,
       };
       parentCategory.childCategories = [childCategory1, childCategory2];
       dataProvider = {
