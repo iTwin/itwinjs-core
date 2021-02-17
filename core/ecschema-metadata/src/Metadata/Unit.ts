@@ -170,8 +170,8 @@ export class Unit extends SchemaItem {
  * An abstract class used for schema editing.
  */
 export abstract class MutableUnit extends Unit {
-  public abstract async setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
-  public abstract async setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
-  public abstract async setDefinition(definition: string): Promise<void>;
+  public abstract setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
+  public abstract setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
+  public abstract setDefinition(definition: string): Promise<void>;
   public abstract setDisplayLabel(displayLabel: string): void;
 }

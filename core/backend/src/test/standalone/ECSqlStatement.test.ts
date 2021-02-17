@@ -198,7 +198,7 @@ describe("ECSqlStatement", () => {
       let successful = 0;
       let rowCount = 0;
       const cb = async () => {
-        return new Promise(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
           try {
             for await (const _row of ecdb.restartQuery("tag", "SELECT * FROM ts.Foo")) {
               rowCount++;

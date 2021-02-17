@@ -82,9 +82,9 @@ export function DEPRECATED_controlledTreeWithFilteringSupport<P extends Controll
     return (
       <div className="filteredTree">
         <TreeComponent
-          nodeLoader={nodeLoader}
           nodeHighlightingProps={nodeHighlightingProps}
           {...strippedProps as CombinedProps}
+          nodeLoader={nodeLoader}
         />
         {overlay}
       </div>
