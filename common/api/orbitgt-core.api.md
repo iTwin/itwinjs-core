@@ -132,7 +132,7 @@ export class OPCReader extends PointCloudReader {
 // @internal (undocumented)
 export class OrbitGtAList<T> {
     [Symbol.iterator](): {
-        next(): IteratorResult<T, any>;
+        next(): IteratorResult<T>;
     };
     constructor(capacity?: number);
     // (undocumented)

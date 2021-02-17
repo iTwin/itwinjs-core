@@ -40,20 +40,8 @@ class Provider extends PresentationPropertyDataProvider {
   public isFieldHidden(field: Field) { return super.isFieldHidden(field); }
   public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
   public sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
-
-  public get sortFields() {
-    return super.sortFields;
-  }
-  public set sortFields(value) {
-    super.sortFields = value;
-  }
-
-  public get isFieldFavorite() {
-    return super.isFieldFavorite;
-  }
-  public set isFieldFavorite(value) {
-    super.isFieldFavorite = value;
-  }
+  public isFieldFavorite!: (field: Field) => boolean;
+  public sortFields!: (category: CategoryDescription, fields: Field[]) => void;
 }
 
 describe("PropertyDataProvider", () => {
