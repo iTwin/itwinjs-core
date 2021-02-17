@@ -1,6 +1,6 @@
 # App Tailoring
 
-While the bulk of an iModel.js app is portable, it must also be tailored to fit each configuration and platform well. An app's UI and functionality may vary if it supports more than one configuration. And, an app can integrate platform-specific functionality.
+While the bulk of an iTwin.js app is portable, it must also be tailored to fit each configuration and platform well. An app's UI and functionality may vary if it supports more than one configuration. And, an app can integrate platform-specific functionality.
 
 ## App Packaging and Deployment
 
@@ -38,4 +38,4 @@ An interactive app can use platform-specific modules that are supplied by the ho
 
 ## Backends for Frontends
 
-Following the [backends-for-frontends pattern](https://samnewman.io/patterns/architectural/bff/), an app would ideally use different backend services for different configurations, rather than trying to rely on a one-size-fits-all backend service. The iModel.js [RpcInterface](./RpcInterface.md) architecture encourages and supports the BFF pattern. It is easy to write and deploy app-specific backends, because a backend is just a TypeScript class that deals only with the app's functionality, not communication details. It is easy for an app to choose the mix of backend services that match its configuration, because RpcInterfaces, as TypeScript classes, are first class objects that can be managed at runtime.
+Following the [backends-for-frontends pattern](https://samnewman.io/patterns/architectural/bff/), an app would ideally use different backend services for different configurations, rather than trying to rely on a one-size-fits-all backend service. The iTwin.js [RpcInterface](./RpcInterface.md) architecture encourages and supports the BFF pattern. It is easy to write and deploy app-specific backends, because a backend is just a TypeScript class that deals only with the app's functionality, not communication details. It is easy for an app to choose the mix of backend services that match its configuration, because RpcInterfaces, as TypeScript classes, are first class objects that can be managed at runtime.

@@ -7,6 +7,7 @@ import {
   BaseItemState,
   CommandItemDef,
   ContentGroup, ContentLayoutDef, ContentViewManager, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupItemDef, ItemList, NavigationWidget,
+  SelectionContextToolDefinitions,
   SessionStateActionId,
   SyncUiEventId,
   ToolWidget, UiFramework, Widget, WidgetState, Zone, ZoneState,
@@ -176,7 +177,10 @@ class FrontstageToolWidget extends React.Component {
 
   private get _horizontalToolbarItems(): ItemList {
     const items = new ItemList([
-      this.myClearSelectionItemDef,
+      SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef,
+      SelectionContextToolDefinitions.hideSectionToolGroup,
+      SelectionContextToolDefinitions.isolateSelectionToolGroup,
+      SelectionContextToolDefinitions.emphasizeElementsItemDef,
       AppTools.item1,
       AppTools.item2,
       new GroupItemDef({

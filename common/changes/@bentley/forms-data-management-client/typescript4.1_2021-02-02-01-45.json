@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/forms-data-management-client",
+      "comment": "Updated to use TypeScript 4.1",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/forms-data-management-client",
+  "email": "33036725+wgoehrig@users.noreply.github.com"
+}

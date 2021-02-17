@@ -910,6 +910,18 @@ export namespace IModelJson {
               polyface.addNormalXYZ(uvw[0], uvw[1], uvw[2]);
           }
         }
+        if (data.hasOwnProperty("twoSided")) {
+          const q = data.twoSided;
+          if (q === true || q === false) {
+            polyface.twoSided = q;
+          }
+        }
+        if (data.hasOwnProperty("expectedClosure")) {
+          const q = data.expectedClosure;
+          if (Number.isFinite (q)) {
+            polyface.expectedClosure = q;
+          }
+        }
         if (data.hasOwnProperty("param") && Array.isArray(data.param)) {
           for (const uv of data.param) {
             if (Geometry.isNumberArray(uv, 2))
@@ -1706,6 +1718,8 @@ export namespace IModelJson {
       }
       // assemble the contents in alphabetical order.
       const contents: { [k: string]: any } = {};
+      if (pf.expectedClosure  !== 0)
+        contents.expectedClosure = pf.expectedClosure;
       if (pf.twoSided)
         contents.twoSided = true;
       if (pf.data.auxData)
