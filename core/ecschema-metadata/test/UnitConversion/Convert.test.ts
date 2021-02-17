@@ -31,7 +31,7 @@ describe("A unit tree creator", () => {
   );
 
   before(() => {
-    const schemaFile = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Standard", `Units.ecschema.xml`);;
+    const schemaFile = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Standard", `Units.ecschema.xml`);
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     const schema: Schema = deserializeXml(context, schemaXml as string);
     context.addSchema(schema);
