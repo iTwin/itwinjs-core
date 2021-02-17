@@ -39,6 +39,8 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
   ref?: React.Ref<HTMLButtonElement>;
   /** If true show up/down caret next to color  */
   showCaret?: boolean;
+  /** If true, don't propagate clicks out of the ColorPicker */
+  captureClicks?: boolean;
 }
 
 // Defined using following pattern (const ColorPickerPopup at bottom) to ensure useful API documentation is extracted
@@ -100,10 +102,17 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
       props.className,
     );
 
+    const clickHandler = (event: React.MouseEvent) => {
+      // istanbul ignore else
+      if (props.captureClicks)
+        event.stopPropagation();
+    };
+
     const colorOptions = props.colorDefs && props.colorDefs.length ? props.colorDefs : defaultColors.current;
     const popupPosition = undefined !== props.popupPosition ? props.popupPosition : RelativePosition.BottomLeft;
     return (
-      <>
+      /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
+      <div onClick={clickHandler}>
         <button data-testid="components-colorpicker-popup-button" onClick={togglePopup} className={buttonClassNames} style={buttonStyle} disabled={props.disabled} ref={refs} >
           <div className="components-colorpicker-button-container">
             <div className="components-colorpicker-button-color-swatch" style={swatchStyle} />
@@ -122,7 +131,7 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
             <ColorPickerPanel activeColor={colorDef} colorPresets={colorOptions} onColorChange={handleColorChanged} />
           </div>
         </Popup>
-      </>
+      </div>
     );
   }
 );
