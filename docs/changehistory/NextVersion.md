@@ -114,3 +114,80 @@ The *export* methods of [IModelExporter]($backend) and the *process* methods of 
 While exporting and transforming should generally be considered *batch* operations, changing these methods to `async` makes progress reporting and process health monitoring much easier. This is particularly important when processing large iModels.
 
 To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from within an `async` method. No internal logic was changed, so that should be the only changes required.
+
+## Presentation
+
+### Setting up default formats
+
+A new feature was introduced, which allows supplying default unit formats to use for formatting properties that don't have a presentation unit for requested unit system. The formats are set when initializing [Presentation]($presentation-backend) and passing `PresentationManagerProps.defaultFormats`.
+Example:
+
+```ts
+Presentation.initialize({
+  defaultFormats: {
+    length: {
+      unitSystems: [PresentationUnitSystem.BritishImperial],
+      format: MY_DEFAULT_FORMAT_FOR_LENGTHS_IN_BRITISH_IMPERIAL_UNITS,
+    },
+    area: {
+      unitSystems: [PresentationUnitSystem.UsCustomary, PresentationUnitSystem.UsSurvey],
+      format: MY_DEFAULT_FORMAT_FOR_AREAS_IN_US_UNITS,
+    },
+  },
+});
+```
+
+### Accessing selection in instance filter of content specifications
+
+Added a way to create and filter content that's related to given input through some ID type of property that is not part of a relationship. That can be done by
+using [ContentInstancesOfSpecificClasses specification](../learning/presentation/content/ContentInstancesOfSpecificClasses.md) with an instance filter that makes use
+of the newly added [SelectedInstanceKeys](../learning/presentation/content/ECExpressions.md#instance=filter) ECExpression symbol. Example:
+
+```json
+{
+  "ruleType": "Content",
+  "condition": "SelectedNode.IsOfClass(\"ECClassDef\", \"ECDbMeta\")",
+  "specifications": [
+    {
+      "specType": "ContentInstancesOfSpecificClasses",
+      "classes": {
+        "schemaName": "BisCore",
+        "classNames": ["Element"]
+      },
+      "arePolymorphic": true,
+      "instanceFilter": "SelectedInstanceKeys.AnyMatches(x => this.IsOfClass(x.ECInstanceId))"
+    }
+  ]
+}
+```
+
+The above example creates content for `ECDbMeta.ECClassDef` instances by selecting all `BisCore.Element` instances
+that are of given `ECDbMeta.ECClassDef` instances.
+
+Previously this was not possible, because there is no ECRelationship between `ECDbMeta.ECClassDef` and `BisCore.Element`.
+
+### ECInstance ECExpression context method enhancements
+
+Added lambda versions for [ECInstance ECExpression context](../learning/presentation/ECExpressions.md#ecinstance) methods: `GetRelatedInstancesCount`,
+`HasRelatedInstance`, `GetRelatedValue`. This allows using those methods without the need of an ECRelationship between "current" ECInstance
+and related ECInstance. Example:
+
+```json
+{
+  "ruleType": "RootNodes",
+  "specifications": [
+    {
+      "specType": "InstanceNodesOfSpecificClasses",
+      "classes": {
+        "schemaName": "ECDbMeta",
+        "classNames": ["ECClassDef"]
+      },
+      "instanceFilter": "this.HasRelatedInstance(\"BisCore:Element\", el => el.IsOfClass(this.ECInstanceId))",
+      "groupByClass": false,
+      "groupByLabel": false
+    }
+  ]
+}
+```
+
+The above example returns `ECDbMeta:ECClassDef` instances only if there are `BisCore:Elements` of those classes.
