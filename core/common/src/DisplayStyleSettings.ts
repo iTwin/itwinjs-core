@@ -705,18 +705,18 @@ export class DisplayStyleSettings {
     return this._subCategoryOverrides.size > 0;
   }
 
-  /** Customize the way a [[Model]]  is drawn by this display style.
-   * @param modelId The ID of the [[model]] whose appearance is to be overridden.
-   * @param ovr The overrides to apply to the [[Model]].
+  /** Customize the way a [Model]($backend)   is drawn by this display style.
+   * @param modelId The ID of the [Model]($backend)  whose appearance is to be overridden.
+   * @param ovr The overrides to apply to the [Model]($backend) .
    * @see [[dropModelAppearanceOverride]]
    */
   public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void {
     this.changeModelAppearanceOverride(modelId, true, ovr);
   }
 
-  /** Remove any appearance overrides applied to a [[Model]] by this style.
-   * @param modelId The ID of the [[Model]].
-   * @param ovr The overrides to apply to the [[Model]].
+  /** Remove any appearance overrides applied to a [Model]($backend)  by this style.
+   * @param modelId The ID of the [Model]($backend) .
+   * @param ovr The overrides to apply to the [Model]($backend) .
    * @see [[overrideModelAppearance]]
    */
   public dropModelAppearanceOverride(id: Id64String): void {
@@ -728,8 +728,8 @@ export class DisplayStyleSettings {
     return this._modelAppearanceOverrides;
   }
 
-  /** Obtain the override applied to a [[Model]] by this style.
-   * @param id The ID of the [[Model]].
+  /** Obtain the override applied to a [Model]($backend)  by this style.
+   * @param id The ID of the [Model]($backend).
    * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
    * @see [[overrideModelAppearance]]
    */
@@ -742,28 +742,25 @@ export class DisplayStyleSettings {
     return this._modelAppearanceOverrides.size > 0;
   }
 
-  /** Set the planar clip mask for a persistent reality [[Model]] drawn by this display style.  Masking of BIM models is not supported although they can be used for masking for reality models and background maps.
- * @param modelId The ID of the persistent reality [[Model]]
- * @param planarClipMask The clip mask to apply to the [[Model]].
- * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideModelPlanarClipMask]] to ensure
- * the changes are promptly visible on the screen.
+  /** Set the planar clip mask for a persistent reality [Model]($backend)  drawn by this display style.  Masking of BIM models is not supported although they can be used for masking for reality models and background maps.
+ * @param modelId The ID of the persistent reality [Model]($backend)
+ * @param planarClipMask The clip mask to apply to the [Model]($backend).
+
  * @see [[dropModelPlanarClipMaskOverride]]
  * @beta
  */
   public overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMaskSettings): boolean { return this.changePlanarClipMaskOverride(modelId, true, planarClipMask); }
 
-  /** Remove planar clip mask applied to a [[Model]] by this style.
-   * @param modelId The ID of the [[Model]].
-   * @param planarClipMask The planar clip mask to apply to the [[Model]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideModelPlanarClipMask]] to ensure
-   * the changes are promptly visible on the screen.
+  /** Remove planar clip mask applied to a [Model]($backend)  by this style.
+   * @param modelId The ID of the [Model]($backend).
+   * @param planarClipMask The planar clip mask to apply to the [Model]($backend).
    * @see [[overrideModelPlanarClipMask]]
    * @beta
    */
   public dropModelPlanarClipMaskOverride(id: Id64String): boolean { return this.changePlanarClipMaskOverride(id, true); }
 
-  /** Obtain the planar clip applied to a [[Model]] by this style.b
-    * @param id The ID of the [[Model]].
+  /** Obtain the planar clip applied to a [Model]($backend)  by this style.
+    * @param id The ID of the [Model]($backend) .
     * @returns The corresponding planar clip mask, or undefined if none exist.
     * @beta
     */
