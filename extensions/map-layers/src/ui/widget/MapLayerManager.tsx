@@ -279,7 +279,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     }
   }, [backgroundMapVisible, setBackgroundMapVisible, activeViewport]);
 
-  const handleOnMapLayerDragEnd = React.useCallback((result: DropResult /* , _provided: ResponderProvided*/) => {
+  const handleOnMapLayerDragEnd = React.useCallback((result: DropResult /* ,  _provided: ResponderProvided*/) => {
     const { destination, source } = result;
 
     if (!destination) // dropped outside of list
