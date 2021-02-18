@@ -700,7 +700,7 @@ export class DisplayStyleSettings {
     return this._subCategoryOverrides.get(id);
   }
 
-  /** Returns true if an [[SubCategoryOverride]s are defined by this style. */
+  /** Returns true if an [[SubCategoryOverride]]s are defined by this style. */
   public get hasSubCategoryOverride(): boolean {
     return this._subCategoryOverrides.size > 0;
   }
@@ -852,7 +852,7 @@ export class DisplayStyleSettings {
       };
     }
 
-    const viewflags = this.viewFlags.toFullyDefinedJSON();
+    const viewflags: Partial<ViewFlagProps> = this.viewFlags.toFullyDefinedJSON();
     const props: DisplayStyleSettingsProps = {
       viewflags,
       backgroundColor: this.backgroundColor.toJSON(),

@@ -25,7 +25,7 @@ abstract class AbstractAsyncStartupPlugin {
     });
   }
 
-  public abstract async runAsync(compiler: Compiler): Promise<any>;
+  public abstract runAsync(compiler: Compiler): Promise<any>;
 }
 
 async function isDirectory(directoryName: string) {

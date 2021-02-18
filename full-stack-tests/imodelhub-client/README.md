@@ -1,12 +1,12 @@
 # iModelHub client tests
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 This package contains unit and integration tests for the iModelHub client (`@bentley\imodelhub-client` npm package).
 
 ## Prerequisites
 
-Refer to the iModel.js [prerequisites](https://github.com/imodeljs/imodeljs#prerequisites)
+Refer to the iTwin.js [prerequisites](https://github.com/imodeljs/imodeljs#prerequisites)
 
 ## Running the tests
 
