@@ -693,7 +693,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === tree || !this.initializeImagery())
       return;     // Not loaded yet.
 
-    if (this._planarClipMask)
+    if (this._planarClipMask && this._planarClipMask.settings.isValid)
       context.addPlanarClassifier(tree.modelId, undefined, this._planarClipMask);
 
     const args = this.createDrawArgs(context);
