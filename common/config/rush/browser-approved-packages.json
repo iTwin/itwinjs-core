@@ -235,6 +235,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@bentley/units-schema",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "@bentley/usage-logging-client",
       "allowedCategories": [ "backend", "frontend" ]
     },
