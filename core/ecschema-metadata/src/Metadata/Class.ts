@@ -678,26 +678,26 @@ export abstract class MutableStructClass extends StructClass {
 export abstract class MutableClass extends ECClass {
   public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
   public abstract setModifier(modifier: ECClassModifier): void;
-  public abstract async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
-  public abstract async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
-  public abstract async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
+  public abstract createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
+  public abstract createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
+  public abstract createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
 
   public abstract createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
   public abstract createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
   public abstract createPrimitivePropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property;
 
-  public abstract async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
-  public abstract async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
-  public abstract async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
+  public abstract createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
+  public abstract createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
+  public abstract createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
 
   public abstract createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
   public abstract createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
   public abstract createPrimitiveArrayPropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property;
 
-  public abstract async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty>;
+  public abstract createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty>;
   public abstract createStructPropertySync(name: string, structType: string | StructClass): StructProperty;
 
-  public abstract async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
+  public abstract createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
   public abstract createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty;
 
 }

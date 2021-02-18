@@ -78,7 +78,7 @@ export interface ViewportDecorator {
    */
   readonly useCachedDecorations?: true;
 
-  /** Implement this method to add [[Decorations}} into the supplied DecorateContext.
+  /** Implement this method to add [[Decorations]] into the supplied DecorateContext.
    * @see [[useCachedDecorations]] to avoid unnecessarily recreating decorations.
    */
   decorate(context: DecorateContext): void;
