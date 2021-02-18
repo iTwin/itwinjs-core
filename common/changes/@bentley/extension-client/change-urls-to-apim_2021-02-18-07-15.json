@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/extension-client",
+      "comment": "Update service URL",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/extension-client",
+  "email": "laurynasr@users.noreply.github.com"
+}
