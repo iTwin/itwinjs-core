@@ -28,9 +28,9 @@ class LocalTransport extends IpcWebSocketTransport {
   }
 }
 
-/** @alpha */
-export class LocalWebViewerApp {
-  public static async initializeIpc(port: number) {
+/** @internal */
+export class LocalhostIpcApp {
+  public static async startup(port: number) {
     IpcWebSocket.transport = new LocalTransport(port);
     const ipc = new IpcWebSocketFrontend();
     await IpcApp.startup({ ipcApp: { ipc } });

@@ -4777,10 +4777,10 @@ export interface LoadedExtensionProps {
     props: ExtensionProps;
 }
 
-// @alpha (undocumented)
-export class LocalWebViewerApp {
+// @internal (undocumented)
+export class LocalhostIpcApp {
     // (undocumented)
-    static initializeIpc(port: number): Promise<void>;
+    static startup(port: number): Promise<void>;
 }
 
 // @public

@@ -3230,10 +3230,10 @@ export class LinkPartition extends InformationPartitionElement {
     static get className(): string;
 }
 
-// @alpha (undocumented)
-export class LocalWebViewerHost {
+// @internal (undocumented)
+export class LocalhostIpcHost {
     // (undocumented)
-    static initializeIpc(port: number): Promise<void>;
+    static startup(port: number): Promise<void>;
 }
 
 // @internal

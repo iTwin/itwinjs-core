@@ -9,7 +9,7 @@ import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
-import { IModelHost, IModelHostConfiguration, LocalWebViewerHost } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@bentley/imodeljs-backend";
 import {
   Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
@@ -259,7 +259,7 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
     await AndroidHost.startup();
   } else {
     await IModelHost.startup(iModelHost);
-    await LocalWebViewerHost.initializeIpc(3002);
+    await LocalhostIpcHost.startup(3002);
   }
 
   // Set up logging (by default, no logging is enabled)
