@@ -20,8 +20,6 @@ export interface PropertyCategory {
 
   /** @alpha */
   childCategories?: PropertyCategory[];
-  /** @alpha */
-  parentCategory?: PropertyCategory;
 }
 
 /**
