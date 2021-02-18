@@ -99,7 +99,7 @@ export enum FavoritePropertiesScope {
 }
 
 // @internal (undocumented)
-export const getFieldInfos: (field: Field) => Set<PropertyFullName>;
+export const getFieldInfos: (field: Field) => Set<string>;
 
 // @public
 export function getScopeId(scope: SelectionScope | string | undefined): string;

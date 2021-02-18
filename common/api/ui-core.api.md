@@ -2291,8 +2291,6 @@ export interface TreeNodeProps extends CommonProps {
     // (undocumented)
     onClickExpansionToggle?: () => void;
     // (undocumented)
-    onContextMenu?: (e: React.MouseEvent) => void;
-    // (undocumented)
     onMouseDown?: (e: React.MouseEvent) => void;
     // (undocumented)
     onMouseMove?: (e: React.MouseEvent) => void;

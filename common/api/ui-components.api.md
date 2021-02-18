@@ -212,23 +212,19 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     animationFraction: number;
     // (undocumented)
     protected _cartographicCenter: Cartographic;
+    // (undocumented)
     get day(): Date;
+    set day(dayVal: Date);
+    // (undocumented)
     get dayStartMs(): number;
     // (undocumented)
     getCartographicCenter(iModel: IModelConnection): Cartographic;
-    // (undocumented)
-    protected getZone(location: Cartographic): number;
-    // (undocumented)
-    protected initializeData(projectTimeZoneOffset: number, initialTime?: Date): void;
     // (undocumented)
     latitude: number;
     // (undocumented)
     longitude: number;
     // (undocumented)
     onTimeChanged: (_time: Date) => void;
-    // (undocumented)
-    protected _projectTimeZoneOffset: number;
-    setDateAndTime(date: Date, isProjectDate?: boolean): void;
     // (undocumented)
     get shadowColor(): ColorDef;
     set shadowColor(color: ColorDef);
@@ -239,16 +235,11 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     // (undocumented)
     get sunrise(): Date;
     // (undocumented)
-    get sunriseMs(): number;
-    // (undocumented)
     get sunset(): Date;
     // (undocumented)
-    get sunsetMs(): number;
-    // (undocumented)
     supportsTimelineAnimation: boolean;
-    get timeOfDay(): Date;
     // (undocumented)
-    get timeZoneOffset(): number;
+    timeOfDay: Date;
     // (undocumented)
     viewId: string;
     set viewport(viewport: ScreenViewport | undefined);
@@ -256,7 +247,7 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     get viewport(): ScreenViewport | undefined;
     // (undocumented)
     protected _viewport: ScreenViewport | undefined;
-    }
+}
 
 // @alpha
 export class BaseTimelineDataProvider implements TimelineDataProvider {
@@ -883,7 +874,6 @@ export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | n
 
 // @beta
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
-    captureClicks?: boolean;
     colorDefs?: ColorDef[];
     disabled?: boolean;
     initialColor: ColorDef;
@@ -1715,7 +1705,7 @@ export interface ErrorObserver<T> {
 
 // @public @deprecated
 export class EventsMuteContext implements IDisposable {
-    constructor(_events: BeInspireTreeEvent[], _mute: (events: BeInspireTreeEvent[]) => void, _unmute: (events: BeInspireTreeEvent[]) => boolean, _emit?: ((events: BeInspireTreeEvent[]) => void) | undefined, _listen?: ((events: BeInspireTreeEvent[], listener: (...values: any[]) => void) => (() => void)) | undefined, allowedEventTriggersBeforeMute?: number);
+    constructor(_events: BeInspireTreeEvent[], _mute: (events: BeInspireTreeEvent[]) => void, _unmute: (events: BeInspireTreeEvent[]) => boolean, _emit?: ((events: BeInspireTreeEvent[]) => void) | undefined, _listen?: ((events: BeInspireTreeEvent[], listener: (...values: any[]) => void) => () => void) | undefined, allowedEventTriggersBeforeMute?: number);
     // (undocumented)
     dispose(): void;
     }
@@ -2651,12 +2641,12 @@ export enum MapMode {
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
 
 // @public
-export const matchLinks: (text: string) => Array<{
+export const matchLinks: (text: string) => {
     index: number;
     lastIndex: number;
     schema: string;
     url: string;
-}>;
+}[];
 
 // @internal
 export interface MenuItem {
@@ -3294,6 +3284,8 @@ export interface PropertyCategory {
     label: string;
     // (undocumented)
     name: string;
+    // @alpha (undocumented)
+    parentCategory?: PropertyCategory;
 }
 
 // @public
@@ -4036,15 +4028,13 @@ export interface SolarDataProvider {
     day: Date;
     readonly dayStartMs: number;
     onTimeChanged?: SolarPlaybackProgressHandler;
-    setDateAndTime: (day: Date, isProjectDate?: boolean) => void;
     shadowColor: ColorDef;
     // (undocumented)
     readonly shouldShowTimeline: boolean;
     readonly sunrise: Date;
     readonly sunset: Date;
     supportsTimelineAnimation: boolean;
-    readonly timeOfDay: Date;
-    readonly timeZoneOffset: number;
+    timeOfDay: Date;
     // (undocumented)
     viewId: string;
     viewport?: ScreenViewport;
@@ -4058,8 +4048,6 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     constructor(props: SolarTimelineComponentProps);
     // (undocumented)
     componentWillUnmount(): void;
-    // (undocumented)
-    getLocalTime(ticks: number): Date;
     // (undocumented)
     render(): JSX.Element;
     }
@@ -5395,7 +5383,7 @@ export interface Unsubscribable {
 }
 
 // @beta
-export const useAsyncValue: <T extends unknown>(value: T | PromiseLike<T>) => T | undefined;
+export const useAsyncValue: <T extends any>(value: T | PromiseLike<T>) => T | undefined;
 
 // @alpha
 export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (() => Promise<TReturn>)): {

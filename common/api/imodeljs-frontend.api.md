@@ -6244,7 +6244,7 @@ export class NativeApp {
     // (undocumented)
     static onUserStateChanged: BeEvent<(_arg: {
         accessToken: any;
-        err?: string;
+        err?: string | undefined;
     }) => void>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
@@ -6859,8 +6859,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     // (undocumented)
     targetIsLocked: boolean;
     // (undocumented)
-    get targetModelId(): string | undefined;
-    set targetModelId(v: string | undefined);
+    targetModelId?: string;
     // (undocumented)
     targetView?: Viewport;
     // @internal (undocumented)
@@ -10339,7 +10338,7 @@ export class ToolAdmin {
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
     processEvent(): Promise<void>;
-    processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): boolean;
+    processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
     // @internal
     get reloadToolSettingsHandler(): (() => void) | undefined;
@@ -11175,7 +11174,7 @@ export class ViewClipTool extends PrimitiveTool {
 // @beta
 export class ViewCreator2d {
     constructor(_imodel: IModelConnection);
-    createViewForModel(modelId: Id64String, modelType: string, options?: ViewCreator2dOptions): Promise<ViewState>;
+    createViewForModel(modelId: Id64String, options?: ViewCreator2dOptions, modelType?: string): Promise<ViewState>;
     static isDrawingModelClass(modelType: string): boolean;
     static isSheetModelClass(modelType: string): boolean;
     }
