@@ -547,10 +547,6 @@
       "allowedCategories": [ "backend", "edit", "frontend", "internal", "tools" ]
     },
     {
-      "name": "graphlib",
-      "allowedCategories": [ "common" ]
-    },
-    {
       "name": "highlight.js",
       "allowedCategories": [ "internal" ]
     },
