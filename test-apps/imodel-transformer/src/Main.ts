@@ -13,6 +13,7 @@ interface CommandLineArgs {
   source: string;
   target: string;
   simplifyElementGeometry?: boolean;
+  combinePhysicalModels?: boolean;
 }
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -23,6 +24,7 @@ interface CommandLineArgs {
     Yargs.demandOption("source");
     Yargs.demandOption("target");
     Yargs.option("simplifyElementGeometry", { desc: "Simplify element geometry upon import into target iModel", type: "boolean", default: false });
+    Yargs.option("combinePhysicalModels", { desc: "Combine all source PhysicalModels into a single PhysicalModel in the target iModel", type: "boolean", default: false });
     const args = Yargs.parse() as Yargs.Arguments<CommandLineArgs>;
 
     await IModelHost.startup();
@@ -53,6 +55,7 @@ interface CommandLineArgs {
 
     await Transformer.transformAll(sourceDb, targetDb, {
       simplifyElementGeometry: args.simplifyElementGeometry,
+      combinePhysicalModels: args.combinePhysicalModels,
     });
     sourceDb.close();
     targetDb.close();

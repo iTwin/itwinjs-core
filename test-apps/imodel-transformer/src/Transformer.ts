@@ -3,15 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Logger } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Logger } from "@bentley/bentleyjs-core";
 import {
-  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, IModelDb, IModelTransformer, IModelTransformOptions, Relationship,
+  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, IModelDb, IModelTransformer, IModelTransformOptions, PhysicalModel, PhysicalPartition, Relationship,
 } from "@bentley/imodeljs-backend";
+import { IModel } from "@bentley/imodeljs-common";
 
 export const progressLoggerCategory = "Progress";
 
 export interface TransformerOptions extends IModelTransformOptions {
   simplifyElementGeometry?: boolean;
+  combinePhysicalModels?: boolean;
 }
 
 export class Transformer extends IModelTransformer {
@@ -20,11 +22,16 @@ export class Transformer extends IModelTransformer {
   private _numSourceRelationships = 0;
   private _numSourceRelationshipsProcessed = 0;
   private _startTime = new Date();
+  private _targetPhysicalModelId = Id64.invalid; // will be valid when PhysicalModels are being combined
 
   public static async transformAll(sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
     const transformer = new Transformer(sourceDb, targetDb, options);
     if (options?.simplifyElementGeometry) {
       transformer.importer.simplifyElementGeometry = true;
+    }
+    if (options?.combinePhysicalModels) {
+      transformer._targetPhysicalModelId = PhysicalModel.insert(targetDb, IModel.rootSubjectId, "CombinedPhysicalModel");
+      transformer.importer.doNotUpdateElementIds.add(transformer._targetPhysicalModelId);
     }
     transformer.initialize();
     await transformer.processSchemas(new BackendRequestContext());
@@ -59,6 +66,9 @@ export class Transformer extends IModelTransformer {
   protected shouldExportElement(sourceElement: Element): boolean {
     if (this._numSourceElementsProcessed < this._numSourceElements) { // with deferred element processing, the number processed can be more than the total
       ++this._numSourceElementsProcessed;
+    }
+    if (Id64.isValidId64(this._targetPhysicalModelId) && (sourceElement instanceof PhysicalPartition)) {
+      this.context.remapElement(sourceElement.id, this._targetPhysicalModelId); // combine all source PhysicalModels into a single target PhysicalModel
     }
     return super.shouldExportElement(sourceElement);
   }

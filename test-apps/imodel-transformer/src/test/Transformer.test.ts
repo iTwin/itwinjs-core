@@ -5,11 +5,16 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { BackendLoggerCategory, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
+import { DbResult, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import {
+  BackendLoggerCategory, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, PhysicalPartition, SnapshotDb, SpatialElement,
+} from "@bentley/imodeljs-backend";
 import { progressLoggerCategory, Transformer } from "../Transformer";
 
 describe("imodel-transformer", () => {
+  const sourceDbFileName = "../../core/backend/src/test/assets/CompatibilityTestSeed.bim";
+  let sourceDb: IModelDb;
+
   before(async () => {
     await IModelHost.startup();
 
@@ -21,9 +26,13 @@ describe("imodel-transformer", () => {
       Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
       Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
+
+    assert.isTrue(IModelJsFs.existsSync(sourceDbFileName));
+    sourceDb = SnapshotDb.openFile(sourceDbFileName);
   });
 
   after(async () => {
+    sourceDb.close();
     await IModelHost.shutdown();
   });
 
@@ -39,19 +48,39 @@ describe("imodel-transformer", () => {
     return outputFileName;
   }
 
-  it("should transform an iModel", async () => {
-    const sourceDbFile = "../../core/backend/src/test/assets/CompatibilityTestSeed.bim";
-    assert.isTrue(IModelJsFs.existsSync(sourceDbFile));
-    const sourceDb = SnapshotDb.openFile(sourceDbFile);
+  function count(iModelDb: IModelDb, classFullName: string): number {
+    return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${classFullName}`, (statement: ECSqlStatement): number => {
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
+    });
+  }
 
-    const targetDbFileName = initOutputFile("CompatibilityTestSeed-Transformed.bim");
+  it("should should simplify Element geometry in the target iModel", async () => {
+    const targetDbFileName = initOutputFile("CompatibilityTestSeed-Simplified.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFileName, {
-      rootSubject: { name: `${sourceDb.rootSubject.name}-Transformed` },
+      rootSubject: { name: `${sourceDb.rootSubject.name}-Simplified` },
       ecefLocation: sourceDb.ecefLocation,
     });
 
-    await Transformer.transformAll(sourceDb, targetDb);
-    sourceDb.close();
+    await Transformer.transformAll(sourceDb, targetDb, { simplifyElementGeometry: true });
+    const numSourceElements = count(sourceDb, Element.classFullName);
+    assert.isAtLeast(numSourceElements, 50);
+    assert.equal(count(targetDb, Element.classFullName), numSourceElements);
+    targetDb.close();
+  });
+
+  it("should should combine PhysicalModels in the target iModel", async () => {
+    const targetDbFileName = initOutputFile("CompatibilityTestSeed-Combined.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFileName, {
+      rootSubject: { name: `${sourceDb.rootSubject.name}-Combined` },
+      ecefLocation: sourceDb.ecefLocation,
+    });
+
+    await Transformer.transformAll(sourceDb, targetDb, { combinePhysicalModels: true });
+    const numSourceSpatialElements = count(sourceDb, SpatialElement.classFullName);
+    assert.isAtLeast(numSourceSpatialElements, 6);
+    assert.equal(count(targetDb, SpatialElement.classFullName), numSourceSpatialElements);
+    assert.equal(count(targetDb, PhysicalPartition.classFullName), 1);
+    assert.isAtLeast(count(sourceDb, PhysicalPartition.classFullName), 2);
     targetDb.close();
   });
 });
