@@ -2,10 +2,15 @@
 
 # GitHub workflow handles invalidating Pull Requests after 3 hours.
 #
-# It will only invalidate open non-draft pull requests and mark each statuses
-#
+# It will only invalidate open, non-draft pull requests and mark each status
+# as timed out.
 
-oauth=''
+if [[ "" == $token ]]; then
+  echo Missing the environment variable "$token"
+  exit
+fi
+
+oauth=$token
 
 # Get all active PRs
 # https://docs.github.com/en/rest/reference/pulls#list-pull-requests
@@ -35,9 +40,18 @@ for row in $(echo "${prs}" | jq -r '.[] | @base64'); do
   echo Checking $(_jq '.title') updated last at $(_jq '.updated_at')
 
   ## TODO Need to use to test for how long ago it expired
-  # ['updated_at']
-  # now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-  # echo Current time $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  lastUpdatedTime=$(_jq '.updated_at')
+  currentTime=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  tooOld=$(node -e "const lutPlus3=new Date('$lastUpdatedTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
+  echo $tooOld
+  break
+
+  # START=$(date -jf '%Y-%m-%dT%H:%M:%SZ' '$(_jq '.updated_at')' +%s)
+  # END=$(date -jf '%Y-%m-%dT%H:%M:%SZ' '$(date -u +"%Y-%m-%dT%H:%M:%SZ")' +%s)
+  # echo $START
+  # echo $END
+  # DIFF=$(( $END - $START ))
+  # echo "Difference is $DIFF seconds"
 
   # Get all statuses of the PR
   #   e.g. https://api.github.com/repos/imodeljs/imodeljs/statuses/c29a168b6a201052098ea6743041868bfbadaa4f
@@ -51,12 +65,9 @@ for row in $(echo "${prs}" | jq -r '.[] | @base64'); do
       continue
     fi
 
-    #echo $(_jq '.head.sha')
+    echo ${status} | base64 --decode
 
     target_url=$(_jq2 '.target_url')
-    body=
-
-    #echo $body
 
     # testing
     if [[ "d13ea94c5dc0f0f35492de5ebe12981eb0e83372" != $(_jq '.head.sha') ]]; then
@@ -71,13 +82,8 @@ for row in $(echo "${prs}" | jq -r '.[] | @base64'); do
       -H "Accept: application/vnd.github.v3+json" \
       -H "Authorization: token $oauth" \
       $updateUrl \
-      -d '{"state":"failed","target_url":"'$(_jq2 '.target_url')'","description":"The build hit the 3 hour threshold. Please re-queue the build.","context":"'$(_jq2 '.context')'"}'
+      -d '{"state":"failure","target_url":"'$(_jq2 '.target_url')'","description":"The build hit the 3 hour threshold. Please re-queue the build.","context":"'$(_jq2 '.context')'"}'
+
+    break
   done
 done
-
-# Get the sha of the pr ['head']['sha']
-# curl \
-#   -X POST \
-#   -H "Accept: application/vnd.github.v3+json" \
-#   https://api.github.com/repos/imodeljs/imodeljs/statuses/SHA \
-#   -d '{"state":"state"}'
