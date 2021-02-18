@@ -165,6 +165,9 @@ export class DisplayTestApp {
           info: { title: "DisplayTestApp", version: "v1.0" },
         },
       },
+      localhostIpcApp: {
+        socketPort: 3002
+      }
     };
 
     if (ProcessDetector.isElectronAppFrontend) {
@@ -174,8 +177,7 @@ export class DisplayTestApp {
     } else if (ProcessDetector.isAndroidAppFrontend) {
       await AndroidApp.startup(opts);
     } else {
-      await WebViewerApp.startup(opts);
-      await LocalhostIpcApp.startup(3002);
+      await LocalhostIpcApp.startup(opts);
     }
 
     // For testing local extensions only, should not be used in production.

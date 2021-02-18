@@ -9,6 +9,7 @@
 import * as ws from "ws";
 import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport } from "@bentley/imodeljs-common";
 import { IpcHost } from "./IpcHost";
+import { IModelHostConfiguration } from "./IModelHost";
 
 class LocalTransport extends IpcWebSocketTransport {
   private _server: ws.Server;
@@ -36,9 +37,9 @@ class LocalTransport extends IpcWebSocketTransport {
 
 /** @internal */
 export class LocalhostIpcHost {
-  public static async startup(port: number) {
-    IpcWebSocket.transport = new LocalTransport(port);
+  public static async startup(opts?: { localhostIpcHost?: { socketPort?: number }, iModelHost?: IModelHostConfiguration }) {
+    IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcHost?.socketPort ?? 3002);
     const socket = new IpcWebSocketBackend();
-    await IpcHost.startup({ ipcHost: { socket } });
+    await IpcHost.startup({ ipcHost: { socket }, iModelHost: opts?.iModelHost });
   }
 }

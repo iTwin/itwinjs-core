@@ -254,12 +254,11 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost, iModelHost });
   } else if (ProcessDetector.isIOSAppBackend) {
-    await IOSHost.startup();
+    await IOSHost.startup({ iModelHost });
   } else if (ProcessDetector.isAndroidAppBackend) {
-    await AndroidHost.startup();
+    await AndroidHost.startup({ iModelHost });
   } else {
-    await IModelHost.startup(iModelHost);
-    await LocalhostIpcHost.startup(3002);
+    await LocalhostIpcHost.startup({ iModelHost });
   }
 
   // Set up logging (by default, no logging is enabled)
