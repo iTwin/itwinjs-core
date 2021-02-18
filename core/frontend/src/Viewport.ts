@@ -1944,7 +1944,6 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public computeViewRange(): Range3d {
-    this.setupFromView(); // can't proceed if viewport isn't valid (not active)
     const fitRange = this.view.computeFitRange();
     this.forEachTiledGraphicsProviderTree((ref) => {
       ref.unionFitRange(fitRange);
