@@ -2,11 +2,11 @@
 ignore: true
 ---
 
-# Capabilities of iModel.js
+# Capabilities of iTwin.js
 
-[iModel.js](http://imodeljs.org) is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins that are comprised of many federated sources of information. iModel.js provides a framework for creating immersive applications that generate, connect, analyze, and visualize that information. It is designed to be as open and flexible, to be as widely applicable as possible.
+[iTwin.js](http://itwinjs.org) is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins that are comprised of many federated sources of information. iTwin.js provides a framework for creating immersive applications that generate, connect, analyze, and visualize that information. It is designed to be as open and flexible, to be as widely applicable as possible.
 
-This document describes the high-level capabilities of iModel.js so you can determine its suitability for your needs.
+This document describes the high-level capabilities of iTwin.js so you can determine its suitability for your needs.
 
 Not all capabilities are at the same maturity level, the key below explains the levels.
 
@@ -193,7 +193,7 @@ Load new functionality to a running instance of an application in a web browser.
 
 Create iModels from data from external BIM/CAD/GIS/etc. applications.
 
-[iModel Bridges](.\imodel-bridges.md) read data from external formats and *bridge* it into an iModel. They create ChangeSets that are sent to iModelHub.
+[iModel Connectors](.\imodel-connectors.md) read data from external formats and *connect* it into an iModel. They create ChangeSets that are sent to iModelHub.
 
 ## Application and User Settings
 
@@ -214,7 +214,7 @@ Examples:
 
 The [9-Zone UI](./learning/ui/ninezone/index.md) UX pattern organizes the screen into 9 purpose-specific zones for ease of use and consistency.
 
-The iModel.js UI layer is based in React, so its UI controls can be added to existing web apps.
+The iTwin.js UI layer is based in React, so its UI controls can be added to existing web apps.
 
 ### UI Controls
 
@@ -352,8 +352,8 @@ Desktop and Mobile device Web browsers.
 ## Further Resources
 
 - [GitHub](https://github.com/imodeljs/imodeljs): the imodeljs repository along with samples.
-- [Documentation](https://www.imodeljs.org/learning/):
-  - Learning articles: explaining the iModel.js library structure and architecture.
+- [Documentation](https://www.itwinjs.org/learning/):
+  - Learning articles: explaining the iTwin.js library structure and architecture.
   - BIS docs: for understanding BIS schemas and the ECSql data query language.
   - API reference: can be used in conjunction with the imodeljs repository above to find code samples for API calls. Function/Class names can be searched within the repository to find relevant samples.
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/imodeljs): don't forget to add the **imodeljs** tag to your question. This will make it easier for us to respond.
@@ -361,5 +361,5 @@ Desktop and Mobile device Web browsers.
 - Sample Apps: can be used as a starting point for your app.
   - [simple-viewer-app](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/simple-viewer-app): An example of an interactive application which can display graphical data, browse iModel catalog and view element properties.
   - [imodel-query-agent](https://github.com/imodeljs/imodel-query-agent): An example of an agent application which can listen to changes made to an iModel in iModelHub and construct a 'Change Summary' of useful information.
-- [Sample Data](https://www.imodeljs.org/getting-started/registration-dashboard/?tab=1): to use with the above samples and jump start iModel.js development.
+- [Sample Data](https://www.itwinjs.org/getting-started/registration-dashboard/?tab=1): to use with the above samples and jump start iTwin.js development.
 - [iModel Console](https://imdevsrvcdeveusfsa01.blob.core.windows.net/prod-imodel-console/index.html): handy tool for running ECSql queries against an iModel. Can be used for writing queries for the application or for better understanding the project data.

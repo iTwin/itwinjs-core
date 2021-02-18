@@ -7,9 +7,9 @@
  */
 
 import * as path from "path";
-import { DbResult, GuidString, IDisposable, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeSet } from "@bentley/imodelhub-client";
-import { ChangeData, ChangedElements, ChangedModels, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager, ChangeSetToken } from "./BriefcaseManager";

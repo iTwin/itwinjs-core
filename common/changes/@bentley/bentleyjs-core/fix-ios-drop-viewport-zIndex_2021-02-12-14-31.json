@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/bentleyjs-core",
+      "comment": "Add isIPhoneBrowser to ProcessDetector and make isIOSBrowser work for both iPads and iPhones. Clarify documentation.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "47000437+markschlosseratbentley@users.noreply.github.com"
+}

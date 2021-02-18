@@ -173,7 +173,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
     public add(rhs: Uint64): void {
       let lower = rhs.lower;
       let upper = rhs.upper;
-      if (lower >= Uint64._base) {
+      if (lower + this.lower >= Uint64._base) {
         lower -= Uint64._base;
         upper += 1;
       }
@@ -331,7 +331,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
     return set;
   }
 
-  /** Decompress the compact string representation of an [[Id64Set]] into an [[Id64Array].
+  /** Decompress the compact string representation of an [[Id64Set]] into an [[Id64Array]].
    * @param compressedIds The compact string representation.
    * @param out If supplied, the Ids will be appended to this array rather than allocating and returning a new array.
    * @returns The array containing the decompressed Ids.

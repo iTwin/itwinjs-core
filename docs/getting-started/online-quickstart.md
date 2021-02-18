@@ -2,7 +2,7 @@
 
 ## 1. Get the tools
 
-Writing an iModel.js application requires the following software:
+Writing an iTwin.js application requires the following software:
 
 - [Node.js](https://nodejs.org) (12.x LTS version)
   - This provides the backend JavaScript runtime.
@@ -10,46 +10,33 @@ Writing an iModel.js application requires the following software:
 - [Google Chrome](https://www.google.com/chrome/)
   - This is the preferred tool for developing and debugging frontend JavaScript.
 - [Git](https://git-scm.com/downloads)
-  - This is the source code control system for the iModel.js repositories.
+  - This is the source code control system for the iTwin.js repositories.
 
 ### Suggested IDE
+
 - [Visual Studio Code](https://code.visualstudio.com/)
-  - This is the recommended editor and debugger for iModel.js applications.
+  - This is the recommended editor and debugger for iTwin.js applications.
   - VS Code also supplies a GUI for working with Git.
 
 ## 2. Get a sample iModel
+
 [Click here and use the registration dashboard to create a new iModel](/getting-started/registration-dashboard?tab=1&create=bentleyExample)
 
-## 3. Get the sample code
-The samples are included in the [imodeljs-samples](https://github.com/imodeljs/imodeljs-samples) repo on GitHub. For a complete list of samples see the README.
+## 3. Get, build, and develop code
 
-> `git clone https://github.com/imodeljs/imodeljs-samples.git`
-
-## 4. Configure
-Edit imodeljs-samples/interactive-app/basic-viewport-app/.env.local
-  > `imjs_test_imodel` =  The name of your iModel created in step 2<br/>
-
-## 5. Build and run a sample app
-> `cd interactive-app`
-
-> `cd basic-viewport-app`
-
-> `npm install`
-
-> `npm run build`
-
-> `npm run start:servers`
+[Follow the "Developing a web viewer" tutorial]($docs/learning/tutorials/develop-web-viewer.md)
 
 &nbsp;
 &nbsp;
 ---
-## Next Steps
-### [Follow tutorials to dive deeper into iModel.js]($docs/learning/tutorials/index.md)
 
-### [iModel.js Blog](https://medium.com/imodeljs)
+## Next Steps
+
+### [Follow tutorials to dive deeper into iTwin.js]($docs/learning/tutorials/index.md)
+
+### [iTwin.js Blog](https://medium.com/itwinjs)
 
 ### Read [imodeljs-samples](https://github.com/imodeljs/imodeljs-samples) READMEs, and review code
-
 
 <style>
   article#main h3:after {

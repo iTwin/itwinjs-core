@@ -1,7 +1,8 @@
-# Getting started with iModel.js using your own data via the Free Trial service
-This tutorial will describe steps to get started with iModel.js, using the free trial test environment. We will outline creating a Bentley user account, creating a starter iModel, then loading the starter iModel with data from source files on your desktop. At the end of the tutorial, you should have an iModel containing your own data that you will be able to view either on the web, with in a localhost web application, or with a local Electron app.
+# Getting started with iTwin.js using your own data via the Free Trial service
 
-You should have a basic understanding of [iModels]($docs/learning/imodels.md), [iModelHub]($docs/learning/imodelhub/index.md), [iModel Bridges]($docs/learning/imodel-bridges.md), but don't worry if any of those concepts aren't entirely clear.
+This tutorial will describe steps to get started with iTwin.js, using the free trial test environment. We will outline creating a Bentley user account, creating a starter iModel, then loading the starter iModel with data from source files on your desktop. At the end of the tutorial, you should have an iModel containing your own data that you will be able to view either on the web, with in a localhost web application, or with a local Electron app.
+
+You should have a basic understanding of [iModels]($docs/learning/imodels.md), [iModelHub]($docs/learning/imodelhub/index.md), [iModel Connectors]($docs/learning/imodel-connectors.md), but don't worry if any of those concepts aren't entirely clear.
 
 ## Create iModel
 
@@ -44,7 +45,6 @@ Build and run the [query-agent](https://github.com/imodeljs/imodeljs-samples/tre
 <br/>
 
 > _Note: Test iModels should not be used to host sensitive data. The uploaded data is administered by Bentley and should only be used for the purpose of testing. It is not subject to the same data privacy, security policies, and access controls that apply to Bentley’s iTwin offerings. It is subject to data size and other usage limitations, and will be purged after 90 days, if not renewed._ _If you need help or have questions, please contact us on [Github](https://github.com/imodeljs/imodeljs/issues)._
-
 
 <style>
     a#getting-started---explore-imodel {

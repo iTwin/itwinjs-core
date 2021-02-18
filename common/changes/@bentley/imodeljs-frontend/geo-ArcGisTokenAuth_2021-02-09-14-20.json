@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Added new ArcGis token generator/manager. ArcGISMapLAyerImageryProvider now check for token error messages when fetch tile, inform end-user and raise an event.  Token is generated / appended dynamically to each ArcGIS request.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "mdastous-bentley@users.noreply.github.com"
+}

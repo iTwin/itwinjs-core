@@ -1,16 +1,16 @@
-﻿# iModel.js
+﻿# iTwin.js
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](./LICENSE.md) for license terms and full copyright notice.
 
-[iModel.js](http://imodeljs.org) is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
+[iTwin.js](http://www.itwinjs.org) is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
 
-If you have questions, or wish to contribute to iModel.js, see our [Contributing guide](./CONTRIBUTING.md).
+If you have questions, or wish to contribute to iTwin.js, see our [Contributing guide](./CONTRIBUTING.md).
 
 ## About this Repository
 
 [![Build status](https://dev.azure.com/imodeljs/imodeljs/_apis/build/status/iModel.js)](https://dev.azure.com/imodeljs/imodeljs/_build/latest?definitionId=12)
 
-This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that holds the source code to multiple iModel.js npm packages. It is built using [Rush](http://rushjs.io/).
+This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that holds the source code to multiple iTwin.js npm packages. It is built using [Rush](http://rushjs.io/).
 
 See [rush.json](./rush.json) for the complete list of packages.
 
@@ -18,11 +18,11 @@ Each package has its own **node_modules** directory that contains symbolic links
 
 ## Prerequisites
 
-* [Git](https://git-scm.com/)
-* [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 12. The Node installation also includes the **npm** package manager.
-* [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
-* [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
-* [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
+- [Git](https://git-scm.com/)
+- [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 12. The Node installation also includes the **npm** package manager.
+- [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
+- [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
+- [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
 > See [supported platforms](./docs/learning/SupportedPlatforms.md) for further information.
 

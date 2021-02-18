@@ -72,5 +72,5 @@ export abstract class FrontendTelemetryClient implements TelemetryClient {
     await this._postTelemetry(requestContext, frontendTelemetryEvent);
   }
 
-  protected abstract async _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: ClientTelemetryEvent): Promise<void>;
+  protected abstract _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: ClientTelemetryEvent): Promise<void>;
 }

@@ -8,6 +8,7 @@
 
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
+  ProcessDetector,
   StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
@@ -46,7 +47,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { SheetViewState } from "./SheetViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileTreeSet } from "./tile/internal";
+import { DisclosedTileTreeSet, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
@@ -76,7 +77,7 @@ export interface ViewportDecorator {
    */
   readonly useCachedDecorations?: true;
 
-  /** Implement this method to add [[Decorations}} into the supplied DecorateContext.
+  /** Implement this method to add [[Decorations]] into the supplied DecorateContext.
    * @see [[useCachedDecorations]] to avoid unnecessarily recreating decorations.
    */
   decorate(context: DecorateContext): void;
@@ -342,6 +343,7 @@ export abstract class Viewport implements IDisposable {
    */
   public requestRedraw(): void {
     this._redrawPending = true;
+    IModelApp.requestNextAnimation();
   }
 
   private _animator?: Animator;
@@ -1421,7 +1423,7 @@ export abstract class Viewport implements IDisposable {
   /** Disclose *all* TileTrees currently in use by this Viewport. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     this.forEachTiledGraphicsProviderTree((ref) => trees.disclose(ref));
     trees.disclose(this.view);
   }
@@ -2407,9 +2409,9 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    const trees = new TileTreeSet();
+    const trees = new DisclosedTileTreeSet();
     this.discloseTileTrees(trees);
-    for (const tree of trees.trees)
+    for (const tree of trees)
       tree.collectStatistics(stats);
 
     this.view.collectNonTileTreeStatistics(stats);
@@ -3121,13 +3123,30 @@ export class ScreenViewport extends Viewport {
       assert(undefined === this._webglCanvas); // see getter...
       this._webglCanvas = webglCanvas;
 
-      // this.canvas has zIndex 10. Make webgl canvas' zIndex lower so that canvas decorations draw on top.
       this.addChildDiv(this.vpDiv, webglCanvas, 5);
+
+      /** The following workaround resolves an issue specific to iOS Safari. We really want this webgl canvas' zIndex to be
+       * lower than this.canvas, but if we do that on iOS Safari, Safari may decide to not display the canvas contents once
+       * it is re-added to the parent div after dropping other viewports. It will only display it once resizing the view.
+       * The offending element here is the 2d canvas sitting on top of the webgl canvas. We need to clear its contents
+       * immediately on iOS. Even though the 2d canvas gets cleared in OnScreenTarget.drawOverlayDecorations() in this case,
+       * it looks like iOS needs an immediate clear.
+       */
+      if (ProcessDetector.isIOSBrowser)
+        _clear2dCanvas(this.canvas);
     }
 
     this.target.updateViewRect();
     this.invalidateRenderPlan();
   }
+}
+
+function _clear2dCanvas(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext("2d", { alpha: true })!;
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for clearRect() call below.
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
 }
 
 /** An off-screen viewport is not rendered to the screen. It is never added to the [[ViewManager]], therefore does not participate in

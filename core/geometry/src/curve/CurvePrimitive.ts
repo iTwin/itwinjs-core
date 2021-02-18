@@ -28,8 +28,8 @@ import { StrokeOptions } from "./StrokeOptions";
  *  - "arc" => [[Arc3d]]
  *  - "lineSegment" => [[LineSegment3d]]
  *  - "lineString" => [[LineString3d]]
- *  - "bsplineCurve" => [[BSplineCurve3dBase]] which is an intermediate class implemented by [[BSplineCurve3d and BsplineCurve3dH]]
- *  - "bezierCurve" => [[BezierCurveBase]] which is an intermediate class implemented by [[BezierCurve3d and BezierCurve3dH]]
+ *  - "bsplineCurve" => [[BSplineCurve3dBase]] which is an intermediate class implemented by [[BSplineCurve3d]] and [[BSplineCurve3dH]]
+ *  - "bezierCurve" => [[BezierCurveBase]] which is an intermediate class implemented by [[BezierCurve3d]] and [[BezierCurve3dH]]
  *  - "transitionSpiral" => [[TransitionSpiral3d]]
  *  - "curveChainWithDistanceIndex" => [[CurveChainWithDistanceIndex]]
  *

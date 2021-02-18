@@ -3,30 +3,159 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
-import { DateFormatter, IconSpecUtilities, ParseResults, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
-import {
-  BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
-  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
-  LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
-  NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
-  ThemedSelect, Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
-} from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import {
+  ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
+} from "@bentley/imodeljs-frontend";
+import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { DateFormatter, IconSpecUtilities, ParseResults, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps,
   IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
 } from "@bentley/ui-components";
+import {
+  BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
+  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
+  LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus,
+  MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
+  SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title, Toggle, ToggleButtonType,
+  UnderlinedButton, VerticalTabs,
+} from "@bentley/ui-core";
 import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails } from "@bentley/ui-framework";
-import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType } from "@bentley/imodeljs-frontend";
+import { SampleAppIModelApp } from "../../..";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
-import { SampleAppIModelApp } from "../../..";
-import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+import { FormatPopupButton } from "./FormatPopupButton";
+
+function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
+  const traitStr = Format.getTraitString(trait);
+  if (undefined === traitStr)
+    return;
+  let formatTraits: string[] | undefined;
+  if (setActive) {
+    // setting trait
+    if (!formatProps.formatTraits) {
+      formatTraits = [traitStr];
+    } else {
+      const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+      if (!traits.find((traitEntry) => traitStr === traitEntry)) {
+        formatTraits = [...traits, traitStr];
+      }
+    }
+  } else {
+    // clearing trait
+    if (!formatProps.formatTraits)
+      return;
+    const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+    formatTraits = traits.filter((traitEntry) => traitEntry !== traitStr);
+  }
+  return { ...formatProps, formatTraits };
+}
+
+function provideSecondaryChildren(formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
+  const inProps = formatProps;
+  const onChange = fireFormatChange;
+  const handleUseThousandsSeparatorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newProps = setFormatTrait(inProps, FormatTraits.Use1000Separator, e.target.checked);
+    if (newProps)
+      onChange(newProps);
+  };
+
+  return (
+    <>
+      <span className={"uicore-label"}>Secondary (1000 sep)</span>
+      <Checkbox checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+    </>
+  );
+}
+
+function providePrimaryChildren(formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
+  const inProps = formatProps;
+  const onChange = fireFormatChange;
+  const handleUseThousandsSeparatorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newProps = setFormatTrait(inProps, FormatTraits.Use1000Separator, e.target.checked);
+    if (newProps)
+      onChange(newProps);
+  };
+
+  return (
+    <>
+      <span className={"uicore-label"}>Primary (1000 sep)</span>
+      <Checkbox checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+    </>
+  );
+}
+
+async function provideFormatSpec(formatProps: FormatProps, persistenceUnit: UnitProps, unitsProvider: UnitsProvider, formatName?: string) {
+  const actualFormat = await Format.createFromJSON(formatName ?? "custom",unitsProvider, formatProps);
+  return FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, persistenceUnit);
+}
+
+function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persistenceUnitName: string, initialMagnitude: number }) {
+  const initialFormatProps: FormatProps = {
+    formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes"],
+    precision: 4,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+  };
+
+  const [formatterSpec, setFormatterSpec] = React.useState<FormatterSpec>();
+  const [formattedValue, setFormattedValue] = React.useState<string>();
+  const handleFormatChange = React.useCallback((inProps: FormatProps) => {
+    async function fetchFormatSpec(formatProps: FormatProps) {
+      const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+      if (formatterSpec) {
+        const pu = formatterSpec.persistenceUnit;
+        if (pu) {
+          const actualFormat = await  Format.createFromJSON("custom", unitsProvider, formatProps);
+          await actualFormat.fromJSON(unitsProvider, formatProps);
+          const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
+          setFormattedValue(newSpec.applyFormatting(initialMagnitude));
+          setFormatterSpec(newSpec);
+        }
+      }
+    }
+    fetchFormatSpec(inProps); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [formatterSpec, initialMagnitude]);
+
+  React.useEffect(() => {
+    async function fetchInitialFormatSpec() {
+      const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+      const pu = await unitsProvider.findUnitByName(persistenceUnitName);
+      if (pu) {
+        const newSpec = await provideFormatSpec(initialFormatProps, pu, unitsProvider);
+        setFormattedValue(newSpec.applyFormatting(initialMagnitude));
+        setFormatterSpec(newSpec);
+      }
+    }
+
+    if (undefined === formatterSpec)
+      fetchInitialFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [formatterSpec, persistenceUnitName, initialMagnitude, initialFormatProps]);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      { (formatterSpec && formattedValue) &&
+        <>
+          <span>{formattedValue}</span>
+          <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
+            initialMagnitude={initialMagnitude} unitsProvider={IModelApp.quantityFormatter.unitsProvider} persistenceUnit={formatterSpec.persistenceUnit}
+            provideFormatSpec={provideFormatSpec}
+            providePrimaryChildren={providePrimaryChildren}
+            provideSecondaryChildren={provideSecondaryChildren}
+          />
+        </>
+      }
+    </div>
+  );
+}
 
 function WrappedSelect() {
   const [currentValue, setCurrentValue] = React.useState(3);
@@ -52,7 +181,6 @@ function WrappedSelect() {
       <button onClick={() => handleValueChange(3)}>3</button>
     </div>
   );
-
 }
 
 function NestedPopup({ closeOnNestedPopupOutsideClick }: { closeOnNestedPopupOutsideClick?: boolean }) {
@@ -643,6 +771,8 @@ export class ComponentExamplesProvider {
           <QuantityInput initialValue={initialLength} quantityType={QuantityType.Length} onQuantityChange={onLengthChange} />),
         createComponentExample("Angle", undefined,
           <QuantityInput initialValue={initialAngle} quantityType={QuantityType.Angle} onQuantityChange={onAngleChange} />),
+        createComponentExample("Bearing", undefined,
+          <QuantityInput initialValue={initialAngle} quantityType={"Bearing"} onQuantityChange={onAngleChange} />),
         createComponentExample("Volume", undefined,
           <QuantityInput initialValue={initialVolume} quantityType={QuantityType.Volume} onQuantityChange={onVolumeChange} />),
         createComponentExample("Temperature (Custom)", undefined,
@@ -770,6 +900,8 @@ export class ComponentExamplesProvider {
           <Slider min={0} max={100} values={[50]} step={1} showTooltip tooltipBelow />),
         createComponentExample("Slider w/ min/max", "Slider with showMinMax prop",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax />),
+        createComponentExample("Slider w/ min/max", "Slider with formatMax prop",
+          <Slider min={0} max={1} values={[0.5]} step={0.01} showTooltip showMinMax formatMax={(v: number) => v.toFixed(1)} />),
         createComponentExample("Slider w/ min/max images", "Slider with minImage and maxImage props",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax
             minImage={<Icon iconSpec="icon-placeholder" />} maxImage={<Icon iconSpec="icon-placeholder" />} />),
@@ -940,6 +1072,17 @@ export class ComponentExamplesProvider {
     };
   }
 
+  private static get quantityFormatting(): ComponentExampleCategory {
+    const examples = [];
+    examples.push(
+      createComponentExample("Meter", "Non-composite Formatting", <NumericFormatPopup persistenceUnitName={"Units.M"} initialMagnitude={1234.56} />),
+    );
+    return {
+      title: "Quantity Formatting Component",
+      examples,
+    };
+  }
+
   public static get categories(): ComponentExampleCategory[] {
     return [
       ComponentExamplesProvider.badgeSamples,
@@ -965,6 +1108,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.tileSamples,
       ComponentExamplesProvider.toggleSamples,
       ComponentExamplesProvider.weightSamples,
+      ComponentExamplesProvider.quantityFormatting,
       ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }

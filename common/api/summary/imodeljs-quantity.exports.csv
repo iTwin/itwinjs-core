@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 alpha;BadUnit 
 alpha;BasicUnit 
+alpha;CustomFormatProps 
 alpha;DecimalPrecision
 alpha;Format
 alpha;FormatProps
@@ -10,13 +11,17 @@ alpha;FormatterSpec
 alpha;FormatTraits
 alpha;FormatType
 alpha;FractionalPrecision
+alpha;isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps
+alpha;ParsedQuantity
+alpha;ParseError
+alpha;ParseQuantityError
 alpha;Parser
-alpha;ParseResult
 alpha;ParserSpec
 alpha;PotentialParseUnit
 alpha;Quantity 
 internal;QuantityConstants
 alpha;QuantityError 
+alpha;QuantityParseResult = ParsedQuantity | ParseQuantityError
 alpha;QuantityProps
 alpha;QuantityStatus
 alpha;ScientificType

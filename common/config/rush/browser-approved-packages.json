@@ -120,7 +120,7 @@
     },
     {
       "name": "@bentley/imodeljs-frontend",
-      "allowedCategories": [ "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-i18n",
@@ -136,7 +136,7 @@
     },
     {
       "name": "@bentley/imodeljs-quantity",
-      "allowedCategories": [ "common", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/itwin-client",
@@ -152,6 +152,10 @@
     },
     {
       "name": "@bentley/map-layers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/mobile-manager",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -576,7 +580,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "istanbul-instrumenter-loader",

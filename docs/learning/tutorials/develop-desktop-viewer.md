@@ -1,14 +1,17 @@
-## Developing a desktop viewer
+# Developing a desktop viewer
 
-### Setup
+## Setup
+
 - [Install necessary prerequisites]($docs/getting-started/development-prerequisites)
 - [Clone desktop-starter repo](https://github.com/imodeljs/desktop-starter)
 
-### Build
+## Build
+
 - Open the cloned repo in VS Code
 - `npm install`
 
-### Run
+## Run
+
 - `npm run start`
 
 The app will open a pre-packaged offline snapshot iModel. You will likely want to use your own snapshot iModel. Follow the [Create a snapshot iModel]($docs/learning/tutorials/create-test-imodel-offline) tutorial. Then open your snapshot by clicking the Home button and selecting "Open Offline Snapshot".

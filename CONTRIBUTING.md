@@ -1,6 +1,6 @@
-# Contributing to iModel.js
+# Contributing to iTwin.js
 
-Welcome, and thank you for your interest in contributing to iModel.js!
+Welcome, and thank you for your interest in contributing to iTwin.js!
 
 There are many ways to contribute.
 The goal of this document is to provide a high-level overview of how you can get involved.
@@ -18,7 +18,7 @@ Your comments and feedback are welcome. For general comments or discussion pleas
 
 ## Reporting Issues
 
-Have you identified a reproducible problem in iModel.js?
+Have you identified a reproducible problem in iTwin.js?
 Have a feature request?
 We want to hear about it!
 Here's how you can make reporting your issue as effective as possible.
@@ -30,8 +30,8 @@ Before you create a new issue, please do a search in [open issues](https://githu
 If you find that your issue already exists, please add relevant comments and your [reaction](https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments).
 Use a reaction in place of a "+1" comment:
 
-* 👍 - upvote
-* 👎 - downvote
+- 👍 - upvote
+- 👎 - downvote
 
 If you cannot find an existing issue that describes your bug or feature, create a new issue using the guidelines below.
 
@@ -47,14 +47,14 @@ The more information you can provide, the more likely someone will be successful
 
 Please include the following with each issue:
 
-* A short description of the issue that becomes the title
-* Versions of relevant iModel.js packages
-* Minimal steps to reproduce the issue or a code snippet that demonstrates the issue
-* What you expected to see, versus what you actually saw
-* Images that help explain the issue
-* Any relevant error messages, logs, or other details
-* Impact of the issue
-* Use the [`bug`](https://github.com/imodeljs/imodeljs/labels/bug) or [`enhancement`](https://github.com/imodeljs/imodeljs/labels/enhancement) label to identify the type of issue you are filing
+- A short description of the issue that becomes the title
+- Versions of relevant iTwin.js packages
+- Minimal steps to reproduce the issue or a code snippet that demonstrates the issue
+- What you expected to see, versus what you actually saw
+- Images that help explain the issue
+- Any relevant error messages, logs, or other details
+- Impact of the issue
+- Use the [`bug`](https://github.com/imodeljs/imodeljs/labels/bug) or [`enhancement`](https://github.com/imodeljs/imodeljs/labels/enhancement) label to identify the type of issue you are filing
 
 Don't feel bad if the developers can't reproduce the issue right away.
 They will simply ask for more information!
@@ -65,7 +65,7 @@ You may be asked to clarify things or try different approaches, so please follow
 
 ## Contributions
 
-We'd love to accept your contributions to iModel.js.
+We'd love to accept your contributions to iTwin.js.
 There are just a few guidelines you need to follow.
 
 ### Contributor License Agreement (CLA)
@@ -86,10 +86,10 @@ Consult [GitHub Help](https://help.github.com/articles/about-pull-requests/) for
 
 We welcome contributions, large or small, including:
 
-* Bug fixes
-* New features
-* Documentation corrections or additions
-* Example code snippets
-* Sample data
+- Bug fixes
+- New features
+- Documentation corrections or additions
+- Example code snippets
+- Sample data
 
-Thank you for taking the time to contribute to open source and making great projects like iModel.js possible!
+Thank you for taking the time to contribute to open source and making great projects like iTwin.js possible!
