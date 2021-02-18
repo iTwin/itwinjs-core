@@ -9,6 +9,7 @@ import {
 import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, DisplayStyle3dSettingsProps, GlobeMode, HiddenLine, LinePixels,
   MapLayerProps,
+  MapLayerSettings,
   MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
@@ -528,7 +529,8 @@ export class ViewAttributes {
     };
 
     const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
-    const mapVisible = this.addCheckbox("BaseMap Visible", (enabled: boolean) => this.updateBaseMap({ transparency: enabled ? 0 : 1 }), backgroundSettingsDiv).checkbox;
+    //const mapVisible = this.addCheckbox("BaseMap Visible", (enabled: boolean) => this.updateBaseMap({ transparency: enabled ? 0 : 1 }), backgroundSettingsDiv).checkbox;
+    const mapVisible = this.addCheckbox("BaseMap Visible", (enabled: boolean) => this.updateBaseMap({ visible: enabled ? true : false }), backgroundSettingsDiv).checkbox;
     const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv).checkbox;
     const locatable = this.addCheckbox("Locatable", (enabled) => this.updateBackgroundMap({ nonLocatable: !enabled }), backgroundSettingsDiv).checkbox;
     backgroundSettingsDiv.appendChild(document.createElement("hr")!);
@@ -550,7 +552,9 @@ export class ViewAttributes {
       types.value = map.mapType.toString();
       terrainCheckbox.checked = map.applyTerrain;
 
-      mapVisible.checked = (view.displayStyle.baseMapTransparency < 1);
+      //mapVisible.checked = (view.displayStyle.baseMapTransparency < 1);
+      if (view.displayStyle.backgroundMapBase instanceof MapLayerSettings)
+        mapVisible.checked = (view.displayStyle.backgroundMapBase.visible);
       transCheckbox.checked = false !== map.transparency;
       locatable.checked = map.locatable;
       globeModes.value = map.globeMode.toString();
