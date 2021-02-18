@@ -19,7 +19,6 @@ import { renderHook } from "@testing-library/react-hooks";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Update", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -36,7 +35,6 @@ describe("Update", () => {
   });
 
   describe("hierarchy", () => {
-
     let hierarchyCompareSpy: Sinon.SinonSpy<[PresentationDataCompareOptions<IModelConnection, NodeKey>], Promise<PartialHierarchyModification[]>>;
 
     beforeEach(() => {
@@ -82,7 +80,6 @@ describe("Update", () => {
     }
 
     describe("on ruleset modification", () => {
-
       it("detects custom node change", async () => {
         const initialRuleset = await Presentation.presentation.rulesets().add({
           id: faker.random.uuid(),
@@ -265,11 +262,9 @@ describe("Update", () => {
           node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: (instanceKeys: InstanceKey[]) => instanceKeys.some((k) => k.id === "0x75") } },
         }]);
       });
-
     });
 
     describe("on ruleset variables' modification", () => {
-
       it("detects a change in rule condition", async () => {
         const ruleset = await Presentation.presentation.rulesets().add({
           id: faker.random.uuid(),
@@ -646,11 +641,9 @@ describe("Update", () => {
           node: { key: { type: "T_CHILD_1" } },
         }]);
       });
-
     });
 
     describe("paging", () => {
-
       it("collects results from multiple pages", async () => {
         const ruleset = await Presentation.presentation.rulesets().add({
           id: faker.random.uuid(),
@@ -717,9 +710,6 @@ describe("Update", () => {
         }]);
         expect(rpcSpy).to.be.calledTwice;
       });
-
     });
-
   });
-
 });
