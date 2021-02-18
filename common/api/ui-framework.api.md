@@ -5805,6 +5805,10 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)
+    context: React.ContextType<typeof UiSettingsContext>;
+    // @internal (undocumented)
+    static contextType: React.Context<UiSettings>;
+    // @internal (undocumented)
     static readonly defaultProps: ToolAssistanceFieldDefaultProps;
     // @internal (undocumented)
     static getInstructionImage(instruction: ToolAssistanceInstruction): React.ReactNode;
@@ -5821,7 +5825,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
     defaultPromptAtCursor: boolean;
     fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
-    uiSettings: UiSettings;
+    uiSettings?: UiSettings;
 }
 
 // @internal
