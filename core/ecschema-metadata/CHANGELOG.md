@@ -1,6 +1,13 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+This log was last generated on Thu, 18 Feb 2021 22:10:12 GMT and should not be manually modified.
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:12 GMT
+
+### Updates
+
+- EC Validation Rule 102 added regarding abstract base class restrictions
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
