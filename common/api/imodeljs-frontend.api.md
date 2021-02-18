@@ -7838,6 +7838,8 @@ export abstract class RenderSystem implements IDisposable {
     abstract dispose(): void;
     // @internal
     abstract doIdleWork(): boolean;
+    // @alpha (undocumented)
+    doStuff(): string;
     // @internal (undocumented)
     get dpiAwareLOD(): boolean;
     // @internal (undocumented)
@@ -9582,6 +9584,8 @@ export abstract class Tile {
     dispose(): void;
     protected disposeChildren(): void;
     disposeContents(): void;
+    // @alpha (undocumented)
+    doStuff(): string;
     drawGraphics(args: TileDrawArgs): void;
     // @internal (undocumented)
     extendRangeForContent(range: Range3d, matrix: Matrix4d, treeTransform: Transform, frustumPlanes?: FrustumPlanes): void;

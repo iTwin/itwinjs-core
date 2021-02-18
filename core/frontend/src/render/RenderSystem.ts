@@ -155,6 +155,9 @@ export class DebugShaderFile {
  * @public
  */
 export abstract class RenderSystem implements IDisposable {
+  /** @alpha */
+  public doStuff() { return "stuff"; }
+
   /** Options used to initialize the RenderSystem. These are primarily used for feature-gating.
    * This object is frozen and cannot be modified after the RenderSystem is created.
    * @internal

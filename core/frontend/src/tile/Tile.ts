@@ -60,6 +60,9 @@ const scratchFrustum = new Frustum();
  * @beta
  */
 export abstract class Tile {
+  /** @alpha */
+  public doStuff() { return "stuff"; }
+
   private _state: TileState = TileState.NotReady;
   private _children: Tile[] | undefined;
   private _rangeGraphic?: RenderGraphic;
