@@ -8,13 +8,13 @@ import {
   SchemaItemKey,
   SchemaKey,
 } from "../../src/ecschema-metadata";
-import { KnownLocations } from '../../../backend/src/IModelHost';
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { Float } from "../../src/UnitConversion/Float";
 import { UnitConvertorContext } from "../../src/UnitConversion/Convert";
 import { deserializeXml } from "./DeserializeSchema";
+import { mapUnits, setSchema } from '../../src/UnitConversion/NewConvert'
 
 interface TestData {
   From: string;
@@ -31,20 +31,19 @@ describe("A unit tree creator", () => {
   );
 
   before(() => {
-    const schemaFile = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Standard", `Units.ecschema.xml`);
+    const schemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     const schema: Schema = deserializeXml(context, schemaXml as string);
-    context.addSchema(schema);
+    setSchema(schema)
   });
 
   testData.forEach((test: TestData) => {
-    it(`should convert ${test.From} to ${test.To}`, async () => {
-      const converter = new UnitConvertorContext(context);
+    it(`should convert ${test.From} to ${test.To}`, async() => {
       const schemaKey = new SchemaKey("Units");
       const from = new SchemaItemKey(test.From, schemaKey);
       const to = new SchemaItemKey(test.To, schemaKey);
-      const map = await converter.processSchemaItem(from, to);
-      const actual = map.evaluate(test.Input);
+      const conversion = mapUnits(from, to);
+      const actual = test.Input * conversion.multiplier + conversion.offset;
       const ulp = Float.ulp(Math.max(test.Input, test.Expect));
       expect(
         Float.equals(test.Expect, actual, 3 * ulp),
