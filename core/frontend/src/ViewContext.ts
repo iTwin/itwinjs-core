@@ -25,7 +25,8 @@ import { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";
 import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
 import { ViewingSpace } from "./ViewingSpace";
-import { CachedDecoration, ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
+import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
+import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 
 const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
 
@@ -116,13 +117,18 @@ export class DynamicsContext extends RenderContext {
  * @public
  */
 export class DecorateContext extends RenderContext {
+  private readonly _decorations: Decorations;
+  private readonly _cache: DecorationsCache;
   private _curCacheableDecorator?: ViewportDecorator;
 
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn. */
   public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
+
   /** @internal */
-  constructor(vp: ScreenViewport, private readonly _decorations: Decorations) {
+  constructor(vp: ScreenViewport, decorations: Decorations, cache: DecorationsCache) {
     super(vp);
+    this._decorations = decorations;
+    this._cache = cache;
   }
 
   /** Create a builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
@@ -141,7 +147,7 @@ export class DecorateContext extends RenderContext {
     assert(undefined === this._curCacheableDecorator);
     try {
       if (decorator.useCachedDecorations) {
-        const cached = this.viewport.getCachedDecorations(decorator);
+        const cached = this._cache.get(decorator);
         if (cached) {
           this.restoreCache(cached);
           return;
@@ -175,7 +181,7 @@ export class DecorateContext extends RenderContext {
 
   private _appendToCache(decoration: CachedDecoration) {
     assert(undefined !== this._curCacheableDecorator);
-    this.viewport.addCachedDecoration(this._curCacheableDecorator, decoration);
+    this._cache.add(this._curCacheableDecorator, decoration);
   }
 
   /** Calls [[GraphicBuilder.finish]] on the supplied builder to obtain a [[RenderGraphic]], then adds the graphic to the appropriate list of

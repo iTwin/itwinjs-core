@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  CachedDecoration, CanvasDecoration, DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, SnapshotConnection, ViewportDecorator, ViewRect,
+  CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, GraphicType, IModelApp, IModelConnection, SnapshotConnection, ViewportDecorator, ViewRect,
 } from "@bentley/imodeljs-frontend";
 import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
 import { Point3d } from "@bentley/geometry-core";
@@ -53,7 +53,7 @@ describe("Cached decorations", () => {
   }
 
   // Drop the decorator and ensure no decorations are cached anymore.
-  async function dropAndVerifyEmptyCache(vp: ScreenTestViewport, dec: Decorator, cache: Map<ViewportDecorator, CachedDecoration[]>) {
+  async function dropAndVerifyEmptyCache(vp: ScreenTestViewport, dec: Decorator, cache: DecorationsCache) {
     IModelApp.viewManager.dropDecorator(dec);
     await vp.drawFrame();
     expect(cache.size).to.equal(0);
@@ -73,7 +73,9 @@ describe("Cached decorations", () => {
   async function testCachedDecorations(vp: ScreenTestViewport, type: "graphic" | "html" | "canvas") {
     await vp.waitForAllTilesToRender();
 
-    const cache = (vp as any)._decorationCache as Map<ViewportDecorator, CachedDecoration[]>;
+    const cache = (vp as any)._decorationCache as DecorationsCache;
+    expect(cache).not.to.be.undefined;
+    expect(cache).instanceof(DecorationsCache);
 
     // Add no decorators and ensure no decorations have been cached.
     await vp.drawFrame();
