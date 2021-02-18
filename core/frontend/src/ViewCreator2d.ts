@@ -37,7 +37,7 @@ export interface ViewCreator2dOptions {
  * const viewCreator = new ViewCreator2d(imodel);
  * const models = await imodel.models.queryProps({ from: "BisCore.GeometricModel2d" });
  * if (models.length > 0)
- * const view = await viewCreator.createViewForModel(models[0].id!, models[0].classFullName);
+ * const view = await viewCreator.createViewForModel(models[0].id!);
  * ```
  */
 export class ViewCreator2d {
@@ -77,12 +77,13 @@ export class ViewCreator2d {
   /**
    * Creates and returns view for given 2D model.
    * @param modelId of target 2D model.
-   * @param modelType classFullName of target 2D model.
    * @param options for view creation.
+   * @param modelType classFullName of target 2D model.
    * @throws [IModelError]($common) if modelType is not supported.
    */
-  public async createViewForModel(modelId: Id64String, modelType: string, options?: ViewCreator2dOptions): Promise<ViewState> {
-    const baseClassName = await this._imodel.findClassFor(modelType, undefined);
+  public async createViewForModel(modelId: Id64String, options?: ViewCreator2dOptions, modelType?: string): Promise<ViewState> {
+
+    const baseClassName = modelType ? await this._imodel.findClassFor(modelType, undefined) : await this._getModelBaseClassName(modelId);
 
     if (baseClassName === undefined)
       throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d.getViewForModel: modelType is invalid", Logger.logError, loggerCategory, () => ({ modelType, modelId }));
@@ -93,6 +94,25 @@ export class ViewCreator2d {
     } catch { }
 
     return viewState;
+  }
+
+  /**
+   * Gets model base class name from id.
+   * @param modelId of target model.
+   * @throws [IModelError]($common) if modelId is invalid.
+   */
+  private async _getModelBaseClassName(modelId: Id64String) {
+
+    let baseClassName;
+
+    const modelProps = await this._imodel.models.getProps(modelId);
+    if (modelProps.length > 0) {
+      const modelType = modelProps[0].classFullName;
+      baseClassName = await this._imodel.findClassFor(modelType, undefined);
+    } else
+      throw new IModelError(IModelStatus.BadModel, "ViewCreator2d._getModelBaseClassName: modelId is invalid", Logger.logError, loggerCategory, () => ({ modelId }));
+
+    return baseClassName;
   }
 
   /**
