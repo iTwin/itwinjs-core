@@ -20,7 +20,7 @@ import { ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, IsolateSelect
 import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
-import { AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool, AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapLayerSubLayerVisiblityTool, MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool } from "./tools/MapLayerTool";
+import { AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool, AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisiblityTool, MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool } from "./tools/MapLayerTool";
 import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
 import { ClearModelAppearanceOverrides, SetModelColorTool, SetModelEmphasizedTool, SetModelIgnoresMaterialsTool, SetModelLineCodeTool, SetModelLineWeightTool, SetModelLocateTool, SetModelTransparencyTool } from "./tools/ModelAppearanceTools";
 import { ChangePlanProjectionSettingsTool, DumpPlanProjectionSettingsTool, OverrideSubCategoryPriorityTool } from "./tools/PlanProjectionTools";
@@ -114,6 +114,7 @@ export class FrontendDevTools {
       MapLayerZoomTool,
       MapBaseColorTool,
       MapBaseTransparencyTool,
+      MapBaseVisibilityTool,
       MeasureTileLoadTimeTool,
       OverrideSubCategoryPriorityTool,
       RealityTransitionTool,

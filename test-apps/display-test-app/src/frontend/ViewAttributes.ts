@@ -8,8 +8,6 @@ import {
 } from "@bentley/frontend-devtools";
 import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, DisplayStyle3dSettingsProps, GlobeMode, HiddenLine, LinePixels,
-  MapLayerProps,
-  MapLayerSettings,
   MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
@@ -459,7 +457,7 @@ export class ViewAttributes {
     const thematic = new ThematicDisplayEditor(this._vp, this._element);
     this._updates.push((view) => thematic.update(view));
   }
-  private getBaseMap(view: ViewState) { return view.displayStyle.backgroundMapBase; }
+
   private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }
   private addBackgroundMapOrTerrain(): void {
     const isMapSupported = (view: ViewState) => view.is3d() && view.iModel.isGeoLocated;
@@ -529,8 +527,6 @@ export class ViewAttributes {
     };
 
     const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
-    //const mapVisible = this.addCheckbox("BaseMap Visible", (enabled: boolean) => this.updateBaseMap({ transparency: enabled ? 0 : 1 }), backgroundSettingsDiv).checkbox;
-    const mapVisible = this.addCheckbox("BaseMap Visible", (enabled: boolean) => this.updateBaseMap({ visible: enabled ? true : false }), backgroundSettingsDiv).checkbox;
     const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv).checkbox;
     const locatable = this.addCheckbox("Locatable", (enabled) => this.updateBackgroundMap({ nonLocatable: !enabled }), backgroundSettingsDiv).checkbox;
     backgroundSettingsDiv.appendChild(document.createElement("hr")!);
@@ -551,10 +547,6 @@ export class ViewAttributes {
       imageryProviders.value = map.providerName;
       types.value = map.mapType.toString();
       terrainCheckbox.checked = map.applyTerrain;
-
-      //mapVisible.checked = (view.displayStyle.baseMapTransparency < 1);
-      if (view.displayStyle.backgroundMapBase instanceof MapLayerSettings)
-        mapVisible.checked = (view.displayStyle.backgroundMapBase.visible);
       transCheckbox.checked = false !== map.transparency;
       locatable.checked = map.locatable;
       globeModes.value = map.globeMode.toString();
@@ -596,11 +588,6 @@ export class ViewAttributes {
     });
 
     return mapSettingsDiv;
-  }
-
-  private updateBaseMap(props: MapLayerProps): void {
-    this._vp.displayStyle.changeBaseMapProps(props);
-    this.sync();
   }
 
   private updateBackgroundMap(props: BackgroundMapProps): void {

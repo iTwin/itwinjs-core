@@ -198,6 +198,9 @@
     "SetMapBaseTransparencyTool": {
       "keyin": "fdt set map base transparency"
     },
+    "SetMapBaseVisibilityTool": {
+      "keyin": "fdt set map base visibility"
+    },
     "DetachMapLayersTool": {
       "keyin": "fdt detach maplayers"
     },
