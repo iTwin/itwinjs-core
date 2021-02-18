@@ -1077,6 +1077,154 @@ export class MapLayerZoomTool extends Tool {
     static toolId: string;
 }
 
+// @beta
+export class MaskBackgroundMapByElementTool extends PlanarMaskBaseTool {
+    // (undocumented)
+    protected applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected createToolInstance(): PlanarMaskBaseTool;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    protected targetModelRequired(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class MaskBackgroundMapByExcludedElementTool extends PlanarMaskBaseTool {
+    // (undocumented)
+    protected applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected createToolInstance(): PlanarMaskBaseTool;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    protected targetModelRequired(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class MaskBackgroundMapByModelTool extends PlanarMaskBaseTool {
+    // (undocumented)
+    protected applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected createToolInstance(): PlanarMaskBaseTool;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    protected targetModelRequired(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class MaskBackgroundMapBySubCategoryTool extends PlanarMaskBaseTool {
+    // (undocumented)
+    protected allowSelection(): boolean;
+    // (undocumented)
+    protected applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected createToolInstance(): PlanarMaskBaseTool;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    protected targetModelRequired(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class MaskRealityModelByElementTool extends PlanarMaskBaseTool {
+    // (undocumented)
+    protected applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected createToolInstance(): PlanarMaskBaseTool;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    protected targetModelRequired(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class MaskRealityModelByExcludedElementTool extends PlanarMaskBaseTool {
+    // (undocumented)
+    protected applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected createToolInstance(): PlanarMaskBaseTool;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    protected targetModelRequired(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class MaskRealityModelByModelTool extends PlanarMaskBaseTool {
+    // (undocumented)
+    protected applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected createToolInstance(): PlanarMaskBaseTool;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    protected targetModelRequired(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
+    // (undocumented)
+    protected allowSelection(): boolean;
+    // (undocumented)
+    protected applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected createToolInstance(): PlanarMaskBaseTool;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    protected targetModelRequired(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha
 export class MeasureTileLoadTimeTool extends Tool {
     // (undocumented)
@@ -1172,6 +1320,52 @@ export function parseBoolean(arg: string | undefined): boolean | undefined;
 
 // @beta
 export function parseToggle(arg: string | undefined): string | boolean | undefined;
+
+// @beta
+export abstract class PlanarMaskBaseTool extends PrimitiveTool {
+    // (undocumented)
+    protected readonly _acceptedElementIds: Set<string>;
+    // (undocumented)
+    protected readonly _acceptedModelIds: Set<string>;
+    // (undocumented)
+    protected readonly _acceptedSubCategoryIds: Set<string>;
+    // (undocumented)
+    protected allowSelection(): boolean;
+    // (undocumented)
+    protected abstract applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected abstract createToolInstance(): PlanarMaskBaseTool;
+    // (undocumented)
+    protected elementRequired(): boolean;
+    // (undocumented)
+    exitTool(): void;
+    // (undocumented)
+    filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected abstract showPrompt(): void;
+    // (undocumented)
+    protected _targetMaskModelId?: Id64String | number;
+    // (undocumented)
+    protected targetModelRequired(): boolean;
+    // (undocumented)
+    protected _transparency?: number;
+    // (undocumented)
+    protected _useSelection: boolean;
+}
 
 // @beta (undocumented)
 export class ProjectExtentsDecoration {
@@ -1441,9 +1635,45 @@ export class SetGpuMemoryLimitTool extends Tool {
     static toolId: string;
 }
 
+// @beta
+export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
+    // (undocumented)
+    protected applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected createToolInstance(): PlanarMaskBaseTool;
+    // (undocumented)
+    protected elementRequired(): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    protected targetModelRequired(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha
 export class SetMapBaseTool extends AttachMapLayerTool {
     constructor();
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetMapHigherPriorityMasking extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(transparency?: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2093,6 +2323,36 @@ export class ToolSettingsTracker {
     // (undocumented)
     dispose(): void;
     }
+
+// @beta
+export class UnmaskMapTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(..._args: string[]): boolean;
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class UnmaskRealityModelTool extends PlanarMaskBaseTool {
+    // (undocumented)
+    protected applyMask(vp: ScreenViewport): void;
+    // (undocumented)
+    protected createToolInstance(): PlanarMaskBaseTool;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    protected targetModelRequired(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @beta
 export class UnsharpenEffect extends ConvolutionEffect {
