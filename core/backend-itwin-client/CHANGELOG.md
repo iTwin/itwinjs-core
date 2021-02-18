@@ -22,6 +22,11 @@ Thu, 18 Feb 2021 22:10:12 GMT
 
 _Version update only_
 
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
 ## 2.11.1
 Thu, 04 Feb 2021 17:22:41 GMT
 

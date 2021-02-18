@@ -19,6 +19,9 @@ _Version update only_
 ## 2.12.0
 Thu, 18 Feb 2021 22:10:13 GMT
 
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
 _Version update only_
 
 ## 2.11.1

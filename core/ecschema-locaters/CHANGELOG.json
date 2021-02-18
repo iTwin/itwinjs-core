@@ -29,6 +29,12 @@
       "comments": {}
     },
     {
+      "version": "2.11.2",
+      "tag": "@bentley/ecschema-locaters_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.11.1",
       "tag": "@bentley/ecschema-locaters_v2.11.1",
       "date": "Thu, 04 Feb 2021 17:22:41 GMT",

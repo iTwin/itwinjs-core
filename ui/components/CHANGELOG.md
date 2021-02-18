@@ -33,6 +33,11 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - `ControlledTree`: Fix calling `scrollToNode` too early triggering an assertion error.
 - Update TimelineComponent.tsx to properly respond to changed props.
 
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
 ## 2.11.1
 Thu, 04 Feb 2021 17:22:41 GMT
 
