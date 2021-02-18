@@ -1008,6 +1008,20 @@ export class MapBaseTransparencyTool extends Tool {
 }
 
 // @alpha
+export class MapBaseVisibilityTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(visible: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class MapLayerSubLayerVisiblityTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
