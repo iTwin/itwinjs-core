@@ -12,9 +12,8 @@ import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { Float } from "../../src/UnitConversion/Float";
-import { UnitConvertorContext } from "../../src/UnitConversion/Convert";
 import { deserializeXml } from "./DeserializeSchema";
-import { mapUnits, setSchema } from '../../src/UnitConversion/NewConvert'
+import { getConversion, setSchema } from '../../src/UnitConversion/NewConvert'
 
 interface TestData {
   From: string;
@@ -42,7 +41,7 @@ describe("A unit tree creator", () => {
       const schemaKey = new SchemaKey("Units");
       const from = new SchemaItemKey(test.From, schemaKey);
       const to = new SchemaItemKey(test.To, schemaKey);
-      const conversion = mapUnits(from, to);
+      const conversion = getConversion(from, to);
       const actual = test.Input * conversion.multiplier + conversion.offset;
       const ulp = Float.ulp(Math.max(test.Input, test.Expect));
       expect(
