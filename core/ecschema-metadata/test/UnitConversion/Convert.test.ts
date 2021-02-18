@@ -13,7 +13,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Float } from "../../src/UnitConversion/Float";
 import { deserializeXml } from "./DeserializeSchema";
-import { getConversion, setSchema } from '../../src/UnitConversion/NewConvert'
+import { getConversion, setSchema } from '../../src/UnitConversion/Convert'
 
 interface TestData {
   From: string;
