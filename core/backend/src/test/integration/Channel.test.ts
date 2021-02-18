@@ -22,7 +22,7 @@ chai.use(chaiAsPromised);
 function createAndInsertSpatialCategory(testIModel: IModelDb, name: string): Id64String {
   const dictionary: DictionaryModel = testIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, name);
-  return SpatialCategory.insert(testIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+  return SpatialCategory.insert(testIModel, IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 }));
 }
 
 describe("Channel Control (#integration)", () => {

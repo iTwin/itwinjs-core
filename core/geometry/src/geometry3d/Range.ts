@@ -1029,6 +1029,23 @@ export class Range1d extends RangeBase {
   public intersectsRange(other: Range1d): boolean {
     return !(this.low > other.high || other.low > this.high);
   }
+/**
+ * Intersect this range with a range defined by parameters x0 and x1
+ * * For x1 > x0, that range is null, and the intersection is null.
+ * * For x0 <= x1, the input is a non-null range.
+ * * The intersection range replaces the contents of this.
+ *
+ */
+  public intersectRangeXXInPlace(x0: number, x1: number){
+    if (x1 < x0 || x1 < this.low || x0 > this.high) {
+      this.setNull();
+    } else {
+      if (x1 < this.high)
+        this.high = x1;
+      if (x0 > this.low)
+        this.low = x0;
+    }
+  }
 
   /** returns 0 if the ranges have any overlap, otherwise the shortest absolute distance from one to the other. */
   public distanceToRange(other: Range1d): number {
@@ -1306,6 +1323,14 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     result.setDirect(
       Math.min(xA, xB), Math.min(yA, yB),
       Math.max(xA, xB), Math.max(yA, yB), false);
+    return result;
+  }
+  /** Create a box with 3 pairs of xy candidates. Theses are compared and shuffled as needed for the box. */
+  public static createXYXYXY<T extends Range2d>(xA: number, yA: number, xB: number, yB: number, xC: number, yC: number, result?: T): T {
+    result = result ? result : new this() as T;
+    result.setDirect(
+      Math.min(xA, xB, xC), Math.min(yA, yB, yC),
+      Math.max(xA, xB, xC), Math.max(yA, yB, yC), false);
     return result;
   }
   /** Create a box with 2 pairs of xy candidates. If any direction has order flip, create null. */

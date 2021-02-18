@@ -966,7 +966,7 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
 
 // @public
 export class Code implements CodeProps {
-    constructor(val: CodeProps);
+    constructor(codeProps: CodeProps);
     static createEmpty(): Code;
     // @internal (undocumented)
     static equalCodes(c1: CodeProps, c2: CodeProps): boolean;
@@ -974,13 +974,16 @@ export class Code implements CodeProps {
     equals(other: Code): boolean;
     // (undocumented)
     static fromJSON(json?: any): Code;
-    // (undocumented)
+    // @deprecated (undocumented)
     getValue(): string;
     static isEmpty(c: CodeProps): boolean;
     static isValid(c: CodeProps): boolean;
     scope: string;
     spec: Id64String;
-    value?: string;
+    // (undocumented)
+    toJSON(): CodeProps;
+    get value(): string;
+    set value(val: string);
 }
 
 // @public
@@ -1828,15 +1831,15 @@ export class DisplayStyleSettings {
     readonly onLightsChanged: BeEvent<(newLights: LightSettings) => void>;
     // @alpha
     readonly onMapImageryChanged: BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>;
-    readonly onModelAppearanceOverrideChanged: BeEvent<(modelId: string, newAppearance: FeatureAppearance | undefined) => void>;
+    readonly onModelAppearanceOverrideChanged: BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>;
     readonly onMonochromeColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onMonochromeModeChanged: BeEvent<(newMode: MonochromeMode) => void>;
     // @beta
     readonly onOverridesApplied: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
     // @beta
-    readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: string, newSettings: PlanProjectionSettings | undefined) => void>;
+    readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>;
     // @internal
-    readonly onScheduleScriptPropsChanged: BeEvent<(newProps: readonly RenderSchedule.ModelTimelineProps[] | undefined) => void>;
+    readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
     readonly onSubCategoryOverridesChanged: BeEvent<() => void>;
     // @beta
@@ -6366,13 +6369,13 @@ export abstract class RpcRequest<TResponse = any> {
     get pending(): boolean;
     readonly protocol: RpcProtocol;
     // (undocumented)
-    protected _rawPromise: Promise<Response>;
-    get rawResponse(): Promise<Response>;
+    protected _rawPromise: Promise<Response | undefined>;
+    get rawResponse(): Promise<Response | undefined>;
     // (undocumented)
     protected reject(reason: any): void;
     // (undocumented)
     protected _resolveRaw: (value?: Response | PromiseLike<Response> | undefined) => void;
-    readonly response: Promise<TResponse>;
+    readonly response: Promise<TResponse | undefined>;
     // (undocumented)
     protected _response: Response | undefined;
     retryInterval: number;

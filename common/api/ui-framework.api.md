@@ -1938,6 +1938,9 @@ export interface ExtensibleToolbarProps {
     usage: ToolbarUsage;
 }
 
+// @beta
+export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>): BaseItemState;
+
 // @public
 export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
     // (undocumented)
@@ -2612,7 +2615,7 @@ export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, d
 export function getFeatureOverrideSyncEventIds(): string[];
 
 // @internal (undocumented)
-export const getFirstItem: (groupItemDef: GroupItemDef) => import("../shared/CommandItemDef").CommandItemDef | ActionButtonItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
+export const getFirstItem: (groupItemDef: GroupItemDef) => AnyItemDef | undefined;
 
 // @internal (undocumented)
 export const getFirstItemId: (groupItemDef: GroupItemDef) => string;
@@ -3065,7 +3068,8 @@ export abstract class ItemDefBase {
     // (undocumented)
     static initializeDef(me: ItemDefBase, itemProps: ItemProps): void;
     // (undocumented)
-    isActive: boolean;
+    get isActive(): boolean;
+    set isActive(v: boolean);
     // (undocumented)
     isDisabled?: boolean | ConditionalBooleanValue;
     // @deprecated (undocumented)
@@ -6400,7 +6404,7 @@ export function useFrameworkVersion(): FrameworkVersion;
 export function useFrontstageManager(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
-export const useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems;
+export const useGroupedItems: (items: ReadonlyArray<BackstageItem>) => GroupedItems;
 
 // @internal (undocumented)
 export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
@@ -7189,7 +7193,7 @@ export enum WidgetType {
 }
 
 // @beta
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "targetRef" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
 
 // @alpha
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {

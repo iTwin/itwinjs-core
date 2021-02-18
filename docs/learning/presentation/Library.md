@@ -1,4 +1,4 @@
-# iModel.js Presentation Library
+# iTwin.js Presentation Library
 
 - [Content](./content/index.md)
 - [Hierarchies](./hierarchies/index.md)

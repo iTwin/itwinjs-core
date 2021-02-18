@@ -11,8 +11,8 @@ import {
   Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import {
-  AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode, TileAdmin,
-  Tool, WebViewerApp,
+  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode,
+  TileAdmin, Tool, ToolAdmin, WebViewerApp,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -47,6 +47,15 @@ class DisplayTestAppAccuSnap extends AccuSnap {
     this._activeSnaps.length = snaps.length;
     for (let i = 0; i < snaps.length; i++)
       this._activeSnaps[i] = snaps[i];
+  }
+}
+
+class DisplayTestAppToolAdmin extends ToolAdmin {
+  /** Process shortcut key events */
+  public processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
+    if (wentDown && IModelApp.accuDraw.isEnabled)
+      return AccuDrawShortcuts.processShortcutKey(keyEvent);
+    return false;
   }
 }
 
@@ -138,6 +147,7 @@ export class DisplayTestApp {
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
         tileAdmin: TileAdmin.create(DisplayTestApp.tileAdminProps),
+        toolAdmin: new DisplayTestAppToolAdmin(),
         uiAdmin: new UiManager(),
         renderSys,
         rpcInterfaces: [
