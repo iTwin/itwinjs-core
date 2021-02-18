@@ -289,7 +289,7 @@ export class Matrix3d implements BeJSONFunctions {
     }
   }
   /** Return a new Matrix3d constructed from contents of the json value. Se `setFromJSON` for layout rules */
-  public static fromJSON(json?: Matrix3dProps | Matrix3d): Matrix3d { const result = Matrix3d.createIdentity(); result.setFromJSON(json); return result; }
+  public static fromJSON(json?: Matrix3dProps): Matrix3d { const result = Matrix3d.createIdentity(); result.setFromJSON(json); return result; }
   /** Test if this Matrix3d and other are within tolerance in all numeric entries.
    * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
    */

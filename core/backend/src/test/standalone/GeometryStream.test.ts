@@ -796,36 +796,25 @@ describe("GeometryStream", () => {
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "geometryQuery");
-      const pattern = entry.geomParams.pattern!;
-      assert.isDefined(pattern);
+      assert.isDefined(entry.geomParams.pattern);
       switch (iShape++) {
         case 0:
-          assert.isDefined(pattern.space1);
-          assert.isDefined(pattern.angle1);
-          assert.isUndefined(pattern.space2);
-          assert.isUndefined(pattern.angle2);
+          assert.isTrue(undefined !== entry.geomParams.pattern!.space1 && undefined !== entry.geomParams.pattern!.angle1 && undefined === entry.geomParams.pattern!.space2 && undefined === entry.geomParams.pattern!.angle2);
           break;
         case 1:
-          assert.isDefined(pattern.space1);
-          assert.isDefined(pattern.angle1);
-          assert.isDefined(pattern.space2);
-          assert.isDefined(pattern.angle2);
+          assert.isTrue(undefined !== entry.geomParams.pattern!.space1 && undefined !== entry.geomParams.pattern!.angle1 && undefined !== entry.geomParams.pattern!.space2 && undefined !== entry.geomParams.pattern!.angle2);
           break;
         case 2:
-          assert.isDefined(pattern.symbolId);
-          assert.isUndefined(pattern.color);
+          assert.isTrue(undefined !== entry.geomParams.pattern!.symbolId && undefined === entry.geomParams.pattern!.color);
           break;
         case 3:
-          assert.isDefined(pattern.symbolId);
-          assert.isDefined(pattern.color);
+          assert.isTrue(undefined !== entry.geomParams.pattern!.symbolId && undefined !== entry.geomParams.pattern!.color);
           break;
         case 4:
-          assert.isDefined(pattern.defLines);
-          assert.isUndefined(pattern.color);
+          assert.isTrue(undefined !== entry.geomParams.pattern!.defLines && undefined === entry.geomParams.pattern!.color);
           break;
         case 5:
-          assert.isDefined(pattern.defLines);
-          assert.isDefined(pattern.color);
+          assert.isTrue(undefined !== entry.geomParams.pattern!.defLines && undefined !== entry.geomParams.pattern!.color);
           break;
       }
     }

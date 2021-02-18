@@ -23,10 +23,6 @@ export interface ModelProps extends EntityProps {
   isTemplate?: boolean;
   jsonProperties?: any;
 }
-export interface ModelLoadProps {
-  id?: Id64String;
-  code?: CodeProps;
-}
 
 /** Properties that specify what model should be loaded.
  * @public
