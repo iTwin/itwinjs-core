@@ -1344,7 +1344,7 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     // (undocumented)
     protected abstract showPrompt(): void;
     // (undocumented)
-    protected _targetModelId?: Id64String | number;
+    protected _targetMaskModelId?: Id64String | number;
     // (undocumented)
     protected targetModelRequired(): boolean;
     // (undocumented)

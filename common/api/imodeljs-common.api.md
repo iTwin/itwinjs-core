@@ -988,7 +988,7 @@ export class Code implements CodeProps {
     toJSON(): CodeProps;
     get value(): string;
     set value(val: string);
-}
+    }
 
 // @public
 export interface CodeProps {
@@ -1854,9 +1854,9 @@ export class DisplayStyleSettings {
     // @beta
     readonly onOverridesApplied: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
     // @beta
-    readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: string, newSettings: PlanProjectionSettings | undefined) => void>;
+    readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>;
     // @beta
-    readonly onRealityModelPlanarClipMaskChanged: BeEvent<(idOrIndex: string | number, newSettings: PlanarClipMaskSettings | undefined) => void>;
+    readonly onRealityModelPlanarClipMaskChanged: BeEvent<(idOrIndex: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => void>;
     // @internal
     readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
