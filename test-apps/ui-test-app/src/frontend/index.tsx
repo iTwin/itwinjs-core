@@ -45,7 +45,7 @@ import {
   UiFramework, UiSettingsProvider,
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
-import getSupportedRpcs from "../common/rpcs";
+import { getSupportedRpcs } from "../common/rpcs";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
 import { BearingQuantityType } from "./api/BearingQuantityType";
