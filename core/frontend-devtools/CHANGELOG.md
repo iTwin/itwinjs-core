@@ -1,6 +1,16 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+This log was last generated on Thu, 18 Feb 2021 22:10:12 GMT and should not be manually modified.
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:12 GMT
+
+### Updates
+
+- Improved MapLayerSource validation for authentification errors.
+- Add `fdt gpu mem limit` keyin.
+- Fix locate for particle effects.
+- Add example particle effects.
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
