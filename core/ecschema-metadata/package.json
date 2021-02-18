@@ -37,6 +37,7 @@
     "@bentley/build-tools": "2.13.0-dev.10",
     "@bentley/eslint-plugin": "2.13.0-dev.10",
     "@bentley/imodeljs-i18n": "2.13.0-dev.10",
+    "@bentley/units-schema": "1.0.5",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",

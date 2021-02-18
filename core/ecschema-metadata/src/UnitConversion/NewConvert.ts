@@ -6,7 +6,7 @@ import { Schema, SchemaItemKey, Unit } from "../ecschema-metadata";
 import { parseDefinition } from "./NewParser";
 
 let schema: Schema;
-let unitsMap = new Map();
+let schemaMap = new Map();
 
 // Map schema with unit names as keys
 export function setSchema(schemaInput: Schema) {
@@ -14,7 +14,7 @@ export function setSchema(schemaInput: Schema) {
   let iter = schema.getItems();
   for (let elem of iter) {
     let unit = elem as Unit;
-    unitsMap.set(elem.name, {
+    schemaMap.set(elem.name, {
       definition: unit.definition,
       numerator: unit.numerator,
       denominator: unit.denominator,
@@ -28,39 +28,21 @@ type Conversion = {
   offset: number;
 };
 
-export function mapUnits(
+export function getConversion(
   fromUnit: SchemaItemKey,
   toUnit: SchemaItemKey
 ): Conversion {
-  let from = recursiveConvert(fromUnit.name);
-  let to = recursiveConvert(toUnit.name);
-  to = solveSystemOfEquations(to);
+  let from = recursiveCalculate(fromUnit.name, true);
+  let to = recursiveCalculate(toUnit.name, false);
   return {
-    multiplier: from.multiplier * to.multiplier,
-    offset: from.offset * to.multiplier + to.offset,
-  };
-}
-
-function solveSystemOfEquations(toConversion: Conversion): Conversion {
-  // Any x1 and x2 would work
-  let x1 = 3;
-  let x2 = 42;
-  let y1 = x1 * toConversion.multiplier + toConversion.offset;
-  let y2 = x2 * toConversion.multiplier + toConversion.offset;
-
-  // Solve for new slope and offset
-  let newOffset = (x2 - (y2 / y1) * x1) / (1 - y2 / y1);
-  let newMultiplier = (x2 - newOffset) / y2;
-
-  return {
-    multiplier: newMultiplier,
-    offset: newOffset,
+    multiplier: from.multiplier / to.multiplier,
+    offset: from.offset / to.multiplier - to.offset,
   };
 }
 
 // Recursive function to traverse from unit to unit
-function recursiveConvert(unitName: string): Conversion {
-  let currentUnit = unitsMap.get(unitName);
+function recursiveCalculate(unitName: string, isFrom: boolean): Conversion {
+  let currentUnit = schemaMap.get(unitName);
   // Definition returns a map of children needed to calculate
   let unitChildren = parseDefinition(currentUnit.definition);
 
@@ -72,18 +54,22 @@ function recursiveConvert(unitName: string): Conversion {
   let aggregate = { multiplier: 1, offset: 0 };
   // Calculate each children
   unitChildren.forEach((value, key) => {
-    let result = recursiveConvert(key);
+    let result = recursiveCalculate(key, isFrom);
 
-    let multiplier = result.multiplier ** value.exponent;
-    let offset = result.offset;
-    if (value.exponent > 0) {
-      let fraction = currentUnit.numerator / currentUnit.denominator;
-      multiplier *= fraction;
-      offset += currentUnit.offset * fraction;
-    }
-    aggregate.multiplier *= multiplier;
-    aggregate.offset += offset;
+    aggregate.multiplier *= result.multiplier ** value.exponent;
+    aggregate.offset += result.offset;
   });
+
+  let fraction = currentUnit.numerator / currentUnit.denominator
+  aggregate.multiplier *= fraction;
+
+  if (isFrom) {
+    aggregate.offset =
+      aggregate.offset + currentUnit.offset * fraction; // Multiply current offset by fraction then add previous offset
+  } else {
+    aggregate.offset =
+      aggregate.offset / fraction + currentUnit.offset; // Divide previous offset by fraction then add current offset
+  }
 
   return aggregate;
 }
