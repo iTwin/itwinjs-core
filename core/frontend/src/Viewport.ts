@@ -18,7 +18,8 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
+  SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -739,6 +740,13 @@ export abstract class Viewport implements IDisposable {
     return this.displayStyle.getRealityModelAppearanceOverride(index);
   }
 
+  /** Return the "contextual" reality model index for a transient model ID or -1 if none found
+   * @beta
+   */
+  public getRealityModelIndexFromTransientId(id: Id64String): number {
+    return this.displayStyle.getRealityModelIndexFromTransientId(id);
+  }
+
   /** @beta
    * Set the display of the OpenStreetMap worldwide building layer in this viewport by attaching or detaching the reality model displaying the buildings.
    * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
@@ -1127,6 +1135,7 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onRealityModelPlanarClipMaskChanged.addListener(displayStyleChanged));
 
     const analysisChanged = () => {
       this._changeFlags.setDisplayStyle();
