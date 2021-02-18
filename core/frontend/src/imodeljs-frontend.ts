@@ -45,6 +45,7 @@ export * from "./NativeAppLogger";
 export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
+export * from "./PlanarClipMaskState";
 export * from "./QuantityFormatter";
 export * from "./RenderScheduleState";
 export * from "./CheckpointConnection";
