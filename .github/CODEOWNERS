@@ -77,8 +77,8 @@ rush.json       @calebmshafer @scsewall
 /common/**/imodeljs-common/                       @imodeljs/admins
 /common/**/imodeljs-editor-*.*                    @kabentley @pmconne
 /common/**/imodeljs-editor-*/                     @kabentley @pmconne
-/common/**/imodeljs-frontend.*                    @imodeljs/admins
-/common/**/imodeljs-frontend/                     @imodeljs/admins
+/common/**/imodeljs-frontend.*                    @imodeljs/admins @imodeljs/display
+/common/**/imodeljs-frontend/                     @imodeljs/admins @imodeljs/display
 /common/**/imodeljs-i18n.*                        @calebmshafer @wgoehrig
 /common/**/imodeljs-i18n/                         @calebmshafer @wgoehrig
 /common/**/imodeljs-markup.*                      @kabentley @pmconne @bbastings
