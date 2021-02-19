@@ -9,6 +9,7 @@
 
 import { ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@bentley/imodeljs-frontend";
+import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
 
 /** Base class for attaching map layer tool.
@@ -407,5 +408,31 @@ export class MapBaseTransparencyTool extends Tool {
     const transparency = parseFloat(args[0]);
 
     return (isNaN(transparency) || transparency < 0 || transparency > 1) ? false : this.run(transparency);
+  }
+}
+
+/** Set base map visibility
+ * @alpha
+ */
+export class MapBaseVisibilityTool extends Tool {
+  public static toolId = "SetMapBaseVisibilityTool";
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 1; }
+
+  public run(visible: boolean) {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp || !vp.view.isSpatialView())
+      return false;
+
+    vp.displayStyle.changeBaseMapProps({ visible });
+    vp.invalidateRenderPlan();
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const visible = parseBoolean(args[0]);
+
+    return (visible !== undefined ? this.run(visible) : false);
   }
 }
