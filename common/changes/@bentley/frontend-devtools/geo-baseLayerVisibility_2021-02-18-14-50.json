@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-devtools",
+      "comment": "Added new MapBaseVisibilityTool and key in.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "mdastous-bentley@users.noreply.github.com"
+}
