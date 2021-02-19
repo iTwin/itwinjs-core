@@ -1,6 +1,6 @@
-# What's changed between ECObjects 2 supported in Power Platform and ECObjects 3 supported in iModel.js
+# What's changed between ECObjects 2 supported in Power Platform and ECObjects 3 supported in iTwin.js
 
-This page if for people who have used ECObjects in Power Platform and want to learn how it has changed in iModel.js.  It does not cover all new features of EC 3, rather it focuses on what has changed between the two versions.
+This page if for people who have used ECObjects in Power Platform and want to learn how it has changed in iTwin.js.  It does not cover all new features of EC 3, rather it focuses on what has changed between the two versions.
 
 ## Changes to Schema
 

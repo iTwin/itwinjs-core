@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, ProcessDetector } from "@bentley/bentleyjs-core";
 import {
   BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps,
 } from "@bentley/imodeljs-common";
@@ -11,17 +11,28 @@ import {
   DisplayStyle3dState, GeometricModel3dState, IModelApp, IModelConnection, Pixel, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { testOnScreenViewport } from "../TestViewport";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { rpcInterfaces } from "../../common/RpcInterfaces";
 
 describe("Plan projections", () => {
   let mirukuru: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup({
-      renderSys: {
-        // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
-        dpiAwareViewports: false,
+    const opts = {
+      electronApp: { rpcInterfaces },
+      iModelApp: {
+        renderSys: {
+          // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
+          dpiAwareViewports: false,
+        },
       },
-    });
+    };
+
+    await IModelApp.shutdown();
+    if (ProcessDetector.isElectronAppFrontend)
+      await ElectronApp.startup(opts);
+    else
+      await IModelApp.startup(opts.iModelApp);
 
     mirukuru = await SnapshotConnection.openFile("planprojection.bim");
   });

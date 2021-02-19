@@ -1,6 +1,6 @@
 # Default BIS Presentation Rules
 
-iModel.js delivers a supplemental presentation ruleset that gets automatically merged into all presentation rulesets that support BisCore ECSchema. The ruleset provides default behavior for various BIS types: Elements, Models, etc.
+iTwin.js delivers a supplemental presentation ruleset that gets automatically merged into all presentation rulesets that support BisCore ECSchema. The ruleset provides default behavior for various BIS types: Elements, Models, etc.
 
 ## Label Overrides
 

@@ -1,0 +1,49 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/index";
+
+.components-quantity-format-popup-button {
+  color: $buic-foreground-body;
+  font-size: $uicore-font-size;
+  background-color: transparent;
+  height: 2.2em;
+  border: none;
+  margin-right: 2px;
+
+  .components-down-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  svg {
+    fill: $buic-foreground-body;
+  }
+
+  &:hover {
+    color: $buic-foreground-primary-tone;
+    cursor: auto;
+
+    svg {
+      fill: $buic-foreground-primary-tone;
+    }
+  }
+  &:focus {
+    box-shadow: $uicore-button-focus-boxshadow;
+    outline: none;
+  }
+}
+
+.components-quantity-format-popup-panel {
+  display: flex;
+  flex-direction: column;
+  background-color: $buic-background-control;
+  padding: .5em .75em;
+
+  >.components-button-panel {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}

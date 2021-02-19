@@ -18,7 +18,7 @@ Note that being a native app doesn't mean that the user experience should feel "
 
 ## Offline Operation
 
-An important virtue of native apps, and of iModels and iModel.js in general, is that it permits queries, visualizations and editing of the iModel database without requiring a connection to a server. Of course native apps *can* connect to external services via HTTP (e.g. IModelHub), but may also work with no internet connection. This is especially valuable for mobile applications where network connections are often unreliable or slow.
+An important virtue of native apps, and of iModels and iTwin.js in general, is that it permits queries, visualizations and editing of the iModel database without requiring a connection to a server. Of course native apps *can* connect to external services via HTTP (e.g. IModelHub), but may also work with no internet connection. This is especially valuable for mobile applications where network connections are often unreliable or slow.
 
 ## Automatic Updates
 
@@ -26,13 +26,13 @@ Native applications are installed on a computer and are granted permissions to p
 
 This eliminates many issues associated with desktop applications and sometimes listed as a virtue of web/cloud-based applications; worrying about old versions continuing to create problems after issues are fixed. It also facilitates the fast paced build-measure-learn-refine software development cadence that web developers take for granted.
 
-Users of mobile apps are already used to this app-store-auto update model, but some desktop users are accustomed to the decades old every-other-year-big-bang update model. iModel.js presumes auto updating of native apps, and you should too.
+Users of mobile apps are already used to this app-store-auto update model, but some desktop users are accustomed to the decades old every-other-year-big-bang update model. iTwin.js presumes auto updating of native apps, and you should too.
 
 ## Platforms
 
 Native apps run on either desktop computers or mobile devices.
 
-On desktop computers, iModel.js relies on [Electron](https://www.electronjs.org/) for its platform-specific layers. Electron supports Windows, Macs, and Linux. There are a few platform-specific features that native apps can avail, but generally it's a good idea to let Electron handle most platform/OS specific needs. Note that Electron delivers a custom version of Node.js that runs the backend for desktop native apps.
+On desktop computers, iTwin.js relies on [Electron](https://www.electronjs.org/) for its platform-specific layers. Electron supports Windows, Macs, and Linux. There are a few platform-specific features that native apps can avail, but generally it's a good idea to let Electron handle most platform/OS specific needs. Note that Electron delivers a custom version of Node.js that runs the backend for desktop native apps.
 
 It is essential to test your application on multiple platforms to ensure you haven't inadvertently taken on a specific platform dependence.
 

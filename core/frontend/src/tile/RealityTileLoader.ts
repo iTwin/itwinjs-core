@@ -41,8 +41,8 @@ export abstract class RealityTileLoader {
     return RealityTileLoader.computeTileClosestToEyePriority(tile, viewports, tile.tree.iModelTransform);
   }
 
-  public abstract async loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
-  public abstract async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
+  public abstract loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
+  public abstract requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
   public abstract get priority(): TileLoadPriority;
   protected get _batchType(): BatchType { return BatchType.Primary; }

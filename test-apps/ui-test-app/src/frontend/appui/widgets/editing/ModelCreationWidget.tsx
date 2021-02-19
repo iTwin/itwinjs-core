@@ -41,9 +41,10 @@ export class ModelCreationComponent extends React.Component<{}, ModelCreationCom
     this.setState((prev) => ({ ...prev, haveName: (modelName.length !== 0) }));
   }
 
+  /* eslint-disable deprecation/deprecation */
   private async createNewModel() {
     const iModel = UiFramework.getIModelConnection();
-    if (iModel === undefined)
+    if (iModel === undefined || !iModel.isRemoteBriefcaseConnection())
       return;
     const modelName = this.modelName;
     if (modelName === "")

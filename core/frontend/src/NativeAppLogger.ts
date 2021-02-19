@@ -7,7 +7,7 @@
  */
 
 import { GetMetaDataFunction, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { NativeApp } from "./NativeApp";
+import { IpcApp } from "./IpcApp";
 
 /**
  * Describe log message
@@ -21,7 +21,7 @@ interface LogMessage {
   metaData: any;
 }
 /**
- * NativeAppLogger send log message from frontend to backend. It work on native app only.
+ * NativeAppLogger send log message from frontend to backend. It works on native app only.
  * @internal
  */
 export class NativeAppLogger {
@@ -39,7 +39,7 @@ export class NativeAppLogger {
     try {
       while (messages.length > 0) {
         const msg: LogMessage = messages.shift()!;
-        await NativeApp.callBackend("log", msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
+        await IpcApp.callIpcHost("log", msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
       }
     } finally {
       // Put back unsent messages.

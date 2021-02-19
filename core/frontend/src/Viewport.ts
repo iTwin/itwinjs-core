@@ -8,6 +8,7 @@
 
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
+  ProcessDetector,
   StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
@@ -17,7 +18,8 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
+  SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -76,7 +78,7 @@ export interface ViewportDecorator {
    */
   readonly useCachedDecorations?: true;
 
-  /** Implement this method to add [[Decorations}} into the supplied DecorateContext.
+  /** Implement this method to add [[Decorations]] into the supplied DecorateContext.
    * @see [[useCachedDecorations]] to avoid unnecessarily recreating decorations.
    */
   decorate(context: DecorateContext): void;
@@ -342,6 +344,7 @@ export abstract class Viewport implements IDisposable {
    */
   public requestRedraw(): void {
     this._redrawPending = true;
+    IModelApp.requestNextAnimation();
   }
 
   private _animator?: Animator;
@@ -737,6 +740,13 @@ export abstract class Viewport implements IDisposable {
     return this.displayStyle.getRealityModelAppearanceOverride(index);
   }
 
+  /** Return the "contextual" reality model index for a transient model ID or -1 if none found
+   * @beta
+   */
+  public getRealityModelIndexFromTransientId(id: Id64String): number {
+    return this.displayStyle.getRealityModelIndexFromTransientId(id);
+  }
+
   /** @beta
    * Set the display of the OpenStreetMap worldwide building layer in this viewport by attaching or detaching the reality model displaying the buildings.
    * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
@@ -1125,6 +1135,7 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onRealityModelPlanarClipMaskChanged.addListener(displayStyleChanged));
 
     const analysisChanged = () => {
       this._changeFlags.setDisplayStyle();
@@ -3121,13 +3132,30 @@ export class ScreenViewport extends Viewport {
       assert(undefined === this._webglCanvas); // see getter...
       this._webglCanvas = webglCanvas;
 
-      // this.canvas has zIndex 10. Make webgl canvas' zIndex lower so that canvas decorations draw on top.
       this.addChildDiv(this.vpDiv, webglCanvas, 5);
+
+      /** The following workaround resolves an issue specific to iOS Safari. We really want this webgl canvas' zIndex to be
+       * lower than this.canvas, but if we do that on iOS Safari, Safari may decide to not display the canvas contents once
+       * it is re-added to the parent div after dropping other viewports. It will only display it once resizing the view.
+       * The offending element here is the 2d canvas sitting on top of the webgl canvas. We need to clear its contents
+       * immediately on iOS. Even though the 2d canvas gets cleared in OnScreenTarget.drawOverlayDecorations() in this case,
+       * it looks like iOS needs an immediate clear.
+       */
+      if (ProcessDetector.isIOSBrowser)
+        _clear2dCanvas(this.canvas);
     }
 
     this.target.updateViewRect();
     this.invalidateRenderPlan();
   }
+}
+
+function _clear2dCanvas(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext("2d", { alpha: true })!;
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for clearRect() call below.
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
 }
 
 /** An off-screen viewport is not rendered to the screen. It is never added to the [[ViewManager]], therefore does not participate in

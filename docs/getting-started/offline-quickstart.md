@@ -2,18 +2,18 @@
 
 ## 1. Get the tools
 
-Writing an iModel.js application requires the following software:
+Writing an iTwin.js application requires the following software:
 
 - [Node.js](https://nodejs.org) (12.x LTS version)
   - This provides the backend JavaScript runtime.
   - The installation also includes the `npm` command line tool.
 - [Git](https://git-scm.com/downloads)
-  - This is the source code control system for the iModel.js repositories.
+  - This is the source code control system for the iTwin.js repositories.
 
 ### Suggested IDE
 
 - [Visual Studio Code](https://code.visualstudio.com/)
-  - This is the recommended editor and debugger for iModel.js applications.
+  - This is the recommended editor and debugger for iTwin.js applications.
   - VS Code also supplies a GUI for working with Git.
 
 ## 2. Get the code
@@ -28,6 +28,10 @@ The starter application is located in the [desktop-starter](https://github.com/i
 
 > `npm start`
 
+The app will open a pre-packaged offline snapshot iModel. You will likely want to use your own snapshot iModel. Follow the [Create a snapshot iModel]($docs/learning/tutorials/create-test-imodel-offline) tutorial. Then open your snapshot by clicking the Home button and selecting "Open Offline Snapshot".
+
+Desktop apps can also open cloud hosted iModels. If you do not have access to one, follow one of our tutorials to [create an online iModel]($docs/learning/tutorials/index.md). Then open your online iModel by selecting "Open Online iModel" and logging in.
+
 &nbsp;
 &nbsp;
 ---
@@ -38,9 +42,9 @@ The starter application is located in the [desktop-starter](https://github.com/i
 
 > Open your snapshot iModel in the desktop-starter app by clicking the home button in the upper left and clicking "Select snapshot".
 
-### [Follow tutorials to dive deeper into iModel.js]($docs/learning/tutorials/index.md)
+### [Follow tutorials to dive deeper into iTwin.js]($docs/learning/tutorials/index.md)
 
-### [iModel.js Blog](https://medium.com/imodeljs)
+### [iTwin.js Blog](https://medium.com/itwinjs)
 
 <style>
   article#main h3:after {
