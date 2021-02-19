@@ -5177,15 +5177,10 @@ export enum PlanarClipMaskMode {
 
 // @beta
 export enum PlanarClipMaskPriority {
-    // (undocumented)
     BackgroundMap = -2048,
-    // (undocumented)
     BIM = 2048,
-    // (undocumented)
     GlobalRealityModel = -1024,
-    // (undocumented)
     Maximum = 4096,
-    // (undocumented)
     RealityModel = 0
 }
 
@@ -5207,7 +5202,6 @@ export class PlanarClipMaskSettings {
     // (undocumented)
     equals(other: PlanarClipMaskSettings): boolean;
     static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings;
-    // (undocumented)
     get isValid(): boolean;
     readonly mode: PlanarClipMaskMode;
     readonly modelIds?: CompressedId64Set;
