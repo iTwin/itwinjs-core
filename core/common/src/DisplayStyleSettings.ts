@@ -11,7 +11,7 @@
 import {
   assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, ObservableSet, OrderedId64Iterable,
 } from "@bentley/bentleyjs-core";
-import { Point3d, XYZProps } from "@bentley/geometry-core";
+import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
 import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
@@ -1378,13 +1378,11 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   public setSunTime(timePoint: number, location: IModel | Cartographic): void {
     let cartoCenter;
     if (location instanceof IModel) {
-      if (location.isGeoLocated) {
-        const projectExtents = location.projectExtents;
-        const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
-        cartoCenter = location.spatialToCartographicFromEcef(projectCenter);
-      } else {
+      if (location.ecefLocation)
+        cartoCenter = Cartographic.fromEcef(location.ecefLocation.origin);
+
+      if (!cartoCenter)
         cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
-      }
     } else {
       cartoCenter = location;
     }
