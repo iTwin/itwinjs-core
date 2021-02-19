@@ -1715,7 +1715,7 @@ export interface ErrorObserver<T> {
 
 // @public @deprecated
 export class EventsMuteContext implements IDisposable {
-    constructor(_events: BeInspireTreeEvent[], _mute: (events: BeInspireTreeEvent[]) => void, _unmute: (events: BeInspireTreeEvent[]) => boolean, _emit?: ((events: BeInspireTreeEvent[]) => void) | undefined, _listen?: ((events: BeInspireTreeEvent[], listener: (...values: any[]) => void) => () => void) | undefined, allowedEventTriggersBeforeMute?: number);
+    constructor(_events: BeInspireTreeEvent[], _mute: (events: BeInspireTreeEvent[]) => void, _unmute: (events: BeInspireTreeEvent[]) => boolean, _emit?: ((events: BeInspireTreeEvent[]) => void) | undefined, _listen?: ((events: BeInspireTreeEvent[], listener: (...values: any[]) => void) => (() => void)) | undefined, allowedEventTriggersBeforeMute?: number);
     // (undocumented)
     dispose(): void;
     }
@@ -2651,12 +2651,12 @@ export enum MapMode {
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
 
 // @public
-export const matchLinks: (text: string) => {
+export const matchLinks: (text: string) => Array<{
     index: number;
     lastIndex: number;
     schema: string;
     url: string;
-}[];
+}>;
 
 // @internal
 export interface MenuItem {
@@ -3294,8 +3294,6 @@ export interface PropertyCategory {
     label: string;
     // (undocumented)
     name: string;
-    // @alpha (undocumented)
-    parentCategory?: PropertyCategory;
 }
 
 // @public
@@ -5397,7 +5395,7 @@ export interface Unsubscribable {
 }
 
 // @beta
-export const useAsyncValue: <T extends any>(value: T | PromiseLike<T>) => T | undefined;
+export const useAsyncValue: <T extends unknown>(value: T | PromiseLike<T>) => T | undefined;
 
 // @alpha
 export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (() => Promise<TReturn>)): {
