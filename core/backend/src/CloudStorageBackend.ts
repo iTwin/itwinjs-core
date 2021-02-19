@@ -175,7 +175,7 @@ export class CloudStorageTileUploader {
 
       const perfInfo = { ...id.tokenProps, treeId: id.treeId, contentId: id.contentId, size: content.byteLength, compress: IModelHost.compressCachedTiles };
       const perfLogger = new PerfLogger("Uploading tile to external tile cache", () => perfInfo);
-      await IModelHost.tileCacheService.upload(containerKey, resourceKey, content, metadata, options);
+      await IModelHost.tileCacheService.upload(containerKey, resourceKey, content, options, metadata);
       perfLogger.dispose();
     } catch (err) {
       Logger.logError(BackendLoggerCategory.IModelTileUpload, (err instanceof Error) ? err.toString() : JSON.stringify(err));

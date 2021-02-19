@@ -36,11 +36,11 @@ describe("TileUpload (#integration)", () => {
     await IModelHost.shutdown();
     const config = new IModelHostConfiguration();
 
-    // TODO: Don't use sandbox storage account
+    // Default account and key for azurite
     config.tileCacheCredentials = {
       service: "azure",
-      account: "tilemetadatatest",
-      accessKey: "",
+      account: "devstoreaccount1",
+      accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
     };
 
     await IModelHost.startup(config);
@@ -56,12 +56,15 @@ describe("TileUpload (#integration)", () => {
     testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
 
     // Get URL for cached tile
-    const credentials = new Azure.SharedKeyCredential(IModelHost.configuration!.tileCacheCredentials!.account, IModelHost.configuration!.tileCacheCredentials!.accessKey);
+    const credentials = new Azure.SharedKeyCredential(config.tileCacheCredentials.account, config.tileCacheCredentials.accessKey);
     const pipeline = Azure.StorageURL.newPipeline(credentials);
-    const serviceUrl = new Azure.ServiceURL(`https://${credentials.accountName}.blob.core.windows.net`, pipeline);
+    const serviceUrl = new Azure.ServiceURL(`http://127.0.0.1:10000/${credentials.accountName}`, pipeline);
     const containerUrl = Azure.ContainerURL.fromServiceURL(serviceUrl, testIModelId);
     const blobUrl = Azure.BlobURL.fromContainerURL(containerUrl, `tiles/${testTileProps.treeId}/${testTileProps.guid}/${testTileProps.contentId}`);
     blockBlobUrl = Azure.BlockBlobURL.fromBlobURL(blobUrl);
+
+    // Point tileCacheService towards azurite URL
+    (IModelHost.tileCacheService as any)._service = serviceUrl;
 
     // Open and close the iModel to ensure it works and is closed
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(testChangeSetId).toJSON() });
