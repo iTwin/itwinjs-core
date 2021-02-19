@@ -1307,8 +1307,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   /** Set the solar light direction based on time value
    * @param time The time in unix time milliseconds.
-   * @see [DisplayStyleSettings.sunTime]($common) to obtain the current sun time.
-   * @see [DisplayStyleSettings.setSunTime]($common).
+   * @see [DisplayStyle3dSettings.sunTime]($common) to obtain the current sun time.
+   * @see [DisplayStyle3dSettings.setSunTime]($common).
    */
   public setSunTime(time: number) {
     this.settings.setSunTime(time, this.iModel);

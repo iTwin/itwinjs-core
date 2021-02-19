@@ -1370,10 +1370,10 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   /** Adjust the solar light direction based on a date and time at a geographic location.
    * This replaces `this.lights` with a copy that records the time point and the computed direction.
    * @param timePoint The time in UNIX milliseconds.
-   * @param location The geographic location, or an iModel from which the geolocation is to be obtained.
+   * @param location The geographic location; or an iModel, in which case the iModel's [[EcefLocation]] is used.
    * @see [[sunTime]] to get the current sun time.
    * @see [[clearSunTime]] to clear the time point.
-   * @note If the iModel is not geolocated, a location in Exton, Pennsylvania will be used to compute the light direction.
+   * @note If `location` is an iModel lacking an EcefLocation, a location in Exton, Pennsylvania will be used to compute the light direction.
    */
   public setSunTime(timePoint: number, location: IModel | Cartographic): void {
     let cartoCenter;

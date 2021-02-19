@@ -24,7 +24,7 @@ function extractIntensity(value: number | undefined, defaultValue: number) {
 export interface SolarLightProps {
   /** Intensity of the light, typically in [0..1] but can range up to 5. Default: 1.0 */
   intensity?: number;
-  /** Direction of the light in world coordinates. Default: (0.272166, 0.680414, 0.680414) */
+  /** Direction of the light in world coordinates. Defaults to a vector looking down on the scene at a 45 degree angle mostly along the Y axis. */
   direction?: XYZProps;
   /** If true, the light will be applied even when shadows are turned off for the view.
    * If false, a roughly overhead light of the same intensity oriented in view space will be used instead.
@@ -44,7 +44,7 @@ const defaultSolarDirection = Vector3d.create(0.272166, 0.680414, 0.680414);
  * @public
  */
 export class SolarLight {
-  /** Direction of the light in world coordinates. Default: (0.272166, 0.680414, 0.680414) */
+  /** Direction of the light in world coordinates. Defaults to a vector looking down on the scene at a 45 degree angle mostly along the Y axis. */
   public readonly direction: Readonly<Vector3d>;
   /** Intensity of the light, typically in [0..1] but can range up to 5. Default: 1.0 */
   public readonly intensity: number;
