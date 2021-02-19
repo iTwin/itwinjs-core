@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "compile": "npm run build",
     "cover": "",
     "docs": "",
     "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
