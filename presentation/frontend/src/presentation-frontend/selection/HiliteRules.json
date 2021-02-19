@@ -1,5 +1,5 @@
 {
-  "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "$schema": "../../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
   "id": "presentation-frontend/HiliteRules",
   "rules": [
     {
@@ -9,22 +9,33 @@
       "specifications": [
         {
           "specType": "ContentRelatedInstances",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementOwnsChildElements"
+          "relationshipPaths": [
+            [
+              {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsChildElements"
+                },
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "Subject"
+                },
+                "count": "*"
+              },
+              {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsChildElements"
+                },
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "PhysicalPartition"
+                }
+              }
             ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Subject",
-              "PhysicalPartition"
-            ]
-          },
-          "isRecursive": true,
-          "instanceFilter": "this.IsOfClass(\"PhysicalPartition\", \"BisCore\")"
+          ]
         }
       ]
     },
@@ -52,19 +63,15 @@
       "specifications": [
         {
           "specType": "ContentRelatedInstances",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "CategoryOwnsSubCategories"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SubCategory"
-            ]
-          }
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "CategoryOwnsSubCategories"
+              },
+              "direction": "Forward"
+            }
+          ]
         }
       ]
     },
@@ -87,28 +94,76 @@
     },
     {
       "ruleType": "Content",
+      "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"GroupInformationElement\", \"BisCore\")",
+      "onlyIfNotHandled": true,
+      "specifications": [
+        {
+          "specType": "ContentRelatedInstances",
+          "relationshipPaths": [
+            [
+              {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementGroupsMembers"
+                },
+                "direction": "Forward"
+              },
+              {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsChildElements"
+                },
+                "direction": "Forward",
+                "count": "*"
+              }
+            ]
+          ],
+          "instanceFilter": "this.IsOfClass(\"GeometricElement\", \"BisCore\")"
+        }
+      ]
+    },
+    {
+      "ruleType": "Content",
       "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"GeometricElement\", \"BisCore\")",
       "onlyIfNotHandled": true,
       "specifications": [
         {
           "specType": "ContentRelatedInstances",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementOwnsChildElements"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Element"
-            ]
-          },
-          "isRecursive": true
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ElementOwnsChildElements"
+              },
+              "direction": "Forward",
+              "count": "*"
+            }
+          ],
+          "instanceFilter": "this.IsOfClass(\"GeometricElement\", \"BisCore\")"
         },
         {
           "specType": "SelectedNodeInstances"
+        }
+      ]
+    },
+    {
+      "ruleType": "Content",
+      "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"Element\", \"BisCore\")",
+      "onlyIfNotHandled": true,
+      "specifications": [
+        {
+          "specType": "ContentRelatedInstances",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ElementOwnsChildElements"
+              },
+              "direction": "Forward",
+              "count": "*"
+            }
+          ],
+          "instanceFilter": "this.IsOfClass(\"GeometricElement\", \"BisCore\")"
         }
       ]
     }
