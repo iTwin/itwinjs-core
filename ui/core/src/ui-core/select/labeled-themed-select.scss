@@ -5,10 +5,11 @@
 @import "../style/index";
 
 @mixin uicore-inputs-labeled-themed-select {
+  $uicore-select-padding-bordered:  $uicore-inputs-padding-bordered;
 
   display:                    block;
-  padding:                    0;
-  margin:                     0 0 $uicore-unbordered-padding;
+  padding:                    $uicore-select-padding-bordered ($uicore-bordered-padding - 3px);
+  margin:                     $uicore-inputs-margin 0;
   text-align:                 left;
   font-family:                $uicore-font-family;
   font-size:                  $uicore-font-size;
@@ -36,6 +37,10 @@
     color:                  $buic-text-color-muted;
   }
 
+  > .uicore-reactSelectTop {
+    padding:                    $uicore-select-padding-bordered ($uicore-bordered-padding - 3px);
+    margin:                     $uicore-inputs-margin 0;
+  }
 
   /// Status colors ----------------------------------------------------------
 
