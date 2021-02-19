@@ -33,7 +33,7 @@ import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowF
 import { InspectElementTool } from "./tools/InspectElementTool";
 import {
   AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
-  AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapLayerSubLayerVisiblityTool,
+  AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisiblityTool,
   MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool,
 } from "./tools/MapLayerTool";
 import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
@@ -130,6 +130,7 @@ export class FrontendDevTools {
       MapLayerZoomTool,
       MapBaseColorTool,
       MapBaseTransparencyTool,
+      MapBaseVisibilityTool,
       MeasureTileLoadTimeTool,
       OverrideSubCategoryPriorityTool,
       RealityTransitionTool,
