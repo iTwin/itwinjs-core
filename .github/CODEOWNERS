@@ -167,7 +167,7 @@ rush.json       @calebmshafer @scsewall
 /test-apps/imodel-from-geojson              @mgooding
 /test-apps/imodel-from-orbitgt              @RBBentley
 /test-apps/imodel-from-reality-model        @RBBentley
-/test-apps/imodel-transformer               @scsewall
+/test-apps/imodel-transformer               @scsewall @mgooding
 /test-apps/ninezone-test-app                @imodeljs/ui
 /test-apps/presentation-test-app            @imodeljs/presentation
 /test-apps/synchro-schedule-importer        @RBBentley
