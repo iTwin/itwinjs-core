@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IpcApp } from "@bentley/imodeljs-frontend";
-import { presentationIpcChannel, RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
+import { PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
 import { expect } from "chai";
 import sinon from "sinon";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
@@ -23,7 +23,7 @@ describe("IpcRequestsHandler", () => {
       const rulesetId = "test-ruleset-id";
       const variable: RulesetVariable = { id: "var-id", type: VariableValueTypes.String, value: "test-value" };
       await handler.setRulesetVariable({ rulesetId, variable });
-      expect(callChannelStub).to.be.calledOnceWith(presentationIpcChannel, "setRulesetVariable", {
+      expect(callChannelStub).to.be.calledOnceWith(PRESENTATION_IPC_CHANNEL_NAME, "setRulesetVariable", {
         clientId: "test-client-id",
         rulesetId,
         variable,

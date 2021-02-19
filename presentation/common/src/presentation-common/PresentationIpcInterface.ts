@@ -9,7 +9,7 @@
 import { RulesetVariableJSON } from "./RulesetVariables";
 
 /** @internal */
-export const presentationIpcChannel = "presentationIpcInterface-1.0";
+export const PRESENTATION_IPC_CHANNEL_NAME = "presentationIpcInterface-1.0";
 
 /** @internal */
 export interface CommonIpcParams {

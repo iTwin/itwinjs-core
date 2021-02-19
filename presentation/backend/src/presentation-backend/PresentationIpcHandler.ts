@@ -7,12 +7,12 @@
  */
 
 import { IpcHandler } from "@bentley/imodeljs-backend";
-import { presentationIpcChannel, PresentationIpcInterface, RulesetVariableJSON, SetRulesetVariableParams } from "@bentley/presentation-common";
+import { PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariableJSON, SetRulesetVariableParams } from "@bentley/presentation-common";
 import { Presentation } from "./Presentation";
 
 /** @internal */
 export class PresentationIpcHandler extends IpcHandler implements PresentationIpcInterface {
-  public channelName = presentationIpcChannel;
+  public channelName = PRESENTATION_IPC_CHANNEL_NAME;
 
   public async setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void> {
     const { variable } = params;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AsyncMethodsOf, IpcApp, PromiseReturnType } from "@bentley/imodeljs-frontend";
-import { presentationIpcChannel, PresentationIpcInterface, RulesetVariable, SetRulesetVariableParams } from "@bentley/presentation-common";
+import { PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, SetRulesetVariableParams } from "@bentley/presentation-common";
 
 /** @internal */
 export class IpcRequestsHandler {
@@ -19,7 +19,7 @@ export class IpcRequestsHandler {
   }
 
   private async call<T extends AsyncMethodsOf<PresentationIpcInterface>>(methodName: T, ...args: Parameters<PresentationIpcInterface[T]>): Promise<PromiseReturnType<PresentationIpcInterface[T]>> {
-    return IpcApp.callIpcChannel(presentationIpcChannel, methodName, ...args);
+    return IpcApp.callIpcChannel(PRESENTATION_IPC_CHANNEL_NAME, methodName, ...args);
   }
 
   public async setRulesetVariable(params: Omit<SetRulesetVariableParams<RulesetVariable>, "clientId">) {
