@@ -3230,6 +3230,17 @@ export class LinkPartition extends InformationPartitionElement {
     static get className(): string;
 }
 
+// @internal (undocumented)
+export class LocalhostIpcHost {
+    // (undocumented)
+    static startup(opts?: {
+        localhostIpcHost?: {
+            socketPort?: number;
+        };
+        iModelHost?: IModelHostConfiguration;
+    }): Promise<void>;
+}
+
 // @internal
 export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;

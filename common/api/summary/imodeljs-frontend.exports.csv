@@ -107,6 +107,7 @@ alpha;CustomQuantityTypeDefinition
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
+internal;DecorationsCache
 public;Decorator 
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
@@ -280,6 +281,7 @@ internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
+internal;LocalhostIpcApp
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
