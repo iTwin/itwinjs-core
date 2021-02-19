@@ -1952,16 +1952,15 @@ export interface FooterModeFieldProps extends StatusFieldProps {
     children?: React.ReactNode;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export class FrameworkAccuDraw extends AccuDraw {
     constructor();
     static get displayNotifications(): boolean;
     static set displayNotifications(v: boolean);
     // (undocumented)
     static getFieldDisplayValue(index: ItemField): string;
-    // @internal
     grabInputFocus(): void;
-    // @internal (undocumented)
+    // (undocumented)
     get hasInputFocus(): boolean;
     static readonly isACSRotationConditional: ConditionalBooleanValue;
     static readonly isContextRotationConditional: ConditionalBooleanValue;
@@ -1971,21 +1970,20 @@ export class FrameworkAccuDraw extends AccuDraw {
     static readonly isSideRotationConditional: ConditionalBooleanValue;
     static readonly isTopRotationConditional: ConditionalBooleanValue;
     static readonly isViewRotationConditional: ConditionalBooleanValue;
-    // @internal (undocumented)
+    // (undocumented)
     onCompassModeChange(): void;
-    // @internal (undocumented)
+    // (undocumented)
     onFieldLockChange(index: ItemField): void;
-    // @internal (undocumented)
+    // (undocumented)
     onFieldValueChange(index: ItemField): void;
-    // @internal
     onMotion(_ev: BeButtonEvent): void;
-    // @internal (undocumented)
+    // (undocumented)
     onRotationModeChange(): void;
-    // @internal (undocumented)
+    // (undocumented)
     setFocusItem(index: ItemField): void;
-    // @internal (undocumented)
+    // (undocumented)
     static translateFromItemField(item: ItemField): AccuDrawField;
-    // @internal (undocumented)
+    // (undocumented)
     static translateToItemField(field: AccuDrawField): ItemField;
 }
 
