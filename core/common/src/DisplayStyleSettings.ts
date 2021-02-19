@@ -11,7 +11,7 @@
 import {
   assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, ObservableSet, OrderedId64Iterable,
 } from "@bentley/bentleyjs-core";
-import { XYZProps } from "@bentley/geometry-core";
+import { Point3d, XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
 import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
@@ -31,6 +31,9 @@ import { SpatialClassificationProps } from "./SpatialClassificationProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
+import { Cartographic } from "./geometry/Cartographic";
+import { IModel } from "./IModel";
+import { calculateSolarDirection } from "./SolarCalculate";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -1362,6 +1365,54 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this.onLightsChanged.raiseEvent(lights);
     this._lights = lights;
     this._json3d.lights = lights.toJSON();
+  }
+
+  /** Adjust the solar light direction based on a date and time at a geographic location.
+   * This replaces `this.lights` with a copy that records the time point and the computed direction.
+   * @param timePoint The time in UNIX milliseconds.
+   * @param location The geographic location, or an iModel from which the geolocation is to be obtained.
+   * @see [[sunTime]] to get the current sun time.
+   * @see [[clearSunTime]] to clear the time point.
+   * @note If the iModel is not geolocated, a default cartographic center in Exton, Pennsylvania will be used to compute the light direction.
+   */
+  public setSunTime(timePoint: number, location: IModel | Cartographic): void {
+    let cartoCenter;
+    if (location instanceof IModel) {
+      if (location.isGeoLocated) {
+        const projectExtents = location.projectExtents;
+        const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
+        cartoCenter = location.spatialToCartographicFromEcef(projectCenter);
+      } else {
+        cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+      }
+    } else {
+      cartoCenter = location;
+    }
+
+    const direction = calculateSolarDirection(new Date(timePoint), cartoCenter);
+    this.lights = this.lights.clone({ solar: { direction, timePoint } });
+  }
+
+  /** Clear the solar time point stored in `this.lights.solarLight`.
+   * @note This does not affect the solar light direction.
+   * @see [[sunTime]] to get the current sun time.
+   * @see [[setSunTime]] to set the time point and the solar light direction derived from it.
+   */
+  public clearSunTime(): void {
+    if (this.lights.solar.timePoint === undefined)
+      return;
+
+    const solar = this.lights.solar.toJSON() ?? { };
+    solar.timePoint = undefined;
+    this.lights = this.lights.clone({ solar });
+  }
+
+  /** The time point from which the solar light direction was derived, in UNIX milliseconds.
+   * @see [[setSunTime]] to change the time point and solar direction.
+   * @see [[clearSunTime]] to reset the time point to `undefined`.
+   */
+  public get sunTime(): number | undefined {
+    return this.lights.solar.timePoint;
   }
 
   /** Get the plan projection settings associated with the specified model, if defined.
