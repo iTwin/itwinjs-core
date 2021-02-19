@@ -7,6 +7,22 @@
 $divider-color: $buic-background-toolbutton-stroke;
 $hovered-icon-color: $buic-foreground-primary-tone;
 
+button.map-manager-item-visibility {
+  background-color: transparent;
+  border: none;
+  //margin: 0 2px;
+  color: $buic-foreground-body;
+  background-color: transparent;
+
+  &:hover {
+    color: $hovered-icon-color;
+  }
+  &:focus {
+    outline: none;
+    box-shadow: $uicore-button-focus-boxshadow;
+  }
+}
+
 .map-manager-layer-host {
   margin: 0 6px;
   height: 100%;
@@ -48,23 +64,6 @@ $hovered-icon-color: $buic-foreground-primary-tone;
 
   button.map-manager-item-requireAuthIcon {
     color: $buic-foreground-warning;
-  }
-
-
-  button.map-manager-item-visibility {
-    background-color: transparent;
-    border: none;
-    //margin: 0 2px;
-    color: $buic-foreground-body;
-    background-color: transparent;
-
-    &:hover {
-      color: $hovered-icon-color;
-    }
-    &:focus {
-      outline: none;
-      box-shadow: $uicore-button-focus-boxshadow;
-    }
   }
 
   .map-manager-header-buttons-group {
