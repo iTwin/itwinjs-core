@@ -12,7 +12,7 @@ import { Config } from "@bentley/bentleyjs-core";
 /**
  * Returns a list of RPCs supported by this application
  */
-export default function getSupportedRpcs(): RpcInterfaceDefinition[] {
+export function getSupportedRpcs(): RpcInterfaceDefinition[] {
 
   if (Config.App.has("imjs_TESTAPP_ALLOW_WRITE") && (Config.App.get("imjs_TESTAPP_ALLOW_WRITE") === "1")) {
     // eslint-disable-next-line no-console
