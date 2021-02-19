@@ -14,11 +14,12 @@ import { CompressedId64Set, Id64Set } from "@bentley/bentleyjs-core";
  * @beta
  */
 export enum PlanarClipMaskMode {
-  /** None indicates that no masking is performed.   */
+  /** No masking. */
   None = 0,
-  /** Priority indicates that masking should occur for all models with a higher priority.  Various model types have default priorities as enumerated in [[PlanarClipMaskModelPriority]]. As background maps have
-   * lowest priority they are masked by all other model types, followed by global and nonglobal reality models.  BIM models have highest priority and are never masked.  Reality models priority can be overriden by setting
-   * a value in the [[PlanarClipMask]] object to cause reality models to mask each other.  This can be useful if more than one overlapping reality model is present.
+
+  /** Mask based on priority. Different types of models have different default priorities as enumerated by [[PlanarClipMaskPriority]].
+   * For example, background maps have the lowest prioority, so they are masked by all other types, while design ("BIM") models have the highest priority and are therefore never masked.
+   * The priority of a reality model can be overridden by [[PlanarClipMaskSettings.priority]]. This is useful to allow one reality model to mask another overlapping one.
    */
   Priority = 1,
   /**  Models indicates that masking should occur by all models indicated by [[PlanarClipMaskProps.modelIds]], in this case the model does not have to be displayed in the view participate in masking.
@@ -33,22 +34,25 @@ export enum PlanarClipMaskMode {
   ExcludeElements = 5,
 }
 
-/** The default priority values for a [[PlanrClipMask]]  models.  Models with [[PlanarClipMaskMode]] set to priority are
- * clipped by by any model with a higher priority.  The enumerated values are the defaults and may be overriden by setting
- * [[PlanarClipMask]].priority.
- * @see [[PlanarClipMaskProps]]
- * @see [[PlanarClipMaskSettings]]
+/** The default priority values for a [[PlanarClipMaskSettings]], based on model type. Models with a lower priority is masked by models with a higher priority
+ * in [[PlanarClipMaskMode.Priority]].
+ * The default can be overridden by [[PlanarClipMaskSettings.priority]].
  *  @beta
  */
 export enum PlanarClipMaskPriority {
+  /** Background map. */
   BackgroundMap = -2048,
+  /** A reality model that spans the globe - e.g., OpenStreetMaps Buildings. */
   GlobalRealityModel = -1024,
+  /** A reality model with a bounded range. */
   RealityModel = 0,
+  /** A design model stored in the [IModelDb]($backend). */
   BIM = 2048,
+  /** The maximum supported priority. */
   Maximum = 4096,
 }
 
-/** JSON representation of the [[PlanarClipMask]]  properties.
+/** JSON representation of a [[PlanarClipMaskSettings]].
  * @beta
  */
 export interface  PlanarClipMaskProps {
@@ -86,7 +90,8 @@ export class PlanarClipMaskSettings {
 
     return new PlanarClipMaskSettings(json.mode, json.transparency, json.modelIds, json.subCategoryOrElementIds, json.priority);
   }
-  /** Create a [[PlanarClipMaskAettings]] object */
+
+  /** Create a [[PlanarClipMaskSettings]] object */
   public static create(mode: PlanarClipMaskMode, modelIds?: Id64Set, subCategoryOrElementIds?: Id64Set, transparency?: number): PlanarClipMaskSettings | undefined {
     switch (mode) {
       case PlanarClipMaskMode.None:
@@ -106,8 +111,8 @@ export class PlanarClipMaskSettings {
     }
   }
 
-  /** Create [[planarClipMaskSettings]] object by priority
-   * @see [[PlanarClipMaskPriority]]
+  /** Create [[PlanarClipMaskSettings]] object by priority.
+   * @see [[PlanarClipMaskPriority]] for default priority values based on model type.
    */
   public static createByPriority(priority: number, transparency?: number) {
     return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, transparency, undefined, undefined, priority);
@@ -118,8 +123,10 @@ export class PlanarClipMaskSettings {
     return { mode: this.mode, modelIds: this.modelIds, subCategoryOrElementIds: this.subCategoryOrElementIds, priority: this.priority, transparency: this.transparency  };
   }
 
-  /**  */
-  public get isValid(): boolean { return this.mode !== PlanarClipMaskMode.None; }
+  /** Returns true if masking is enabled. */
+  public get isValid(): boolean {
+    return this.mode !== PlanarClipMaskMode.None;
+  }
 
   public equals(other: PlanarClipMaskSettings): boolean {
     return this.mode === other.mode &&
@@ -128,6 +135,7 @@ export class PlanarClipMaskSettings {
       this.modelIds === other.modelIds  &&
       this.subCategoryOrElementIds ===  other.subCategoryOrElementIds;
   }
+
   /** Create a copy of this TerrainSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
    * @returns A TerrainSettings with all of its properties set to match those of`this`, except those explicitly defined in `changedProps`.
@@ -154,6 +162,7 @@ export class PlanarClipMaskSettings {
     this.priority = priority;
     this.transparency = transparency;
   }
+
   /** A default PlanarClipMask which masks nothing. */
   public static defaults = new PlanarClipMaskSettings(PlanarClipMaskMode.None);
 }
