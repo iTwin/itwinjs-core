@@ -46,6 +46,7 @@ import { Ruleset } from '@bentley/presentation-common';
 import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
+import { SetRulesetVariableParams } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 
 // @internal (undocumented)
@@ -243,6 +244,8 @@ export class PresentationManager implements IDisposable {
     getNodesCount(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>): Promise<number>;
     // @alpha
     getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>>;
+    // @internal (undocumented)
+    get ipcRequestsHandler(): IpcRequestsHandler | undefined;
     // @alpha
     loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
     // @alpha
@@ -263,6 +266,8 @@ export interface PresentationManagerProps {
     // @alpha
     activeUnitSystem?: PresentationUnitSystem;
     clientId?: string;
+    // @internal (undocumented)
+    ipcRequestsHandler?: IpcRequestsHandler;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
 }

@@ -8,8 +8,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Config, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@bentley/imodeljs-common";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, WebViewerApp } from "@bentley/imodeljs-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
@@ -23,21 +22,26 @@ import App from "./components/app/App";
 Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Warning);
 
-// initialize RPC
-(function initRpc() {
-  RpcConfiguration.developmentMode = true;
-  if (!ProcessDetector.isElectronAppFrontend) {
-    const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
-    // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface
-    BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
-    // __PUBLISH_EXTRACT_END__
-  }
-})();
-
 export class SampleApp {
   private static _ready: Promise<void>;
   public static async startup(): Promise<void> {
-    await ElectronApp.startup({ iModelApp: { rpcInterfaces: rpcs } });
+    const opts = {
+      iModelApp: {
+        rpcInterfaces: rpcs,
+      },
+      webViewerApp: {
+        rpcParams: {
+          uriPrefix: "http://localhost:3001",
+          info: { title: "presentation-test-app", version: "v1.0" },
+        },
+      },
+    };
+
+    if (ProcessDetector.isElectronAppFrontend)
+      await ElectronApp.startup(opts);
+    else
+      await WebViewerApp.startup(opts);
+
     const readyPromises = new Array<Promise<void>>();
 
     const localizationNamespace = IModelApp.i18n.registerNamespace("Sample");
