@@ -224,8 +224,8 @@ export class MobileHost {
     // (undocumented)
     static signOut(ctx: ClientRequestContext): Promise<void>;
     static startup(opt?: {
-        mobileHost: {
-            device: MobileDevice;
+        mobileHost?: {
+            device?: MobileDevice;
         };
         ipcHost?: IpcHostOptions;
         iModelHost?: IModelHostConfiguration;
