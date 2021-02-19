@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, ViewportDecorator
+  CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
 import { Point3d } from "@bentley/geometry-core";

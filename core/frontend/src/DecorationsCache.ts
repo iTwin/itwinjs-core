@@ -33,16 +33,22 @@ function disposeCachedDecorations(decorations: CachedDecoration[]): void {
  */
 export class DecorationsCache {
   private readonly _cache = new Map<ViewportDecorator, CachedDecoration[]>();
+  /** If true, attempts to remove entries from the cache will silently fail. This is set while a [[ScreenViewport]] is producing decorations
+   * to prevent poorly-written decorators from invalidating the cache while it is being populated by, e.g., calling [[Viewport.invalidateScene]].
+   */
   public prohibitRemoval = false;
 
+  /** The number of decorators that have entries in the cache. */
   public get size(): number {
     return this._cache.size;
   }
 
+  /** Get the list of cached decorations for the decorator. */
   public get(decorator: ViewportDecorator): CachedDecoration[] | undefined {
     return this._cache.get(decorator);
   }
 
+  /** Add a decoration to the list of cached decorations for the decorator. */
   public add(decorator: ViewportDecorator, decoration: CachedDecoration): void {
     assert(true === decorator.useCachedDecorations);
     if (!decorator.useCachedDecorations)
@@ -55,6 +61,7 @@ export class DecorationsCache {
     decorations.push(decoration);
   }
 
+  /** Delete the decorator and all of its decorations, disposing of the decorations' graphics. */
   public delete(decorator: ViewportDecorator): void {
     if (this.prohibitRemoval)
       return;
@@ -67,6 +74,7 @@ export class DecorationsCache {
     }
   }
 
+  /** Remove all decorators and their decorations from the cache, disposing of the decorations' graphics. */
   public clear(): void {
     if (this.prohibitRemoval)
       return;
