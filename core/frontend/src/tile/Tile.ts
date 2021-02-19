@@ -86,7 +86,7 @@ export abstract class Tile {
   public readonly range: ElementAlignedBox3d;
   /** The parent of this tile, or undefined if it is the [[TileTree]]'s root tile. */
   public readonly parent: Tile | undefined;
-  /** The depth of this tile within its [[TileTree]. The root tile has a depth of zero. */
+  /** The depth of this tile within its [[TileTree]]. The root tile has a depth of zero. */
   public readonly depth: number;
   /** The point at the center of this tile's volume. */
   public readonly center: Point3d;
@@ -108,10 +108,10 @@ export abstract class Tile {
   protected abstract _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
 
   /** Return a Promise that resolves to the raw data representing this tile's content. */
-  public abstract async requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
+  public abstract requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
 
   /** Return a Promise that deserializes this tile's content from raw format produced by [[requestContent]]. */
-  public abstract async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent>;
+  public abstract readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent>;
 
   /** Constructor */
   protected constructor(params: TileParams, tree: TileTree) {

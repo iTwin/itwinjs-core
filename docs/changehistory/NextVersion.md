@@ -93,6 +93,28 @@ It is frequently necessary to detect the type of JavaScript process currently ex
 
 CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
 
+## Planar clip masks
+
+Planar clip masks provide a two and a half dimensional method for masking the regions where the background map, reality models and BIM geometry overlap. A planar clip mask is described by [PlanarClipMaskProps]($common).A planar clip mask may be applied to a contexual reality model as a [ContextRealityModelProps.planarClipMask]($common) to the background map as [BackgroundMapProps.planarClipMask]($common) or as an override to attached reality models with the [DisplayStyleSettingsProps.planarClipOvr]($common) array of [DisplayStyleRealityModelPlanarClipMaskProps]($common).   The planar clip mask geometry is not required to be planar as the masks will be generated from their projection to the X-Y plane, therefore any 3D model or reality model can be used to generate a planar clip mask.
+
+The [PlanarClipMaskProps.mode]($common) specifies how the mask geometry is collected.  [PlanarClipMaskMode]$(common) includes collection of masks by models, subcategories, elements (included or excluded) or by a priority scheme that clips against other models with a higher priority.
+
+### By masking a reality model with a BIM model we can display the BIM model without the overlapping reality model
+
+![Building and reality model without mask](./assets/PlanarMask_BuildingNoMask.jpg)
+![Reality model masked by building](./assets/PlanarMask_BuildingMasked.jpg)
+
+### By masking the background map terrain with the reality model we can display the current state of the quarry without intrusive terrain
+
+![Quarry and Background Map Terrain without mask](./assets/PlanarMask_QuarryNoMask.jpg)
+![Background Map Terrain masked by quarry reality model](./assets/PlanarMask_QuarryMasked.jpg)
+
+### Planar Clip Mask Transparency
+
+Planar clip masks support transparency.  If a mask is not transparent then the masked geometry is omitted completely, if transparency is included then increasing the transparency will decrease the masking and increase a translucent blending of the masked geometry.  A transparency value of 1 would indicate no masking.  If no transparency is included then the transparency value from the mask elements is used.  In the image below a transparent mask is applied to the reality model to show the underground tunnel.
+
+![Planar clip mask with transparency](./assets/PlanarMask_TunnelTransparent.jpg)
+
 ## Breaking Api Changes
 
 ### Quantity package
@@ -114,3 +136,84 @@ The *export* methods of [IModelExporter]($backend) and the *process* methods of 
 While exporting and transforming should generally be considered *batch* operations, changing these methods to `async` makes progress reporting and process health monitoring much easier. This is particularly important when processing large iModels.
 
 To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from within an `async` method. No internal logic was changed, so that should be the only changes required.
+
+## Presentation
+
+### Highlighting members of GroupInformationElement
+
+Presentation rules used by [HiliteSetProvider]($presentation-frontend) have been modified to return geometric elements grouped by *BisCore.GroupInformationElement* instances.
+
+### Setting up default formats
+
+A new feature was introduced, which allows supplying default unit formats to use for formatting properties that don't have a presentation unit for requested unit system. The formats are set when initializing [Presentation]($presentation-backend) and passing `PresentationManagerProps.defaultFormats`.
+Example:
+
+```ts
+Presentation.initialize({
+  defaultFormats: {
+    length: {
+      unitSystems: [PresentationUnitSystem.BritishImperial],
+      format: MY_DEFAULT_FORMAT_FOR_LENGTHS_IN_BRITISH_IMPERIAL_UNITS,
+    },
+    area: {
+      unitSystems: [PresentationUnitSystem.UsCustomary, PresentationUnitSystem.UsSurvey],
+      format: MY_DEFAULT_FORMAT_FOR_AREAS_IN_US_UNITS,
+    },
+  },
+});
+```
+
+### Accessing selection in instance filter of content specifications
+
+Added a way to create and filter content that's related to given input through some ID type of property that is not part of a relationship. That can be done by
+using [ContentInstancesOfSpecificClasses specification](../learning/presentation/content/ContentInstancesOfSpecificClasses.md) with an instance filter that makes use
+of the newly added [SelectedInstanceKeys](../learning/presentation/content/ECExpressions.md#instance=filter) ECExpression symbol. Example:
+
+```json
+{
+  "ruleType": "Content",
+  "condition": "SelectedNode.IsOfClass(\"ECClassDef\", \"ECDbMeta\")",
+  "specifications": [
+    {
+      "specType": "ContentInstancesOfSpecificClasses",
+      "classes": {
+        "schemaName": "BisCore",
+        "classNames": ["Element"]
+      },
+      "arePolymorphic": true,
+      "instanceFilter": "SelectedInstanceKeys.AnyMatches(x => this.IsOfClass(x.ECInstanceId))"
+    }
+  ]
+}
+```
+
+The above example creates content for `ECDbMeta.ECClassDef` instances by selecting all `BisCore.Element` instances
+that are of given `ECDbMeta.ECClassDef` instances.
+
+Previously this was not possible, because there is no ECRelationship between `ECDbMeta.ECClassDef` and `BisCore.Element`.
+
+### ECInstance ECExpression context method enhancements
+
+Added lambda versions for [ECInstance ECExpression context](../learning/presentation/ECExpressions.md#ecinstance) methods: `GetRelatedInstancesCount`,
+`HasRelatedInstance`, `GetRelatedValue`. This allows using those methods without the need of an ECRelationship between "current" ECInstance
+and related ECInstance. Example:
+
+```json
+{
+  "ruleType": "RootNodes",
+  "specifications": [
+    {
+      "specType": "InstanceNodesOfSpecificClasses",
+      "classes": {
+        "schemaName": "ECDbMeta",
+        "classNames": ["ECClassDef"]
+      },
+      "instanceFilter": "this.HasRelatedInstance(\"BisCore:Element\", el => el.IsOfClass(this.ECInstanceId))",
+      "groupByClass": false,
+      "groupByLabel": false
+    }
+  ]
+}
+```
+
+The above example returns `ECDbMeta:ECClassDef` instances only if there are `BisCore:Elements` of those classes.

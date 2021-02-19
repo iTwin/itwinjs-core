@@ -46,6 +46,7 @@ export const enum TechniqueId {
   AmbientOcclusion,
   Blur,
   CombineTextures,
+  Combine3Textures,
   VolClassCopyZ,
   VolClassSetBlend,
   VolClassBlend,
