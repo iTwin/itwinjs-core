@@ -311,6 +311,11 @@ describe("PresentationManager", () => {
 
     it("does not inject ruleset variables into request options in IpcApp", async () => {
       sinon.stub(IpcApp, "isValid").get(() => true);
+      sinon.stub(IpcApp, "addListener");
+      manager.dispose();
+      manager = PresentationManager.create({
+        rpcRequestsHandler: rpcRequestsHandlerMock.object,
+      });
       await manager.getNodesCount({  // eslint-disable-line deprecation/deprecation
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
