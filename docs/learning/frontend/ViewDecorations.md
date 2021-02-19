@@ -161,4 +161,4 @@ class FancyDecorator {
 }
 ```
 
-For a decorator defining the `useCachedDecorations` property as true, the functions [ViewManager.invalidateCachedDecorationsAllViews]($frontend) and [Viewport.invalidateCachedDecorations]($frontend) give the decorator much tighter control over when its decorations are regenerated. This can potentially result in significantly improved performance.
+For a decorator defining the `useCachedDecorations` property as true, the functions [ViewManager.invalidateCachedDecorationsAllViews]($frontend) and [ScreenViewport.invalidateCachedDecorations]($frontend) give the decorator much tighter control over when its decorations are regenerated. This can potentially result in significantly improved performance.
