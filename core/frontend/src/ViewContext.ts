@@ -36,15 +36,14 @@ const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 2
 export class RenderContext {
   /** ViewFlags extracted from the context's [[Viewport]]. */
   public readonly viewFlags: ViewFlags;
-  /** The [[Viewport]] associated with this context. */
-  public readonly viewport: Viewport;
+  private readonly _viewport: Viewport;
   /** Frustum extracted from the context's [[Viewport]]. */
   public readonly frustum: Frustum;
   /** Frustum planes extracted from the context's [[Viewport]]. */
   public readonly frustumPlanes: FrustumPlanes;
 
   constructor(vp: Viewport, frustum?: Frustum) {
-    this.viewport = vp;
+    this._viewport = vp;
     this.viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
     this.frustum = frustum ? frustum : vp.getFrustum();
     this.frustumPlanes = new FrustumPlanes(this.frustum);
@@ -53,6 +52,11 @@ export class RenderContext {
   /** Given a point in world coordinates, determine approximately how many pixels it occupies on screen based on this context's frustum. */
   public getPixelSizeAtPoint(inPoint?: Point3d): number {
     return this.viewport.viewingSpace.getPixelSizeAtPoint(inPoint);
+  }
+
+  /** The [[Viewport]] associated with this context. */
+  public get viewport(): Viewport {
+    return this._viewport;
   }
 
   /** @internal */
@@ -121,8 +125,15 @@ export class DecorateContext extends RenderContext {
   private readonly _cache: DecorationsCache;
   private _curCacheableDecorator?: ViewportDecorator;
 
+  /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn.
+   * @deprecated use [[DecorateContext.viewport]].
+   */
+  public get screenViewport(): ScreenViewport { return this.viewport; }
+
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn. */
-  public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
+  public get viewport(): ScreenViewport {
+    return super.viewport as ScreenViewport;
+  }
 
   /** @internal */
   constructor(vp: ScreenViewport, decorations: Decorations, cache: DecorationsCache) {
