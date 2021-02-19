@@ -72,18 +72,21 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   });
 
   const isSettingsStorageAvailable = React.useCallback(() => {
-    return !props.askForCredentialsOnly
-      && !!IModelApp.viewManager?.selectedView?.iModel?.contextId
-      && !!IModelApp.viewManager?.selectedView?.iModel?.iModelId;
+    return !props.askForCredentialsOnly;
   }, [props.askForCredentialsOnly]);
 
-  // Even though the settings storage is available, we might want to disable it in the UI
-  // ArcGIS support only for now, to revisit later.
-  const [settingsStorageDisabled, setSettingsStorageDisabled] = React.useState(isSettingsStorageAvailable() && (mapType === MAP_TYPES.arcGis || (!userName && !password)));
+  // Even though the settings storage is available,
+  // we don't always want to enable it in the UI.
+  const [settingsStorageDisabled] = React.useState(
+    !isSettingsStorageAvailable()
+    || !IModelApp.viewManager?.selectedView?.iModel?.contextId
+    || !IModelApp.viewManager?.selectedView?.iModel?.iModelId);
 
-  const [authSupported] = React.useState(() =>
-    (mapType === MAP_TYPES.wms && (mapTypesOptions?.supportWmsAuthentication ? true : false))
-    || mapType === MAP_TYPES.arcGis);
+  //const [authSupported] = React.useState(() =>
+  const isAuthSupported = React.useCallback(() => {
+    return ((mapType === MAP_TYPES.wms || mapType === MAP_TYPES.wms) && (mapTypesOptions?.supportWmsAuthentication ? true : false))
+      || mapType === MAP_TYPES.arcGis;
+  }, []);
 
   const [layerIdxToEdit] = React.useState((): number | undefined => {
     if (props.layerToEdit === undefined || !props.layerToEdit.name || !props.layerToEdit.url) {
@@ -136,12 +139,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     if (invalidCredentialsProvided)
       setInvalidCredentialsProvided(false);
   }, [setPassword, invalidCredentialsProvided, setInvalidCredentialsProvided]);
-
-  React.useEffect(() => {
-    if (isSettingsStorageAvailable()) {
-      setSettingsStorageDisabled(mapType !== MAP_TYPES.arcGis && (userName.length > 0 || password.length > 0));
-    }
-  }, [mapType, userName, password, setSettingsStorageDisabled, isSettingsStorageAvailable]);
 
   const doAttach = React.useCallback(async (source: MapLayerSource): Promise<boolean> => {
 
@@ -306,7 +303,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             <Input placeholder="Enter Map Name" onChange={onNameChange} value={props.layerToEdit?.name || layerToEdit?.name} disabled={props.askForCredentialsOnly} />
             <span className="map-layer-source-label">{urlLabel}</span>
             <Input placeholder="Enter Map Source URL" onChange={onUrlChange} value={props.layerToEdit?.url || layerToEdit?.url} disabled={props.askForCredentialsOnly} />
-            {authSupported &&
+            {isAuthSupported() &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>
                 <LabeledInput placeholder={serverRequireCredentials ? "Username required" : userNameLabel}
