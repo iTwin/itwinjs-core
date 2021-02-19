@@ -1373,7 +1373,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
    * @param location The geographic location; or an iModel, in which case the iModel's [[EcefLocation]] is used.
    * @see [[sunTime]] to get the current sun time.
    * @see [[clearSunTime]] to clear the time point.
-   * @note If `location` is an iModel lacking an EcefLocation, a location in Exton, Pennsylvania will be used to compute the light direction.
+   * @note If `location` is an iModel lacking an EcefLocation, a location in Exton, Pennsylvania will be used to compute the light direction instead.
    */
   public setSunTime(timePoint: number, location: IModel | Cartographic): void {
     let cartoCenter;
