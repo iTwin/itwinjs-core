@@ -4805,6 +4805,18 @@ export interface LoadedExtensionProps {
     props: ExtensionProps;
 }
 
+// @internal
+export class LocalhostIpcApp {
+    // (undocumented)
+    static startup(opts: {
+        localhostIpcApp?: {
+            socketPort?: number;
+        };
+        webViewerApp: WebViewerAppOptions;
+        iModelApp?: IModelAppOptions;
+    }): Promise<void>;
+}
+
 // @public
 export enum LocateAction {
     // (undocumented)
