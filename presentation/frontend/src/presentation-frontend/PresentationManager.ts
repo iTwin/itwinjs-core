@@ -283,8 +283,11 @@ export class PresentationManager implements IDisposable {
     }
     const rulesetId = (typeof foundRulesetOrId === "object") ? foundRulesetOrId.id : foundRulesetOrId;
     const variables = [...(rulesetVariables || [])];
-    if (!IpcApp.isValid)
+    if (!this._ipcRequestsHandler) {
+      // only need to add variables from variables manager if there's no IPC
+      // handler - if there is one, the variables are already known by the backend
       variables.push(...(await this.vars(rulesetId).getAllVariables()));
+    }
 
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
