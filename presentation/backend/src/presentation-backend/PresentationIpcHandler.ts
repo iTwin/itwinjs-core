@@ -15,7 +15,7 @@ export class PresentationIpcHandler extends IpcHandler implements PresentationIp
   public channelName = PRESENTATION_IPC_CHANNEL_NAME;
 
   public async setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void> {
-    const { variable } = params;
-    Presentation.getManager(params.clientId).vars(params.rulesetId).setValue(variable.id, variable.type, variable.value);
+    const { clientId, rulesetId, variable } = params;
+    Presentation.getManager(clientId).vars(rulesetId).setValue(variable.id, variable.type, variable.value);
   }
 }
