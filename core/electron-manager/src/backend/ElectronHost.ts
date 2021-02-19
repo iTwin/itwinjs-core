@@ -201,7 +201,7 @@ export class ElectronHost {
       this._developmentServer = eopt?.developmentServer ?? false;
       const frontendPort = eopt?.frontendPort ?? 3000;
       this.webResourcesPath = eopt?.webResourcesPath ?? "";
-      this.frontendURL = eopt?.frontendURL ?? this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`;
+      this.frontendURL = eopt?.frontendURL ?? (this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`);
       this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
       this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
     }
