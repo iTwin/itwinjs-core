@@ -30,13 +30,10 @@ import { SpatialClassificationProps } from "./SpatialClassificationProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
-<<<<<<< HEAD
 import { ClipStyle, ClipStyleProps } from "./ClipStyle";
-=======
 import { Cartographic } from "./geometry/Cartographic";
 import { IModel } from "./IModel";
 import { calculateSolarDirection } from "./SolarCalculate";
->>>>>>> 2c4134e4d5... Persist time point for solar light direction. (#810)
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
