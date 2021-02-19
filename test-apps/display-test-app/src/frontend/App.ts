@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode,
-  TileAdmin, Tool, ToolAdmin, WebViewerApp,
+  TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -166,8 +166,8 @@ export class DisplayTestApp {
         },
       },
       localhostIpcApp: {
-        socketPort: 3002
-      }
+        socketPort: 3002,
+      },
     };
 
     if (ProcessDetector.isElectronAppFrontend) {
