@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, Guid, IDisposable, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
