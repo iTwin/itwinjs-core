@@ -6,9 +6,9 @@
  * @module Views
  */
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
+import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps,
+  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps,
   DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode,
   GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, PlanarClipMaskMode, PlanarClipMaskSettings, RenderTexture, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
@@ -1307,18 +1307,11 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   /** Set the solar light direction based on time value
    * @param time The time in unix time milliseconds.
+   * @see [DisplayStyle3dSettings.sunTime]($common) to obtain the current sun time.
+   * @see [DisplayStyle3dSettings.setSunTime]($common).
    */
   public setSunTime(time: number) {
-    let cartoCenter;
-    if (this.iModel.isGeoLocated) {
-      const projectExtents = this.iModel.projectExtents;
-      const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
-      cartoCenter = this.iModel.spatialToCartographicFromEcef(projectCenter);
-    } else {
-      cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
-    }
-
-    this.settings.lights = this.settings.lights.clone({ solar: { direction: calculateSolarDirection(new Date(time), cartoCenter) } });
+    this.settings.setSunTime(time, this.iModel);
   }
 
   /** Settings controlling shadow display. */
