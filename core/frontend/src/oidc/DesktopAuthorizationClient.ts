@@ -17,7 +17,7 @@ import { FrontendRequestContext } from "../FrontendRequestContext";
 import { IpcApp } from "../IpcApp";
 
 /**
- * Ipc Wrapper around DesktopAuthorizationClient for use in the electron render process
+ * For use in desktop apps
  * @alpha
  */
 export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
@@ -31,11 +31,8 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
    */
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
-  /** Creates a new DesktopAuthorizationClient to be used in the electron render process */
   public constructor(clientConfiguration: DesktopAuthorizationClientConfiguration) {
     this._clientConfiguration = clientConfiguration;
-    if (!IpcApp.isValid)
-      throw new Error("This code should only be run in the electron renderer process");
   }
 
   /** Create strongly typed access token from untyped object */
@@ -46,12 +43,10 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
     return AccessToken.fromJson(accessTokenObj);
   }
 
-  /** Wrapper around ipc.send to add log traces */
   private ipcSend(channel: string, ...args: any[]) {
     IpcApp.send(channel, ...args);
   }
 
-  /** Wrapper around ipc.on to add log traces */
   private ipcOn(channel: string, fn: IpcListener) {
     IpcApp.addListener(channel, fn);
   }

@@ -2051,7 +2051,7 @@ export class DebugShaderFile {
 // @public
 export class DecorateContext extends RenderContext {
     // @internal
-    constructor(vp: ScreenViewport, _decorations: Decorations);
+    constructor(vp: ScreenViewport, decorations: Decorations, cache: DecorationsCache);
     addCanvasDecoration(decoration: CanvasDecoration, atFront?: boolean): void;
     addDecoration(type: GraphicType, decoration: RenderGraphic): void;
     addDecorationFromBuilder(builder: GraphicBuilder): void;
@@ -2061,9 +2061,11 @@ export class DecorateContext extends RenderContext {
     createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
     // @internal (undocumented)
     drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid?: boolean, _fixedRepetitions?: Point2d): void;
+    // @deprecated
     get screenViewport(): ScreenViewport;
     setSkyBox(graphic: RenderGraphic): void;
     setViewBackground(graphic: RenderGraphic): void;
+    get viewport(): ScreenViewport;
 }
 
 // @public
@@ -2085,6 +2087,16 @@ export class Decorations implements IDisposable {
     get worldOverlay(): GraphicList | undefined;
     set worldOverlay(worldOverlay: GraphicList | undefined);
     }
+
+// @internal
+export class DecorationsCache {
+    add(decorator: ViewportDecorator, decoration: CachedDecoration): void;
+    clear(): void;
+    delete(decorator: ViewportDecorator): void;
+    get(decorator: ViewportDecorator): CachedDecoration[] | undefined;
+    prohibitRemoval: boolean;
+    get size(): number;
+}
 
 // @public
 export interface Decorator extends ViewportDecorator {
@@ -4793,6 +4805,18 @@ export interface LoadedExtensionProps {
     props: ExtensionProps;
 }
 
+// @internal
+export class LocalhostIpcApp {
+    // (undocumented)
+    static startup(opts: {
+        localhostIpcApp?: {
+            socketPort?: number;
+        };
+        webViewerApp: WebViewerAppOptions;
+        iModelApp?: IModelAppOptions;
+    }): Promise<void>;
+}
+
 // @public
 export enum LocateAction {
     // (undocumented)
@@ -7410,8 +7434,8 @@ export class RenderContext {
     // @internal (undocumented)
     get target(): RenderTarget;
     readonly viewFlags: ViewFlags;
-    readonly viewport: Viewport;
-}
+    get viewport(): Viewport;
+    }
 
 // @internal (undocumented)
 export enum RenderDiagnostics {
@@ -8288,11 +8312,17 @@ export class ScreenViewport extends Viewport {
     static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport;
     // @deprecated
     readonly decorationDiv: HTMLDivElement;
+    // @internal (undocumented)
+    dispose(): void;
     doRedo(animationTime?: BeDuration): void;
     doUndo(animationTime?: BeDuration): void;
     // @internal (undocumented)
     drawLocateCursor(context: DecorateContext, viewPt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void;
     getClientRect(): ClientRect;
+    // @beta
+    invalidateCachedDecorations(decorator: ViewportDecorator): void;
+    // @internal (undocumented)
+    invalidateScene(): void;
     get isRedoPossible(): boolean;
     get isUndoPossible(): boolean;
     // @beta
@@ -8307,7 +8337,7 @@ export class ScreenViewport extends Viewport {
     openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     readonly parentDiv: HTMLDivElement;
     // @internal (undocumented)
-    pickCanvasDecoration(pt: XAndY): CanvasDecoration | undefined;
+    pickCanvasDecoration(pt: XAndY): import("./imodeljs-frontend").CanvasDecoration | undefined;
     // @alpha
     pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): {
         plane: Plane3dByOriginAndUnitNormal;
@@ -11758,8 +11788,6 @@ export abstract class Viewport implements IDisposable {
     // @internal
     protected constructor(target: RenderTarget);
     // @internal (undocumented)
-    addCachedDecoration(decorator: ViewportDecorator, decoration: CachedDecoration): void;
-    // @internal (undocumented)
     protected addDecorations(_decorations: Decorations): void;
     addFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
     // @internal (undocumented)
@@ -11873,8 +11901,6 @@ export abstract class Viewport implements IDisposable {
     getAuxCoordOrigin(result?: Point3d): Point3d;
     // (undocumented)
     getAuxCoordRotation(result?: Matrix3d): Matrix3d;
-    // @internal (undocumented)
-    getCachedDecorations(decorator: ViewportDecorator): CachedDecoration[] | undefined;
     getContrastToBackgroundColor(): ColorDef;
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // @beta
@@ -11905,8 +11931,6 @@ export abstract class Viewport implements IDisposable {
     // @beta
     get insideClipColor(): ColorDef | undefined;
     set insideClipColor(color: ColorDef | undefined);
-    // @beta
-    invalidateCachedDecorations(decorator: ViewportDecorator): void;
     // @internal (undocumented)
     invalidateController(): void;
     invalidateDecorations(): void;
