@@ -3233,7 +3233,12 @@ export class LinkPartition extends InformationPartitionElement {
 // @internal (undocumented)
 export class LocalhostIpcHost {
     // (undocumented)
-    static startup(port: number): Promise<void>;
+    static startup(opts?: {
+        localhostIpcHost?: {
+            socketPort?: number;
+        };
+        iModelHost?: IModelHostConfiguration;
+    }): Promise<void>;
 }
 
 // @internal

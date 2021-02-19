@@ -4793,10 +4793,16 @@ export interface LoadedExtensionProps {
     props: ExtensionProps;
 }
 
-// @internal (undocumented)
+// @internal
 export class LocalhostIpcApp {
     // (undocumented)
-    static startup(port: number): Promise<void>;
+    static startup(opts: {
+        localhostIpcApp?: {
+            socketPort?: number;
+        };
+        webViewerApp: WebViewerAppOptions;
+        iModelApp?: IModelAppOptions;
+    }): Promise<void>;
 }
 
 // @public
