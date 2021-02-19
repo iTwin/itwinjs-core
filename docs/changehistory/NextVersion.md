@@ -139,6 +139,10 @@ To react to the changes, add an `await` before each `IModelExporter.export*` and
 
 ## Presentation
 
+### Highlighting members of GroupInformationElement
+
+Presentation rules used by [HiliteSetProvider]($presentation-frontend) have been modified to return geometric elements grouped by *BisCore.GroupInformationElement* instances.
+
 ### Setting up default formats
 
 A new feature was introduced, which allows supplying default unit formats to use for formatting properties that don't have a presentation unit for requested unit system. The formats are set when initializing [Presentation]($presentation-backend) and passing `PresentationManagerProps.defaultFormats`.
