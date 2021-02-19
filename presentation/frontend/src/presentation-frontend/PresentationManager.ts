@@ -125,8 +125,7 @@ export class PresentationManager implements IDisposable {
       this.activeUnitSystem = props.activeUnitSystem;
     }
 
-    const clientId = props?.clientId ?? Guid.createValue();
-    this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler({ clientId });
+    this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new LocalizationHelper();
@@ -135,7 +134,7 @@ export class PresentationManager implements IDisposable {
     if (IpcApp.isValid) {
       // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
       this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
-      this._ipcRequestsHandler = props?.ipcRequestsHandler ?? new IpcRequestsHandler(clientId);
+      this._ipcRequestsHandler = props?.ipcRequestsHandler ?? new IpcRequestsHandler(this._requestsHandler.clientId);
     }
   }
 
