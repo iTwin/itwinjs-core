@@ -1555,6 +1555,9 @@ export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDelet
 // @internal (undocumented)
 export const PRESENTATION_COMMON_ROOT: string;
 
+// @internal (undocumented)
+export const PRESENTATION_IPC_CHANNEL_NAME = "presentationIpcInterface-1.0";
+
 // @alpha
 export interface PresentationDataCompareOptions<TIModel, TNodeKey> extends RequestOptionsWithRuleset<TIModel> {
     // (undocumented)
@@ -1581,9 +1584,6 @@ export class PresentationError extends BentleyError {
     constructor(errorNumber: PresentationStatus, message?: string, log?: LogFunction, getMetaData?: GetMetaDataFunction);
     protected _initName(): string;
 }
-
-// @internal (undocumented)
-export const presentationIpcChannel = "presentationIpcInterface-1.0";
 
 // @alpha (undocumented)
 export enum PresentationIpcEvents {
