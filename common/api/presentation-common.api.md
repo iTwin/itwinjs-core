@@ -1556,7 +1556,7 @@ export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDelet
 export const PRESENTATION_COMMON_ROOT: string;
 
 // @internal (undocumented)
-export const PRESENTATION_IPC_CHANNEL_NAME = "presentationIpcInterface-1.0";
+export const PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface";
 
 // @alpha
 export interface PresentationDataCompareOptions<TIModel, TNodeKey> extends RequestOptionsWithRuleset<TIModel> {

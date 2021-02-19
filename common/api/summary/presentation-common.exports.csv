@@ -202,7 +202,7 @@ alpha;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | Node
 alpha;PartialHierarchyModification
 alpha;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
 internal;PRESENTATION_COMMON_ROOT: string
-internal;PRESENTATION_IPC_CHANNEL_NAME = "presentationIpcInterface-1.0"
+internal;PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface"
 alpha;PresentationDataCompareOptions
 alpha;PresentationDataCompareRpcOptions = PresentationRpcRequestOptions
 public;PresentationError 
