@@ -127,13 +127,14 @@ describe("Update", () => {
         expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
           type: "Update",
           node: { key: { type: "T_NODE" }, label: { displayValue: "test-2" } },
-          changes: [{
-            name: "Key",
-          }, {
-            name: "LabelDefinition",
-            old: { displayValue: "test-1" },
-            new: { displayValue: "test-2" },
-          }],
+          changes: [
+            { name: "Key" },
+            {
+              name: "LabelDefinition",
+              old: { displayValue: "test-1" },
+              new: { displayValue: "test-2" },
+            },
+          ],
         }]);
       });
 
@@ -159,11 +160,10 @@ describe("Update", () => {
         await loadHierarchy(result.current);
         const nodesBefore = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
         expect(nodesBefore.length).to.eq(2);
-        expect(nodesBefore).to.containSubset([{
-          label: { value: { displayValue: "Physical Object [0-38]" } },
-        }, {
-          label: { value: { displayValue: "Physical Object [0-39]" } },
-        }]);
+        expect(nodesBefore).to.containSubset([
+          { label: { value: { displayValue: "Physical Object [0-38]" } } },
+          { label: { value: { displayValue: "Physical Object [0-39]" } } },
+        ]);
 
         const modifiedRuleset = await Presentation.presentation.rulesets().modify(initialRuleset, {
           rules: [{
@@ -186,16 +186,25 @@ describe("Update", () => {
           label: { value: { displayValue: "Physical Object [0-39]" } },
         }]);
         expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Delete",
-          node: { key: { instanceKeys: (initialDataProvider.getNodeKey(nodesBefore[0].item) as ECInstancesNodeKey).instanceKeys } },
-        }, {
-          type: "Update",
-          node: { key: { instanceKeys: (initialDataProvider.getNodeKey(nodesBefore[1].item) as ECInstancesNodeKey).instanceKeys } },
-          changes: [{
-            name: "Key",
-          }],
-        }]);
+        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([
+          {
+            type: "Delete",
+            node: {
+              key: {
+                instanceKeys: (initialDataProvider.getNodeKey(nodesBefore[0].item) as ECInstancesNodeKey).instanceKeys,
+              },
+            },
+          },
+          {
+            type: "Update",
+            node: {
+              key: {
+                instanceKeys: (initialDataProvider.getNodeKey(nodesBefore[1].item) as ECInstancesNodeKey).instanceKeys,
+              },
+            },
+            changes: [{ name: "Key" }],
+          },
+        ]);
       });
 
       it("detects ECClass grouping node change", async () => {
@@ -246,12 +255,13 @@ describe("Update", () => {
         await loadHierarchy(result.current);
         const nodesAfter = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
         expect(nodesAfter.length).to.eq(2);
-        expect(nodesAfter).to.containSubset([{
-          label: { value: { displayValue: "Physical Object" } },
-        }, {
-          label: { value: { displayValue: "Physical Object [0-39]" } },
-          parentId: (parentId?: string) => !!parentId,
-        }]);
+        expect(nodesAfter).to.containSubset([
+          { label: { value: { displayValue: "Physical Object" } } },
+          {
+            label: { value: { displayValue: "Physical Object [0-39]" } },
+            parentId: (parentId?: string) => !!parentId,
+          },
+        ]);
         expect(hierarchyCompareSpy).to.be.calledOnce;
         expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
           type: "Update",
@@ -259,7 +269,12 @@ describe("Update", () => {
         }, {
           type: "Insert",
           position: 0,
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: (instanceKeys: InstanceKey[]) => instanceKeys.some((k) => k.id === "0x75") } },
+          node: {
+            key: {
+              type: StandardNodeTypes.ECInstancesNode,
+              instanceKeys: (instanceKeys: InstanceKey[]) => instanceKeys.some((k) => k.id === "0x75"),
+            },
+          },
         }]);
       });
     });
@@ -270,21 +285,24 @@ describe("Update", () => {
           id: faker.random.uuid(),
           rules: [{
             ruleType: RuleTypes.RootNodes,
-            subConditions: [{
-              condition: `GetVariableBoolValue("use_first")`,
-              specifications: [{
-                specType: ChildNodeSpecificationTypes.CustomNode,
-                type: "T_NODE_1",
-                label: "test-1",
-              }],
-            }, {
-              condition: `GetVariableBoolValue("use_second")`,
-              specifications: [{
-                specType: ChildNodeSpecificationTypes.CustomNode,
-                type: "T_NODE_2",
-                label: "test-2",
-              }],
-            }],
+            subConditions: [
+              {
+                condition: `GetVariableBoolValue("use_first")`,
+                specifications: [{
+                  specType: ChildNodeSpecificationTypes.CustomNode,
+                  type: "T_NODE_1",
+                  label: "test-1",
+                }],
+              },
+              {
+                condition: `GetVariableBoolValue("use_second")`,
+                specifications: [{
+                  specType: ChildNodeSpecificationTypes.CustomNode,
+                  type: "T_NODE_2",
+                  label: "test-2",
+                }],
+              },
+            ],
           }],
         });
         expect(ruleset).to.not.be.undefined;
@@ -321,11 +339,10 @@ describe("Update", () => {
         await loadHierarchy(result.current);
         const nodesAfter2 = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
         expect(nodesAfter2.length).to.eq(2);
-        expect(nodesAfter2).to.containSubset([{
-          label: { value: { displayValue: "test-1" } },
-        }, {
-          label: { value: { displayValue: "test-2" } },
-        }]);
+        expect(nodesAfter2).to.containSubset([
+          { label: { value: { displayValue: "test-1" } } },
+          { label: { value: { displayValue: "test-2" } } },
+        ]);
         expect(hierarchyCompareSpy).to.be.calledTwice;
         expect(await hierarchyCompareSpy.secondCall.returnValue).to.containSubset([{
           type: "Insert",
@@ -380,21 +397,29 @@ describe("Update", () => {
         await loadHierarchy(result.current);
         const nodesAfter1 = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
         expect(nodesAfter1.length).to.eq(2);
-        expect(nodesAfter1).to.containSubset([{
-          label: { value: { displayValue: "Physical Object [0-38]" } },
-        }, {
-          label: { value: { displayValue: "Physical Object [0-39]" } },
-        }]);
+        expect(nodesAfter1).to.containSubset([
+          { label: { value: { displayValue: "Physical Object [0-38]" } } },
+          { label: { value: { displayValue: "Physical Object [0-39]" } } },
+        ]);
         expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Insert",
-          position: 0,
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] }, label: { displayValue: "Physical Object [0-38]" } },
-        }, {
-          type: "Insert",
-          position: 1,
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] }, label: { displayValue: "Physical Object [0-39]" } },
-        }]);
+        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([
+          {
+            type: "Insert",
+            position: 0,
+            node: {
+              key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] },
+              label: { displayValue: "Physical Object [0-38]" },
+            },
+          },
+          {
+            type: "Insert",
+            position: 1,
+            node: {
+              key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] },
+              label: { displayValue: "Physical Object [0-39]" },
+            },
+          },
+        ]);
         dataProvider = result.current.dataProvider;
 
         await Presentation.presentation.vars(ruleset.id).setBool("show_nodes", false);
@@ -403,31 +428,37 @@ describe("Update", () => {
         const nodesAfter2 = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
         expect(nodesAfter2.length).to.eq(0);
         expect(hierarchyCompareSpy).to.be.calledTwice;
-        expect(await hierarchyCompareSpy.secondCall.returnValue).to.containSubset([{
-          type: "Delete",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
-        }, {
-          type: "Delete",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
-        }]);
+        expect(await hierarchyCompareSpy.secondCall.returnValue).to.containSubset([
+          {
+            type: "Delete",
+            node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
+          },
+          {
+            type: "Delete",
+            node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
+          },
+        ]);
       });
 
       it("detects a change in customization rule's condition", async () => {
         const ruleset = await Presentation.presentation.rulesets().add({
           id: faker.random.uuid(),
-          rules: [{
-            ruleType: RuleTypes.RootNodes,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-              classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: RuleTypes.StyleOverride,
-            condition: `GetVariableBoolValue("should_customize")`,
-            foreColor: `"Red"`,
-          }],
+          rules: [
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
+                groupByClass: false,
+                groupByLabel: false,
+              }],
+            },
+            {
+              ruleType: RuleTypes.StyleOverride,
+              condition: `GetVariableBoolValue("should_customize")`,
+              foreColor: `"Red"`,
+            },
+          ],
         });
         expect(ruleset).to.not.be.undefined;
 
@@ -448,41 +479,47 @@ describe("Update", () => {
         expect(nodesAfter1.length).to.eq(2);
         nodesAfter1.forEach((n) => expect(n.item.style?.colorOverrides?.color).to.eq(0xFF0000FF));
         expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "",
-            new: "Red",
-          }],
-        }, {
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "",
-            new: "Red",
-          }],
-        }]);
+        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([
+          {
+            type: "Update",
+            node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
+            changes: [{
+              name: "ForeColor",
+              old: "",
+              new: "Red",
+            }],
+          },
+          {
+            type: "Update",
+            node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
+            changes: [{
+              name: "ForeColor",
+              old: "",
+              new: "Red",
+            }],
+          },
+        ]);
       });
 
       it("detects a change in customization rule's value", async () => {
         const ruleset = await Presentation.presentation.rulesets().add({
           id: faker.random.uuid(),
-          rules: [{
-            ruleType: RuleTypes.RootNodes,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-              classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: RuleTypes.StyleOverride,
-            condition: `ThisNode.IsOfClass("PhysicalObject", "Generic")`,
-            foreColor: `GetVariableStringValue("custom_color")`,
-          }],
+          rules: [
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
+                groupByClass: false,
+                groupByLabel: false,
+              }],
+            },
+            {
+              ruleType: RuleTypes.StyleOverride,
+              condition: `ThisNode.IsOfClass("PhysicalObject", "Generic")`,
+              foreColor: `GetVariableStringValue("custom_color")`,
+            },
+          ],
         });
         expect(ruleset).to.not.be.undefined;
 
@@ -503,23 +540,26 @@ describe("Update", () => {
         expect(nodesAfter1.length).to.eq(2);
         nodesAfter1.forEach((n) => expect(n.item.style?.colorOverrides?.color).to.eq(0xFF0000FF));
         expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "",
-            new: "Red",
-          }],
-        }, {
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "",
-            new: "Red",
-          }],
-        }]);
+        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([
+          {
+            type: "Update",
+            node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
+            changes: [{
+              name: "ForeColor",
+              old: "",
+              new: "Red",
+            }],
+          },
+          {
+            type: "Update",
+            node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
+            changes: [{
+              name: "ForeColor",
+              old: "",
+              new: "Red",
+            }],
+          },
+        ]);
         dataProvider = result.current.dataProvider;
 
         await Presentation.presentation.vars(ruleset.id).setString("custom_color", "Blue");
@@ -529,58 +569,65 @@ describe("Update", () => {
         expect(nodesAfter2.length).to.eq(2);
         nodesAfter2.forEach((n) => expect(n.item.style?.colorOverrides?.color).to.eq(0x0000FFFF));
         expect(hierarchyCompareSpy).to.be.calledTwice;
-        expect(await hierarchyCompareSpy.secondCall.returnValue).to.containSubset([{
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "Red",
-            new: "Blue",
-          }],
-        }, {
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "Red",
-            new: "Blue",
-          }],
-        }]);
+        expect(await hierarchyCompareSpy.secondCall.returnValue).to.containSubset([
+          {
+            type: "Update",
+            node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
+            changes: [{
+              name: "ForeColor",
+              old: "Red",
+              new: "Blue",
+            }],
+          },
+          {
+            type: "Update",
+            node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
+            changes: [{
+              name: "ForeColor",
+              old: "Red",
+              new: "Blue",
+            }],
+          },
+        ]);
       });
 
       it("detects changes of root and expanded nodes", async () => {
         const ruleset = await Presentation.presentation.rulesets().add({
           id: faker.random.uuid(),
-          rules: [{
-            ruleType: RuleTypes.RootNodes,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "T_ROOT_1",
-              label: "root-1",
-              hasChildren: "Unknown",
-            }, {
-              specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "T_ROOT_2",
-              label: "root-2",
-              hasChildren: "Unknown",
-            }],
-          }, {
-            ruleType: RuleTypes.ChildNodes,
-            condition: `ParentNode.Type = "T_ROOT_1" ANDALSO GetVariableBoolValue("show_children")`,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "T_CHILD_1",
-              label: "child-1",
-            }],
-          }, {
-            ruleType: RuleTypes.ChildNodes,
-            condition: `ParentNode.Type = "T_ROOT_2" ANDALSO GetVariableBoolValue("show_children")`,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "T_CHILD_2",
-              label: "child-2",
-            }],
-          }],
+          rules: [
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_ROOT_1",
+                label: "root-1",
+                hasChildren: "Unknown",
+              }, {
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_ROOT_2",
+                label: "root-2",
+                hasChildren: "Unknown",
+              }],
+            },
+            {
+              ruleType: RuleTypes.ChildNodes,
+              condition: `ParentNode.Type = "T_ROOT_1" ANDALSO GetVariableBoolValue("show_children")`,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_CHILD_1",
+                label: "child-1",
+              }],
+            },
+            {
+              ruleType: RuleTypes.ChildNodes,
+              condition: `ParentNode.Type = "T_ROOT_2" ANDALSO GetVariableBoolValue("show_children")`,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_CHILD_2",
+                label: "child-2",
+              }],
+            },
+          ],
         });
         expect(ruleset).to.not.be.undefined;
         await Presentation.presentation.vars(ruleset.id).setBool("show_children", true);
@@ -593,17 +640,18 @@ describe("Update", () => {
         await loadHierarchy(result.current);
         const nodesBefore = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
         expect(nodesBefore.length).to.eq(4);
-        expect(nodesBefore).to.containSubset([{
-          label: { value: { displayValue: "root-1" } },
-          item: { hasChildren: true },
-        }, {
-          label: { value: { displayValue: "child-1" } },
-        }, {
-          label: { value: { displayValue: "root-2" } },
-          item: { hasChildren: true },
-        }, {
-          label: { value: { displayValue: "child-2" } },
-        }]);
+        expect(nodesBefore).to.containSubset([
+          {
+            label: { value: { displayValue: "root-1" } },
+            item: { hasChildren: true },
+          },
+          { label: { value: { displayValue: "child-1" } } },
+          {
+            label: { value: { displayValue: "root-2" } },
+            item: { hasChildren: true },
+          },
+          { label: { value: { displayValue: "child-2" } } },
+        ]);
         result.current.modelSource.modifyModel((model) => {
           // expand only the `root-1` node
           model.getNode(nodesBefore[0].id)!.isExpanded = true;
@@ -614,32 +662,35 @@ describe("Update", () => {
         await loadHierarchy(result.current);
         const nodesAfter = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
         expect(nodesAfter.length).to.eq(2);
-        expect(nodesAfter).to.containSubset([{
-          label: { value: { displayValue: "root-1" } },
-        }, {
-          label: { value: { displayValue: "root-2" } },
-        }]);
+        expect(nodesAfter).to.containSubset([
+          { label: { value: { displayValue: "root-1" } } },
+          { label: { value: { displayValue: "root-2" } } },
+        ]);
         expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Update",
-          node: { key: { type: "T_ROOT_1" } },
-          changes: [{
-            name: "HasChildren",
-            old: true,
-            new: false,
-          }],
-        }, {
-          type: "Update",
-          node: { key: { type: "T_ROOT_2" } },
-          changes: [{
-            name: "HasChildren",
-            old: true,
-            new: false,
-          }],
-        }, {
-          type: "Delete",
-          node: { key: { type: "T_CHILD_1" } },
-        }]);
+        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([
+          {
+            type: "Update",
+            node: { key: { type: "T_ROOT_1" } },
+            changes: [{
+              name: "HasChildren",
+              old: true,
+              new: false,
+            }],
+          },
+          {
+            type: "Update",
+            node: { key: { type: "T_ROOT_2" } },
+            changes: [{
+              name: "HasChildren",
+              old: true,
+              new: false,
+            }],
+          },
+          {
+            type: "Delete",
+            node: { key: { type: "T_CHILD_1" } },
+          },
+        ]);
       });
     });
 
@@ -699,15 +750,18 @@ describe("Update", () => {
           rulesetVariables: [],
           resultSetSize: 1,
         });
-        expect(changes).to.containSubset([{
-          type: "Insert",
-          node: { key: { type: "T_ROOT-0" } },
-          position: 0,
-        }, {
-          type: "Insert",
-          node: { key: { type: "T_ROOT-2" } },
-          position: 2,
-        }]);
+        expect(changes).to.containSubset([
+          {
+            type: "Insert",
+            node: { key: { type: "T_ROOT-0" } },
+            position: 0,
+          },
+          {
+            type: "Insert",
+            node: { key: { type: "T_ROOT-2" } },
+            position: 2,
+          },
+        ]);
         expect(rpcSpy).to.be.calledTwice;
       });
     });
