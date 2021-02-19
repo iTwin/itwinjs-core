@@ -44,7 +44,7 @@ import {
   UiFramework, UiSettingsProvider,
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
-import getSupportedRpcs from "../common/rpcs";
+import { getSupportedRpcs } from "../common/rpcs";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
 import { BearingQuantityType } from "./api/BearingQuantityType";
@@ -741,9 +741,6 @@ async function main() {
     rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
   }
 
-  const oidcConfig = getOidcConfiguration();
-  const oidcClient = await createOidcClient(new ClientRequestContext(), oidcConfig);
-
   const opts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
@@ -754,13 +751,14 @@ async function main() {
       viewManager: new AppViewManager(true),  // Favorite Properties Support
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
-      authorizationClient: oidcClient,
     },
     webViewerApp: { rpcParams },
   };
 
   // Start the app.
   await SampleAppIModelApp.startup(opts);
+
+  IModelApp.authorizationClient = await createOidcClient(new ClientRequestContext(), getOidcConfiguration());
 
   // Add ApplicationInsights telemetry client
   const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
@@ -773,7 +771,7 @@ async function main() {
   await SampleAppIModelApp.initialize();
 
   // register new QuantityType
-  await BearingQuantityType.registerQuantityType ();
+  await BearingQuantityType.registerQuantityType();
 
   ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
 }
