@@ -227,11 +227,11 @@ export class MobileHost {
   /**
    * Start the backend of a mobile app.
    */
-  public static async startup(opt?: { mobileHost: { device: MobileDevice }, ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
+  public static async startup(opt?: { mobileHost?: { device?: MobileDevice }, ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
     if (!this.isValid) {
       setupMobileRpc();
 
-      this._device = opt?.mobileHost.device;
+      this._device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
       this.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
         const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
         NativeHost.notifyNativeFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
