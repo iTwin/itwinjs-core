@@ -135,6 +135,7 @@ rush.json       @calebmshafer @scsewall
 
 /docs/getting-started @calebmshafer @williamkbentley
 /docs/config @calebmshafer @williamkbentley
+/docs/learning/presentation @imodeljs/presentation
 
 # These domains should be split up a bit more
 /domains      @scsewall
