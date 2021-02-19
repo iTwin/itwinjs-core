@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, Guid, IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
@@ -19,6 +19,7 @@ import {
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { LocalizationHelper } from "./LocalizationHelper";
+import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
@@ -80,6 +81,9 @@ export interface PresentationManagerProps {
 
   /** @internal */
   rpcRequestsHandler?: RpcRequestsHandler;
+
+  /** @internal */
+  ipcRequestsHandler?: IpcRequestsHandler;
 }
 
 /**
@@ -95,6 +99,7 @@ export class PresentationManager implements IDisposable {
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
+  private _ipcRequestsHandler?: IpcRequestsHandler;
 
   /**
    * An event raised when hierarchies created using specific ruleset change
@@ -120,7 +125,8 @@ export class PresentationManager implements IDisposable {
       this.activeUnitSystem = props.activeUnitSystem;
     }
 
-    this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
+    const clientId = props?.clientId ?? Guid.createValue();
+    this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler({ clientId });
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new LocalizationHelper();
@@ -129,6 +135,7 @@ export class PresentationManager implements IDisposable {
     if (IpcApp.isValid) {
       // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
       this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
+      this._ipcRequestsHandler = props?.ipcRequestsHandler ?? new IpcRequestsHandler(clientId);
     }
   }
 
@@ -230,6 +237,9 @@ export class PresentationManager implements IDisposable {
   /** @internal */
   public get rpcRequestsHandler() { return this._requestsHandler; }
 
+  /** @internal */
+  public get ipcRequestsHandler() { return this._ipcRequestsHandler; }
+
   /**
    * Get rulesets manager
    */
@@ -241,7 +251,7 @@ export class PresentationManager implements IDisposable {
    */
   public vars(rulesetId: string) {
     if (!this._rulesetVars.has(rulesetId)) {
-      const varsManager = new RulesetVariablesManagerImpl();
+      const varsManager = new RulesetVariablesManagerImpl(rulesetId, this._ipcRequestsHandler);
       this._rulesetVars.set(rulesetId, varsManager);
     }
     return this._rulesetVars.get(rulesetId)!;
@@ -273,8 +283,10 @@ export class PresentationManager implements IDisposable {
       foundRulesetOrId = foundRuleset ? foundRuleset.toJSON() : rulesetOrId;
     }
     const rulesetId = (typeof foundRulesetOrId === "object") ? foundRulesetOrId.id : foundRulesetOrId;
-    const variablesManager = this.vars(rulesetId);
-    const variables = [...(rulesetVariables || []), ...await variablesManager.getAllVariables()];
+    const variables = [...(rulesetVariables || [])];
+    if (!IpcApp.isValid)
+      variables.push(...(await this.vars(rulesetId).getAllVariables()));
+
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 

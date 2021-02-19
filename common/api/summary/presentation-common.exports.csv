@@ -18,6 +18,7 @@ public;ClassId = Id64String
 public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
+internal;CommonIpcParams
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
 public;ConditionContainer
 public;Content
@@ -204,7 +205,9 @@ internal;PRESENTATION_COMMON_ROOT: string
 alpha;PresentationDataCompareOptions
 alpha;PresentationDataCompareRpcOptions = PresentationRpcRequestOptions
 public;PresentationError 
+internal;presentationIpcChannel = "presentationIpcInterface-1.0"
 alpha;PresentationIpcEvents
+internal;PresentationIpcInterface
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
 public;PresentationStatus
@@ -274,6 +277,7 @@ public;RuleBase
 public;Ruleset
 public;RulesetsFactory
 public;RulesetVariable
+public;RulesetVariableJSON
 public;RuleTypes
 public;SameLabelInstanceGroup 
 public;SameLabelInstanceGroupApplicationStage
@@ -286,6 +290,7 @@ public;SelectionInfo
 public;SelectionScope
 public;SelectionScopeRequestOptions
 public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
+internal;SetRulesetVariableParams
 public;SingleSchemaClassSpecification
 public;SortDirection
 public;SortingRule = PropertySortingRule | DisabledSortingRule
