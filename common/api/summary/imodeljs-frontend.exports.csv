@@ -99,6 +99,7 @@ internal;CurrentState
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
+internal;DecorationsCache
 public;Decorator 
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
