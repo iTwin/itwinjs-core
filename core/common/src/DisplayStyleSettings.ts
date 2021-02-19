@@ -50,7 +50,7 @@ export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps
   modelId?: Id64String;
 }
 
-/** Describes the [[PlanarClipMask]] applied to a model.
+/** Describes the [[PlanarClipMaskSettings]] applied to a model.
  * @beta
  */
 export interface DisplayStyleRealityModelPlanarClipMaskProps extends PlanarClipMaskProps {
