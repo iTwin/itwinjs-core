@@ -8,7 +8,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Config, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { IModelApp, WebViewerApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelAppOptions, WebViewerApp } from "@bentley/imodeljs-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
@@ -25,14 +25,18 @@ Logger.setLevelDefault(LogLevel.Warning);
 export class SampleApp {
   private static _ready: Promise<void>;
   public static async startup(): Promise<void> {
-    const iModelAppOpts = {
-      iModelApp: { rpcInterfaces: rpcs },
+    // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface_1
+    const iModelAppOpts: IModelAppOptions = {
+      rpcInterfaces: rpcs,
     };
+    // __PUBLISH_EXTRACT_END__
     if (ProcessDetector.isElectronAppFrontend) {
-      await ElectronApp.startup(iModelAppOpts);
+      // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface_2
+      await ElectronApp.startup({ iModelApp: iModelAppOpts });
+      // __PUBLISH_EXTRACT_END__
     } else if (ProcessDetector.isBrowserProcess) {
       await WebViewerApp.startup({
-        ...iModelAppOpts,
+        iModelApp: iModelAppOpts,
         webViewerApp: {
           rpcParams: { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" },
         },
