@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, DbResult, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, DbResult, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, UpgradeOptions,
+  Code, ColorByName, DomainOptions, ElementsChanged, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, UpdateModelOptions,
+  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, TxnElementsChanged, UpdateModelOptions,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
@@ -65,9 +65,9 @@ describe("TxnManager", () => {
 
   after(() => imodel.close());
 
-  it("Undo/Redo", async () => {
+  it("TxnManager", async () => {
     const models = imodel.models;
-    const elements = imodel.elements;
+    let elements = imodel.elements;
     const modelId = props.model;
 
     let model = models.getModel<PhysicalModel>(modelId);
@@ -98,11 +98,10 @@ describe("TxnManager", () => {
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
 
-    // const classId = imodel.nativeDb.classNameToId(props.classFullName);
-    // assert.isTrue(Id64.isValid(classId));
-    // const class2 = imodel.nativeDb.classIdToName(classId);
-    // assert.equal(class2, props.classFullName);
-
+    const classId = imodel.nativeDb.classNameToId(props.classFullName);
+    assert.isTrue(Id64.isValid(classId));
+    const class2 = imodel.nativeDb.classIdToName(classId);
+    assert.equal(class2, props.classFullName);
     model = models.getModel(modelId);
     assert.isDefined(model.geometryGuid);
 
@@ -285,6 +284,47 @@ describe("TxnManager", () => {
     assert.isFalse(txns.isUndoPossible);
     assert.isFalse(txns.hasUnsavedChanges);
     assert.isFalse(txns.hasPendingTxns);
+
+    let changes: TxnElementsChanged | undefined;
+    let nValidates = 0;
+    elements = imodel.elements;
+    txns.onEndValidation.addListener(() => ++nValidates);
+    txns.onElementsChanged.addListener((ch) => changes = ch);
+
+    const elementId1 = elements.insertElement(props);
+    const elementId2 = elements.insertElement(props);
+    imodel.saveChanges("2 inserts");
+    assert.equal(nValidates, 1);
+    assert.equal(changes?.inserted.length, 2);
+    assert.isTrue(changes?.inserted.contains(elementId1));
+    assert.isTrue(changes?.inserted.contains(elementId2));
+    assert.equal(changes?.deleted.length, 0);
+    assert.equal(changes?.updated.length, 0);
+
+    const element1 = elements.getElement<TestPhysicalObject>(elementId1);
+    const element2 = elements.getElement<TestPhysicalObject>(elementId2);
+    element1.intProperty = 200;
+    element1.update();
+    element2.intProperty = 200;
+    element2.update();
+    imodel.saveChanges("2 updates");
+    assert.equal(nValidates, 2);
+    assert.equal(changes?.inserted.length, 0);
+    assert.equal(changes?.deleted.length, 0);
+    assert.equal(changes?.updated.length, 2);
+    assert.isTrue(changes?.updated.contains(elementId1));
+    assert.isTrue(changes?.updated.contains(elementId2));
+
+    element1.delete();
+    element2.delete();
+    imodel.saveChanges("2 deletes");
+    assert.equal(nValidates, 3);
+    assert.equal(changes?.inserted.length, 0);
+    assert.equal(changes?.updated.length, 0);
+    assert.equal(changes?.deleted.length, 2);
+    assert.isTrue(changes?.deleted.contains(elementId1));
+    assert.isTrue(changes?.deleted.contains(elementId2));
+
   });
 
   it("Element drives element events", async () => {
