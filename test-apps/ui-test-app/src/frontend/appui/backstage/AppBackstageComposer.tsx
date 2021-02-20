@@ -39,6 +39,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
   const enableCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
   const notUi2Condition = new ConditionalBooleanValue(() => SampleAppIModelApp.getUiFrameworkProperty() === "1", [SampleAppUiActionId.toggleFrameworkVersion, SampleAppUiActionId.setFrameworkVersion]);
   const imodelIndexHidden = new ConditionalBooleanValue(() => SampleAppIModelApp.isIModelLocal, [SampleAppUiActionId.setIsIModelLocal]);
+  const openLocalFileHidden = new ConditionalBooleanValue(() => SampleAppIModelApp.testAppConfiguration?.snapshotPath === undefined, [SampleAppUiActionId.setIsIModelLocal]);
 
   const [backstageItems] = React.useState(() => {
     if (SampleAppIModelApp.allowWrite) {
@@ -46,6 +47,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
         BackstageItemUtilities.createStageLauncher(EditFrontstage.stageId, 100, 10, IModelApp.i18n.translate("SampleApp:backstage.editIModel"), IModelApp.i18n.translate("SampleApp:backstage.editStage"), "icon-edit"),
         BackstageItemUtilities.createStageLauncher("IModelOpen", 300, 10, IModelApp.i18n.translate("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
         BackstageItemUtilities.createStageLauncher("IModelIndex", 300, 20, IModelApp.i18n.translate("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
+        BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.i18n.translate("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
         BackstageItemUtilities.createActionItem("SampleApp.settings", 400, 10, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.testFrontstage6"), undefined, IconSpecUtilities.createSvgIconSpec(settingsIconSvg)),
       ];
     }
@@ -59,7 +61,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
       BackstageItemUtilities.createStageLauncher("Ui2", 200, 50, IModelApp.i18n.translate("SampleApp:backstage.testFrontstageUi20"), undefined, "icon-placeholder", { isHidden: notUi2Condition }),
       BackstageItemUtilities.createStageLauncher("IModelOpen", 300, 10, IModelApp.i18n.translate("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
       BackstageItemUtilities.createStageLauncher("IModelIndex", 300, 20, IModelApp.i18n.translate("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
-      BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.i18n.translate("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder"),
+      BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.i18n.translate("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
       BackstageItemUtilities.createActionItem("SampleApp.settings", 400, 10, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.testFrontstage6"), undefined, IconSpecUtilities.createSvgIconSpec(settingsIconSvg)),
       BackstageItemUtilities.createActionItem("SampleApp.componentExamples", 400, 20, () => FrontstageManager.openModalFrontstage(new ComponentExamplesModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.componentExamples"), undefined, "icon-details", { badgeType: BadgeType.New }),
       BackstageItemUtilities.createActionItem("SampleApp.quantityFormats", 400, 30, () => FrontstageManager.openModalFrontstage(new QuantityFormatModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.quantityFormat"), undefined, IconSpecUtilities.createSvgIconSpec(measureIconSvg)),

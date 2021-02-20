@@ -43,7 +43,7 @@ const rotationModeToKeyMap = new Map<RotationMode, string>([
   [RotationMode.Context, "context"],
 ]);
 
-/** @alpha */
+/** @internal */
 export class FrameworkAccuDraw extends AccuDraw {
   private static _displayNotifications = false;
 
