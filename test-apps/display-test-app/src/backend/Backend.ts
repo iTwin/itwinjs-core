@@ -18,6 +18,7 @@ import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend"
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
+import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 
 class DisplayTestAppRpc extends DtaRpcInterface {
 
@@ -253,6 +254,7 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost, iModelHost });
+    EditCommandAdmin.register(BasicManipulationCommand);
   } else if (ProcessDetector.isIOSAppBackend) {
     await IOSHost.startup({ iModelHost });
   } else if (ProcessDetector.isAndroidAppBackend) {

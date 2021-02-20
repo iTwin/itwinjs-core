@@ -1,3 +1,4 @@
 sep=;
 Release Tag;API Item
-alpha;class EditTool 
+alpha;DeleteElementsTool 
+alpha;EditTools
