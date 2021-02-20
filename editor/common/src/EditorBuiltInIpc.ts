@@ -11,10 +11,10 @@ import { EditCommandIpc } from "./EditorIpc";
 
 /** @alpha */
 export const editorBuiltInCmdIds = {
-  cmdBasicManipulation: "editorBasicManipulation",
+  cmdBasicManipulation: "basicManipulation",
 };
 
 /** @alpha */
-export interface EditorBasicManipulationCommandIpc extends EditCommandIpc {
+export interface BasicManipulationCommandIpc extends EditCommandIpc {
   deleteElements: (ids: CompressedId64Set) => Promise<IModelStatus>;
 }

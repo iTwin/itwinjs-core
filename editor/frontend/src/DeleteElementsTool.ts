@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EditorBasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+
+import { CompressedId64Set, IModelStatus, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 import { ElementSetTool } from "@bentley/imodeljs-frontend";
-import { CompressedId64Set, IModelStatus, MutableCompressedId64Set } from "@bentley/bentleyjs-core";
 import { EditTools } from "./EditTool";
 
 /** Delete elements immediately from active selection set or prompt user to identify elements to delete. */
@@ -17,16 +18,16 @@ export class DeleteElementsTool extends ElementSetTool {
   protected get controlKeyContinuesSelection(): boolean { return true; }
   protected get requireAcceptForSelectionSetOperation(): boolean { return false; }
 
-  public static callCommand<T extends keyof EditorBasicManipulationCommandIpc>(method: T, ...args: Parameters<EditorBasicManipulationCommandIpc[T]>): ReturnType<EditorBasicManipulationCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<EditorBasicManipulationCommandIpc[T]>;
+  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
+    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
   }
 
   public async processAgendaImmediate(): Promise<void> {
     try {
       await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
 
-      const ids = new MutableCompressedId64Set(); // TODO: ElementAgenda method to get OrderedId64Array...
-      this.agenda.elements.forEach((id) => ids.add(id));
+      const ids = new OrderedId64Array(); // TODO: ElementAgenda method to get OrderedId64Array...
+      this.agenda.elements.forEach((id) => ids.insert(id));
 
       if (IModelStatus.Success === await DeleteElementsTool.callCommand("deleteElements", CompressedId64Set.compressIds(ids)))
         await this.iModel.saveChanges();

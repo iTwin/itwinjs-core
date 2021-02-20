@@ -8,10 +8,10 @@
 
 import { CompressedId64Set, IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
-import { EditorBasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 import { EditCommand } from "./EditCommand";
 
-export class EditorBasicManipulationCommand extends EditCommand implements EditorBasicManipulationCommandIpc {
+export class BasicManipulationCommand extends EditCommand implements BasicManipulationCommandIpc {
   public static commandId = editorBuiltInCmdIds.cmdBasicManipulation;
 
   public constructor(iModel: IModelDb, protected _str: string) { super(iModel); }
