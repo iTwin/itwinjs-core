@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { EditorBasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 import { ElementSetTool } from "@bentley/imodeljs-frontend";
-import { CompressedId64Set, IModelStatus } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, IModelStatus, MutableCompressedId64Set } from "@bentley/bentleyjs-core";
 import { EditTools } from "./EditTool";
 
 /** Delete elements immediately from active selection set or prompt user to identify elements to delete. */
@@ -24,7 +24,11 @@ export class DeleteElementsTool extends ElementSetTool {
   public async processAgendaImmediate(): Promise<void> {
     try {
       await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
-      if (IModelStatus.Success === await DeleteElementsTool.callCommand("deleteElements", CompressedId64Set.compressArray(this.agenda.elements)))
+
+      const ids = new MutableCompressedId64Set(); // TODO: ElementAgenda method to get OrderedId64Array...
+      this.agenda.elements.forEach((id) => ids.add(id));
+
+      if (IModelStatus.Success === await DeleteElementsTool.callCommand("deleteElements", CompressedId64Set.compressIds(ids)))
         await this.iModel.saveChanges();
     } catch (err) {
       // TODO: NotificationManager message?

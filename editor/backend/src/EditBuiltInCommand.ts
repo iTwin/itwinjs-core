@@ -16,7 +16,9 @@ export class EditorBasicManipulationCommand extends EditCommand implements Edito
 
   public constructor(iModel: IModelDb, protected _str: string) { super(iModel); }
 
-  public async deleteElements(_ids: CompressedId64Set): Promise<IModelStatus> {
-    return IModelStatus.NotEnabled;
+  public async deleteElements(ids: CompressedId64Set): Promise<IModelStatus> {
+    for (const id of CompressedId64Set.iterable(ids))
+      this.iModel.elements.deleteElement(id);
+    return IModelStatus.Success;
   }
 }

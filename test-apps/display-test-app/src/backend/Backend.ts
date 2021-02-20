@@ -254,7 +254,7 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost, iModelHost });
-    EditCommandAdmin.registerModule(EditorBasicManipulationCommand);
+    EditCommandAdmin.register(EditorBasicManipulationCommand);
   } else if (ProcessDetector.isIOSAppBackend) {
     await IOSHost.startup({ iModelHost });
   } else if (ProcessDetector.isAndroidAppBackend) {
