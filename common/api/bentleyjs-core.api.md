@@ -1186,6 +1186,13 @@ export enum OpenMode {
 // @public
 export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
 
+// @alpha (undocumented)
+export class OrderedId64Array extends SortedArray<Id64String> {
+    constructor();
+    // (undocumented)
+    get ids(): OrderedId64Iterable;
+}
+
 // @beta
 export type OrderedId64Iterable = Iterable<Id64String>;
 
