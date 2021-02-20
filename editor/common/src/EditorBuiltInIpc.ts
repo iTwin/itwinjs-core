@@ -5,5 +5,16 @@
 /** @packageDocumentation
  * @module Editing
  */
-export * from "./DeleteElementsTool";
-export * from "./EditTool";
+
+import { CompressedId64Set, IModelStatus } from "@bentley/bentleyjs-core";
+import { EditCommandIpc } from "./EditorIpc";
+
+/** @alpha */
+export const editorBuiltInCmdIds = {
+  cmdBasicManipulation: "basicManipulation",
+};
+
+/** @alpha */
+export interface BasicManipulationCommandIpc extends EditCommandIpc {
+  deleteElements: (ids: CompressedId64Set) => Promise<IModelStatus>;
+}
