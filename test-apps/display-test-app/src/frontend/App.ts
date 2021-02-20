@@ -21,7 +21,8 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { DeleteElementsTool, EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, RotateElementByAngleTool, RotateElementByPointsTool, UndoTool } from "./EditingTools";
+import { EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, RotateElementByAngleTool, RotateElementByPointsTool, UndoTool } from "./EditingTools";
+import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
@@ -193,7 +194,6 @@ export class DisplayTestApp {
       CloseIModelTool,
       CloseWindowTool,
       CreateWindowTool,
-      DeleteElementsTool,
       DockWindowTool,
       DrawingAidTestTool,
       EditingSessionTool,
@@ -231,6 +231,7 @@ export class DisplayTestApp {
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
+    await EditTools.initialize();
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

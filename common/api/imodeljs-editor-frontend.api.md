@@ -4,12 +4,36 @@
 
 ```ts
 
-import { PrimitiveTool } from '@bentley/imodeljs-frontend';
+import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
+import { ElementSetTool } from '@bentley/imodeljs-frontend';
 
 // @alpha
-export abstract class EditTool extends PrimitiveTool {
+export class DeleteElementsTool extends ElementSetTool {
+    // (undocumented)
+    protected get allowDragSelect(): boolean;
+    // (undocumented)
+    protected get allowGroups(): boolean;
+    // (undocumented)
+    protected get allowSelectionSet(): boolean;
+    // (undocumented)
+    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    processAgendaImmediate(): Promise<void>;
+    // (undocumented)
+    protected get requireAcceptForSelectionSetOperation(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class EditTools {
     // (undocumented)
     static callCommand(methodName: string, ...args: any[]): Promise<any>;
+    static initialize(): Promise<void>;
     // (undocumented)
     static startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T>;
 }

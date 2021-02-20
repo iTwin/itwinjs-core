@@ -4,8 +4,22 @@
 
 ```ts
 
+import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
+import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { EditCommandIpc } from '@bentley/imodeljs-editor-common';
 import { IModelDb } from '@bentley/imodeljs-backend';
+import { IModelStatus } from '@bentley/bentleyjs-core';
+
+// @alpha (undocumented)
+export class BasicManipulationCommand extends EditCommand implements BasicManipulationCommandIpc {
+    constructor(iModel: IModelDb, _str: string);
+    // (undocumented)
+    static commandId: string;
+    // (undocumented)
+    deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
+    // (undocumented)
+    protected _str: string;
+}
 
 // @alpha
 export class EditCommand implements EditCommandIpc {
