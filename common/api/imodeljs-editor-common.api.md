@@ -4,6 +4,15 @@
 
 ```ts
 
+import { CompressedId64Set } from '@bentley/bentleyjs-core';
+import { IModelStatus } from '@bentley/bentleyjs-core';
+
+// @alpha (undocumented)
+export interface BasicManipulationCommandIpc extends EditCommandIpc {
+    // (undocumented)
+    deleteElements: (ids: CompressedId64Set) => Promise<IModelStatus>;
+}
+
 // @alpha (undocumented)
 export interface EditCommandIpc {
     // (undocumented)
@@ -13,6 +22,11 @@ export interface EditCommandIpc {
         [propName: string]: any;
     }>;
 }
+
+// @alpha (undocumented)
+export const editorBuiltInCmdIds: {
+    cmdBasicManipulation: string;
+};
 
 // @internal (undocumented)
 export const editorChannel = "editor";
