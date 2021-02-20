@@ -11,6 +11,7 @@ import { IModelDb } from "@bentley/imodeljs-backend";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 import { EditCommand } from "./EditCommand";
 
+/** @alpha */
 export class BasicManipulationCommand extends EditCommand implements BasicManipulationCommandIpc {
   public static commandId = editorBuiltInCmdIds.cmdBasicManipulation;
 

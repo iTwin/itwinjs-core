@@ -8,7 +8,7 @@ import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imode
 import { ElementSetTool } from "@bentley/imodeljs-frontend";
 import { EditTools } from "./EditTool";
 
-/** Delete elements immediately from active selection set or prompt user to identify elements to delete. */
+/** @alpha Delete elements immediately from active selection set or prompt user to identify elements to delete. */
 export class DeleteElementsTool extends ElementSetTool {
   public static toolId = "DeleteElements";
 
