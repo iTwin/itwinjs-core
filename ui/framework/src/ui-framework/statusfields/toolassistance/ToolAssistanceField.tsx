@@ -56,7 +56,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
   /** Indicates whether to include promptAtCursor Checkbox. Defaults to true. */
   includePromptAtCursor: boolean;
   /** Optional parameter for persistent UI settings. Defaults to UiSettingsContext. */
-  uiSettings?: UiSettings;
+  uiSettings: UiSettings;
   /** Cursor Prompt Timeout period. Defaults to 5000. */
   cursorPromptTimeout: number;
   /** Fade Out the Cursor Prompt when closed. */
@@ -87,7 +87,7 @@ interface ToolAssistanceFieldState {
 
 /** Tool Assistance Field React component.
  * @public
- */
+ */
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
   /** @internal */
   public static contextType = UiSettingsContext;
