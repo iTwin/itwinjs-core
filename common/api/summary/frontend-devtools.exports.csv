@@ -95,6 +95,7 @@ beta;LensDistortionEffect
 beta;LoseWebGLContextTool 
 alpha;MapBaseColorTool 
 alpha;MapBaseTransparencyTool 
+alpha;MapBaseVisibilityTool 
 alpha;MapLayerSubLayerVisiblityTool 
 alpha;MapLayerTransparencyTool 
 alpha;MapLayerVisibilityTool 
