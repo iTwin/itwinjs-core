@@ -29,11 +29,13 @@ _jq2() {
 
 for row in $(echo "${prs}" | jq -r '.[] | @base64'); do
   if [[ "open" != $(_jq '.state') ]] || [[ "true" == $(_jq '.draft') ]]; then
-    # echo Skipping $(_jq '.title') with state $(_jq '.state') and draft $(_jq '.draft')
+    echo Skipping $(_jq '.title') with state $(_jq '.state') and draft $(_jq '.draft')
     continue
   fi
 
-  if [[ "d13ea94c5dc0f0f35492de5ebe12981eb0e83372" != $(_jq '.head.sha') ]]; then
+  #echo Checking $(_jq '.title') updated last at $(_jq '.head.sha')
+
+  if [[ "fa0e9cb3a20dd8fa6206d72371b3663b9a90e02b" != $(_jq '.head.sha') ]]; then
     continue
   fi
 
@@ -43,7 +45,11 @@ for row in $(echo "${prs}" | jq -r '.[] | @base64'); do
   lastUpdatedTime=$(_jq '.updated_at')
   currentTime=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   tooOld=$(node -e "const lutPlus3=new Date('$lastUpdatedTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
-  echo $tooOld
+  if [[ tooOld == false ]]; then
+    echo $tooOld
+    continue
+  fi
+  echo Too Old $tooOld
   break
 
   # START=$(date -jf '%Y-%m-%dT%H:%M:%SZ' '$(_jq '.updated_at')' +%s)
