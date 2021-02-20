@@ -351,6 +351,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
   }
 }
 
+/** @alpha */
 export class OrderedId64Array extends SortedArray<Id64String> {
   public constructor() {
     super((lhs, rhs) => OrderedId64Iterable.compare(lhs, rhs));

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/map-layers",
+      "comment": "Restored base layer visibility button in map manager. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/map-layers",
+  "email": "mdastous-bentley@users.noreply.github.com"
+}
