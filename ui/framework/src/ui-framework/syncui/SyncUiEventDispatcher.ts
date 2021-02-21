@@ -67,6 +67,8 @@ export enum SyncUiEventId {
   WorkflowActivated = "workflowactivated",
   /** The SelectionSet for the active IModelConnection has changed. */
   SelectionSetChanged = "selectionsetchanged",
+  /** The list of settings providers registered with SettingsManager has changed. */
+  SettingsProvidersChanged = "settingsproviderschanged",
   /** The current view state has changed (used by view undo/redo toolbar buttons). */
   ViewStateChanged = "viewstatechanged",
   /** The current object the reads and write UI Settings has changed. */
@@ -97,6 +99,7 @@ export class SyncUiEventDispatcher {
   private static _timeoutPeriod = 100;
   private static _secondaryTimeoutPeriod = SyncUiEventDispatcher._timeoutPeriod / 2;
   private static _unregisterListenerFunc?: () => void;
+  private static initialized = false;
 
   /** @internal - used for testing only */
   /* istanbul ignore next */
@@ -219,6 +222,10 @@ export class SyncUiEventDispatcher {
 
   /** Initializes the Monitoring of Events that trigger dispatching sync events */
   public static initialize() {
+    if (SyncUiEventDispatcher.initialized)
+      return;
+
+    SyncUiEventDispatcher.initialized = true;
 
     FrontstageManager.onContentControlActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentControlActivated);
@@ -266,6 +273,10 @@ export class SyncUiEventDispatcher {
 
     ContentViewManager.onActiveContentChangedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveContentChanged);
+    });
+
+    UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
     });
 
     // istanbul ignore else

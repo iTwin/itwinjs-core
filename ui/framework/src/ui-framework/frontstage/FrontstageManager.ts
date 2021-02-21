@@ -105,6 +105,25 @@ export interface ModalFrontstageClosedEventArgs {
   idleTime: number;
 }
 
+/** Modal Frontstage Requested Close Event class. Notifies the modal stage that the close button was
+ * pressed and passes the function to actually close the modal stage. This allows stage to do any
+ * saving of unsaved data prior to closing the stage. If the ModalFrontstageInfo sets notifyCloseRequest
+ * to true it is up to the stage to register for this event and call the stageCloseFunc once it has saved
+ * any unsaved data.
+ * @alpha
+ */
+export class ModalFrontstageRequestedCloseEvent extends UiEvent<ModalFrontstageRequestedCloseEventArgs> { }
+
+/** Modal Frontstage RequestedClose Event Args interface.
+ * @alpha
+ */
+export interface ModalFrontstageRequestedCloseEventArgs {
+  /** Modal Frontstage that is to be closed */
+  modalFrontstage: ModalFrontstageInfo;
+  /** Function to call to close the stage */
+  stageCloseFunc: () => void;
+}
+
 /** Modal Frontstage Closed Event class.
  * @public
  */
@@ -141,6 +160,7 @@ export interface ModalFrontstageInfo {
   title: string;
   content: React.ReactNode;
   appBarRight?: React.ReactNode;
+  notifyCloseRequest?: boolean;
 }
 
 /** Modal Frontstage array item interface.
@@ -260,6 +280,9 @@ export class FrontstageManager {
 
   /** Get Modal Frontstage Closed event. */
   public static readonly onModalFrontstageClosedEvent = new ModalFrontstageClosedEvent();
+
+  /** Get Modal Frontstage Requested Closed event. */
+  public static readonly onCloseModalFrontstageRequestedEvent = new ModalFrontstageRequestedCloseEvent();
 
   /** Get Tool Activated event. */
   public static readonly onToolActivatedEvent = new ToolActivatedEvent();
@@ -509,7 +532,17 @@ export class FrontstageManager {
   /** Closes the top-most modal Frontstage.
    */
   public static closeModalFrontstage(): void {
-    FrontstageManager.popModalFrontstage();
+    if (FrontstageManager._modalFrontstages.length > 0){
+      const topMostStageItem = FrontstageManager._modalFrontstages[FrontstageManager._modalFrontstages.length - 1];
+      if (topMostStageItem.modalFrontstage.notifyCloseRequest)
+        FrontstageManager.onCloseModalFrontstageRequestedEvent.emit (
+          {
+            modalFrontstage: topMostStageItem.modalFrontstage,
+            stageCloseFunc: FrontstageManager.popModalFrontstage,
+          });
+      else
+        FrontstageManager.popModalFrontstage();
+    }
   }
 
   private static popModalFrontstage(): void {

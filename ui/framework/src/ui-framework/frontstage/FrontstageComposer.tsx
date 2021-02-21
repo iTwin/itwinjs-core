@@ -298,7 +298,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       this.setState({ modalFrontstageCount: FrontstageManager.modalFrontstageCount });
   };
 
-  private _closeModal = () => {
+  private _closeModalStage = () => {
     FrontstageManager.closeModalFrontstage();
   };
 
@@ -317,7 +317,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       <ModalFrontstage
         isOpen={true}
         title={title}
-        closeModal={this._closeModal}
+        closeModal={this._closeModalStage}
         appBarRight={appBarRight}
       >
         {content}

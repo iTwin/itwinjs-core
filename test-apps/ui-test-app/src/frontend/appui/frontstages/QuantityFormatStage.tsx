@@ -19,7 +19,7 @@ import { ModalDialogManager, ModalFrontstageInfo, UiFramework } from "@bentley/u
  */
 export class QuantityFormatModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.i18n.translate("SampleApp:QuantityFormatModalFrontstage.QuantityFormatStage");
-  public get content(): React.ReactNode { return (<QuantityFormatStage initialQuantityType={getQuantityTypeKey(QuantityType.Length)} />); }
+  public get content(): React.ReactNode { return (<QuantityFormatSettingsPanel initialQuantityType={getQuantityTypeKey(QuantityType.Length)} />); }
 }
 
 function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
@@ -27,7 +27,7 @@ function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
   return compare.compare(obj1, obj2);
 }
 
-function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: QuantityTypeArg }) {
+export function QuantityFormatSettingsPanel({ initialQuantityType }: { initialQuantityType: QuantityTypeArg }) {
   const [activeQuantityType, setActiveQuantityType] = React.useState(getQuantityTypeKey(initialQuantityType));
   const [activeFormatterSpec, setActiveFormatterSpec] = React.useState<FormatterSpec | undefined>(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(getQuantityTypeKey(initialQuantityType)));
   const [saveEnabled, setSaveEnabled] = React.useState(false);

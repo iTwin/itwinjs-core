@@ -1,0 +1,164 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors.scss";
+@import "~@bentley/ui-core/lib/ui-core/style/typography";
+
+$backButtonSize: 32px;
+$backButtonPadding: 12px;
+$backButtonElemSize: $backButtonSize + 2 * $backButtonPadding;
+$layoutMargin: 54px;
+
+.SettingsPage_layout {
+  display: grid;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  margin: 0 $layoutMargin $layoutMargin;
+  grid-template-rows: calc(#{$backButtonElemSize} + 12px) minmax(0, 1fr);
+  grid-template-areas:
+    "header"
+    "content";
+  color: RGBA($buic-foreground-body-rgb, 0.75);
+
+  &::after {
+    content: "";
+    display: block;
+    height: $layoutMargin;
+   }
+
+  img,
+  video {
+    // responsive images and videos
+    max-width: 100%;
+    height: auto;
+  }
+
+  .rt-thead {
+    background-color: RGBA($buic-background-5-rgb, 0.75);
+    border-bottom: 0;
+  }
+
+  > .SettingsPage_header {
+    display: grid;
+    background: $buic-background-titlebar;
+    grid-area: header;
+    grid-template-columns: $backButtonElemSize minmax(0, 1fr);
+    grid-template-areas: "back-button title";
+    column-gap: 1em;
+
+    > .SettingsPage_backButtonWrapper {
+      display: flex;
+      grid-area: back-button;
+      align-self: center;
+      justify-self: center;
+      padding: .5em;
+      background: $buic-background-control;
+
+      > .SettingsPage_backButton {
+        height: $backButtonSize;
+        width: $backButtonSize;
+        cursor: pointer;
+        fill: $buic-foreground-body;
+      }
+    }
+
+    > .SettingsPage_title {
+      font-size: $uicore-font-size-title;
+      grid-area: title;
+      font-weight: 500;
+      align-self: center;
+      justify-self: left;
+      color: $buic-foreground-body;
+    }
+  }
+
+  > .SettingsPage_content {
+    grid-area: content;
+    display: grid;
+    // minmax(0, 1fr) required for firefox hack
+    grid-template-columns: 200px minmax(0, 1fr);
+    grid-template-areas: "tabs current-tab";
+    grid-gap: 24px;
+
+    > .SettingsPage_tabs {
+      grid-area: tabs;
+      background-color: $buic-background-2;
+
+      > .SettingsPage_tabsList {
+        display: flex;
+        flex-direction: column;
+
+      }
+    }
+
+    > .SettingsPage_currentTab {
+      grid-area: current-tab;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 0 2px;
+      background-color: $buic-background-2;
+      border: 1px solid black;
+      box-sizing: border-box;
+      padding: 12px;
+
+      > .SettingsPage_currentTabTop {
+        background-color: $buic-background-2;
+        padding: 12px;
+        grid-column: 1 / -1;
+      }
+
+      > .SettingsPage_currentTabLeft,
+      > .SettingsPage_currentTabRight {
+        box-sizing: border-box;
+        padding: 24px;
+        background-color: $buic-background-2;
+
+      }
+
+      @media screen and (max-width: 11.4in) {
+        display: block;
+        position: relative;
+      }
+
+    }
+
+    > .SettingsPage_currentTabWithAlert {
+      grid-area: current-tab;
+      display: grid;
+      grid-template-areas:
+        "alert"
+        "subsection";
+      grid-template-rows: minmax(0, 1fr);
+
+      > .SettingsPage_alert {
+        grid-area: alert;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      > .SettingsPage_subsection {
+        grid-area: subsection;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 0 1px;
+        // background-color: RGBA($itwin-box-shadow-color-rgb, 1);
+        border: 1px solid black;
+
+        > .SettingsPage_currentTabLeft,
+        > .SettingsPage_currentTabRight {
+          background-color: $buic-background-2;
+          padding: 24px;
+          padding-top: 54px;
+        }
+
+        @media screen and (max-width: 11.4in) {
+          display: block;
+          position: relative;
+        }
+      }
+    }
+  }
+}

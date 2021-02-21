@@ -14,7 +14,7 @@ import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvi
 import { DateFormatter, IconSpecUtilities, ParseResults, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
+  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, SettingsContainer, SettingsPageTab, WeightPickerButton,
 } from "@bentley/ui-components";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
@@ -32,6 +32,23 @@ import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
+import { QuantityFormatSettingsPanel } from "../QuantityFormatStage";
+import { ConnectedUiSettingsPage } from "../Settings";
+
+function MySettingsPage() {
+  const tabs: SettingsPageTab[] = [
+    {tabId:"Quantity", label: "Quantity", disabled: false, page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} />},
+    {tabId:"UI", label: "UI", disabled: false, page: <ConnectedUiSettingsPage />},
+    {tabId:"page3", label: "page3", disabled: false, page: <div>Page 3</div>},
+    {tabId:"page4", label: "page4", disabled: false, page: <div>Page 4</div>},
+  ];
+
+  return (
+    <div style={{ display: "flex", width: "100%", height: "100%" }}>
+      <SettingsContainer title="Hello Settings" tabs={tabs} showBackButton={true} onBackButtonClick={()=>{}}  onSettingsTabSelected={(_tab: SettingsPageTab) =>{}} />
+    </div>
+  );
+}
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
   const traitStr = Format.getTraitString(trait);
@@ -1083,6 +1100,17 @@ export class ComponentExamplesProvider {
     };
   }
 
+  private static get settingPage(): ComponentExampleCategory {
+    const examples = [];
+    examples.push(
+      createComponentExample("Setting Page", undefined, <MySettingsPage />),
+    );
+    return {
+      title: "Setting Page Component",
+      examples,
+    };
+  }
+
   public static get categories(): ComponentExampleCategory[] {
     return [
       ComponentExamplesProvider.badgeSamples,
@@ -1109,6 +1137,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.toggleSamples,
       ComponentExamplesProvider.weightSamples,
       ComponentExamplesProvider.quantityFormatting,
+      ComponentExamplesProvider.settingPage,
       ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }

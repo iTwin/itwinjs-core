@@ -1,0 +1,38 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors.scss";
+
+.SettingsPage_wrapper {
+  transition: ease 300ms;
+  transition-property: color, background-color;
+  padding: 2px;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: normal;
+  cursor: pointer;
+  width: 98%;
+
+  &.SettingsPage_selected {
+    background-color: $buic-background-1;
+
+    > .SettingsPage_name {
+      color: $buic-foreground-primary;
+      border-left: 2px solid $buic-foreground-primary;
+    }
+  }
+
+  &.SettingsPage_disabled {
+    opacity: 0.45;
+  }
+
+  > .SettingsPage_name {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    padding-left: 29px;
+
+  }
+}
