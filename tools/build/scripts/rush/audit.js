@@ -42,7 +42,6 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
       const severity = advisory.severity.toUpperCase();
       const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
 
-
       // TODO: Temporarily lower the threshold of the immer security issue until we can consume a fix.  Id === 1603
 
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
@@ -52,7 +51,6 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
         logBuildWarning(message);
     }
   }
-
   // For some reason yarn audit can return the json without the vulnerabilities
   if (undefined === jsonOut.metadata.vulnerabilities)
     failBuild();
