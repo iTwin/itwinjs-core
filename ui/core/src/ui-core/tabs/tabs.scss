@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index";
+@import "../icons/variables";
 
 @mixin uicore-tabs {
 
@@ -30,6 +31,15 @@
       line-height:    $uicore-line-height;
       color:          $buic-text-color;
       cursor:         pointer;
+
+      .uicore-tabs-inline-label {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        }
+
+        .uicore-tabs-icon {
+          width: ( $uicore-icons-small + 10px );
+        }
 
       &::after {
 
@@ -67,10 +77,14 @@
         }
       }
     }
+
+    &.core-tab-item-disabled {
+      color: $buic-foreground-disabled;
+      pointer-events: none;
+    }
   }
 
   &.uicore-tabs-green > li > a::after {
-
     background-color:     $buic-foreground-success;
   }
 }

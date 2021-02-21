@@ -11,13 +11,35 @@ import * as React from "react";
 import { CommonProps } from "../utils/Props";
 import { Orientation } from "../enums/Orientation";
 import { ItemKeyboardNavigator } from "../focus/ItemKeyboardNavigator";
+import { IconHelper } from "../utils/IconHelper";
+
+/** TabLabel provides ability to define label, icon, and tooltip for a tab entry. The tooltip can be defined as JSX|Element
+ *  to support react-tooltip component or a string that will be use to set the title property.
+ * @alpha
+ */
+export interface TabLabel {
+  label: string;
+  icon?: string | JSX.Element;
+  tabId?: string; /* optional id added to tab so it can be used by react-tooltip  */
+  /** tooltip allows JSX.Element to support styled tooltips like react-tooltip. */
+  tooltip?: string | JSX.Element;
+  disabled?: boolean;
+}
+
+function isTabLabelWithIcon(item: string|TabLabel): item is TabLabel {
+  return (typeof item !== "string") && !!(item ).icon;
+}
+
+function isTabLabel(item: string|TabLabel): item is TabLabel {
+  return (typeof item !== "string");
+}
 
 /** Properties for the [[HorizontalTabs]] and [[VerticalTabs]] components
  * @public
  */
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
   /** Text shown for each tab */
-  labels: string[];
+  labels: Array <string|TabLabel>;
   /** Handler for activating a tab */
   onActivateTab?: (index: number) => any;
   /** Index of the initial active tab */
@@ -145,17 +167,33 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
       this.props.className,
     );
 
+    const anyIconsPresent = (this.props.labels.reduce ((a, b) => a + (isTabLabelWithIcon(b) ? 1 : 0), 0)) > 0;
+
     return (
       <ul className={ulClassNames} style={this.props.style}
         role="tablist"
         aria-orientation={this.props.orientation === Orientation.Vertical ? "vertical" : "horizontal"}
       >
-        {this.props.labels.map((label: string, index: number) =>
-          <li key={index}
-            className={classnames({ "core-active": index === this.state.activeIndex })}
+        {this.props.labels.map((label, index) => {
+          let disabled = false;
+          let tooltipElement: JSX.Element|undefined;
+          let title: string|undefined;
+          let tabId = "";
+          if (isTabLabel(label)) {
+            disabled = label.disabled??false;
+            tabId = label.tabId ?? "";
+            if (React.isValidElement(label.tooltip))
+              tooltipElement = label.tooltip;
+            else if (typeof label.tooltip === "string")
+              title = label.tooltip;
+          }
+          return <li key={index} title={title}
+            className={classnames(index === this.state.activeIndex && "core-active", disabled && "core-tab-item-disabled")}
             role="tab"
             aria-selected={index === this.state.activeIndex}
+            data-for={`${tabId}`} /* to support react-tooltip */
           >
+            {tooltipElement}
             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a ref={this._anchorRefs[index]}
               tabIndex={index === this.state.activeIndex ? 0 : -1}
@@ -163,10 +201,13 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
               onKeyDown={(event) => this._handleKeyDownEvent(event, index)}
               onKeyUp={(event) => this._handleKeyUpEvent(event, index)}
               role="button"
-            >
-              {label}
+            > <div className="uicore-tabs-inline-label">
+                {anyIconsPresent ? <span className="uicore-tabs-icon">{(typeof label === "string") ? null : IconHelper.getIconReactNode ((label ).icon)}</span> : <span/>}
+                <span>{(typeof label === "string") ? label : (label ).label}</span>
+              </div>
             </a>
-          </li>,
+          </li>;
+        }
         )}
       </ul>
     );

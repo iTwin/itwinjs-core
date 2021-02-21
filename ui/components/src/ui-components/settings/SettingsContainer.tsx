@@ -3,16 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "./SettingsPage.scss";
-
+import "./SettingsContainer.scss";
 import React from "react";
-
-import SettingsTabLink from "./SettingsTabLink";
+import { VerticalTabs } from "@bentley/ui-core";
 
 /**
  *
  */
-export interface SettingsPageTab {
+export interface SettingsTab {
   /** unique id for entry */
   readonly tabId: string;
   /** localized display label */
@@ -33,9 +31,9 @@ export interface SettingsPageTab {
  *
  */
 export interface SettingsContainerProps {
-  tabs: SettingsPageTab[];
+  tabs: SettingsTab[];
   // sets tab to set as active tab
-  currentSettingsTab?: SettingsPageTab;
+  currentSettingsTab?: SettingsTab;
   // If plugging into Modal-Frontstage, then don't need a title as UiFramework will take care of this
   title?: string;
   // If plugging into Modal-Frontstage, then don't need a back button as UiFramework will take care of this
@@ -43,12 +41,8 @@ export interface SettingsContainerProps {
   // If we're providing the back button, then provide the on click handlers for the back button
   onBackButtonClick?: () => void;
   // If plugging into a SPA and you need to modify the route, you can pass in additional logic here
-  onSettingsTabSelected?: (tab: SettingsPageTab) => void;
+  onSettingsTabSelected?: (tab: SettingsTab) => void;
 }
-
-// interface SettingsTabsMap {
-//   [tabName: string]: SettingsPageTab;
-// }
 
 /**
  * Note that SettingsContainer is not rendered if tabs is empty
@@ -61,7 +55,7 @@ export const SettingsContainer = ({title, tabs, showBackButton, onBackButtonClic
       return tabs[0];
   });
 
-  const processTabSelection = React.useCallback((tab: SettingsPageTab) => {
+  const processTabSelection = React.useCallback((tab: SettingsTab) => {
     if (!tab.disabled) {
       if (onSettingsTabSelected) {
         onSettingsTabSelected(tab);
@@ -70,12 +64,15 @@ export const SettingsContainer = ({title, tabs, showBackButton, onBackButtonClic
     }
   }, [onSettingsTabSelected]);
 
-  const onSelectTabId =  React.useCallback((tabId: string) => {
-    const selectedTab = tabs.find((tab)=>tab.tabId === tabId);
+  const onActivateTab =  React.useCallback((tabIndex: number) => {
+    const selectedTab = tabs[tabIndex];
     if (selectedTab) {
       processTabSelection(selectedTab);
     }
   }, [processTabSelection, tabs]);
+
+  const labels=tabs.map((tab)=> {return {label:tab.label, icon: tab.icon, tooltip: tab.tooltip, tabId: tab.tabId, disabled: tab.disabled};});
+  const activeIndex = tabs.findIndex((tab)=>tab.tabId === openTab.tabId);
 
   return (
     <div className={"SettingsPage_layout"}>
@@ -100,21 +97,7 @@ export const SettingsContainer = ({title, tabs, showBackButton, onBackButtonClic
         </div>
       )}
       <div className={"SettingsPage_content"}>
-        <div className={"SettingsPage_tabs"}>
-          <div className={"SettingsPage_tabsList"}>
-            {tabs.map((tab) => (
-              <SettingsTabLink
-                tabId={tab.tabId}
-                isOpenTab={tab.tabId === openTab.tabId}
-                tabLabel={tab.label}
-                onClick={onSelectTabId}
-                key={tab.tabId}
-                disabled={tab.disabled}
-                tooltip={tab.tooltip}
-              />
-            ))}
-          </div>
-        </div>
+        <VerticalTabs labels={labels} activeIndex={activeIndex} onActivateTab={onActivateTab} />
         {openTab?.page ?? null}
       </div>
     </div>

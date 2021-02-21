@@ -8,7 +8,7 @@
 
 import "./ModalSettingsStage.scss";
 import * as React from "react";
-import { SettingsContainer, SettingsPageTab } from "@bentley/ui-components";
+import { SettingsContainer, SettingsTab } from "@bentley/ui-components";
 import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities, StageUsage } from "@bentley/ui-abstract";
 import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
@@ -30,7 +30,7 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
     return FrontstageManager.onCloseModalFrontstageRequestedEvent.addListener(handleFrontstageCloseRequested);
   }, []);
 
-  const tabs: SettingsPageTab[] = !entries ? []: entries.sort((a, b)=> a.itemPriority - b.itemPriority).map((entry) => {
+  const tabs: SettingsTab[] = !entries ? []: entries.sort((a, b)=> a.itemPriority - b.itemPriority).map((entry) => {
     return {
       tabId: entry.tabId,
       label: entry.label,

@@ -97,8 +97,7 @@ export * from "./ui-components/quantityformat/MiscFormatOptions";
 export * from "./ui-components/quantityformat/QuantityFormatPanel";
 
 export * from "./ui-components/settings/SettingsManager";
-export * from "./ui-components/settingspage/SettingsPage";
-export * from "./ui-components/settingspage/SettingsPage";
+export * from "./ui-components/settings/SettingsContainer";
 
 export * from "./ui-components/timeline/interfaces";
 export * from "./ui-components/timeline/BaseTimelineDataProvider";
