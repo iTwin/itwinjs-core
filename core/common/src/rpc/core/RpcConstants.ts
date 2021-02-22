@@ -47,6 +47,15 @@ export enum RpcRequestStatus {
   NotFound,
   Cancelled,
   NoContent,
+  BadGateway,
+  ServiceUnavailable,
+  GatewayTimeout
+}
+
+export namespace RpcRequestStatus {
+  export function isTransientError(status: RpcRequestStatus) {
+    return status === RpcRequestStatus.BadGateway || status == RpcRequestStatus.ServiceUnavailable || status === RpcRequestStatus.GatewayTimeout;
+  }
 }
 
 /** RPC request event types.
@@ -55,6 +64,7 @@ export enum RpcRequestStatus {
 export enum RpcRequestEvent {
   StatusChanged,
   PendingUpdateReceived,
+  TransientErrorReceived
 }
 
 /** RPC content types.
