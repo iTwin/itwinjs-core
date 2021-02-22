@@ -103,7 +103,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     setOverlayMapLayers(getMapLayerSettingsFromStyle(displayStyle, false));
   }, [setBackgroundMapLayers, setOverlayMapLayers]);
 
-  const [basemapVisible, setBasemapVisible] = React.useState(() => {
+  const [backgroundMapVisible, setBackgroundMapVisible] = React.useState(() => {
     if (activeViewport) {
       return activeViewport.viewFlags.backgroundMap;
     }
@@ -270,16 +270,16 @@ export function MapLayerManager(props: MapLayerManagerProps) {
 
   const handleMapLayersToggle = React.useCallback(() => {
     if (activeViewport) {
-      const newState = !basemapVisible;
+      const newState = !backgroundMapVisible;
       const vf = activeViewport.viewFlags.clone();
       vf.backgroundMap = newState; // Or any other modifications
       activeViewport.viewFlags = vf;
       activeViewport.invalidateRenderPlan();
-      setBasemapVisible(newState);
+      setBackgroundMapVisible(newState);
     }
-  }, [basemapVisible, activeViewport]);
+  }, [backgroundMapVisible, setBackgroundMapVisible, activeViewport]);
 
-  const handleOnMapLayerDragEnd = React.useCallback((result: DropResult /* , _provided: ResponderProvided*/) => {
+  const handleOnMapLayerDragEnd = React.useCallback((result: DropResult /* ,  _provided: ResponderProvided*/) => {
     const { destination, source } = result;
 
     if (!destination) // dropped outside of list
@@ -370,7 +370,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       <div className="map-manager-top-header">
         <span className="map-manager-header-label">{baseMapPanelLabel}</span>
         <div className="map-manager-header-buttons-group">
-          <Toggle className="map-manager-toggle" isOn={basemapVisible} onChange={handleMapLayersToggle} />
+          <Toggle className="map-manager-toggle" isOn={backgroundMapVisible} onChange={handleMapLayersToggle} />
           <MapLayerSettingsPopupButton />
         </div>
       </div>

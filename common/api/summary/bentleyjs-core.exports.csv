@@ -87,6 +87,7 @@ beta;ObservableSet
 beta;OneAtATimeAction
 public;OpenMode
 public;OrderedComparator
+alpha;OrderedId64Array 
 beta;OrderedId64Iterable = Iterable
 beta;OrderedId64Iterable
 public;OrderedSet
