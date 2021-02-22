@@ -1689,6 +1689,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     // @beta
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
+    clearSunTime(): void;
     // @internal (undocumented)
     get environment(): EnvironmentProps;
     set environment(environment: EnvironmentProps);
@@ -1705,8 +1706,10 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined;
     // @beta
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
+    setSunTime(timePoint: number, location: IModel | Cartographic): void;
     get solarShadows(): SolarShadowSettings;
     set solarShadows(solarShadows: SolarShadowSettings);
+    get sunTime(): number | undefined;
     // @beta
     get thematic(): ThematicDisplay;
     set thematic(thematic: ThematicDisplay);
@@ -6876,15 +6879,13 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
 // @public
 export class SolarLight {
     constructor(json?: SolarLightProps);
-    // (undocumented)
     readonly alwaysEnabled: boolean;
     clone(changedProps?: SolarLightProps): SolarLight;
-    // (undocumented)
     readonly direction: Readonly<Vector3d>;
     // (undocumented)
     equals(rhs: SolarLight): boolean;
-    // (undocumented)
     readonly intensity: number;
+    readonly timePoint?: number;
     // (undocumented)
     toJSON(): SolarLightProps | undefined;
 }
@@ -6894,6 +6895,7 @@ export interface SolarLightProps {
     alwaysEnabled?: boolean;
     direction?: XYZProps;
     intensity?: number;
+    timePoint?: number;
 }
 
 // @public
