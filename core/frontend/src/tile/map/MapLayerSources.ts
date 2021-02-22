@@ -57,7 +57,7 @@ export class MapLayerSource implements MapLayerProps {
   }
 
   public toLayerSettings(): MapLayerSettings | undefined {
-    const layerSettings = MapLayerSettings.fromJSON(this.toJSON());
+    const layerSettings = MapLayerSettings.fromJSON(this);
     layerSettings?.setCredentials(this.userName, this.password);
     return layerSettings;
   }
