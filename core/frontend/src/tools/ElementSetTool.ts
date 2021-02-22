@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { Id64, Id64Arg, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { AccuDrawFlags } from "../AccuDraw";
@@ -69,6 +69,19 @@ export class ElementAgenda {
   public get isEmpty() { return this.length === 0; }
   public get count() { return this.length; }
   public get length() { return this.elements.length; }
+
+  /** Create [[OrderedId64Array]] from agenda. */
+  public orderIds(): OrderedId64Array {
+    const ids = new OrderedId64Array();
+    this.elements.forEach((id) => ids.insert(id));
+    return ids;
+  }
+
+  /** Create [[CompressedId64Set]] from agenda. */
+  public compressIds(): CompressedId64Set {
+    const ids = this.orderIds();
+    return CompressedId64Set.compressIds(ids);
+  }
 
   /** Empties the agenda and clears hilite state when manageHiliteState is true. */
   public clear() { this.setEntriesHiliteState(false); this.elements.length = 0; this.groupMarks.length = 0; }

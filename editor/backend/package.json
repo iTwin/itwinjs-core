@@ -35,6 +35,7 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.13.0-dev.19",
+    "@bentley/geometry-core": "^2.13.0-dev.19",
     "@bentley/imodeljs-backend": "2.13.0-dev.19",
     "@bentley/imodeljs-common": "^2.13.0-dev.19"
   },
@@ -46,6 +47,7 @@
     "@bentley/bentleyjs-core": "2.13.0-dev.19",
     "@bentley/build-tools": "2.13.0-dev.19",
     "@bentley/eslint-plugin": "2.13.0-dev.19",
+    "@bentley/geometry-core": "2.13.0-dev.19",
     "@bentley/imodeljs-backend": "2.13.0-dev.19",
     "@bentley/imodeljs-common": "2.13.0-dev.19",
     "@types/chai": "^4.1.4",

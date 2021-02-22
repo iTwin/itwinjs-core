@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CompressedId64Set, IModelStatus, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { IModelStatus } from "@bentley/bentleyjs-core";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
-import { ElementSetTool } from "@bentley/imodeljs-frontend";
+import { ElementSetTool, IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { EditTools } from "./EditTool";
 
 /** @alpha Delete elements immediately from active selection set or prompt user to identify elements to delete. */
@@ -25,14 +25,10 @@ export class DeleteElementsTool extends ElementSetTool {
   public async processAgendaImmediate(): Promise<void> {
     try {
       await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
-
-      const ids = new OrderedId64Array(); // TODO: ElementAgenda method to get OrderedId64Array...
-      this.agenda.elements.forEach((id) => ids.insert(id));
-
-      if (IModelStatus.Success === await DeleteElementsTool.callCommand("deleteElements", CompressedId64Set.compressIds(ids)))
+      if (IModelStatus.Success === await DeleteElementsTool.callCommand("deleteElements", this.agenda.compressIds()))
         await this.iModel.saveChanges();
     } catch (err) {
-      // TODO: NotificationManager message?
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
   }
 
