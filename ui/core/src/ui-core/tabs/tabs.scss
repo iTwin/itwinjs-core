@@ -35,11 +35,17 @@
       .uicore-tabs-inline-label {
         display: grid;
         grid-template-columns: auto 1fr;
+        align-items: center;
+
+        &.core-tab-item-disabled {
+          color: $buic-foreground-disabled;
+          pointer-events: none;
         }
 
         .uicore-tabs-icon {
           width: ( $uicore-icons-small + 10px );
         }
+      }
 
       &::after {
 
@@ -78,9 +84,12 @@
       }
     }
 
-    &.core-tab-item-disabled {
-      color: $buic-foreground-disabled;
-      pointer-events: none;
+    .uicore-tabs-label-subLabel-container {
+      display: flex;
+      flex-direction: column;
+      .uicore-tabs-subLabel {
+        font-size: $uicore-font-size-small
+      }
     }
   }
 

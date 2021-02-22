@@ -19,6 +19,7 @@ import { IconHelper } from "../utils/IconHelper";
  */
 export interface TabLabel {
   label: string;
+  subLabel?: string;
   icon?: string | JSX.Element;
   tabId?: string; /* optional id added to tab so it can be used by react-tooltip  */
   /** tooltip allows JSX.Element to support styled tooltips like react-tooltip. */
@@ -178,8 +179,10 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
           let disabled = false;
           let tooltipElement: JSX.Element|undefined;
           let title: string|undefined;
+          let subLabel: string|undefined;
           let tabId = "";
           if (isTabLabel(label)) {
+            subLabel = label.subLabel;
             disabled = label.disabled??false;
             tabId = label.tabId ?? "";
             if (React.isValidElement(label.tooltip))
@@ -188,7 +191,7 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
               title = label.tooltip;
           }
           return <li key={index} title={title}
-            className={classnames(index === this.state.activeIndex && "core-active", disabled && "core-tab-item-disabled")}
+            className={classnames(index === this.state.activeIndex && "core-active")}
             role="tab"
             aria-selected={index === this.state.activeIndex}
             data-for={`${tabId}`} /* to support react-tooltip */
@@ -201,9 +204,12 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
               onKeyDown={(event) => this._handleKeyDownEvent(event, index)}
               onKeyUp={(event) => this._handleKeyUpEvent(event, index)}
               role="button"
-            > <div className="uicore-tabs-inline-label">
+            > <div className={classnames("uicore-tabs-inline-label", disabled && "core-tab-item-disabled")}>
                 {anyIconsPresent ? <span className="uicore-tabs-icon">{(typeof label === "string") ? null : IconHelper.getIconReactNode ((label ).icon)}</span> : <span/>}
-                <span>{(typeof label === "string") ? label : (label ).label}</span>
+                <div className="uicore-tabs-label-subLabel-container">
+                  <span>{(typeof label === "string") ? label : label.label}</span>
+                  {subLabel && <span className="uicore-tabs-subLabel">{subLabel}</span>}
+                </div>
               </div>
             </a>
           </li>;

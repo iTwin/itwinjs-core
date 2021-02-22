@@ -37,10 +37,12 @@ import { ConnectedUiSettingsPage } from "../Settings";
 
 function MySettingsPage() {
   const tabs: SettingsTab[] = [
-    {tabId:"Quantity", label: "Quantity", tooltip:"Quantity Format Settings", icon: "icon-measure", disabled: false, page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} />},
-    {tabId:"UI", label: "UI", tooltip:"UI Settings", disabled: false, page: <ConnectedUiSettingsPage />},
+    {tabId:"Quantity", label: "Quantity", tooltip:"Quantity Format Settings", icon: "icon-measure",
+      disabled: false, page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} />},
+    {tabId:"UI", label: "UI", subLabel:"UI and Accudraw", tooltip:"UI Settings", icon: "icon-paintbrush",
+      disabled: false, page: <ConnectedUiSettingsPage />},
     {tabId:"page3", label: "page3", disabled: false, page: <div>Page 3</div>},
-    {tabId:"page4", label: "page4", disabled: false, page: <div>Page 4</div>},
+    {tabId:"page4", label: "page4", subLabel:"disabled page4", disabled: true, page: <div>Page 4</div>},
   ];
 
   return (

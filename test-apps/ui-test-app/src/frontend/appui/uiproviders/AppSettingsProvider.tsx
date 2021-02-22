@@ -28,6 +28,7 @@ export class AppSettingsProvider implements SettingsProvider {
         page: <ConnectedUiSettingsPage />,
         isDisabled: false,
         icon: "icon-paintbrush",
+        subLabel: "UI and Accudraw",
         tooltip: "UI and Accudraw Settings",
       },
     ];

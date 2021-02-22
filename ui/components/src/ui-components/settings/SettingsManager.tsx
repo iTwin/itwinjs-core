@@ -21,7 +21,7 @@ export interface SettingsEntry {
   /** used to determine position in tablist */
   readonly itemPriority: number;
   /** Optional Subtitle to show below label. */
-  readonly subtitle?: string;
+  readonly subLabel?: string;
   /** Icon specification */
   readonly icon?: string | JSX.Element;
   /** Tooltip. Allows JSX|Element to support react-tooltip component */

@@ -17,8 +17,8 @@ export interface SettingsTab {
   readonly label: string;
   /** Setting page content to display when tab item is selected. */
   readonly page: JSX.Element;
-  /** Optional Subtitle to show below label. */
-  readonly subtitle?: string;
+  /** Optional sub-label to show below label. */
+  readonly subLabel?: string;
   /** Icon specification */
   readonly icon?: string | JSX.Element;
   /** Tooltip. Allows JSX|Element to support react-tooltip component */
@@ -71,7 +71,10 @@ export const SettingsContainer = ({title, tabs, showBackButton, onBackButtonClic
     }
   }, [processTabSelection, tabs]);
 
-  const labels=tabs.map((tab)=> {return {label:tab.label, icon: tab.icon, tooltip: tab.tooltip, tabId: tab.tabId, disabled: tab.disabled};});
+  const labels=tabs.map((tab)=> {
+    return {label:tab.label, subLabel: tab.subLabel, icon: tab.icon,
+      tooltip: tab.tooltip, tabId: tab.tabId, disabled: tab.disabled};
+  });
   const activeIndex = tabs.findIndex((tab)=>tab.tabId === openTab.tabId);
 
   return (

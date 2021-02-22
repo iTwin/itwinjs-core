@@ -35,7 +35,7 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
       tabId: entry.tabId,
       label: entry.label,
       page: entry.page,
-      subtitle: entry.subtitle,
+      subLabel: entry.subLabel,
       icon: entry.icon,
       tooltip: entry.tooltip,
       disabled: ConditionalBooleanValue.getValue(entry.isDisabled),
