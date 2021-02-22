@@ -139,7 +139,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     }
 
     const proxyUrl = process.env.HTTPS_PROXY;
-    let proxyAuthOptions: puppeteer.AuthOptions | undefined = undefined;
+    let proxyAuthOptions: puppeteer.AuthOptions | undefined;
     if (proxyUrl) {
       const proxyUrlObj = new URL(proxyUrl);
       proxyAuthOptions = { username: proxyUrlObj.username, password: proxyUrlObj.password };

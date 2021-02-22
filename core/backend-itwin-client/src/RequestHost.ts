@@ -38,9 +38,9 @@ export class RequestHost {
       const proxyAgentOptions = url.parse(RequestHost._proxyUrl);
       const mergedAgentOptions: HttpsProxyAgentOptions = additionalOptions !== undefined ? { ...additionalOptions, ...proxyAgentOptions } : { ...proxyAgentOptions };
       return new HttpsProxyAgent(mergedAgentOptions);
-    }
+    };
 
-    const unquoteString = (str: string) => str.replace(/(^["'`])|(["'`]$)/g, '');
+    const unquoteString = (str: string) => str.replace(/(^["'`])|(["'`]$)/g, "");
 
     RequestHost._proxyUrl = unquoteString(proxyUrl);
     const httpsProxy = createHttpsProxy();
