@@ -1,4 +1,4 @@
-### [The iModel.js Library](./index.md)
+### [The iTwin.js Library](./index.md)
 
 - [Frontend](./frontend/index.md)
 - [Backend](./backend/index.md)

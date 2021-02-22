@@ -123,12 +123,8 @@ describe("AccuDrawFieldContainer", () => {
     expect(document.activeElement === input).to.be.true;
     spy.resetHistory();
 
-    IModelApp.accuDraw.setFocusItem(ItemField.Z_Item);
-    spy.calledOnce.should.true;
     input = wrapper.queryByTestId("uifw-accudraw-z");
-    expect(input).not.to.be.null;
-    expect(document.activeElement === input).to.be.true;
-    spy.resetHistory();
+    expect(input).to.be.null;
 
     IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
     await TestUtils.flushAsyncOperations();
@@ -143,6 +139,28 @@ describe("AccuDrawFieldContainer", () => {
     IModelApp.accuDraw.setFocusItem(ItemField.DIST_Item);
     spy.calledOnce.should.true;
     input = wrapper.queryByTestId("uifw-accudraw-distance");
+    expect(input).not.to.be.null;
+    expect(document.activeElement === input).to.be.true;
+    spy.resetHistory();
+
+    await TestUtils.flushAsyncOperations();
+    expect(IModelApp.accuDraw.hasInputFocus).to.be.true;
+
+    remove();
+  });
+
+  it("should emit onAccuDrawSetFieldFocusEvent and show Z field", async () => {
+    const spy = sinon.spy();
+    const remove = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spy);
+    const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
+    expect(IModelApp.accuDraw.hasInputFocus).to.be.false;
+
+    IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+    await TestUtils.flushAsyncOperations();
+
+    IModelApp.accuDraw.setFocusItem(ItemField.Z_Item);
+    spy.calledOnce.should.true;
+    const input = wrapper.queryByTestId("uifw-accudraw-z");
     expect(input).not.to.be.null;
     expect(document.activeElement === input).to.be.true;
     spy.resetHistory();
@@ -215,11 +233,7 @@ describe("AccuDrawFieldContainer", () => {
     spy.resetHistory();
 
     input = wrapper.queryByTestId("uifw-accudraw-z");
-    expect(input).not.to.be.null;
-    fireEvent.change(input!, { target: { value: "22.3" } });
-    fakeTimers.tick(300);
-    spy.calledOnce.should.true;
-    spy.resetHistory();
+    expect(input).to.be.null;
 
     IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
 
@@ -231,6 +245,25 @@ describe("AccuDrawFieldContainer", () => {
     spy.resetHistory();
 
     input = wrapper.queryByTestId("uifw-accudraw-distance");
+    expect(input).not.to.be.null;
+    fireEvent.change(input!, { target: { value: "22.3" } });
+    fakeTimers.tick(300);
+    spy.calledOnce.should.true;
+    spy.resetHistory();
+
+    remove();
+    fakeTimers.restore();
+  });
+
+  it("should call onValueChanged & setFieldValueFromUi & show the Z field", () => {
+    const fakeTimers = sinon.useFakeTimers();
+    const spy = sinon.spy();
+    const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.addListener(spy);
+    const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
+
+    IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+
+    const input = wrapper.queryByTestId("uifw-accudraw-z");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
     fakeTimers.tick(300);

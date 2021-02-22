@@ -428,6 +428,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/mobile-manager",
+      "projectFolder": "core/mobile-manager",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/express-server",
       "projectFolder": "core/express-server",
       "reviewCategory": "backend",
@@ -520,6 +527,12 @@
     {
       "packageName": "imodel-from-geojson",
       "projectFolder": "test-apps/imodel-from-geojson",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "imodel-transformer",
+      "projectFolder": "test-apps/imodel-transformer",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

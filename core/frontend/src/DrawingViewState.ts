@@ -28,7 +28,7 @@ import { Scene } from "./render/Scene";
 import { MockRender } from "./render/MockRender";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
 import { RenderGraphic } from "./render/RenderGraphic";
-import { TileGraphicType, TileTreeSet } from "./tile/internal";
+import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 
 /** Strictly for testing.
  * @internal
@@ -430,7 +430,7 @@ export class DrawingViewState extends ViewState2d {
   }
 
   /** @internal */
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     if (this._attachment)
       trees.disclose(this._attachment.viewport);
@@ -448,5 +448,10 @@ export class DrawingViewState extends ViewState2d {
   /** @internal */
   public get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachment || this._attachment.view.areAllTileTreesLoaded);
+  }
+
+  /** @internal */
+  public get secondaryViewports() {
+    return this._attachment ? [ this._attachment.viewport ] : super.secondaryViewports;
   }
 }

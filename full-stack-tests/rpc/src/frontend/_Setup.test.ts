@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, MobileRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
+import { MobileRpcManager } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
-import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 RpcConfiguration.disableRoutingValidation = true;
 
@@ -57,7 +58,7 @@ before(async () => {
     case "http":
       return initializeCloud("http");
     case "electron":
-      return ElectronFrontend.initialize({ rpcInterfaces });
+      return ElectronApp.startup({ iModelApp: { rpcInterfaces } });
     case "direct": {
       // (global as any).window = undefined;
       // eslint-disable-next-line @typescript-eslint/no-var-requires

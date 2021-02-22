@@ -82,7 +82,7 @@ Property | Description
 ECInstanceId | Is the unique identifier for an ECInstance.
 ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECClass in the iModel.
 
-> In iModel.js the *ECClassId* is formatted as fully qualified class name when used in the SELECT clause.
+> In iTwin.js the *ECClassId* is formatted as fully qualified class name when used in the SELECT clause.
 
 ### Example
 
@@ -383,3 +383,7 @@ See also [SQLite Functions overview](https://www.sqlite.org/lang_corefunc.html).
 ECSQL can perform [spatial queries](./SpatialQueries.md).
 
 ECSQL has a number of [built-in geometry functions](./GeometrySqlFuncs.md)
+
+## Common Table Expressions
+
+ECSQL can do regular and recursive [CTE queries](./CommonTableExp.md)

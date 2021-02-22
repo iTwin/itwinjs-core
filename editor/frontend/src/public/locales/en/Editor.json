@@ -1,0 +1,12 @@
+{
+  "tools": {
+    "DeleteElements": {
+      "keyin": "editor delete elements",
+      "flyover": "Delete Elements"
+    },
+    "MoveElements": {
+      "keyin": "editor move elements",
+      "flyover": "Move Elements"
+    }
+  }
+}

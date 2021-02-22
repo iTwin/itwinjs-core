@@ -2,7 +2,7 @@
   "name": "@bentley/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "2.13.0-dev.1",
+  "version": "2.13.0-dev.19",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
@@ -36,8 +36,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.13.0-dev.1",
-    "@bentley/eslint-plugin": "2.13.0-dev.1",
+    "@bentley/build-tools": "2.13.0-dev.19",
+    "@bentley/eslint-plugin": "2.13.0-dev.19",
     "@types/chai": "^4.1.4",
     "@types/chai-string": "^1.4.1",
     "@types/fs-extra": "^4.0.7",
@@ -53,20 +53,20 @@
     "rimraf": "^3.0.2",
     "source-map-support": "^0.5.6",
     "ts-node": "^7.0.1",
-    "typescript": "~3.7.4"
+    "typescript": "~4.1.0"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "2.13.0-dev.1",
-    "@bentley/bentleyjs-core": "2.13.0-dev.1",
-    "@bentley/ecschema-locaters": "2.13.0-dev.1",
-    "@bentley/ecschema-metadata": "2.13.0-dev.1",
-    "@bentley/frontend-authorization-client": "2.13.0-dev.1",
-    "@bentley/geometry-core": "2.13.0-dev.1",
-    "@bentley/imodelhub-client": "2.13.0-dev.1",
-    "@bentley/imodeljs-backend": "2.13.0-dev.1",
-    "@bentley/imodeljs-common": "2.13.0-dev.1",
-    "@bentley/itwin-client": "2.13.0-dev.1",
-    "@bentley/rbac-client": "2.13.0-dev.1",
+    "@bentley/backend-itwin-client": "2.13.0-dev.19",
+    "@bentley/bentleyjs-core": "2.13.0-dev.19",
+    "@bentley/ecschema-locaters": "2.13.0-dev.19",
+    "@bentley/ecschema-metadata": "2.13.0-dev.19",
+    "@bentley/frontend-authorization-client": "2.13.0-dev.19",
+    "@bentley/geometry-core": "2.13.0-dev.19",
+    "@bentley/imodelhub-client": "2.13.0-dev.19",
+    "@bentley/imodeljs-backend": "2.13.0-dev.19",
+    "@bentley/imodeljs-common": "2.13.0-dev.19",
+    "@bentley/itwin-client": "2.13.0-dev.19",
+    "@bentley/rbac-client": "2.13.0-dev.19",
     "chai-string": "^1.5.0",
     "chalk": "^3.0.0",
     "commander": "^2.14.1",

@@ -20,6 +20,7 @@ async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: 
   return rows;
 }
 
+/* eslint-disable deprecation/deprecation */
 describe("ChangeSummary (#integration)", () => {
   let iModel: RemoteBriefcaseConnection;
   let testProjectId: string;
@@ -36,6 +37,7 @@ describe("ChangeSummary (#integration)", () => {
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     };
+    await IModelApp.shutdown();
     await MockRender.App.startup(options);
 
     assert(IModelApp.authorizationClient);
@@ -71,7 +73,7 @@ describe("ChangeSummary (#integration)", () => {
     // for now, imodel must be open read/write for changesummary extraction
     await iModel.close();
 
-    const testIModel: RemoteBriefcaseConnection = await RemoteBriefcaseConnection.open(testProjectId, testIModelId, OpenMode.ReadWrite);
+    const testIModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId, OpenMode.ReadWrite);
     try {
       await TestRpcInterface.getClient().deleteChangeCache(testIModel.getRpcProps());
       await TestRpcInterface.getClient().extractChangeSummaries(testIModel.getRpcProps(), { currentChangeSetOnly: true });

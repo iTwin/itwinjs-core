@@ -7,6 +7,7 @@
 import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { FocusEventHandler } from 'react-select/src/types';
@@ -99,7 +100,7 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     onSuggestionSelected: (selected: AutoSuggestData) => void;
     options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
     // @internal
-    renderInputComponent?: ReactAutosuggest.RenderInputComponent<AutoSuggestData>;
+    renderInputComponent?: any;
     // @internal
     renderSuggestionsContainer?: ReactAutosuggest.RenderSuggestionsContainer;
     setFocus?: boolean;
@@ -351,9 +352,10 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
     }
 
 // @public
-export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
+export interface ContextMenuItemProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "disabled" | "hidden">, CommonProps {
     badgeType?: BadgeType;
-    disabled?: boolean;
+    disabled?: boolean | ConditionalBooleanValue;
+    hidden?: boolean | ConditionalBooleanValue;
     hideIconContainer?: boolean;
     icon?: IconSpec;
     iconRight?: IconSpec;
@@ -1877,6 +1879,8 @@ export function Slider(props: SliderProps): JSX.Element;
 // @public
 export interface SliderProps extends CommonProps {
     disabled?: boolean;
+    formatMax?: (value: number) => string;
+    formatMin?: (value: number) => string;
     formatTick?: (tick: number) => string;
     formatTooltip?: (value: number) => string;
     getTickCount?: () => number;
@@ -2287,6 +2291,8 @@ export interface TreeNodeProps extends CommonProps {
     // (undocumented)
     onClickExpansionToggle?: () => void;
     // (undocumented)
+    onContextMenu?: (e: React.MouseEvent) => void;
+    // (undocumented)
     onMouseDown?: (e: React.MouseEvent) => void;
     // (undocumented)
     onMouseMove?: (e: React.MouseEvent) => void;
@@ -2349,7 +2355,7 @@ export class UiSetting<T> {
     settingNamespace: string;
 }
 
-// @beta
+// @public
 export interface UiSettings {
     // (undocumented)
     deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
@@ -2359,7 +2365,7 @@ export interface UiSettings {
     saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
 }
 
-// @beta
+// @public
 export interface UiSettingsResult {
     // (undocumented)
     setting?: any;
@@ -2367,7 +2373,7 @@ export interface UiSettingsResult {
     status: UiSettingsStatus;
 }
 
-// @beta
+// @public
 export enum UiSettingsStatus {
     // (undocumented)
     AuthorizationError = 4,
