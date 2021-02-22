@@ -14,7 +14,12 @@ import { PropertyRenderer } from "../../../ui-components/properties/renderers/Pr
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../TestUtils";
 import { fireEvent, render } from "@testing-library/react";
+<<<<<<< HEAD
 import { PropertyRecord } from "@bentley/ui-abstract";
+=======
+import { DEFAULT_LINKS_HANDLER } from "../../../ui-components/properties/renderers/value/PrimitivePropertyValueRenderer";
+import { LinkElementsInfo } from "../../../../../abstract/lib/ui-abstract/properties/Record";
+>>>>>>> fe734bf18a... Handle URI properties
 
 describe("PropertyRenderer", () => {
   describe("getLabelOffset", () => {
@@ -137,6 +142,43 @@ describe("PropertyRenderer", () => {
     propertyRenderer.update();
 
     expect(propertyRenderer.find(LinksRenderer).prop("value")).to.be.equal(recordValue);
+  });
+
+  it("calls linksRenderer with DEFAULT_LINKS_HANDLER if links are not set on the Record", async () => {
+    propertyRecord = TestUtils.createPrimitiveStringProperty("Label", "Value");
+
+    const propertyRenderer = mount(
+      <PropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+      />);
+
+    await TestUtils.flushAsyncOperations();
+    propertyRenderer.update();
+
+    expect(propertyRenderer.find(LinksRenderer).prop("links")).to.be.equal(DEFAULT_LINKS_HANDLER);
+  });
+
+  it("calls linksRenderer with links specified in PropertyRecord", async () => {
+    propertyRecord = TestUtils.createPrimitiveStringProperty("Label", "Value");
+    const testMatcher = () => [];
+    const testOnClick = () => [];
+    const testLinks: LinkElementsInfo = {
+      matcher: testMatcher,
+      onClick: testOnClick,
+    };
+    propertyRecord.links = testLinks;
+
+    const propertyRenderer = mount(
+      <PropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+      />);
+
+    await TestUtils.flushAsyncOperations();
+    propertyRenderer.update();
+
+    expect(propertyRenderer.find(LinksRenderer).prop("links")).to.be.equal(testLinks);
   });
 
   it("renders value differently if provided with custom propertyValueRendererManager", async () => {

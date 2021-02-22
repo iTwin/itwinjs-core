@@ -12,6 +12,7 @@ import { TypeConverter } from "../../../../ui-components/converters/TypeConverte
 import { TypeConverterManager } from "../../../../ui-components/converters/TypeConverterManager";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
+import { getFullLink } from "../../../../ui-components/properties/renderers/value/URIPropertyValueRenderer";
 
 class AsyncValuesTypeConverter extends TypeConverter {
   public sortCompare(_lhs: Primitives.Value, _rhs: Primitives.Value, _ignoreCase?: boolean) {

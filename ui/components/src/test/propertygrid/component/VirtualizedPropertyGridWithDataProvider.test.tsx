@@ -20,6 +20,8 @@ import {
 } from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
+import { LinksRenderer } from "../../../ui-components/properties/LinkHandler";
+import { DEFAULT_LINKS_HANDLER } from "../../../ui-components/properties/renderers/value/PrimitivePropertyValueRenderer";
 
 describe("VirtualizedPropertyGridWithDataProvider", () => {
 

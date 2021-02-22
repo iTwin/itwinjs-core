@@ -9,6 +9,7 @@ import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
 import { fireEvent, render } from "@testing-library/react";
 import { hasLinks, LinksRenderer, renderLinks, withLinks } from "../../ui-components/properties/LinkHandler";
 import TestUtils from "../TestUtils";
+import { getFullLink } from "../../ui-components/properties/renderers/value/URIPropertyValueRenderer";
 
 describe("LinkHandler", () => {
   const onClickSpy = sinon.spy();
@@ -21,6 +22,7 @@ describe("LinkHandler", () => {
   beforeEach(() => {
     links = {
       onClick: onClickSpy,
+      matcher: getFullLink,
     };
   });
 
