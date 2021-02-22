@@ -141,6 +141,18 @@ export class IModelTransformer extends IModelExportHandler {
     this.context.dispose();
   }
 
+  /** Log current settings that affect IModelTransformer's behavior. */
+  private logSettings(): void {
+    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantGeometry=${this.exporter.wantGeometry}`);
+    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantSystemSchemas=${this.exporter.wantSystemSchemas}`);
+    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantTemplateModels=${this.exporter.wantTemplateModels}`);
+    Logger.logInfo(loggerCategory, `this.targetScopeElementId=${this.targetScopeElementId}`);
+    Logger.logInfo(loggerCategory, `this._noProvenance=${this._noProvenance}`);
+    Logger.logInfo(loggerCategory, `this._cloneUsingBinaryGeometry=${this._cloneUsingBinaryGeometry}`);
+    Logger.logInfo(BackendLoggerCategory.IModelImporter, `this.importer.autoExtendProjectExtents=${this.importer.autoExtendProjectExtents}`);
+    Logger.logInfo(BackendLoggerCategory.IModelImporter, `this.importer.simplifyElementGeometry=${this.importer.simplifyElementGeometry}`);
+  }
+
   /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation.
    * @param sourceElement The new ExternalSourceAspectProps will be tracking this Element from the source iModel.
    * @param targetElementId The optional Id of the target Element that will own the ExternalSourceAspect.
@@ -713,6 +725,8 @@ export class IModelTransformer extends IModelExportHandler {
    * @note [[processSchemas]] is not called automatically since the target iModel may want a different collection of schemas.
    */
   public async processAll(): Promise<void> {
+    Logger.logTrace(loggerCategory, "processAll()");
+    this.logSettings();
     this.initFromExternalSourceAspects();
     await this.exporter.exportCodeSpecs();
     await this.exporter.exportFonts();
@@ -738,6 +752,8 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public async processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     requestContext.enter();
+    Logger.logTrace(loggerCategory, "processChanges()");
+    this.logSettings();
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(requestContext, startChangeSetId);
     requestContext.enter();
