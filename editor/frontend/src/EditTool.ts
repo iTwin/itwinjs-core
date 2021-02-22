@@ -9,6 +9,7 @@
 import { editorChannel } from "@bentley/imodeljs-editor-common";
 import { IModelApp, IpcApp } from "@bentley/imodeljs-frontend";
 import { DeleteElementsTool } from "./DeleteElementsTool";
+import { MoveElementsTool } from "./TransformElementsTool";
 
 /** @alpha functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand. */
 export class EditTools {
@@ -38,6 +39,7 @@ export class EditTools {
     const i18n = IModelApp.i18n.registerNamespace("Editor");
     const tools = [
       DeleteElementsTool,
+      MoveElementsTool,
     ];
 
     for (const tool of tools)

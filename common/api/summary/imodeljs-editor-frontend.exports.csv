@@ -2,3 +2,5 @@ sep=;
 Release Tag;API Item
 alpha;DeleteElementsTool 
 alpha;EditTools
+alpha;MoveElementsTool 
+alpha;class TransformElementsTool 
