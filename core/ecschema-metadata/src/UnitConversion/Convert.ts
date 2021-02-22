@@ -40,7 +40,7 @@ export function getConversion(
   };
 }
 
-// Recursive function to traverse from unit to unit
+// Recursive function to calculate unit conversions bottom-up
 function recursiveCalculate(unitName: string, isFrom: boolean): Conversion {
   let currentUnit = schemaMap.get(unitName);
   // Definition returns a map of children needed to calculate
@@ -61,15 +61,21 @@ function recursiveCalculate(unitName: string, isFrom: boolean): Conversion {
   });
 
   let fraction = currentUnit.numerator / currentUnit.denominator
-  aggregate.multiplier *= fraction;
 
   if (isFrom) {
     aggregate.offset =
       aggregate.offset + currentUnit.offset * fraction; // Multiply current offset by fraction then add previous offset
+      if (aggregate.offset !== 0) {
+        aggregate.offset = aggregate.offset * aggregate.multiplier;
+      }
   } else {
+    if (aggregate.offset !== 0) {
+      aggregate.offset = aggregate.offset / aggregate.multiplier;
+    }
     aggregate.offset =
       aggregate.offset / fraction + currentUnit.offset; // Divide previous offset by fraction then add current offset
   }
 
+  aggregate.multiplier *= fraction;
   return aggregate;
 }
