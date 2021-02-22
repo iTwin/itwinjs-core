@@ -5836,7 +5836,6 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
     defaultPromptAtCursor: boolean;
     fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
-    // @internal
     uiSettings?: UiSettings;
 }
 
