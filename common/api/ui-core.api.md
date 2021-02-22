@@ -100,7 +100,7 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     onSuggestionSelected: (selected: AutoSuggestData) => void;
     options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
     // @internal
-    renderInputComponent?: ReactAutosuggest.RenderInputComponent<AutoSuggestData>;
+    renderInputComponent?: any;
     // @internal
     renderSuggestionsContainer?: ReactAutosuggest.RenderSuggestionsContainer;
     setFocus?: boolean;
