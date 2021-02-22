@@ -3,59 +3,52 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { StandardNodeTypes } from "../../presentation-common/hierarchy/Key";
 import { Node, NodeJSON } from "../../presentation-common/hierarchy/Node";
-import { createRandomECInstancesNode, createRandomECInstancesNodeKeyJSON, createRandomLabelDefinitionJSON } from "../_helpers/random";
-
-const createRandomNodeJSON = (): NodeJSON => {
-  return {
-    ...createRandomECInstancesNode(),
-    key: createRandomECInstancesNodeKeyJSON(),
-    labelDefinition: createRandomLabelDefinitionJSON(),
-  };
-};
 
 describe("Node", () => {
+  const testNodeJson: NodeJSON = {
+    key: { instanceKeys: [], pathFromRoot: [], type: StandardNodeTypes.ECInstancesNode },
+    labelDefinition: { displayValue: "TestNode", rawValue: "test_node", typeName: "string" },
+    description: "test description",
+  };
+
+  const testNode: Node = {
+    key: { instanceKeys: [], pathFromRoot: [], type: StandardNodeTypes.ECInstancesNode },
+    label: { displayValue: "TestNode", rawValue: "test_node", typeName: "string" },
+    description: "test description",
+  };
 
   describe("toJSON", () => {
-
     it("serializes Node", () => {
-      const node = createRandomECInstancesNode();
-      const json = Node.toJSON(node);
-      expect(json).to.matchSnapshot();
+      const json = Node.toJSON(testNode);
+      expect(json).to.deep.equal(testNodeJson);
     });
-
   });
 
   describe("fromJSON", () => {
-
     it("creates valid Node from JSON", () => {
-      const json = createRandomNodeJSON();
-      const node = Node.fromJSON(json);
-      expect(node).to.matchSnapshot();
+      const node = Node.fromJSON(testNodeJson);
+      expect(node).to.deep.equal(testNode);
     });
 
     it("creates valid Node from serialized JSON", () => {
-      const json = createRandomNodeJSON();
-      const node = Node.fromJSON(JSON.stringify(json));
-      expect(node).to.matchSnapshot();
+      const node = Node.fromJSON(JSON.stringify(testNodeJson));
+      expect(node).to.deep.equal(testNode);
     });
-
   });
 
   describe("listFromJSON", () => {
-
     it("creates valid Node[] from JSON", () => {
-      const json = [createRandomNodeJSON(), createRandomNodeJSON()];
+      const json = [testNodeJson, testNodeJson];
       const nodes = Node.listFromJSON(json);
-      expect(nodes).to.matchSnapshot();
+      expect(nodes).to.deep.equal([testNode, testNode]);
     });
 
     it("creates valid Node[] from serialized JSON", () => {
-      const json = [createRandomNodeJSON(), createRandomNodeJSON()];
+      const json = [testNodeJson, testNodeJson];
       const nodes = Node.listFromJSON(JSON.stringify(json));
-      expect(nodes).to.matchSnapshot();
+      expect(nodes).to.deep.equal([testNode, testNode]);
     });
-
   });
-
 });
