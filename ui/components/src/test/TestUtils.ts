@@ -399,6 +399,16 @@ export class TestUtils {
     (property.value as PrimitiveValue).value = value;
     return property;
   }
+
+  public static createURIProperty(
+    name: string,
+    value: string,
+    displayValue?: string,
+  ): PropertyRecord {
+    const property = TestUtils.createPrimitiveStringProperty(name, value, displayValue);
+    property.property.typename = "URI";
+    return property;
+  }
 }
 
 /** @internal */

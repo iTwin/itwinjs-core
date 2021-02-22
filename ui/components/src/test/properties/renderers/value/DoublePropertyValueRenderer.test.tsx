@@ -10,6 +10,7 @@ import { render } from "@testing-library/react";
 import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
+import { getFullLink } from "../../../../ui-components/properties/renderers/value/URIPropertyValueRenderer";
 
 function createDoubleProperty(value: number, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Length", "", displayValue);
@@ -43,7 +44,10 @@ describe("DoublePropertyValueRenderer", () => {
     it("renders double property wrapped in an anchored tag when property record has it", () => {
       const renderer = new DoublePropertyValueRenderer();
       const property = createDoubleProperty(0.45, "zero point forty five meters");
-      property.links = { onClick: sinon.spy() };
+      property.links = {
+        onClick: sinon.spy(),
+        matcher: getFullLink,
+      };
 
       const element = renderer.render(property);
       const renderedElement = render(<>{element}</>);

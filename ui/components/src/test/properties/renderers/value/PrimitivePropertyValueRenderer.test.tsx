@@ -12,6 +12,7 @@ import { TypeConverter } from "../../../../ui-components/converters/TypeConverte
 import { TypeConverterManager } from "../../../../ui-components/converters/TypeConverterManager";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
+import { getFullLink } from "../../../../ui-components/properties/renderers/value/URIPropertyValueRenderer";
 
 class AsyncValuesTypeConverter extends TypeConverter {
   public sortCompare(_lhs: Primitives.Value, _rhs: Primitives.Value, _ignoreCase?: boolean) {
@@ -42,7 +43,10 @@ describe("PrimitivePropertyValueRenderer", () => {
     it("renders primitive property wrapped in an anchored tag when property record has it", () => {
       const renderer = new PrimitivePropertyValueRenderer();
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
-      stringProperty.links = { onClick: sinon.spy() };
+      stringProperty.links = {
+        onClick: sinon.spy(),
+        matcher: getFullLink,
+      };
 
       const element = renderer.render(stringProperty);
       const renderedElement = render(<>{element}</>);

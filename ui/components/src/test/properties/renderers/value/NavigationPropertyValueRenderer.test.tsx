@@ -10,6 +10,7 @@ import { render } from "@testing-library/react";
 import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
+import { getFullLink } from "../../../../ui-components/properties/renderers/value/URIPropertyValueRenderer";
 
 describe("NavigationPropertyValueRenderer", () => {
   const instanceKey = { className: "", id: Id64.fromUint32Pair(1, 0) };
@@ -25,7 +26,7 @@ describe("NavigationPropertyValueRenderer", () => {
       elementRender.getByText("Rod");
     });
 
-    it("renders navigation property from raw value", () => {
+    it("renders navigation property from property name", () => {
       const renderer = new NavigationPropertyValueRenderer();
       const property = TestUtils.createNavigationProperty("Category", instanceKey, "");
 
@@ -38,7 +39,10 @@ describe("NavigationPropertyValueRenderer", () => {
     it("renders navigation property wrapped in an anchored tag when property record has it", () => {
       const renderer = new NavigationPropertyValueRenderer();
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
-      stringProperty.links = { onClick: sinon.spy() };
+      stringProperty.links = {
+        onClick: sinon.spy(),
+        matcher: getFullLink,
+      };
 
       const element = renderer.render(stringProperty);
       const renderedElement = render(<>{element}</>);

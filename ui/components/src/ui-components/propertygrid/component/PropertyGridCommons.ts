@@ -7,7 +7,7 @@
  */
 
 import { CommonProps, Orientation } from "@bentley/ui-core";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory } from "../PropertyDataProvider";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
@@ -62,8 +62,10 @@ export interface CommonPropertyGridProps extends CommonProps {
   /** Callback for when properties are updated @beta */
   onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
 
-  /** Callback for when links in properties are being clicked @beta */
-  onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
+  /** Callback for when links in properties are being clicked
+   * @deprecated Should override data provider and set it on PropertyRecords instead
+   */
+  onPropertyLinkClick?: (text: string) => void;
 
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
@@ -104,7 +106,11 @@ export class PropertyGridCommons {
     return orientation;
   }
 
-  private static _handleLinkClick = (_record: PropertyRecord, text: string) => {
+  /**
+  * Helper method to handle link clicks
+  * @beta
+  */
+  public static handleLinkClick(text: string) {
     const linksArray = matchLinks(text);
     if (linksArray.length <= 0)
       return;
@@ -116,12 +122,22 @@ export class PropertyGridCommons {
       else
         window.open(foundLink.url, "_blank")!.focus();
     }
+  }
+
+  /**
+ * A helper method to get links from string.
+ * @internal
+ */
+  public static getLinks = (value: string): Array<{ start: number, end: number }> => {
+    return matchLinks(value).map((linkInfo: { index: number, lastIndex: number }) => {
+      return { start: linkInfo.index, end: linkInfo.lastIndex };
+    });
   };
 
-  public static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick?: (property: PropertyRecord, text: string) => void) {
+  public static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick: (text: string) => void) {
     records.forEach((record: PropertyRecord) => {
       if (record.links)
-        record.links.onClick = onPropertyLinkClick ?? this._handleLinkClick;
+        record.links.onClick = onPropertyLinkClick;
 
       this.assignRecordClickHandlers(record.getChildrenRecords(), onPropertyLinkClick);
     });

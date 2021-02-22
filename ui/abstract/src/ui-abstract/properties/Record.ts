@@ -15,14 +15,14 @@ import { PropertyValue, PropertyValueFormat } from "./Value";
  */
 export interface LinkElementsInfo {
   /** Callback to link click event */
-  onClick?: (record: PropertyRecord, text: string) => void;
+  onClick: (text: string) => void;
   /**
    * Function that specifies which parts of display value need to be clickable.
    *
    * Letters will be picked from __start__ index to __end__ index. __end__ index is not included.
    * For a string _"example"_ and a match ```{ start: 1, end: 3 }```, _"xa"_ will be clickable.
    */
-  matcher?: (displayValue: string) => Array<{ start: number, end: number }>;
+  matcher: (displayValue: string) => Array<{ start: number, end: number }>;
 }
 
 /**
