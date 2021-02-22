@@ -69,6 +69,7 @@
     "NOTE: imodeljs-editor-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
+    "@bentley/geometry-core": "2.13.0-dev.19",
     "@bentley/imodeljs-frontend": "2.13.0-dev.19",
     "@bentley/imodeljs-editor-common": "2.13.0-dev.19"
   },

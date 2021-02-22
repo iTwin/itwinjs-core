@@ -7,6 +7,7 @@
  */
 
 import { CompressedId64Set, IModelStatus } from "@bentley/bentleyjs-core";
+import { Matrix3dProps, TransformProps } from "@bentley/geometry-core";
 import { EditCommandIpc } from "./EditorIpc";
 
 /** @alpha */
@@ -17,4 +18,6 @@ export const editorBuiltInCmdIds = {
 /** @alpha */
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
   deleteElements: (ids: CompressedId64Set) => Promise<IModelStatus>;
+  transformPlacement: (ids: CompressedId64Set, transform: TransformProps) => Promise<IModelStatus>;
+  rotatePlacement: (ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean) => Promise<IModelStatus>;
 }
