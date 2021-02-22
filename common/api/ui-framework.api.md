@@ -5809,6 +5809,7 @@ export interface ToolAssistanceChangedEventArgs {
 
 // @public
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
+    // @internal
     constructor(p: ToolAssistanceFieldProps);
     // @internal (undocumented)
     componentDidMount(): Promise<void>;
@@ -5835,6 +5836,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
     defaultPromptAtCursor: boolean;
     fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
+    // @internal
     uiSettings?: UiSettings;
 }
 

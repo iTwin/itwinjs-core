@@ -273,9 +273,9 @@ public;TreeProps
 public;UiCore
 public;UiEvent
 beta;UiSetting
-beta;UiSettings
-beta;UiSettingsResult
-beta;UiSettingsStatus
+public;UiSettings
+public;UiSettingsResult
+public;UiSettingsStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;useDisposable
