@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BriefcaseConnection, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "../index";
-import { IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelStatus, Logger, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
 
 // cSpell:ignore TESTAPP FILEPATH
@@ -26,22 +26,32 @@ export class LocalFileSupport {
     let iModelConnection: IModelConnection | undefined;
     const filePath = `${SampleAppIModelApp.testAppConfiguration?.snapshotPath}/${fileName}`;
 
-    // open the imodel
-    Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: Opening standalone or snapshot. path=${filePath} writable=${writable}`);
+    // Open the iModel
+    if (ProcessDetector.isElectronAppFrontend) {
+      Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: Opening standalone. path=${filePath} writable=${writable}`);
+      try {
+        iModelConnection = await BriefcaseConnection.openStandalone(filePath, writable ? OpenMode.ReadWrite : OpenMode.Readonly, { key: filePath });
+      } catch (err) {
+        Logger.logError(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: BriefcaseConnection.openStandalone failed.`);
 
-    try {
-      iModelConnection = await BriefcaseConnection.openStandalone(filePath, writable ? OpenMode.ReadWrite : OpenMode.Readonly, { key: filePath });
-    } catch (err) {
-      Logger.logError(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: BriefcaseConnection.openStandalone failed.`);
-
-      if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly) {
+        if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly) {
+          iModelConnection = await SnapshotConnection.openFile(filePath);
+          alert(`Local file (${filePath}) could not be opened as writable. Special bytes are required in the props table of the iModel to make it editable. File opened as read-only instead.`);
+        } else {
+          alert(err.message);
+          iModelConnection = undefined;
+        }
+      }
+    } else {
+      Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: Opening snapshot. path=${filePath}`);
+      try {
         iModelConnection = await SnapshotConnection.openFile(filePath);
-        alert(`Local file (${filePath}) could not be opened as writable. Special bytes are required in the props table of the iModel to make it editable. File opened as read-only instead.`);
-      } else {
+      } catch (err) {
         alert(err.message);
         iModelConnection = undefined;
       }
     }
+
     return iModelConnection;
   };
 }
