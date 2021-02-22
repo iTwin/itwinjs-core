@@ -211,12 +211,12 @@ export abstract class HideIsolateEmphasizeActionHandler {
   /**
    * Function run when `ClearOverrideCategories` tool button is pressed
    */
-  public abstract async processClearOverrideCategories(): Promise<void>;
+  public abstract processClearOverrideCategories(): Promise<void>;
 
   /**
    * Function run when `ClearOverrideModels` tool button is pressed
    */
-  public abstract async processClearOverrideModels(): Promise<void>;
+  public abstract processClearOverrideModels(): Promise<void>;
 }
 
 /** Provides helper functions for doing commands on logical selection like categories and subjects.
