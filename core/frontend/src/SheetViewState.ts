@@ -230,6 +230,10 @@ class ViewAttachments {
     this._attachments.length = 0;
   }
 
+  public [Symbol.iterator](): Iterator<Attachment> {
+    return this._attachments[Symbol.iterator]();
+  }
+
   /** For tests. */
   public get attachments(): Object[] {
     return this._attachments;
@@ -392,6 +396,25 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
+  public get secondaryViewports(): Iterable<Viewport> {
+    const attachments = this._attachments;
+    if (!attachments)
+      return super.secondaryViewports;
+
+    function* iterator() {
+      for (const attachment of attachments!) {
+        const vp = attachment.viewport;
+        if (vp)
+          yield vp;
+      }
+    }
+
+    return {
+      [Symbol.iterator]: () => iterator(),
+    };
+  }
+
+  /** @internal */
   private async queryAttachmentIds(): Promise<Id64Array> {
     const ecsql = `SELECT ECInstanceId as attachmentId FROM bis.ViewAttachment WHERE model.Id=${this.baseModelId}`;
     const ids: string[] = [];
@@ -485,6 +508,7 @@ interface Attachment {
   collectStatistics: (stats: RenderMemory.Statistics) => void;
   viewAttachmentProps: ViewAttachmentProps;
   dispose(): void;
+  readonly viewport?: Viewport;
 }
 
 /** Draws the contents a 2d or orthographic 3d view directly into a sheet view.
@@ -516,6 +540,10 @@ class OrthographicAttachment {
 
   public get viewAttachmentProps() {
     return this._props;
+  }
+
+  public get viewport(): Viewport {
+    return this._viewport;
   }
 
   public constructor(view: ViewState, props: ViewAttachmentProps, sheetView: SheetViewState) {
@@ -834,6 +862,10 @@ class RasterAttachment {
 
   public get viewAttachmentProps() {
     return this._props;
+  }
+
+  public get viewport(): Viewport | undefined {
+    return this._viewport;
   }
 
   public get areAllTileTreesLoaded() {
