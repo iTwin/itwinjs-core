@@ -531,6 +531,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "imodel-transformer",
+      "projectFolder": "test-apps/imodel-transformer",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@bentley/ui-test-extension",
       "projectFolder": "test-apps/ui-test-extension",
       "reviewCategory": "internal",
