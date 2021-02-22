@@ -45,7 +45,7 @@ async function setToStandalone() {
   nativeDb.closeIModel();
 
   console.log(`[${iModelName}] successfully set as standalone iModel`);
-};
+}
 
 async function run() {
   try {
