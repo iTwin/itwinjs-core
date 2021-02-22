@@ -11,7 +11,7 @@ import * as path from "path";
 import * as semver from "semver";
 import {
   AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient,
-  RequestHost,
+  HttpRequestHost,
 } from "@bentley/backend-itwin-client";
 import {
   assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector,
@@ -362,7 +362,7 @@ export class IModelHost {
     IModelHost.sessionId = Guid.createValue();
     this.logStartup();
 
-    await RequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
+    await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
 
     // Setup a current context for all requests that originate from this backend
     const requestContext = new BackendRequestContext();

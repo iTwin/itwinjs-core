@@ -11,12 +11,13 @@ import * as url from "url";
 /** Utility to configure all HTTP service requests make from the backend
  * @internal
  */
-export class RequestHost {
+export class HttpRequestHost {
   private static _proxyUrl?: string;
 
   /** Initialize the configuration for all HTTP service requests made from the backend */
   public static async initialize() {
-    // Route requests through any user setup proxy
+    // Route requests through any proxy identified by environment
+    // NEEDS_WORK: Should validate the proxy, and throw an error if unreachable - isReachable call below doesn't seem to succeed for some proxies
     if (process.env.HTTPS_PROXY) {
       this.setupProxy(process.env.HTTPS_PROXY);
       return;
@@ -24,25 +25,24 @@ export class RequestHost {
 
     // Setup fiddler as a proxy automatically if it's reachable
     const fiddlerProxyUrl = "http://127.0.0.1:8888";
-    const isProxyReachable = await RequestHost.isHostReachable(fiddlerProxyUrl);
+    const isProxyReachable = await HttpRequestHost.isHostReachable(fiddlerProxyUrl);
     if (isProxyReachable)
       this.setupProxy(fiddlerProxyUrl);
   }
 
-  /** Sets up the supplied proxy is reachable */
   private static setupProxy(proxyUrl: string) {
     const createHttpsProxy = (additionalOptions?: https.AgentOptions): https.Agent | undefined => {
-      if (RequestHost._proxyUrl === undefined)
+      if (HttpRequestHost._proxyUrl === undefined)
         return undefined;
 
-      const proxyAgentOptions = url.parse(RequestHost._proxyUrl);
+      const proxyAgentOptions = url.parse(HttpRequestHost._proxyUrl);
       const mergedAgentOptions: HttpsProxyAgentOptions = additionalOptions !== undefined ? { ...additionalOptions, ...proxyAgentOptions } : { ...proxyAgentOptions };
       return new HttpsProxyAgent(mergedAgentOptions);
     };
 
     const unquoteString = (str: string) => str.replace(/(^["'`])|(["'`]$)/g, "");
 
-    RequestHost._proxyUrl = unquoteString(proxyUrl);
+    HttpRequestHost._proxyUrl = unquoteString(proxyUrl);
     const httpsProxy = createHttpsProxy();
     if (httpsProxy === undefined)
       return;
@@ -51,12 +51,12 @@ export class RequestHost {
     RequestGlobalOptions.httpsProxy = httpsProxy;
 
     // NEEDS_WORK: Temporary fix for Electron (DesktopAuthorizationClient)
-    // - needs to be automatically configured based on system proxy.
-    // - global setting otherwise not needed
+    // - needs to be automatically configured based on Operating System settings on desktops
+    // - global setting of agent may also not be needed except for DesktopAuthorizationClient
     (httpsProxy as HttpsProxyAgent).protocol = "https:";
     (https.globalAgent as any) = httpsProxy;
 
-    const proxyUrlParts = url.parse(RequestHost._proxyUrl);
+    const proxyUrlParts = url.parse(HttpRequestHost._proxyUrl);
     if (this.isHttp(proxyUrlParts.protocol))
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     console.log(`Routing requests through HTTPS_PROXY: ${proxyUrl}`); // eslint-disable-line no-console
