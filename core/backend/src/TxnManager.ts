@@ -107,7 +107,7 @@ export class TxnManager {
     this.onElementsChanged.raiseEvent({ inserted, updated, deleted });
 
     // now notify frontend listeners
-    const toCompressedIds = (idArray: OrderedId64Array) => inserted.isEmpty ? undefined : CompressedId64Set.compressIds(idArray);
+    const toCompressedIds = (idArray: OrderedId64Array) => idArray.isEmpty ? undefined : CompressedId64Set.compressIds(idArray);
     IpcHost.notifyIModelChanges(this._iModel, "notifyElementsChanged", { inserted: toCompressedIds(inserted), deleted: toCompressedIds(deleted), updated: toCompressedIds(updated) });
   }
 
