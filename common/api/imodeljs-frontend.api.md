@@ -2476,6 +2476,8 @@ export class DrawingViewState extends ViewState2d {
     isDrawingView(): this is DrawingViewState;
     // @internal (undocumented)
     load(): Promise<void>;
+    // @internal (undocumented)
+    get secondaryViewports(): Iterable<import("./Viewport").Viewport>;
     // @internal
     get sectionDrawingInfo(): SectionDrawingInfo;
     // @internal
@@ -8750,6 +8752,8 @@ export class SheetViewState extends ViewState2d {
     isDrawingView(): this is DrawingViewState;
     // @internal
     load(): Promise<void>;
+    // @internal (undocumented)
+    get secondaryViewports(): Iterable<Viewport>;
     readonly sheetSize: Point2d;
     // (undocumented)
     toProps(): ViewStateProps;
@@ -12399,6 +12403,8 @@ export abstract class ViewState extends ElementState {
     abstract savePose(): ViewPose;
     // @internal
     get scheduleScript(): RenderScheduleState.Script | undefined;
+    // @internal
+    get secondaryViewports(): Iterable<Viewport>;
     setAspectRatioSkew(val: number): void;
     setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState): void;
     setCategorySelector(categories: CategorySelectorState): void;
