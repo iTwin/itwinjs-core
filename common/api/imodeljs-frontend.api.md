@@ -183,6 +183,7 @@ import { OpenMode } from '@bentley/bentleyjs-core';
 import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
 import { OrbitGtDataManager } from '@bentley/orbitgt-core';
 import { OrderedComparator } from '@bentley/bentleyjs-core';
+import { OrderedId64Array } from '@bentley/bentleyjs-core';
 import { PackedFeatureTable } from '@bentley/imodeljs-common';
 import { ParseResults } from '@bentley/ui-abstract';
 import { ParserSpec } from '@bentley/imodeljs-quantity';
@@ -2672,6 +2673,7 @@ export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
     clear(): void;
+    compressIds(): CompressedId64Set;
     // (undocumented)
     get count(): number;
     readonly elements: Id64Array;
@@ -2688,6 +2690,7 @@ export class ElementAgenda {
     get length(): number;
     // (undocumented)
     manageHiliteState: boolean;
+    orderIds(): OrderedId64Array;
     popGroup(): void;
     // (undocumented)
     remove(arg: Id64Arg): boolean;

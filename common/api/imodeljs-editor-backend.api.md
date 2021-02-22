@@ -9,6 +9,8 @@ import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { EditCommandIpc } from '@bentley/imodeljs-editor-common';
 import { IModelDb } from '@bentley/imodeljs-backend';
 import { IModelStatus } from '@bentley/bentleyjs-core';
+import { Matrix3dProps } from '@bentley/geometry-core';
+import { TransformProps } from '@bentley/geometry-core';
 
 // @alpha (undocumented)
 export class BasicManipulationCommand extends EditCommand implements BasicManipulationCommandIpc {
@@ -18,7 +20,11 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
     // (undocumented)
+    rotatePlacement(_ids: CompressedId64Set, _matrix: Matrix3dProps, _aboutCenter: boolean): Promise<IModelStatus>;
+    // (undocumented)
     protected _str: string;
+    // (undocumented)
+    transformPlacement(ids: CompressedId64Set, transProps: TransformProps): Promise<IModelStatus>;
 }
 
 // @alpha
