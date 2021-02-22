@@ -246,7 +246,7 @@ export class AzureFileHandler implements FileHandler {
         }
       });
       const clientRequest = downloadUrl.startsWith("https:") ?
-        https.get(downloadUrl, downloadCallback) : http.get(downloadUrl, downloadCallback);
+        https.get(downloadUrl, { agent: this.agent }, downloadCallback) : http.get(downloadUrl, downloadCallback);
 
       clientRequest.on("error", (error: any) => {
         if (cancelRequest !== undefined)
