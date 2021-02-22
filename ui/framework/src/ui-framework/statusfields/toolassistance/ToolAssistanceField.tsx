@@ -55,7 +55,9 @@ import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
   /** Indicates whether to include promptAtCursor Checkbox. Defaults to true. */
   includePromptAtCursor: boolean;
-  /** Optional parameter for persistent UI settings. Defaults to UiSettingsContext. */
+  /** Optional parameter for persistent UI settings. Defaults to UiSettingsContext.
+   * @internal
+   */
   uiSettings?: UiSettings;
   /** Cursor Prompt Timeout period. Defaults to 5000. */
   cursorPromptTimeout: number;
@@ -87,7 +89,7 @@ interface ToolAssistanceFieldState {
 
 /** Tool Assistance Field React component.
  * @public
- */
+ */
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
   /** @internal */
   public static contextType = UiSettingsContext;
@@ -114,6 +116,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     defaultPromptAtCursor: false,
   };
 
+  /** @internal */
   constructor(p: ToolAssistanceFieldProps) {
     super(p);
 
