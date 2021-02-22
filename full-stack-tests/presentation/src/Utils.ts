@@ -5,7 +5,14 @@
 
 import { Field } from "@bentley/presentation-common";
 
-/** Returns field by given label.
+/**
+ * Simplified type for `sinon.SinonSpy`.
+ * @internal
+ */
+export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
+
+/**
+ * Returns field by given label.
  * @internal
  */
 export function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
