@@ -87,8 +87,8 @@ let iModelJsCss: string | undefined = `
   font-style:normal;
   letter-spacing:normal;
   text-align:left;
-  --width-border: calc(max(var(--safe-area-left), var(--safe-area-right), 16px));
-  --height-border: calc(max(var(--safe-area-top), var(--safe-area-bottom), 16px));
+  --width-border: max(var(--safe-area-left), var(--safe-area-right), 16px);
+  --height-border: max(var(--safe-area-top), var(--safe-area-bottom), 16px);
   max-height: calc(100% - (2 * var(--height-border)));
   overflow: auto;
 }

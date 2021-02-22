@@ -20,7 +20,7 @@ class LocalFileOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactNode = <LocalFilePage onClose={this._handleClose} onViewsSelected={this._handleViewsSelected} />;
+    this.reactNode = <LocalFilePage onClose={this._handleClose} onViewsSelected={this._handleViewsSelected} writable={SampleAppIModelApp.allowWrite} />;
   }
 
   private _handleClose = () => {
@@ -85,6 +85,7 @@ class FrontstageToolWidget extends React.Component {
 interface LocalFilePageProps {
   onViewsSelected: (iModelConnection: IModelConnection, views: Id64String[]) => void;
   onClose: () => void;
+  writable: boolean;
 }
 
 interface LocalFilePageState {
@@ -116,7 +117,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
       if (this._input.files && this._input.files.length) {
         const file: File = this._input.files[0];
         if (file) {
-          const iModelConnection = await LocalFileSupport.openLocalFile(file.name);
+          const iModelConnection = await LocalFileSupport.openLocalFile(file.name, this.props.writable);
           if (iModelConnection) {
             SampleAppIModelApp.setIsIModelLocal(true, true);
             this.setState({ iModelConnection });
@@ -124,6 +125,12 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
         }
       }
     }
+  };
+
+  private _handleClose = async (): Promise<void> => {
+    if (this.state.iModelConnection)
+      await this.state.iModelConnection.close();
+    this.setState({ iModelConnection: undefined }, () => this.props.onClose());
   };
 
   private _handleViewsSelected = (views: ViewDefinitionProps[]): void => {
@@ -159,7 +166,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
     } else {
       return (
         <IModelViewPicker iModelConnection={this.state.iModelConnection}
-          onClose={this.props.onClose} onViewsSelected={this._handleViewsSelected} />
+          onClose={this._handleClose} onViewsSelected={this._handleViewsSelected} />
       );
     }
   }

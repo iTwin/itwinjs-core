@@ -168,7 +168,7 @@ export class DetachRealityModelTool extends Tool {
   }
 
   public parseAndRun(...args: string[]): boolean {
-    return this.run(args.length > 1 ? parseInt(args[1], 10) : -1);
+    return this.run(args.length > 1 ? parseInt(args[0], 10) : -1);
   }
 }
 

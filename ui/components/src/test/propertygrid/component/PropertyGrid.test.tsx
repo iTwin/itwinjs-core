@@ -104,7 +104,6 @@ describe("PropertyGrid", () => {
         name: "ChildCategory",
         label: "Child",
         expand: true,
-        parentCategory,
       };
       parentCategory.childCategories = [childCategory];
       dataProvider = {
@@ -367,7 +366,6 @@ describe("PropertyGrid", () => {
         name: "ChildCategory",
         label: "Child",
         expand: false,
-        parentCategory: rootCategory1,
       };
       rootCategory1.childCategories = [childCategory];
       const rootCategory2: PropertyCategory = {

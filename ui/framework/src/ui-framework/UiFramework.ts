@@ -7,9 +7,8 @@
  */
 
 import { Store } from "redux";
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
@@ -40,19 +39,19 @@ import { WidgetManager } from "./widgets/WidgetManager";
 
 /** UiVisibility Event Args interface.
  * @public
- */
+ */
 export interface UiVisibilityEventArgs {
   visible: boolean;
 }
 
 /** UiVisibility Event class.
  * @public
- */
+ */
 export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
 
 /** FrameworkVersion Changed Event Args interface.
  * @internal
- */
+ */
 export interface FrameworkVersionChangedEventArgs {
   oldVersion: string;
   version: string;
@@ -60,7 +59,7 @@ export interface FrameworkVersionChangedEventArgs {
 
 /** FrameworkVersion Changed Event class.
  * @internal
- */
+ */
 export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChangedEventArgs> { }
 
 /** TrackingTime time argument used by our feature tracking manager as an option argument to the TelemetryClient
@@ -417,12 +416,10 @@ export class UiFramework {
       [{ id: "element", label: "Element" } as PresentationSelectionScope];
   }
 
-  /** @public */
   public static getIsUiVisible() {
     return UiShowHideManager.isUiVisible;
   }
 
-  /** @public */
   public static setIsUiVisible(visible: boolean) {
     if (UiShowHideManager.isUiVisible !== visible) {
       UiShowHideManager.isUiVisible = visible;
@@ -430,38 +427,24 @@ export class UiFramework {
     }
   }
 
-  /** @public */
   public static setColorTheme(theme: string) {
     UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetTheme, payload: theme });
   }
 
-  /** @public */
   public static getColorTheme(): string {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : /* istanbul ignore next */ SYSTEM_PREFERRED_COLOR_THEME;
   }
 
-  /** @public */
   public static setWidgetOpacity(opacity: number) {
     UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetWidgetOpacity, payload: opacity });
   }
 
-  /** @public */
   public static getWidgetOpacity(): number {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : /* istanbul ignore next */ WIDGET_OPACITY_DEFAULT;
   }
 
-  /** @public */
   public static isMobile() {  // eslint-disable-line @bentley/prefer-get
-    let mobile = false;
-    // istanbul ignore if
-    if ((/Mobi|Android/i.test(navigator.userAgent))) {
-      mobile = true;
-    } else /* istanbul ignore next */ if (/Mobi|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
-      mobile = true;
-    } else {
-      mobile = MobileRpcConfiguration.isMobileFrontend;
-    }
-    return mobile;
+    return ProcessDetector.isMobileBrowser;
   }
 
   /** Returns the Ui Version.

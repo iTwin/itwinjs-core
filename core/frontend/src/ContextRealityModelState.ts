@@ -6,7 +6,7 @@
  * @module Views
  */
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Constant } from "@bentley/geometry-core";
+import { Angle } from "@bentley/geometry-core";
 import { CartographicRange, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -14,9 +14,13 @@ import { DisplayStyleState } from "./DisplayStyleState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { PlanarClipMaskState } from "./imodeljs-frontend";
 import { SpatialModelState } from "./ModelState";
 import { SpatialClassifiers } from "./SpatialClassifiers";
-import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils, TileTreeReference } from "./tile/internal";
+import {
+  createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils,
+  TileTreeReference,
+} from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
@@ -53,7 +57,6 @@ export class ContextRealityModelState {
     this.description = undefined !== props.description ? props.description : "";
     this.iModel = iModel;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
-
     const classifiers = new SpatialClassifiers(props);
     this._treeRef = (undefined === props.orbitGtBlob) ?
       createRealityTileTreeReference({
@@ -62,6 +65,7 @@ export class ContextRealityModelState {
         url: props.tilesetUrl,
         name: props.name,
         classifiers,
+        planarMask: props.planarClipMask,
       }) :
       createOrbitGtTileTreeReference({
         iModel,
@@ -70,7 +74,6 @@ export class ContextRealityModelState {
         classifiers,
         displayStyle,
       });
-
   }
 
   public get treeRef(): TileTreeReference { return this._treeRef; }
@@ -79,14 +82,9 @@ export class ContextRealityModelState {
   public set appearanceOverrides(overrides: FeatureAppearance | undefined) { this._appearanceOverrides = overrides; }
   public get modelId(): Id64String | undefined { return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined; }
   /** Return true if the model spans the entire globe ellipsoid in 3D */
-  public get isGlobal(): boolean {
-    if (undefined === this._isGlobal) {
-      const range = this.treeRef.computeWorldContentRange();
-      if (!range.isNull)
-        this._isGlobal = range.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
-    }
-    return this._isGlobal === undefined ? false : this._isGlobal;
-  }
+  public get isGlobal(): boolean { return this.treeRef.isGlobal; }
+  public get planarClipMask(): PlanarClipMaskState | undefined { return this._treeRef.planarClipMask; }
+  public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._treeRef.planarClipMask = planarClipMask; }
 
   public toJSON(): ContextRealityModelProps {
     return {

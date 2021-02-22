@@ -8,13 +8,13 @@
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { Matrix4d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, PlanarClipMaskPriority, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
-import { TileDrawArgs, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSet } from "./internal";
+import { DisclosedTileTreeSet, TileDrawArgs, TileTree, TileTreeLoadStatus, TileTreeOwner } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
  * @beta
@@ -44,7 +44,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * Override this and call super if you have such auxiliary trees.
    * @note Any tree *NOT* disclosed becomes a candidate for *purging* (being unloaded from memory along with all of its tiles and graphics).
    */
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     const tree = this.treeOwner.tileTree;
     if (undefined !== tree)
       trees.add(tree);
@@ -200,4 +200,10 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
 
   /** Return whether the geometry exposed by this tile tree reference should cast shadows on other geometry. */
   public abstract get castsShadows(): boolean;
+
+  /** Return whether this reference has global coverage.  Mapping data is global and some non-primary models such as the OSM building layer have global coverage */
+  public get isGlobal(): boolean { return false; }
+
+  /**  Return the clip mask priority for this model - models will be clipped by any other viewed model with a higher proirity.  BIM models have highest prioirty and are never clipped */
+  public get planarClipMaskPrority(): number { return PlanarClipMaskPriority.BIM; }
 }

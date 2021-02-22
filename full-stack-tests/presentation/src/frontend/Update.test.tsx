@@ -5,21 +5,21 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { enablePatches } from "immer";
-import Sinon, * as sinon from "sinon";
+import * as sinon from "sinon";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import {
-  ChildNodeSpecificationTypes, ECInstancesNodeKey, InstanceKey, NodeKey, PartialHierarchyModification, PresentationDataCompareOptions, RuleTypes,
-  StandardNodeTypes,
-} from "@bentley/presentation-common";
-import { PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
-import { PRESENTATION_TREE_NODE_KEY } from "@bentley/presentation-components/lib/presentation-components/tree/Utils";
+import { ChildNodeSpecificationTypes, PartialHierarchyModification, RuleTypes, StandardNodeTypes } from "@bentley/presentation-common";
+import { IPresentationTreeDataProvider, PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
-import { AbstractTreeNodeLoader, DelayLoadedTreeNodeItem, from, Subscription, TreeModelNode, TreeModelRootNode } from "@bentley/ui-components";
+import { PrimitiveValue } from "@bentley/ui-abstract";
+import {
+  AbstractTreeNodeLoader, DelayLoadedTreeNodeItem, MutableTreeModelNode, PagedTreeNodeLoader, Subscription, TreeModelNode, TreeModelRootNode,
+  TreeModelSource,
+} from "@bentley/ui-components";
 import { renderHook } from "@testing-library/react-hooks";
 import { initialize, terminate } from "../IntegrationTests";
+import { SinonSpy } from "../Utils";
 
 describe("Update", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -36,53 +36,23 @@ describe("Update", () => {
   });
 
   describe("hierarchy", () => {
-
-    let hierarchyCompareSpy: Sinon.SinonSpy<[PresentationDataCompareOptions<IModelConnection, NodeKey>], Promise<PartialHierarchyModification[]>>;
+    let hierarchyCompareSpy: SinonSpy<typeof Presentation.presentation.compareHierarchies>;
+    let defaultProps: Omit<PresentationTreeNodeLoaderProps, "ruleset">;
 
     beforeEach(() => {
       hierarchyCompareSpy = sinon.spy(Presentation.presentation, "compareHierarchies");
+      defaultProps = {
+        imodel,
+        pagingSize: 100,
+        enableHierarchyAutoUpdate: true,
+      };
     });
 
     afterEach(() => {
-      hierarchyCompareSpy.restore();
+      sinon.restore();
     });
 
-    async function loadHierarchy(loader: AbstractTreeNodeLoader) {
-      const getChildrenCount = async (parent: TreeModelNode | TreeModelRootNode): Promise<number> => {
-        return new Promise<number>((resolve) => {
-          loader.loadNode(parent, 0).subscribe({
-            complete: () => {
-              const node = parent.id ? loader.modelSource.getModel().getNode(parent.id) : loader.modelSource.getModel().getRootNode();
-              const { numChildren } = (node as { numChildren: number });
-              resolve(numChildren);
-            },
-          });
-        });
-      };
-      const loadChildren = async (parent: TreeModelNode | TreeModelRootNode): Promise<void> => {
-        const numChildren = await getChildrenCount(parent);
-        const nodeSubscriptions = new Array<Subscription>();
-        for (let i = 0; i < numChildren; ++i)
-          nodeSubscriptions.push(loader.loadNode(parent, i).subscribe());
-        await new Promise<string[]>((resolve) => {
-          from(nodeSubscriptions).subscribe({
-            complete: resolve,
-          });
-        });
-        const children = loader.modelSource.getModel().getChildren(parent.id);
-        if (children) {
-          for (const sparseValue of children.iterateValues()) {
-            const child = loader.modelSource.getModel().getNode(sparseValue[0]);
-            if (child && (child.item as DelayLoadedTreeNodeItem).hasChildren)
-              await loadChildren(child);
-          }
-        }
-      };
-      await loadChildren(loader.modelSource.getModel().getRootNode());
-    }
-
     describe("on ruleset modification", () => {
-
       it("detects custom node change", async () => {
         const initialRuleset = await Presentation.presentation.rulesets().add({
           id: faker.random.uuid(),
@@ -95,49 +65,36 @@ describe("Update", () => {
             }],
           }],
         });
-        expect(initialRuleset).to.not.be.undefined;
-        const { result, waitForValueToChange } = renderHook(
-          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-          { initialProps: { imodel, ruleset: initialRuleset.id, pagingSize: 100, enableHierarchyAutoUpdate: true } },
-        );
-        const initialDataProvider = result.current.dataProvider;
-        await loadHierarchy(result.current);
-        const nodesBefore = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesBefore.length).to.eq(1);
-        expect(nodesBefore).to.containSubset([{
-          label: { value: { displayValue: "test-1" } },
-        }]);
+        const hierarchy = await verifyHierarchy({ ...defaultProps, ruleset: initialRuleset }, ["test-1"]);
 
-        const modifiedRuleset = await Presentation.presentation.rulesets().modify(initialRuleset, {
-          rules: [{
-            ruleType: RuleTypes.RootNodes,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "T_NODE",
-              label: "test-2",
+        await Presentation.presentation.rulesets().modify(
+          initialRuleset,
+          {
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_NODE",
+                label: "test-2",
+              }],
             }],
+          },
+        );
+        await hierarchy.verifyChange(
+          [{
+            type: "Update",
+            node: { key: { type: "T_NODE" }, label: { displayValue: "test-2" } },
+            changes: [
+              { name: "Key" },
+              {
+                name: "LabelDefinition",
+                old: { displayValue: "test-1" },
+                new: { displayValue: "test-2" },
+              },
+            ],
           }],
-        });
-        expect(modifiedRuleset).to.not.be.undefined;
-        await waitForValueToChange(() => result.current.dataProvider !== initialDataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter.length).to.eq(1);
-        expect(nodesAfter).to.containSubset([{
-          label: { value: { displayValue: "test-2" } },
-        }]);
-        expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Update",
-          node: { key: { type: "T_NODE" }, label: { displayValue: "test-2" } },
-          changes: [{
-            name: "Key",
-          }, {
-            name: "LabelDefinition",
-            old: { displayValue: "test-1" },
-            new: { displayValue: "test-2" },
-          }],
-        }]);
+          ["test-2"],
+        );
       });
 
       it("detects ECInstance node change", async () => {
@@ -153,22 +110,12 @@ describe("Update", () => {
             }],
           }],
         });
-        expect(initialRuleset).to.not.be.undefined;
-        const { result, waitForValueToChange } = renderHook(
-          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-          { initialProps: { imodel, ruleset: initialRuleset.id, pagingSize: 100, enableHierarchyAutoUpdate: true } },
+        const hierarchy = await verifyHierarchy(
+          { ...defaultProps, ruleset: initialRuleset },
+          ["Physical Object [0-38]", "Physical Object [0-39]"],
         );
-        const initialDataProvider = result.current.dataProvider;
-        await loadHierarchy(result.current);
-        const nodesBefore = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesBefore.length).to.eq(2);
-        expect(nodesBefore).to.containSubset([{
-          label: { value: { displayValue: "Physical Object [0-38]" } },
-        }, {
-          label: { value: { displayValue: "Physical Object [0-39]" } },
-        }]);
 
-        const modifiedRuleset = await Presentation.presentation.rulesets().modify(initialRuleset, {
+        await Presentation.presentation.rulesets().modify(initialRuleset, {
           rules: [{
             ruleType: RuleTypes.RootNodes,
             specifications: [{
@@ -180,25 +127,19 @@ describe("Update", () => {
             }],
           }],
         });
-        expect(modifiedRuleset).to.not.be.undefined;
-        await waitForValueToChange(() => result.current.dataProvider !== initialDataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter.length).to.eq(1);
-        expect(nodesAfter).to.containSubset([{
-          label: { value: { displayValue: "Physical Object [0-39]" } },
-        }]);
-        expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Delete",
-          node: { key: { instanceKeys: (initialDataProvider.getNodeKey(nodesBefore[0].item) as ECInstancesNodeKey).instanceKeys } },
-        }, {
-          type: "Update",
-          node: { key: { instanceKeys: (initialDataProvider.getNodeKey(nodesBefore[1].item) as ECInstancesNodeKey).instanceKeys } },
-          changes: [{
-            name: "Key",
-          }],
-        }]);
+        await hierarchy.verifyChange(
+          [
+            {
+              type: "Delete",
+              node: { key: { instanceKeys: [{ className: "Generic:PhysicalObject", id: "0x74" }] } },
+            },
+            {
+              type: "Update",
+              node: { key: { instanceKeys: [{ className: "Generic:PhysicalObject", id: "0x75" }] } },
+              changes: [{ name: "Key" }],
+            }],
+          ["Physical Object [0-39]"],
+        );
       });
 
       it("detects ECClass grouping node change", async () => {
@@ -215,24 +156,16 @@ describe("Update", () => {
             }],
           }],
         });
-        expect(initialRuleset).to.not.be.undefined;
-        const { result, waitForValueToChange } = renderHook(
-          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-          { initialProps: { imodel, ruleset: initialRuleset.id, pagingSize: 100, enableHierarchyAutoUpdate: true } },
+        const hierarchy = await verifyHierarchy(
+          { ...defaultProps, ruleset: initialRuleset },
+          [{ ["Physical Object"]: ["Physical Object [0-38]"] }],
         );
-        const initialDataProvider = result.current.dataProvider;
-        await loadHierarchy(result.current);
-        const nodesBefore = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesBefore.length).to.eq(2);
-        expect(nodesBefore).to.containSubset([{
-          item: { [PRESENTATION_TREE_NODE_KEY]: { type: StandardNodeTypes.ECClassGroupingNode } },
-          label: { value: { displayValue: "Physical Object" } },
-        }]);
-        result.current.modelSource.modifyModel((model) => {
-          model.getNode(nodesBefore[0].id)!.isExpanded = true;
-        });
 
-        const modifiedRuleset = await Presentation.presentation.rulesets().modify(initialRuleset, {
+        hierarchy.getModelSource().modifyModel((model) => {
+          const node = model.getNode(undefined, 0);
+          (node as MutableTreeModelNode).isExpanded = true;
+        });
+        await Presentation.presentation.rulesets().modify(initialRuleset, {
           rules: [{
             ruleType: RuleTypes.RootNodes,
             specifications: [{
@@ -244,114 +177,86 @@ describe("Update", () => {
             }],
           }],
         });
-        expect(modifiedRuleset).to.not.be.undefined;
-        await waitForValueToChange(() => result.current.dataProvider !== initialDataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter.length).to.eq(2);
-        expect(nodesAfter).to.containSubset([{
-          label: { value: { displayValue: "Physical Object" } },
-        }, {
-          label: { value: { displayValue: "Physical Object [0-39]" } },
-          parentId: (parentId?: string) => !!parentId,
-        }]);
-        expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECClassGroupingNode } },
-        }, {
-          type: "Insert",
-          position: 0,
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: (instanceKeys: InstanceKey[]) => instanceKeys.some((k) => k.id === "0x75") } },
-        }]);
+        await hierarchy.verifyChange(
+          [
+            {
+              type: "Update",
+              node: { key: { type: StandardNodeTypes.ECClassGroupingNode } },
+            },
+            {
+              type: "Insert",
+              position: 0,
+              node: {
+                key: {
+                  type: StandardNodeTypes.ECInstancesNode,
+                  instanceKeys: [{ className: "Generic:PhysicalObject", id: "0x75" }],
+                },
+              },
+            },
+          ],
+          [{ ["Physical Object"]: ["Physical Object [0-39]"] }],
+        );
       });
-
     });
 
     describe("on ruleset variables' modification", () => {
-
       it("detects a change in rule condition", async () => {
         const ruleset = await Presentation.presentation.rulesets().add({
           id: faker.random.uuid(),
           rules: [{
             ruleType: RuleTypes.RootNodes,
-            subConditions: [{
-              condition: `GetVariableBoolValue("use_first")`,
-              specifications: [{
-                specType: ChildNodeSpecificationTypes.CustomNode,
-                type: "T_NODE_1",
-                label: "test-1",
-              }],
-            }, {
-              condition: `GetVariableBoolValue("use_second")`,
-              specifications: [{
-                specType: ChildNodeSpecificationTypes.CustomNode,
-                type: "T_NODE_2",
-                label: "test-2",
-              }],
-            }],
+            subConditions: [
+              {
+                condition: `GetVariableBoolValue("use_first")`,
+                specifications: [{
+                  specType: ChildNodeSpecificationTypes.CustomNode,
+                  type: "T_NODE_1",
+                  label: "test-1",
+                }],
+              },
+              {
+                condition: `GetVariableBoolValue("use_second")`,
+                specifications: [{
+                  specType: ChildNodeSpecificationTypes.CustomNode,
+                  type: "T_NODE_2",
+                  label: "test-2",
+                }],
+              },
+            ],
           }],
         });
-        expect(ruleset).to.not.be.undefined;
         await Presentation.presentation.vars(ruleset.id).setBool("use_first", false);
         await Presentation.presentation.vars(ruleset.id).setBool("use_second", false);
-
-        const { result, waitForValueToChange } = renderHook(
-          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-          { initialProps: { imodel, ruleset, pagingSize: 100, enableHierarchyAutoUpdate: true } },
-        );
-        let dataProvider = result.current.dataProvider;
-        await loadHierarchy(result.current);
-        const nodesBefore = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesBefore.length).to.eq(0);
+        const hierarchy = await verifyHierarchy({ ...defaultProps, ruleset }, []);
 
         await Presentation.presentation.vars(ruleset.id).setBool("use_first", true);
-        await waitForValueToChange(() => result.current.dataProvider !== dataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter1 = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter1.length).to.eq(1);
-        expect(nodesAfter1).to.containSubset([{
-          label: { value: { displayValue: "test-1" } },
-        }]);
-        expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Insert",
-          position: 0,
-          node: { key: { type: "T_NODE_1" }, label: { displayValue: "test-1" } },
-        }]);
-        dataProvider = result.current.dataProvider;
+        await hierarchy.verifyChange(
+          [{
+            type: "Insert",
+            position: 0,
+            node: { key: { type: "T_NODE_1" }, label: { displayValue: "test-1" } },
+          }],
+          ["test-1"],
+        );
 
         await Presentation.presentation.vars(ruleset.id).setBool("use_second", true);
-        await waitForValueToChange(() => result.current.dataProvider !== dataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter2 = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter2.length).to.eq(2);
-        expect(nodesAfter2).to.containSubset([{
-          label: { value: { displayValue: "test-1" } },
-        }, {
-          label: { value: { displayValue: "test-2" } },
-        }]);
-        expect(hierarchyCompareSpy).to.be.calledTwice;
-        expect(await hierarchyCompareSpy.secondCall.returnValue).to.containSubset([{
-          type: "Insert",
-          position: 1,
-          node: { key: { type: "T_NODE_2" }, label: { displayValue: "test-2" } },
-        }]);
-        dataProvider = result.current.dataProvider;
+        await hierarchy.verifyChange(
+          [{
+            type: "Insert",
+            position: 1,
+            node: { key: { type: "T_NODE_2" }, label: { displayValue: "test-2" } },
+          }],
+          ["test-1", "test-2"],
+        );
 
         await Presentation.presentation.vars(ruleset.id).setBool("use_first", false);
-        await waitForValueToChange(() => result.current.dataProvider !== dataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter3 = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter3.length).to.eq(1);
-        expect(nodesAfter3).to.containSubset([{
-          label: { value: { displayValue: "test-2" } },
-        }]);
-        expect(hierarchyCompareSpy).to.be.calledThrice;
-        expect(await hierarchyCompareSpy.thirdCall.returnValue).to.containSubset([{
-          type: "Delete",
-          node: { key: { type: "T_NODE_1" }, label: { displayValue: "test-1" } },
-        }]);
+        await hierarchy.verifyChange(
+          [{
+            type: "Delete",
+            node: { key: { type: "T_NODE_1" }, label: { displayValue: "test-1" } },
+          }],
+          ["test-2"],
+        );
       });
 
       it("detects a change in instance filter", async () => {
@@ -368,287 +273,458 @@ describe("Update", () => {
             }],
           }],
         });
-        expect(ruleset).to.not.be.undefined;
         await Presentation.presentation.vars(ruleset.id).setBool("show_nodes", false);
-
-        const { result, waitForValueToChange } = renderHook(
-          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-          { initialProps: { imodel, ruleset, pagingSize: 100, enableHierarchyAutoUpdate: true } },
-        );
-        let dataProvider = result.current.dataProvider;
-        await loadHierarchy(result.current);
-        const nodesBefore = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesBefore.length).to.eq(0);
+        const hierarchy = await verifyHierarchy({ ...defaultProps, ruleset }, []);
 
         await Presentation.presentation.vars(ruleset.id).setBool("show_nodes", true);
-        await waitForValueToChange(() => result.current.dataProvider !== dataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter1 = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter1.length).to.eq(2);
-        expect(nodesAfter1).to.containSubset([{
-          label: { value: { displayValue: "Physical Object [0-38]" } },
-        }, {
-          label: { value: { displayValue: "Physical Object [0-39]" } },
-        }]);
-        expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Insert",
-          position: 0,
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] }, label: { displayValue: "Physical Object [0-38]" } },
-        }, {
-          type: "Insert",
-          position: 1,
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] }, label: { displayValue: "Physical Object [0-39]" } },
-        }]);
-        dataProvider = result.current.dataProvider;
+        await hierarchy.verifyChange(
+          [
+            {
+              type: "Insert",
+              position: 0,
+              node: {
+                key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] },
+                label: { displayValue: "Physical Object [0-38]" },
+              },
+            },
+            {
+              type: "Insert",
+              position: 1,
+              node: {
+                key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] },
+                label: { displayValue: "Physical Object [0-39]" },
+              },
+            },
+          ],
+          ["Physical Object [0-38]", "Physical Object [0-39]"],
+        );
 
         await Presentation.presentation.vars(ruleset.id).setBool("show_nodes", false);
-        await waitForValueToChange(() => result.current.dataProvider !== dataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter2 = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter2.length).to.eq(0);
-        expect(hierarchyCompareSpy).to.be.calledTwice;
-        expect(await hierarchyCompareSpy.secondCall.returnValue).to.containSubset([{
-          type: "Delete",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
-        }, {
-          type: "Delete",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
-        }]);
+        await hierarchy.verifyChange(
+          [
+            {
+              type: "Delete",
+              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
+            },
+            {
+              type: "Delete",
+              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
+            },
+          ],
+          [],
+        );
       });
 
       it("detects a change in customization rule's condition", async () => {
         const ruleset = await Presentation.presentation.rulesets().add({
           id: faker.random.uuid(),
-          rules: [{
-            ruleType: RuleTypes.RootNodes,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-              classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: RuleTypes.StyleOverride,
-            condition: `GetVariableBoolValue("should_customize")`,
-            foreColor: `"Red"`,
-          }],
+          rules: [
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
+                groupByClass: false,
+                groupByLabel: false,
+              }],
+            },
+            {
+              ruleType: RuleTypes.StyleOverride,
+              condition: `GetVariableBoolValue("should_customize")`,
+              foreColor: `"Red"`,
+            },
+          ],
         });
-        expect(ruleset).to.not.be.undefined;
-
-        const { result, waitForValueToChange } = renderHook(
-          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-          { initialProps: { imodel, ruleset, pagingSize: 100, enableHierarchyAutoUpdate: true } },
+        const hierarchy = await verifyHierarchy(
+          { ...defaultProps, ruleset },
+          ["Physical Object [0-38]", "Physical Object [0-39]"],
         );
-        const dataProvider = result.current.dataProvider;
-        await loadHierarchy(result.current);
-        const nodesBefore = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesBefore.length).to.eq(2);
-        nodesBefore.forEach((n) => expect(n.item.style?.colorOverrides?.color).to.be.undefined);
 
         await Presentation.presentation.vars(ruleset.id).setBool("should_customize", true);
-        await waitForValueToChange(() => result.current.dataProvider !== dataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter1 = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter1.length).to.eq(2);
-        nodesAfter1.forEach((n) => expect(n.item.style?.colorOverrides?.color).to.eq(0xFF0000FF));
-        expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "",
-            new: "Red",
-          }],
-        }, {
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "",
-            new: "Red",
-          }],
-        }]);
+        await hierarchy.verifyChange(
+          [
+            {
+              type: "Update",
+              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
+              changes: [{
+                name: "ForeColor",
+                old: "",
+                new: "Red",
+              }],
+            },
+            {
+              type: "Update",
+              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
+              changes: [{
+                name: "ForeColor",
+                old: "",
+                new: "Red",
+              }],
+            },
+          ],
+          [
+            { label: "Physical Object [0-38]", color: 0xFF0000FF },
+            { label: "Physical Object [0-39]", color: 0xFF0000FF },
+          ],
+        );
       });
 
       it("detects a change in customization rule's value", async () => {
         const ruleset = await Presentation.presentation.rulesets().add({
           id: faker.random.uuid(),
-          rules: [{
-            ruleType: RuleTypes.RootNodes,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-              classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: RuleTypes.StyleOverride,
-            condition: `ThisNode.IsOfClass("PhysicalObject", "Generic")`,
-            foreColor: `GetVariableStringValue("custom_color")`,
-          }],
+          rules: [
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
+                groupByClass: false,
+                groupByLabel: false,
+              }],
+            },
+            {
+              ruleType: RuleTypes.StyleOverride,
+              condition: `ThisNode.IsOfClass("PhysicalObject", "Generic")`,
+              foreColor: `GetVariableStringValue("custom_color")`,
+            },
+          ],
         });
-        expect(ruleset).to.not.be.undefined;
-
-        const { result, waitForValueToChange } = renderHook(
-          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-          { initialProps: { imodel, ruleset, pagingSize: 100, enableHierarchyAutoUpdate: true } },
+        const hierarchy = await verifyHierarchy(
+          { ...defaultProps, ruleset },
+          ["Physical Object [0-38]", "Physical Object [0-39]"],
         );
-        let dataProvider = result.current.dataProvider;
-        await loadHierarchy(result.current);
-        const nodesBefore = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesBefore.length).to.eq(2);
-        nodesBefore.forEach((n) => expect(n.item.style?.colorOverrides?.color).to.be.undefined);
 
         await Presentation.presentation.vars(ruleset.id).setString("custom_color", "Red");
-        await waitForValueToChange(() => result.current.dataProvider !== dataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter1 = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter1.length).to.eq(2);
-        nodesAfter1.forEach((n) => expect(n.item.style?.colorOverrides?.color).to.eq(0xFF0000FF));
-        expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "",
-            new: "Red",
-          }],
-        }, {
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "",
-            new: "Red",
-          }],
-        }]);
-        dataProvider = result.current.dataProvider;
+        await hierarchy.verifyChange(
+          [
+            {
+              type: "Update",
+              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
+              changes: [{
+                name: "ForeColor",
+                old: "",
+                new: "Red",
+              }],
+            },
+            {
+              type: "Update",
+              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
+              changes: [{
+                name: "ForeColor",
+                old: "",
+                new: "Red",
+              }],
+            },
+          ],
+          [
+            { label: "Physical Object [0-38]", color: 0xFF0000FF },
+            { label: "Physical Object [0-39]", color: 0xFF0000FF },
+          ],
+        );
 
         await Presentation.presentation.vars(ruleset.id).setString("custom_color", "Blue");
-        await waitForValueToChange(() => result.current.dataProvider !== dataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter2 = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter2.length).to.eq(2);
-        nodesAfter2.forEach((n) => expect(n.item.style?.colorOverrides?.color).to.eq(0x0000FFFF));
-        expect(hierarchyCompareSpy).to.be.calledTwice;
-        expect(await hierarchyCompareSpy.secondCall.returnValue).to.containSubset([{
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "Red",
-            new: "Blue",
-          }],
-        }, {
-          type: "Update",
-          node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
-          changes: [{
-            name: "ForeColor",
-            old: "Red",
-            new: "Blue",
-          }],
-        }]);
+        await hierarchy.verifyChange(
+          [
+            {
+              type: "Update",
+              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
+              changes: [{
+                name: "ForeColor",
+                old: "Red",
+                new: "Blue",
+              }],
+            },
+            {
+              type: "Update",
+              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
+              changes: [{
+                name: "ForeColor",
+                old: "Red",
+                new: "Blue",
+              }],
+            },
+          ],
+          [
+            { label: "Physical Object [0-38]", color: 0x0000FFFF },
+            { label: "Physical Object [0-39]", color: 0x0000FFFF },
+          ],
+        );
       });
 
       it("detects changes of root and expanded nodes", async () => {
+        const ruleset = await Presentation.presentation.rulesets().add({
+          id: faker.random.uuid(),
+          rules: [
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [
+                {
+                  specType: ChildNodeSpecificationTypes.CustomNode,
+                  type: "T_ROOT_1",
+                  label: "root-1",
+                  hasChildren: "Unknown",
+                },
+                {
+                  specType: ChildNodeSpecificationTypes.CustomNode,
+                  type: "T_ROOT_2",
+                  label: "root-2",
+                  hasChildren: "Unknown",
+                },
+              ],
+            },
+            {
+              ruleType: RuleTypes.ChildNodes,
+              condition: `ParentNode.Type = "T_ROOT_1" ANDALSO GetVariableBoolValue("show_children")`,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_CHILD_1",
+                label: "child-1",
+              }],
+            },
+            {
+              ruleType: RuleTypes.ChildNodes,
+              condition: `ParentNode.Type = "T_ROOT_2" ANDALSO GetVariableBoolValue("show_children")`,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_CHILD_2",
+                label: "child-2",
+              }],
+            },
+          ],
+        });
+        await Presentation.presentation.vars(ruleset.id).setBool("show_children", true);
+        const hierarchy = await verifyHierarchy(
+          { ...defaultProps, ruleset },
+          [{ ["root-1"]: ["child-1"] }, { ["root-2"]: ["child-2"] }],
+        );
+
+        hierarchy.getModelSource().modifyModel((model) => {
+          // expand only the `root-1` node
+          (model.getNode(undefined, 0) as MutableTreeModelNode).isExpanded = true;
+        });
+        await Presentation.presentation.vars(ruleset.id).setBool("show_children", false);
+        await hierarchy.verifyChange(
+          [
+            {
+              type: "Update",
+              node: { key: { type: "T_ROOT_1" } },
+              changes: [{
+                name: "HasChildren",
+                old: true,
+                new: false,
+              }],
+            },
+            {
+              type: "Update",
+              node: { key: { type: "T_ROOT_2" } },
+              changes: [{
+                name: "HasChildren",
+                old: true,
+                new: false,
+              }],
+            },
+            {
+              type: "Delete",
+              node: { key: { type: "T_CHILD_1" } },
+            },
+          ],
+          ["root-1", "root-2"],
+        );
+      });
+    });
+
+    interface VerifiedHierarchy {
+      getModelSource(): TreeModelSource;
+
+      verifyChange: (
+        expectedModifications: DeepPartial<PartialHierarchyModification[]>,
+        expectedTree: TreeHierarchy[],
+      ) => Promise<void>;
+    }
+
+    type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> };
+
+    type TreeHierarchy = string | {
+      [label: string]: TreeHierarchy[];
+    } | {
+      label: string;
+      children?: TreeHierarchy[];
+      expanded?: true;
+      color?: number;
+    };
+
+    async function verifyHierarchy(
+      props: PresentationTreeNodeLoaderProps,
+      expectedTree: TreeHierarchy[],
+    ): Promise<VerifiedHierarchy> {
+      const { result, waitForNextUpdate } = renderHook(
+        (hookProps: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(hookProps),
+        { initialProps: props },
+      );
+      await expectTree(result.current, expectedTree);
+
+      return new class implements VerifiedHierarchy {
+        private _numSpyCalls = 0;
+
+        public getModelSource(): TreeModelSource {
+          return result.current.modelSource;
+        }
+
+        public async verifyChange(
+          expectedModifications: DeepPartial<PartialHierarchyModification[]>,
+          expectedUpdatedTree: TreeHierarchy[],
+        ): Promise<void> {
+          await waitForNextUpdate();
+          this._numSpyCalls += 1;
+          expect(hierarchyCompareSpy.callCount).to.be.equal(this._numSpyCalls);
+          expect(await hierarchyCompareSpy.lastCall.returnValue).to.containSubset(expectedModifications);
+          await expectTree(result.current, expectedUpdatedTree);
+        }
+      }();
+    }
+
+    async function expectTree(
+      nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>,
+      expectedHierarchy: TreeHierarchy[],
+    ): Promise<void> {
+      await loadHierarchy(nodeLoader);
+
+      const model = nodeLoader.modelSource.getModel();
+      const actualHierarchy = buildActualHierarchy(undefined);
+      expect(actualHierarchy).to.deep.equal(expectedHierarchy);
+
+      function buildActualHierarchy(parentId: string | undefined): TreeHierarchy[] {
+        const result: TreeHierarchy[] = [];
+        for (const childId of model.getChildren(parentId) ?? []) {
+          const node = model.getNode(childId) as TreeModelNode;
+          const label = (node.label.value as PrimitiveValue).displayValue!;
+          const children = buildActualHierarchy(childId);
+          const additionalProperties: Partial<TreeHierarchy> = {};
+          if (node.isExpanded) {
+            additionalProperties.expanded = true;
+          }
+
+          if (node.item.style?.colorOverrides?.color !== undefined) {
+            additionalProperties.color = node.item.style.colorOverrides.color;
+          }
+
+          if (Object.keys(additionalProperties).length > 0) {
+            result.push({ label, ...additionalProperties, ...(children.length > 0 && { children }) });
+          } else if (children.length > 0) {
+            result.push({ [label]: children });
+          } else {
+            result.push(label);
+          }
+        }
+
+        return result;
+      }
+    }
+
+    describe("paging", () => {
+      it("collects results from multiple pages", async () => {
         const ruleset = await Presentation.presentation.rulesets().add({
           id: faker.random.uuid(),
           rules: [{
             ruleType: RuleTypes.RootNodes,
             specifications: [{
               specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "T_ROOT_1",
+              type: "T_ROOT-1",
               label: "root-1",
-              hasChildren: "Unknown",
-            }, {
-              specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "T_ROOT_2",
-              label: "root-2",
-              hasChildren: "Unknown",
-            }],
-          }, {
-            ruleType: RuleTypes.ChildNodes,
-            condition: `ParentNode.Type = "T_ROOT_1" ANDALSO GetVariableBoolValue("show_children")`,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "T_CHILD_1",
-              label: "child-1",
-            }],
-          }, {
-            ruleType: RuleTypes.ChildNodes,
-            condition: `ParentNode.Type = "T_ROOT_2" ANDALSO GetVariableBoolValue("show_children")`,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "T_CHILD_2",
-              label: "child-2",
             }],
           }],
         });
         expect(ruleset).to.not.be.undefined;
-        await Presentation.presentation.vars(ruleset.id).setBool("show_children", true);
 
-        const { result, waitForValueToChange } = renderHook(
+        const { result, unmount } = renderHook(
           (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
           { initialProps: { imodel, ruleset, pagingSize: 100, enableHierarchyAutoUpdate: true } },
         );
-        const dataProvider = result.current.dataProvider;
         await loadHierarchy(result.current);
-        const nodesBefore = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesBefore.length).to.eq(4);
-        expect(nodesBefore).to.containSubset([{
-          label: { value: { displayValue: "root-1" } },
-          item: { hasChildren: true },
-        }, {
-          label: { value: { displayValue: "child-1" } },
-        }, {
-          label: { value: { displayValue: "root-2" } },
-          item: { hasChildren: true },
-        }, {
-          label: { value: { displayValue: "child-2" } },
-        }]);
-        result.current.modelSource.modifyModel((model) => {
-          // expand only the `root-1` node
-          model.getNode(nodesBefore[0].id)!.isExpanded = true;
+        unmount();
+
+        const modifiedRuleset = await Presentation.presentation.rulesets().modify(ruleset, {
+          rules: [
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_ROOT-0",
+                label: "root-0",
+              }],
+            },
+            ...ruleset.rules,
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_ROOT-2",
+                label: "root-2",
+              }],
+            },
+          ],
         });
+        expect(modifiedRuleset).to.not.be.undefined;
 
-        await Presentation.presentation.vars(ruleset.id).setBool("show_children", false);
-        await waitForValueToChange(() => result.current.dataProvider !== dataProvider);
-        await loadHierarchy(result.current);
-        const nodesAfter = [...result.current.modelSource.getModel().iterateTreeModelNodes()];
-        expect(nodesAfter.length).to.eq(2);
-        expect(nodesAfter).to.containSubset([{
-          label: { value: { displayValue: "root-1" } },
-        }, {
-          label: { value: { displayValue: "root-2" } },
-        }]);
-        expect(hierarchyCompareSpy).to.be.calledOnce;
-        expect(await hierarchyCompareSpy.firstCall.returnValue).to.containSubset([{
-          type: "Update",
-          node: { key: { type: "T_ROOT_1" } },
-          changes: [{
-            name: "HasChildren",
-            old: true,
-            new: false,
-          }],
-        }, {
-          type: "Update",
-          node: { key: { type: "T_ROOT_2" } },
-          changes: [{
-            name: "HasChildren",
-            old: true,
-            new: false,
-          }],
-        }, {
-          type: "Delete",
-          node: { key: { type: "T_CHILD_1" } },
-        }]);
+        const rpcSpy = sinon.spy(Presentation.presentation.rpcRequestsHandler, "compareHierarchiesPaged");
+        const changes = await Presentation.presentation.compareHierarchies({
+          imodel,
+          prev: {
+            rulesetOrId: ruleset,
+            rulesetVariables: [],
+          },
+          rulesetOrId: modifiedRuleset,
+          rulesetVariables: [],
+          resultSetSize: 1,
+        });
+        expect(changes).to.containSubset([
+          {
+            type: "Insert",
+            node: { key: { type: "T_ROOT-0" } },
+            position: 0,
+          },
+          {
+            type: "Insert",
+            node: { key: { type: "T_ROOT-2" } },
+            position: 2,
+          },
+        ]);
+        expect(rpcSpy).to.be.calledTwice;
       });
-
     });
 
-  });
+    async function loadHierarchy(loader: AbstractTreeNodeLoader): Promise<void> {
+      await loadChildren(loader.modelSource.getModel().getRootNode());
 
+      async function loadChildren(parent: TreeModelNode | TreeModelRootNode): Promise<void> {
+        const numChildren = await getChildrenCount(parent);
+        for (let i = 0; i < numChildren; ++i) {
+          await waitForCompletion(loader.loadNode(parent, i).subscribe());
+        }
+
+        const children = loader.modelSource.getModel().getChildren(parent.id);
+        if (children === undefined) {
+          return;
+        }
+
+        for (const sparseValue of children.iterateValues()) {
+          const child = loader.modelSource.getModel().getNode(sparseValue[0]);
+          if (child && (child.item as DelayLoadedTreeNodeItem).hasChildren) {
+            await loadChildren(child);
+          }
+        }
+      }
+
+      async function getChildrenCount(parent: TreeModelNode | TreeModelRootNode): Promise<number> {
+        await waitForCompletion(loader.loadNode(parent, 0).subscribe());
+        const treeModel = loader.modelSource.getModel();
+        const node = parent.id ? treeModel.getNode(parent.id) : treeModel.getRootNode();
+        return node!.numChildren!;
+      }
+
+      async function waitForCompletion(subscription: Subscription): Promise<void> {
+        return new Promise((resolve) => subscription.add(resolve));
+      }
+    }
+  });
 });
