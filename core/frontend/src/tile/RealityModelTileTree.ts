@@ -112,6 +112,8 @@ export function createRealityTileTreeReference(props: RealityModelTileTree.Refer
 const zeroPoint = Point3d.createZero();
 const earthEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.polar);
 const scratchRay = Ray3d.createXAxis();
+const scratchX = Vector3d.create(), scratchY = Vector3d.create(), scratchZ = Vector3d.create();
+const scratchCenter = Point3d.create();
 /** @internal */
 export class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[] } | undefined {
@@ -122,19 +124,19 @@ export class RealityModelTileUtils {
     let range: Range3d | undefined;
     if (undefined !== boundingVolume.box) {
       const box: number[] = boundingVolume.box;
-      const center = Point3d.create(box[0], box[1], box[2]);
-      const ux = Vector3d.create(box[3], box[4], box[5]);
-      const uy = Vector3d.create(box[6], box[7], box[8]);
-      const uz = Vector3d.create(box[9], box[10], box[11]);
+      scratchCenter.set(box[0], box[1], box[2]);
+      scratchX.set(box[3], box[4], box[5]);
+      scratchY.set(box[6], box[7], box[8]);
+      scratchZ.set(box[9], box[10], box[11]);
+      range = Range3d.createNull();
       corners = new Array<Point3d>();
       for (let j = 0; j < 2; j++) {
         for (let k = 0; k < 2; k++) {
           for (let l = 0; l < 2; l++) {
-            corners.push(center.plus3Scaled(ux, (j ? -1.0 : 1.0), uy, (k ? -1.0 : 1.0), uz, (l ? -1.0 : 1.0)));
+            range.extend(scratchCenter.plus3Scaled(scratchX, (j ? -1.0 : 1.0), scratchY, (k ? -1.0 : 1.0), scratchZ, (l ? -1.0 : 1.0)));
           }
         }
       }
-      range = Range3d.createArray(corners);
     } else if (Array.isArray(boundingVolume.sphere)) {
       const sphere: number[] = boundingVolume.sphere;
       const center = Point3d.create(sphere[0], sphere[1], sphere[2]);
