@@ -2623,23 +2623,23 @@ export class IModelExporter {
     excludeElementCategory(categoryId: Id64String): void;
     excludeElementClass(classFullName: string): void;
     excludeRelationshipClass(classFullName: string): void;
-    exportAll(): void;
+    exportAll(): Promise<void>;
     exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
-    exportChildElements(elementId: Id64String): void;
-    exportCodeSpecById(codeSpecId: Id64String): void;
-    exportCodeSpecByName(codeSpecName: string): void;
-    exportCodeSpecs(): void;
-    exportElement(elementId: Id64String): void;
-    exportFontByName(fontName: string): void;
-    exportFontByNumber(fontNumber: number): void;
-    exportFonts(): void;
-    exportModel(modeledElementId: Id64String): void;
-    exportModelContents(modelId: Id64String, elementClassFullName?: string): void;
-    exportRelationship(relClassFullName: string, relInstanceId: Id64String): void;
-    exportRelationships(baseRelClassFullName: string): void;
-    exportRepositoryLinks(): void;
-    exportSchemas(): void;
-    exportSubModels(parentModelId: Id64String): void;
+    exportChildElements(elementId: Id64String): Promise<void>;
+    exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
+    exportCodeSpecByName(codeSpecName: string): Promise<void>;
+    exportCodeSpecs(): Promise<void>;
+    exportElement(elementId: Id64String): Promise<void>;
+    exportFontByName(fontName: string): Promise<void>;
+    exportFontByNumber(fontNumber: number): Promise<void>;
+    exportFonts(): Promise<void>;
+    exportModel(modeledElementId: Id64String): Promise<void>;
+    exportModelContents(modelId: Id64String, elementClassFullName?: string): Promise<void>;
+    exportRelationship(relClassFullName: string, relInstanceId: Id64String): Promise<void>;
+    exportRelationships(baseRelClassFullName: string): Promise<void>;
+    exportRepositoryLinks(): Promise<void>;
+    exportSchemas(): Promise<void>;
+    exportSubModels(parentModelId: Id64String): Promise<void>;
     protected get handler(): IModelExportHandler;
     progressInterval: number;
     registerHandler(handler: IModelExportHandler): void;
@@ -2869,8 +2869,8 @@ export class IModelTransformer extends IModelExportHandler {
     constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
     readonly context: IModelCloneContext;
     protected _deferredElementIds: Set<string>;
-    detectElementDeletes(): void;
-    detectRelationshipDeletes(): void;
+    detectElementDeletes(): Promise<void>;
+    detectRelationshipDeletes(): Promise<void>;
     dispose(): void;
     readonly exporter: IModelExporter;
     protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
@@ -2890,19 +2890,19 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
-    processAll(): void;
+    processAll(): Promise<void>;
     processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
-    processChildElements(sourceElementId: Id64String): void;
-    processCodeSpec(codeSpecName: string): void;
-    processCodeSpecs(): void;
-    processDeferredElements(numRetries?: number): void;
-    processElement(sourceElementId: Id64String): void;
-    processFonts(): void;
-    processModel(sourceModeledElementId: Id64String): void;
-    processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): void;
-    processRelationships(baseRelClassFullName: string): void;
+    processChildElements(sourceElementId: Id64String): Promise<void>;
+    processCodeSpec(codeSpecName: string): Promise<void>;
+    processCodeSpecs(): Promise<void>;
+    processDeferredElements(numRetries?: number): Promise<void>;
+    processElement(sourceElementId: Id64String): Promise<void>;
+    processFonts(): Promise<void>;
+    processModel(sourceModeledElementId: Id64String): Promise<void>;
+    processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): Promise<void>;
+    processRelationships(baseRelClassFullName: string): Promise<void>;
     processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
-    processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void;
+    processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
     protected shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     protected shouldExportElement(_sourceElement: Element): boolean;
     protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
@@ -3228,6 +3228,17 @@ export class LinkModel extends InformationModel {
 export class LinkPartition extends InformationPartitionElement {
     // @internal (undocumented)
     static get className(): string;
+}
+
+// @internal (undocumented)
+export class LocalhostIpcHost {
+    // (undocumented)
+    static startup(opts?: {
+        localhostIpcHost?: {
+            socketPort?: number;
+        };
+        iModelHost?: IModelHostConfiguration;
+    }): Promise<void>;
 }
 
 // @internal
@@ -3975,8 +3986,8 @@ export class SubjectOwnsSubjects extends ElementOwnsChildElements {
 export class TemplateModelCloner extends IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
     protected onTransformElement(sourceElement: Element): ElementProps;
-    placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Map<Id64String, Id64String>;
-    placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Map<Id64String, Id64String>;
+    placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Promise<Map<Id64String, Id64String>>;
+    placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Promise<Map<Id64String, Id64String>>;
     }
 
 // @beta

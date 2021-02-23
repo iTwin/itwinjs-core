@@ -4,7 +4,7 @@ A View Decoration shows application-generated graphics in a [ScreenViewport]($fr
 
 ## View Decorators
 
-The process of creating View Decorations starts by adding an object that implements the [Decorator]($frontend) interface to the `ViewManager` via the [ViewManager.addDecorator]($frontend) method. The most important part of the `Decorate` interface is the [Decorator.decorate]($frontend) method, which is called every time iModel.js renders a frame *for any ScreenViewport*. The argument to the `decorate` method is a [DecorateContext]($frontend) that supplies information about the ScreenViewport being rendered, as well as methods to create and save decoration graphics. The [DecorateContext.viewport]($frontend) member holds the target viewport. If you wish to decorate only a single viewport, you must test this member against your intended viewport.
+The process of creating View Decorations starts by adding an object that implements the [Decorator]($frontend) interface to the `ViewManager` via the [ViewManager.addDecorator]($frontend) method. The most important part of the `Decorate` interface is the [Decorator.decorate]($frontend) method, which is called every time iTwin.js renders a frame *for any ScreenViewport*. The argument to the `decorate` method is a [DecorateContext]($frontend) that supplies information about the ScreenViewport being rendered, as well as methods to create and save decoration graphics. The [DecorateContext.viewport]($frontend) member holds the target viewport. If you wish to decorate only a single viewport, you must test this member against your intended viewport.
 
 The job of the `decorate` method is to supply the graphics (the *Decorations*) for a single frame of a single ScreenViewport.
 
@@ -18,7 +18,7 @@ To learn how to optimize when your decorations are invalidated by using cached d
 
 Sometimes decorations are meant to *intersperse* with the scene geometry, and sometimes they are meant to display atop of it. For this reason, there are 3 broad categories of View Decorations:
 
-- View Graphic Decorations - are drawn using iModel.js render primitives into the WebGL context.
+- View Graphic Decorations - are drawn using iTwin.js render primitives into the WebGL context.
 - Canvas Decoration - are drawn onto the 2d canvas using [CanvasRenderingContext2D](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D). Canvas decorations are always on top of View Graphic Decorations
 - HTML Decorations - are HTMLElements that are added to the DOM. HTML decorations are always on top of Canvas Decorations.
 
@@ -26,7 +26,7 @@ Sometimes decorations are meant to *intersperse* with the scene geometry, and so
 
 ### View Graphic Decorations
 
-View Graphic Decorations are drawn using the iModel.js rendering system through WebGL. There are 5 types of View Graphic Decorations, defined by the [GraphicType]($frontend) enum.
+View Graphic Decorations are drawn using the iTwin.js rendering system through WebGL. There are 5 types of View Graphic Decorations, defined by the [GraphicType]($frontend) enum.
 
 - [GraphicType.ViewBackground]($frontend) - displayed behind all scene geometry
 - [GraphicType.Scene]($frontend) - interspersed with scene geometry, rendered using view's render mode and lighting
@@ -161,4 +161,4 @@ class FancyDecorator {
 }
 ```
 
-For a decorator defining the `useCachedDecorations` property as true, the functions [ViewManager.invalidateCachedDecorationsAllViews]($frontend) and [Viewport.invalidateCachedDecorations]($frontend) give the decorator much tighter control over when its decorations are regenerated. This can potentially result in significantly improved performance.
+For a decorator defining the `useCachedDecorations` property as true, the functions [ViewManager.invalidateCachedDecorationsAllViews]($frontend) and [ScreenViewport.invalidateCachedDecorations]($frontend) give the decorator much tighter control over when its decorations are regenerated. This can potentially result in significantly improved performance.

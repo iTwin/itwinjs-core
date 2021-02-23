@@ -8,6 +8,7 @@
 
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
+  ProcessDetector,
   StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
@@ -17,7 +18,8 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
+  SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -34,12 +36,11 @@ import { IModelConnection } from "./IModelConnection";
 import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ToolTipOptions } from "./NotificationManager";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
-import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Pixel } from "./render/Pixel";
-import { GraphicList, RenderGraphicOwner } from "./render/RenderGraphic";
+import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
@@ -57,6 +58,7 @@ import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
+import { DecorationsCache } from "./DecorationsCache";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -76,21 +78,10 @@ export interface ViewportDecorator {
    */
   readonly useCachedDecorations?: true;
 
-  /** Implement this method to add [[Decorations}} into the supplied DecorateContext.
+  /** Implement this method to add [[Decorations]] into the supplied DecorateContext.
    * @see [[useCachedDecorations]] to avoid unnecessarily recreating decorations.
    */
   decorate(context: DecorateContext): void;
-}
-
-/** @internal */
-export type CachedDecoration =
-  { type: "graphic", graphicType: GraphicType, graphicOwner: RenderGraphicOwner } |
-  { type: "canvas", canvasDecoration: CanvasDecoration, atFront: boolean } |
-  { type: "html", htmlElement: HTMLElement };
-
-function disposeCachedDecoration(dec: CachedDecoration): void {
-  if ("graphic" === dec.type)
-    dec.graphicOwner.disposeGraphic();
 }
 
 /** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
@@ -289,7 +280,6 @@ export abstract class Viewport implements IDisposable {
   private _timePointValid = false;
   /** @internal */
   public get timePointValid() { return this._timePointValid; }
-  private readonly _decorationCache: Map<ViewportDecorator, CachedDecoration[]> = new Map<ViewportDecorator, CachedDecoration[]>();
 
   /** Strictly for tests. @internal */
   public setAllValid(): void {
@@ -312,13 +302,14 @@ export abstract class Viewport implements IDisposable {
     this._sceneValid = false;
     this._timePointValid = false;
     this.invalidateDecorations();
-    this._disposeDecorationCache(); // When the scene is invalidated, remove all cached decorations so they get regenerated.
   }
+
   /** @internal */
   public invalidateRenderPlan(): void {
     this._renderPlanValid = false;
     this.invalidateScene();
   }
+
   /** @internal */
   public invalidateController(): void {
     this._controllerValid = this._analysisFractionValid = false;
@@ -329,6 +320,7 @@ export abstract class Viewport implements IDisposable {
   public setValidScene() {
     this._sceneValid = true;
   }
+
   /** @deprecated Use requestRedraw.
    * @internal
    */
@@ -342,6 +334,7 @@ export abstract class Viewport implements IDisposable {
    */
   public requestRedraw(): void {
     this._redrawPending = true;
+    IModelApp.requestNextAnimation();
   }
 
   private _animator?: Animator;
@@ -737,6 +730,13 @@ export abstract class Viewport implements IDisposable {
     return this.displayStyle.getRealityModelAppearanceOverride(index);
   }
 
+  /** Return the "contextual" reality model index for a transient model ID or -1 if none found
+   * @beta
+   */
+  public getRealityModelIndexFromTransientId(id: Id64String): number {
+    return this.displayStyle.getRealityModelIndexFromTransientId(id);
+  }
+
   /** @beta
    * Set the display of the OpenStreetMap worldwide building layer in this viewport by attaching or detaching the reality model displaying the buildings.
    * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
@@ -1013,40 +1013,10 @@ export abstract class Viewport implements IDisposable {
     IModelApp.tileAdmin.registerViewport(this);
   }
 
-  /** Forces removal of a specific decorator's cached decorations from this viewport, if they exist.
-   * This will force those decorations to be regenerated.
-   * @see [[ViewportDecorator.useCachedDecorations]].
-   * @beta
-   */
-  public invalidateCachedDecorations(decorator: ViewportDecorator) {
-    assert(true === decorator.useCachedDecorations, "Cannot invalidate cached decorations on a decorator which does not support cached decorations.");
-    if (true !== decorator.useCachedDecorations)
-      return;
-
-    const decorations = this._decorationCache.get(decorator);
-    if (decorations) {
-      decorations.forEach((decoration) => disposeCachedDecoration(decoration));
-      this._decorationCache.delete(decorator);
-    }
-
-    // Always invalidate decorations. Decorator may have no cached decorations currently, but wants them created.
-    this.invalidateDecorations();
-  }
-
-  /** Disposes of the entire decoration cache for this viewport. */
-  private _disposeDecorationCache() {
-    this._decorationCache.forEach((decorations: CachedDecoration[]) => {
-      decorations.forEach((decoration) => disposeCachedDecoration(decoration));
-    });
-
-    this._decorationCache.clear();
-  }
-
   public dispose(): void {
     if (this.isDisposed)
       return;
 
-    this._disposeDecorationCache();
     this._target = dispose(this._target);
     this.subcategories.dispose();
     IModelApp.tileAdmin.forgetViewport(this);
@@ -1125,6 +1095,7 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onRealityModelPlanarClipMaskChanged.addListener(displayStyleChanged));
 
     const analysisChanged = () => {
       this._changeFlags.setDisplayStyle();
@@ -1933,7 +1904,6 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public computeViewRange(): Range3d {
-    this.setupFromView(); // can't proceed if viewport isn't valid (not active)
     const fitRange = this.view.computeFitRange();
     this.forEachTiledGraphicsProviderTree((ref) => {
       ref.unionFitRange(fitRange);
@@ -2301,23 +2271,6 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   protected addDecorations(_decorations: Decorations): void { }
 
-  /** @internal */
-  public getCachedDecorations(decorator: ViewportDecorator): CachedDecoration[] | undefined {
-    return this._decorationCache.get(decorator);
-  }
-
-  /** @internal */
-  public addCachedDecoration(decorator: ViewportDecorator, decoration: CachedDecoration): void {
-    assert(true === decorator.useCachedDecorations);
-    let list = this._decorationCache.get(decorator);
-    if (!list) {
-      list = [];
-      this._decorationCache.set(decorator, list);
-    }
-
-    list.push(decoration);
-  }
-
   /** Read selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
    * @param selector Specifies which aspect(s) of data to read.
@@ -2579,6 +2532,7 @@ export class ScreenViewport extends Viewport {
   private _lastPose?: ViewPose; // the pose the last time this view was rendered
   private _webglCanvas?: HTMLCanvasElement;
   private _logo!: HTMLImageElement;
+  private readonly _decorationCache = new DecorationsCache();
 
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
@@ -2610,6 +2564,32 @@ export class ScreenViewport extends Viewport {
     const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
     vp.changeView(view);
     return vp;
+  }
+
+  /** @internal */
+  public dispose(): void {
+    super.dispose();
+    this._decorationCache.clear();
+  }
+
+  /** @internal */
+  public invalidateScene(): void {
+    super.invalidateScene();
+
+    // When the scene is invalidated, so are all cached decorations - they will be regenerated.
+    this._decorationCache.clear();
+  }
+
+  /** Forces removal of a specific decorator's cached decorations from this viewport, if they exist.
+   * This will force those decorations to be regenerated.
+   * @see [[ViewportDecorator.useCachedDecorations]].
+   * @beta
+   */
+  public invalidateCachedDecorations(decorator: ViewportDecorator) {
+    this._decorationCache.delete(decorator);
+
+    // Always invalidate decorations. Decorator may have no cached decorations currently, but wants them created.
+    this.invalidateDecorations();
   }
 
   /** @internal */
@@ -2889,15 +2869,23 @@ export class ScreenViewport extends Viewport {
     // SEE: decorationDiv doc comment
     // eslint-disable-next-line deprecation/deprecation
     ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
-    const context = new DecorateContext(this, decorations);
-    context.addFromDecorator(this.view);
-    this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
+    const context = new DecorateContext(this, decorations, this._decorationCache);
+    try {
+      // It is an error to try to remove cached decorations while we are decorating.
+      // Some naughty decorators unwittingly do so by e.g. invalidating the scene in their decorate method.
+      this._decorationCache.prohibitRemoval = true;
 
-    for (const decorator of IModelApp.viewManager.decorators)
-      context.addFromDecorator(decorator);
+      context.addFromDecorator(this.view);
+      this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
 
-    // eslint-disable-next-line deprecation/deprecation
-    ScreenViewport.removeMarkedChildren(this.decorationDiv);
+      for (const decorator of IModelApp.viewManager.decorators)
+        context.addFromDecorator(decorator);
+
+      // eslint-disable-next-line deprecation/deprecation
+      ScreenViewport.removeMarkedChildren(this.decorationDiv);
+    } finally {
+      this._decorationCache.prohibitRemoval = false;
+    }
   }
 
   /** Change the cursor for this Viewport */
@@ -3121,13 +3109,30 @@ export class ScreenViewport extends Viewport {
       assert(undefined === this._webglCanvas); // see getter...
       this._webglCanvas = webglCanvas;
 
-      // this.canvas has zIndex 10. Make webgl canvas' zIndex lower so that canvas decorations draw on top.
       this.addChildDiv(this.vpDiv, webglCanvas, 5);
+
+      /** The following workaround resolves an issue specific to iOS Safari. We really want this webgl canvas' zIndex to be
+       * lower than this.canvas, but if we do that on iOS Safari, Safari may decide to not display the canvas contents once
+       * it is re-added to the parent div after dropping other viewports. It will only display it once resizing the view.
+       * The offending element here is the 2d canvas sitting on top of the webgl canvas. We need to clear its contents
+       * immediately on iOS. Even though the 2d canvas gets cleared in OnScreenTarget.drawOverlayDecorations() in this case,
+       * it looks like iOS needs an immediate clear.
+       */
+      if (ProcessDetector.isIOSBrowser)
+        _clear2dCanvas(this.canvas);
     }
 
     this.target.updateViewRect();
     this.invalidateRenderPlan();
   }
+}
+
+function _clear2dCanvas(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext("2d", { alpha: true })!;
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for clearRect() call below.
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
 }
 
 /** An off-screen viewport is not rendered to the screen. It is never added to the [[ViewManager]], therefore does not participate in
