@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Dialog, DialogButtonType, ThemedSelect } from "@bentley/ui-core";
+import { Dialog, DialogButtonType, LabeledThemedSelect, ThemedSelect } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 
 enum ColorOptions {
@@ -78,6 +78,7 @@ export class TestReactSelectDialog extends React.Component<TestReactSelectDialog
       <div className="modal-react-select-dialog">
         <div><label className="label-data">Color: </label><ThemedSelect options={colorChoices} /></div>
         <div><label className="label-data">Choose Cities: </label><ThemedSelect isMulti={true} isSearchable={true} options={cityChoices} /></div>
+        <div><LabeledThemedSelect label={"Labeled ThemedSelect Multi"} isMulti={true} isSearchable={true} options={cityChoices} /></div>
       </div>
     </Dialog>
     );

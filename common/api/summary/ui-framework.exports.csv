@@ -188,7 +188,7 @@ beta;ExtensibleToolbarProps
 beta;featureOverridesActiveStateFunc(state: Readonly
 public;FooterModeField 
 public;FooterModeFieldProps 
-alpha;FrameworkAccuDraw 
+internal;FrameworkAccuDraw 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps

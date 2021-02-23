@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 ## The iModel.js Project Is Renamed iTwin.js
@@ -122,6 +123,8 @@ Planar clip masks support transparency.  If a mask is not transparent then the m
 The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
 New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.
 
+The alpha UnitConversionSpec interface now requires a "system" property that can be used during parsing to help determine the unit to parse the value.
+
 ### Frontend package
 
 The alpha class QuantityFormatter now registers its own standard QuantityTypeDefinitions during initialization. CustomQuantityTypeDefinitions must now be registered to support additional QuantityTypes. This replaces the use of FormatterParserSpecsProvider to provide custom quantity types. Removed koq methods that were never implemented.
@@ -138,6 +141,10 @@ While exporting and transforming should generally be considered *batch* operatio
 To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from within an `async` method. No internal logic was changed, so that should be the only changes required.
 
 ## Presentation
+
+### Highlighting members of GroupInformationElement
+
+Presentation rules used by [HiliteSetProvider]($presentation-frontend) have been modified to return geometric elements grouped by *BisCore.GroupInformationElement* instances.
 
 ### Setting up default formats
 

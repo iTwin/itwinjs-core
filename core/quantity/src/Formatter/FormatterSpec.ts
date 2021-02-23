@@ -69,7 +69,7 @@ export class FormatterSpec {
           unitConversion = ({ factor: 1.0, offset: 0.0 }) as UnitConversion;
         }
         const unitLabel = (unit[1] && unit[1]!.length > 0) ? unit[1]! : unit[0].label;
-        const spec = ({ name: unit[0].name, label: unitLabel, conversion: unitConversion }) as UnitConversionSpec;
+        const spec = ({ name: unit[0].name, label: unitLabel, conversion: unitConversion, system: unit[0].system }) as UnitConversionSpec;
 
         conversions.push(spec);
         convertFromUnit = unit[0];
@@ -77,7 +77,7 @@ export class FormatterSpec {
     } else {
       // if format is only numeric and a input unit is defined set spec to use the input unit as the format unit
       if (inputUnit) {
-        const spec: UnitConversionSpec = { name: inputUnit.name, label: inputUnit.label, conversion: { factor: 1.0, offset: 0.0 } };
+        const spec: UnitConversionSpec = { name: inputUnit.name, label: inputUnit.label, system: inputUnit.system, conversion: { factor: 1.0, offset: 0.0 } };
         conversions.push(spec);
       }
     }
@@ -93,7 +93,7 @@ export class FormatterSpec {
    *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
    */
   public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
-    const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format,unitsProvider, inputUnit);
+    const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format, unitsProvider, inputUnit);
     return new FormatterSpec(name, format, conversions, inputUnit);
   }
 

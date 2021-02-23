@@ -212,6 +212,7 @@ public;LineStyleDefinition
 public;class LinkElement 
 public;LinkModel 
 public;LinkPartition 
+internal;LocalhostIpcHost
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
@@ -288,6 +289,7 @@ public;TextAnnotation3d
 public;Texture 
 public;TitleText 
 public;TxnAction
+beta;TxnElementsChanged
 public;TxnIdString = string
 beta;TxnManager
 public;class TypeDefinitionElement 

@@ -7,16 +7,44 @@
  */
 
 import { editorChannel } from "@bentley/imodeljs-editor-common";
-import { IpcApp, PrimitiveTool } from "@bentley/imodeljs-frontend";
+import { IModelApp, IpcApp } from "@bentley/imodeljs-frontend";
+import { DeleteElementsTool } from "./DeleteElementsTool";
+import { MoveElementsTool } from "./TransformElementsTool";
 
-/** @alpha TODO: Make namespace instead of PrimitiveTool sub-class, ex. InputCollector for modify handles is an edit tool...
-*/
-export abstract class EditTool extends PrimitiveTool {
+/** @alpha functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand. */
+export class EditTools {
+  private static _initialized = false;
+
   public static async startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T> {
     return IpcApp.callIpcChannel(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
   }
 
   public static async callCommand(methodName: string, ...args: any[]): Promise<any> {
     return IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
+  }
+
+  /** Call this before using the package (e.g., before attempting to use any of its tools.)
+   * To initialize when starting up your app:
+   * ```ts
+   *   IModelApp.startup();
+   *   await EditorTools.initialize();
+   * ```
+   */
+  public static async initialize(): Promise<void> {
+    if (this._initialized)
+      return;
+
+    this._initialized = true;
+
+    const i18n = IModelApp.i18n.registerNamespace("Editor");
+    const tools = [
+      DeleteElementsTool,
+      MoveElementsTool,
+    ];
+
+    for (const tool of tools)
+      tool.register(i18n);
+
+    return i18n.readFinished;
   }
 }
