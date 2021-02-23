@@ -23,14 +23,11 @@ export class BasicUnitsProvider implements UnitsProvider {
     const unitSystemToFind = unitSystem ? unitSystem.toLowerCase():undefined;
 
     for (const entry of UNIT_DATA) {
-      if (unitFamily) {
-        if (entry.unitFamily.toLowerCase() !== unitFamilyToFind)
-          continue;
-      }
-      if (unitSystemToFind) {
-        if (entry.system.toLowerCase() !== unitSystemToFind)
-          continue;
-      }
+      if (unitFamily && entry.unitFamily.toLowerCase() !== unitFamilyToFind)
+        continue;
+
+      if (unitSystemToFind && entry.system.toLowerCase() !== unitSystemToFind)
+        continue;
 
       if (entry.displayLabel.toLowerCase() === labelToFind || entry.name.toLowerCase() === labelToFind) {
         const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.altDisplayLabels, entry.system);

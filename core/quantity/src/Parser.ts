@@ -341,11 +341,8 @@ export class Parser {
       if (tokens[0].isNumber) {
         return new Quantity(defaultUnit, tokens[0].value as number);
       } else {
-        try {
-          // first try to find a unit from the same family and system, if not found just limit to family
-          const unit = await this.lookupUnitByLabel(tokens[0].value as string, format, unitsProvider);
-          return new Quantity(unit);
-        } catch (err) { }
+        const unit = await this.lookupUnitByLabel(tokens[0].value as string, format, unitsProvider);
+        return new Quantity(unit);
       }
     }
 
@@ -477,9 +474,10 @@ export class Parser {
             const value = (tokens[0].value as number) * conversion.factor + conversion.offset;
             return { ok: true, value };
           }
+        } else {
+          // if no conversion or no defaultUnit, just return parsed number
+          return { ok: true, value: tokens[0].value as number };
         }
-        // if no conversion or no defaultUnit, just return parsed number
-        return { ok: true, value: tokens[0].value as number };
       } else {
         // only the unit label was specified so assume magnitude of 1
         const conversion = Parser.tryFindUnitConversion(tokens[0].value as string, unitsConversions, defaultUnit);
