@@ -62,7 +62,7 @@
     "webpack": "4.42.0",
     "webpack-sources": "^1.4.3",
     "yargonaut": "^1.1.2",
-    "yargs": "^15.0.0"
+    "yargs": "^16.0.0"
   },
   "devDependencies": {
     "rimraf": "^3.0.2"
