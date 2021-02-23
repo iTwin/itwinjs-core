@@ -202,13 +202,10 @@ export class IModelHostConfiguration {
  */
 export class IModelHost {
   private constructor() { }
-  private static _authorizationClient?: AuthorizationClient;
-  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for backend applications */
-  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
-  public static get authorizationClient(): AuthorizationClient | undefined { return IModelHost._authorizationClient; }
-  public static set authorizationClient(authorizationClient: AuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
+  public static authorizationClient?: AuthorizationClient;
 
   private static _imodelClient?: IModelClient;
+
   private static _clientAuthIntrospectionManager?: ClientAuthIntrospectionManager;
   /** @alpha */
   public static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined { return this._clientAuthIntrospectionManager; }
