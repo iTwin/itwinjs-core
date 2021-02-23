@@ -7,7 +7,7 @@
  */
 
 import { CommonProps, Orientation } from "@bentley/ui-core";
-import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory } from "../PropertyDataProvider";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";

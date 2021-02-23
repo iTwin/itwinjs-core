@@ -127,9 +127,12 @@ describe("PropertyGrid", () => {
 
     it("sets passed onPropertyLinkClick event handler to records with link property", async () => {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       const testMatcher = (_displayValue: string) => [];
 >>>>>>> fe734bf18a... Handle URI properties
+=======
+>>>>>>> 4ed44a3a09... PR Fixes
       const testOnClick = (_text: string) => [];
       const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
       const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
@@ -137,6 +140,7 @@ describe("PropertyGrid", () => {
       const testStructRecord = TestUtils.createStructProperty("testStructRecord", { "testProperty": testNestedRecord2 });
       const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
       testNestedRecord1.links = {
+<<<<<<< HEAD
 <<<<<<< HEAD
         onClick: testOnClick,
       };
@@ -146,15 +150,19 @@ describe("PropertyGrid", () => {
       testStructRecord.links = {
 =======
         matcher: testMatcher,
+=======
+>>>>>>> 4ed44a3a09... PR Fixes
         onClick: testOnClick,
       };
       testNestedRecord2.links = {
-        matcher: testMatcher,
         onClick: testOnClick,
       };
       testStructRecord.links = {
+<<<<<<< HEAD
         matcher: testMatcher,
 >>>>>>> fe734bf18a... Handle URI properties
+=======
+>>>>>>> 4ed44a3a09... PR Fixes
         onClick: testOnClick,
       };
 
@@ -182,6 +190,7 @@ describe("PropertyGrid", () => {
       expect(testNestedRecord2.links.onClick).to.be.equal(propertyLinkClickFn);
     });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
     describe("default onPropertyLinkClick behavior", () => {
@@ -280,6 +289,8 @@ describe("PropertyGrid", () => {
     });
 
 >>>>>>> fe734bf18a... Handle URI properties
+=======
+>>>>>>> 4ed44a3a09... PR Fixes
     it("renders PropertyCategoryBlock as collapsed when it gets clicked", async () => {
       const wrapper = mount<PropertyGrid>(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
@@ -807,6 +818,7 @@ describe("PropertyGrid", () => {
 
 });
 <<<<<<< HEAD
+<<<<<<< HEAD
 describe("PropertyGrid Commons", () => {
 
   describe("getLinks", () => {
@@ -874,15 +886,76 @@ describe("PropertyGrid Commons", () => {
   });
 
 =======
+=======
+describe("PropertyGrid Commons", () => {
 
-describe("getLinks", () => {
+  describe("getLinks", () => {
+>>>>>>> 4ed44a3a09... PR Fixes
 
-  it("detects url link", () => {
-    const testLinkWithIndexes = { link: "Link: https://www.testLink.com", linkIndexes: { start: 6, end: 30 } };
-    const linkResult = PropertyGridCommons.getLinks(testLinkWithIndexes.link);
-    expect(linkResult.length).to.be.equal(1);
-    expect(linkResult[0].start).to.be.equal(testLinkWithIndexes.linkIndexes.start);
-    expect(linkResult[0].end).to.be.equal(testLinkWithIndexes.linkIndexes.end);
+    it("detects url link", () => {
+      const testLinkWithIndexes = { link: "Link: https://www.testLink.com", linkIndexes: { start: 6, end: 30 } };
+      const linkResult = PropertyGridCommons.getLinks(testLinkWithIndexes.link);
+      expect(linkResult.length).to.be.equal(1);
+      expect(linkResult[0].start).to.be.equal(testLinkWithIndexes.linkIndexes.start);
+      expect(linkResult[0].end).to.be.equal(testLinkWithIndexes.linkIndexes.end);
+    });
+
   });
+<<<<<<< HEAD
 >>>>>>> fe734bf18a... Handle URI properties
+=======
+
+  describe("handleLinkClick", () => {
+    const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
+    let spy: sinon.SinonStub<[(string | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
+
+    before(() => {
+      location = locationMockRef.object;
+    });
+
+    after(() => {
+      locationMockRef.reset();
+    });
+
+    afterEach(() => {
+      spy.restore();
+    });
+
+    it("opens new window if the link text was found without http schema", async () => {
+      spy = sinon.stub(window, "open");
+      spy.returns(moq.Mock.ofType<Window>().object);
+
+      PropertyGridCommons.handleLinkClick("www.testLink.com");
+      expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
+    });
+
+    it("opens new window if the link text was found in record with http schema", async () => {
+      spy = sinon.stub(window, "open");
+      spy.returns(moq.Mock.ofType<Window>().object);
+
+      PropertyGridCommons.handleLinkClick("http://www.testLink.com");
+      expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
+    });
+
+    it("does not open new window if there were no url links", async () => {
+      spy = sinon.stub(window, "open");
+      spy.returns(moq.Mock.ofType<Window>().object);
+
+      PropertyGridCommons.handleLinkClick("not an url link");
+      PropertyGridCommons.handleLinkClick("testEmail@mail.com");
+      sinon.assert.notCalled(spy);
+    });
+
+    it("sets location href value to value got in the text if it is an email link", async () => {
+      PropertyGridCommons.handleLinkClick("someOtherLink@mail.com");
+      expect(locationMockRef.object.href).to.be.equal("mailto:someOtherLink@mail.com");
+    });
+
+    it("sets location href value to value got in the text if it is an ProjectWise Explorer link", async () => {
+      PropertyGridCommons.handleLinkClick("pw://server.bentley.com:datasource-01/Documents/ProjectName");
+      expect(locationMockRef.object.href).to.be.equal("pw://server.bentley.com:datasource-01/Documents/ProjectName");
+    });
+  });
+
+>>>>>>> 4ed44a3a09... PR Fixes
 });
