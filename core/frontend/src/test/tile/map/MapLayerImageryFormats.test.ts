@@ -32,11 +32,9 @@ describe("MapLayerImageryFormats", () => {
       expect(layerSettings).to.not.undefined;
       if (!layerSettings)
         return;
-      const provider = registry.createImageryProvider(layerSettings);
 
+      const provider = registry.createImageryProvider(layerSettings);
       expect(provider).to.not.undefined;
-      if (!layerSettings)
-        return;
 
       // Update this switch case if you add a new format.
       switch (imageryFormat.formatId) {
