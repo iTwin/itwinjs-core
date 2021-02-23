@@ -1,4 +1,4 @@
-# @bentley/electron-manager
+# @bentley/mobile-manager
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice. See LICENSE.md in the project root for license terms and full copyright notice.
 

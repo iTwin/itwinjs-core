@@ -150,6 +150,7 @@ internal;ElementGraphicsRequestProps
 alpha;ElementIdsAndRangesProps
 public;ElementLoadProps
 public;ElementProps 
+alpha;ElementsChanged
 beta;EntityMetaData 
 beta;EntityMetaDataProps
 public;EntityProps
@@ -192,7 +193,6 @@ public;GeometricModel2dProps
 public;GeometricModel3dProps 
 public;GeometricModelProps 
 public;GeometryAppearanceProps
-internal;GeometryChangeNotifications
 public;GeometryClass
 beta;GeometryContainmentRequestProps
 beta;GeometryContainmentResponseProps
@@ -250,6 +250,7 @@ public;ImageSourceFormat
 internal;ImdlFlags
 internal;ImdlHeader 
 public;class IModel 
+internal;IModelChangeNotifications
 alpha;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
