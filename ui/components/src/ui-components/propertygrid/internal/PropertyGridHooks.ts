@@ -7,7 +7,6 @@
  */
 
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { PropertyRecord } from "@bentley/ui-abstract";
 import { useDebouncedAsyncValue } from "../../common/UseDebouncedAsyncValue";
 import { PropertyGridCommons } from "../component/PropertyGridCommons";
 import { IPropertyDataProvider } from "../PropertyDataProvider";

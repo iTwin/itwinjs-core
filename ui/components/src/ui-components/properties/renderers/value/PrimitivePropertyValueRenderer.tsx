@@ -12,9 +12,8 @@ import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { LinksRenderer } from "../../LinkHandler";
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { withContextStyle } from "./WithContextStyle";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { LinkElementsInfo, PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { PropertyGridCommons } from "../../../propertygrid/component/PropertyGridCommons";
-import { LinkElementsInfo } from "../../../../../../abstract/lib/ui-abstract/properties/Record";
 
 /** Default Primitive Property Renderer
  * @public
@@ -62,6 +61,11 @@ export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValue
   return <span style={props.context?.style} title={stringValue}>{element}</span>;
 }
 
+/**
+ * Default link handler used for handling records,
+ * which did not have any specified LinkElementsInfo.
+ * @beta
+ */
 export const DEFAULT_LINKS_HANDLER: LinkElementsInfo = {
   matcher: PropertyGridCommons.getLinks,
   onClick: PropertyGridCommons.handleLinkClick,

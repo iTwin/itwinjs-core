@@ -22,7 +22,7 @@ export interface LinkElementsInfo {
    * Letters will be picked from __start__ index to __end__ index. __end__ index is not included.
    * For a string _"example"_ and a match ```{ start: 1, end: 3 }```, _"xa"_ will be clickable.
    */
-  matcher: (displayValue: string) => Array<{ start: number, end: number }>;
+  matcher?: (displayValue: string) => Array<{ start: number, end: number }>;
 }
 
 /**

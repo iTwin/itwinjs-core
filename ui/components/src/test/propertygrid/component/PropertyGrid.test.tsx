@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, ReactWrapper, shallow } from "enzyme";
+import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
@@ -126,7 +126,6 @@ describe("PropertyGrid", () => {
     });
 
     it("sets passed onPropertyLinkClick event handler to records with link property", async () => {
-      const testMatcher = (_displayValue: string) => [];
       const testOnClick = (_text: string) => [];
       const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
       const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
@@ -134,15 +133,12 @@ describe("PropertyGrid", () => {
       const testStructRecord = TestUtils.createStructProperty("testStructRecord", { "testProperty": testNestedRecord2 });
       const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
       testNestedRecord1.links = {
-        matcher: testMatcher,
         onClick: testOnClick,
       };
       testNestedRecord2.links = {
-        matcher: testMatcher,
         onClick: testOnClick,
       };
       testStructRecord.links = {
-        matcher: testMatcher,
         onClick: testOnClick,
       };
 
@@ -168,101 +164,6 @@ describe("PropertyGrid", () => {
       expect(testNestedRecord1.links.onClick).to.be.equal(propertyLinkClickFn);
       expect(testStructRecord.links.onClick).to.be.equal(propertyLinkClickFn);
       expect(testNestedRecord2.links.onClick).to.be.equal(propertyLinkClickFn);
-    });
-
-    describe("default onPropertyLinkClick behavior", () => {
-      const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
-      let testRecord: PropertyRecord;
-      let wrapper: ReactWrapper<any, Readonly<{}>, React.Component<{}, {}, any>>;
-      let spy: sinon.SinonStub<[(string | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
-
-      before(() => {
-        location = locationMockRef.object;
-      });
-
-      after(() => {
-        locationMockRef.reset();
-      });
-
-      beforeEach(() => {
-        const testMatcher = (_displayValue: string) => [];
-        testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-        testRecord.links = {
-          matcher: testMatcher,
-          onClick: PropertyGridCommons.handleLinkClick,
-        };
-        dataProvider.getData = async (): Promise<PropertyData> => ({
-          label: PropertyRecord.fromString(faker.random.word()),
-          description: faker.random.words(),
-          categories: [...categories],
-          records: {
-            Group_1: [testRecord],
-            Group_2: [records[0]],
-          },
-        });
-        wrapper = mount(<PropertyGrid
-          orientation={Orientation.Horizontal}
-          dataProvider={dataProvider} />);
-      });
-
-      afterEach(() => {
-        spy.restore();
-      });
-
-      it("opens new window if the link text was found in record with no schema specified", async () => {
-        await TestUtils.flushAsyncOperations();
-        spy = sinon.stub(window, "open");
-        spy.returns(moq.Mock.ofType<Window>().object);
-
-        testRecord.links!.onClick("www.testLink.com");
-        expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
-      });
-
-      it("opens new window if the link text was found in record with http schema", async () => {
-        await TestUtils.flushAsyncOperations();
-        spy = sinon.stub(window, "open");
-        spy.returns(moq.Mock.ofType<Window>().object);
-
-        testRecord.links!.onClick( "http://www.testLink.com");
-        expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
-      });
-
-      it("opens new window if the link text was found in record with https schema", async () => {
-        await TestUtils.flushAsyncOperations();
-        spy = sinon.stub(window, "open");
-        spy.returns(moq.Mock.ofType<Window>().object);
-
-        testRecord.links!.onClick("https://www.testLink.com");
-        expect(spy).to.be.calledOnceWith("https://www.testLink.com", "_blank");
-      });
-
-      it("does not open new window if there were no url links", async () => {
-        await TestUtils.flushAsyncOperations();
-        spy = sinon.stub(window, "open");
-        spy.returns(moq.Mock.ofType<Window>().object);
-
-        testRecord.links!.onClick("not an url link");
-        testRecord.links!.onClick("testEmail@mail.com");
-        sinon.assert.notCalled(spy);
-      });
-
-      it("sets location href value to value got in the text if it is an email link", async () => {
-        await TestUtils.flushAsyncOperations();
-        wrapper.update();
-
-        testRecord.links!.onClick("someOtherLink@mail.com");
-        expect(locationMockRef.object.href).to.be.equal("mailto:someOtherLink@mail.com");
-      });
-
-      it("sets location href value to value got in the text if it is an ProjectWise Explorer link", async () => {
-        await TestUtils.flushAsyncOperations();
-        wrapper.update();
-
-        // cSpell:disable
-        testRecord.links!.onClick("pw://server.bentley.com:datasource-01/Documents/ProjectName");
-        expect(locationMockRef.object.href).to.be.equal("pw://server.bentley.com:datasource-01/Documents/ProjectName");
-        // cSpell:enable
-      });
     });
 
     it("renders PropertyCategoryBlock as collapsed when it gets clicked", async () => {
@@ -791,14 +692,70 @@ describe("PropertyGrid", () => {
   });
 
 });
+describe("PropertyGrid Commons", () => {
 
-describe("getLinks", () => {
+  describe("getLinks", () => {
 
-  it("detects url link", () => {
-    const testLinkWithIndexes = { link: "Link: https://www.testLink.com", linkIndexes: { start: 6, end: 30 } };
-    const linkResult = PropertyGridCommons.getLinks(testLinkWithIndexes.link);
-    expect(linkResult.length).to.be.equal(1);
-    expect(linkResult[0].start).to.be.equal(testLinkWithIndexes.linkIndexes.start);
-    expect(linkResult[0].end).to.be.equal(testLinkWithIndexes.linkIndexes.end);
+    it("detects url link", () => {
+      const testLinkWithIndexes = { link: "Link: https://www.testLink.com", linkIndexes: { start: 6, end: 30 } };
+      const linkResult = PropertyGridCommons.getLinks(testLinkWithIndexes.link);
+      expect(linkResult.length).to.be.equal(1);
+      expect(linkResult[0].start).to.be.equal(testLinkWithIndexes.linkIndexes.start);
+      expect(linkResult[0].end).to.be.equal(testLinkWithIndexes.linkIndexes.end);
+    });
+
   });
+
+  describe("handleLinkClick", () => {
+    const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
+    let spy: sinon.SinonStub<[(string | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
+
+    before(() => {
+      location = locationMockRef.object;
+    });
+
+    after(() => {
+      locationMockRef.reset();
+    });
+
+    afterEach(() => {
+      spy.restore();
+    });
+
+    it("opens new window if the link text was found without http schema", async () => {
+      spy = sinon.stub(window, "open");
+      spy.returns(moq.Mock.ofType<Window>().object);
+
+      PropertyGridCommons.handleLinkClick("www.testLink.com");
+      expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
+    });
+
+    it("opens new window if the link text was found in record with http schema", async () => {
+      spy = sinon.stub(window, "open");
+      spy.returns(moq.Mock.ofType<Window>().object);
+
+      PropertyGridCommons.handleLinkClick("http://www.testLink.com");
+      expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
+    });
+
+    it("does not open new window if there were no url links", async () => {
+      spy = sinon.stub(window, "open");
+      spy.returns(moq.Mock.ofType<Window>().object);
+
+      PropertyGridCommons.handleLinkClick("not an url link");
+      PropertyGridCommons.handleLinkClick("testEmail@mail.com");
+      sinon.assert.notCalled(spy);
+    });
+
+    it("sets location href value to value got in the text if it is an email link", async () => {
+      PropertyGridCommons.handleLinkClick("someOtherLink@mail.com");
+      expect(locationMockRef.object.href).to.be.equal("mailto:someOtherLink@mail.com");
+    });
+
+    it("sets location href value to value got in the text if it is an ProjectWise Explorer link", async () => {
+      PropertyGridCommons.handleLinkClick("pw://server.bentley.com:datasource-01/Documents/ProjectName");
+      expect(locationMockRef.object.href).to.be.equal("pw://server.bentley.com:datasource-01/Documents/ProjectName");
+    });
+  });
+
 });

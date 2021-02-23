@@ -395,7 +395,7 @@ export class TestUtils {
     displayValue?: string,
   ): PropertyRecord {
     const property = TestUtils.createPrimitiveStringProperty(name, "", displayValue);
-    property.property.typename = "navigation";
+    property.property.typename = StandardTypeNames.Navigation;
     (property.value as PrimitiveValue).value = value;
     return property;
   }
@@ -406,7 +406,7 @@ export class TestUtils {
     displayValue?: string,
   ): PropertyRecord {
     const property = TestUtils.createPrimitiveStringProperty(name, value, displayValue);
-    property.property.typename = "URI";
+    property.property.typename = StandardTypeNames.URL;
     return property;
   }
 }

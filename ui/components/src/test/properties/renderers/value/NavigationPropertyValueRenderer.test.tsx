@@ -10,7 +10,6 @@ import { render } from "@testing-library/react";
 import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
-import { getFullLink } from "../../../../ui-components/properties/renderers/value/URIPropertyValueRenderer";
 
 describe("NavigationPropertyValueRenderer", () => {
   const instanceKey = { className: "", id: Id64.fromUint32Pair(1, 0) };
@@ -41,7 +40,6 @@ describe("NavigationPropertyValueRenderer", () => {
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
       stringProperty.links = {
         onClick: sinon.spy(),
-        matcher: getFullLink,
       };
 
       const element = renderer.render(stringProperty);

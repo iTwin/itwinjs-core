@@ -12,7 +12,6 @@ import { TypeConverter } from "../../../../ui-components/converters/TypeConverte
 import { TypeConverterManager } from "../../../../ui-components/converters/TypeConverterManager";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
-import { getFullLink } from "../../../../ui-components/properties/renderers/value/URIPropertyValueRenderer";
 
 class AsyncValuesTypeConverter extends TypeConverter {
   public sortCompare(_lhs: Primitives.Value, _rhs: Primitives.Value, _ignoreCase?: boolean) {
@@ -45,7 +44,6 @@ describe("PrimitivePropertyValueRenderer", () => {
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
       stringProperty.links = {
         onClick: sinon.spy(),
-        matcher: getFullLink,
       };
 
       const element = renderer.render(stringProperty);
@@ -54,6 +52,30 @@ describe("PrimitivePropertyValueRenderer", () => {
       renderedElement.getByText("Test property");
 
       expect(renderedElement.container.getElementsByClassName("core-underlined-button")).to.not.be.empty;
+    });
+
+    it("renders primitive property applying default links behavior - matches all links using regex if PropertyRecord does not have LinkElementsInfo", () => {
+      const renderer = new PrimitivePropertyValueRenderer();
+      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property www.test.com");
+
+      const element = renderer.render(stringProperty);
+      const renderedElement = render(<>{element}</>);
+
+      expect(renderedElement.container.getElementsByClassName("core-underlined-button")[0].textContent).to.be.eq("www.test.com");
+    });
+
+    it("renders primitive property applying custom LinkElementsInfo specified in PropertyRecord's LinkElementsInfo", () => {
+      const renderer = new PrimitivePropertyValueRenderer();
+      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
+      stringProperty.links = {
+        onClick: sinon.spy(),
+        matcher: () => [{ start: 0, end: 4 }],
+      };
+
+      const element = renderer.render(stringProperty);
+      const renderedElement = render(<>{element}</>);
+
+      expect(renderedElement.container.getElementsByClassName("core-underlined-button")[0].textContent).to.be.eq("Test");
     });
 
     it("renders async value with default value in context", async () => {

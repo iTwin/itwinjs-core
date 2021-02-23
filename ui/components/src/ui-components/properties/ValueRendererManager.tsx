@@ -16,7 +16,7 @@ import { MultilineTextPropertyValueRenderer } from "./renderers/value/MultilineT
 import { NavigationPropertyValueRenderer } from "./renderers/value/NavigationPropertyValueRenderer";
 import { PrimitivePropertyValueRenderer } from "./renderers/value/PrimitivePropertyValueRenderer";
 import { StructPropertyValueRenderer } from "./renderers/value/StructPropertyValueRenderer";
-import { URIPropertyValueRenderer } from "./renderers/value/URIPropertyValueRenderer";
+import { UrlPropertyValueRenderer } from "./renderers/value/UrlPropertyValueRenderer";
 
 /** Types of property containers
  * @public
@@ -157,6 +157,6 @@ export class PropertyValueRendererManager {
 }
 
 PropertyValueRendererManager.defaultManager.registerRenderer("navigation", new NavigationPropertyValueRenderer());
-PropertyValueRendererManager.defaultManager.registerRenderer("URI", new URIPropertyValueRenderer());
+PropertyValueRendererManager.defaultManager.registerRenderer("uri", new UrlPropertyValueRenderer());
 PropertyValueRendererManager.defaultManager.registerRenderer("double", new DoublePropertyValueRenderer());
 PropertyValueRendererManager.defaultManager.registerRenderer("multiline", new MultilineTextPropertyValueRenderer());

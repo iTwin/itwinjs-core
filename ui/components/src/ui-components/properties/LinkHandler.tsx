@@ -43,6 +43,9 @@ function renderTextPart(text: string, highlight?: (text: string) => React.ReactN
 function renderText(text: string, links: LinkElementsInfo, highlight?: (text: string) => React.ReactNode): React.ReactNode {
   const { matcher } = links;
 
+  if (!matcher)
+    return renderTag(text, links, highlight);
+
   const matches = matcher(text);
 
   // Sort just to be sure
@@ -75,7 +78,7 @@ function renderHighlighted(text: string, highlight: (text: string) => React.Reac
 }
 
 /** Returns true if property record has an anchor tag
- * @public
+ * @deprecated
  */
 export const hasLinks = (record: PropertyRecord) => !!record.links;
 
@@ -90,7 +93,7 @@ export const renderLinks = (text: string, links: LinkElementsInfo, highlight?: (
  * Optionally it can highlight text
  * @public
  */
-export const withLinks = (links: LinkElementsInfo, stringValue: string, highlight?: (text: string) => React.ReactNode): React.ReactNode => {
+export const withLinks = (stringValue: string, links?: LinkElementsInfo, highlight?: (text: string) => React.ReactNode): React.ReactNode => {
   if (links)
     return renderLinks(stringValue, links, highlight);
   if (highlight)
@@ -104,7 +107,7 @@ export const withLinks = (links: LinkElementsInfo, stringValue: string, highligh
  */
 export interface LinksRendererProps {
   value: string;
-  links: LinkElementsInfo;
+  links?: LinkElementsInfo;
   highlighter?: (text: string) => React.ReactNode;
 }
 
@@ -113,5 +116,5 @@ export interface LinksRendererProps {
  * @alpha
  */
 export function LinksRenderer(props: LinksRendererProps) {
-  return <>{withLinks(props.links, props.value, props.highlighter)}</>;
+  return <>{withLinks(props.value, props.links, props.highlighter)}</>;
 }

@@ -7,7 +7,7 @@
  */
 
 import { CommonProps, Orientation } from "@bentley/ui-core";
-import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory } from "../PropertyDataProvider";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
@@ -107,9 +107,9 @@ export class PropertyGridCommons {
   }
 
   /**
-  * Helper method to handle link clicks
-  * @beta
-  */
+   * Helper method to handle link clicks
+   * @beta
+   */
   public static handleLinkClick(text: string) {
     const linksArray = matchLinks(text);
     if (linksArray.length <= 0)
@@ -125,9 +125,9 @@ export class PropertyGridCommons {
   }
 
   /**
- * A helper method to get links from string.
- * @internal
- */
+   * A helper method to get links from string.
+   * @internal
+   */
   public static getLinks = (value: string): Array<{ start: number, end: number }> => {
     return matchLinks(value).map((linkInfo: { index: number, lastIndex: number }) => {
       return { start: linkInfo.index, end: linkInfo.lastIndex };

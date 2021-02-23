@@ -8,15 +8,15 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { render } from "@testing-library/react";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
-import { URIPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/URIPropertyValueRenderer";
-import { PropertyRecord } from "@bentley/ui-abstract/lib/ui-abstract/properties/Record";
-import { DEFAULT_LINKS_HANDLER } from "../../../../ui-components/properties/renderers/value/PrimitivePropertyValueRenderer";
+import { UrlPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/UrlPropertyValueRenderer";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import sinon from "sinon";
 
-describe("URIPropertyValueRenderer", () => {
+describe("UrlPropertyValueRenderer", () => {
 
   describe("render", () => {
     it("renders URI property wrapped in an anchored tag from display value", () => {
-      const renderer = new URIPropertyValueRenderer();
+      const renderer = new UrlPropertyValueRenderer();
       const property = TestUtils.createURIProperty("Category", "Value", "Test Uri Value: pw:\\wsp-aus-pw.bentley.com:wsp-aus-pw-10\Documents\Southern Program Alliance");
 
       const element = renderer.render(property);
@@ -25,20 +25,23 @@ describe("URIPropertyValueRenderer", () => {
       expect(elementRender.container.getElementsByClassName("core-underlined-button")[0].textContent).to.be.eq("Test Uri Value: pw:\\wsp-aus-pw.bentley.com:wsp-aus-pw-10\Documents\Southern Program Alliance");
     });
 
-    it("renders URI property wrapped in an anchored tag if links are specified in the PropertyRecord", () => {
-      const renderer = new URIPropertyValueRenderer();
+    it("renders URI property wrapped in an anchored tag if custom LinkElementsInfo is specified in the PropertyRecord", () => {
+      const renderer = new UrlPropertyValueRenderer();
       const property: PropertyRecord = TestUtils.createURIProperty("Category", "Value", "Test www.test.com");
 
-      property.links = DEFAULT_LINKS_HANDLER;
+      property.links = {
+        onClick: sinon.spy(),
+        matcher: () => [{ start: 0, end: 4 }],
+      };
 
       const element = renderer.render(property);
       const elementRender = render(<>{element}</>);
 
-      expect(elementRender.container.getElementsByClassName("core-underlined-button")[0].textContent).to.be.eq("www.test.com");
+      expect(elementRender.container.getElementsByClassName("core-underlined-button")[0].textContent).to.be.eq("Test");
     });
 
     it("renders URI property wrapped in an anchored tag from raw value", () => {
-      const renderer = new URIPropertyValueRenderer();
+      const renderer = new UrlPropertyValueRenderer();
       const property = TestUtils.createURIProperty("Category", "Value");
 
       const element = renderer.render(property);
@@ -50,7 +53,7 @@ describe("URIPropertyValueRenderer", () => {
     });
 
     it("doesn't render URI property from name", () => {
-      const renderer = new URIPropertyValueRenderer();
+      const renderer = new UrlPropertyValueRenderer();
       const property = TestUtils.createURIProperty("Category", "", "");
 
       const element = renderer.render(property);
@@ -59,20 +62,8 @@ describe("URIPropertyValueRenderer", () => {
       expect(() => elementRender.getByText("Category")).to.throw("Unable to find an element with the text: Category");
     });
 
-    it("renders URI property wrapped in an anchored tag when property record has it", () => {
-      const renderer = new URIPropertyValueRenderer();
-      const stringProperty = TestUtils.createURIProperty("Label", "Test property");
-
-      const element = renderer.render(stringProperty);
-      const renderedElement = render(<>{element}</>);
-
-      renderedElement.getByText("Test property");
-
-      expect(renderedElement.container.getElementsByClassName("core-underlined-button")).to.not.be.empty;
-    });
-
-    it("renders URI property with highlighting", () => {
-      const renderer = new URIPropertyValueRenderer();
+    it("renders URI property with highlighting and in anchored tag", () => {
+      const renderer = new UrlPropertyValueRenderer();
       const stringProperty = TestUtils.createURIProperty("Label", "Test property");
 
       const highlightNode = (text: string) => <span>{`${text} Highlighted`}</span>;
@@ -84,10 +75,11 @@ describe("URIPropertyValueRenderer", () => {
       const renderedElement = render(<>{element}</>);
 
       renderedElement.getByText("Test property Highlighted");
+      expect(renderedElement.container.getElementsByClassName("core-underlined-button")).to.not.be.empty;
     });
 
     it("throws when trying to render array property", () => {
-      const renderer = new URIPropertyValueRenderer();
+      const renderer = new UrlPropertyValueRenderer();
       const arrayProperty = TestUtils.createArrayProperty("LabelArray");
       expect(() => renderer.render(arrayProperty)).to.throw;
     });
@@ -95,13 +87,13 @@ describe("URIPropertyValueRenderer", () => {
 
   describe("canRender", () => {
     it("returns true for a URI property", () => {
-      const renderer = new URIPropertyValueRenderer();
+      const renderer = new UrlPropertyValueRenderer();
       const property = TestUtils.createURIProperty("Category", "Value");
       expect(renderer.canRender(property)).to.be.true;
     });
 
     it("returns false for properties that are not URI", () => {
-      const renderer = new URIPropertyValueRenderer();
+      const renderer = new UrlPropertyValueRenderer();
       const arrayProperty = TestUtils.createArrayProperty("LabelArray");
       const structProperty = TestUtils.createStructProperty("NameStruct");
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Model");
