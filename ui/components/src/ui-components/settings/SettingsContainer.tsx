@@ -98,7 +98,7 @@ export const SettingsContainer = ({title, tabs, showBackButton, onBackButtonClic
     };
 
     return settingsManager.onActivateSettingsTab.addListener(handleActivateSettingsTab);
-  }, [processTabSelection, settingsManager.onActivateSettingsTab, tabs]);
+  }, [openTab, processTabSelection, processTabSelectionById, settingsManager, settingsManager.onActivateSettingsTab, tabs]);
 
   React.useEffect (()=>{
     const handleSettingsContainerClose = ({closeFunc, closeFuncArgs}: ProcessSettingsContainerCloseEventArgs) => {

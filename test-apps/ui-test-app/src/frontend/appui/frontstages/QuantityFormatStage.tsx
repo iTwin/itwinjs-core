@@ -193,7 +193,7 @@ function SaveFormatModalDialog({ formatProps, quantityType, onDialogCloseArgs, o
 
   const handleClose = React.useCallback(() => {
     setIsOpen(false);
-    ModalDialogManager.closeDialog("saveQuantityFormat");
+    ModalDialogManager.closeDialog();
     if (onDialogClose)
       onDialogClose(onDialogCloseArgs);
   }, [onDialogClose, onDialogCloseArgs]);
