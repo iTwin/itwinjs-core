@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { MapLayerSettings } from "@bentley/imodeljs-common";
-import { expect } from "chai";
+import { assert, expect } from "chai";
 
 import {
   ArcGISMapLayerImageryProvider,
@@ -58,9 +58,12 @@ describe("MapLayerImageryFormats", () => {
           expect(provider instanceof MapBoxLayerImageryProvider).to.true;
           break;
 
-        case "TileUrlMapLayerFormat":
+        case "TileURL":
           expect(provider instanceof TileUrlImageryProvider).to.true;
           break;
+
+        default:
+          assert.fail(`Unknown format: '${imageryFormat.formatId}'. Please make sure any new format is covered by this test.`);
       }
     });
   });
