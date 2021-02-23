@@ -486,6 +486,7 @@ export interface UnitConversionSpec {
     label: string;
     name: string;
     parseLabels?: string[];
+    system: string;
 }
 
 // @alpha
@@ -501,7 +502,7 @@ export interface UnitProps {
 // @alpha
 export interface UnitsProvider {
     // (undocumented)
-    findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
+    findUnit(unitLabel: string, unitFamily?: string, unitSystem?: string): Promise<UnitProps>;
     // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
