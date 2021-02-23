@@ -2908,7 +2908,7 @@ export class MutableTreeModel implements TreeModel {
     iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
     removeChild(parentId: string | undefined, childId: string): void;
     setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
-    setNumChildren(parentId: string | undefined, numChildren: number): void;
+    setNumChildren(parentId: string | undefined, numChildren: number | undefined): void;
     }
 
 // @beta
