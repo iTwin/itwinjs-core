@@ -139,7 +139,6 @@ export class NativeApp {
       const locRequestContext = new FrontendRequestContext();
       locRequestContext.enter();
       try {
-        locRequestContext.useContextForRpc = true;
         await this.callNativeHost("downloadBriefcase", requestProps, progress !== undefined);
       } finally {
         stopProgressEvents();
@@ -166,7 +165,6 @@ export class NativeApp {
   public static async deleteBriefcase(fileName: string): Promise<void> {
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
-    requestContext.useContextForRpc = true;
     await this.callNativeHost("deleteBriefcaseFiles", fileName);
   }
 
