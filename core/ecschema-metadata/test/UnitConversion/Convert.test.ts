@@ -13,7 +13,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { Float } from "../../src/UnitConversion/Float";
 import { deserializeXml } from "./DeserializeSchema";
-import { getConversion, setSchema } from '../../src/UnitConversion/Convert'
+import { UnitConvertorContext } from '../../src/UnitConversion/Convert'
+import { getConversion, setSchema } from '../../src/UnitConversion/ConvertNew'
 
 interface TestData {
   From: string;
@@ -36,22 +37,44 @@ describe("A unit tree creator", () => {
     setSchema(schema)
   });
 
+  // Old converter from Convert.ts
   testData.forEach((test: TestData) => {
-    it(`should convert ${test.From} to ${test.To}`, async() => {
+    it(`should convert ${test.From} to ${test.To}`, async () => {
+      const converter = new UnitConvertorContext(context);
       const schemaKey = new SchemaKey("Units");
       const from = new SchemaItemKey(test.From, schemaKey);
       const to = new SchemaItemKey(test.To, schemaKey);
-      const conversion = getConversion(from, to);
-      const actual = test.Input * conversion.multiplier + conversion.offset;
-      const ulp = Float.ulp(Math.max(test.Input, test.Expect));
+      const map = await converter.processSchemaItem(from, to);
+      const actual = map.evaluate(test.Input);
+      const ulp = Float.ulp(Math.max(test.Input, test.Expect!));
       expect(
-        Float.equals(test.Expect, actual, 3 * ulp),
+        Float.equals(test.Expect!, actual, 3 * ulp),
         `${test.Input} ${test.From} in ${test.To} should be ${
           test.Expect
-        } and not ${actual} error = ${Math.abs(test.Expect - actual)} > ${
+        } and not ${actual} error = ${Math.abs(test.Expect! - actual)} > ${
           3 * ulp
         }`
       ).to.be.true;
     });
   });
+
+  // New converter from ConvertNew.ts
+  // testData.forEach((test: TestData) => {
+  //   it(`should convert ${test.From} to ${test.To}`, async() => {
+  //     const schemaKey = new SchemaKey("Units");
+  //     const from = new SchemaItemKey(test.From, schemaKey);
+  //     const to = new SchemaItemKey(test.To, schemaKey);
+  //     const conversion = getConversion(from, to);
+  //     const actual = test.Input * conversion.multiplier + conversion.offset;
+  //     const ulp = Float.ulp(Math.max(test.Input, test.Expect));
+  //     expect(
+  //       Float.equals(test.Expect, actual, 3 * ulp),
+  //       `${test.Input} ${test.From} in ${test.To} should be ${
+  //         test.Expect
+  //       } and not ${actual} error = ${Math.abs(test.Expect - actual)} > ${
+  //         3 * ulp
+  //       }`
+  //     ).to.be.true;
+  //   });
+  // });
 });
