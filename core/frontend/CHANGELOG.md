@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 18 Feb 2021 22:10:13 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+### Updates
+
+- Prevent buggy decorators from invalidating other decorators' cached decorations.
+- Fixed regression introduced recently that prevent WMS map layers from being displayed.
 
 ## 2.12.0
 Thu, 18 Feb 2021 22:10:13 GMT

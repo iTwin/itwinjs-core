@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Thu, 18 Feb 2021 22:10:13 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+### Updates
+
+- Persist the time point used to compute solar light direction in LightSettingsProps.
 
 ## 2.12.0
 Thu, 18 Feb 2021 22:10:13 GMT
