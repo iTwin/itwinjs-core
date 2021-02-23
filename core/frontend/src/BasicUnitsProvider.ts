@@ -17,19 +17,25 @@ import {
  */
 export class BasicUnitsProvider implements UnitsProvider {
   /** Find a unit given the unitLabel. */
-  public async findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps> {
+  public async findUnit(unitLabel: string, unitFamily?: string, unitSystem?: string): Promise<UnitProps> {
+    const labelToFind = unitLabel.toLowerCase();
+    const unitFamilyToFind = unitFamily ? unitFamily.toLowerCase():undefined;
+    const unitSystemToFind = unitSystem ? unitSystem.toLowerCase():undefined;
+
     for (const entry of UNIT_DATA) {
-      if (unitFamily) {
-        if (entry.unitFamily !== unitFamily)
-          continue;
-      }
-      if (entry.displayLabel === unitLabel || entry.name === unitLabel) {
+      if (unitFamily && entry.unitFamily.toLowerCase() !== unitFamilyToFind)
+        continue;
+
+      if (unitSystemToFind && entry.system.toLowerCase() !== unitSystemToFind)
+        continue;
+
+      if (entry.displayLabel.toLowerCase() === labelToFind || entry.name.toLowerCase() === labelToFind) {
         const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.altDisplayLabels, entry.system);
         return unitProps;
       }
 
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
-        if (entry.altDisplayLabels.findIndex((ref) => ref === unitLabel) !== -1) {
+        if (entry.altDisplayLabels.findIndex((ref) => ref.toLowerCase() === labelToFind) !== -1) {
           const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.altDisplayLabels, entry.system);
           return unitProps;
         }
