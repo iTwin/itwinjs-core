@@ -12,6 +12,7 @@ import { IModelConnection } from "../../IModelConnection";
 import {
   ArcGISMapLayerImageryProvider,
   ArcGisUtilities,
+  AzureMapsLayerImageryProvider,
   BingMapsImageryLayerProvider,
   ImageryMapLayerTreeReference,
   MapBoxLayerImageryProvider,
@@ -24,6 +25,7 @@ import {
   WmsCapabilities,
   WmsMapLayerImageryProvider,
   WmtsCapabilities,
+  WmtsMapLayerImageryProvider,
 } from "../internal";
 
 /** Base class imagery map layer formats. Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
@@ -98,7 +100,7 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
   public static formatId = "WMTS";
 
   public static createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
-    return new WmsMapLayerImageryProvider(settings);
+    return new WmtsMapLayerImageryProvider(settings);
   }
 
   public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
@@ -156,7 +158,7 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
 class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static formatId = "AzureMaps";
   public static createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
-    return new ArcGISMapLayerImageryProvider(settings);
+    return new AzureMapsLayerImageryProvider(settings);
   }
 }
 class BingMapsMapLayerFormat extends ImageryMapLayerFormat {
