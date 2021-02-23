@@ -4647,7 +4647,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     // @internal (undocumented)
     notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
     static readonly onBegin: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onElementChanges: BeEvent<(changes: ElementsChanged, session: InteractiveEditingSession) => void>;
+    readonly onElementChanges: BeEvent<(changes: ElementsChanged, iModel: EditableConnection) => void>;
     readonly onEnded: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onEnding: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>;
