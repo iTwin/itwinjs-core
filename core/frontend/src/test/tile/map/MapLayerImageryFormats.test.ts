@@ -19,11 +19,11 @@ import {
 
 const getSampleLayerSettings = ((formatId: string) => {
   return MapLayerSettings.fromJSON({
-    formatId, url: "https://localhost/service", name: `Test ${formatId}`
+    formatId, url: "https://localhost/service", name: `Test ${formatId}`,
   });
 });
 
-describe.only("MapLayerImageryFormats", () => {
+describe("MapLayerImageryFormats", () => {
   it("should create proper provider", () => {
     const registry = new MapLayerFormatRegistry({});
     internalMapLayerImageryFormats.forEach((imageryFormat) => {
