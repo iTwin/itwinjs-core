@@ -5,18 +5,17 @@
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
-import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-
+import { getSupportedRpcs } from "../../common/rpcs";
 /**
  * Initializes Electron backend
  */
 const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
-export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]) {
+export async function initializeElectron() {
   const electronHost: ElectronHostOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
-    rpcInterfaces,
+    rpcInterfaces: getSupportedRpcs(),
     developmentServer: process.env.NODE_ENV === "development",
   };
 

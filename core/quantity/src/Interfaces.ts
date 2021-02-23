@@ -38,6 +38,8 @@ export interface UnitConversionSpec {
   name: string;
   /** The default label that is used to display unit */
   label: string;
+  /** Unit system name, used to when finding preferred parse unit */
+  system: string;
   /** the information necessary to convert the unit to a specific display unit */
   conversion: UnitConversion;
   /** Labels that may be used to represent the unit in a string that is to be parsed. */
@@ -66,7 +68,7 @@ export interface PotentialParseUnit {
  * @alpha
  */
 export interface UnitsProvider {
-  findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
+  findUnit(unitLabel: string, unitFamily?: string, unitSystem?: string): Promise<UnitProps>;
   getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
   findUnitByName(unitName: string): Promise<UnitProps>;
   getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;

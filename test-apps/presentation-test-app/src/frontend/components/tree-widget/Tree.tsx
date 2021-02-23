@@ -5,11 +5,10 @@
 import "./TreeWidget.css";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { useControlledTreeFiltering, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
-import {
-  ControlledTree, FilteringInput, SelectionMode, usePagedTreeNodeLoader, useTreeModelSource, useVisibleTreeNodes,
-} from "@bentley/ui-components";
-import { PAGING_SIZE, useDataProvider } from "./SampleTreeDataProvider";
+import { useControlledTreeFiltering, usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
+import { ControlledTree, FilteringInput, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+
+const PAGING_SIZE = 10;
 
 interface Props {
   imodel: IModelConnection;
@@ -18,9 +17,11 @@ interface Props {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Tree: React.FC<Props> = (props: Props) => {
-  const dataProvider = useDataProvider(props.imodel, props.rulesetId);
-  const modelSource = useTreeModelSource(dataProvider);
-  const nodeLoader = usePagedTreeNodeLoader(dataProvider, PAGING_SIZE, modelSource);
+  const nodeLoader = usePresentationTreeNodeLoader({
+    imodel: props.imodel,
+    ruleset: props.rulesetId,
+    pagingSize: PAGING_SIZE,
+  });
 
   const [filter, setFilter] = React.useState("");
   const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
@@ -57,8 +58,8 @@ export const Tree: React.FC<Props> = (props: Props) => {
           treeEvents={eventHandler}
           nodeLoader={filteredNodeLoader}
           selectionMode={SelectionMode.Extended}
-          descriptionsEnabled={true}
           nodeHighlightingProps={nodeHighlightingProps}
+          iconsEnabled={true}
         />
         {overlay}
       </div>

@@ -115,12 +115,15 @@ export class EditCommandAdmin {
    * @param modelObj the module to search for subclasses of EditCommand.
    */
   public static registerModule(moduleObj: any) {
+    let foundOne = false;
     for (const thisMember in moduleObj) {  // eslint-disable-line guard-for-in
       const thisCmd = moduleObj[thisMember];
       if (thisCmd.prototype instanceof EditCommand) {
+        foundOne = true;
         this.register(thisCmd);
       }
     }
+    if (!foundOne)
+      throw new Error(`no EditCommands found - are you sure this is a module? Maybe you meant to call "register"?`);
   }
-
 }

@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 ## The iModel.js Project Is Renamed iTwin.js
@@ -93,12 +94,36 @@ It is frequently necessary to detect the type of JavaScript process currently ex
 
 CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
 
+## Planar clip masks
+
+Planar clip masks provide a two and a half dimensional method for masking the regions where the background map, reality models and BIM geometry overlap. A planar clip mask is described by [PlanarClipMaskProps]($common).A planar clip mask may be applied to a contexual reality model as a [ContextRealityModelProps.planarClipMask]($common) to the background map as [BackgroundMapProps.planarClipMask]($common) or as an override to attached reality models with the [DisplayStyleSettingsProps.planarClipOvr]($common) array of [DisplayStyleRealityModelPlanarClipMaskProps]($common).   The planar clip mask geometry is not required to be planar as the masks will be generated from their projection to the X-Y plane, therefore any 3D model or reality model can be used to generate a planar clip mask.
+
+The [PlanarClipMaskProps.mode]($common) specifies how the mask geometry is collected.  [PlanarClipMaskMode]$(common) includes collection of masks by models, subcategories, elements (included or excluded) or by a priority scheme that clips against other models with a higher priority.
+
+### By masking a reality model with a BIM model we can display the BIM model without the overlapping reality model
+
+![Building and reality model without mask](./assets/PlanarMask_BuildingNoMask.jpg)
+![Reality model masked by building](./assets/PlanarMask_BuildingMasked.jpg)
+
+### By masking the background map terrain with the reality model we can display the current state of the quarry without intrusive terrain
+
+![Quarry and Background Map Terrain without mask](./assets/PlanarMask_QuarryNoMask.jpg)
+![Background Map Terrain masked by quarry reality model](./assets/PlanarMask_QuarryMasked.jpg)
+
+### Planar Clip Mask Transparency
+
+Planar clip masks support transparency.  If a mask is not transparent then the masked geometry is omitted completely, if transparency is included then increasing the transparency will decrease the masking and increase a translucent blending of the masked geometry.  A transparency value of 1 would indicate no masking.  If no transparency is included then the transparency value from the mask elements is used.  In the image below a transparent mask is applied to the reality model to show the underground tunnel.
+
+![Planar clip mask with transparency](./assets/PlanarMask_TunnelTransparent.jpg)
+
 ## Breaking Api Changes
 
 ### Quantity package
 
 The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
 New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.
+
+The alpha UnitConversionSpec interface now requires a "system" property that can be used during parsing to help determine the unit to parse the value.
 
 ### Frontend package
 
@@ -116,6 +141,10 @@ While exporting and transforming should generally be considered *batch* operatio
 To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from within an `async` method. No internal logic was changed, so that should be the only changes required.
 
 ## Presentation
+
+### Highlighting members of GroupInformationElement
+
+Presentation rules used by [HiliteSetProvider]($presentation-frontend) have been modified to return geometric elements grouped by *BisCore.GroupInformationElement* instances.
 
 ### Setting up default formats
 
