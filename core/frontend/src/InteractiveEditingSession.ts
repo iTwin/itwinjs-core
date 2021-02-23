@@ -72,8 +72,10 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
    */
   public readonly onEnded = new BeEvent<(session: InteractiveEditingSession) => void>();
 
-  /** Event raised after Txn validation to indicate the set of changed elements. */
-  public readonly onElementChanges = new BeEvent<(changes: ElementsChanged, session: InteractiveEditingSession) => void>();
+  /** Event raised after Txn validation or changeset apply to indicate the set of changed elements.
+   * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
+   */
+  public readonly onElementChanges = new BeEvent<(changes: ElementsChanged, iModel: EditableConnection) => void>();
 
   /** Event raised after geometric changes are written to the iModel. */
   public readonly onGeometryChanges = new BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>();
@@ -195,7 +197,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
 
   /** @internal */
   public notifyElementsChanged(changed: ElementsChanged) {
-    this.onElementChanges.raiseEvent(changed, this);
+    this.onElementChanges.raiseEvent(changed, this.iModel);
   }
 
   /** @internal */
