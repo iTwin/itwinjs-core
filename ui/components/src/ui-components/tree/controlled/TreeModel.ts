@@ -287,16 +287,18 @@ export class MutableTreeModel implements TreeModel {
   }
 
   /**
-   * Sets number of how many child nodes the parent will have.
-   * If parent already has some nodes they are removed.
+   * Sets the number of child nodes a parent is expected to contain. All child nodes of this parent will be subsequently
+   * removed.
    */
-  public setNumChildren(parentId: string | undefined, numChildren: number) {
+  public setNumChildren(parentId: string | undefined, numChildren: number | undefined): void {
     const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
-    if (parentNode !== undefined) {
-      (parentNode.numChildren as number) = numChildren;
+    if (parentNode === undefined) {
+      return;
     }
 
-    this._tree.setNumChildren(parentId, numChildren);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    (parentNode.numChildren as number | undefined) = numChildren;
+    this._tree.setNumChildren(parentId, numChildren ?? 0);
   }
 
   /** Removes children specified by id.
