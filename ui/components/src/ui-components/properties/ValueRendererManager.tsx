@@ -157,6 +157,6 @@ export class PropertyValueRendererManager {
 }
 
 PropertyValueRendererManager.defaultManager.registerRenderer("navigation", new NavigationPropertyValueRenderer());
-PropertyValueRendererManager.defaultManager.registerRenderer("uri", new UrlPropertyValueRenderer());
+PropertyValueRendererManager.defaultManager.registerRenderer("url", new UrlPropertyValueRenderer());
 PropertyValueRendererManager.defaultManager.registerRenderer("double", new DoublePropertyValueRenderer());
 PropertyValueRendererManager.defaultManager.registerRenderer("multiline", new MultilineTextPropertyValueRenderer());
