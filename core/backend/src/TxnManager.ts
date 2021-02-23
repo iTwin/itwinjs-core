@@ -6,11 +6,12 @@
  * @module iModels
  */
 
-import { BeEvent, DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { ModelGeometryChangesProps } from "@bentley/imodeljs-common";
+import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { ElementsChanged, ModelGeometryChangesProps } from "@bentley/imodeljs-common";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
+import { SqliteStatement } from "./SqliteStatement";
 
 /** @public */
 export enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
@@ -33,6 +34,59 @@ export interface ValidationError {
 }
 
 /**
+ * @beta
+ */
+export interface TxnElementsChanged {
+  inserted: OrderedId64Array;
+  deleted: OrderedId64Array;
+  updated: OrderedId64Array;
+}
+
+class ElementsChangedProc implements TxnElementsChanged {
+  public inserted = new OrderedId64Array();
+  public deleted = new OrderedId64Array();
+  public updated = new OrderedId64Array();
+  private _currSize = 0;
+  private compressIds(): ElementsChanged {
+    const toCompressedIds = (idArray: OrderedId64Array) => idArray.isEmpty ? undefined : CompressedId64Set.compressIds(idArray);
+    return { inserted: toCompressedIds(this.inserted), deleted: toCompressedIds(this.deleted), updated: toCompressedIds(this.updated) };
+  }
+  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: BeEvent<(changes: TxnElementsChanged) => void>) {
+    if (this._currSize > 0) {
+      evt.raiseEvent(this); // send to backend listeners
+      IpcHost.notifyIModelChanges(iModel, "notifyElementsChanged", this.compressIds()); // now notify frontend listeners
+      this.inserted.clear();
+      this.deleted.clear();
+      this.updated.clear();
+      this._currSize = 0;
+    }
+  }
+  public static process(iModel: BriefcaseDb | StandaloneDb, changedEvent: BeEvent<(changes: TxnElementsChanged) => void>, maxSize = 1000) {
+    const changes = new ElementsChangedProc();
+    iModel.withPreparedSqliteStatement("SELECT ElementId,ChangeType FROM temp.txn_Elements", (sql: SqliteStatement) => {
+      const stmt = sql.stmt!;
+      while (sql.step() === DbResult.BE_SQLITE_ROW) {
+        const id = stmt.getValueId(0);
+        switch (stmt.getValueInteger(1)) {
+          case 0:
+            changes.inserted.insert(id);
+            break;
+          case 1:
+            changes.updated.insert(id);
+            break;
+          case 2:
+            changes.deleted.insert(id);
+            break;
+        }
+        if (++changes._currSize > maxSize)
+          changes.sendEvent(iModel, changedEvent);
+      }
+    });
+    changes.sendEvent(iModel, changedEvent);
+  }
+}
+
+/**
  * Manages local changes to an iModel via [Txns]($docs/learning/InteractiveEditing.md)
  * @beta
  */
@@ -40,7 +94,6 @@ export class TxnManager {
   /** @internal */
   constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
 
-  public readonly onGeometryChanged = new BeEvent<(models: ModelGeometryChangesProps[]) => void>();
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];
 
@@ -73,12 +126,19 @@ export class TxnManager {
   }
   /** @internal */
   protected _onBeginValidate() { this.validationErrors.length = 0; }
+
+  /** called from native code after validation of a Txn, either from saveChanges or apply changeset.
+   * @internal
+   */
+  protected _onEndValidate() {
+    ElementsChangedProc.process(this._iModel, this.onElementsChanged);
+    this.onEndValidation.raiseEvent();
+  }
+
   /** @internal */
-  protected _onEndValidate() { }
-  /** @internal */
-  protected _onGeometryChanged(models: ModelGeometryChangesProps[]) {
-    this.onGeometryChanged.raiseEvent(models);
-    IpcHost.notifyGeometryChanges(this._iModel, "notifyGeometryChanged", models); // send to frontend
+  protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]) {
+    this.onGeometryChanged.raiseEvent(modelProps);
+    IpcHost.notifyIModelChanges(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
   }
 
   /** Dependency handlers may call method this to report a validation error.
@@ -89,6 +149,16 @@ export class TxnManager {
   /** Determine whether any fatal validation errors have occurred during dependency propagation.  */
   public get hasFatalError(): boolean { return this._nativeDb.hasFatalTxnError(); }
 
+  /** @internal */
+  public readonly onEndValidation = new BeEvent<() => void>();
+
+  /** Called after validation completes from [[IModelDb.saveChanges]].
+   * The argument to the event holds the list of elements that were inserted, updated, and deleted.
+   * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
+   */
+  public readonly onElementsChanged = new BeEvent<(changes: TxnElementsChanged) => void>();
+
+  public readonly onGeometryChanged = new BeEvent<(models: ModelGeometryChangesProps[]) => void>();
   /** Event raised before a commit operation is performed. Initiated by a call to [[IModelDb.saveChanges]] */
   public readonly onCommit = new BeEvent<() => void>();
   /** Event raised after a commit operation has been performed. Initiated by a call to [[IModelDb.saveChanges]] */
@@ -207,4 +277,5 @@ export class TxnManager {
 
   /** Query if there are un-saved or un-pushed local changes. */
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
+
 }
