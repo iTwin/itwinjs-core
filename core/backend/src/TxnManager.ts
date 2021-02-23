@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { ModelGeometryChangesProps } from "@bentley/imodeljs-common";
+import { ElementsChanged, ModelGeometryChangesProps } from "@bentley/imodeljs-common";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
@@ -36,7 +36,56 @@ export interface ValidationError {
 /**
  * @beta
  */
-export interface TxnElementsChanged { inserted: OrderedId64Array, deleted: OrderedId64Array, updated: OrderedId64Array }
+export interface TxnElementsChanged {
+  inserted: OrderedId64Array;
+  deleted: OrderedId64Array;
+  updated: OrderedId64Array;
+}
+
+class ElementsChangedProc implements TxnElementsChanged {
+  public inserted = new OrderedId64Array();
+  public deleted = new OrderedId64Array();
+  public updated = new OrderedId64Array();
+  private _currSize = 0;
+  private compressIds(): ElementsChanged {
+    const toCompressedIds = (idArray: OrderedId64Array) => idArray.isEmpty ? undefined : CompressedId64Set.compressIds(idArray);
+    return { inserted: toCompressedIds(this.inserted), deleted: toCompressedIds(this.deleted), updated: toCompressedIds(this.updated) };
+  }
+  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: BeEvent<(changes: TxnElementsChanged) => void>) {
+    if (this._currSize > 0) {
+      evt.raiseEvent(this); // send to backend listeners
+      IpcHost.notifyIModelChanges(iModel, "notifyElementsChanged", this.compressIds()); // now notify frontend listeners
+      this.inserted.clear();
+      this.deleted.clear();
+      this.updated.clear();
+      this._currSize = 0;
+    }
+  }
+  public static process(iModel: BriefcaseDb | StandaloneDb, changedEvent: BeEvent<(changes: TxnElementsChanged) => void>, maxSize = 1000) {
+    const changes = new ElementsChangedProc();
+    iModel.withPreparedSqliteStatement("SELECT ElementId,ChangeType FROM temp.txn_Elements", (sql: SqliteStatement) => {
+      const stmt = sql.stmt!;
+      while (sql.step() === DbResult.BE_SQLITE_ROW) {
+        const id = stmt.getValueId(0);
+        switch (stmt.getValueInteger(1)) {
+          case 0:
+            changes.inserted.insert(id);
+            break;
+          case 1:
+            changes.updated.insert(id);
+            break;
+          case 2:
+            changes.deleted.insert(id);
+            break;
+        }
+        if (++changes._currSize > maxSize)
+          changes.sendEvent(iModel, changedEvent);
+      }
+    });
+    changes.sendEvent(iModel, changedEvent);
+  }
+}
+
 /**
  * Manages local changes to an iModel via [Txns]($docs/learning/InteractiveEditing.md)
  * @beta
@@ -78,37 +127,12 @@ export class TxnManager {
   /** @internal */
   protected _onBeginValidate() { this.validationErrors.length = 0; }
 
-  /** called from native code after validation of a Txn, either from saveChange or apply changeset.
+  /** called from native code after validation of a Txn, either from saveChanges or apply changeset.
    * @internal
    */
   protected _onEndValidate() {
+    ElementsChangedProc.process(this._iModel, this.onElementsChanged);
     this.onEndValidation.raiseEvent();
-    const deleted = new OrderedId64Array();
-    const inserted = new OrderedId64Array();
-    const updated = new OrderedId64Array();
-    this._iModel.withPreparedSqliteStatement("SELECT ElementId,ChangeType FROM temp.txn_Elements", (sql: SqliteStatement) => {
-      const stmt = sql.stmt!;
-      while (sql.step() === DbResult.BE_SQLITE_ROW) {
-        const id = stmt.getValueId(0);
-        switch (stmt.getValueInteger(1)) {
-          case 0:
-            inserted.insert(id);
-            break;
-          case 1:
-            updated.insert(id);
-            break;
-          case 2:
-            deleted.insert(id);
-            break;
-        }
-      }
-    });
-    // notify backend listeners. Note: they may change lists
-    this.onElementsChanged.raiseEvent({ inserted, updated, deleted });
-
-    // now notify frontend listeners
-    const toCompressedIds = (idArray: OrderedId64Array) => idArray.isEmpty ? undefined : CompressedId64Set.compressIds(idArray);
-    IpcHost.notifyIModelChanges(this._iModel, "notifyElementsChanged", { inserted: toCompressedIds(inserted), deleted: toCompressedIds(deleted), updated: toCompressedIds(updated) });
   }
 
   /** @internal */
@@ -128,8 +152,9 @@ export class TxnManager {
   /** @internal */
   public readonly onEndValidation = new BeEvent<() => void>();
 
-  /** Called after validation completes from [[IModelDb.saveChanges]] or on merging changes from ApplyChanges.
-   * The argument to the callback holds the list of elements that were inserted, updated, and deleted.
+  /** Called after validation completes from [[IModelDb.saveChanges]].
+   * The argument to the event holds the list of elements that were inserted, updated, and deleted.
+   * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
   public readonly onElementsChanged = new BeEvent<(changes: TxnElementsChanged) => void>();
 
