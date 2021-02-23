@@ -191,7 +191,7 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
               title = label.tooltip;
           }
           return <li key={index} title={title}
-            className={classnames(index === this.state.activeIndex && "core-active")}
+            className={classnames(index === this.state.activeIndex && "core-active", disabled && "core-tab-item-disabled")}
             role="tab"
             aria-selected={index === this.state.activeIndex}
             data-for={`${tabId}`} /* to support react-tooltip */

@@ -6,8 +6,7 @@ import * as React from "react";
 
 import { UiFramework } from "@bentley/ui-framework";
 import { SettingsEntry, SettingsProvider } from "@bentley/ui-components";
-import { QuantityType } from "@bentley/imodeljs-frontend";
-import { QuantityFormatSettingsPanel } from "../frontstages/QuantityFormatStage";
+import { getQuantityFormatsSettingsManagerEntry } from "../frontstages/QuantityFormatStage";
 import { ConnectedUiSettingsPage } from "../frontstages/Settings";
 
 // Sample UI items provider that dynamically adds ui items
@@ -16,13 +15,7 @@ export class AppSettingsProvider implements SettingsProvider {
 
   public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsEntry> | undefined {
     return [
-      {
-        itemPriority: 10, tabId: "ui-test-app:Quantity", label: "Quantity",
-        page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} />,
-        isDisabled: false,
-        icon: "icon-measure",
-        tooltip: "Quantity Formats",
-      },
+      getQuantityFormatsSettingsManagerEntry(10),
       {
         itemPriority: 20, tabId: "ui-test-app:UI", label:"UI",
         page: <ConnectedUiSettingsPage />,

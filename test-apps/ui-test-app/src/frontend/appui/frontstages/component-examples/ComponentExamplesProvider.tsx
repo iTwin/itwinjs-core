@@ -24,7 +24,7 @@ import {
   SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title, Toggle, ToggleButtonType,
   UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
-import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails } from "@bentley/ui-framework";
+import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails, UiFramework } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../..";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
@@ -37,7 +37,7 @@ import { ConnectedUiSettingsPage } from "../Settings";
 
 function MySettingsPage() {
   const tabs: SettingsTab[] = [
-    {tabId:"Quantity", label: "Quantity", tooltip:"Quantity Format Settings", icon: "icon-measure",
+    {tabId:"Quantity", pageWillHandleCloseRequest:true, label: "Quantity", tooltip:"Quantity Format Settings", icon: "icon-measure",
       disabled: false, page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} />},
     {tabId:"UI", label: "UI", subLabel:"UI and Accudraw", tooltip:"UI Settings", icon: "icon-paintbrush",
       disabled: false, page: <ConnectedUiSettingsPage />},
@@ -47,7 +47,7 @@ function MySettingsPage() {
 
   return (
     <div style={{ display: "flex", width: "100%", height: "100%" }}>
-      <SettingsContainer title="Hello Settings" tabs={tabs} showBackButton={true} onBackButtonClick={()=>{}}  onSettingsTabSelected={(_tab: SettingsTab) =>{}} />
+      <SettingsContainer title="Hello Settings" tabs={tabs} settingsManager={UiFramework.settingsManager} showBackButton={true} onBackButtonClick={()=>{}} />
     </div>
   );
 }

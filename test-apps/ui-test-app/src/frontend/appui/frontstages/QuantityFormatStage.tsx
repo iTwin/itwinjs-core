@@ -10,21 +10,29 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { FormatProps, FormatterSpec } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
-import { FormatSample, QuantityFormatPanel } from "@bentley/ui-components";
+import { FormatSample, ProcessSettingsContainerCloseEventArgs, ProcessSettingsTabActivationEventArgs, QuantityFormatPanel, SettingsEntry } from "@bentley/ui-components";
 import { Button, ButtonType, Dialog, Listbox, ListboxItem } from "@bentley/ui-core";
-import { ModalDialogManager, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
-
-/** Modal frontstage displaying the active QuantityFormatStage.
- * @alpha
- */
-export class QuantityFormatModalFrontstage implements ModalFrontstageInfo {
-  public title: string = UiFramework.i18n.translate("SampleApp:QuantityFormatModalFrontstage.QuantityFormatStage");
-  public get content(): React.ReactNode { return (<QuantityFormatSettingsPanel initialQuantityType={getQuantityTypeKey(QuantityType.Length)} />); }
-}
+import { ModalDialogManager, UiFramework } from "@bentley/ui-framework";
 
 function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
   const compare = new DeepCompare();
   return compare.compare(obj1, obj2);
+}
+
+/**
+ * Return a SettingsEntry that can be used to define the available settings that can be set for an application.
+ * @param itemPriority - Used to define the order of the entry in the Settings Stage
+ * @alpha
+ */
+export function getQuantityFormatsSettingsManagerEntry(itemPriority: number): SettingsEntry {
+  return {
+    itemPriority, tabId: "ui-test-app:Quantity", label: "Quantity",
+    page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} />,
+    isDisabled: false,
+    icon: "icon-measure",
+    tooltip: "Quantity Formats",
+    pageWillHandleCloseRequest: true,
+  };
 }
 
 export function QuantityFormatSettingsPanel({ initialQuantityType }: { initialQuantityType: QuantityTypeArg }) {
@@ -67,6 +75,32 @@ export function QuantityFormatSettingsPanel({ initialQuantityType }: { initialQu
     };
   }, [activeQuantityType]);
 
+  const saveChanges = React.useCallback((afterSaveFunction: (args: any) => void, args?: any) => {
+    if (activeFormatterSpec) {
+      const formatProps = activeFormatterSpec.format.toJSON();
+      const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)?.format.toJSON();
+      if (formatPropsInUse && !formatAreEqual(formatProps, formatPropsInUse)) {
+        ModalDialogManager.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={args} onDialogClose={afterSaveFunction} />, "saveQuantityFormat");
+        return;
+      }
+    }
+    afterSaveFunction(args);
+  }, [activeFormatterSpec, activeQuantityType]);
+
+  React.useEffect (()=>{
+    const handleProcessSettingsTabActivation = ({requestedSettingsTabId, tabSelectionFunc}: ProcessSettingsTabActivationEventArgs) => {
+      saveChanges (tabSelectionFunc, requestedSettingsTabId);
+    };
+    return UiFramework.settingsManager.onProcessSettingsTabActivation.addListener(handleProcessSettingsTabActivation);
+  }, [saveChanges]);
+
+  React.useEffect (()=>{
+    const handleProcessSettingsContainerClose = ({closeFunc, closeFuncArgs}: ProcessSettingsContainerCloseEventArgs) => {
+      saveChanges (closeFunc, closeFuncArgs);
+    };
+    return UiFramework.settingsManager.onProcessSettingsContainerClose.addListener(handleProcessSettingsContainerClose);
+  }, [saveChanges]);
+
   const processListboxValueChange = React.useCallback((newQuantityType: QuantityTypeKey) => {
     const volumeFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(newQuantityType);
     setActiveFormatterSpec(volumeFormatterSpec);
@@ -81,7 +115,7 @@ export function QuantityFormatSettingsPanel({ initialQuantityType }: { initialQu
       const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)?.format.toJSON();
       if (formatPropsInUse && !formatAreEqual(formatProps, formatPropsInUse)) {
         newQuantityTypeRef.current = newQuantityType;
-        ModalDialogManager.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} newQuantityType={newQuantityType} onDialogClose={processListboxValueChange} />, "saveQuantityFormat");
+        ModalDialogManager.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={newQuantityType} onDialogClose={processListboxValueChange} />, "saveQuantityFormat");
         return;
       }
     }
@@ -154,14 +188,15 @@ export function QuantityFormatSettingsPanel({ initialQuantityType }: { initialQu
   );
 }
 
-function SaveFormatModalDialog({ formatProps, quantityType, newQuantityType, onDialogClose }: { formatProps: FormatProps, quantityType: QuantityTypeKey, newQuantityType: QuantityTypeKey, onDialogClose: (newQuantityType: QuantityTypeKey) => void }) {
+function SaveFormatModalDialog({ formatProps, quantityType, onDialogCloseArgs, onDialogClose }: { formatProps: FormatProps, quantityType: QuantityTypeKey, onDialogCloseArgs?: any, onDialogClose: (args?: any) => void }) {
   const [isOpen, setIsOpen] = React.useState(true);
 
   const handleClose = React.useCallback(() => {
     setIsOpen(false);
     ModalDialogManager.closeDialog("saveQuantityFormat");
-    onDialogClose(newQuantityType);
-  }, [newQuantityType, onDialogClose]);
+    if (onDialogClose)
+      onDialogClose(onDialogCloseArgs);
+  }, [onDialogClose, onDialogCloseArgs]);
 
   const handleOK = React.useCallback(() => {
     void IModelApp.quantityFormatter.setOverrideFormat(quantityType, formatProps); // eslint-disable-line @typescript-eslint/no-floating-promises

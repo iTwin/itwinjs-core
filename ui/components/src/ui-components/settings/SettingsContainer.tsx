@@ -6,9 +6,10 @@
 import "./SettingsContainer.scss";
 import React from "react";
 import { VerticalTabs } from "@bentley/ui-core";
+import { ActivateSettingsTabEventArgs, ProcessSettingsContainerCloseEventArgs, SettingsManager } from "./SettingsManager";
 
 /**
- *
+ * @internal
  */
 export interface SettingsTab {
   /** unique id for entry */
@@ -17,6 +18,8 @@ export interface SettingsTab {
   readonly label: string;
   /** Setting page content to display when tab item is selected. */
   readonly page: JSX.Element;
+  /** If the page content needs to save any unsaved content before closing the this value is set to true. */
+  readonly pageWillHandleCloseRequest?: boolean;
   /** Optional sub-label to show below label. */
   readonly subLabel?: string;
   /** Icon specification */
@@ -28,7 +31,7 @@ export interface SettingsTab {
 }
 
 /**
- *
+ * @internal
  */
 export interface SettingsContainerProps {
   tabs: SettingsTab[];
@@ -42,12 +45,13 @@ export interface SettingsContainerProps {
   onBackButtonClick?: () => void;
   // If plugging into a SPA and you need to modify the route, you can pass in additional logic here
   onSettingsTabSelected?: (tab: SettingsTab) => void;
+  settingsManager: SettingsManager;
 }
 
 /**
  * Note that SettingsContainer is not rendered if tabs is empty
  */
-export const SettingsContainer = ({title, tabs, showBackButton, onBackButtonClick, onSettingsTabSelected, currentSettingsTab}: SettingsContainerProps) => {
+export const SettingsContainer = ({title, tabs, showBackButton, onBackButtonClick, onSettingsTabSelected, currentSettingsTab, settingsManager}: SettingsContainerProps) => {
   const [openTab, setOpenTab] = React.useState(()=>{
     if (currentSettingsTab && !currentSettingsTab.disabled)
       return currentSettingsTab;
@@ -56,20 +60,55 @@ export const SettingsContainer = ({title, tabs, showBackButton, onBackButtonClic
   });
 
   const processTabSelection = React.useCallback((tab: SettingsTab) => {
-    if (!tab.disabled) {
-      if (onSettingsTabSelected) {
-        onSettingsTabSelected(tab);
-      }
-      setOpenTab(tab);
-    }
+    if (tab.disabled)
+      return;
+    if (onSettingsTabSelected)
+      onSettingsTabSelected(tab);
+    setOpenTab(tab);
   }, [onSettingsTabSelected]);
+
+  const processTabSelectionById = React.useCallback((tabId: string) => {
+    const tabToActivate = tabs.find((tab)=>tab.tabId === tabId);
+    if (tabToActivate)
+      processTabSelection (tabToActivate);
+  }, [processTabSelection, tabs]);
 
   const onActivateTab =  React.useCallback((tabIndex: number) => {
     const selectedTab = tabs[tabIndex];
     if (selectedTab) {
-      processTabSelection(selectedTab);
+      if (openTab && openTab.pageWillHandleCloseRequest)
+        settingsManager.processSettingsTabActivation(selectedTab.tabId, processTabSelectionById);
+      else
+        processTabSelection(selectedTab);
     }
-  }, [processTabSelection, tabs]);
+  }, [openTab, processTabSelection, processTabSelectionById, settingsManager, tabs]);
+
+  React.useEffect (()=>{
+    const handleActivateSettingsTab = ({settingsTabId}: ActivateSettingsTabEventArgs) => {
+      const idToFind = settingsTabId.toLowerCase();
+      let tabToActivate = tabs.find((tab)=>tab.tabId.toLowerCase() === idToFind);
+      if (!tabToActivate)
+        tabToActivate = tabs.find((tab)=>tab.label.toLowerCase() === idToFind);
+      if (tabToActivate) {
+        if (openTab && openTab.pageWillHandleCloseRequest)
+          settingsManager.processSettingsTabActivation(tabToActivate.tabId, processTabSelectionById);
+        else
+          processTabSelection(tabToActivate);
+      }
+    };
+
+    return settingsManager.onActivateSettingsTab.addListener(handleActivateSettingsTab);
+  }, [processTabSelection, settingsManager.onActivateSettingsTab, tabs]);
+
+  React.useEffect (()=>{
+    const handleSettingsContainerClose = ({closeFunc, closeFuncArgs}: ProcessSettingsContainerCloseEventArgs) => {
+      if (openTab && openTab.pageWillHandleCloseRequest)
+        settingsManager.processSettingsContainerClose(closeFunc, closeFuncArgs);
+      else
+        closeFunc(closeFuncArgs);
+    };
+    return settingsManager.onCloseSettingsContainer.addListener(handleSettingsContainerClose);
+  }, [openTab, processTabSelection, settingsManager, settingsManager.onActivateSettingsTab, tabs]);
 
   const labels=tabs.map((tab)=> {
     return {label:tab.label, subLabel: tab.subLabel, icon: tab.icon,

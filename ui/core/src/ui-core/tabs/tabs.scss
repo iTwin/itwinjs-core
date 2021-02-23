@@ -22,6 +22,10 @@
     padding:        0;
     margin:         0;
 
+    &.core-tab-item-disabled {
+      pointer-events: none;
+    }
+
     > a {
 
       display:        block;
@@ -39,7 +43,6 @@
 
         &.core-tab-item-disabled {
           color: $buic-foreground-disabled;
-          pointer-events: none;
         }
 
         .uicore-tabs-icon {

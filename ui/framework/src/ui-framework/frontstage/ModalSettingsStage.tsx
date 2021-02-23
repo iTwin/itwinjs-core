@@ -22,14 +22,6 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
   const stageUsage=FrontstageManager.activeFrontstageDef?.usage??StageUsage.General;
   const entries = UiFramework.settingsManager.getSettingEntries(id, stageUsage);
 
-  React.useEffect (()=>{
-    const handleFrontstageCloseRequested = ({modalFrontstage, stageCloseFunc}: ModalFrontstageRequestedCloseEventArgs) => {
-      if (modalFrontstage instanceof SettingsModalFrontstage && stageCloseFunc)
-        stageCloseFunc ();
-    };
-    return FrontstageManager.onCloseModalFrontstageRequestedEvent.addListener(handleFrontstageCloseRequested);
-  }, []);
-
   const tabs: SettingsTab[] = !entries ? []: entries.sort((a, b)=> a.itemPriority - b.itemPriority).map((entry) => {
     return {
       tabId: entry.tabId,
@@ -39,23 +31,31 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
       icon: entry.icon,
       tooltip: entry.tooltip,
       disabled: ConditionalBooleanValue.getValue(entry.isDisabled),
+      pageWillHandleCloseRequest: entry.pageWillHandleCloseRequest,
     };
   });
 
-  const [currentSettingsTab, setCurrentSettingsTab] = React.useState(()=>{
+  const currentSettingsTab = React.useCallback(() => {
     const categoryToFind = initialSettingsTabId ? initialSettingsTabId.toLowerCase() : tabs[0].tabId.toLowerCase();
-    return tabs.find((entry) => entry.tabId.toLowerCase() === categoryToFind);
-  });
+    let foundTab = tabs.find((entry) => entry.tabId.toLowerCase() === categoryToFind);
+    if (!foundTab)
+      foundTab = tabs.find((entry) => entry.label.toLowerCase() === categoryToFind);
+    return foundTab;
+  },[initialSettingsTabId, tabs]);
 
-  const handleSettingsTabSelected = React.useCallback((selectedEntry) =>{
-    if (selectedEntry !== currentSettingsTab)
-      setCurrentSettingsTab (selectedEntry);
-  }, [currentSettingsTab]);
+  React.useEffect (()=>{
+    const handleFrontstageCloseRequested = ({modalFrontstage, stageCloseFunc}: ModalFrontstageRequestedCloseEventArgs) => {
+      if (modalFrontstage instanceof SettingsModalFrontstage && stageCloseFunc) {
+        UiFramework.settingsManager.closeSettingsContainer (stageCloseFunc);
+      }
+    };
+    return FrontstageManager.onCloseModalFrontstageRequestedEvent.addListener(handleFrontstageCloseRequested);
+  }, [currentSettingsTab, entries]);
 
   return (
     <div className="uifw-settings-container">
       {tabs.length &&
-      <SettingsContainer tabs={tabs} currentSettingsTab={currentSettingsTab} onSettingsTabSelected={handleSettingsTabSelected} />
+      <SettingsContainer tabs={tabs} currentSettingsTab={currentSettingsTab()} settingsManager={UiFramework.settingsManager} />
       }
     </div>
   );
@@ -82,7 +82,8 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
     if (UiFramework.settingsManager.providers.length) {
       // Check to see if it is already open
       if (FrontstageManager.activeModalFrontstage && FrontstageManager.activeModalFrontstage instanceof SettingsModalFrontstage){
-        // TODO send message to component to change tab
+        if (initialSettingsTab)
+          UiFramework.settingsManager.activateSettingsTab(initialSettingsTab);
         return;
       }
       FrontstageManager.openModalFrontstage(new SettingsModalFrontstage(initialSettingsTab));
