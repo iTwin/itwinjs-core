@@ -2354,6 +2354,13 @@ export interface ElementProps extends EntityProps {
     userLabel?: string;
 }
 
+// @alpha
+export interface ElementsChanged {
+    deleted?: CompressedId64Set;
+    inserted?: CompressedId64Set;
+    updated?: CompressedId64Set;
+}
+
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
@@ -2916,12 +2923,6 @@ export interface GeometryAppearanceProps {
     subCategory?: Id64String;
     transparency?: number;
     weight?: number;
-}
-
-// @internal
-export interface GeometryChangeNotifications {
-    // (undocumented)
-    notifyGeometryChanged: (models: ModelGeometryChangesProps[]) => void;
 }
 
 // @public
@@ -3793,6 +3794,14 @@ export abstract class IModel implements IModelProps {
     toJSON(): IModelConnectionProps;
 }
 
+// @internal
+export interface IModelChangeNotifications {
+    // (undocumented)
+    notifyElementsChanged: (changes: ElementsChanged) => void;
+    // (undocumented)
+    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
+}
+
 // @alpha (undocumented)
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
@@ -4071,7 +4080,7 @@ export enum IpcAppChannel {
     // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
-    GeometryChanges = "geometry-changes",
+    IModelChanges = "imodel-changes",
     // (undocumented)
     PushPull = "push-pull"
 }
