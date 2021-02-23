@@ -22,7 +22,7 @@
     "@bentley/imodeljs-common": "2.13.0-dev.20",
     "@bentley/imodeljs-backend": "2.13.0-dev.20",
     "fs-extra": "^8.1.0",
-    "yargs": "^15.0.0"
+    "yargs": "^16.0.0"
   },
   "devDependencies": {
     "@bentley/build-tools": "2.13.0-dev.20",
