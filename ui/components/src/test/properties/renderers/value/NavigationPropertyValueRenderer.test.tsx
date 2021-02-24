@@ -33,7 +33,6 @@ describe("NavigationPropertyValueRenderer", () => {
       const element = renderer.render(property);
       const elementRender = render(<>{element}</>);
 
-      elementRender.debug();
       elementRender.getByText("Category");
     });
 
@@ -46,7 +45,6 @@ describe("NavigationPropertyValueRenderer", () => {
       const element = renderer.render(property);
       const elementRender = render(<>{element}</>);
 
-      elementRender.debug();
       elementRender.getByText("Category");
     });
 
