@@ -1,6 +1,31 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- Element.code is no longer readonly, so can now be updated
+- Deprecate detachChangeCache()
+- added optional flag to abbreviate blob properties in queries
+- Implement external textures for iModel tiles.
+- Updated create display style test to remove credentials from backgroundLayers definition.
+- Add IModelTransformerOptions.wasSourceIModelCopiedToTarget to better support branching scenarios.
+- Add IModelTransformOptions.isReverseSynchronization to better support synchronizing changes from a branch back to master.
+- Mobile IPC fix
+- Bump native version to 2.12.1
+- Update to @bentley/imodeljs-native@2.12.4
+- lock test
+- add IpcSocket
+- Add beta API for TemplateRecipe2d
+- fix incorrect version logic in UsageLoggingUtilities
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT

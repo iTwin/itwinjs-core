@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-components",
-      "comment": "`TreeModel`: Allow `undefined` child count in `setNumChildren`.",
+      "comment": "`MutableTreeModel`: Allow `undefined` child count in `setNumChildren`.",
       "type": "none"
     }
   ],
