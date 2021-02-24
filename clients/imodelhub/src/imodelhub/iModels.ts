@@ -65,6 +65,10 @@ export class HubIModel extends WsgInstance {
   /** Set to true, when iModel has custom access control. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Secured")
   public secured?: boolean;
+
+  /** Data center location id where iModel is stored. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.DataLocationId")
+  public dataLocationId?: string;
 }
 
 /** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
