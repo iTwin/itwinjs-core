@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Added PropertyRecord links handling and implemented UrlPropertyValue renderer, which will allow us to properly handle URL values.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "30312645+aurislt7@users.noreply.github.com"
+}
