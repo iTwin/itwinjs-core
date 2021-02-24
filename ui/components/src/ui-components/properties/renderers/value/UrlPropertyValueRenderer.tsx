@@ -11,10 +11,11 @@ import { LinkElementsInfo, PrimitiveValue, PropertyRecord, PropertyValueFormat, 
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { PrimitivePropertyValueRendererImpl } from "./PrimitivePropertyValueRenderer";
-import { PropertyGridCommons } from "../../../propertygrid/component/PropertyGridCommons";
 
-/** Default URI Property Renderer
- * Renders full given value as a link.
+/**
+ * URL property value renderer that renders the whole value as a URL without matching it
+ * against URL regex.
+ *
  * @public
  */
 export class UrlPropertyValueRenderer implements IPropertyValueRenderer {
@@ -45,6 +46,14 @@ function convertRecordToString(record: PropertyRecord) {
   return TypeConverterManager.getConverter(record.property.typename, record.property.converter?.name).convertPropertyToString(record.property, primitive.value);
 }
 
+/**
+ * Default URI onClick event, sets location.href to the whole URI value without matching it
+ * against URL regex.
+ */
+function uriOnClick(text: string) {
+  location.href = text;
+}
+
 const URI_PROPERTY_LINK_HANDLER: LinkElementsInfo = {
-  onClick: PropertyGridCommons.handleLinkClick,
+  onClick: uriOnClick,
 };

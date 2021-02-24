@@ -5,12 +5,13 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
 import { UrlPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/UrlPropertyValueRenderer";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import sinon from "sinon";
+import * as moq from "typemoq";
 
 describe("UrlPropertyValueRenderer", () => {
 
@@ -82,6 +83,23 @@ describe("UrlPropertyValueRenderer", () => {
       const renderer = new UrlPropertyValueRenderer();
       const arrayProperty = TestUtils.createArrayProperty("LabelArray");
       expect(() => renderer.render(arrayProperty)).to.throw;
+    });
+
+    it("handles whole URI value, when clicked", () => {
+      const renderer = new UrlPropertyValueRenderer();
+      const stringProperty = TestUtils.createURIProperty("Label", "Test property");
+      const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
+      location = locationMockRef.object;
+
+      const element = renderer.render(stringProperty);
+      const renderedElement = render(<>{element}</>);
+
+      const linkElement = renderedElement.container.getElementsByClassName("core-underlined-button")[0];
+
+      expect(linkElement.textContent).to.be.eq("Test property");
+
+      fireEvent.click(linkElement);
+      expect(locationMockRef.object.href).to.be.equal("Test property");
     });
   });
 

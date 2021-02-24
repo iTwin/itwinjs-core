@@ -63,7 +63,7 @@ export interface CommonPropertyGridProps extends CommonProps {
   onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
 
   /** Callback for when links in properties are being clicked
-   * @deprecated Should override data provider and set it on PropertyRecords instead
+   * @deprecated Should override data provider and set it on [[PropertyRecord]] instead
    */
   onPropertyLinkClick?: (text: string) => void;
 

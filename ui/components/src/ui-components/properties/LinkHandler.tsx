@@ -78,7 +78,8 @@ function renderHighlighted(text: string, highlight: (text: string) => React.Reac
 }
 
 /** Returns true if property record has an anchor tag
- * @deprecated
+ * @public
+ * @deprecated Should check if [[PropertyRecord]] has any links set instead.
  */
 export const hasLinks = (record: PropertyRecord) => !!record.links;
 

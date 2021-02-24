@@ -64,6 +64,9 @@ export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValue
 /**
  * Default link handler used for handling records,
  * which did not have any specified LinkElementsInfo.
+ *
+ * Default matcher matches all URLs using regex.
+ * Default onClick opens window or sets location.href with found URL.
  * @beta
  */
 export const DEFAULT_LINKS_HANDLER: LinkElementsInfo = {
