@@ -247,14 +247,14 @@ export class AzureFileHandler implements FileHandler {
       });
 
       const isHttps = /^https:/i.test(downloadUrl);
-      let clientRequest = undefined;
+      let clientRequest;
       if (isHttps) {
         const url = new URL(downloadUrl);
         const options: https.RequestOptions = {
           hostname: url.hostname,
           path: url.pathname,
           port: url.port,
-          agent: this.agent
+          agent: this.agent,
         };
         clientRequest = https.get(options, downloadCallback);
       } else {
