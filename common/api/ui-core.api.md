@@ -946,12 +946,13 @@ export class IconHelper {
 }
 
 // @public
-export function IconInput(props: IconInputProps): JSX.Element;
+export const IconInput: (props: IconInputProps) => JSX.Element | null;
 
 // @public
 export interface IconInputProps extends InputProps {
     containerClassName?: string;
     icon: React.ReactNode;
+    ref?: React.Ref<HTMLInputElement>;
 }
 
 // @public

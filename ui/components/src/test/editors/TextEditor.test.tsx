@@ -154,11 +154,13 @@ describe("<TextEditor />", () => {
 
   describe("Needs IModelApp", () => {
     before(async () => {
+      await TestUtils.initializeUiComponents();
       await MockRender.App.startup();
     });
 
     after(async () => {
       await MockRender.App.shutdown();
+      TestUtils.terminateUiComponents();
     });
 
     class MineDataController extends DataControllerBase {

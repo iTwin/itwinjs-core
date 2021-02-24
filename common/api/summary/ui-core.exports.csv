@@ -106,7 +106,7 @@ public;HorizontalAlignment
 public;HorizontalTabs(props: TabsProps): JSX.Element
 public;Icon(props: IconProps): JSX.Element | null
 public;IconHelper
-public;IconInput(props: IconInputProps): JSX.Element
+public;IconInput: (props: IconInputProps) => JSX.Element | null
 public;IconInputProps 
 public;IconProps 
 public;IconSpec = string | ConditionalStringValue | React.ReactNode
