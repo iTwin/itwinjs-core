@@ -869,7 +869,7 @@ describe("iModelHub iModelsHandler", () => {
     await iModelClient.iModels.update(requestContext, projectId, imodel);
   });
 
-  it.only("should return DataLocationId", async () => {
+  it("should return DataLocationId", async () => {
     mockGetIModelByName(projectId, imodelName);
     const iModel: HubIModel = (await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
     chai.expect(iModel.dataLocationId).to.be.equal(defaultDataLocationId);
