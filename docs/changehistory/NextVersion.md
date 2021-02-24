@@ -125,6 +125,21 @@ New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can b
 
 The alpha UnitConversionSpec interface now requires a "system" property that can be used during parsing to help determine the unit to parse the value.
 
+### UI-abstract
+
+Property `onClick` in `LinkElementsInfo` was changed to be mandatory. Now it is easier to work with with the mentioned interface.
+Only problem that might happen is if we want to setup a custom `LinkElementsInfo.matcher` while still using default `LinkElementsInfo.onClick`.
+
+In order to fix this problem, specify default onClick method when creating `LinkElementsInfo` which can be found in: `@bentley\ui-components\propertygrid\component\PropertyGridCommons.getLinks`
+Example:
+
+```ts
+const exampleLinksElementInfo: LinkElementsInfo = {
+  onClick: PropertyGridCommons.getLinks,
+  matcher: CUSTOM_MATCHER,
+}
+```
+
 ### Frontend package
 
 The alpha class QuantityFormatter now registers its own standard QuantityTypeDefinitions during initialization. CustomQuantityTypeDefinitions must now be registered to support additional QuantityTypes. This replaces the use of FormatterParserSpecsProvider to provide custom quantity types. Removed koq methods that were never implemented.
