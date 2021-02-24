@@ -7,6 +7,7 @@
 import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import Component from 'react-select';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
@@ -187,6 +188,8 @@ export function Centered(props: CommonDivProps): JSX.Element;
 
 // @public
 export class Checkbox extends React.PureComponent<CheckboxProps> {
+    // @internal
+    constructor(props: CheckboxProps);
     // (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -211,6 +214,7 @@ export interface CheckBoxInfo {
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
     indeterminate?: boolean;
     inputClassName?: string;
+    inputRef?: React.Ref<HTMLInputElement>;
     inputStyle?: React.CSSProperties;
     label?: string;
     labelClassName?: string;
@@ -972,6 +976,7 @@ export interface ImageCheckBoxProps extends CommonProps {
     imageOff: string | React.ReactNode;
     imageOn: string | React.ReactNode;
     inputClassName?: string;
+    inputRef?: React.Ref<HTMLInputElement>;
     inputStyle?: React.CSSProperties;
     onClick?: (checked: boolean) => any;
     tooltip?: string;
@@ -1242,6 +1247,9 @@ export interface MainTabsProps extends TabsProps {
     mainClassName: string;
     orientation: Orientation;
 }
+
+// @internal
+export function mergeRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
 
 // @public
 export class MessageBox extends React.PureComponent<MessageBoxProps> {
@@ -1817,7 +1825,7 @@ export interface SearchBoxProps extends CommonProps {
 }
 
 // @public
-export function Select(props: SelectProps): JSX.Element;
+export const Select: (props: SelectProps) => JSX.Element | null;
 
 // @public
 export interface SelectOption {
@@ -1831,6 +1839,7 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
     options: (string | SelectOption)[] | {
         [key: string]: (string | SelectOption);
     };
+    ref?: React.Ref<HTMLSelectElement>;
     setFocus?: boolean;
 }
 
@@ -2063,6 +2072,7 @@ export type ThemedSelectProps = {
     controlShouldRenderValue?: boolean;
     defaultMenuIsOpen?: boolean;
     defaultValue?: ValueType<OptionType>;
+    divRef?: React.Ref<HTMLDivElement>;
     escapeClearsValue?: boolean;
     filterOption?: ((option: OptionType, rawInput: string) => boolean) | null;
     formatGroupLabel?: typeof formatGroupLabel;
@@ -2105,6 +2115,7 @@ export type ThemedSelectProps = {
     options: OptionsType;
     pageSize?: number;
     placeholder?: string;
+    ref?: React.Ref<Component>;
     styles?: React.CSSProperties;
     tabIndex?: string;
     tabSelectsValue?: boolean;
@@ -2167,7 +2178,7 @@ export function Title(props: TextProps): JSX.Element;
 export function Title2(props: TextProps): JSX.Element;
 
 // @public
-export function Toggle(props: ToggleProps): JSX.Element;
+export const Toggle: (props: ToggleProps) => JSX.Element | null;
 
 // @public
 export enum ToggleButtonType {
@@ -2183,6 +2194,7 @@ export interface ToggleProps extends CommonProps {
     large?: boolean;
     onBlur?: (event: React.FocusEvent) => any;
     onChange?: (checked: boolean) => any;
+    ref?: React.Ref<HTMLInputElement>;
     rounded?: boolean;
     setFocus?: boolean;
     showCheckmark?: boolean;

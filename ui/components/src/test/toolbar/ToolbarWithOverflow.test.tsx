@@ -80,7 +80,9 @@ describe("<ToolbarWithOverflow />", () => {
         }
         return createDOMRect();
       });
-      const renderedComponent = render(<ToolbarWithOverflow panelAlignment={ToolbarPanelAlignment.End} expandsTo={Direction.Top} items={toolbarItems} />);
+      const renderedComponent = render(
+        <ToolbarWithOverflow panelAlignment={ToolbarPanelAlignment.End} expandsTo={Direction.Top} items={toolbarItems} overflowExpandsTo={Direction.Top} />
+      );
       expect(renderedComponent).not.to.be.undefined;
       // renderedComponent.debug();
       expect(renderedComponent.queryByTitle("Entry6")).not.to.be.null;

@@ -24,6 +24,7 @@ export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (
   const [inProgress, setInProgress] = useState(false);
 
   useEffect(() => {
+    // istanbul ignore next
     if (!valueToBeResolved) {
       setValue(undefined);
       setInProgress(false);

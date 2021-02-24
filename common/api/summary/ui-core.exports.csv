@@ -153,6 +153,7 @@ public;LoadingStatus
 public;LoadingStatusProps 
 beta;LocalUiSettings 
 public;MainTabsProps 
+internal;mergeRefs
 public;MessageBox 
 public;MessageBoxProps 
 public;MessageContainer 
@@ -213,7 +214,7 @@ beta;ScrollPositionMaintainer
 public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
 public;SearchBoxProps 
-public;Select(props: SelectProps): JSX.Element
+public;Select: (props: SelectProps) => JSX.Element | null
 public;SelectOption
 public;SelectProps 
 beta;SessionUiSettings 
@@ -253,7 +254,7 @@ public;TimeFormat
 public;Timer
 public;Title(props: TextProps): JSX.Element
 public;Title2(props: TextProps): JSX.Element
-public;Toggle(props: ToggleProps): JSX.Element
+public;Toggle: (props: ToggleProps) => JSX.Element | null
 public;ToggleButtonType
 public;ToggleProps 
 internal;TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10

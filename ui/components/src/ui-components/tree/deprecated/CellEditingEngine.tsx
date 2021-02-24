@@ -98,6 +98,7 @@ export class CellEditingEngine {
       typename,
     };
 
+    // istanbul ignore next
     if (editor)
       p.editor = { name: editor, params: [] };
 
@@ -109,9 +110,11 @@ export class CellEditingEngine {
   }
 
   private _onCommit = async (args: PropertyUpdatedArgs) => {
+    // istanbul ignore next
     if (!this._getCurrentlyEditedNode || !this._setCurrentlyEditedNode)
       return;
 
+    // istanbul ignore else
     if (this._getCurrentlyEditedNode()) {
       const newValue = (args.newValue as PrimitiveValue).value as string;
       const cellUpdatedArgs: TreeCellUpdatedArgs = {
@@ -119,6 +122,7 @@ export class CellEditingEngine {
         newValue,
       };
       const allowed = await this._props.onCellUpdated(cellUpdatedArgs);
+      // istanbul ignore else
       if (allowed)
         this._getCurrentlyEditedNode()!.setDirty(true);
     }

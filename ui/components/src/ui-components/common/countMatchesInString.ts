@@ -12,6 +12,7 @@
  * @internal
  */
 export function countMatchesInString(str: string, lookup: string) {
+  // istanbul ignore next
   if (lookup.length <= 0)
     return (str.length + 1);
 

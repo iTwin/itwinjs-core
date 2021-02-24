@@ -101,7 +101,7 @@ export function FormatUnits(props: FormatUnitsProps) {
   const handleOnSpacerChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     // istanbul ignore else
     if (formatProps.composite) {
-      const spacerValue = e.target.value.length ? e.target.value[0] : ""; // spacer can only be empty or a single character
+      const spacerValue = e.target.value.length ? e.target.value[0] : /* istanbul ignore next */ ""; // spacer can only be empty or a single character
       const composite = { ...formatProps.composite, spacer: spacerValue };
       const newFormatProps = { ...formatProps, composite };
       handleSetFormatProps(newFormatProps);
@@ -110,6 +110,7 @@ export function FormatUnits(props: FormatUnitsProps) {
 
   const compositeSpacer = React.useRef (UiComponents.translate("QuantityFormat.labels.compositeSpacer"));
 
+  // istanbul ignore next - NEEDSWORK add complete tests
   return (
     <>
       {(formatProps.composite?.units && formatProps.composite?.units.length > 0)

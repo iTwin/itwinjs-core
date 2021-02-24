@@ -146,7 +146,9 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
       this.updateOrientation(this.state.width);
 
     if (this.props.model !== prevProps.model) {
-      this._listRef.current?.resetAfterIndex(0);
+      // istanbul ignore else
+      if (this._listRef.current)
+        this._listRef.current.resetAfterIndex(0);
     }
 
     if (this.props.highlight !== prevProps.highlight && this.props.highlight?.activeHighlight && this.state.gridItems.length !== 0) {
@@ -154,6 +156,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
       let index = 0;
       let foundMatchingItem = false;
       for (const item of this.state.gridItems) {
+        // istanbul ignore next - NEEDSWORK add complete tests
         if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.derivedRecord.property.name
           || item instanceof MutableGridCategory && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.name) {
           foundMatchingItem = true;
@@ -162,8 +165,12 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
         index++;
       }
 
-      if (foundMatchingItem)
-        this._listRef.current?.scrollToItem(index);
+      // istanbul ignore else
+      if (foundMatchingItem) {
+      // istanbul ignore else
+        if (this._listRef.current)
+          this._listRef.current.scrollToItem(index);
+      }
     }
   }
 
@@ -193,6 +200,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
     const { orientation, isOrientationFixed, horizontalOrientationMinWidth } = { ...this.props };
     const currentOrientation = PropertyGridCommons.getCurrentOrientation(width, orientation, isOrientationFixed, horizontalOrientationMinWidth);
 
+    // istanbul ignore else
     if (currentOrientation !== this.state.orientation || width !== this.state.width) {
       this.setState({ orientation: currentOrientation, width });
       this._listRef.current?.resetAfterIndex(0);

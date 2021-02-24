@@ -10,6 +10,7 @@ import { render } from "@testing-library/react";
 import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
+import { PropertyConverterInfo } from "@bentley/ui-abstract";
 
 describe("NavigationPropertyValueRenderer", () => {
   const instanceKey = { className: "", id: Id64.fromUint32Pair(1, 0) };
@@ -32,6 +33,20 @@ describe("NavigationPropertyValueRenderer", () => {
       const element = renderer.render(property);
       const elementRender = render(<>{element}</>);
 
+      elementRender.debug();
+      elementRender.getByText("Category");
+    });
+
+    it("supports PropertyConverterInfo", () => {
+      const renderer = new NavigationPropertyValueRenderer();
+      const property = TestUtils.createNavigationProperty("Category", instanceKey);
+      const convertInfo: PropertyConverterInfo = { name: "" };
+      property.property.converter = convertInfo;
+
+      const element = renderer.render(property);
+      const elementRender = render(<>{element}</>);
+
+      elementRender.debug();
       elementRender.getByText("Category");
     });
 
