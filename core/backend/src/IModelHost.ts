@@ -213,7 +213,7 @@ export class IModelHost {
   public static get introspectionClient(): IntrospectionClient | undefined { return this._clientAuthIntrospectionManager?.introspectionClient; }
 
   /** @alpha */
-  public static readonly telemetry: TelemetryManager = new TelemetryManager();
+  public static readonly telemetry = new TelemetryManager();
 
   public static backendVersion = "";
   private static _cacheDir = "";
@@ -268,10 +268,13 @@ export class IModelHost {
     const platform = Platform.load();
     this.registerPlatform(platform);
 
-    const iModelClientType = iModelClient && iModelClient instanceof IModelBankClient
-      ? IModelJsNative.IModelClientType.IModelBank
-      : IModelJsNative.IModelClientType.IModelHub;
-    platform.NativeUlasClient.initialize(region, applicationType, iModelClientType);
+    let iModelClientType = IModelJsNative.IModelClientType.IModelHub;
+    let iModelClientUrl: string | undefined;
+    if (iModelClient && iModelClient instanceof IModelBankClient) {
+      iModelClientType = IModelJsNative.IModelClientType.IModelBank;
+      iModelClientUrl = iModelClient.baseUrl;
+    }
+    platform.NativeUlasClient.initialize(region, applicationType, iModelClientType, iModelClientUrl);
   }
 
   private static registerPlatform(platform: typeof IModelJsNative): void {
