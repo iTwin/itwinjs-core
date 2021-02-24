@@ -1080,6 +1080,14 @@ export abstract class ViewState extends ElementState {
     // So a non-empty list of event listener removal functions indicates we are currently attached to a viewport.
     return this._unregisterCategorySelectorListeners.length > 0;
   }
+
+  /** Returns an iterator over additional Viewports used to construct this view's scene. e.g., those used for ViewAttachments and section drawings.
+   * This exists chiefly for display-performance-test-app to determine when all tiles required for the view have been loaded.
+   * @internal
+   */
+  public get secondaryViewports(): Iterable<Viewport> {
+    return [];
+  }
 }
 
 /** Defines the state of a view of 3d models.

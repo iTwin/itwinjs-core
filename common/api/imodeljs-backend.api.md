@@ -77,7 +77,6 @@ import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
 import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
-import { GeometryChangeNotifications } from '@bentley/imodeljs-common';
 import { GeometryContainmentRequestProps } from '@bentley/imodeljs-common';
 import { GeometryContainmentResponseProps } from '@bentley/imodeljs-common';
 import { GeometryPartProps } from '@bentley/imodeljs-common';
@@ -91,6 +90,7 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
+import { IModelChangeNotifications } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
@@ -129,6 +129,7 @@ import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
 import { OpenBriefcaseProps } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
+import { OrderedId64Array } from '@bentley/bentleyjs-core';
 import * as os from 'os';
 import { OverriddenBy } from '@bentley/imodeljs-common';
 import { PhysicalElementProps } from '@bentley/imodeljs-common';
@@ -421,6 +422,7 @@ export class BriefcaseDb extends IModelDb {
     get contextId(): GuidString;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
+    get isBriefcase(): boolean;
     static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext, _props: IModelRpcProps) => void>;
     static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
@@ -2679,8 +2681,8 @@ export class IModelHost {
     static get appAssetsDir(): string | undefined;
     static applicationId: string;
     static applicationVersion: string;
-    static get authorizationClient(): AuthorizationClient | undefined;
-    static set authorizationClient(authorizationClient: AuthorizationClient | undefined);
+    // (undocumented)
+    static authorizationClient?: AuthorizationClient;
     // (undocumented)
     static backendVersion: string;
     static get cacheDir(): string;
@@ -3013,7 +3015,7 @@ export class IpcHost {
     static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static get isValid(): boolean;
     // @internal (undocumented)
-    static notifyGeometryChanges<T extends keyof GeometryChangeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<GeometryChangeNotifications[T]>): void;
+    static notifyIModelChanges<T extends keyof IModelChangeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<IModelChangeNotifications[T]>): void;
     // @internal (undocumented)
     static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>): void;
     static removeListener(channel: string, listener: IpcListener): void;
@@ -3228,6 +3230,17 @@ export class LinkModel extends InformationModel {
 export class LinkPartition extends InformationPartitionElement {
     // @internal (undocumented)
     static get className(): string;
+}
+
+// @internal (undocumented)
+export class LocalhostIpcHost {
+    // (undocumented)
+    static startup(opts?: {
+        localhostIpcHost?: {
+            socketPort?: number;
+        };
+        iModelHost?: IModelHostConfiguration;
+    }): Promise<void>;
 }
 
 // @internal
@@ -3728,6 +3741,8 @@ export class SnapshotDb extends IModelDb {
     get filePath(): string;
     // (undocumented)
     static findByKey(key: string): SnapshotDb;
+    // (undocumented)
+    get isSnapshot(): boolean;
     // @internal
     static openCheckpointV1(fileName: string, checkpoint: CheckpointProps): SnapshotDb;
     // @internal
@@ -3849,6 +3864,8 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     reset(): void;
     setIsShared(b: boolean): void;
     step(): DbResult;
+    // (undocumented)
+    get stmt(): IModelJsNative.SqliteStatement | undefined;
     }
 
 // @internal
@@ -3909,6 +3926,8 @@ export class StandaloneDb extends IModelDb {
     get filePath(): string;
     // (undocumented)
     static findByKey(key: string): StandaloneDb;
+    // (undocumented)
+    get isStandalone(): boolean;
     static openFile(filePath: string, openMode?: OpenMode, options?: StandaloneOpenOptions): StandaloneDb;
     // (undocumented)
     static tryFindByKey(key: string): StandaloneDb | undefined;
@@ -4079,6 +4098,16 @@ export enum TxnAction {
     Reverse = 3
 }
 
+// @beta (undocumented)
+export interface TxnElementsChanged {
+    // (undocumented)
+    deleted: OrderedId64Array;
+    // (undocumented)
+    inserted: OrderedId64Array;
+    // (undocumented)
+    updated: OrderedId64Array;
+}
+
 // @public
 export type TxnIdString = string;
 
@@ -4115,12 +4144,15 @@ export class TxnManager {
     readonly onCommitted: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onDeletedDependency(props: RelationshipProps): void;
-    // @internal (undocumented)
+    readonly onElementsChanged: BeEvent<(changes: TxnElementsChanged) => void>;
+    // @internal
     protected _onEndValidate(): void;
+    // @internal (undocumented)
+    readonly onEndValidation: BeEvent<() => void>;
     // (undocumented)
     readonly onGeometryChanged: BeEvent<(models: ModelGeometryChangesProps[]) => void>;
     // @internal (undocumented)
-    protected _onGeometryChanged(models: ModelGeometryChangesProps[]): void;
+    protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]): void;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     // @internal (undocumented)

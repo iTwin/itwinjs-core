@@ -80,7 +80,7 @@
     },
     {
       "name": "@bentley/geometry-core",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/hypermodeling-frontend",

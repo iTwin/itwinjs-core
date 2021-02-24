@@ -49,5 +49,9 @@ consumers must do before the library can be used.
   ```
 
   ``` ts
-  [[include:Presentation.Frontend.RpcInterface]]
+  [[include:Presentation.Frontend.RpcInterface_1]]
+  ```
+
+  ``` ts
+  [[include:Presentation.Frontend.RpcInterface_2]]
   ```

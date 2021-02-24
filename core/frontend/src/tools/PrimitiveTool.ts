@@ -137,6 +137,11 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * Called when an external event may invalidate the current tool's state.
    * Examples are undo, which may invalidate any references to elements, or an incompatible active view change.
    * The active tool is expected to call installTool with a new instance, or exitTool to start the default tool.
+   * ```ts
+   *   const tool = new MyPrimitiveTool();
+   *   if (!tool.run())
+   *     this.exitTool(); // Don't leave current instance active if new instance rejects install...
+   * ```
    */
   public abstract onRestartTool(): void;
 
