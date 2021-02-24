@@ -4,7 +4,6 @@ publish: false
 
 # NextVersion
 
-<<<<<<< HEAD
 ## The iModel.js Project Is Renamed iTwin.js
 
 The version begins the process of renaming our project from **iModel.js** to **iTwin.js** to better reflect its purpose as the *platform for infrastructure digital twins*.
@@ -221,5 +220,3 @@ and related ECInstance. Example:
 ```
 
 The above example returns `ECDbMeta:ECClassDef` instances only if there are `BisCore:Elements` of those classes.
-=======
->>>>>>> 28a8de7973... 2.12.0
