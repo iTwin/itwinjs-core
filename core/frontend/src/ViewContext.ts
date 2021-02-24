@@ -11,7 +11,7 @@ import {
   ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
   Point3d, Range1d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
 } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum, FrustumPlanes, LinePixels, NpcCenter, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
@@ -27,6 +27,7 @@ import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStat
 import { ViewingSpace } from "./ViewingSpace";
 import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
 import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
+import { EditManipulator } from "./imodeljs-frontend";
 
 const gridConstants = { minSeparation: 15, maxRefLines: 100, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
 
@@ -381,6 +382,24 @@ export class DecorateContext extends RenderContext {
       minX *= refSpacing.x; maxX *= refSpacing.x;
       minY *= refSpacing.y; maxY *= refSpacing.y;
 
+      const getCenterRefLine = (imin: number, imax: number, refStep: number, nRefRepetitions: number, constantX: boolean) => {
+        const centerRef = Math.ceil(nRefRepetitions / 2);
+        const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(vp.npcToWorld(NpcCenter), plane.getOriginRef(), plane.getNormalRef(), vp);
+
+        if (undefined !== planePt) {
+          transform.multiplyInversePoint3d(planePt, planePt);
+          const imid = (constantX ? planePt.y : planePt.x);
+
+          if (imid > imin && imid < imax) {
+            const closeRef = Math.ceil((imid - imin) / refStep);
+
+            return closeRef;
+          }
+        }
+
+        return centerRef;
+      };
+
       const drawRefAndGridLines = (refStart: number, refStep: number, imin: number, imax: number, nRefRepetitions: number, constantX: boolean, skipFirst: boolean) => {
         let nGridRepetitions = nRefRepetitions;
         let lastDist;
@@ -476,7 +495,8 @@ export class DecorateContext extends RenderContext {
         if (!unambiguousX && vp.isCameraOn) {
           const nRefRepetitions = Math.ceil(nRefRepetitionsX / 2);
           const refStepY = refSpacing.y;
-          const refStart = minY + (nRefRepetitions * refStepY);
+          const centerRef = getCenterRefLine(minY, maxY, refStepY, nRefRepetitionsX, true);
+          const refStart = minY + (centerRef * refStepY);
 
           builder.setSymbology(refColor, planeColor, 1, linePat);
           drawRefAndGridLines(refStart, refStepY, minX, maxX, nRefRepetitions, true, false);
@@ -496,7 +516,8 @@ export class DecorateContext extends RenderContext {
         if (!unambiguousY && vp.isCameraOn) {
           const nRefRepetitions = Math.ceil(nRefRepetitionsY / 2);
           const refStepX = refSpacing.x;
-          const refStart = minX + (nRefRepetitions * refStepX);
+          const centerRef = getCenterRefLine(minX, maxX, refStepX, nRefRepetitionsY, false);
+          const refStart = minX + (centerRef * refStepX);
 
           builder.setSymbology(refColor, planeColor, 1, linePat);
           drawRefAndGridLines(refStart, refStepX, minY, maxY, nRefRepetitions, false, false);
