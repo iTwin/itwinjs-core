@@ -49,7 +49,7 @@ function startWebServer() {
 
   let serverConfig: any;
   let browser = "";
-  const chromeFlags = [];
+  const chromeFlags: Array<string> = [];
 
   process.argv.forEach((arg) => {
     if (arg.split(".").pop() === "json")
