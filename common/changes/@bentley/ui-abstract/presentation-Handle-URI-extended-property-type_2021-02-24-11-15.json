@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Added URL StandardTypeName and changed LinkElementsInfo.onClick to be mandatory.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "30312645+aurislt7@users.noreply.github.com"
+}
