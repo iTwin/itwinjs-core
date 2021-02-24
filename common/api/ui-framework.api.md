@@ -1952,16 +1952,15 @@ export interface FooterModeFieldProps extends StatusFieldProps {
     children?: React.ReactNode;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export class FrameworkAccuDraw extends AccuDraw {
     constructor();
     static get displayNotifications(): boolean;
     static set displayNotifications(v: boolean);
     // (undocumented)
     static getFieldDisplayValue(index: ItemField): string;
-    // @internal
     grabInputFocus(): void;
-    // @internal (undocumented)
+    // (undocumented)
     get hasInputFocus(): boolean;
     static readonly isACSRotationConditional: ConditionalBooleanValue;
     static readonly isContextRotationConditional: ConditionalBooleanValue;
@@ -1971,21 +1970,20 @@ export class FrameworkAccuDraw extends AccuDraw {
     static readonly isSideRotationConditional: ConditionalBooleanValue;
     static readonly isTopRotationConditional: ConditionalBooleanValue;
     static readonly isViewRotationConditional: ConditionalBooleanValue;
-    // @internal (undocumented)
+    // (undocumented)
     onCompassModeChange(): void;
-    // @internal (undocumented)
+    // (undocumented)
     onFieldLockChange(index: ItemField): void;
-    // @internal (undocumented)
+    // (undocumented)
     onFieldValueChange(index: ItemField): void;
-    // @internal
     onMotion(_ev: BeButtonEvent): void;
-    // @internal (undocumented)
+    // (undocumented)
     onRotationModeChange(): void;
-    // @internal (undocumented)
+    // (undocumented)
     setFocusItem(index: ItemField): void;
-    // @internal (undocumented)
+    // (undocumented)
     static translateFromItemField(item: ItemField): AccuDrawField;
-    // @internal (undocumented)
+    // (undocumented)
     static translateToItemField(field: AccuDrawField): ItemField;
 }
 
@@ -2743,6 +2741,10 @@ export enum HideIsolateEmphasizeAction {
     // (undocumented)
     ClearHiddenIsolatedEmphasized = "ClearHiddenIsolatedEmphasized",
     // (undocumented)
+    ClearOverrideCategories = "ClearOverrideCategories",
+    // (undocumented)
+    ClearOverrideModels = "ClearOverrideModels",
+    // (undocumented)
     EmphasizeSelectedElements = "EmphasizeSelectedElements",
     // (undocumented)
     HideSelectedCategories = "HideSelectedCategories",
@@ -2765,6 +2767,8 @@ export abstract class HideIsolateEmphasizeActionHandler {
     static emphasizeElementsChanged: BeEvent<(args: EmphasizeElementsChangedArgs) => void>;
     static get hideIsolateEmphasizeUiSyncId(): string;
     abstract processClearEmphasize(): Promise<void>;
+    abstract processClearOverrideCategories(): Promise<void>;
+    abstract processClearOverrideModels(): Promise<void>;
     abstract processEmphasizeSelected(): Promise<void>;
     abstract processHideSelected(): Promise<void>;
     abstract processHideSelectedElementsCategory(): Promise<void>;
@@ -2778,6 +2782,8 @@ export abstract class HideIsolateEmphasizeActionHandler {
 export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
     areFeatureOverridesActive(vp: Viewport): boolean;
     static clearEmphasize(vp: Viewport | undefined): void;
+    static clearOverrideCategories(vp: Viewport): void;
+    static clearOverrideModels(vp: Viewport): void;
     static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
     static emphasizeSelectedCategory(vp: Viewport): Promise<void>;
     static hideCommand(vp: Viewport): Promise<void>;
@@ -2791,7 +2797,11 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     static isolateSelectedElementsModel(vp: Viewport): Promise<void>;
     static isolateSelectedModel(vp: Viewport): Promise<void>;
     static isolateSelectedSubject(vp: Viewport): Promise<void>;
+    static isOverrideCategories(vp: Viewport): boolean;
+    static isOverrideModels(vp: Viewport): boolean;
     processClearEmphasize(): Promise<void>;
+    processClearOverrideCategories(): Promise<void>;
+    processClearOverrideModels(): Promise<void>;
     processEmphasizeSelected(): Promise<void>;
     processHideSelected(): Promise<void>;
     processHideSelectedElementsCategory(): Promise<void>;
@@ -5799,11 +5809,16 @@ export interface ToolAssistanceChangedEventArgs {
 
 // @public
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
+    // @internal
     constructor(p: ToolAssistanceFieldProps);
     // @internal (undocumented)
     componentDidMount(): Promise<void>;
     // @internal (undocumented)
     componentWillUnmount(): void;
+    // @internal (undocumented)
+    context: React.ContextType<typeof UiSettingsContext>;
+    // @internal (undocumented)
+    static contextType: React.Context<UiSettings>;
     // @internal (undocumented)
     static readonly defaultProps: ToolAssistanceFieldDefaultProps;
     // @internal (undocumented)
@@ -5821,7 +5836,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
     defaultPromptAtCursor: boolean;
     fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
-    uiSettings: UiSettings;
+    uiSettings?: UiSettings;
 }
 
 // @internal

@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { QuantityStatus } from "../src/Exception";
+import { assert, expect } from "chai";
 import { Format } from "../src/Formatter/Format";
 import { FormatterSpec } from "../src/Formatter/FormatterSpec";
 import { Formatter } from "../src/Formatter/Formatter";
@@ -152,7 +151,7 @@ describe("Parsing tests:", () => {
     }
   });
 
-  it("Parse into Length Quantities", async () => {
+  it("Parse into FT Quantities", async () => {
     const formatData = {
       composite: {
         includeZero: true,
@@ -172,15 +171,15 @@ describe("Parsing tests:", () => {
 
     const testData = [
       { value: "12,345.345", quantity: { magnitude: 12345.345, unitName: "Units.FT" } },
-      { value: "3.6252e3 Miles", quantity: { magnitude: 3625.2, unitName: "Units.MILE" } },
-      { value: "3.6252e-3 Miles", quantity: { magnitude: 0.0036252, unitName: "Units.MILE" } },
-      { value: "3.6252e+3 Miles", quantity: { magnitude: 3625.2, unitName: "Units.MILE" } },
+      { value: "3.6252e3 Miles", quantity: { magnitude: 19141056, unitName: "Units.FT" } },
+      { value: "3.6252e-3 Miles", quantity: { magnitude: 19.141056, unitName: "Units.FT" } },
+      { value: "3.6252e+3 Miles", quantity: { magnitude: 19141056, unitName: "Units.FT" } },
       { value: "-1 1/2FT", quantity: { magnitude: -1.5, unitName: "Units.FT" } },
       { value: "-2FT 6IN", quantity: { magnitude: -2.5, unitName: "Units.FT" } },
       { value: "1 1/2 FT", quantity: { magnitude: 1.5, unitName: "Units.FT" } },
       { value: "2FT 6IN", quantity: { magnitude: 2.5, unitName: "Units.FT" } },
       { value: `2'-6"`, quantity: { magnitude: 2.5, unitName: "Units.FT" } },
-      { value: "-3IN", quantity: { magnitude: -3.0, unitName: "Units.IN" } },
+      { value: "-3IN", quantity: { magnitude: -0.25, unitName: "Units.FT" } },
     ];
 
     const unitsProvider = new TestUnitsProvider();
@@ -190,12 +189,46 @@ describe("Parsing tests:", () => {
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
-      assert.isTrue(Math.fround(quantityProps.magnitude) === Math.fround(testEntry.quantity!.magnitude));
-      assert.isTrue(quantityProps.unit.name === testEntry.quantity!.unitName);
+      // console.log (`quantityProps=${JSON.stringify(quantityProps)}`);
+      expect(Math.fround(quantityProps.magnitude)).to.eql(Math.fround(testEntry.quantity!.magnitude));
+      expect(quantityProps.unit.name).to.eql(testEntry.quantity!.unitName);
     }
   });
 
-  it("Parse into Length Quantities w/uom separator", async () => {
+  it("Parse into Length Quantities", async () => {
+    const formatData = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: "",
+    };
+
+    const testData = [
+      { value: "12,345.345 FT", quantity: { magnitude: 12345.345, unitName: "Units.FT" } },
+      { value: "3.6252e3 Miles", quantity: { magnitude: 3625.2, unitName: "Units.MILE" } },
+      { value: "3.6252e-3 Miles", quantity: { magnitude: 0.0036252, unitName: "Units.MILE" } },
+      { value: "3.6252e+3 Miles", quantity: { magnitude: 3625.2, unitName: "Units.MILE" } },
+      { value: "-1 1/2FT", quantity: { magnitude: -1.5, unitName: "Units.FT" } },
+      { value: "-2FT 6IN", quantity: { magnitude: -2.5, unitName: "Units.FT" } },
+      { value: "1 1/2 FT", quantity: { magnitude: 1.5, unitName: "Units.FT" } },
+      { value: "2FT 6IN", quantity: { magnitude: 2.5, unitName: "Units.FT" } },
+  /*    { value: `2'-6"`, quantity: { magnitude: 2.5, unitName: "Units.FT" } }, ambiguous case since ' can be Unit.FT or Units.ARC_MINUTE would require a Format unit to be defined. */
+      { value: "-3IN", quantity: { magnitude: -3.0, unitName: "Units.IN" } },
+    ];
+
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+
+    for (const testEntry of testData) {
+      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
+      // console.log (`quantityProps=${JSON.stringify(quantityProps)}`);
+      expect(Math.fround(quantityProps.magnitude)).to.eql(Math.fround(testEntry.quantity!.magnitude));
+      expect(quantityProps.unit.name).to.eql(testEntry.quantity!.unitName);
+    }
+  });
+
+  it("Parse into Length FT Quantities w/uom separator", async () => {
     const formatData = {
       composite: {
         includeZero: true,
@@ -215,12 +248,12 @@ describe("Parsing tests:", () => {
 
     const testData = [
       { value: "12,345.345", quantity: { magnitude: 12345.345, unitName: "Units.FT" } },
-      { value: "3.6252e3*Miles", quantity: { magnitude: 3625.2, unitName: "Units.MILE" } },
+      { value: "3.6252e3*Miles", quantity: { magnitude: 19141056, unitName: "Units.FT" } },
       { value: "-1 1/2*FT", quantity: { magnitude: -1.5, unitName: "Units.FT" } },
       { value: "-2*FT 6*IN", quantity: { magnitude: -2.5, unitName: "Units.FT" } },
       { value: "1 1/2*FT", quantity: { magnitude: 1.5, unitName: "Units.FT" } },
       { value: "2*FT 6*IN", quantity: { magnitude: 2.5, unitName: "Units.FT" } },
-      { value: "-3*IN", quantity: { magnitude: -3.0, unitName: "Units.IN" } },
+      { value: "-3*IN", quantity: { magnitude: -0.25, unitName: "Units.FT" } },
     ];
 
     const unitsProvider = new TestUnitsProvider();
@@ -340,6 +373,82 @@ describe("Parsing tests:", () => {
       assert.isTrue(quantityProps.unit.name === testEntry.quantity!.unitName);
     }
   });
+
+  it("Parse into Survey Length Quantities into meters", async () => {
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [{ label: "usft", name: "Units.US_SURVEY_FT" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    };
+
+    const testData = [
+      { value: "1000 usft", magnitude: 304.8006096012192 },  // label should match the label in the Format so it will use SURVEY_FT
+      { value: "1000 ft (US Survey)", magnitude: 304.8006096012192 },  // label should match a valid SURVEY_FT label or alternate label
+      { value: "1000 USF",  magnitude: 304.8006096012192 }, // label should match a valid SURVEY_FT label or alternate label
+      { value: "1000 ft",   magnitude: 304.8006096012192 },  // label should match a valid SURVEY_FT label or alternate label
+      { value: "1000 USF",  magnitude: 304.8006096012192 }, // label should match a valid SURVEY_FT label or alternate label
+      { value: "1000",      magnitude: 304.8006096012192},  // no label should default to SURVEY_FT from Format
+      { value: "1000 f",    magnitude: 304.8},  // "f" is only valid for Units.FT so convert based on feet
+      { value: "1000'",     magnitude: 304.8},  // "'" is only valid for Units.FT so convert based on feet
+    ];
+
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(format.hasUnits);
+
+    const persistenceUnit = await unitsProvider.findUnitByName ("Units.M");
+    const unitConversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, persistenceUnit);
+
+    for (const testEntry of testData) {
+      const result = Parser.parseToQuantityValue (testEntry.value, format, unitConversions);
+      expect (Parser.isParsedQuantity(result)).to.be.true;
+      if (Parser.isParsedQuantity(result)) {
+        expect(Math.fround(result.value*1000000)).to.be.eql(Math.fround(testEntry.magnitude*1000000));
+      }
+    }
+  });
+
+  it("Parse into Survey Length Quantities", async () => {
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [{ label: "usft", name: "Units.US_SURVEY_FT" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    };
+
+    const testData = [
+      { value: "1000 usft",  quantity: { magnitude: 1000, unitName: "Units.US_SURVEY_FT" } },  // label should match the label in the Format so it will use SURVEY_FT
+      { value: "1000 ft (US Survey)", quantity: { magnitude: 1000, unitName: "Units.US_SURVEY_FT" } },  // label should match a valid SURVEY_FT label or alternate label
+      { value: "1000 USF",   quantity: { magnitude: 1000, unitName: "Units.US_SURVEY_FT" } }, // label should match a valid SURVEY_FT label or alternate label
+      { value: "1000 ft",    quantity: { magnitude: 1000, unitName: "Units.US_SURVEY_FT" } },  // label should match a valid SURVEY_FT label or alternate label
+      { value: "1000 USF",  quantity: { magnitude: 1000, unitName: "Units.US_SURVEY_FT" } }, // label should match a valid SURVEY_FT label or alternate label
+      { value: "1000",      quantity: { magnitude: 1000, unitName: "Units.US_SURVEY_FT" }},  // no label should default to SURVEY_FT from Format
+      { value: "1000 f",    quantity: { magnitude: 999.998, unitName: "Units.US_SURVEY_FT" }},  // "f" is only valid for Units.FT so convert based on feet
+      { value: "1000'",     quantity: { magnitude: 999.998, unitName: "Units.US_SURVEY_FT" }},  // "'" is only valid for Units.FT so convert based on feet
+    ];
+
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(format.hasUnits);
+
+    for (const testEntry of testData) {
+      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
+      // console.log (`quantityProps=${JSON.stringify(quantityProps)}`);
+      expect(Math.fround(quantityProps.magnitude*1000000)).to.be.eql(Math.fround(testEntry.quantity.magnitude*1000000));
+      expect(quantityProps.unit.name).to.be.eql(testEntry.quantity.unitName);
+    }
+  });
 });
 
 describe("Synchronous Parsing tests:", async () => {
@@ -442,7 +551,7 @@ describe("Synchronous Parsing tests:", async () => {
       if (logTestOutput) {
         if (Parser.isParsedQuantity(parseResult))
           console.log(`input=${testEntry.value} output=${parseResult.value}`); // eslint-disable-line no-console
-        else if (Parser.isParseError (parseResult))
+        else if (Parser.isParseError(parseResult))
           console.log(`input=${testEntry.value} error=${parseResult.error}`); // eslint-disable-line no-console
       }
       assert.isTrue(Parser.isParsedQuantity(parseResult));

@@ -402,21 +402,26 @@ function getViewFlagsString(): string {
  * Sorted by tree Id and then by tile Id so that the output is consistent from run to run unless the set of selected tiles changed between runs.
  */
 let formattedSelectedTileIds = "Selected tiles:\n";
-function formatSelectedTileIds(viewport: Viewport): void {
+function formatSelectedTileIds(vp: Viewport): void {
   formattedSelectedTileIds = "Selected tiles:\n";
   const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
-  const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
-  if (!selected)
-    return;
+  for (const viewport of [ vp, ...vp.view.secondaryViewports]) {
+    const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
+    if (!selected)
+      continue;
 
-  for (const tile of selected) {
-    const treeId = tile.tree.id;
-    let tileIds = dict.get(treeId);
-    if (!tileIds)
-      dict.set(treeId, tileIds = new SortedArray<string>((lhs, rhs) => lhs.localeCompare(rhs)));
+    for (const tile of selected) {
+      const treeId = tile.tree.id;
+      let tileIds = dict.get(treeId);
+      if (!tileIds)
+        dict.set(treeId, tileIds = new SortedArray<string>((lhs, rhs) => lhs.localeCompare(rhs)));
 
-    tileIds.insert(tile.contentId);
+      tileIds.insert(tile.contentId);
+    }
   }
+
+  if (dict.size === 0)
+    return;
 
   for (const kvp of dict) {
     const contentIds = kvp.value.extractArray().join(",");
@@ -446,6 +451,22 @@ async function waitForTilesToLoad(modelLocation?: string) {
     activeViewState.viewState!.createScene(sceneContext);
     sceneContext.requestMissingTiles();
     haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles || 0 < sceneContext.missingTiles.size;
+
+    if (!haveNewTiles) {
+      // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports. Check those too.
+      for (const secondaryVp of activeViewState.viewState!.secondaryViewports) {
+        if (secondaryVp.numRequestedTiles > 0) {
+          haveNewTiles = true;
+          break;
+        }
+
+        const secondaryTiles = IModelApp.tileAdmin.getTilesForViewport(secondaryVp);
+        if (secondaryTiles && secondaryTiles.external.requested > 0) {
+          haveNewTiles = true;
+          break;
+        }
+      }
+    }
 
     // NB: The viewport is NOT added to the ViewManager's render loop, therefore we must manually pump the tile request scheduler...
     if (haveNewTiles)

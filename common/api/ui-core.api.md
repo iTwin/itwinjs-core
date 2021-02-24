@@ -100,7 +100,7 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     onSuggestionSelected: (selected: AutoSuggestData) => void;
     options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
     // @internal
-    renderInputComponent?: ReactAutosuggest.RenderInputComponent<AutoSuggestData>;
+    renderInputComponent?: any;
     // @internal
     renderSuggestionsContainer?: ReactAutosuggest.RenderSuggestionsContainer;
     setFocus?: boolean;
@@ -2355,7 +2355,7 @@ export class UiSetting<T> {
     settingNamespace: string;
 }
 
-// @beta
+// @public
 export interface UiSettings {
     // (undocumented)
     deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
@@ -2365,7 +2365,7 @@ export interface UiSettings {
     saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
 }
 
-// @beta
+// @public
 export interface UiSettingsResult {
     // (undocumented)
     setting?: any;
@@ -2373,7 +2373,7 @@ export interface UiSettingsResult {
     status: UiSettingsStatus;
 }
 
-// @beta
+// @public
 export enum UiSettingsStatus {
     // (undocumented)
     AuthorizationError = 4,

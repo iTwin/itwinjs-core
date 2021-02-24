@@ -1694,6 +1694,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     // @beta
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
+    clearSunTime(): void;
     // @internal (undocumented)
     get environment(): EnvironmentProps;
     set environment(environment: EnvironmentProps);
@@ -1710,8 +1711,10 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined;
     // @beta
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
+    setSunTime(timePoint: number, location: IModel | Cartographic): void;
     get solarShadows(): SolarShadowSettings;
     set solarShadows(solarShadows: SolarShadowSettings);
+    get sunTime(): number | undefined;
     // @beta
     get thematic(): ThematicDisplay;
     set thematic(thematic: ThematicDisplay);
@@ -2351,6 +2354,13 @@ export interface ElementProps extends EntityProps {
     userLabel?: string;
 }
 
+// @alpha
+export interface ElementsChanged {
+    deleted?: CompressedId64Set;
+    inserted?: CompressedId64Set;
+    updated?: CompressedId64Set;
+}
+
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
@@ -2913,12 +2923,6 @@ export interface GeometryAppearanceProps {
     subCategory?: Id64String;
     transparency?: number;
     weight?: number;
-}
-
-// @internal
-export interface GeometryChangeNotifications {
-    // (undocumented)
-    notifyGeometryChanged: (models: ModelGeometryChangesProps[]) => void;
 }
 
 // @public
@@ -3790,6 +3794,14 @@ export abstract class IModel implements IModelProps {
     toJSON(): IModelConnectionProps;
 }
 
+// @internal
+export interface IModelChangeNotifications {
+    // (undocumented)
+    notifyElementsChanged: (changes: ElementsChanged) => void;
+    // (undocumented)
+    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
+}
+
 // @alpha (undocumented)
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
@@ -4068,7 +4080,7 @@ export enum IpcAppChannel {
     // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
-    GeometryChanges = "geometry-changes",
+    IModelChanges = "imodel-changes",
     // (undocumented)
     PushPull = "push-pull"
 }
@@ -5177,15 +5189,10 @@ export enum PlanarClipMaskMode {
 
 // @beta
 export enum PlanarClipMaskPriority {
-    // (undocumented)
     BackgroundMap = -2048,
-    // (undocumented)
     BIM = 2048,
-    // (undocumented)
     GlobalRealityModel = -1024,
-    // (undocumented)
     Maximum = 4096,
-    // (undocumented)
     RealityModel = 0
 }
 
@@ -5207,7 +5214,6 @@ export class PlanarClipMaskSettings {
     // (undocumented)
     equals(other: PlanarClipMaskSettings): boolean;
     static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings;
-    // (undocumented)
     get isValid(): boolean;
     readonly mode: PlanarClipMaskMode;
     readonly modelIds?: CompressedId64Set;
@@ -6848,15 +6854,13 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
 // @public
 export class SolarLight {
     constructor(json?: SolarLightProps);
-    // (undocumented)
     readonly alwaysEnabled: boolean;
     clone(changedProps?: SolarLightProps): SolarLight;
-    // (undocumented)
     readonly direction: Readonly<Vector3d>;
     // (undocumented)
     equals(rhs: SolarLight): boolean;
-    // (undocumented)
     readonly intensity: number;
+    readonly timePoint?: number;
     // (undocumented)
     toJSON(): SolarLightProps | undefined;
 }
@@ -6866,6 +6870,7 @@ export interface SolarLightProps {
     alwaysEnabled?: boolean;
     direction?: XYZProps;
     intensity?: number;
+    timePoint?: number;
 }
 
 // @public

@@ -5,4 +5,6 @@
 /** @packageDocumentation
  * @module Editing
  */
+export * from "./DeleteElementsTool";
 export * from "./EditTool";
+export * from "./TransformElementsTool";
