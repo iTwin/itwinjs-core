@@ -17,6 +17,8 @@ import * as utils from "./TestUtils";
 import { assetsPath, workDir } from "./TestConstants";
 import { createFileHandler } from "./FileHandler";
 
+const defaultDataLocationId: GuidString = "99999999-9999-9999-9999-999999999999";
+
 function mockGetIModelByName(contextId: string, name: string, description = "", imodelId?: GuidString, initialized = true, iModelType = IModelType.Undefined, extent: number[] = [], returnsInstances = true) {
   mockGetIModelWithFilter(`?$filter=Name+eq+%27${encodeURIComponent(name)}%27`, contextId, name, description, imodelId, initialized, "Empty", iModelType, extent, returnsInstances);
 }
@@ -55,6 +57,7 @@ function mockGetIModelWithFilter(
       ["iModelTemplate", template],
       ["iModelType", iModelType],
       ["extent", extent],
+      ["dataLocationId", defaultDataLocationId],
     ])), returnsInstances ? 1 : 0);
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
@@ -864,5 +867,11 @@ describe("iModelHub iModelsHandler", () => {
     imodel.name = oldimodelName;
     mockUpdateiModel(projectId, imodel);
     await iModelClient.iModels.update(requestContext, projectId, imodel);
+  });
+
+  it("should return DataLocationId", async () => {
+    mockGetIModelByName(projectId, imodelName);
+    const iModel: HubIModel = (await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
+    chai.expect(iModel.dataLocationId).to.be.equal(defaultDataLocationId);
   });
 });

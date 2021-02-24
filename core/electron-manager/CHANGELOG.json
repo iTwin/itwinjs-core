@@ -2,6 +2,33 @@
   "name": "@bentley/electron-manager",
   "entries": [
     {
+      "version": "2.12.1",
+      "tag": "@bentley/electron-manager_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/electron-manager_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add methods to call electron.app,dialog,shell methods from ElectronFrontend"
+          },
+          {
+            "comment": "allow calling safe electron methods from frontend"
+          },
+          {
+            "comment": "rework into ElectronBackend and ElectronFrontend"
+          },
+          {
+            "comment": "standardize BackendIpc and FrontendIpc"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.11.0",
       "tag": "@bentley/electron-manager_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",
