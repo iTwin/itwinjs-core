@@ -21,7 +21,7 @@ import { IPropertyGridModelSource, PropertyGridModelSource } from "./PropertyGri
  * Returned property data has links.onClick replaced by passed onPropertyLinkClick or default implementation
  * @alpha
  */
-export function usePropertyData(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (record: PropertyRecord, text: string) => void }) {
+export function usePropertyData(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (property: PropertyRecord, text: string) => void }) {
   const { dataProvider, onPropertyLinkClick } = { ...props };
 
   const [forcedUpdate, triggerForcedUpdate] = useReducer(() => ({}), {});
@@ -53,7 +53,7 @@ export function usePropertyData(props: { dataProvider: IPropertyDataProvider, on
  * Custom hook that creates a PropertyGridModelSource and subscribes it to data updates from the data provider.
  * @alpha
  */
-export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (record: PropertyRecord, text: string) => void }) {
+export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (property: PropertyRecord, text: string) => void }) {
   const { value: propertyData } = usePropertyData(props);
   const { dataProvider } = { ...props };
 
