@@ -1,6 +1,21 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- UI 'pickers' that use Popup component with fixed content should set closeOnNestedPopupOutsideClick prop.
+- Consider string values starting with `pw:\` or `pw://` to be URLs without checking the rest of the string.
+- `ControlledTree`: Fix calling `scrollToNode` too early triggering an assertion error.
+- Update TimelineComponent.tsx to properly respond to changed props.
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT

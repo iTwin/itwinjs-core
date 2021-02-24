@@ -610,6 +610,8 @@ export class HubUserInfo extends WsgInstance {
 export class IModelBankClient extends IModelClient {
     constructor(url: string, handler: FileHandler | undefined);
     // (undocumented)
+    get baseUrl(): string;
+    // (undocumented)
     getUrl(rqctx: AuthorizedClientRequestContext): Promise<string>;
 }
 
@@ -631,6 +633,8 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 // @internal
 export class IModelBankHandler extends IModelBaseHandler {
     constructor(url: string, handler: FileHandler | undefined, keepAliveDuration?: number);
+    // (undocumented)
+    get baseUrl(): string;
     // (undocumented)
     getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
     // (undocumented)

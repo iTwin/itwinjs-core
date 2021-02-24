@@ -2896,6 +2896,7 @@ export interface MutableTreeDataProvider extends ITreeDataProvider {
 export class MutableTreeModel implements TreeModel {
     // (undocumented)
     [immerable]: boolean;
+    changeNodeId(currentId: string, newId: string): boolean;
     clearChildren(parentId: string | undefined): void;
     computeVisibleNodes(): VisibleTreeNodes;
     getChildOffset(parentId: string | undefined, childId: string): number | undefined;
@@ -2908,7 +2909,7 @@ export class MutableTreeModel implements TreeModel {
     iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
     removeChild(parentId: string | undefined, childId: string): void;
     setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
-    setNumChildren(parentId: string | undefined, numChildren: number): void;
+    setNumChildren(parentId: string | undefined, numChildren: number | undefined): void;
     }
 
 // @beta
@@ -4102,6 +4103,8 @@ export class SparseTree<T extends Node> {
     removeChild(parentId: string | undefined, childId: string): void;
     // (undocumented)
     setChildren(parentId: string | undefined, children: T[], offset: number): void;
+    // (undocumented)
+    setNodeId(parentId: string | undefined, index: number, newId: string): boolean;
     // (undocumented)
     setNumChildren(parentId: string | undefined, numChildren: number): void;
 }
