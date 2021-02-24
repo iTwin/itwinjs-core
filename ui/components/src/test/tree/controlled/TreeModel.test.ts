@@ -226,7 +226,65 @@ describe("MutableTreeModel", () => {
       treeModel.insertChild(rootNode.id, childNode, 0);
       treeMock.verifyAll();
     });
+  });
 
+  describe("changeNodeId", () => {
+    beforeEach(() => {
+      treeModel = new MutableTreeModel();
+    });
+
+    it("does nothing when target node does not exist and returns `false`", () => {
+      const resultStatus = treeModel.changeNodeId("testId", "newId");
+      expect(resultStatus).to.be.false;
+      expect(treeModel.getNode("newId")).to.be.undefined;
+    });
+
+    it("does nothing when node with the same id already exists and returns `false`", () => {
+      const existingNode = createTreeModelNodeInput("existingNode");
+      treeModel.insertChild(undefined, existingNode, 0);
+      const targetNode = createTreeModelNodeInput("targetNode");
+      treeModel.insertChild(undefined, targetNode, 1);
+
+      const resultStatus = treeModel.changeNodeId("targetNode", "existingNode");
+
+      expect(resultStatus).to.be.false;
+      expect(treeModel.getNode("existingNode")!.item).to.be.deep.equal(existingNode.item);
+      expect(treeModel.getNode("targetNode")!.item).to.be.deep.equal(targetNode.item);
+    });
+
+    it("does nothing if equal ids are passed", () => {
+      const nodeInput = createTreeModelNodeInput("testId");
+      treeModel.insertChild(undefined, nodeInput, 0);
+      const resultStatus = treeModel.changeNodeId("testId", "testId");
+
+      expect(resultStatus).to.be.true;
+      expect(treeModel.getNode("testId")!.item).to.be.deep.equal(nodeInput.item);
+    });
+
+    it("changes node id", () => {
+      const nodeInput = createTreeModelNodeInput("testId");
+      treeModel.insertChild(undefined, nodeInput, 0);
+      const resultStatus = treeModel.changeNodeId("testId", "newId");
+
+      expect(resultStatus).to.be.true;
+      expect(treeModel.getNode("testId")).to.be.undefined;
+      expect(treeModel.getNode("newId")!.item).to.be.deep.equal(nodeInput.item);
+    });
+
+    it("updates hierarchy", () => {
+      treeModel.setChildren(undefined, [createTreeModelNodeInput("root1")], 0);
+      treeModel.setChildren("root1", [createTreeModelNodeInput("child1")], 0);
+      treeModel.setChildren("child1", [createTreeModelNodeInput("grandchild1")], 0);
+
+      const resultStatus = treeModel.changeNodeId("child1", "updated_id");
+
+      expect(resultStatus).to.be.true;
+      expect(treeModel.getChildren("child1")).to.be.undefined;
+      expect([...treeModel.getChildren(undefined)!]).to.be.deep.equal(["root1"]);
+      expect([...treeModel.getChildren("root1")!]).to.be.deep.equal(["updated_id"]);
+      expect([...treeModel.getChildren("updated_id")!]).to.be.deep.equal(["grandchild1"]);
+      expect(treeModel.getNode("grandchild1")!.parentId).to.be.equal("updated_id");
+    });
   });
 
   describe("setNumChildren", () => {
