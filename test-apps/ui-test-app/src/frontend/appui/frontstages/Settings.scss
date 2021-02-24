@@ -17,7 +17,6 @@ $settings-rightpanel-width: 220px;
   }
 
 .uifw-settings {
-  @include uicore-scrollview;
   background: $buic-background-dialog;
   color: $buic-text-color;
   border-radius: 3px;
@@ -52,6 +51,8 @@ $settings-rightpanel-width: 220px;
   }
 
   > .right-panel {
+    display:flex;
+    justify-content: center;
     align-items: center;
     min-width: $settings-rightpanel-width;
     padding: 30px 50px 30px 30px;

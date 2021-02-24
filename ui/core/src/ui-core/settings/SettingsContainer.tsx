@@ -113,14 +113,19 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
       tooltip: tab.tooltip, tabId: tab.tabId, disabled: tab.disabled};
   });
   const activeIndex = tabs.findIndex((tab)=>tab.tabId === openTab.tabId);
-
   return (
     <div className="core-settings-container">
       <div className="core-settings-container-left">
         <VerticalTabs labels={labels} activeIndex={activeIndex} onActivateTab={onActivateTab} />
       </div>
       <div className="core-settings-container-right">
-        {openTab?.page ?? null}
+        <div className="core-settings-container-right-header">
+          <span className="core-settings-container-main-header">{openTab?.label}</span>
+          {openTab?.subLabel && <span className="core-settings-container-main-sub-header">{openTab?.subLabel}</span>}
+        </div>
+        <div className="core-settings-container-right-contents">
+          {openTab?.page ?? null}
+        </div>
       </div>
     </div>
   );
