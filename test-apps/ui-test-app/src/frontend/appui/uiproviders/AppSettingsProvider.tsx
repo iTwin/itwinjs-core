@@ -5,7 +5,7 @@
 import * as React from "react";
 
 import { UiFramework } from "@bentley/ui-framework";
-import { SettingsEntry, SettingsProvider } from "@bentley/ui-components";
+import { SettingsEntry, SettingsProvider } from "@bentley/ui-core";
 import { getQuantityFormatsSettingsManagerEntry } from "../frontstages/QuantityFormatStage";
 import { ConnectedUiSettingsPage } from "../frontstages/Settings";
 

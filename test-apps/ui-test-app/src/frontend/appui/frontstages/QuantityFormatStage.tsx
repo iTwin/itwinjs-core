@@ -10,8 +10,8 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { FormatProps, FormatterSpec } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
-import { FormatSample, ProcessSettingsContainerCloseEventArgs, ProcessSettingsTabActivationEventArgs, QuantityFormatPanel, SettingsEntry } from "@bentley/ui-components";
-import { Button, ButtonType, Dialog, Listbox, ListboxItem } from "@bentley/ui-core";
+import { FormatSample, QuantityFormatPanel } from "@bentley/ui-components";
+import { Button, ButtonType, Dialog, Listbox, ListboxItem, ProcessSettingsContainerCloseEventArgs, ProcessSettingsTabActivationEventArgs, SettingsEntry } from "@bentley/ui-core";
 import { ModalDialogManager, UiFramework } from "@bentley/ui-framework";
 
 function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {

@@ -14,15 +14,15 @@ import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvi
 import { DateFormatter, IconSpecUtilities, ParseResults, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, SettingsContainer, SettingsTab, WeightPickerButton,
+  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
 } from "@bentley/ui-components";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus,
   MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
-  SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title, Toggle, ToggleButtonType,
-  UnderlinedButton, VerticalTabs,
+  SearchBox, Select, SettingsContainer, SettingsTab, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
+  Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails, UiFramework } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../..";
@@ -47,7 +47,7 @@ function MySettingsPage() {
 
   return (
     <div style={{ display: "flex", width: "100%", height: "100%" }}>
-      <SettingsContainer title="Hello Settings" tabs={tabs} settingsManager={UiFramework.settingsManager} showBackButton={true} onBackButtonClick={()=>{}} />
+      <SettingsContainer tabs={tabs} settingsManager={UiFramework.settingsManager} />
     </div>
   );
 }

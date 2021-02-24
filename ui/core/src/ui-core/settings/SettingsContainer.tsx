@@ -2,14 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Settings
+ */
 
 import "./SettingsContainer.scss";
-import React from "react";
-import { VerticalTabs } from "@bentley/ui-core";
+import * as React from "react";
 import { ActivateSettingsTabEventArgs, ProcessSettingsContainerCloseEventArgs, SettingsManager } from "./SettingsManager";
+import { VerticalTabs } from "../tabs/VerticalTabs";
 
 /**
- * @internal
+ * @alpha
  */
 export interface SettingsTab {
   /** unique id for entry */
@@ -31,27 +34,22 @@ export interface SettingsTab {
 }
 
 /**
- * @internal
+ * @alpha
  */
 export interface SettingsContainerProps {
   tabs: SettingsTab[];
   // sets tab to set as active tab
   currentSettingsTab?: SettingsTab;
-  // If plugging into Modal-Frontstage, then don't need a title as UiFramework will take care of this
-  title?: string;
-  // If plugging into Modal-Frontstage, then don't need a back button as UiFramework will take care of this
-  showBackButton?: boolean;
-  // If we're providing the back button, then provide the on click handlers for the back button
-  onBackButtonClick?: () => void;
   // If plugging into a SPA and you need to modify the route, you can pass in additional logic here
   onSettingsTabSelected?: (tab: SettingsTab) => void;
+  // The SettingsManager that can have event handlers registered against it so pages can save its settings before the page is closed.
   settingsManager: SettingsManager;
 }
 
 /**
  * Note that SettingsContainer is not rendered if tabs is empty
  */
-export const SettingsContainer = ({title, tabs, showBackButton, onBackButtonClick, onSettingsTabSelected, currentSettingsTab, settingsManager}: SettingsContainerProps) => {
+export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsTab, settingsManager}: SettingsContainerProps) => {
   const [openTab, setOpenTab] = React.useState(()=>{
     if (currentSettingsTab && !currentSettingsTab.disabled)
       return currentSettingsTab;
@@ -117,29 +115,11 @@ export const SettingsContainer = ({title, tabs, showBackButton, onBackButtonClic
   const activeIndex = tabs.findIndex((tab)=>tab.tabId === openTab.tabId);
 
   return (
-    <div className={"SettingsPage_layout"}>
-      {showBackButton && (
-        <div className={"SettingsPage_header"}>
-          <div className={"SettingsPage_backButtonWrapper"}>
-            {/* Added an inline svg instead of using the svg as a component because we don't use svg loaders to build & compile this pkg */}
-            <svg
-              viewBox="0 0 16 16"
-              className="SettingsPage_backButton"
-              onClick={() => {
-                if (onBackButtonClick) {
-                  onBackButtonClick();
-                }
-              }}
-            >
-              <path d="M9.47 3.47 10.53 4.53 7.06 8 10.53 11.47 9.47 12.53 4.939 8 9.47 3.47z" />
-              <path d="M8 14.5A6.5 6.5 0 1 1 14.5 8 6.5074 6.5074 0 0 1 8 14.5M8 16A8 8 0 1 0 0 8a8 8 0 0 0 8 8" />
-            </svg>
-          </div>
-          <div className={"SettingsPage_title"}>{title}</div>
-        </div>
-      )}
-      <div className={"SettingsPage_content"}>
+    <div className="core-settings-container">
+      <div className="core-settings-container-left">
         <VerticalTabs labels={labels} activeIndex={activeIndex} onActivateTab={onActivateTab} />
+      </div>
+      <div className="core-settings-container-right">
         {openTab?.page ?? null}
       </div>
     </div>

@@ -8,7 +8,7 @@
 
 import { BeUiEvent, Logger } from "@bentley/bentleyjs-core";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { UiComponents } from "../UiComponents";
+import { UiCore } from "../UiCore";
 
 /** @alpha */
 export interface SettingsEntry {
@@ -34,12 +34,12 @@ export interface SettingsEntry {
 }
 
 /** Event class for [[this.onSettingsProvidersChanged]] which is emitted when a new SettingsProvider is added or removed.
- * @internal
+ * @alpha
  */
 export class SettingsProvidersChangedEvent extends BeUiEvent<SettingsProvidersChangedEventArgs> { }
 
 /** Arguments of [[this.onSettingsProvidersChanged]] event.
- * @internal
+ * @alpha
  */
 export interface SettingsProvidersChangedEventArgs {
   readonly providers: ReadonlyArray<SettingsProvider>;
@@ -47,12 +47,12 @@ export interface SettingsProvidersChangedEventArgs {
 
 /** Event class for [[this.onProcessSettingsTabActivation]] which is emitted when a new Tab needs to be activated. This allows the current
  * settings page to save its settings before activating the new SettingTab.
- * @internal
+ * @alpha
  */
 export class ProcessSettingsTabActivationEvent extends BeUiEvent<ProcessSettingsTabActivationEventArgs> { }
 
 /** Arguments of [[this.onProcessSettingsTabActivation]] event.
- * @internal
+ * @alpha
  */
 export interface ProcessSettingsTabActivationEventArgs {
   readonly requestedSettingsTabId: string;
@@ -61,17 +61,17 @@ export interface ProcessSettingsTabActivationEventArgs {
 
 /** Event class for [[this.onProcessSettingsContainerClose]] which is emitted when the settings container will be close. This allows the current
  * settings page to save its settings before calling the function to close the container.
- * @internal
+ * @alpha
  */
 export class ProcessSettingsContainerCloseEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> { }
 
 /** Event class for [[this.onCloseSettingsContainer]] which is emitted when the settings container should be closed given the closing function and its args.
- * @internal
+ * @alpha
  */
 export class CloseSettingsContainerEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> { }
 
 /** Arguments of [[this.onProcessSettingsContainerClose]] event.
- * @internal
+ * @alpha
  */
 export interface ProcessSettingsContainerCloseEventArgs {
   readonly closeFunc: (args: any) => void;
@@ -79,12 +79,12 @@ export interface ProcessSettingsContainerCloseEventArgs {
 }
 
 /** Event class for [[this.onActivateSettingsTab]] which is emitted when API call needs to set the active settings tab (ie via Tool key-in).
- * @internal
+ * @alpha
  */
 export class ActivateSettingsTabEvent extends BeUiEvent<ActivateSettingsTabEventArgs> { }
 
 /** Arguments of [[this.onActivateSettingsTab]] event.
- * @internal
+ * @alpha
  */
 export interface ActivateSettingsTabEventArgs {
   readonly settingsTabId: string;
@@ -106,28 +106,28 @@ export class SettingsManager {
   private _providers: ReadonlyArray<SettingsProvider> = [];
 
   /** Event raised when SettingsProviders are changed.
-   * @internal
+   * @alpha
    */
   public readonly onSettingsProvidersChanged = new SettingsProvidersChangedEvent();
 
   /** Event raised to for settings page to monitor to intercept SettingTab changes so changed settings can be saved before continuing tab activation.
-   * @internal
+   * @alpha
    */
   public readonly onProcessSettingsTabActivation = new ProcessSettingsTabActivationEvent();
 
   /** Event raised to change the active settings tab shown in UI.
-   * @internal
+   * @alpha
    */
   public readonly onActivateSettingsTab = new ActivateSettingsTabEvent();
 
   /** Event raised to change the active settings tab shown in UI.
-   * @internal
+   * @alpha
    */
   public readonly onProcessSettingsContainerClose = new ProcessSettingsContainerCloseEvent();
 
   public readonly onCloseSettingsContainer = new CloseSettingsContainerEvent();
 
-  /** @internal */
+  /** @alpha */
   public get providers(): ReadonlyArray<SettingsProvider> { return this._providers; }
   public set providers(p: ReadonlyArray<SettingsProvider>) {
     this._providers = p;
@@ -159,7 +159,7 @@ export class SettingsManager {
       ];
       this.providers = updatedProviders;
     } else {
-      Logger.logInfo(UiComponents.loggerCategory(UiComponents), `Settings Provider with id of ${settingsProvider.id} has already been registered`);
+      Logger.logInfo(UiCore.loggerCategory(this), `Settings Provider with id of ${settingsProvider.id} has already been registered`);
     }
   }
 

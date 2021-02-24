@@ -1,0 +1,33 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+@import "../style/themecolors.scss";
+@import "../style/typography";
+
+div.core-settings-container {
+  display: flex;
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+
+  *, *:before, *:after {
+    box-sizing: inherit;
+  }
+
+  .core-settings-container-left {
+    min-width: 15em;
+    height: 100%;
+    overflow: auto;
+    >.uicore-tabs-vertical {
+      font-size: 16px;
+    }
+  }
+  .core-settings-container-right {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background: var(--buic-background-dialog);
+  }
+}

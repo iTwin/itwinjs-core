@@ -91,7 +91,16 @@
       display: flex;
       flex-direction: column;
       .uicore-tabs-subLabel {
-        font-size: $uicore-font-size-small
+        font-size: $uicore-font-size-small;
+        font-weight: $uicore-font-weight-semibold;
+      }
+    }
+    &:not(.core-active) {
+      .uicore-tabs-label-subLabel-container {
+        .uicore-tabs-subLabel {
+          color: $buic-text-color-muted;
+          font-weight: $uicore-font-weight-light;
+        }
       }
     }
   }

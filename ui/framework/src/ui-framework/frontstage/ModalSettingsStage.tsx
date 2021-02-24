@@ -8,14 +8,14 @@
 
 import "./ModalSettingsStage.scss";
 import * as React from "react";
-import { SettingsContainer, SettingsTab } from "@bentley/ui-components";
 import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities, StageUsage } from "@bentley/ui-abstract";
 import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { Logger } from "@bentley/bentleyjs-core";
+import { SettingsContainer, SettingsTab } from "@bentley/ui-core";
 import { FrontstageManager, ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "./FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { Logger } from "@bentley/bentleyjs-core";
 
 function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: string}) {
   const id=FrontstageManager.activeFrontstageDef?.id??"none";
