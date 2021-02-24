@@ -63,22 +63,68 @@ describe("UrlPropertyValueRenderer", () => {
       expect(() => renderer.render(arrayProperty)).to.throw;
     });
 
-    it("handles whole URI value, when clicked", () => {
-      const renderer = new UrlPropertyValueRenderer();
-      const stringProperty = TestUtils.createURIProperty("Label", "Test property");
+    describe("onClick", () => {
       const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
-      location = locationMockRef.object;
+      let spy: sinon.SinonStub<[(string | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
 
-      const element = renderer.render(stringProperty);
-      const renderedElement = render(<>{element}</>);
+      before(() => {
+        location = locationMockRef.object;
+      });
 
-      const linkElement = renderedElement.container.getElementsByClassName("core-underlined-button")[0];
+      after(() => {
+        locationMockRef.reset();
+      });
 
-      expect(linkElement.textContent).to.be.eq("Test property");
+      afterEach(() => {
+        spy.restore();
+      });
 
-      fireEvent.click(linkElement);
-      expect(locationMockRef.object.href).to.be.equal("Test property");
-    });
+      it("opens window using the whole URI value, when link which doesn't start with pw: or mailto: is clicked", () => {
+        const renderer = new UrlPropertyValueRenderer();
+        const stringProperty = TestUtils.createURIProperty("Label", "Random Test property");
+        spy = sinon.stub(window, "open");
+        spy.returns(moq.Mock.ofType<Window>().object);
+
+        const element = renderer.render(stringProperty);
+        const renderedElement = render(<>{element}</>);
+
+        const linkElement = renderedElement.container.getElementsByClassName("core-underlined-button")[0];
+
+        expect(linkElement.textContent).to.be.eq("Random Test property");
+
+        fireEvent.click(linkElement);
+        expect(spy).to.be.calledOnceWith("Random Test property", "_blank");
+      });
+
+      it("sets location.href to the whole URI value, when link starting with pw: or mailto: is clicked", () => {
+        const renderer = new UrlPropertyValueRenderer();
+        const stringProperty = TestUtils.createURIProperty("Label", "pw:Test property");
+
+        const element = renderer.render(stringProperty);
+        const renderedElement = render(<>{element}</>);
+
+        const linkElement = renderedElement.container.getElementsByClassName("core-underlined-button")[0];
+        expect(linkElement.textContent).to.be.eq("pw:Test property");
+
+        fireEvent.click(linkElement);
+        expect(locationMockRef.object.href).to.be.equal("pw:Test property");
+      });
+
+      it("sets location.href to the whole URI value, when link starting with mailto: is clicked", () => {
+        const renderer = new UrlPropertyValueRenderer();
+        const stringProperty = TestUtils.createURIProperty("Label", "mailto:Test property");
+
+        const element = renderer.render(stringProperty);
+        const renderedElement = render(<>{element}</>);
+
+        const linkElement = renderedElement.container.getElementsByClassName("core-underlined-button")[0];
+
+        expect(linkElement.textContent).to.be.eq("mailto:Test property");
+
+        fireEvent.click(linkElement);
+        expect(locationMockRef.object.href).to.be.equal("mailto:Test property");
+      });
+    })
   });
 
   describe("canRender", () => {

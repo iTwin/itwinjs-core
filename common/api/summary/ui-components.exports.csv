@@ -92,7 +92,7 @@ beta;ControlledSelectableContentProps
 beta;ControlledTree(props: ControlledTreeProps): JSX.Element
 beta;ControlledTreeProps 
 public;ConvertedPrimitives
-beta;convertPrimitiveRecordToString(record: PropertyRecord): string | Promise
+internal;convertPrimitiveRecordToString(record: PropertyRecord): string | Promise
 internal;CubeHover
 beta;CubeNavigationAid 
 beta;CubeNavigationAidProps 

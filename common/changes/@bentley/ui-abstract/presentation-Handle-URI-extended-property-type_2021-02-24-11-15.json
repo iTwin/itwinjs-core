@@ -2,7 +2,12 @@
   "changes": [
     {
       "packageName": "@bentley/ui-abstract",
-      "comment": "Added URL StandardTypeName and changed LinkElementsInfo.onClick to be mandatory.",
+      "comment": "Added `StandardTypeName.URL`.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Changed `LinkElementsInfo.onClick` to be mandatory.",
       "type": "none"
     }
   ],

@@ -1109,7 +1109,7 @@ export namespace ConvertedPrimitives {
     export type Value = boolean | number | string | Date | Point | Id64String;
 }
 
-// @beta
+// @internal
 export function convertPrimitiveRecordToString(record: PropertyRecord): string | Promise<string>;
 
 // @internal (undocumented)
@@ -3488,7 +3488,6 @@ export class PropertyGridCommons {
         start: number;
         end: number;
     }>;
-    // @beta
     static handleLinkClick(text: string): void;
 }
 

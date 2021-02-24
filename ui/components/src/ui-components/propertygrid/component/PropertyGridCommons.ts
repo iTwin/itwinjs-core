@@ -108,7 +108,7 @@ export class PropertyGridCommons {
 
   /**
    * Helper method to handle link clicks
-   * @beta
+   * @internal
    */
   public static handleLinkClick(text: string) {
     const linksArray = matchLinks(text);

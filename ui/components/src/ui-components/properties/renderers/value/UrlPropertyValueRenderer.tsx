@@ -40,10 +40,13 @@ export class UrlPropertyValueRenderer implements IPropertyValueRenderer {
  * Default URI onClick event, sets location.href to the whole URI value without matching it
  * against URL regex.
  */
-function uriOnClick(text: string) {
-  location.href = text;
+function urlOnClick(text: string) {
+  if (text.startsWith("mailto:") || text.startsWith("pw:"))
+    location.href = text;
+  else
+    window.open(text, "_blank")!.focus();
 }
 
 const URI_PROPERTY_LINK_HANDLER: LinkElementsInfo = {
-  onClick: uriOnClick,
+  onClick: urlOnClick,
 };

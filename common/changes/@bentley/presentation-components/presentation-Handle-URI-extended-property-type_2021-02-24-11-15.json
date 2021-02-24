@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/presentation-components",
-      "comment": "From now on ContentBuilder does not mutate links on PropertyRecord.",
+      "comment": "Changed `PresentationManager` to **not** set link information on created `PropertyRecords`. Default behavior should be handled by UI components. Custom behavior can be injected by overriding data providers that return the records.",
       "type": "none"
     }
   ],
