@@ -43,7 +43,7 @@ export interface BrowserAuthorizationClientConfiguration {
  * @beta
  */
 export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
   protected _accessToken?: AccessToken;
 

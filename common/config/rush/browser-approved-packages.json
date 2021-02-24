@@ -48,7 +48,7 @@
     },
     {
       "name": "@bentley/electron-manager",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@bentley/eslint-plugin",

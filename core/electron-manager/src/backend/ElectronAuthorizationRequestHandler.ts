@@ -15,10 +15,9 @@ import {
   AuthorizationResponseJson, AuthorizationServiceConfiguration, BasicQueryStringUtils,
 } from "@openid/appauth";
 import { NodeCrypto } from "@openid/appauth/built/node_support";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 
-const loggerCategory = BackendLoggerCategory.Authorization;
+const loggerCategory = "electron-backend";
 
 /**
  * Utility to setup a local web server that listens to authorization responses to the browser and make the necessary redirections

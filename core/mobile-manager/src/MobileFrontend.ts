@@ -8,4 +8,3 @@ export * from "./frontend/AuthorizationFrontend";
 export * from "./frontend/IOSApp";
 export * from "./frontend/MobileApp";
 export * from "./common/MobileRpcManager";
-export * from "./common/MobileAuthorizationClientConfiguration";

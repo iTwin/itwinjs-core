@@ -11,6 +11,14 @@ import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
 const loggerCategory = ITwinClientLoggerCategory.Authorization;
 
+export interface UserInfoProps {
+  id: string;
+  email?: { id: string, isVerified?: boolean };
+  profile?: { firstName: string, lastName: string, name?: string, preferredUserName?: string };
+  organization?: { id: string, name: string };
+  featureTracking?: { ultimateSite: string, usageCountryIso: string };
+}
+
 /** Information on the authenticated user.
  * @beta
  */
@@ -37,7 +45,7 @@ export class UserInfo {
    * @throws [BentleyError]($bentley) if the supplied json parameter is undefined
    * @beta
    */
-  public static fromJson(jsonObj: any): UserInfo {
+  public static fromJson(jsonObj: UserInfoProps): UserInfo {
     if (!jsonObj)
       throw new BentleyError(AuthStatus.Error, "Expected valid json to be passed to UserInfo.fromTokenResponseJson", Logger.logError, loggerCategory, () => jsonObj);
     return new UserInfo(jsonObj.id, jsonObj.email, jsonObj.profile, jsonObj.organization, jsonObj.featureTracking);

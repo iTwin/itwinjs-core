@@ -19,7 +19,7 @@ export interface FrontendAuthorizationClient extends AuthorizationClient {
   signOut(requestContext: ClientRequestContext): Promise<void>;
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
-  readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+  readonly onUserStateChanged: BeEvent<(token?: AccessToken) => void>;
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
   hasSignedIn: boolean;

@@ -4,3 +4,4 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./frontend/ElectronApp";
+export * from "./frontend/DesktopAuthorizationFrontend";

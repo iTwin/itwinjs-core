@@ -1,49 +1,46 @@
+
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Authentication
+ */
 
 import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { NativeAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { FrontendRequestContext, NativeApp } from "@bentley/imodeljs-frontend";
-import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 
-/** Utility to provide OIDC/OAuth tokens from native ios app to frontend
+/**
+ * For use in desktop apps
  * @alpha
  */
-export class MobileAuthorizationFrontend extends ImsAuthorizationClient implements FrontendAuthorizationClient {
-  private _accessToken?: AccessToken;
+export class DesktopAuthorizationFrontend {
   private _clientConfiguration: NativeAuthorizationConfiguration;
+  private _accessToken?: AccessToken;
+  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+
   public constructor(clientConfiguration: NativeAuthorizationConfiguration) {
-    super();
     this._clientConfiguration = clientConfiguration;
   }
+
   /** Used to initialize the client - must be awaited before any other methods are called */
   public async initialize(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    this._clientConfiguration.issuerUrl = await this.getUrl(requestContext);
-    await NativeApp.callNativeHost("initializeAuth", requestContext, this._clientConfiguration);
+    return NativeApp.callNativeHost("initializeAuth", requestContext, this._clientConfiguration);
   }
-  /** Start the sign-in process */
+
+  /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
   public async signIn(requestContext: ClientRequestContext): Promise<void> {
-    await NativeApp.callNativeHost("signIn", requestContext);
-  }
-
-  /** Start the sign-out process */
-  public async signOut(requestContext: ClientRequestContext): Promise<void> {
-    return NativeApp.callNativeHost("signOut", requestContext);
-  }
-
-  /** return accessToken */
-  public async getAccessToken(requestContext: ClientRequestContext = new FrontendRequestContext()): Promise<AccessToken> {
     requestContext.enter();
-    if (this.isAuthorized) {
-      return this._accessToken!;
-    }
-    const tokenProps = await NativeApp.callNativeHost("getAccessTokenProps", requestContext);
-    this._accessToken = AccessToken.fromJson(tokenProps);
-    return this._accessToken;
+    return NativeApp.callNativeHost("signIn", requestContext);
+  }
+
+  /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
+  public async signOut(requestContext: ClientRequestContext): Promise<void> {
+    requestContext.enter();
+    return NativeApp.callNativeHost("signOut", requestContext);
   }
 
   /** Set to true if there's a current authorized user or client (in the case of agent applications).
@@ -54,7 +51,7 @@ export class MobileAuthorizationFrontend extends ImsAuthorizationClient implemen
       return false;
 
     const expiresAt = this._accessToken.getExpiresAt();
-    assert(!!expiresAt, "Invalid token in MobileAuthorizationClient");
+    assert(!!expiresAt, "Invalid token in DesktopAuthorizationClient");
     if (expiresAt.getTime() - Date.now() > (this._clientConfiguration.expiryBuffer || 60 * 10) * 1000)
       return true;
 
@@ -71,8 +68,20 @@ export class MobileAuthorizationFrontend extends ImsAuthorizationClient implemen
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
   public get hasSignedIn(): boolean {
-    return !!this._accessToken; // Always silently refreshed
+    return !!this._accessToken;
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+  /** Returns a promise that resolves to the AccessToken if signed in.
+   * - The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
+   * - The token is refreshed if it's possible and necessary.
+   * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
+   * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
+   */
+  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
+    requestContext = requestContext ?? new FrontendRequestContext();
+    requestContext.enter();
+    if (!this.isAuthorized)
+      this._accessToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps", requestContext));
+    return this._accessToken!;
+  }
 }

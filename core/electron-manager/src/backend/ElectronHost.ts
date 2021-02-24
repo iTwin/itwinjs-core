@@ -9,14 +9,13 @@
 // IMPORTANT: Do not call or construct any of these imports. Otherwise, a require("electron") call will be emitted at top level.
 // Instead, access using `ElectronHost.electron.<type>` at point of use in the code.
 import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
-
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
+import { IModelHost, IModelHostConfiguration, IpcHandler, IpcHost, NativeHost } from "@bentley/imodeljs-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { IModelHostConfiguration, IpcHandler, IpcHost, NativeHost } from "@bentley/imodeljs-backend";
+import { DesktopAuthorizationBackend } from "../ElectronBackend";
 
 // cSpell:ignore signin devserver webcontents copyfile
 
@@ -129,8 +128,6 @@ export class ElectronHost {
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
 
-    // Setup handlers for IPC calls to support Authorization
-    DesktopAuthorizationClientIpc.initializeIpc();
   }
 
   /** The "main" BrowserWindow for this application. */
@@ -210,7 +207,9 @@ export class ElectronHost {
       ElectronAppHandler.register();
       opts?.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
+    IModelHost.authorizationClient = new DesktopAuthorizationBackend();
   }
+
 }
 
 class ElectronAppHandler extends IpcHandler {

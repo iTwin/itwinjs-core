@@ -12,7 +12,7 @@ import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import { ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { DesktopAuthorizationFrontend, ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
@@ -21,9 +21,9 @@ import {
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcParams, DesktopAuthorizationClientConfiguration, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcParams, IModelVersion, NativeAuthorizationConfiguration, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import {
-  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions,
+  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelAppOptions,
   IModelConnection, NativeApp, NativeAppLogger, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOptions,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -31,7 +31,7 @@ import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
 import { MapLayersUI } from "@bentley/map-layers";
-import { AndroidApp, IOSApp, MobileAuthorizationClient, MobileAuthorizationClientConfiguration } from "@bentley/mobile-manager/lib/MobileFrontend";
+import { AndroidApp, IOSApp, MobileAuthorizationFrontend } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
@@ -658,7 +658,7 @@ window.addEventListener("beforeunload", async () => { // eslint-disable-line @ty
   await SampleAppIModelApp.closeCurrentIModel();
 });
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | NativeAuthorizationConfiguration {
   let redirectUri = "http://localhost:3000/signin-callback";
   if (ProcessDetector.isMobileAppFrontend) {
     redirectUri = "imodeljs://app/signin-callback";
@@ -690,17 +690,17 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | Deskt
     };
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<FrontendAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationFrontend): Promise<FrontendAuthorizationClient> {
   if (ProcessDetector.isElectronAppFrontend) {
-    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
+    const desktopClient = new DesktopAuthorizationFrontend(oidcConfiguration as NativeAuthorizationConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else if (ProcessDetector.isMobileAppFrontend) {
-    const mobileClient = new MobileAuthorizationClient(oidcConfiguration as MobileAuthorizationClientConfiguration);
+    const mobileClient = new MobileAuthorizationFrontend(oidcConfiguration as NativeAuthorizationConfiguration);
     await mobileClient.initialize(requestContext);
     return mobileClient;
   } else {
-    await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
+    await BrowserAuthorizationCallbackHandler.handleSigninCallback((oidcConfiguration as BrowserAuthorizationClientConfiguration).redirectUri);
     const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
     try {
       await browserClient.signInSilent(requestContext);
@@ -725,7 +725,7 @@ async function main() {
 
   // retrieve, set, and output the global configuration variable
   SampleAppIModelApp.testAppConfiguration = {};
-  SampleAppIModelApp.testAppConfiguration.snapshotPath =  Config.App.get("imjs_TESTAPP_SNAPSHOT_FILEPATH");
+  SampleAppIModelApp.testAppConfiguration.snapshotPath = Config.App.get("imjs_TESTAPP_SNAPSHOT_FILEPATH");
   SampleAppIModelApp.testAppConfiguration.startWithSnapshots = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_START_WITH_SNAPSHOTS");
   SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_REACT_AXE_CONSOLE");
   SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_USE_LOCAL_SETTINGS");

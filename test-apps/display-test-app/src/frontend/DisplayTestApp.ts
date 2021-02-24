@@ -3,17 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
+import { DesktopAuthorizationFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
 } from "@bentley/frontend-authorization-client";
 import {
-  CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, RpcConfiguration, TileContentIdentifier,
+  CloudStorageContainerUrl, CloudStorageTileCache, NativeAuthorizationConfiguration, RpcConfiguration, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
-import {
-  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem,
-} from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
-import { MobileAuthorizationClient, MobileAuthorizationClientConfiguration } from "@bentley/mobile-manager/lib/MobileFrontend";
+import { FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
+import { MobileAuthorizationFrontend } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DisplayTestApp } from "./App";
@@ -64,7 +62,7 @@ async function openIModel(filename: string, writable: boolean): Promise<IModelCo
   return iModelConnection;
 }
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | NativeAuthorizationConfiguration {
   const redirectUri = ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
   const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
@@ -88,13 +86,13 @@ async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientC
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<DesktopAuthorizationClient | BrowserAuthorizationClient | MobileAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | NativeAuthorizationConfiguration): Promise<DesktopAuthorizationFrontend | BrowserAuthorizationClient | MobileAuthorizationFrontend> {
   if (ProcessDetector.isElectronAppFrontend) {
-    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
+    const desktopClient = new DesktopAuthorizationFrontend(oidcConfiguration as NativeAuthorizationConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else if (ProcessDetector.isMobileAppFrontend) {
-    const mobileClient = new MobileAuthorizationClient(oidcConfiguration as MobileAuthorizationClientConfiguration);
+    const mobileClient = new MobileAuthorizationFrontend(oidcConfiguration as NativeAuthorizationConfiguration);
     await mobileClient.initialize(requestContext);
     return mobileClient;
   } else {
@@ -121,17 +119,8 @@ async function signIn(): Promise<boolean> {
   if (oidcClient.isAuthorized)
     return true;
 
-  const retPromise = new Promise<boolean>((resolve, _reject) => {
-    oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
-      resolve(token !== undefined);
-    });
-
-    oidcClient.signIn(requestContext).catch((err) => {
-      _reject(err);
-    });
-  });
-
-  return retPromise;
+  await oidcClient.signIn(requestContext);
+  return oidcClient.hasSignedIn;
 }
 
 class FakeTileCache extends CloudStorageTileCache {

@@ -7,43 +7,71 @@
  */
 
 import * as path from "path";
-import { BeEvent, ClientRequestContext, Config, GuidString } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContext, ClientRequestContextProps, Config, GuidString, IModelStatus } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify,
-  OverriddenBy, RequestNewBriefcaseProps, StorageValue,
+  BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel,
+  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, NativeAuthorizationConfiguration, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AccessToken, AccessTokenProps, AuthorizationClient, AuthorizedClientRequestContext, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
 import { IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
+export abstract class NativeAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
+  public abstract signIn(requestContext: ClientRequestContext): Promise<void>;
+  public abstract signOut(requestContext: ClientRequestContext): Promise<void>;
+  public abstract initialize(requestContext: ClientRequestContext, config: NativeAuthorizationConfiguration): Promise<void>;
+  public abstract getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+  public abstract get isAuthorized(): boolean;
+}
+
 /**
  * Implementation of NativeAppFunctions
  */
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
+
+  private getAuthClient() {
+    const client = IModelHost.authorizationClient;
+    if (!(client instanceof NativeAuthorizationBackend))
+      throw new IModelError(IModelStatus.BadArg, "IModelHost.authorizationClient must be a NativeAuthorizationBackend");
+    return client;
+  }
+  private getClientRequestContext(props: ClientRequestContextProps) {
+    const requestContext = new ClientRequestContext(props.activityId, props.applicationId, props.applicationVersion, props.sessionId);
+    requestContext.enter();
+    return requestContext;
+  }
+  public async initializeAuth(props: ClientRequestContextProps, config: NativeAuthorizationConfiguration): Promise<void> {
+    return this.getAuthClient().initialize(this.getClientRequestContext(props), config);
+  }
+  public async signIn(props: ClientRequestContextProps): Promise<void> {
+    return this.getAuthClient().signIn(this.getClientRequestContext(props));
+  }
+  public async signOut(props: ClientRequestContextProps): Promise<void> {
+    return this.getAuthClient().signOut(this.getClientRequestContext(props));
+  }
+  public async getAccessTokenProps(props: ClientRequestContextProps): Promise<AccessTokenProps> {
+    return (await this.getAuthClient().getAccessToken(this.getClientRequestContext(props))).toJSON();
+  }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();
   }
   public async overrideInternetConnectivity(by: OverriddenBy, status: InternetConnectivityStatus): Promise<void> {
     NativeHost.overrideInternetConnectivity(by, status);
   }
-
   public async getConfig(): Promise<any> {
     return Config.App.getContainer();
   }
-
   public async acquireNewBriefcaseId(iModelId: GuidString): Promise<number> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     return BriefcaseManager.acquireNewBriefcaseId(requestContext, iModelId);
   }
-
   public async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
     return BriefcaseManager.getFileName(props);
   }
-
   public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean): Promise<LocalBriefcaseProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
 
@@ -128,7 +156,10 @@ export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
   private constructor() { }
 
-  public static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void> = new BeEvent<(status: InternetConnectivityStatus) => void>();
+  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
+  public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+
+  public static onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
 
   private static _appSettingsCacheDir?: string;
 
@@ -158,8 +189,10 @@ export class NativeHost {
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
     }
     await IpcHost.startup(opt);
-    if (IpcHost.isValid) // for tests, we use NativeHost but don't have a frontend
+    if (IpcHost.isValid) { // for tests, we use NativeHost but don't have a frontend
       NativeAppHandler.register();
+      this.onUserStateChanged.addListener((token?: AccessToken) => NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
+    }
   }
 
   /**

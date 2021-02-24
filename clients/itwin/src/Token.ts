@@ -7,7 +7,7 @@
  */
 import { AuthStatus, BentleyError, Logger } from "@bentley/bentleyjs-core";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
-import { UserInfo } from "./UserInfo";
+import { UserInfo, UserInfoProps } from "./UserInfo";
 const loggerCategory = ITwinClientLoggerCategory.Authorization;
 
 /**
@@ -41,20 +41,28 @@ class TokenPrefixToTypeContainer {
   public static tokenPrefixToConstructorDict: { [key: string]: any } = {};
 }
 
+/* eslint-disable @typescript-eslint/naming-convention */
+export interface AccessTokenProps {
+  _tokenString: string;
+  _startsAt?: string;
+  _expiresAt?: string;
+  _userInfo?: UserInfoProps;
+}
+
 /** Token issued by DelegationSecureTokenService for API access
  * @beta
  */
 @TokenPrefix("Bearer")
 export class AccessToken {
   protected _prefix: string;
-  protected _tokenString?: string;
+  protected _tokenString: string;
   private _userInfo?: UserInfo;
   private _startsAt?: Date;
   private _expiresAt?: Date;
 
-  /** Create a new AccessToken given a JWT (Jason Web Token) */
+  /** Create a new AccessToken given a JWT (JSON Web Token) */
   public constructor(tokenString?: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo) {
-    this._tokenString = tokenString;
+    this._tokenString = tokenString ?? "";
     this._startsAt = startsAt;
     this._expiresAt = expiresAt;
     this._userInfo = userInfo;
@@ -91,7 +99,7 @@ export class AccessToken {
    * @beta
    */
   public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
-    const jwt = this._tokenString || "";
+    const jwt = this._tokenString;
     return (includePrefix === IncludePrefix.Yes) ? `${this._prefix} ${jwt}` : jwt;
   }
   /**
@@ -137,15 +145,21 @@ export class AccessToken {
    * @throws [BentleyError]($bentley) if the supplied tokenResponse is undefined, or does not contain an "access_token" field
    * @beta
    */
-  public static fromJson(jsonObj: any): AccessToken {
-    if (!jsonObj || !jsonObj._tokenString) {
-      throw new BentleyError(AuthStatus.Error, "Expected JSON representing the token to contain the _tokenString field", Logger.logError, loggerCategory, () => jsonObj);
-    }
+  public static fromJson(jsonObj: AccessTokenProps): AccessToken {
     const jwt = jsonObj._tokenString;
     const startsAt = jsonObj._startsAt !== undefined ? new Date(jsonObj._startsAt) : undefined;
     const expiresAt = jsonObj._expiresAt !== undefined ? new Date(jsonObj._expiresAt) : undefined;
-    const userInfo = UserInfo.fromJson(jsonObj._userInfo);
+    const userInfo = jsonObj._userInfo !== undefined ? UserInfo.fromJson(jsonObj._userInfo) : undefined;
     return new AccessToken(jwt, startsAt, expiresAt, userInfo);
+  }
+
+  public toJSON(): AccessTokenProps {
+    return {
+      _tokenString: this._tokenString,
+      _startsAt: this._startsAt?.toJSON(),
+      _expiresAt: this._expiresAt?.toJSON(),
+      _userInfo: this._userInfo,
+    };
   }
   /**
    * Creates AccessToken from the typical token responses obtained from Authorization servers

@@ -11,10 +11,10 @@ import {
   BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
-import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
-import { IModelAppOptions } from "./imodeljs-frontend";
+import { IModelApp, IModelAppOptions } from "./imodeljs-frontend";
 import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
@@ -35,8 +35,8 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
   }
-  public notifyUserStateChanged(arg: { accessToken: any, err?: string }) {
-    NativeApp.onUserStateChanged.raiseEvent(arg);
+  public notifyUserStateChanged(props?: AccessTokenProps) {
+    IModelApp.authorizationClient?.onUserStateChanged.raiseEvent(props ? AccessToken.fromJson(props) : undefined);
   }
 }
 
@@ -74,7 +74,6 @@ export class NativeApp {
     }
   }
   public static onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
-  public static onUserStateChanged = new BeEvent<(_arg: { accessToken: any, err?: string }) => void>();
 
   public static async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return this.callNativeHost("checkInternetConnectivity");

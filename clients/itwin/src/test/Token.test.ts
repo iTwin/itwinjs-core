@@ -12,7 +12,7 @@ const loggerCategory = ITwinClientLoggerCategory.Authorization;
 @TokenPrefix("Basic")
 class BasicAccessToken extends AccessToken {
 
-  constructor(tokenStr?: string) {
+  constructor(tokenStr: string) {
     super(tokenStr, undefined, undefined, undefined);
     this.setPrefix("Basic");
   }
@@ -70,7 +70,7 @@ describe("AccessToken", async () => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       _tokenString: "abc123",
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      _userInfo: "blah",
+      _userInfo: { id: "blah" },
     };
     const token = AccessToken.fromJson(jsonObject); // fromJson expects _tokenString not tokenString, so we must disable the lint rule.
     chai.assert(token.toTokenString() === "Bearer abc123");

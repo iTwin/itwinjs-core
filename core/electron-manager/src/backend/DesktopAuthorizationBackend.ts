@@ -8,51 +8,46 @@
  * @module Authentication
  */
 
-import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
-import { AccessToken, ImsAuthorizationClient, request, RequestOptions } from "@bentley/itwin-client";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { NativeAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
+import { NativeAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
-  BaseTokenRequestHandler, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, RevokeTokenRequest, RevokeTokenRequestJson, TokenRequest,
-  TokenRequestHandler, TokenRequestJson, TokenResponse,
+  BaseTokenRequestHandler, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, RevokeTokenRequest, RevokeTokenRequestJson, StringMap,
+  TokenRequest, TokenRequestHandler, TokenRequestJson, TokenResponse,
 } from "@openid/appauth";
 import { NodeCrypto, NodeRequestor } from "@openid/appauth/built/node_support";
-import { StringMap } from "@openid/appauth/built/types";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
 import { ElectronTokenStore } from "./ElectronTokenStore";
 import { LoopbackWebServer } from "./LoopbackWebServer";
 
-const loggerCategory = BackendLoggerCategory.Authorization;
+const loggerCategory = "electron-backend";
 // cSpell:ignore openid appauth signin Pkce Signout
 
 /**
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
  * @alpha
  */
-export class DesktopAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
-  private _clientConfiguration: DesktopAuthorizationClientConfiguration;
+export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
+  private _clientConfiguration?: NativeAuthorizationConfiguration;
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
   private _accessToken?: AccessToken;
-  private _tokenStore: ElectronTokenStore;
+  private _tokenStore?: ElectronTokenStore;
 
-  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
-
-  public constructor(clientConfiguration: DesktopAuthorizationClientConfiguration) {
-    super();
-    this._clientConfiguration = clientConfiguration;
-    this._tokenStore = new ElectronTokenStore(this._clientConfiguration.clientId);
-  }
+  public get clientConfiguration() { return this._clientConfiguration!; }
+  public get tokenStore() { return this._tokenStore!; }
 
   /**
    * Used to initialize the client - must be awaited before any other methods are called.
    * The call attempts a silent sign-if possible.
    */
-  public async initialize(requestContext: ClientRequestContext): Promise<void> {
+  public async initialize(requestContext: ClientRequestContext, clientConfiguration: NativeAuthorizationConfiguration): Promise<void> {
+    this._clientConfiguration = clientConfiguration;
+    this._tokenStore = new ElectronTokenStore(this._clientConfiguration.clientId);
+
     const url = await this.getUrl(requestContext);
     const tokenRequestor = new NodeRequestor(); // the Node.js based HTTP client
     this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(
@@ -69,7 +64,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
    * @return AccessToken if it's possible to get a valid access token, and undefined otherwise.
    */
   private async loadAccessToken(requestContext: ClientRequestContext): Promise<AccessToken | undefined> {
-    const tokenResponse = await this._tokenStore.load();
+    const tokenResponse = await this.tokenStore.load();
     if (tokenResponse === undefined || tokenResponse.refreshToken === undefined)
       return undefined;
     try {
@@ -101,9 +96,9 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
 
     // Create the authorization request
     const authReqJson: AuthorizationRequestJson = {
-      client_id: this._clientConfiguration.clientId, // eslint-disable-line @typescript-eslint/naming-convention
-      redirect_uri: this._clientConfiguration.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
-      scope: this._clientConfiguration.scope,
+      client_id: this.clientConfiguration.clientId, // eslint-disable-line @typescript-eslint/naming-convention
+      redirect_uri: this.clientConfiguration.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
+      scope: this.clientConfiguration.scope,
       response_type: AuthorizationRequest.RESPONSE_TYPE_CODE, // eslint-disable-line @typescript-eslint/naming-convention
       extras: { prompt: "consent", access_type: "offline" }, // eslint-disable-line @typescript-eslint/naming-convention
     };
@@ -117,7 +112,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     LoopbackWebServer.addCorrelationState(authorizationRequest.state, authorizationEvents);
 
     // Start a web server to listen to the browser requests
-    LoopbackWebServer.start(this._clientConfiguration);
+    LoopbackWebServer.start(this.clientConfiguration);
 
     const authorizationHandler = new ElectronAuthorizationRequestHandler(authorizationEvents);
 
@@ -210,8 +205,8 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     if (tokenResponse === undefined) {
       this._tokenResponse = undefined;
       this._accessToken = undefined;
-      await this._tokenStore.delete();
-      this.onUserStateChanged.raiseEvent(this._accessToken);
+      await this.tokenStore.delete();
+      NativeHost.onUserStateChanged.raiseEvent(this._accessToken);
       return;
     }
 
@@ -220,12 +215,12 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
 
     this._tokenResponse = tokenResponse;
     this._accessToken = accessToken;
-    await this._tokenStore.save(this._tokenResponse);
-    this.onUserStateChanged.raiseEvent(this._accessToken);
+    await this.tokenStore.save(this._tokenResponse);
+    NativeHost.onUserStateChanged.raiseEvent(this._accessToken);
   }
 
   private isValidToken(tokenResponse: TokenResponse): boolean {
-    const buffer = this._clientConfiguration.expiryBuffer || defaultDesktopAuthorizationClientExpiryBuffer;
+    const buffer = this.clientConfiguration.expiryBuffer || 60 * 10;
     return tokenResponse.isValid(-buffer);
   }
 
@@ -300,8 +295,8 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
       code: authCode,
-      redirect_uri: this._clientConfiguration.redirectUri,
-      client_id: this._clientConfiguration.clientId,
+      redirect_uri: this.clientConfiguration.redirectUri,
+      client_id: this.clientConfiguration.clientId,
       extras,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
@@ -321,8 +316,8 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_REFRESH_TOKEN,
       refresh_token: refreshToken,
-      redirect_uri: this._clientConfiguration.redirectUri,
-      client_id: this._clientConfiguration.clientId,
+      redirect_uri: this.clientConfiguration.redirectUri,
+      client_id: this.clientConfiguration.clientId,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -345,7 +340,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     const revokeTokenRequestJson: RevokeTokenRequestJson = {
       token: refreshToken,
       token_type_hint: "refresh_token",
-      client_id: this._clientConfiguration.clientId,
+      client_id: this.clientConfiguration.clientId,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
