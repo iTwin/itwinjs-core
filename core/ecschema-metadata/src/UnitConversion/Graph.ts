@@ -33,14 +33,14 @@ interface OutEdgesMap {
 }
 
 export class Graph<T> {
-  EDGE_KEY_DELIM = "\x01";
-  _label = "";
-  _nodeCount = 0;
-  _edgeCount = 0;
-  _nodes: NodesMap<T>;
-  _edgeObjs: EdgeObjsMap;
-  _edgeLabels: EdgeLabelsMap;
-  _outEdges: OutEdgesMap;
+  private _edgeKeyDelim = "\x01";
+  private _label = "";
+  private _nodeCount = 0;
+  private _edgeCount = 0;
+  private _nodes: NodesMap<T>;
+  private _edgeObjs: EdgeObjsMap;
+  private _edgeLabels: EdgeLabelsMap;
+  private _outEdges: OutEdgesMap;
 
   constructor() {
     this._nodes = {};
@@ -49,24 +49,24 @@ export class Graph<T> {
     this._outEdges = {};
   }
 
-  setGraph = (label: string): Graph<T> => {
+  public setGraph = (label: string): Graph<T> => {
     this._label = label;
     return this;
   };
 
-  graph = () => {
+  public graph = () => {
     return this._label;
   };
 
-  nodeCount = () => {
+  public nodeCount = () => {
     return this._nodeCount;
   };
 
-  nodes = () => {
+  public nodes = () => {
     return Object.keys(this._nodes);
   };
 
-  setNode = (nodeKey: string, nodeValue: T) => {
+  public setNode = (nodeKey: string, nodeValue: T) => {
     if (nodeKey in this._nodes) {
       this._nodes[nodeKey] = nodeValue;
       return;
@@ -76,24 +76,24 @@ export class Graph<T> {
     ++this._nodeCount;
   };
 
-  node = (nodeKey: string) => {
+  public node = (nodeKey: string) => {
     return this._nodes[nodeKey];
   };
 
-  hasNode = (nodeKey: string) => {
+  public hasNode = (nodeKey: string) => {
     return nodeKey in this._nodes;
   };
 
-  edgeCount = () => {
+  public edgeCount = () => {
     return this._edgeCount;
   };
 
-  edges = () => {
+  public edges = () => {
     return Object.values(this._edgeObjs);
   };
 
-  setEdge = (v: string, w: string, value: { exponent: number }) => {
-    let edgeId = v + this.EDGE_KEY_DELIM + w + this.EDGE_KEY_DELIM;
+  public setEdge = (v: string, w: string, value: { exponent: number }) => {
+    const edgeId = v + this._edgeKeyDelim + w + this._edgeKeyDelim;
     if (edgeId in this._edgeLabels) {
       this._edgeLabels[edgeId] = value;
       return;
@@ -110,14 +110,14 @@ export class Graph<T> {
     this._edgeCount++;
   };
 
-  edge = (v: string, w: string) => {
-    let edgeId = v + this.EDGE_KEY_DELIM + w + this.EDGE_KEY_DELIM;
+  public edge = (v: string, w: string) => {
+    const edgeId = v + this._edgeKeyDelim + w + this._edgeKeyDelim;
     return this._edgeLabels[edgeId];
   };
 
-  outEdges = (v: string) => {
-    let outV = this._outEdges[v];
-    let edges = Object.values(outV);
+  public outEdges = (v: string) => {
+    const outV = this._outEdges[v];
+    const edges = Object.values(outV);
     return edges;
   };
 }

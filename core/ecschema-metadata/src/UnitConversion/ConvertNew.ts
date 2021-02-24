@@ -6,14 +6,14 @@ import { Schema, SchemaItemKey, Unit } from "../ecschema-metadata";
 import { parseDefinition } from "./Parser";
 
 let schema: Schema;
-let schemaMap = new Map();
+const schemaMap = new Map();
 
 // Map schema with unit names as keys
 export function setSchema(schemaInput: Schema) {
   schema = schemaInput;
-  let iter = schema.getItems();
-  for (let elem of iter) {
-    let unit = elem as Unit;
+  const iter = schema.getItems();
+  for (const elem of iter) {
+    const unit = elem as Unit;
     schemaMap.set(elem.name, {
       definition: unit.definition,
       numerator: unit.numerator,
@@ -23,17 +23,17 @@ export function setSchema(schemaInput: Schema) {
   }
 }
 
-type Conversion = {
+interface Conversion {
   multiplier: number;
   offset: number;
-};
+}
 
 export function getConversion(
   fromUnit: SchemaItemKey,
   toUnit: SchemaItemKey
 ): Conversion {
-  let from = recursiveCalculate(fromUnit.name, true);
-  let to = recursiveCalculate(toUnit.name, false);
+  const from = recursiveCalculate(fromUnit.name, true);
+  const to = recursiveCalculate(toUnit.name, false);
   return {
     multiplier: from.multiplier / to.multiplier,
     offset: from.offset / to.multiplier - to.offset,
@@ -42,38 +42,38 @@ export function getConversion(
 
 // Recursive function to calculate unit conversions bottom-up
 function recursiveCalculate(unitName: string, isFrom: boolean): Conversion {
-  let currentUnit = schemaMap.get(unitName);
+  const currentUnit = schemaMap.get(unitName);
   // Definition returns a map of children needed to calculate
-  let unitChildren = parseDefinition(currentUnit.definition);
+  const unitChildren = parseDefinition(currentUnit.definition);
 
   // Base case where unit name equals its definition, like M, KG, ONE
   if (unitName === currentUnit.definition) {
     return { multiplier: 1, offset: 0 };
   }
 
-  let aggregate = { multiplier: 1, offset: 0 };
+  const aggregate = { multiplier: 1, offset: 0 };
   // Calculate each children
   unitChildren.forEach((value, key) => {
-    let result = recursiveCalculate(key, isFrom);
+    const result = recursiveCalculate(key, isFrom);
 
     aggregate.multiplier *= result.multiplier ** value.exponent;
     aggregate.offset += result.offset;
   });
 
-  let fraction = currentUnit.numerator / currentUnit.denominator
+  const fraction = currentUnit.numerator / currentUnit.denominator;
 
   if (isFrom) {
-    aggregate.offset =
-      aggregate.offset + currentUnit.offset * fraction; // Multiply current offset by fraction then add previous offset
-      if (aggregate.offset !== 0) {
-        aggregate.offset = aggregate.offset * aggregate.multiplier;
-      }
+    // Multiply current offset by fraction then add previous offset
+    aggregate.offset = aggregate.offset + currentUnit.offset * fraction;
+    if (aggregate.offset !== 0) {
+      aggregate.offset = aggregate.offset * aggregate.multiplier;
+    }
   } else {
     if (aggregate.offset !== 0) {
       aggregate.offset = aggregate.offset / aggregate.multiplier;
     }
-    aggregate.offset =
-      aggregate.offset / fraction + currentUnit.offset; // Divide previous offset by fraction then add current offset
+    // Divide previous offset by fraction then add current offset
+    aggregate.offset = aggregate.offset / fraction + currentUnit.offset;
   }
 
   aggregate.multiplier *= fraction;

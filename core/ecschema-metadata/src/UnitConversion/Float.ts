@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { nextUp, nextDown } from "ulp";
+import { nextDown, nextUp } from "ulp";
 
 export class Float {
-  static ulp(l: number): number {
+  public static ulp(l: number): number {
     const lup = nextUp(l);
     const ldown = nextDown(l);
     return lup - ldown;
   }
 
-  static equals(
+  public static equals(
     l: number,
     m: number,
     ulp: number | undefined = undefined
