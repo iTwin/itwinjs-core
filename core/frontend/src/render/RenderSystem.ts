@@ -472,7 +472,7 @@ export abstract class RenderSystem implements IDisposable {
    * An application can override this behavior as follows:
    * ```ts
    * RenderSystem.contextLossHandler = (): Promise<any> => {
-   *  // ...your implementation here...
+   *  // your implementation here.
    * }
    * ```
    * @note Context loss is reported by the browser some short time *after* it has occurred. It is not possible to determine the specific cause.
