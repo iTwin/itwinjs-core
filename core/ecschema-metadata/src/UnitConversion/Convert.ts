@@ -21,16 +21,16 @@ export type ConvertorFunction = (from: number) => number;
  * Convertor context is used to process unit conversion
  */
 export class UnitConvertorContext {
-  static identity: (x: number) => number = (x) => x;
+  public static identity: (x: number) => number = (x) => x;
 
   private _uGraph: UnitGraph;
 
   /**
    * Create convertor context
-   * @param context SchemaContext with contexts added to it.
+   * @param _context SchemaContext with contexts added to it.
    */
-  constructor(private readonly context: SchemaContext) {
-    this._uGraph = new UnitGraph(this.context);
+  constructor(private readonly _context: SchemaContext) {
+    this._uGraph = new UnitGraph(this._context);
   }
 
   /**
@@ -39,11 +39,11 @@ export class UnitConvertorContext {
    * @param to item key of target unit
    * @returns convertor function to convert source unit value to target unit
    */
-  async processSchemaItem(
+  public async processSchemaItem(
     from: SchemaItemKey,
     to: SchemaItemKey
   ): Promise<LinearMap> {
-    const fromItem = await this.context.getSchemaItem(from);
+    const fromItem = await this._context.getSchemaItem(from);
     if (fromItem?.schemaItemType !== SchemaItemType.Unit)
       throw new BentleyError(
         BentleyStatus.ERROR,
@@ -52,7 +52,7 @@ export class UnitConvertorContext {
           return { schemaItem: from };
         }
       );
-    const toItem = await this.context.getSchemaItem(to);
+    const toItem = await this._context.getSchemaItem(to);
     if (toItem?.schemaItemType !== SchemaItemType.Unit)
       throw new BentleyError(
         BentleyStatus.ERROR,
@@ -65,8 +65,8 @@ export class UnitConvertorContext {
     return this.processUnits(fromItem as Unit, toItem as Unit);
   }
 
-  async processUnits(from: Unit, to: Unit): Promise<LinearMap> {
-    if (from.key.matches(to.key)) return LinearMap.Identity;
+  public async processUnits(from: Unit, to: Unit): Promise<LinearMap> {
+    if (from.key.matches(to.key)) return LinearMap.identity;
 
     const fromPhenomenon = await from.phenomenon;
     const toPhenomenon = await to.phenomenon;
@@ -92,8 +92,8 @@ export class UnitConvertorContext {
     const fromMapStore = this._uGraph.reduce(from, new Set<string>());
     const toMapStore = this._uGraph.reduce(to, new Set<string>());
 
-    const fromMap = fromMapStore.get(from.key.fullName) || LinearMap.Identity;
-    const toMap = toMapStore.get(to.key.fullName) || LinearMap.Identity;
+    const fromMap = fromMapStore.get(from.key.fullName) || LinearMap.identity;
+    const toMap = toMapStore.get(to.key.fullName) || LinearMap.identity;
     const fromInverse = fromMap.inverse();
     return fromInverse.compose(toMap);
   }

@@ -12,11 +12,11 @@ enum Tokens {
   Exponent = 3,
 }
 
-export type Definition = {
+export interface Definition {
   name: string;
   exponent: number;
   constant: boolean;
-};
+}
 
 export function parseDefinition(definition: string): Map<string, Definition> {
   const unitMap: Map<string, Definition> = new Map();
@@ -30,7 +30,7 @@ export function parseDefinition(definition: string): Map<string, Definition> {
         : 1;
       const constant = tokens[Tokens.Bracket] !== undefined;
       if (unitMap.has(name)) {
-        let currentDefinition = unitMap.get(name)!;
+        const currentDefinition = unitMap.get(name)!;
         currentDefinition.exponent += exponent;
         unitMap.set(name, currentDefinition);
       } else {
