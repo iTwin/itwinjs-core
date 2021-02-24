@@ -39,6 +39,7 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { immerable } from 'immer';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import * as Inspire from 'inspire-tree';
+import { LinkElementsInfo } from '@bentley/ui-abstract';
 import { Matrix3d } from '@bentley/geometry-core';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeCheckboxProps as NodeCheckboxProps_2 } from '@bentley/ui-core';
@@ -973,8 +974,8 @@ export interface CommonPropertyGridProps extends CommonProps {
     onPropertyContextMenu?: (args: PropertyGridContextMenuArgs) => void;
     // @beta
     onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
-    // @beta
-    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
+    // @deprecated
+    onPropertyLinkClick?: (text: string) => void;
     onPropertySelectionChanged?: (property: PropertyRecord) => void;
     // @beta
     onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
@@ -1107,6 +1108,9 @@ export namespace ConvertedPrimitives {
     }
     export type Value = boolean | number | string | Date | Point | Id64String;
 }
+
+// @beta
+export function convertPrimitiveRecordToString(record: PropertyRecord): string | Promise<string>;
 
 // @internal (undocumented)
 export enum CubeHover {
@@ -1321,6 +1325,9 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
     // (undocumented)
     sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number;
 }
+
+// @beta
+export const DEFAULT_LINKS_HANDLER: LinkElementsInfo;
 
 // @public
 export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
@@ -3474,10 +3481,16 @@ export interface PropertyGridCategory {
 // @internal (undocumented)
 export class PropertyGridCommons {
     // (undocumented)
-    static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick?: (property: PropertyRecord, text: string) => void): void;
+    static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick: (text: string) => void): void;
     // (undocumented)
     static getCurrentOrientation(width: number, preferredOrientation?: Orientation, isOrientationFixed?: boolean, horizontalOrientationMinWidth?: number): Orientation;
-    }
+    static getLinks: (value: string) => Array<{
+        start: number;
+        end: number;
+    }>;
+    // @beta
+    static handleLinkClick(text: string): void;
+}
 
 // @public
 export interface PropertyGridContextMenuArgs {
@@ -5409,7 +5422,7 @@ export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(d
 // @alpha
 export function usePropertyData(props: {
     dataProvider: IPropertyDataProvider;
-    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
+    onPropertyLinkClick?: (text: string) => void;
 }): {
     value: import("../PropertyDataProvider").PropertyData | undefined;
     inProgress: boolean;
@@ -5428,11 +5441,11 @@ export function usePropertyGridModel(props: {
 // @alpha
 export function usePropertyGridModelSource(props: {
     dataProvider: IPropertyDataProvider;
-    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
+    onPropertyLinkClick?: (text: string) => void;
 }): PropertyGridModelSource;
 
 // @internal (undocumented)
-export function useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise<string>, context?: PropertyValueRendererContext): {
+export function useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise<string>, context?: PropertyValueRendererContext, linksHandler?: LinkElementsInfo): {
     stringValue?: string;
     element: React.ReactNode;
 };

@@ -92,6 +92,7 @@ beta;ControlledSelectableContentProps
 beta;ControlledTree(props: ControlledTreeProps): JSX.Element
 beta;ControlledTreeProps 
 public;ConvertedPrimitives
+beta;convertPrimitiveRecordToString(record: PropertyRecord): string | Promise
 internal;CubeHover
 beta;CubeNavigationAid 
 beta;CubeNavigationAidProps 
@@ -114,6 +115,7 @@ internal;DateTimeEditor
 internal;DateTimePropertyEditor 
 public;DateTimeTypeConverter 
 public;class DateTimeTypeConverterBase 
+beta;DEFAULT_LINKS_HANDLER: LinkElementsInfo
 public;DelayLoadedTreeNodeItem 
 public;DEPRECATED_FilteringInputProps 
 public;DEPRECATED_Tree 

@@ -7,10 +7,9 @@
  */
 
 import * as React from "react";
-import { LinkElementsInfo, PrimitiveValue, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
-import { TypeConverterManager } from "../../../converters/TypeConverterManager";
+import { LinkElementsInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { PrimitivePropertyValueRendererImpl } from "./PrimitivePropertyValueRenderer";
+import { convertPrimitiveRecordToString, PrimitivePropertyValueRendererImpl } from "./PrimitivePropertyValueRenderer";
 
 /**
  * URL property value renderer that renders the whole value as a URL without matching it
@@ -28,22 +27,13 @@ export class UrlPropertyValueRenderer implements IPropertyValueRenderer {
 
   /** Method that returns a JSX representation of PropertyRecord */
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
-    if (!record.links)
-      record.links = URI_PROPERTY_LINK_HANDLER;
-
     return <PrimitivePropertyValueRendererImpl
       record={record}
       context={context}
-      stringValueCalculator={convertRecordToString}
+      stringValueCalculator={convertPrimitiveRecordToString}
+      linksHandler={URI_PROPERTY_LINK_HANDLER}
     />;
   }
-}
-
-function convertRecordToString(record: PropertyRecord) {
-  const primitive = record.value as PrimitiveValue;
-  if (primitive.displayValue)
-    return primitive.displayValue;
-  return TypeConverterManager.getConverter(record.property.typename, record.property.converter?.name).convertPropertyToString(record.property, primitive.value);
 }
 
 /**

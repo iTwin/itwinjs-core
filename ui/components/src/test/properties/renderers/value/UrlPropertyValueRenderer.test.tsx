@@ -16,9 +16,9 @@ import * as moq from "typemoq";
 describe("UrlPropertyValueRenderer", () => {
 
   describe("render", () => {
-    it("renders URI property wrapped in an anchored tag from display value", () => {
+    it("renders URI property wrapped in an anchored tag from value", () => {
       const renderer = new UrlPropertyValueRenderer();
-      const property = TestUtils.createURIProperty("Category", "Value", "Test Uri Value: pw:\\wsp-aus-pw.bentley.com:wsp-aus-pw-10\Documents\Southern Program Alliance");
+      const property = TestUtils.createURIProperty("Category", "Test Uri Value: pw:\\wsp-aus-pw.bentley.com:wsp-aus-pw-10\Documents\Southern Program Alliance");
 
       const element = renderer.render(property);
       const elementRender = render(<>{element}</>);
@@ -28,7 +28,7 @@ describe("UrlPropertyValueRenderer", () => {
 
     it("renders URI property wrapped in an anchored tag if custom LinkElementsInfo is specified in the PropertyRecord", () => {
       const renderer = new UrlPropertyValueRenderer();
-      const property: PropertyRecord = TestUtils.createURIProperty("Category", "Value", "Test www.test.com");
+      const property: PropertyRecord = TestUtils.createURIProperty("Category", "Test www.test.com");
 
       property.links = {
         onClick: sinon.spy(),
@@ -39,28 +39,6 @@ describe("UrlPropertyValueRenderer", () => {
       const elementRender = render(<>{element}</>);
 
       expect(elementRender.container.getElementsByClassName("core-underlined-button")[0].textContent).to.be.eq("Test");
-    });
-
-    it("renders URI property wrapped in an anchored tag from raw value", () => {
-      const renderer = new UrlPropertyValueRenderer();
-      const property = TestUtils.createURIProperty("Category", "Value");
-
-      const element = renderer.render(property);
-      const elementRender = render(<>{element}</>);
-
-      elementRender.getByText("Value");
-
-      expect(elementRender.container.getElementsByClassName("core-underlined-button")[0].textContent).to.be.eq("Value");
-    });
-
-    it("doesn't render URI property from name", () => {
-      const renderer = new UrlPropertyValueRenderer();
-      const property = TestUtils.createURIProperty("Category", "", "");
-
-      const element = renderer.render(property);
-      const elementRender = render(<>{element}</>);
-
-      expect(() => elementRender.getByText("Category")).to.throw("Unable to find an element with the text: Category");
     });
 
     it("renders URI property with highlighting and in anchored tag", () => {

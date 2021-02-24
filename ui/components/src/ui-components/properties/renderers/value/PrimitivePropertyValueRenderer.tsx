@@ -38,12 +38,16 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
     return <PrimitivePropertyValueRendererImpl
       record={record}
       context={context}
-      stringValueCalculator={convertRecordToString}
+      stringValueCalculator={convertPrimitiveRecordToString}
     />;
   }
 }
 
-function convertRecordToString(record: PropertyRecord) {
+/**
+ * Function that converts primitive [[PropertyRecord]] to string
+ * @beta
+ */
+export function convertPrimitiveRecordToString(record: PropertyRecord) {
   const primitive = record.value as PrimitiveValue;
   return TypeConverterManager.getConverter(record.property.typename, record.property.converter?.name).convertPropertyToString(record.property, primitive.value);
 }
@@ -53,11 +57,12 @@ interface PrimitivePropertyValueRendererImplProps {
   record: PropertyRecord;
   stringValueCalculator: (record: PropertyRecord) => string | Promise<string>;
   context?: PropertyValueRendererContext;
+  linksHandler?: LinkElementsInfo;
 }
 
 /** @internal */
 export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps) {
-  const { stringValue, element } = useRenderedStringValue(props.record, props.stringValueCalculator, props.context);
+  const { stringValue, element } = useRenderedStringValue(props.record, props.stringValueCalculator, props.context, props.linksHandler);
   return <span style={props.context?.style} title={stringValue}>{element}</span>;
 }
 
@@ -79,13 +84,14 @@ export function useRenderedStringValue(
   record: PropertyRecord,
   stringValueCalculator: (record: PropertyRecord) => string | Promise<string>,
   context?: PropertyValueRendererContext,
+  linksHandler?: LinkElementsInfo,
 ): { stringValue?: string, element: React.ReactNode } {
   const stringValue = useAsyncValue(stringValueCalculator(record));
   const el = (stringValue === undefined)
     ? context?.defaultValue
     : <LinksRenderer
       value={stringValue}
-      links={record.links ?? DEFAULT_LINKS_HANDLER}
+      links={record.links ?? linksHandler ?? DEFAULT_LINKS_HANDLER}
       highlighter={context?.textHighlighter}
     />;
   return { stringValue, element: el };

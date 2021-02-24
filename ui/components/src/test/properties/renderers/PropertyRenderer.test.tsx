@@ -14,16 +14,7 @@ import { PropertyRenderer } from "../../../ui-components/properties/renderers/Pr
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../TestUtils";
 import { fireEvent, render } from "@testing-library/react";
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { PropertyRecord } from "@bentley/ui-abstract";
-=======
-import { DEFAULT_LINKS_HANDLER } from "../../../ui-components/properties/renderers/value/PrimitivePropertyValueRenderer";
-import { LinkElementsInfo } from "../../../../../abstract/lib/ui-abstract/properties/Record";
->>>>>>> fe734bf18a... Handle URI properties
-=======
-import { PropertyRecord } from "@bentley/ui-abstract";
->>>>>>> 4ed44a3a09... PR Fixes
 
 describe("PropertyRenderer", () => {
   describe("getLabelOffset", () => {
