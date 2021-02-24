@@ -223,6 +223,8 @@ function SaveFormatModalDialog({ formatProps, quantityType, onDialogCloseArgs, o
       onOutsideClick={handleCancel}
       minHeight={150}
       maxHeight={400}
+      maxWidth={400}
+      minWidth={200}
     >
       <div className="modal-dialog2">
         Do you want to save changes to format before changing to another type?
