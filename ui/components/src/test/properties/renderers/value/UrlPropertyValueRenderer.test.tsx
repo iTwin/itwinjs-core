@@ -96,7 +96,7 @@ describe("UrlPropertyValueRenderer", () => {
         expect(spy).to.be.calledOnceWith("Random Test property", "_blank");
       });
 
-      it("sets location.href to the whole URI value, when link starting with pw: or mailto: is clicked", () => {
+      it("sets location.href to the whole URI value, when link starting with pw: is clicked", () => {
         const renderer = new UrlPropertyValueRenderer();
         const stringProperty = TestUtils.createURIProperty("Label", "pw:Test property");
 
