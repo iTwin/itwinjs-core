@@ -586,6 +586,7 @@ export class HubCode extends CodeBase {
 // @public
 export class HubIModel extends WsgInstance {
     createdDate?: string;
+    dataLocationId?: string;
     description?: string;
     extent?: number[];
     id?: GuidString;
