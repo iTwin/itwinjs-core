@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 ## The iModel.js Project Is Renamed iTwin.js
@@ -121,6 +122,8 @@ Planar clip masks support transparency.  If a mask is not transparent then the m
 
 The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
 New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.
+
+The alpha UnitConversionSpec interface now requires a "system" property that can be used during parsing to help determine the unit to parse the value.
 
 ### Frontend package
 
