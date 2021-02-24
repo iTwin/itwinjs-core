@@ -1,6 +1,27 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+### Updates
+
+- Persist the time point used to compute solar light direction in LightSettingsProps.
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- Deprecate detachChangeCache()
+- Implement external textures for iModel tiles.
+- Moved username/password from MapLayerProps to MapLayerSettings. Raise the 'onMapImageryChanged' event when ever Map imagery is synced.
+- add ResponseHandler for notifications from backend to frontend
+- Mobile IPC fix
+- Mobile IPC fix
+- add IpcSocket
+- remove IpcInterface, getVersion() method is not needed
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT

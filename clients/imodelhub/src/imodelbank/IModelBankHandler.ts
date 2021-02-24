@@ -32,6 +32,10 @@ export class IModelBankHandler extends IModelBaseHandler {
 
   protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
+  public get baseUrl(): string {
+    return this._baseUrl;
+  }
+
   public async getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
     if (this._url)
       return this._url;
