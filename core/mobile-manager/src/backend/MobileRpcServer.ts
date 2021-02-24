@@ -136,6 +136,10 @@ export function setupMobileRpc() {
   });
 
   MobileHost.onEnterForeground.addListener(() => {
+    if (server !== null) {
+      return;
+    }
+
     server = new MobileRpcServer();
   });
 
