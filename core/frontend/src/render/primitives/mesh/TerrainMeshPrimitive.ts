@@ -9,6 +9,7 @@
 import { Point3d, Range1d, Range2d, Range3d, Vector3d } from "@bentley/geometry-core";
 import { OctEncodedNormal, QParams2d, QParams3d, QPoint2d, QPoint2dList, QPoint3d, QPoint3dList, Quantization } from "@bentley/imodeljs-common";
 import { RenderMemory } from "../../RenderMemory";
+import { SimpleMeshPrimitive } from "./SimpleMeshPrimitive";
 
 export enum Child { Q00, Q01, Q10, Q11 }
 
@@ -32,27 +33,16 @@ class ClipAxis {
  * It may be worthwhile to pack the data into buffers...
  * @internal.
  */
-export class TerrainMeshPrimitive implements RenderMemory.Consumer {
-  public readonly indices: number[];
-  public readonly points: QPoint3dList;
-  public readonly normals: OctEncodedNormal[];
-  public readonly uvParams: QPoint2dList;
-  public readonly featureID: number = 0;
-
+export class TerrainMeshPrimitive extends SimpleMeshPrimitive {
   private constructor(pointParams: QParams3d, indices?: number[]) {
-    this.points = new QPoint3dList(pointParams);
-    this.normals = [];
-    this.uvParams = new QPoint2dList(QParams2d.fromRange(Range2d.createXYXY(0, 0, 1, 1)));
-    this.indices = indices ? indices : new Array<number>();
+    super(indices ? indices : new Array<number>(), new QPoint3dList(pointParams), new QPoint2dList(QParams2d.fromRange(Range2d.createXYXY(0, 0, 1, 1))), new Array<OctEncodedNormal>());
   }
   public static create(props: TerrainMesh.Props, indices?: number[]) {
     return new TerrainMeshPrimitive(QParams3d.fromRange(props.range), indices);
   }
-  public get bytesUsed() {
-    return 8 * (this.indices.length + this.points.length * 3 + this.uvParams.length * 2) + 2 * this.normals.length;
-  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addTerrain(this.bytesUsed);
+  stats.addTerrain(this.bytesUsed);
   }
 
   public addVertex(point: Point3d, uvParam: QPoint2d, normal?: OctEncodedNormal) {

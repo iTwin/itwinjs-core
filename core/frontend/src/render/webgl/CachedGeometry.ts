@@ -274,6 +274,8 @@ export abstract class IndexedGeometry extends CachedGeometry {
   public get qScale() { return this._params.positions.scale; }
 }
 
+
+
 /** a cube of quads in normalized device coordinates for skybox rendering techniques
  * @internal
  */

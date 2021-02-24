@@ -22,6 +22,7 @@ import { Mesh, MeshGraphicArgs, MeshList } from "../render/primitives/mesh/MeshP
 import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+import { MeshGraphic } from "../render/webgl/Mesh";
 import { TileContent } from "./internal";
 
 /* eslint-disable no-restricted-syntax */
@@ -212,6 +213,13 @@ export abstract class GltfReader {
       contentRange,
       graphic: renderGraphic,
     };
+  }
+
+  private graphicFromMesh(mesh: Mesh, meshGraphicArgs: MeshGraphicArgs, instances?: InstancedGraphicParams) {
+    const realityMesh = instances ? undefined : RealityMeshPrimitive.createFromMesh(mesh);
+    if (!realityMesh)
+      return mesh.getGraphics(meshGraphicArgs, this._system, instances);
+
   }
 
   private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {

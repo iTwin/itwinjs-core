@@ -131,7 +131,7 @@ export interface RenderSystemDebugControl {
 }
 
 /** @internal */
-export abstract class RenderTerrainMeshGeometry implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderSimpleMeshGeometry implements IDisposable, RenderMemory.Consumer {
   public abstract dispose(): void;
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
@@ -264,9 +264,9 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform: Transform): RenderTerrainMeshGeometry | undefined { return undefined; }
+  public createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform: Transform): RenderSimpleMeshGeometry | undefined { return undefined; }
   /** @internal */
-  public createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  public createTerrainMeshGraphic(_terrainGeometry: RenderSimpleMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public get maxTerrainImageryLayers() { return 0; }
   /** @internal */

@@ -10,14 +10,13 @@
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
-import { IndexedGeometry, IndexedGeometryParams, Matrix4 } from "../../webgl";
+import { IndexedGeometry, Matrix4 } from "../../webgl";
 import { GraphicBranch } from "../GraphicBranch";
+import { SimpleMeshGeometryParams } from "../primitives/mesh/SimpleMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { RenderSystem, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
-import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
-import { AttributeMap } from "./AttributeMap";
+import { RenderSystem, RenderSimpleMeshGeometry, TerrainTexture } from "../RenderSystem";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
 import { RenderOrder, RenderPass } from "./RenderFlags";
@@ -73,74 +72,14 @@ export class TerrainTextureParams {
 }
 
 /** @internal */
-export class TerrainMeshParams extends IndexedGeometryParams {
-  public readonly uvParams: QBufferHandle2d;
-  public readonly featureID?: number;
-  public readonly normals?: BufferHandle;
-
-  protected constructor(positions: QBufferHandle3d, normals: BufferHandle | undefined, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, featureID?: number) {
-    super(positions, indices, numIndices);
-    let attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.TerrainMesh, false);
-    assert(attrParams !== undefined);
-    this.buffers.addBuffer(uvParams, [BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
-    this.uvParams = uvParams;
-
-    if (undefined !== normals) {
-      attrParams = AttributeMap.findAttribute("a_norm", TechniqueId.TerrainMesh, false);
-      assert(attrParams !== undefined);
-      if (normals.bytesUsed > 0)
-        this.buffers.addBuffer(normals, [BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedByte, false, 0, 0, false)]);
-      this.normals = normals;
-    }
-
-    this.featureID = featureID;
-  }
-
-  public static createFromTerrain(terrainMesh: TerrainMeshPrimitive) {
-    const posBuf = QBufferHandle3d.create(terrainMesh.points.params, terrainMesh.points.toTypedArray());
-    const uvParamBuf = QBufferHandle2d.create(terrainMesh.uvParams.params, terrainMesh.uvParams.toTypedArray());
-
-    const indArray = new Uint16Array(terrainMesh.indices.length);
-    for (let i = 0; i < terrainMesh.indices.length; i++)
-      indArray[i] = terrainMesh.indices[i];
-
-    const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indArray);
-
-    let normBuf: BufferHandle | undefined;
-    if (terrainMesh.normals.length > 0) {
-      const normalBytes = new Uint8Array(terrainMesh.normals.length * 2);
-      const normalShorts = new Uint16Array(normalBytes.buffer);
-      for (let i = 0; i < terrainMesh.normals.length; i++)
-        normalShorts[i] = terrainMesh.normals[i].value;
-      normBuf = BufferHandle.createArrayBuffer(normalBytes);
-    }
-
-    if (undefined === posBuf || undefined === uvParamBuf || undefined === indBuf || (terrainMesh.normals.length > 0 && undefined === normBuf))
-      return undefined;
-
-    return new TerrainMeshParams(posBuf, normBuf, uvParamBuf, indBuf, terrainMesh.indices.length, terrainMesh.featureID);
-  }
-
-  public get isDisposed(): boolean {
-    return super.isDisposed && this.uvParams.isDisposed;
-  }
-  public get bytesUsed(): number { return this.positions.bytesUsed + (undefined === this.normals ? 0 : this.normals.bytesUsed) + this.uvParams.bytesUsed + this.indices.bytesUsed; }
-
-  public dispose() {
-    super.dispose();
-    dispose(this.uvParams);
-  }
-}
-
-/** @internal */
-export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrainMeshGeometry {
+export class TerrainMeshGeometry extends IndexedGeometry implements RenderSimpleMeshGeometry {
   public get asTerrainMesh(): TerrainMeshGeometry | undefined { return this; }
   public get isDisposed(): boolean { return this._terrainMeshParams.isDisposed; }
   public get uvQParams() { return this._terrainMeshParams.uvParams.params; }
   public get hasFeatures(): boolean { return this._terrainMeshParams.featureID !== undefined; }
   public get supportsThematicDisplay() { return true; }
 
-  private constructor(private _terrainMeshParams: TerrainMeshParams, public textureParams: TerrainTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean) {
+  private constructor(private _terrainMeshParams: SimpleMeshGeometryParams, public textureParams: TerrainTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean) {
     super(_terrainMeshParams);
   }
 
@@ -150,7 +89,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
   }
 
   public static createGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined) {
-    const params = TerrainMeshParams.createFromTerrain(terrainMesh);
+    const params = SimpleMeshGeometryParams.createFromPrimitive(terrainMesh);
     return new TerrainMeshGeometry(params!, undefined, transform, undefined, false);
   }
   public getRange(): Range3d {

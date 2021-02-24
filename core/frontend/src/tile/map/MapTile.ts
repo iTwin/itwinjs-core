@@ -14,7 +14,7 @@ import { GraphicBuilder, TileTreeLoadStatus } from "../../imodeljs-frontend";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import { RenderSystem, RenderTerrainMeshGeometry, TerrainTexture } from "../../render/RenderSystem";
+import { RenderSystem, RenderSimpleMeshGeometry, TerrainTexture } from "../../render/RenderSystem";
 import { ViewingSpace } from "../../ViewingSpace";
 import { ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TraversalSelectionContext } from "../internal";
 import { TileGraphicType } from "../TileTreeReference";
@@ -93,7 +93,7 @@ class PlanarProjection extends MapTileProjection {
 /** @internal */
 export interface TerrainTileContent extends TileContent {
   terrain?: {
-    geometry?: RenderTerrainMeshGeometry;
+    geometry?: RenderSimpleMeshGeometry;
     /** Used on leaves to support up-sampling. */
     mesh?: TerrainMeshPrimitive;
   };
@@ -116,7 +116,7 @@ export class MapTile extends RealityTile {
   private _imageryTiles?: ImageryMapTile[];
   public everLoaded = false;                    // If the tile is only required for availability metadata, load it once and then allow it to be unloaded.
   protected _heightRange: Range1d | undefined;
-  protected _geometry?: RenderTerrainMeshGeometry;
+  protected _geometry?: RenderSimpleMeshGeometry;
   protected _mesh?: TerrainMeshPrimitive;     // Primitive retained on leaves only for upsampling.
   public get isReady(): boolean { return super.isReady && this.baseImageryIsReady; }
   public get geometry() { return this._geometry; }

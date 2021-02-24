@@ -29,7 +29,7 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
+import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderSimpleMeshGeometry, TerrainTexture } from "../RenderSystem";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { RenderTarget } from "../RenderTarget";
 import { imageElementFromImageSource } from "../../ImageUtil";
@@ -507,11 +507,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return MeshGraphic.create(params, instances);
   }
 
-  public createTerrainMeshGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform): RenderTerrainMeshGeometry | undefined {
+  public createTerrainMeshGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform): RenderSimpleMeshGeometry | undefined {
     return TerrainMeshGeometry.createGeometry(terrainMesh, transform);
   }
 
-  public createTerrainMeshGraphic(terrainGeometry: RenderTerrainMeshGeometry, featureTable: PackedFeatureTable, tileId: string, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
+  public createTerrainMeshGraphic(terrainGeometry: RenderSimpleMeshGeometry, featureTable: PackedFeatureTable, tileId: string, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
     return TerrainMeshGeometry.createGraphic(this, terrainGeometry as TerrainMeshGeometry, featureTable, tileId, baseColor, baseTransparent, textures);
   }
 

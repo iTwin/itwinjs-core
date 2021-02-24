@@ -40,6 +40,7 @@ export namespace RenderMemory {
     PointClouds,
     Instances,
     Terrain,
+    RealityMesh,
 
     COUNT,
   }
@@ -153,6 +154,7 @@ export namespace RenderMemory {
     public addPointCloud(numBytes: number) { this.addBuffer(BufferType.PointClouds, numBytes); }
     public addTerrain(numBytes: number) { this.addBuffer(BufferType.Terrain, numBytes); }
     public addInstances(numBytes: number) { this.addBuffer(BufferType.Instances, numBytes); }
+    public addRealityMesh(numBytes: number) { this.addBuffer(BufferType.RealityMesh, numBytes); }
   }
 
   /** @internal */
