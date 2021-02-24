@@ -65,7 +65,7 @@ export interface CommonPropertyGridProps extends CommonProps {
   /** Callback for when links in properties are being clicked
    * @deprecated Should override data provider and set it on [[PropertyRecord]] instead
    */
-  onPropertyLinkClick?: (text: string) => void;
+  onPropertyLinkClick?: (record: PropertyRecord, text: string) => void;
 
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
@@ -134,10 +134,10 @@ export class PropertyGridCommons {
     });
   };
 
-  public static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick: (text: string) => void) {
+  public static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick: (record: PropertyRecord, text: string) => void) {
     records.forEach((record: PropertyRecord) => {
       if (record.links)
-        record.links.onClick = onPropertyLinkClick;
+        record.links.onClick = (text) => onPropertyLinkClick(record, text);
 
       this.assignRecordClickHandlers(record.getChildrenRecords(), onPropertyLinkClick);
     });

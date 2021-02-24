@@ -151,19 +151,21 @@ describe("PropertyGrid", () => {
           Group_2: [records[0]],
         },
       });
-      const propertyLinkClickFn = () => { };
+      const propertyLinkClickFnSpy = sinon.spy();
       const wrapper = mount(<PropertyGrid
         orientation={Orientation.Horizontal}
         dataProvider={dataProvider}
-        onPropertyLinkClick={propertyLinkClickFn} />);
+        onPropertyLinkClick={propertyLinkClickFnSpy} />);
 
       await TestUtils.flushAsyncOperations();
 
       wrapper.update();
 
-      expect(testNestedRecord1.links.onClick).to.be.equal(propertyLinkClickFn);
-      expect(testStructRecord.links.onClick).to.be.equal(propertyLinkClickFn);
-      expect(testNestedRecord2.links.onClick).to.be.equal(propertyLinkClickFn);
+      testNestedRecord1.links.onClick("test");
+      testStructRecord.links.onClick("test");
+      testNestedRecord2.links.onClick("test");
+
+      expect(propertyLinkClickFnSpy.calledThrice).to.be.true;
     });
 
     it("renders PropertyCategoryBlock as collapsed when it gets clicked", async () => {

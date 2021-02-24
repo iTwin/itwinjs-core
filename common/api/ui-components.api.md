@@ -975,7 +975,7 @@ export interface CommonPropertyGridProps extends CommonProps {
     // @beta
     onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
     // @deprecated
-    onPropertyLinkClick?: (text: string) => void;
+    onPropertyLinkClick?: (record: PropertyRecord, text: string) => void;
     onPropertySelectionChanged?: (property: PropertyRecord) => void;
     // @beta
     onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
@@ -3481,7 +3481,7 @@ export interface PropertyGridCategory {
 // @internal (undocumented)
 export class PropertyGridCommons {
     // (undocumented)
-    static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick: (text: string) => void): void;
+    static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick: (record: PropertyRecord, text: string) => void): void;
     // (undocumented)
     static getCurrentOrientation(width: number, preferredOrientation?: Orientation, isOrientationFixed?: boolean, horizontalOrientationMinWidth?: number): Orientation;
     static getLinks: (value: string) => Array<{
@@ -5421,7 +5421,7 @@ export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(d
 // @alpha
 export function usePropertyData(props: {
     dataProvider: IPropertyDataProvider;
-    onPropertyLinkClick?: (text: string) => void;
+    onPropertyLinkClick?: (record: PropertyRecord, text: string) => void;
 }): {
     value: import("../PropertyDataProvider").PropertyData | undefined;
     inProgress: boolean;
@@ -5440,7 +5440,7 @@ export function usePropertyGridModel(props: {
 // @alpha
 export function usePropertyGridModelSource(props: {
     dataProvider: IPropertyDataProvider;
-    onPropertyLinkClick?: (text: string) => void;
+    onPropertyLinkClick?: (record: PropertyRecord, text: string) => void;
 }): PropertyGridModelSource;
 
 // @internal (undocumented)

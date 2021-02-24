@@ -6,6 +6,7 @@
  * @module PropertyGrid
  */
 
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { useDebouncedAsyncValue } from "../../common/UseDebouncedAsyncValue";
 import { PropertyGridCommons } from "../component/PropertyGridCommons";
@@ -20,7 +21,7 @@ import { IPropertyGridModelSource, PropertyGridModelSource } from "./PropertyGri
  * Returned property data has links.onClick replaced by passed onPropertyLinkClick or default implementation
  * @alpha
  */
-export function usePropertyData(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (text: string) => void }) {
+export function usePropertyData(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (record: PropertyRecord, text: string) => void }) {
   const { dataProvider, onPropertyLinkClick } = { ...props };
 
   const [forcedUpdate, triggerForcedUpdate] = useReducer(() => ({}), {});
@@ -52,7 +53,7 @@ export function usePropertyData(props: { dataProvider: IPropertyDataProvider, on
  * Custom hook that creates a PropertyGridModelSource and subscribes it to data updates from the data provider.
  * @alpha
  */
-export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (text: string) => void }) {
+export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (record: PropertyRecord, text: string) => void }) {
   const { value: propertyData } = usePropertyData(props);
   const { dataProvider } = { ...props };
 
