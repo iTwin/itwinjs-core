@@ -2,6 +2,51 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.12.1",
+      "tag": "@bentley/imodeljs-common_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Persist the time point used to compute solar light direction in LightSettingsProps."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/imodeljs-common_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecate detachChangeCache()"
+          },
+          {
+            "comment": "Implement external textures for iModel tiles."
+          },
+          {
+            "comment": "Moved username/password from MapLayerProps to MapLayerSettings. Raise the 'onMapImageryChanged' event when ever Map imagery is synced."
+          },
+          {
+            "comment": "add ResponseHandler for notifications from backend to frontend"
+          },
+          {
+            "comment": "Mobile IPC fix"
+          },
+          {
+            "comment": "Mobile IPC fix"
+          },
+          {
+            "comment": "add IpcSocket"
+          },
+          {
+            "comment": "remove IpcInterface, getVersion() method is not needed"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.11.0",
       "tag": "@bentley/imodeljs-common_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",
