@@ -124,7 +124,7 @@ describe("UrlPropertyValueRenderer", () => {
         fireEvent.click(linkElement);
         expect(locationMockRef.object.href).to.be.equal("mailto:Test property");
       });
-    })
+    });
   });
 
   describe("canRender", () => {
