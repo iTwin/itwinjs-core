@@ -8,9 +8,12 @@ import React from "react";
 import * as sinon from "sinon";
 import { ActionButton, BadgeType, CommonToolbarItem, SpecialKey, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render } from "@testing-library/react";
+import * as useTargetedModule from "@bentley/ui-core/lib/ui-core/utils/hooks/useTargeted";
 import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers } from "../../ui-components/toolbar/ToolbarWithOverflow";
 import { Toolbar } from "../../ui-components/toolbar/Toolbar";
 import { Direction } from "../../ui-components/toolbar/utilities/Direction";
+import { BackArrow } from "../../ui-components/toolbar/groupPanel/BackArrow";
+import { GroupTool } from "../../ui-components/toolbar/groupPanel/tool/Tool";
 
 // cSpell:ignore testid
 
@@ -218,4 +221,42 @@ describe("<Toolbar (No Overflow) />", () => {
     });
   });
 
+  describe("<BackArrow />", () => {
+    it("renders targeted correctly", () => {
+      sinon.stub(useTargetedModule, "useTargeted").returns(true);
+      const renderedComponent = render(<BackArrow />);
+      expect(renderedComponent.container.querySelector(".components-targeted")).to.not.be.null;
+    });
+  });
+
+  describe("<GroupTool />", () => {
+    const item = ToolbarItemUtilities.createActionButton("Entry", 20, "icon-developer", "Entry", (): void => { });
+
+    it("renders badge correctly", () => {
+      const renderedComponent = render(<GroupTool item={item} badge />);
+      expect(renderedComponent.container.querySelector(".components-badge")).to.not.be.null;
+    });
+
+    it("renders targeted correctly", () => {
+      sinon.stub(useTargetedModule, "useTargeted").returns(true);
+      const renderedComponent = render(<GroupTool item={item} />);
+      expect(renderedComponent.container.querySelector(".components-targeted")).to.not.be.null;
+    });
+
+    it("renders various props correctly", () => {
+      const renderedComponent = render(<GroupTool item={item} isActive isDisabled isFocused />);
+      expect(renderedComponent.container.querySelector(".components-active")).to.not.be.null;
+      expect(renderedComponent.container.querySelector(".components-disabled")).to.not.be.null;
+      expect(renderedComponent.container.querySelector(".components-focused")).to.not.be.null;
+    });
+
+    it("should invoke onPointerUp handler", () => {
+      const spy = sinon.spy();
+      const renderedComponent = render(<GroupTool item={item} onPointerUp={spy} />);
+      const div = renderedComponent.container.querySelector(".components-toolbar-item-expandable-group-tool-item");
+      expect(div).not.to.be.null;
+      fireEvent.pointerUp(div!);
+      spy.calledOnce.should.true;
+    });
+  });
 });

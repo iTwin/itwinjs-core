@@ -5,10 +5,17 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
+import sinon from "sinon";
+import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
-import { IconEditorParams, InputEditorSizeParams, PropertyEditorInfo, PropertyEditorParamTypes } from "@bentley/ui-abstract";
+import { IconEditorParams, InputEditorSizeParams, PropertyConverterInfo, PropertyEditorInfo, PropertyEditorParamTypes,
+  PropertyRecord, PropertyValue, SpecialKey,
+} from "@bentley/ui-abstract";
+import { MockRender, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { TextEditor } from "../../ui-components/editors/TextEditor";
 import TestUtils from "../TestUtils";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
 describe("<TextEditor />", () => {
   it("should render", () => {
@@ -25,6 +32,20 @@ describe("<TextEditor />", () => {
 
   it("getValue returns proper value after componentDidMount & setState", async () => {
     const record = TestUtils.createPrimitiveStringProperty("Test", "MyValue");
+    const wrapper = mount(<TextEditor propertyRecord={record} />);
+
+    await TestUtils.flushAsyncOperations();
+    const editor = wrapper.instance() as TextEditor;
+    expect(editor.state.inputValue).to.equal("MyValue");
+
+    wrapper.unmount();
+  });
+
+  it("should support record.property.converter?.name", async () => {
+    const record = TestUtils.createPrimitiveStringProperty("Test", "MyValue");
+    const convertInfo: PropertyConverterInfo = { name: "" };
+    record.property.converter = convertInfo;
+
     const wrapper = mount(<TextEditor propertyRecord={record} />);
 
     await TestUtils.flushAsyncOperations();
@@ -112,4 +133,85 @@ describe("<TextEditor />", () => {
 
     wrapper.unmount();
   });
+
+  it("should call onCommit for Enter", async () => {
+    const propertyRecord = TestUtils.createPrimitiveStringProperty("Test", "MyValue");
+    const convertInfo: PropertyConverterInfo = { name: "" };
+    propertyRecord.property.converter = convertInfo;
+
+    const spyOnCommit = sinon.spy();
+    function handleCommit(_commit: PropertyUpdatedArgs): void {
+      spyOnCommit();
+    }
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const inputNode = wrapper.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
+
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCommit.calledOnce).to.be.true;
+  });
+
+  describe("Needs IModelApp", () => {
+    before(async () => {
+      await TestUtils.initializeUiComponents();
+      await MockRender.App.startup();
+    });
+
+    after(async () => {
+      await MockRender.App.shutdown();
+      TestUtils.terminateUiComponents();
+    });
+
+    class MineDataController extends DataControllerBase {
+      public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+        return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+      }
+    }
+
+    it("should not commit if DataController fails to validate", async () => {
+      PropertyEditorManager.registerDataController("myData", MineDataController);
+      const propertyRecord = TestUtils.createPrimitiveStringProperty("Test", "MyValue");
+      const convertInfo: PropertyConverterInfo = { name: "" };
+      propertyRecord.property.converter = convertInfo;
+      propertyRecord.property.dataController = "myData";
+
+      const spyOnCommit = sinon.spy();
+      const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
+      const inputNode = wrapper.container.querySelector("input");
+      expect(inputNode).not.to.be.null;
+
+      fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter });
+      await TestUtils.flushAsyncOperations();
+      expect(spyOnCommit.calledOnce).to.be.false;
+
+      PropertyEditorManager.deregisterDataController("myData");
+    });
+
+    class MineDataController2 extends DataControllerBase {
+      public async commitValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+        return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+      }
+    }
+
+    it("should not commit if DataController fails to commit", async () => {
+      PropertyEditorManager.registerDataController("myData", MineDataController2);
+      const propertyRecord = TestUtils.createPrimitiveStringProperty("Test", "MyValue");
+      const convertInfo: PropertyConverterInfo = { name: "" };
+      propertyRecord.property.converter = convertInfo;
+      propertyRecord.property.dataController = "myData";
+
+      const spyOnCommit = sinon.spy();
+      const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
+      const inputNode = wrapper.container.querySelector("input");
+      expect(inputNode).not.to.be.null;
+
+      fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter });
+      await TestUtils.flushAsyncOperations();
+      expect(spyOnCommit.calledOnce).to.be.false;
+
+      PropertyEditorManager.deregisterDataController("myData");
+    });
+  });
+
 });

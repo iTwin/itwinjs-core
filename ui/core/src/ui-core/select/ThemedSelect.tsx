@@ -89,6 +89,8 @@ export type ThemedSelectProps = {
   defaultMenuIsOpen?: boolean;
   /* Value set in the control by default */
   defaultValue?: ValueType<OptionType>;
+  /** Provides ability to return reference to the outer HTMLDivElement */
+  divRef?: React.Ref<HTMLDivElement>;
   /* Clear all values when the user presses escape AND the menu is closed */
   escapeClearsValue?: boolean;
   /* Custom method to filter whether an option should be displayed in the menu */
@@ -180,6 +182,8 @@ export type ThemedSelectProps = {
   pageSize?: number;
   /* Placeholder for the select value */
   placeholder?: string;
+  /** Provides ability to return reference to the ThemedSelect */
+  ref?: React.Ref<Component>;
   /* Sets additional styling */
   styles?: React.CSSProperties;
   /* Sets the tabIndex attribute on the input */
@@ -214,7 +218,7 @@ export function ThemedSelect(props: ThemedSelectProps) {
   const portalTarget = !!props.isMenuFixed ? undefined : getParentSelector();
   const {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    classNamePrefix, className, noOptionsMessage, menuPortalTarget, isMenuFixed, styles, components,
+    classNamePrefix, className, noOptionsMessage, menuPortalTarget, isMenuFixed, styles, components, divRef, ref,
     // eslint-disable-next-line comma-dangle
     ...otherProps // pass-through props
   } = props as any;
@@ -225,8 +229,9 @@ export function ThemedSelect(props: ThemedSelectProps) {
 
   const zIndex = getCssVariableAsNumber("--uicore-z-index-dialog-popup");
   return (
-    <div className={selectClassName}>
+    <div className={selectClassName} ref={divRef}>
       <Component
+        ref={ref}
         classNamePrefix="react-select"
         noOptionsMessage={noOptionFunction}
         menuPortalTarget={portalTarget}
