@@ -1517,6 +1517,8 @@ export interface ContextRealityModelProps {
     // @beta
     appearanceOverrides?: FeatureAppearanceProps;
     // @beta (undocumented)
+    attribution?: RealityModelAttribution;
+    // @beta (undocumented)
     classifiers?: SpatialClassificationProps.Properties[];
     // (undocumented)
     description?: string;
@@ -5681,6 +5683,14 @@ export interface ReadableFormData extends Readable {
 
 // @internal
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
+
+// @beta
+export interface RealityModelAttribution {
+    // (undocumented)
+    heading: string;
+    // (undocumented)
+    notice: string;
+}
 
 // @internal (undocumented)
 export const REGISTRY: unique symbol;

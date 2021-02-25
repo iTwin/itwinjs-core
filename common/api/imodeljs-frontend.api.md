@@ -223,6 +223,7 @@ import { Range3d } from '@bentley/geometry-core';
 import { Range3dProps } from '@bentley/geometry-core';
 import { Ray3d } from '@bentley/geometry-core';
 import { ReadonlySortedArray } from '@bentley/bentleyjs-core';
+import { RealityModelAttribution } from '@bentley/imodeljs-common';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { RemoveFunction } from '@bentley/imodeljs-common';
@@ -1838,6 +1839,8 @@ export class ContextRealityModelState {
     get appearanceOverrides(): FeatureAppearance | undefined;
     set appearanceOverrides(overrides: FeatureAppearance | undefined);
     // (undocumented)
+    readonly attribution?: RealityModelAttribution;
+    // (undocumented)
     get classifiers(): SpatialClassifiers | undefined;
     // (undocumented)
     readonly description: string;
@@ -2330,8 +2333,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     forEachTileTreeRef(func: (ref: TileTreeReference) => void): void;
     // @internal (undocumented)
     getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
-    // @internal (undocumented)
-    getAttribution(div: HTMLTableElement, vp: ScreenViewport): void;
     // @internal (undocumented)
     getBackgroundMapGeometry(): BackgroundMapGeometry | undefined;
     // @internal (undocumented)
@@ -7170,6 +7171,8 @@ export namespace RealityModelTileTree {
     // (undocumented)
     export interface ReferenceProps {
         // (undocumented)
+        attribution?: RealityModelAttribution;
+        // (undocumented)
         classifiers?: SpatialClassifiers;
         // (undocumented)
         iModel: IModelConnection;
@@ -10265,6 +10268,7 @@ export interface TileTreeParams {
 export abstract class TileTreeReference {
     // (undocumented)
     accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes): void;
+    addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     abstract get castsShadows(): boolean;
     // @internal (undocumented)
