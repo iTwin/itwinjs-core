@@ -76,7 +76,8 @@ describe("ECDb", () => {
         assert.isDefined(res.id);
         assert.isTrue(Id64.isValidId64(res.id!));
         return res.id!;
-      });
+      })
+      testECDb.saveChanges();
     });
 
     using(new ECDb(), (ecdb: ECDb) => {

@@ -1398,6 +1398,7 @@ describe("iModel", () => {
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
       assert.isFalse(codeSpec.isManagedWithIModel);
+      iModelDb.saveChanges();
       iModelDb.close();
     }
 
@@ -1731,6 +1732,7 @@ describe("iModel", () => {
     const contextId = Guid.createValue();
     const changeSetId = generateChangeSetId();
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
+    snapshot.saveChanges();
     snapshot.close();
 
     // Mock iModelHub

@@ -220,6 +220,7 @@ describe("ElementAspect", () => {
     assert.equal(aspect.checksum, aspectProps.checksum);
     assert.equal(aspect.version, aspectProps.version);
     iModelDb.elements.insertAspect(aspectProps);
+    iModelDb.saveChanges();
     iModelDb.close();
     iModelDb = SnapshotDb.openFile(fileName);
 

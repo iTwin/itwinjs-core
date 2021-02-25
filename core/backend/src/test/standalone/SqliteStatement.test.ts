@@ -299,6 +299,7 @@ describe("SqliteStatement", () => {
         }
         assert.equal(4, rowCount);
       });
+      ecdb.saveChanges();
     });
   });
 
