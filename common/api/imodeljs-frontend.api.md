@@ -7878,6 +7878,8 @@ export abstract class RenderSystem implements IDisposable {
     antialiasSamples?: number;
     // @internal (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
+    // @beta
+    static contextLossHandler(): Promise<any>;
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
