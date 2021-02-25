@@ -456,6 +456,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     window.removeEventListener("mouseup", this._onMouseUp);
   };
 
+  // istanbul ignore next - unable to test touch
   private _handleBoxTouchStart = (event: any) => {
     if (1 !== event.targetTouches.length)
       return;
@@ -465,6 +466,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     this._start = this._lastClientXY;
   };
 
+  // istanbul ignore next - unable to test touch
   private _onTouchMove = (event: TouchEvent) => {
     if (1 !== event.targetTouches.length)
       return;
@@ -472,6 +474,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     this._processDrag(mousePos);
   };
 
+  // istanbul ignore next - unable to test touch
   private _onTouchEnd = (event: TouchEvent) => {
     if (0 !== event.targetTouches.length)
       return;

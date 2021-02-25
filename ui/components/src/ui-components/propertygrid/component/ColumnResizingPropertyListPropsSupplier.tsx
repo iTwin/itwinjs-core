@@ -66,6 +66,7 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
     return { ratio };
   };
 
+  // istanbul ignore next
   private _onResizeHandleHoverChanged = (isHovered: boolean) => {
     this.setState({ isResizeHandleHovered: isHovered });
   };
@@ -82,6 +83,7 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
     if (width < this.props.minLabelWidth! + 1 + this.props.minValueWidth! + this.props.actionButtonWidth!) {
       this._minRatio = this._defaultMinRatio;
       this._maxRatio = this._defaultMaxRatio;
+      // istanbul ignore next
       if (this.state.isMinimumColumnSizeEnabled)
         this.setState({ isMinimumColumnSizeEnabled: false });
 
@@ -90,6 +92,7 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
 
     this._minRatio = this.props.minLabelWidth! / width;
     this._maxRatio = (width - this.props.actionButtonWidth! - this.props.minValueWidth!) / width;
+    // istanbul ignore else
     if (!this.state.isMinimumColumnSizeEnabled)
       this.setState({ isMinimumColumnSizeEnabled: true });
   };

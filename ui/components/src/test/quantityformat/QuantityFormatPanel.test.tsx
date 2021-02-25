@@ -148,6 +148,80 @@ describe("QuantityInput", () => {
     });
   });
 
+  it("should handle onFormatChange Type selection (metric)", async () => {
+    const spy = sinon.spy();
+    const system = IModelApp.quantityFormatter.activeUnitSystem;
+    await IModelApp.quantityFormatter.setActiveUnitSystem (system==="imperial"?"metric": "imperial") ;
+
+    const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Stationing} showSample initialMagnitude={123.45} onFormatChange={spy} />);
+    const typeSelector = renderedComponent.getByTestId("format-type-selector");
+
+    // initially set to Station for metric stationing so we should get a change for each value
+    [
+      FormatType.Fractional.toString(),
+      FormatType.Decimal.toString(),
+      FormatType.Scientific.toString(),
+      FormatType.Station.toString(),
+    ].forEach (async (selectValue) => {
+      fireEvent.change(typeSelector, {target: { value: selectValue }});
+      expect(spy).to.be.called;
+      await TestUtils.flushAsyncOperations();
+      spy.resetHistory();
+    });
+
+    await IModelApp.quantityFormatter.setActiveUnitSystem (system) ;
+  });
+
+  it("should handle onFormatChange Type selection (numeric format)", async () => {
+    const nonCompositeFormat: FormatProps = {
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    };
+
+    const spy = sinon.spy();
+    await IModelApp.quantityFormatter.setOverrideFormat(QuantityType.Length, nonCompositeFormat);
+    const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} onFormatChange={spy} />);
+    const typeSelector = renderedComponent.getByTestId("format-type-selector");
+
+    // initially set to Station for metric stationing so we should get a change for each value
+    [
+      FormatType.Fractional.toString(),
+      FormatType.Decimal.toString(),
+      FormatType.Scientific.toString(),
+      FormatType.Station.toString(),
+    ].forEach (async (selectValue) => {
+      fireEvent.change(typeSelector, {target: { value: selectValue }});
+      expect(spy).to.be.called;
+      await TestUtils.flushAsyncOperations();
+      spy.resetHistory();
+    });
+
+    await IModelApp.quantityFormatter.clearOverrideFormats(QuantityType.Length);
+  });
+
+  it("should render new sample when format is changed", async () => {
+    const overrideLengthFormat: FormatProps = {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "in", name: "Units.IN" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    };
+    const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} enableMinimumProperties />);
+    await TestUtils.flushAsyncOperations();
+    const spanElement = renderedComponent.getByTestId("format-sample-formatted") as HTMLSpanElement;
+    expect(spanElement.textContent).to.be.eql (`405'-0 1/4"`);
+    await IModelApp.quantityFormatter.setOverrideFormat(QuantityType.Length, overrideLengthFormat);
+    renderedComponent.rerender(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} enableMinimumProperties />);
+    await TestUtils.flushAsyncOperations();
+    expect(spanElement.textContent).to.be.eql ("4860.2362 in");
+    await IModelApp.quantityFormatter.clearOverrideFormats(QuantityType.Length);
+  });
+
   it("should handle onFormatChange Fraction precision selection", () => {
     // QuantityType.Length by default is set to Type=Fraction
     const spy = sinon.spy();

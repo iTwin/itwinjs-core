@@ -515,6 +515,10 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -839,6 +843,10 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
     componentDidUpdate(prevProps: PropertyEditorProps): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -1172,6 +1180,10 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -1180,6 +1192,8 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
 // @alpha
 export class CustomNumberPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesEscape(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
@@ -1263,6 +1277,10 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // (undocumented)
     processDateChange(typeConverter: TypeConverter, newValue: Date): Promise<void>;
     // (undocumented)
@@ -1657,6 +1675,10 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     componentDidUpdate(prevProps: PropertyEditorProps): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -1673,6 +1695,10 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -2226,6 +2252,10 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     }
@@ -2275,6 +2305,10 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -3059,6 +3093,10 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -3424,6 +3462,8 @@ export abstract class PropertyEditorBase implements DataController {
 export class PropertyEditorManager {
     // (undocumented)
     static createEditor(editType: string, editorName?: string, dataControllerName?: string): PropertyEditorBase;
+    // @internal (undocumented)
+    static deregisterDataController(controllerName: string): void;
     // (undocumented)
     static hasCustomEditor(editType: string, editorName: string): boolean;
     // (undocumented)
@@ -4020,6 +4060,10 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -4520,6 +4564,10 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -4548,6 +4596,10 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -4564,6 +4616,10 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -4695,6 +4751,10 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -5374,6 +5434,10 @@ export class TypeConverterManager {
 export interface TypeEditor {
     // (undocumented)
     getPropertyValue: () => Promise<PropertyValue | undefined>;
+    // (undocumented)
+    hasFocus: boolean;
+    // (undocumented)
+    htmlElement: HTMLElement | null;
 }
 
 // @public
@@ -5704,6 +5768,10 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
