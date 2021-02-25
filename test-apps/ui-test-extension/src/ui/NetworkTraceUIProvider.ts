@@ -20,7 +20,7 @@ import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageTy
 import upstreamIcon from "./icons/upstream-query.svg?sprite";
 import downstreamIcon from "./icons/downstream-query.svg?sprite";
 import traceIcon from "./icons/query-multi.svg?sprite";
-import { getTraceConnectedActionButton } from "./dialogs/SampleModalDialog";
+import { OpenTraceDialogTool } from "./tools/OpenTraceDialogTool";
 
 export class TraceUiItemsProvider implements UiItemsProvider {
   public static syncEventIdTraceAvailable = "ui-test:trace-available-changed";
@@ -77,7 +77,7 @@ export class TraceUiItemsProvider implements UiItemsProvider {
           !TraceUiItemsProvider.isTraceAvailable
         );
 
-      const getConnectedButton = getTraceConnectedActionButton(10);
+      const getConnectedButton = OpenTraceDialogTool.getActionButtonDef(10);
 
       const getDownstreamButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-downstream",

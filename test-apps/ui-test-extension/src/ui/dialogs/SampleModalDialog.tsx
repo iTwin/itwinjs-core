@@ -7,9 +7,10 @@ import * as React from "react";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { TraceUiItemsProvider } from "../NetworkTraceUIProvider";
 import { Dialog, DialogButtonType } from "@bentley/ui-core";
-import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import connectedIcon from "../icons/connected-query.svg?sprite";
 
+/**
+ *  This is an example of how to create a React-based modal dialog that can be opened via a toolbutton or a key-in.
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SampleModalDialog() {
   const title = React.useRef (TraceUiItemsProvider.translate("Dialogs.SampleModal.title"));
@@ -48,29 +49,4 @@ export function SampleModalDialog() {
         In per invidunt conceptam. Ea pri aeque corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.
     </Dialog >
   );
-}
-
-export function getTraceConnectedActionButton(itemPriority: number){
-  const isDisabledCondition = new ConditionalBooleanValue(
-    (): boolean => {
-      return !TraceUiItemsProvider.isTraceAvailable;
-    },
-    [TraceUiItemsProvider.syncEventIdTraceAvailable],
-    !TraceUiItemsProvider.isTraceAvailable
-  );
-
-  const actionButtonDef = ToolbarItemUtilities.createActionButton(
-    "trace-tool-connected",
-    itemPriority, /* order within group button */
-    IconSpecUtilities.createSvgIconSpec(connectedIcon),
-    TraceUiItemsProvider.translate("trace-tool-connected"),
-    (): void => {
-      ModalDialogManager.openDialog(<SampleModalDialog />);
-    },
-    {
-      isDisabled: isDisabledCondition,
-      badgeType: BadgeType.TechnicalPreview,
-    }
-  );
-  return actionButtonDef;
 }
