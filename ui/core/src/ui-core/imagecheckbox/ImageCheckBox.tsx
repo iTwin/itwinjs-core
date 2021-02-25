@@ -34,6 +34,8 @@ export interface ImageCheckBoxProps extends CommonProps {
   tooltip?: string;
   /** If true, draw a border around the image checkbox */
   border?: boolean;
+  /** Provides ability to return reference to HTMLInputElement */
+  inputRef?: React.Ref<HTMLInputElement>;
 }
 
 /**
@@ -76,7 +78,8 @@ export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
       /* eslint-disable-next-line jsx-a11y/click-events-have-key-events */
       <label className={checkBoxClass} style={this.props.style} onClick={this._onLabelClick} title={this.props.tooltip}>
         <input type="checkbox" className={this.props.inputClassName} style={this.props.inputStyle}
-          checked={this.props.checked} disabled={this.props.disabled} onChange={this._onChange} onClick={this._onInputClick} />
+          checked={this.props.checked} disabled={this.props.disabled} onChange={this._onChange} onClick={this._onInputClick}
+          ref={this.props.inputRef} />
         <span className={imageClass}><Icon iconSpec={iconSpec} /></span>
       </label>
     );

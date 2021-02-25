@@ -70,9 +70,7 @@ export function FormatTypeOption(props: FormatTypeOptionProps) {
         break;
       case FormatType.Station:
         precision = DecimalPrecision.Two;
-        stationOffsetSize = formatProps.composite?.units &&
-          formatProps.composite?.units[0] &&
-          formatProps.composite?.units[0].name.toLocaleLowerCase().endsWith("m") ? 3 : 2;
+        stationOffsetSize = formatProps.composite?.units[0].name.toLocaleLowerCase().endsWith("m") ? 3 : 2;
         break;
       case FormatType.Fractional:
         precision = FractionalPrecision.Eight;

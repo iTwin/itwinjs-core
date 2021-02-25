@@ -80,6 +80,7 @@ export function QuantityInput({ initialValue, quantityType, readonly, className,
   React.useEffect(() => {
     const handleUnitSystemChanged = ((args: QuantityFormatsChangedArgs): void => {
       const quantityKey = IModelApp.quantityFormatter.getQuantityTypeKey(quantityType);
+      // istanbul ignore else
       if (args.quantityType === quantityKey) {
         setFormatterSpec(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(quantityType));
         setParserSpec(IModelApp.quantityFormatter.findParserSpecByQuantityType(quantityType));

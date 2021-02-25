@@ -183,9 +183,10 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   private _onCategoryExpansionToggled = (categoryName: string) => {
     this.setState((state) => {
       return produce(state, (draft) => {
-        const category = findCategory(draft.categories, categoryName, true)?.category;
+        const records = findCategory(draft.categories, categoryName, true);
         // istanbul ignore else
-        if (category) {
+        if (records) {
+          const category = records.category;
           category.expand = !category.expand;
         }
       });

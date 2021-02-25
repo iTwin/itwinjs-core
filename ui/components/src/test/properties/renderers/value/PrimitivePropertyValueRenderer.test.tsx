@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Primitives } from "@bentley/ui-abstract";
+import { Primitives, PropertyConverterInfo } from "@bentley/ui-abstract";
 import { render, waitForElement } from "@testing-library/react";
 import { PrimitivePropertyValueRenderer } from "../../../../ui-components";
 import { TypeConverter } from "../../../../ui-components/converters/TypeConverter";
@@ -33,6 +33,17 @@ describe("PrimitivePropertyValueRenderer", () => {
     it("renders primitive property", () => {
       const renderer = new PrimitivePropertyValueRenderer();
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
+
+      const element = renderer.render(stringProperty);
+      const renderedElement = render(<>{element}</>);
+      renderedElement.getByText("Test property");
+    });
+
+    it("supports PropertyConverterInfo", () => {
+      const renderer = new PrimitivePropertyValueRenderer();
+      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
+      const convertInfo: PropertyConverterInfo = { name: "" };
+      stringProperty.property.converter = convertInfo;
 
       const element = renderer.render(stringProperty);
       const renderedElement = render(<>{element}</>);

@@ -11,7 +11,7 @@ exports[`<LabeledSelect /> renders array options correctly 1`] = `
     select test
      
   </div>
-  <Select
+  <ForwardRef(ForwardRefSelect)
     options={
       Array [
         "Option 1",
@@ -34,7 +34,7 @@ exports[`<LabeledSelect /> renders correctly 1`] = `
     select test
      
   </div>
-  <Select
+  <ForwardRef(ForwardRefSelect)
     options={Array []}
   />
 </label>
@@ -51,7 +51,7 @@ exports[`<LabeledSelect /> renders disabled correctly 1`] = `
     select test
      
   </div>
-  <Select
+  <ForwardRef(ForwardRefSelect)
     disabled={true}
     options={Array []}
   />
@@ -69,7 +69,7 @@ exports[`<LabeledSelect /> renders message correctly 1`] = `
     select test
      
   </div>
-  <Select
+  <ForwardRef(ForwardRefSelect)
     options={Array []}
   />
   <div
@@ -91,7 +91,7 @@ exports[`<LabeledSelect /> renders object options correctly 1`] = `
     select test
      
   </div>
-  <Select
+  <ForwardRef(ForwardRefSelect)
     options={
       Object {
         "option1": "Option 1",
@@ -114,7 +114,7 @@ exports[`<LabeledSelect /> renders status correctly 1`] = `
     select test
      
   </div>
-  <Select
+  <ForwardRef(ForwardRefSelect)
     options={Array []}
   />
 </label>

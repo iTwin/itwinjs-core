@@ -308,7 +308,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       expect(queryByText("childCategory2Property")).to.be.null;
     });
 
-    it("rerenders if data in the provider changes", async () => {
+    it("rerenders if data if the provider changes", async () => {
       const { container } = render(<VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
       dataProvider.getData = async (): Promise<PropertyData> => ({
@@ -385,6 +385,25 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
       expect(container.querySelector(".components-property-record--vertical")).to.be.not.null;
     });
+
+    it("doesn't change orientation when props change if not necessary", async () => {
+      const { container, rerender } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider}
+          isOrientationFixed={true}
+        />);
+      await TestUtils.flushAsyncOperations();
+      expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
+
+      rerender(<VirtualizedPropertyGridWithDataProvider
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider}
+        isOrientationFixed={false}
+      />);
+      expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
+    });
+
   });
 
   describe("dynamic node heights", () => {
@@ -933,6 +952,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
       expect(scrollToItemFake).to.have.been.calledOnceWithExactly(3);
     });
+
     it("scrolls to highlighted category when highlight is updated", async () => {
       const providerMock = moq.Mock.ofType<IPropertyDataProvider>();
       providerMock.setup(async (x) => x.getData()).returns(async () => ({
@@ -1025,9 +1045,16 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       rerender(<VirtualizedPropertyGridWithDataProvider
         orientation={Orientation.Horizontal}
         dataProvider={providerMock.object}
+        highlight={{ highlightedText: "test" }}
       />);
       await waitForElement(() => getByTitle(container, "test9"), { container });
+      expect(scrollToItemFake).to.not.have.been.called;
 
+      rerender(<VirtualizedPropertyGridWithDataProvider
+        orientation={Orientation.Horizontal}
+        dataProvider={providerMock.object}
+      />);
+      await waitForElement(() => getByTitle(container, "test9"), { container });
       expect(scrollToItemFake).to.not.have.been.called;
     });
 
@@ -1061,7 +1088,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
     it("doesn't scroll to item if there is no matching item in the grid", async () => {
       const highlight3 = {
         highlightedText: "test",
-        activeMatch: {
+        activeHighlight: {
           highlightedItemIdentifier: "falseTest2",
           highlightIndex: 0,
         },
@@ -1096,7 +1123,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         highlight={highlight3}
       />);
       await waitForElement(() => getByTitle(container, "test9"), { container });
-
       expect(scrollToItemFake).to.not.have.been.called;
     });
   });
