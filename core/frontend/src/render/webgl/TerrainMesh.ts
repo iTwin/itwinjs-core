@@ -16,7 +16,7 @@ import { SimpleMeshGeometryParams } from "../primitives/mesh/SimpleMeshPrimitive
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { RenderSystem, RenderSimpleMeshGeometry, TerrainTexture } from "../RenderSystem";
+import { RenderSimpleMeshGeometry, RenderSystem, TerrainTexture } from "../RenderSystem";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
 import { RenderOrder, RenderPass } from "./RenderFlags";

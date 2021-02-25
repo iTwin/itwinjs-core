@@ -19,10 +19,11 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh, MeshGraphicArgs, MeshList } from "../render/primitives/mesh/MeshPrimitives";
+import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
 import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { MeshGraphic } from "../render/webgl/Mesh";
+import { System } from "../render/webgl/System";
 import { TileContent } from "./internal";
 
 /* eslint-disable no-restricted-syntax */
@@ -217,8 +218,9 @@ export abstract class GltfReader {
 
   private graphicFromMesh(mesh: Mesh, meshGraphicArgs: MeshGraphicArgs, instances?: InstancedGraphicParams) {
     const realityMesh = instances ? undefined : RealityMeshPrimitive.createFromMesh(mesh);
-    if (!realityMesh)
-      return mesh.getGraphics(meshGraphicArgs, this._system, instances);
+
+    return realityMesh ? this._system.createSimpleMesh().getGraphics() : mesh.getGraphics(meshGraphicArgs, this._system, instances);
+
 
   }
 
