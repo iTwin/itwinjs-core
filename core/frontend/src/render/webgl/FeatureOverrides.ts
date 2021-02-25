@@ -350,7 +350,8 @@ export class FeatureOverrides implements WebGLDisposable {
   }
 
   public bindLUT(uniform: UniformHandle): void {
-    this._lut!.bindSampler(uniform, TextureUnit.FeatureSymbology);
+    if (this._lut)
+      this._lut.bindSampler(uniform, TextureUnit.FeatureSymbology);
   }
 
   public bindUniformSymbologyFlags(uniform: UniformHandle): void {
