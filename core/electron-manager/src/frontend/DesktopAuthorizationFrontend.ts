@@ -13,7 +13,7 @@ import { FrontendRequestContext, NativeApp } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 
 /**
- * For use in desktop apps
+ * For use in the frontend of electron apps
  * @alpha
  */
 export class DesktopAuthorizationFrontend {
