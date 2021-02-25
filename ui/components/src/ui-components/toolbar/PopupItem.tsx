@@ -104,7 +104,7 @@ export function PopupItem(props: PopupItemProps) {
             {props.badge}
           </div>
         }
-        {hideIndicator ? undefined : <div className="components-triangle" />}
+        {hideIndicator ? /* istanbul ignore next */ undefined : <div className="components-triangle" />}
       </button>
       <PopupItemPopup
         isOpen={isPanelShown}

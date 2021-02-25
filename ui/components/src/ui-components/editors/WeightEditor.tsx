@@ -30,6 +30,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
   private _control: any | null = null;
   private _isMounted = false;
   private _availableWeights: number[] = [];
+  private _divElement = React.createRef<HTMLDivElement>();
 
   /** @internal */
   public readonly state: Readonly<WeightEditorState> = {
@@ -67,6 +68,18 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
     }
 
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._divElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    let containsFocus = false;
+    // istanbul ignore else
+    if (this._divElement.current)
+      containsFocus = this._divElement.current.contains(document.activeElement);
+    return containsFocus;
   }
 
   private setFocus(): void {
@@ -138,10 +151,10 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
   /** @internal */
   public render() {
     return (
-      <div className={classnames("components-weight-editor", this.props.className)} style={this.props.style}>
+      <div className={classnames("components-weight-editor", this.props.className)} style={this.props.style} ref={this._divElement}>
         <WeightPickerButton ref={(control) => this._control = control}
           activeWeight={this.state.weightValue}
-          weights={this._availableWeights.length > 0 ? this._availableWeights : undefined}
+          weights={this._availableWeights.length > 0 ? /* istanbul ignore next */ this._availableWeights : undefined}
           disabled={this.state.isDisabled ? true : false}
           readonly={this.state.readonly}
           onLineWeightPick={this._onLineWeightPick}

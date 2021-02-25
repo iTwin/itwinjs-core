@@ -98,6 +98,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
     // and asynchronous updates make it very difficult.
     // If it should not render, let the parent know that it's
     // already fully rendered
+    // istanbul ignore else
     if (nextProps.renderId && nextProps.onFinalRenderComplete)
       nextProps.onFinalRenderComplete(nextProps.renderId);
 
@@ -105,6 +106,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
   }
 
   public componentDidUpdate(_prevProps: TreeNodeProps) {
+    // istanbul ignore else
     if (this.props.node.isDirty())
       this.props.node.setDirty(false);
   }
@@ -149,6 +151,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
   }
 
   private _onCheckboxClick = (newValue: CheckBoxState) => {
+    // istanbul ignore else
     if (this.props.checkboxProps && this.props.checkboxProps.onClick)
       this.props.checkboxProps.onClick(this.props.node, newValue);
   };
