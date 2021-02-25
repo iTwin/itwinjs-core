@@ -47,58 +47,6 @@ export class StateTracker {
     await this._ipcRequestsHandler.updateHierarchyState({ imodelKey, rulesetId, changeType, nodeKeys });
   }
 
-  public async onNodesExpanded(imodel: IModelConnection, rulesetId: string, sourceId: string, expandedNodes: NodeIdentifier[]) {
-    let hierarchy = this._expandedHierarchies.get(rulesetId);
-    if (!hierarchy) {
-      hierarchy = new Map<string, ExpandedNode>();
-      this._expandedHierarchies.set(rulesetId, hierarchy);
-    }
-
-    const newKeys: NodeKey[] = [];
-    // add new expanded nodes
-    for (const expandedNode of expandedNodes) {
-      const existingNode = hierarchy.get(expandedNode.id);
-      // this node is already expanded just add current source to the list of sources that have this node expanded
-      if (existingNode) {
-        existingNode.expandedIn.add(sourceId);
-        continue;
-      }
-
-      hierarchy.set(expandedNode.id, { key: expandedNode.key, expandedIn: new Set<string>([sourceId]) });
-      newKeys.push(expandedNode.key);
-    }
-
-    await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesExpanded", newKeys);
-  }
-
-  public async onNodesCollapsed(imodel: IModelConnection, rulesetId: string, sourceId: string, collapsedNodes: NodeIdentifier[]) {
-    const hierarchy = this._expandedHierarchies.get(rulesetId);
-    if (!hierarchy)
-      return;
-
-    const removedKeys: NodeKey[] = [];
-    for (const collapsedNode of collapsedNodes) {
-      const existingNode = hierarchy.get(collapsedNode.id);
-      if (!existingNode)
-        continue;
-
-      // remove current source from the list of sources that have this node expanded
-      existingNode.expandedIn.delete(sourceId);
-      // if there are other sources that have this node expanded leave it
-      if (existingNode.expandedIn.size !== 0)
-        continue;
-
-      hierarchy.delete(collapsedNode.id);
-      removedKeys.push(collapsedNode.key);
-    }
-
-    // if hierarchy does not have any nodes remove it
-    if (hierarchy.size === 0)
-      this._expandedHierarchies.delete(rulesetId);
-
-    await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesCollapsed", removedKeys);
-  }
-
   public async onHierarchyClosed(imodel: IModelConnection, rulesetId: string, sourceId: string) {
     const hierarchy = this._expandedHierarchies.get(rulesetId);
     if (!hierarchy)
@@ -119,5 +67,48 @@ export class StateTracker {
       this._expandedHierarchies.delete(rulesetId);
 
     await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesCollapsed", removedKeys);
+  }
+
+  public async onExpandedNodesChanged(imodel: IModelConnection, rulesetId: string, sourceId: string, expandedNodes: NodeIdentifier[]) {
+    let hierarchy = this._expandedHierarchies.get(rulesetId);
+    if (expandedNodes.length === 0 && !hierarchy)
+      return;
+    if (!hierarchy) {
+      hierarchy = new Map<string, ExpandedNode>();
+      this._expandedHierarchies.set(rulesetId, hierarchy);
+    }
+
+    const removedKeys: NodeKey[] = [];
+    const addedKeys: NodeKey[] = [];
+    for (const [key, existingNode] of hierarchy) {
+      // existing node is in new expanded nodes list. Add current source
+      if (expandedNodes.find((expandedNode) => expandedNode.id === key)) {
+        existingNode.expandedIn.add(sourceId);
+        continue;
+      }
+
+      // node was not found in expanded nodes list. Remove current source
+      existingNode.expandedIn.delete(sourceId);
+      if (existingNode.expandedIn.size !== 0)
+        continue;
+
+      removedKeys.push(existingNode.key);
+      hierarchy.delete(key);
+    }
+
+    // add any new nodes that were not in expanded nodes hierarchy already
+    for (const expandedNode of expandedNodes) {
+      const existingNode = hierarchy.get(expandedNode.id);
+      if (existingNode)
+        continue;
+
+      hierarchy.set(expandedNode.id, { key: expandedNode.key, expandedIn: new Set<string>([sourceId]) });
+      addedKeys.push(expandedNode.key);
+    }
+
+    if (removedKeys.length !== 0)
+      await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesCollapsed", removedKeys);
+    if (addedKeys.length !== 0)
+      await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesExpanded", addedKeys);
   }
 }

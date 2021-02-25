@@ -22,7 +22,7 @@ describe("StateTracker", () => {
   }
 
   async function expandNodes(nodes: NodeIdentifier[], sourceId?: string) {
-    await tracker.onNodesExpanded(imodelMock.object, testRulesetId, sourceId ?? testSourceId, nodes);
+    await tracker.onExpandedNodesChanged(imodelMock.object, testRulesetId, sourceId ?? testSourceId, nodes);
     ipcHandlerMock.reset();
   }
 
@@ -33,10 +33,10 @@ describe("StateTracker", () => {
     tracker = new StateTracker(ipcHandlerMock.object);
   });
 
-  describe("onNodesExpanded", () => {
-    it("does not call 'updateHierarchyState' if called without node keys", async () => {
+  describe("onNodeonExpandedNodesChangedsChanged", () => {
+    it("does not call 'updateHierarchyState' if there are no expanded nodes", async () => {
       ipcHandlerMock.setup(async (x) => x.updateHierarchyState(moq.It.isAny())).verifiable(moq.Times.never());
-      await tracker.onNodesExpanded(imodelMock.object, testRulesetId, testSourceId, []);
+      await tracker.onExpandedNodesChanged(imodelMock.object, testRulesetId, testSourceId, []);
       ipcHandlerMock.verifyAll();
     });
 
@@ -48,24 +48,15 @@ describe("StateTracker", () => {
         nodeKeys: nodes.map((n) => NodeKey.toJSON(n.key)),
         rulesetId: testRulesetId,
       }))).verifiable(moq.Times.once());
-      await tracker.onNodesExpanded(imodelMock.object, testRulesetId, testSourceId, nodes);
+      await tracker.onExpandedNodesChanged(imodelMock.object, testRulesetId, testSourceId, nodes);
       ipcHandlerMock.verifyAll();
     });
 
     it("does not call 'updateHierarchyState' if same node expanded in different source", async () => {
       const nodes = [createNodeIdentifier("node-1", createRandomECInstancesNodeKey())];
       ipcHandlerMock.setup(async (x) => x.updateHierarchyState(moq.It.isAny())).verifiable(moq.Times.once());
-      await tracker.onNodesExpanded(imodelMock.object, testRulesetId, testSourceId, nodes);
-      await tracker.onNodesExpanded(imodelMock.object, testRulesetId, "other-source-id", nodes);
-      ipcHandlerMock.verifyAll();
-    });
-  });
-
-  describe("onNodesCollapsed", () => {
-    it("does not call 'updateHierarchiesState' if no nodes were expanded", async () => {
-      const nodes = [createNodeIdentifier("node-1", createRandomECInstancesNodeKey())];
-      ipcHandlerMock.setup(async (x) => x.updateHierarchyState(moq.It.isAny())).verifiable(moq.Times.never());
-      await tracker.onNodesCollapsed(imodelMock.object, testRulesetId, testSourceId, nodes);
+      await tracker.onExpandedNodesChanged(imodelMock.object, testRulesetId, testSourceId, nodes);
+      await tracker.onExpandedNodesChanged(imodelMock.object, testRulesetId, "other-source-id", nodes);
       ipcHandlerMock.verifyAll();
     });
 
@@ -78,24 +69,24 @@ describe("StateTracker", () => {
         changeType: "nodesCollapsed",
         nodeKeys: nodes.map((n) => NodeKey.toJSON(n.key)),
       }))).verifiable(moq.Times.once());
-      await tracker.onNodesCollapsed(imodelMock.object, testRulesetId, testSourceId, nodes);
+      await tracker.onExpandedNodesChanged(imodelMock.object, testRulesetId, testSourceId, []);
       ipcHandlerMock.verifyAll();
     });
 
-    it("does not call 'updateHierarchiesState' if node is expanded in other source", async () => {
+    it("does not call 'updateHierarchiesState' with collapsed node if it is expanded in other source", async () => {
       const nodes = [createNodeIdentifier("node-1", createRandomECInstancesNodeKey())];
       await expandNodes(nodes);
       await expandNodes(nodes, "other-source-id");
       ipcHandlerMock.setup(async (x) => x.updateHierarchyState(moq.It.isAny())).verifiable(moq.Times.never());
-      await tracker.onNodesCollapsed(imodelMock.object, testRulesetId, "other-source-id", nodes);
+      await tracker.onExpandedNodesChanged(imodelMock.object, testRulesetId, "other-source-id", []);
       ipcHandlerMock.verifyAll();
     });
 
-    it("does not call 'updateHierarchiesState' if node is not expanded", async () => {
+    it("does not call 'updateHierarchiesState' if expanded nodes does not change", async () => {
       const nodes = [createNodeIdentifier("node-1", createRandomECInstancesNodeKey()), createNodeIdentifier("node-2", createRandomECInstancesNodeKey())];
-      await expandNodes([nodes[0]]);
+      await expandNodes(nodes);
       ipcHandlerMock.setup(async (x) => x.updateHierarchyState(moq.It.isAny())).verifiable(moq.Times.never());
-      await tracker.onNodesCollapsed(imodelMock.object, testRulesetId, testSourceId, [nodes[1]]);
+      await tracker.onExpandedNodesChanged(imodelMock.object, testRulesetId, testSourceId, nodes);
       ipcHandlerMock.verifyAll();
     });
   });

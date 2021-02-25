@@ -422,11 +422,9 @@ export interface SelectionScopesManagerProps {
 export class StateTracker {
     constructor(ipcRequestsHandler: IpcRequestsHandler);
     // (undocumented)
+    onExpandedNodesChanged(imodel: IModelConnection, rulesetId: string, sourceId: string, expandedNodes: NodeIdentifier[]): Promise<void>;
+    // (undocumented)
     onHierarchyClosed(imodel: IModelConnection, rulesetId: string, sourceId: string): Promise<void>;
-    // (undocumented)
-    onNodesCollapsed(imodel: IModelConnection, rulesetId: string, sourceId: string, collapsedNodes: NodeIdentifier[]): Promise<void>;
-    // (undocumented)
-    onNodesExpanded(imodel: IModelConnection, rulesetId: string, sourceId: string, expandedNodes: NodeIdentifier[]): Promise<void>;
     }
 
 

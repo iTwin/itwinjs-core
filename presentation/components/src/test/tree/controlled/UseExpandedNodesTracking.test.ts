@@ -103,35 +103,35 @@ describe("UseExpandedNodesTracking", () => {
     stateTrackerMock.verifyAll();
   });
 
-  it("calls 'onNodeExpanded' when expanded root node is added to model", () => {
+  it("calls 'onExpandedNodesChanged' with root node when expanded root node is added to model", () => {
     const node = createNodeItem("root-1");
     renderHook(
       useExpandedNodesTracking,
       { initialProps },
     );
 
-    stateTrackerMock.setup(async (x) => x.onNodesExpanded(imodelMock.object, rulesetId, moq.It.isAnyString(), [{ id: node.id, key: node.key }])).verifiable(moq.Times.once());
+    stateTrackerMock.setup(async (x) => x.onExpandedNodesChanged(imodelMock.object, rulesetId, moq.It.isAnyString(), [{ id: node.id, key: node.key }])).verifiable(moq.Times.once());
     modelSource.modifyModel((model) => {
       model.setChildren(undefined, [createTreeModelInput(node, true)], 0);
     });
     stateTrackerMock.verifyAll();
   });
 
-  it("does not call 'onNodeExpanded' when non expanded root node is added to model", () => {
+  it("call 'onExpandedNodesChanged' without nodes when non expanded root node is added to model", () => {
     const node = createNodeItem("root-1");
     renderHook(
       useExpandedNodesTracking,
       { initialProps },
     );
 
-    stateTrackerMock.setup(async (x) => x.onNodesExpanded(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).verifiable(moq.Times.never());
+    stateTrackerMock.setup(async (x) => x.onExpandedNodesChanged(imodelMock.object, rulesetId, moq.It.isAnyString(), [])).verifiable(moq.Times.once());
     modelSource.modifyModel((model) => {
       model.setChildren(undefined, [createTreeModelInput(node, false)], 0);
     });
     stateTrackerMock.verifyAll();
   });
 
-  it("calls 'onNodeExpanded' when existing node is expanded", () => {
+  it("calls 'onExpandedNodesChanged' with existing node that was expanded", () => {
     const node = createNodeItem("root-1");
     modelSource.modifyModel((model) => { model.setChildren(undefined, [createTreeModelInput(node)], 0); });
     renderHook(
@@ -139,14 +139,14 @@ describe("UseExpandedNodesTracking", () => {
       { initialProps },
     );
 
-    stateTrackerMock.setup(async (x) => x.onNodesExpanded(imodelMock.object, rulesetId, moq.It.isAnyString(), [{ id: node.id, key: node.key }])).verifiable(moq.Times.once());
+    stateTrackerMock.setup(async (x) => x.onExpandedNodesChanged(imodelMock.object, rulesetId, moq.It.isAnyString(), [{ id: node.id, key: node.key }])).verifiable(moq.Times.once());
     modelSource.modifyModel((model) => {
       model.getNode(node.id)!.isExpanded = true;
     });
     stateTrackerMock.verifyAll();
   });
 
-  it("calls 'onNodeExpanded' with expanded children nodes when parent is expanded", () => {
+  it("calls 'onExpandedNodesChanged' with expanded children nodes and parent when parent is expanded", () => {
     const node = createNodeItem("root-1");
     const children = [createNodeItem("child-1"), createNodeItem("child-2")];
     modelSource.modifyModel((model) => {
@@ -158,29 +158,14 @@ describe("UseExpandedNodesTracking", () => {
       { initialProps },
     );
 
-    stateTrackerMock.setup(async (x) => x.onNodesExpanded(imodelMock.object, rulesetId, moq.It.isAnyString(), [{ id: node.id, key: node.key }, { id: children[1].id, key: children[1].key }])).verifiable(moq.Times.once());
+    stateTrackerMock.setup(async (x) => x.onExpandedNodesChanged(imodelMock.object, rulesetId, moq.It.isAnyString(), [{ id: node.id, key: node.key }, { id: children[1].id, key: children[1].key }])).verifiable(moq.Times.once());
     modelSource.modifyModel((model) => {
       model.getNode(node.id)!.isExpanded = true;
     });
     stateTrackerMock.verifyAll();
   });
 
-  it("does not call 'onNodesExpanded' when expanded node is modified", () => {
-    const node = createNodeItem("root-1");
-    modelSource.modifyModel((model) => { model.setChildren(undefined, [createTreeModelInput(node, false)], 0); });
-    renderHook(
-      useExpandedNodesTracking,
-      { initialProps }
-    );
-
-    stateTrackerMock.setup(async (x) => x.onNodesExpanded(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).verifiable(moq.Times.never());
-    modelSource.modifyModel((model) => {
-      model.getNode(node.id)!.isSelected = true;
-    });
-    stateTrackerMock.verifyAll();
-  });
-
-  it("calls 'onNodesCollapsed' when node is collapsed", () => {
+  it("calls 'onExpandedNodesChanged' without nodes when node is collapsed", () => {
     const node = createNodeItem("root-1");
     modelSource.modifyModel((model) => { model.setChildren(undefined, [createTreeModelInput(node, true)], 0); });
     renderHook(
@@ -188,14 +173,14 @@ describe("UseExpandedNodesTracking", () => {
       { initialProps }
     );
 
-    stateTrackerMock.setup(async (x) => x.onNodesCollapsed(imodelMock.object, rulesetId, moq.It.isAnyString(), [{ id: node.id, key: node.key }])).verifiable(moq.Times.once());
+    stateTrackerMock.setup(async (x) => x.onExpandedNodesChanged(imodelMock.object, rulesetId, moq.It.isAnyString(), [])).verifiable(moq.Times.once());
     modelSource.modifyModel((model) => {
       model.getNode(node.id)!.isExpanded = false;
     });
     stateTrackerMock.verifyAll();
   });
 
-  it("calls 'onNodesCollapsed' with expanded child nodes when parent is collapsed", () => {
+  it("calls 'onExpandedNodesChanged' without nodes when parent with expanded child nodes is collapsed", () => {
     const node = createNodeItem("root-1");
     const children = [createNodeItem("child-1"), createNodeItem("child-2")];
     modelSource.modifyModel((model) => {
@@ -207,24 +192,9 @@ describe("UseExpandedNodesTracking", () => {
       { initialProps }
     );
 
-    stateTrackerMock.setup(async (x) => x.onNodesCollapsed(imodelMock.object, rulesetId, moq.It.isAnyString(), [{ id: node.id, key: node.key }, { id: children[1].id, key: children[1].key }])).verifiable(moq.Times.once());
+    stateTrackerMock.setup(async (x) => x.onExpandedNodesChanged(imodelMock.object, rulesetId, moq.It.isAnyString(), [])).verifiable(moq.Times.once());
     modelSource.modifyModel((model) => {
       model.getNode(node.id)!.isExpanded = false;
-    });
-    stateTrackerMock.verifyAll();
-  });
-
-  it("does not call 'onNodesCollapsed' when expanded node is modified", () => {
-    const node = createNodeItem("root-1");
-    modelSource.modifyModel((model) => { model.setChildren(undefined, [createTreeModelInput(node, true)], 0); });
-    renderHook(
-      useExpandedNodesTracking,
-      { initialProps }
-    );
-
-    stateTrackerMock.setup(async (x) => x.onNodesCollapsed(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).verifiable(moq.Times.never());
-    modelSource.modifyModel((model) => {
-      model.getNode(node.id)!.isSelected = true;
     });
     stateTrackerMock.verifyAll();
   });

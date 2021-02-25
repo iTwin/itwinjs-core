@@ -12,12 +12,12 @@ import {
 } from "@bentley/presentation-common";
 import { IModelHierarchyChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import {
-  isTreeModelNode, PagedTreeNodeLoader, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, useTreeModelSource,
+  PagedTreeNodeLoader, TreeModelSource, usePagedTreeNodeLoader, useTreeModelSource,
 } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
-import { useExpandedNodesTracking } from "./UseExpandedNodesTracking";
+import { getExpandedNodeItems, useExpandedNodesTracking } from "./UseExpandedNodesTracking";
 
 /**
  * Properties for [[usePresentationTreeNodeLoader]] hook.
@@ -147,12 +147,7 @@ function updateModelSource(_modelSource: TreeModelSource, _hierarchyModification
 }
 
 function getExpandedNodeKeys(modelSource: TreeModelSource, dataProvider: IPresentationTreeDataProvider) {
-  const expandedItems = new Array<TreeNodeItem>();
-  for (const node of modelSource.getVisibleNodes()) {
-    if (isTreeModelNode(node) && node.isExpanded)
-      expandedItems.push(node.item);
-  }
-  return expandedItems.map((item) => dataProvider.getNodeKey(item));
+  return getExpandedNodeItems(modelSource).map((item) => dataProvider.getNodeKey(item));
 }
 
 function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentationTreeDataProvider {
