@@ -307,6 +307,7 @@ public;Subtract
 public;SupplementationInfo
 public;TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription
 alpha;UPDATE_FULL = "FULL"
+internal;UpdateHierarchyStateParams
 alpha;UpdateInfo
 alpha;UpdateInfo
 alpha;UpdateInfoJSON

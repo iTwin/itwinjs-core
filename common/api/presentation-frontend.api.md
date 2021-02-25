@@ -47,6 +47,7 @@ import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SetRulesetVariableParams } from '@bentley/presentation-common';
+import { UpdateHierarchyStateParams } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 
 // @internal (undocumented)
@@ -155,6 +156,14 @@ export interface ISelectionProvider {
     selectionChange: SelectionChangeEvent;
 }
 
+// @internal
+export interface NodeIdentifier {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    key: NodeKey;
+}
+
 // @public
 export class Presentation {
     static get connectivity(): IConnectivityInformationProvider;
@@ -257,6 +266,8 @@ export class PresentationManager implements IDisposable {
     // @internal (undocumented)
     get rpcRequestsHandler(): RpcRequestsHandler;
     rulesets(): RulesetManager;
+    // @internal (undocumented)
+    get stateTracker(): StateTracker | undefined;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
@@ -270,6 +281,8 @@ export interface PresentationManagerProps {
     ipcRequestsHandler?: IpcRequestsHandler;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
+    // @internal (undocumented)
+    stateTracker?: StateTracker;
 }
 
 // @beta
@@ -404,6 +417,17 @@ export interface SelectionScopesManagerProps {
     localeProvider?: () => string | undefined;
     rpcRequestsHandler: RpcRequestsHandler;
 }
+
+// @internal (undocumented)
+export class StateTracker {
+    constructor(ipcRequestsHandler: IpcRequestsHandler);
+    // (undocumented)
+    onHierarchyClosed(imodel: IModelConnection, rulesetId: string, sourceId: string): Promise<void>;
+    // (undocumented)
+    onNodesCollapsed(imodel: IModelConnection, rulesetId: string, sourceId: string, collapsedNodes: NodeIdentifier[]): Promise<void>;
+    // (undocumented)
+    onNodesExpanded(imodel: IModelConnection, rulesetId: string, sourceId: string, expandedNodes: NodeIdentifier[]): Promise<void>;
+    }
 
 
 // (No @packageDocumentation comment for this package)
