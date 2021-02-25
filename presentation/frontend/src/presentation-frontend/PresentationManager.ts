@@ -23,6 +23,7 @@ import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
+import { StateTracker } from "./StateTracker";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -84,6 +85,9 @@ export interface PresentationManagerProps {
 
   /** @internal */
   ipcRequestsHandler?: IpcRequestsHandler;
+
+  /** @internal */
+  stateTracker?: StateTracker;
 }
 
 /**
@@ -100,6 +104,7 @@ export class PresentationManager implements IDisposable {
   private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
   private _ipcRequestsHandler?: IpcRequestsHandler;
+  private _stateTracker?: StateTracker;
 
   /**
    * An event raised when hierarchies created using specific ruleset change
@@ -135,6 +140,7 @@ export class PresentationManager implements IDisposable {
       // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
       this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
       this._ipcRequestsHandler = props?.ipcRequestsHandler ?? new IpcRequestsHandler(this._requestsHandler.clientId);
+      this._stateTracker = props?.stateTracker ?? new StateTracker(this._ipcRequestsHandler);
     }
   }
 
@@ -238,6 +244,9 @@ export class PresentationManager implements IDisposable {
 
   /** @internal */
   public get ipcRequestsHandler() { return this._ipcRequestsHandler; }
+
+  /** @internal */
+  public get stateTracker() { return this._stateTracker; }
 
   /**
    * Get rulesets manager

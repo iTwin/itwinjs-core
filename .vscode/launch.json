@@ -1177,8 +1177,7 @@
       },
       "outFiles": [
         "${workspaceFolder}/test-apps/presentation-test-app/lib/backend/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[FRONTEND] presentation-test-app (electron)"
@@ -1194,8 +1193,7 @@
       "port": 9223,
       "outFiles": [
         "${workspaceFolder}/test-apps/presentation-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js",
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] presentation-test-app (electron)"

@@ -17,6 +17,7 @@ import {
 import { useDisposable } from "@bentley/ui-core";
 import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import { useExpandedNodesTracking } from "./UseExpandedNodesTracking";
 
 /**
  * Properties for [[usePresentationTreeNodeLoader]] hook.
@@ -86,6 +87,7 @@ interface ModelSourceUpdateProps {
 
 function useModelSourceUpdateOnIModelHierarchyUpdate(props: ModelSourceUpdateProps) {
   const { modelSource, dataProvider, reset } = props;
+  useExpandedNodesTracking({ modelSource, dataProvider, enableAutoUpdate: props.enable ?? false });
   const onIModelHierarchyChanged = useCallback(async (args: IModelHierarchyChangeEventArgs) => {
     if (args.rulesetId === dataProvider.rulesetId && args.imodelKey === dataProvider.imodel.key) {
       if (args.updateInfo === UPDATE_FULL)

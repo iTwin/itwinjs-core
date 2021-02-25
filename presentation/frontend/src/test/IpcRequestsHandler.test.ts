@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IpcApp } from "@bentley/imodeljs-frontend";
-import { PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
+import { NodeKey, PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { expect } from "chai";
 import sinon from "sinon";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
@@ -17,7 +18,6 @@ describe("IpcRequestsHandler", () => {
   });
 
   describe("setRulesetVariable", () => {
-
     it("calls IpcApp.callIpcChannel with injected client id", async () => {
       const callChannelStub = sinon.stub(IpcApp, "callIpcChannel");
       const rulesetId = "test-ruleset-id";
@@ -29,7 +29,21 @@ describe("IpcRequestsHandler", () => {
         variable,
       });
     });
-
   });
 
+  describe("updateHierarchyState", () => {
+    it("calls IpcApp.callIpcChannel with injected client id", async () => {
+      const callChannelStub = sinon.stub(IpcApp, "callIpcChannel");
+      const rulesetId = "ruleset-id";
+      const nodeKeys = [createRandomECInstancesNodeKey()];
+      await handler.updateHierarchyState({ imodelKey: "imodel-key", rulesetId, changeType: "nodesExpanded", nodeKeys });
+      expect(callChannelStub).to.be.calledOnceWith(PRESENTATION_IPC_CHANNEL_NAME, "updateHierarchyState", {
+        clientId: "test-client-id",
+        imodelKey: "imodel-key",
+        rulesetId,
+        changeType: "nodesExpanded",
+        nodeKeys: nodeKeys.map(NodeKey.toJSON),
+      });
+    });
+  });
 });

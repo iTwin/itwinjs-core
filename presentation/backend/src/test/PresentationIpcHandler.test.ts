@@ -4,11 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as moq from "typemoq";
 import * as sinon from "sinon";
-import { RulesetVariableJSON, SetRulesetVariableParams, VariableValueTypes } from "@bentley/presentation-common";
+import { NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, UpdateHierarchyStateParams, VariableValueTypes } from "@bentley/presentation-common";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
 import { Presentation } from "../presentation-backend/Presentation";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import { IModelDb, IModelJsNative } from "@bentley/imodeljs-backend";
+import { createRandomBaseNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 
 describe("PresentationIpcHandler", () => {
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
@@ -39,7 +42,51 @@ describe("PresentationIpcHandler", () => {
       await ipcHandler.setRulesetVariable(params);
       variablesManagerMock.verifyAll();
     });
-
   });
 
+  describe("updateHierarchyState", () => {
+    const testRulesetId = "test-ruleset-id";
+    const nativeAddonMock = moq.Mock.ofType<NativePlatformDefinition>();
+
+    beforeEach(() => {
+      nativeAddonMock.reset();
+      presentationManagerMock.setup((x) => x.getNativePlatform()).returns(() => nativeAddonMock.object);
+    });
+
+    it("does not call native platform's updateHierarchyState if imodelDb is not found", async () => {
+      nativeAddonMock.setup((x) => x.updateHierarchyState(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).verifiable(moq.Times.never());
+
+      const ipcHandler = new PresentationIpcHandler();
+      const params: UpdateHierarchyStateParams<NodeKeyJSON> = {
+        clientId: "client-id",
+        rulesetId: testRulesetId,
+        imodelKey: "imodel-key",
+        changeType: "nodesExpanded",
+        nodeKeys: [],
+      };
+      await ipcHandler.updateHierarchyState(params);
+      nativeAddonMock.verifyAll();
+    });
+
+    it("calls native platform's updateHierarchyState", async () => {
+      const imodelDbMock = moq.Mock.ofType<IModelDb>();
+      const nativeDgnDbMock = moq.Mock.ofType<IModelJsNative.DgnDb>();
+      imodelDbMock.setup((x) => x.nativeDb).returns(() => nativeDgnDbMock.object);
+      sinon.stub(IModelDb, "tryFindByKey").returns(imodelDbMock.object);
+
+      const nodeKey: NodeKeyJSON = createRandomBaseNodeKey();
+      nativeAddonMock.setup((x) => x.updateHierarchyState(nativeDgnDbMock.object, testRulesetId, "nodesExpanded", JSON.stringify([nodeKey]))).verifiable(moq.Times.once());
+
+      const ipcHandler = new PresentationIpcHandler();
+      const params: UpdateHierarchyStateParams<NodeKeyJSON> = {
+        clientId: "client-id",
+        rulesetId: testRulesetId,
+        imodelKey: "imodel-key",
+        changeType: "nodesExpanded",
+        nodeKeys: [nodeKey],
+      };
+      await ipcHandler.updateHierarchyState(params);
+      nativeAddonMock.verifyAll();
+    });
+  });
 });
