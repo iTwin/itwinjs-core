@@ -25,7 +25,8 @@ export class PresentationIpcHandler extends IpcHandler implements PresentationIp
     const { clientId, imodelKey, rulesetId, changeType, nodeKeys } = params;
     const imodelDb = IModelDb.tryFindByKey(imodelKey);
     if (!imodelDb) {
-      Logger.logError(PresentationBackendLoggerCategory.Ipc, "could not found imodelDb to perform hierarchy state update");
+      Logger.logError(PresentationBackendLoggerCategory.Ipc, "Could not find IModelDb to perform hierarchy state update");
+
       return;
     }
     Presentation.getManager(clientId).getNativePlatform().updateHierarchyState(imodelDb.nativeDb, rulesetId, changeType, JSON.stringify(nodeKeys));
