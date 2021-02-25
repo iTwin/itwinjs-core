@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "../../ui-ninezone/base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 
 describe("assert", () => {
   it("should not throw for truthy object", () => {
-    (() => assert({})).should.not.throw();
+    (() => assert(!!{})).should.not.throw();
   });
 
   it("should throw for falsy object", () => {
-    (() => assert(undefined)).should.throw();
+    (() => assert(!!undefined)).should.throw();
   });
 });
