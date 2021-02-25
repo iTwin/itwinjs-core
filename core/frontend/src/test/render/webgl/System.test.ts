@@ -321,4 +321,39 @@ describe("RenderSystem", () => {
       expect(idmap.texturesFromImageSources.size).to.equal(0);
     });
   });
+
+  describe("context loss", () => {
+    const contextLossHandler = RenderSystem.contextLossHandler;
+
+    beforeEach(async () => {
+      await IModelApp.startup();
+    });
+
+    afterEach(async () => {
+      RenderSystem.contextLossHandler = contextLossHandler;
+      await IModelApp.shutdown();
+    });
+
+    it("invokes handler", async () => {
+      let contextLost = false;
+      RenderSystem.contextLossHandler = async () => {
+        contextLost = true;
+        return Promise.resolve();
+      };
+
+      async function waitForContextLoss(): Promise<void> {
+        if (contextLost)
+          return Promise.resolve();
+
+        await new Promise<void>((resolve: any) => setTimeout(resolve, 10));
+        return waitForContextLoss();
+      }
+
+      const debugControl = IModelApp.renderSystem.debugControl!;
+      expect(debugControl).not.to.be.undefined;
+
+      expect(debugControl.loseContext()).to.be.true;
+      await waitForContextLoss();
+    });
+  });
 });
