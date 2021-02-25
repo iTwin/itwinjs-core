@@ -70,6 +70,35 @@ export class SparseTree<T extends Node> {
     this._idToNode[child.id] = child;
   }
 
+  public setNodeId(parentId: string | undefined, index: number, newId: string): boolean {
+    const previousNodeId = this.getChildren(parentId)?.get(index);
+    if (previousNodeId === undefined) {
+      return false;
+    }
+
+    if (previousNodeId === newId) {
+      return true;
+    }
+
+    if (this.getNode(newId) !== undefined) {
+      return false;
+    }
+
+    this._idToNode[newId] = this._idToNode[previousNodeId];
+    delete this._idToNode[previousNodeId];
+
+    this._parentToChildren[newId] = this._parentToChildren[previousNodeId];
+    delete this._parentToChildren[previousNodeId];
+
+    if (parentId === undefined) {
+      this._rootNodes.set(index, newId);
+    } else {
+      this._parentToChildren[parentId].set(index, newId);
+    }
+
+    return true;
+  }
+
   public setNumChildren(parentId: string | undefined, numChildren: number) {
     const children = this.getChildren(parentId, true)!;
     for (const [childId] of children.iterateValues()) {

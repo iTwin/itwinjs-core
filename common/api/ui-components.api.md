@@ -1715,7 +1715,7 @@ export interface ErrorObserver<T> {
 
 // @public @deprecated
 export class EventsMuteContext implements IDisposable {
-    constructor(_events: BeInspireTreeEvent[], _mute: (events: BeInspireTreeEvent[]) => void, _unmute: (events: BeInspireTreeEvent[]) => boolean, _emit?: ((events: BeInspireTreeEvent[]) => void) | undefined, _listen?: ((events: BeInspireTreeEvent[], listener: (...values: any[]) => void) => () => void) | undefined, allowedEventTriggersBeforeMute?: number);
+    constructor(_events: BeInspireTreeEvent[], _mute: (events: BeInspireTreeEvent[]) => void, _unmute: (events: BeInspireTreeEvent[]) => boolean, _emit?: ((events: BeInspireTreeEvent[]) => void) | undefined, _listen?: ((events: BeInspireTreeEvent[], listener: (...values: any[]) => void) => (() => void)) | undefined, allowedEventTriggersBeforeMute?: number);
     // (undocumented)
     dispose(): void;
     }
@@ -2651,12 +2651,12 @@ export enum MapMode {
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
 
 // @public
-export const matchLinks: (text: string) => {
+export const matchLinks: (text: string) => Array<{
     index: number;
     lastIndex: number;
     schema: string;
     url: string;
-}[];
+}>;
 
 // @internal
 export interface MenuItem {
@@ -2896,6 +2896,7 @@ export interface MutableTreeDataProvider extends ITreeDataProvider {
 export class MutableTreeModel implements TreeModel {
     // (undocumented)
     [immerable]: boolean;
+    changeNodeId(currentId: string, newId: string): boolean;
     clearChildren(parentId: string | undefined): void;
     computeVisibleNodes(): VisibleTreeNodes;
     getChildOffset(parentId: string | undefined, childId: string): number | undefined;
@@ -2908,7 +2909,7 @@ export class MutableTreeModel implements TreeModel {
     iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
     removeChild(parentId: string | undefined, childId: string): void;
     setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
-    setNumChildren(parentId: string | undefined, numChildren: number): void;
+    setNumChildren(parentId: string | undefined, numChildren: number | undefined): void;
     }
 
 // @beta
@@ -3294,8 +3295,6 @@ export interface PropertyCategory {
     label: string;
     // (undocumented)
     name: string;
-    // @alpha (undocumented)
-    parentCategory?: PropertyCategory;
 }
 
 // @public
@@ -4104,6 +4103,8 @@ export class SparseTree<T extends Node> {
     removeChild(parentId: string | undefined, childId: string): void;
     // (undocumented)
     setChildren(parentId: string | undefined, children: T[], offset: number): void;
+    // (undocumented)
+    setNodeId(parentId: string | undefined, index: number, newId: string): boolean;
     // (undocumented)
     setNumChildren(parentId: string | undefined, numChildren: number): void;
 }
@@ -5397,7 +5398,7 @@ export interface Unsubscribable {
 }
 
 // @beta
-export const useAsyncValue: <T extends any>(value: T | PromiseLike<T>) => T | undefined;
+export const useAsyncValue: <T extends unknown>(value: T | PromiseLike<T>) => T | undefined;
 
 // @alpha
 export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (() => Promise<TReturn>)): {

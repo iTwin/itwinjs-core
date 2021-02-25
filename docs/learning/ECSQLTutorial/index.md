@@ -61,7 +61,7 @@ Or simply use the provided sample below:
 > SELECT * FROM bis.Element
 > ```
 
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT * FROM bis.Element"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT * FROM bis.Element"></iframe>
 
 ## Tutorial Overview
 

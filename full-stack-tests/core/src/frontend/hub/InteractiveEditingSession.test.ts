@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { BeDuration, compareStrings, DbOpcode, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BatchType, Code, ElementGeometryChange } from "@bentley/imodeljs-common";
+import { BatchType, Code, ElementGeometryChange, ElementsChanged } from "@bentley/imodeljs-common";
 import {
   ElementEditor3d, GeometricModel3dState, IModelApp, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection,
   TileLoadPriority,
@@ -103,11 +103,15 @@ if (ProcessDetector.isElectronAppFrontend) {
       // Begin an editing session.
       const session = await InteractiveEditingSession.begin(imodel);
 
+      let changedElements: ElementsChanged;
+      session.onElementChanges.addListener((ch) => changedElements = ch);
+
       async function expectChanges(expected: ElementGeometryChange[], compareRange = false): Promise<void> {
 
         const changes = session.getGeometryChangesForModel(modelId);
         expect(undefined === changes).to.equal(expected.length === 0);
         if (changes) {
+
           const actual = Array.from(changes).sort((x, y) => compareStrings(x.id, y.id));
           if (compareRange) {
             expect(actual).to.deep.equal(expected);
@@ -129,6 +133,9 @@ if (ProcessDetector.isElectronAppFrontend) {
       await imodel.saveChanges();
       const insertElem1 = makeInsert(elem1);
       await expectChanges([insertElem1]);
+      expect(changedElements!.deleted).to.be.undefined;
+      expect(changedElements!.updated).to.be.undefined;
+      expect(changedElements!.inserted).to.not.be.undefined;
 
       // Modify the line element.
       await editor.startModifyingElements([elem1]);

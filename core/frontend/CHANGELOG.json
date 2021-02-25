@@ -2,6 +2,87 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.12.1",
+      "tag": "@bentley/imodeljs-frontend_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Prevent buggy decorators from invalidating other decorators' cached decorations."
+          },
+          {
+            "comment": "Fixed regression introduced recently that prevent WMS map layers from being displayed."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/imodeljs-frontend_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "The about dialog now works better on smaller screens and mobile devices."
+          },
+          {
+            "comment": "Support clearing color/transparency overrides by element ids and not just key."
+          },
+          {
+            "comment": "Deprecate detachChangeCache()"
+          },
+          {
+            "comment": "dont toggle persistent html decoration's dom attachment"
+          },
+          {
+            "comment": "Fix regressions in image diff tests caused by changes to tile selection logic."
+          },
+          {
+            "comment": "added flag to truncate ecsql blob values"
+          },
+          {
+            "comment": "Smoother frustum transition"
+          },
+          {
+            "comment": "enter requestContexts in map layer settings service so that activity Id can be tracked in SEQ logs"
+          },
+          {
+            "comment": "Implement external textures for iModel tiles."
+          },
+          {
+            "comment": "Fix failure to compute frustum depth from view attachments causing them to be severely clipped."
+          },
+          {
+            "comment": "Added new ArcGis token generator/manager. ArcGISMapLAyerImageryProvider now check for token error messages when fetch tile, inform end-user and raise an event.  Token is generated / appended dynamically to each ArcGIS request."
+          },
+          {
+            "comment": "Add options for limiting GPU memory allocated for tile contents."
+          },
+          {
+            "comment": "Don't change the imodeljs-icon opacity on mobile devices that don't support hover."
+          },
+          {
+            "comment": "Fix locate for particle effects."
+          },
+          {
+            "comment": "Add support for defining custom particle effects."
+          },
+          {
+            "comment": "NativeApp now uses Ipc"
+          },
+          {
+            "comment": "Added support for Slope and Hillshade modes for Thematic display of Terrain"
+          },
+          {
+            "comment": "AccuDraw bi-directional value updates"
+          },
+          {
+            "comment": "Fixed AccuDraw shortcuts in apps like DR"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.11.0",
       "tag": "@bentley/imodeljs-frontend_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",

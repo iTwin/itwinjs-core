@@ -1,6 +1,21 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- UI 'pickers' that use Popup component with fixed content should set closeOnNestedPopupOutsideClick prop.
+- Consider string values starting with `pw:\` or `pw://` to be URLs without checking the rest of the string.
+- `ControlledTree`: Fix calling `scrollToNode` too early triggering an assertion error.
+- Update TimelineComponent.tsx to properly respond to changed props.
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
@@ -43,10 +58,10 @@ Fri, 18 Dec 2020 18:24:01 GMT
 ### Updates
 
 - Add support for onClose function in ColorPickerPopupProps. This allows color value from popup to be used by caller.
-- Added matchesCount attribute to [[PropertyDataFilterResult]] to optionally tell how many matches there were in a [[PropertyRecord]]. Matches in label and value are separated.
-- Added match counting functionality to [[FilteringPropertyDataProvider]]. The returned [[FilteredPropertyData]] now has total matches count and a function get information about a match at specific index.
-- Added highlightedRecordProps to [[VirtualizedPropertyGridProps]] to allow highlighting specific parts of rendered PropertyRecords.
-- Updated [[FilteringInput]] component. Component's `filteringInProgress` prop was deprecated and new `status` property was introduced. This allows rendering the component in any state, including `filtering finished`, without having to cycle through other states first.
+- Added matchesCount attribute to [PropertyDataFilterResult]($ui-components) to optionally tell how many matches there were in a [PropertyRecord]($ui-components). Matches in label and value are separated.
+- Added match counting functionality to [FilteringPropertyDataProvider]($ui-components). The returned [FilteredPropertyData]($ui-components) now has total matches count and a function get information about a match at specific index.
+- Added highlightedRecordProps to [VirtualizedPropertyGridProps]($ui-components) to allow highlighting specific parts of rendered PropertyRecords.
+- Updated [FilteringInput]($ui-components) component. Component's `filteringInProgress` prop was deprecated and new `status` property was introduced. This allows rendering the component in any state, including `filtering finished`, without having to cycle through other states first.
 - fix but in ParsedInput control where formatted text was not updating if underlying parsed value did not change.
 - Refactor DialogItem and Property interfaces to make them eaiser to use.
 - Added support for decimal point in Table numeric filter
@@ -331,7 +346,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Fix toolbar overflow panel display.
-- Update to only show group separators if toolbar is not transparent. 
+- Update to only show group separators if toolbar is not transparent.
 - Fix toolbar error when scaling up UI.
 - Property grid horizontal layout updated according to UX requirements.
 - Fixed Table filter renderers after react-select version upgrade
@@ -803,7 +818,7 @@ Wed, 19 Dec 2018 18:26:14 GMT
 - Added DragDrop tests, added component withDragDrop HOC tests
 - Synchronizing navigation aids with view definition changes
 - Simplified property pane tooltips and improved Property Pane performance.
-- Simplified struct and array tooltips in Table component. 
+- Simplified struct and array tooltips in Table component.
 - Fix BeInspireTree's event listening functions to handle array inputs
 - Fix BeInspireTree's muting events with allowed number of triggers
 - Cache BeInspireTree.visible() result for better performance
@@ -933,7 +948,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix: Do not start search if input field is empty
 - Use strongly typed enums for identifying keyboard keys
 - PropertyGrid property editing and unit tests

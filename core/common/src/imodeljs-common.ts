@@ -66,6 +66,7 @@ export * from "./ModelProps";
 export * from "./NativeAppProps";
 export * from "./OctEncodedNormal";
 export * from "./Paging";
+export * from "./PlanarClipMask";
 export * from "./PlanProjectionSettings";
 export * from "./QPoint";
 export * from "./Render";

@@ -256,14 +256,23 @@ interface PropertyPaneCallbacks {
 
 interface CategorizedFields {
   categories: CategoryDescription[];
-  fields: { [categoryName: string]: Field[] };
+  fields: {
+    [categoryName: string]: Field[];
+  };
   hiddenFieldPaths: Field[][];
   hiddenAncestorsFieldPaths: Field[][];
 }
 
 interface CategorizedRecords {
   categories: PropertyCategory[];
-  records: { [categoryName: string]: PropertyRecord[] };
+  records: {
+    [categoryName: string]: PropertyRecord[];
+  };
+}
+
+interface Record {
+  record: PropertyRecord;
+  field: Field;
 }
 
 class PropertyDataBuilder {
@@ -303,7 +312,9 @@ class PropertyDataBuilder {
   private createCategorizedFieldsWithFlatCategories(): CategorizedFields {
     const favoritesCategory = getFavoritesCategory();
     const categories = new Array<CategoryDescription>();
-    const categoryFields: { [categoryName: string]: Field[] } = {};
+    const categoryFields: {
+      [categoryName: string]: Field[];
+    } = {};
     const hiddenFieldPaths = new Array<Field[]>();
     const hiddenAncestorsFieldPaths = new Array<Field[]>();
 
@@ -444,7 +455,7 @@ class PropertyDataBuilder {
     return result;
   }
 
-  private createRecord(field: Field, createStruct: boolean, hiddenFieldPaths: Field[][]): { record: PropertyRecord, field: Field } | undefined {
+  private createRecord(field: Field, createStruct: boolean, hiddenFieldPaths: Field[][]): Record | undefined {
     const pathToRootField = createFieldPath(field);
 
     if (createStruct) {
@@ -555,7 +566,7 @@ class PropertyDataBuilder {
     visitFields(this._descriptor.fields, false);
 
     // create records for each field
-    const categorizedRecords = new Map<string, Array<{ record: PropertyRecord, field: Field }>>();
+    const categorizedRecords = new Map<string, Record[]>();
     const addRecord = (category: CategoryDescription, field: Field, record: PropertyRecord) => {
       let records = categorizedRecords.get(category.name);
       if (!records) {
@@ -658,27 +669,34 @@ class PropertyDataBuilder {
     nestedSortCategory(undefined);
 
     // create a hierarchy of PropertyCategory
-    const propertyCategories = new Array<{ category: PropertyCategory, source: CategoryDescription }>();
-    const pushPropertyCategories = (parentDescr?: CategoryDescription, parentPropertyCategory?: PropertyCategory) => {
+    const propertyCategories = new Array<{
+      category: PropertyCategory;
+      source: CategoryDescription;
+      categoryHasParent: boolean;
+    }>();
+    const pushPropertyCategories = (parentDescr?: CategoryDescription) => {
       const childCategoryDescriptions = categoriesHierarchy.get(parentDescr);
-      const childPropertyCategories = (childCategoryDescriptions ?? []).map((categoryDescr): { category: PropertyCategory, source: CategoryDescription } => ({
-        category: {
+      const childPropertyCategories = (childCategoryDescriptions ?? []).map((categoryDescr) => {
+        const category: PropertyCategory = {
           name: categoryDescr.name,
           label: categoryDescr.label,
           expand: categoryDescr.expand,
-          parentCategory: parentPropertyCategory,
-        },
-        source: categoryDescr,
-      }));
+        };
+        return { category, source: categoryDescr, categoryHasParent: parentDescr !== undefined };
+      });
       propertyCategories.push(...childPropertyCategories);
-      childPropertyCategories.forEach((categoryInfo) => categoryInfo.category.childCategories = pushPropertyCategories(categoryInfo.source, categoryInfo.category));
+      for (const categoryInfo of childPropertyCategories) {
+        categoryInfo.category.childCategories = pushPropertyCategories(categoryInfo.source);
+      }
       return childPropertyCategories.map((categoryInfo) => categoryInfo.category);
     };
-    pushPropertyCategories(undefined, undefined);
+    pushPropertyCategories(undefined);
 
     // put everything in return format
     const result: CategorizedRecords = {
-      categories: propertyCategories.filter((c) => c.category.parentCategory === undefined).map((c) => c.category),
+      categories: propertyCategories
+        .filter(({ categoryHasParent }) => !categoryHasParent)
+        .map(({ category }) => category),
       records: {},
     };
     categorizedRecords.forEach((recs, categoryName) => {
@@ -799,7 +817,10 @@ const containsFieldPath = (container: Field[][], path: Field[]): boolean => {
   return container.some((candidate) => fieldPathsMatch(candidate, path));
 };
 
-const undefinedIfNoRecord = (entry: { record: PropertyRecord | undefined, field: Field }): { record: PropertyRecord, field: Field } | undefined => {
+const undefinedIfNoRecord = (entry: {
+  record: PropertyRecord | undefined;
+  field: Field;
+}): Record | undefined => {
   if (!entry.record)
     return undefined;
   return { record: entry.record, field: entry.field };

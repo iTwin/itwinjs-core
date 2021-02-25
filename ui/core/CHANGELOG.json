@@ -2,6 +2,30 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.12.1",
+      "tag": "@bentley/ui-core_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/ui-core_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow target _blank in Message boxes if secure relationships exist on the element"
+          },
+          {
+            "comment": "AccuDraw bi-directional value updates"
+          },
+          {
+            "comment": "Wrap the props.valueChanged call in the SearchBox to prevent a state change when the value has not really changed. This generally only happens when a valueChangedDelay is specified."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.11.0",
       "tag": "@bentley/ui-core_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",

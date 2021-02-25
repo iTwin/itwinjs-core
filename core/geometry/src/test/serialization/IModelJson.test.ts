@@ -236,6 +236,8 @@ describe("CreateIModelJsonSamples", () => {
     ck.testExactNumber(mesh.data.point.length, 3);
     ck.testExactNumber(mesh.data.normal!.length, 3);
     ck.testExactNumber(mesh.data.normalIndex!.length, 3);
+    mesh.expectedClosure = 1;
+    ck.testExactNumber(1, mesh.expectedClosure, "expectedClosure property accessors");
     const meshJson = IModelJson.Writer.toIModelJson(mesh);
     const meshB = IModelJson.Reader.parse(meshJson);
     ck.testTrue(mesh.isAlmostEqual(meshB), "confirm json round trip");
