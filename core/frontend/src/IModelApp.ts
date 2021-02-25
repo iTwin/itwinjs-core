@@ -559,7 +559,7 @@ export class IModelApp {
       if (IModelApp.authorizationClient?.hasSignedIn) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         try {
-          const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
+          const accessToken = await IModelApp.authorizationClient.getAccessToken();
           authorization = accessToken.toTokenString(IncludePrefix.Yes);
           const userInfo = accessToken.getUserInfo();
           if (userInfo)

@@ -33,7 +33,7 @@ export abstract class NativeAuthorizationBackend extends ImsAuthorizationClient 
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
 
-  private getAuthClient() {
+  private getAuthBackend() {
     const client = IModelHost.authorizationClient;
     if (!(client instanceof NativeAuthorizationBackend))
       throw new IModelError(IModelStatus.BadArg, "IModelHost.authorizationClient must be a NativeAuthorizationBackend");
@@ -45,16 +45,16 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     return requestContext;
   }
   public async initializeAuth(props: ClientRequestContextProps, config: NativeAuthorizationConfiguration): Promise<void> {
-    return this.getAuthClient().initialize(this.getClientRequestContext(props), config);
+    return this.getAuthBackend().initialize(this.getClientRequestContext(props), config);
   }
   public async signIn(props: ClientRequestContextProps): Promise<void> {
-    return this.getAuthClient().signIn(this.getClientRequestContext(props));
+    return this.getAuthBackend().signIn(this.getClientRequestContext(props));
   }
   public async signOut(props: ClientRequestContextProps): Promise<void> {
-    return this.getAuthClient().signOut(this.getClientRequestContext(props));
+    return this.getAuthBackend().signOut(this.getClientRequestContext(props));
   }
   public async getAccessTokenProps(props: ClientRequestContextProps): Promise<AccessTokenProps> {
-    return (await this.getAuthClient().getAccessToken(this.getClientRequestContext(props))).toJSON();
+    return (await this.getAuthBackend().getAccessToken(this.getClientRequestContext(props))).toJSON();
   }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();

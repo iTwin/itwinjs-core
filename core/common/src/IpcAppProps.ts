@@ -43,7 +43,7 @@ export interface BriefcasePushAndPullNotifications {
 }
 
 /**
- * The methods that may be invoked via Ipc from the frontend of a IpcApp and are implemented on its backend.
+ * The methods that may be invoked via Ipc from the frontend of an IpcApp and are implemented on its backend.
  * @internal
  */
 export interface IpcAppFunctions {
