@@ -71,6 +71,7 @@ import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementGeometryChange } from '@bentley/imodeljs-common';
 import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
+import { ElementsChanged } from '@bentley/imodeljs-common';
 import { Ellipsoid } from '@bentley/geometry-core';
 import { EllipsoidPatch } from '@bentley/geometry-core';
 import { EntityProps } from '@bentley/imodeljs-common';
@@ -99,7 +100,6 @@ import { GeometricElement3dProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
 import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
-import { GeometryChangeNotifications } from '@bentley/imodeljs-common';
 import { GeometryClass } from '@bentley/imodeljs-common';
 import { GeometryContainmentRequestProps } from '@bentley/imodeljs-common';
 import { GeometryContainmentResponseProps } from '@bentley/imodeljs-common';
@@ -131,6 +131,7 @@ import { ImageBufferFormat } from '@bentley/imodeljs-common';
 import { ImageSource } from '@bentley/imodeljs-common';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
+import { IModelChangeNotifications } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
@@ -182,6 +183,7 @@ import { OpenMode } from '@bentley/bentleyjs-core';
 import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
 import { OrbitGtDataManager } from '@bentley/orbitgt-core';
 import { OrderedComparator } from '@bentley/bentleyjs-core';
+import { OrderedId64Array } from '@bentley/bentleyjs-core';
 import { PackedFeatureTable } from '@bentley/imodeljs-common';
 import { ParseResults } from '@bentley/ui-abstract';
 import { ParserSpec } from '@bentley/imodeljs-quantity';
@@ -2671,6 +2673,7 @@ export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
     clear(): void;
+    compressIds(): CompressedId64Set;
     // (undocumented)
     get count(): number;
     readonly elements: Id64Array;
@@ -2687,6 +2690,7 @@ export class ElementAgenda {
     get length(): number;
     // (undocumented)
     manageHiliteState: boolean;
+    orderIds(): OrderedId64Array;
     popGroup(): void;
     // (undocumented)
     remove(arg: Id64Arg): boolean;
@@ -4628,7 +4632,7 @@ export interface InstancedGraphicParams {
 }
 
 // @alpha
-export class InteractiveEditingSession extends BriefcaseNotificationHandler implements GeometryChangeNotifications {
+export class InteractiveEditingSession extends BriefcaseNotificationHandler implements IModelChangeNotifications {
     static begin(imodel: EditableConnection): Promise<InteractiveEditingSession>;
     // (undocumented)
     get briefcaseChannelName(): IpcAppChannel;
@@ -4638,9 +4642,12 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined;
     readonly iModel: EditableConnection;
     static isSupported(imodel: EditableConnection): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
+    notifyElementsChanged(changed: ElementsChanged): void;
+    // @internal (undocumented)
     notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
     static readonly onBegin: BeEvent<(session: InteractiveEditingSession) => void>;
+    readonly onElementChanges: BeEvent<(changes: ElementsChanged, iModel: EditableConnection) => void>;
     readonly onEnded: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onEnding: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>;
@@ -7008,7 +7015,7 @@ export class QuantityFormatter implements UnitsProvider {
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
     // (undocumented)
-    findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
+    findUnit(unitLabel: string, unitFamily?: string, unitSystem?: string): Promise<UnitProps>;
     // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
@@ -7871,6 +7878,8 @@ export abstract class RenderSystem implements IDisposable {
     antialiasSamples?: number;
     // @internal (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
+    // @beta
+    static contextLossHandler(): Promise<any>;
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     // @internal

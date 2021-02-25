@@ -202,13 +202,10 @@ export class IModelHostConfiguration {
  */
 export class IModelHost {
   private constructor() { }
-  private static _authorizationClient?: AuthorizationClient;
-  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for backend applications */
-  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
-  public static get authorizationClient(): AuthorizationClient | undefined { return IModelHost._authorizationClient; }
-  public static set authorizationClient(authorizationClient: AuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
+  public static authorizationClient?: AuthorizationClient;
 
   private static _imodelClient?: IModelClient;
+
   private static _clientAuthIntrospectionManager?: ClientAuthIntrospectionManager;
   /** @alpha */
   public static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined { return this._clientAuthIntrospectionManager; }
@@ -216,7 +213,7 @@ export class IModelHost {
   public static get introspectionClient(): IntrospectionClient | undefined { return this._clientAuthIntrospectionManager?.introspectionClient; }
 
   /** @alpha */
-  public static readonly telemetry: TelemetryManager = new TelemetryManager();
+  public static readonly telemetry = new TelemetryManager();
 
   public static backendVersion = "";
   private static _cacheDir = "";
@@ -271,10 +268,13 @@ export class IModelHost {
     const platform = Platform.load();
     this.registerPlatform(platform);
 
-    const iModelClientType = iModelClient && iModelClient instanceof IModelBankClient
-      ? IModelJsNative.IModelClientType.IModelBank
-      : IModelJsNative.IModelClientType.IModelHub;
-    platform.NativeUlasClient.initialize(region, applicationType, iModelClientType);
+    let iModelClientType = IModelJsNative.IModelClientType.IModelHub;
+    let iModelClientUrl: string | undefined;
+    if (iModelClient && iModelClient instanceof IModelBankClient) {
+      iModelClientType = IModelJsNative.IModelClientType.IModelBank;
+      iModelClientUrl = iModelClient.baseUrl;
+    }
+    platform.NativeUlasClient.initialize(region, applicationType, iModelClientType, iModelClientUrl);
   }
 
   private static registerPlatform(platform: typeof IModelJsNative): void {

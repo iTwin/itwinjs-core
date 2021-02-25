@@ -1,6 +1,39 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+### Updates
+
+- Prevent buggy decorators from invalidating other decorators' cached decorations.
+- Fixed regression introduced recently that prevent WMS map layers from being displayed.
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- The about dialog now works better on smaller screens and mobile devices.
+- Support clearing color/transparency overrides by element ids and not just key.
+- Deprecate detachChangeCache()
+- dont toggle persistent html decoration's dom attachment
+- Fix regressions in image diff tests caused by changes to tile selection logic.
+- added flag to truncate ecsql blob values
+- Smoother frustum transition
+- enter requestContexts in map layer settings service so that activity Id can be tracked in SEQ logs
+- Implement external textures for iModel tiles.
+- Fix failure to compute frustum depth from view attachments causing them to be severely clipped.
+- Added new ArcGis token generator/manager. ArcGISMapLAyerImageryProvider now check for token error messages when fetch tile, inform end-user and raise an event.  Token is generated / appended dynamically to each ArcGIS request.
+- Add options for limiting GPU memory allocated for tile contents.
+- Don't change the imodeljs-icon opacity on mobile devices that don't support hover.
+- Fix locate for particle effects.
+- Add support for defining custom particle effects.
+- NativeApp now uses Ipc
+- Added support for Slope and Hillshade modes for Thematic display of Terrain
+- AccuDraw bi-directional value updates
+- Fixed AccuDraw shortcuts in apps like DR
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT

@@ -2,6 +2,48 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.12.1",
+      "tag": "@bentley/ui-framework_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/ui-framework_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed ModelsTree visibility handler behavior to fully change visibility of node if it matches applied filter"
+          },
+          {
+            "comment": "Updated ModelsTree rulesets to better handle updates."
+          },
+          {
+            "comment": "AccuDraw bi-directional value updates"
+          },
+          {
+            "comment": "Correctly add and remove widgets provided by UiItemsProviders.\""
+          },
+          {
+            "comment": "ModelsTree: Fix getting display status of element nodes"
+          },
+          {
+            "comment": "WidgetDef show and expand will correctly activate the tab."
+          },
+          {
+            "comment": "Preventing cursor prompt lag"
+          },
+          {
+            "comment": "Provide dynamic widgets for every section type."
+          },
+          {
+            "comment": "Update remaining syncEventId checks to be case insensitive."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.11.0",
       "tag": "@bentley/ui-framework_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",

@@ -2741,6 +2741,10 @@ export enum HideIsolateEmphasizeAction {
     // (undocumented)
     ClearHiddenIsolatedEmphasized = "ClearHiddenIsolatedEmphasized",
     // (undocumented)
+    ClearOverrideCategories = "ClearOverrideCategories",
+    // (undocumented)
+    ClearOverrideModels = "ClearOverrideModels",
+    // (undocumented)
     EmphasizeSelectedElements = "EmphasizeSelectedElements",
     // (undocumented)
     HideSelectedCategories = "HideSelectedCategories",
@@ -2763,6 +2767,8 @@ export abstract class HideIsolateEmphasizeActionHandler {
     static emphasizeElementsChanged: BeEvent<(args: EmphasizeElementsChangedArgs) => void>;
     static get hideIsolateEmphasizeUiSyncId(): string;
     abstract processClearEmphasize(): Promise<void>;
+    abstract processClearOverrideCategories(): Promise<void>;
+    abstract processClearOverrideModels(): Promise<void>;
     abstract processEmphasizeSelected(): Promise<void>;
     abstract processHideSelected(): Promise<void>;
     abstract processHideSelectedElementsCategory(): Promise<void>;
@@ -2776,6 +2782,8 @@ export abstract class HideIsolateEmphasizeActionHandler {
 export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
     areFeatureOverridesActive(vp: Viewport): boolean;
     static clearEmphasize(vp: Viewport | undefined): void;
+    static clearOverrideCategories(vp: Viewport): void;
+    static clearOverrideModels(vp: Viewport): void;
     static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
     static emphasizeSelectedCategory(vp: Viewport): Promise<void>;
     static hideCommand(vp: Viewport): Promise<void>;
@@ -2789,7 +2797,11 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     static isolateSelectedElementsModel(vp: Viewport): Promise<void>;
     static isolateSelectedModel(vp: Viewport): Promise<void>;
     static isolateSelectedSubject(vp: Viewport): Promise<void>;
+    static isOverrideCategories(vp: Viewport): boolean;
+    static isOverrideModels(vp: Viewport): boolean;
     processClearEmphasize(): Promise<void>;
+    processClearOverrideCategories(): Promise<void>;
+    processClearOverrideModels(): Promise<void>;
     processEmphasizeSelected(): Promise<void>;
     processHideSelected(): Promise<void>;
     processHideSelectedElementsCategory(): Promise<void>;
@@ -5824,7 +5836,6 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
     defaultPromptAtCursor: boolean;
     fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
-    // @internal
     uiSettings?: UiSettings;
 }
 
