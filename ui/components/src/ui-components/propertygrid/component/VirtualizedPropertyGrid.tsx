@@ -152,22 +152,18 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
     }
 
     if (this.props.highlight !== prevProps.highlight && this.props.highlight?.activeHighlight && this.state.gridItems.length !== 0) {
-
       let index = 0;
       let foundMatchingItem = false;
       for (const item of this.state.gridItems) {
-        // istanbul ignore next - NEEDSWORK add complete tests
-        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.derivedRecord.property.name
-          || item instanceof MutableGridCategory && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.name) {
+        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlight.activeHighlight.highlightedItemIdentifier === item.derivedRecord.property.name
+          || item instanceof MutableGridCategory && this.props.highlight.activeHighlight.highlightedItemIdentifier === item.name) {
           foundMatchingItem = true;
           break;
         }
         index++;
       }
-
-      // istanbul ignore else
       if (foundMatchingItem) {
-      // istanbul ignore else
+        // istanbul ignore else
         if (this._listRef.current)
           this._listRef.current.scrollToItem(index);
       }
@@ -200,7 +196,6 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
     const { orientation, isOrientationFixed, horizontalOrientationMinWidth } = { ...this.props };
     const currentOrientation = PropertyGridCommons.getCurrentOrientation(width, orientation, isOrientationFixed, horizontalOrientationMinWidth);
 
-    // istanbul ignore else
     if (currentOrientation !== this.state.orientation || width !== this.state.width) {
       this.setState({ orientation: currentOrientation, width });
       this._listRef.current?.resetAfterIndex(0);
@@ -379,7 +374,7 @@ const FlatGridItemNode = React.memo(
                 style={gridContext.style}
                 category={node.derivedCategory}
                 onExpansionToggled={onExpansionToggled}
-                highlight={gridContext.highlight?.filteredTypes?.includes(FilteredType.Category)?
+                highlight={gridContext.highlight?.filteredTypes?.includes(FilteredType.Category) ?
                   gridContext.highlight :
                   undefined
                 }

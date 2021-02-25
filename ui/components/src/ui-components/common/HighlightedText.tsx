@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 /** @packageDocumentation
  * @module Common
  */
@@ -22,6 +21,8 @@ export interface HighlightedTextProps {
   activeMatchIndex?: number;
   /* Full text */
   text: string;
+  /** Should search be case sensitive */
+  caseSensitive?: boolean;
 }
 
 /**
@@ -31,7 +32,7 @@ export interface HighlightedTextProps {
  * @beta
  */
 export function HighlightedText(props: HighlightedTextProps) {
-  const { searchText, activeMatchIndex, text } = props;
+  const { searchText, activeMatchIndex, text, caseSensitive } = props;
   return (
     <Highlighter
       searchWords={[searchText]}
@@ -40,6 +41,7 @@ export function HighlightedText(props: HighlightedTextProps) {
       activeClassName={HighlightingEngine.ACTIVE_CLASS_NAME}
       autoEscape={true}
       textToHighlight={text}
+      caseSensitive={caseSensitive}
     />
   );
 }
@@ -56,8 +58,8 @@ interface FindChunksArgs {
   textToHighlight: string;
 }
 const findChunksNoRegex = (args: FindChunksArgs): HighlighterChunk[] => {
-  const text = args.caseSensitive ? /* istanbul ignore next */ args.textToHighlight : args.textToHighlight.toUpperCase();
-  const term = args.caseSensitive ? /* istanbul ignore next */ args.searchWords[0] : args.searchWords[0].toUpperCase();
+  const text = args.caseSensitive ? args.textToHighlight : args.textToHighlight.toUpperCase();
+  const term = args.caseSensitive ? args.searchWords[0] : args.searchWords[0].toUpperCase();
   const chunks: HighlighterChunk[] = [];
   let index = text.indexOf(term);
   while (index !== -1) {

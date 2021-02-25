@@ -86,9 +86,9 @@ export const FlatPropertyRenderer: React.FC<FlatPropertyRendererProps> = (props)
   switch (props.propertyRecord.value.valueFormat) {
     case PropertyValueFormat.Primitive:
       return (<PrimitivePropertyRenderer highlight={highlight?.applyOnLabel ? highlight : undefined} {...primitiveRendererProps} />);
+
     case PropertyValueFormat.Array:
       // If array is empty, render it as a primitive property
-      // istanbul ignore next - NEEDSWORK add complete tests
       if (props.propertyRecord.value.items.length === 0)
         return (<PrimitivePropertyRenderer highlight={highlight?.applyOnLabel ? highlight : undefined} {...primitiveRendererProps} />);
 
