@@ -78,7 +78,8 @@ describe("UseExpandedNodesTracking", () => {
     expect(addListenerSpy).to.be.not.called;
   });
 
-  it("adds and removers 'onModelChange' event listener if auto update is enabled", () => {
+  it("adds and removes 'onModelChange' event listener if auto update is enabled", () => {
+
     const addListenerSpy = sinon.spy(modelSource.onModelChanged, "addListener");
     const removeListenerSpy = sinon.spy(modelSource.onModelChanged, "removeListener");
     const { unmount } = renderHook(
