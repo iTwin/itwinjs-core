@@ -110,10 +110,9 @@ export function FormatUnits(props: FormatUnitsProps) {
 
   const compositeSpacer = React.useRef (UiComponents.translate("QuantityFormat.labels.compositeSpacer"));
 
-  // istanbul ignore next - NEEDSWORK add complete tests
   return (
     <>
-      {(formatProps.composite?.units && formatProps.composite?.units.length > 0)
+      {(formatProps.composite?.units)
         ?
         formatProps.composite.units.map((value, index) => <UnitDescr key={value.name} name={value.name}
           label={value.label ?? ""} parentUnitName={index > 0 ? formatProps.composite!.units[index - 1].name :
@@ -121,13 +120,13 @@ export function FormatUnits(props: FormatUnitsProps) {
           readonly={index < (formatProps.composite!.units.length - 1)} />)
         :
         persistenceUnit && <UnitDescr key={persistenceUnit.name} name={persistenceUnit.name}
-          label={persistenceUnit.label ?? ""} unitsProvider={unitsProvider} index={0} onUnitChange={handleUnitChange} onLabelChange={handleUnitLabelChange} />
+          label={persistenceUnit.label} unitsProvider={unitsProvider} index={0} onUnitChange={handleUnitChange} onLabelChange={handleUnitLabelChange} />
       }
 
-      {(formatProps.composite?.units && formatProps.composite?.units.length > 1) &&
+      {(formatProps.composite?.units && formatProps.composite.units.length > 1) &&
         <>
           <span key={"composite-spacer-label"} className={"uicore-label"}>{compositeSpacer.current}</span>
-          <Input key={"composite-spacer"} data-testid="composite-spacer" value={formatProps.composite?.spacer ?? ""} onChange={handleOnSpacerChange} />
+          <Input key={"composite-spacer"} data-testid="composite-spacer" value={formatProps.composite.spacer ?? ""} onChange={handleOnSpacerChange} />
         </>
       }
     </>
