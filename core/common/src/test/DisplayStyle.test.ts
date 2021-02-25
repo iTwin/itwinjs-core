@@ -242,6 +242,7 @@ describe("DisplayStyleSettings overrides", () => {
       tilesetUrl: "google.com",
       name: "google",
       description: "a popular search engine",
+      attribution: {heading:"Google", notice: "This is attributed to Google" },
     }],
   };
 
@@ -287,6 +288,7 @@ describe("DisplayStyleSettings overrides", () => {
       tilesetUrl: "google.com",
       name: "google",
       description: "a popular search engine",
+      attribution: {heading:"Google", notice: "This is attributed to Google" },
       classifiers: [{
         modelId: "0x123",
         expand: 0.5,

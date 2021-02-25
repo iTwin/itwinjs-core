@@ -7,7 +7,7 @@
  */
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
-import { CartographicRange, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
+import { CartographicRange, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps, RealityModelAttribution } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -42,6 +42,7 @@ export class ContextRealityModelState {
   public readonly name: string;
   public readonly url: string;
   public readonly orbitGtBlob?: OrbitGtBlobProps;
+  public readonly attribution?: RealityModelAttribution;
   /** Not required to be present to display the model. It is use to elide the call to getRealityDataIdFromUrl in the widget if present. */
   public readonly realityDataId?: string;
   public readonly description: string;
@@ -57,6 +58,7 @@ export class ContextRealityModelState {
     this.description = undefined !== props.description ? props.description : "";
     this.iModel = iModel;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
+    this.attribution = props.attribution;
     const classifiers = new SpatialClassifiers(props);
     this._treeRef = (undefined === props.orbitGtBlob) ?
       createRealityTileTreeReference({
@@ -66,6 +68,7 @@ export class ContextRealityModelState {
         name: props.name,
         classifiers,
         planarMask: props.planarClipMask,
+        attribution: props.attribution,
       }) :
       createOrbitGtTileTreeReference({
         iModel,
@@ -94,6 +97,7 @@ export class ContextRealityModelState {
       name: 0 > this.name.length ? this.name : undefined,
       description: 0 > this.description.length ? this.description : undefined,
       appearanceOverrides: this.appearanceOverrides,
+      attribution: this.attribution,
     };
   }
 

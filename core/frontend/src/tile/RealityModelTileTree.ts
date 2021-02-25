@@ -12,6 +12,7 @@ import {
 import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import {
   Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings,
+  RealityModelAttribution,
   ViewFlagOverrides, ViewFlagPresence,
 } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
@@ -26,6 +27,7 @@ import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { RenderMemory } from "../render/RenderMemory";
 import { SpatialClassifiers } from "../SpatialClassifiers";
 import { SceneContext } from "../ViewContext";
+import { ScreenViewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, createClassifierTileTreeReference, DisclosedTileTreeSet, getCesiumAccessTokenAndEndpointUrl, RealityTile, RealityTileLoader, RealityTileParams,
@@ -422,6 +424,7 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiers;
     requestAuthorization?: string;
     planarMask?: PlanarClipMaskProps;
+    attribution?: RealityModelAttribution;
   }
 
   export abstract class Reference extends TileTreeReference {
@@ -546,6 +549,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
   private _transform?: Transform;
   private _iModel: IModelConnection;
   private _maskModelIds?: string;
+  private _attribution?: RealityModelAttribution;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props.modelId, props.iModel);
@@ -562,6 +566,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     this._iModel = props.iModel;
     this._planarClipMask = (props.planarMask && props.planarMask.mode !== PlanarClipMaskMode.None) ? PlanarClipMaskState.create(PlanarClipMaskSettings.fromJSON(props.planarMask)) : undefined;
     this._maskModelIds = props.planarMask?.modelIds;
+    this._attribution = props.attribution;
 
     if (undefined !== props.classifiers)
       this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
@@ -674,6 +679,11 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     const tree = undefined !== this._classifier ? this._classifier.treeOwner.tileTree : undefined;
     if (undefined !== tree)
       tree.collectStatistics(stats);
+  }
+
+  public addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {
+    if (this._attribution)
+      cards.appendChild(IModelApp.makeLogoCard(this._attribution));
   }
 }
 

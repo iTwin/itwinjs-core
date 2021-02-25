@@ -14,6 +14,7 @@ import { FeatureSymbology } from "../render/FeatureSymbology";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
+import { ScreenViewport } from "../Viewport";
 import { DisclosedTileTreeSet, TileDrawArgs, TileTree, TileTreeLoadStatus, TileTreeOwner } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
@@ -206,4 +207,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
 
   /**  Return the clip mask priority for this model - models will be clipped by any other viewed model with a higher proirity.  BIM models have highest prioirty and are never clipped */
   public get planarClipMaskPrority(): number { return PlanarClipMaskPriority.BIM; }
+
+  /** Add attribution logo cards for the tile tree source logo cards to logo div. */
+  public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
 }

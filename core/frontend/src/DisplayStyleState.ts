@@ -250,7 +250,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const tilesetUrl = getCesiumOSMBuildingsUrl();
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
       currentIndex = this._contextRealityModels.length;
-      this.attachRealityModel({ tilesetUrl, name, planarClipMask: { mode: PlanarClipMaskMode.None } });
+      this.attachRealityModel({ tilesetUrl, name, planarClipMask: { mode: PlanarClipMaskMode.None }, attribution: { heading: "OpenStreetMap", notice: "&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors" }});
     }
 
     if (options.appearanceOverrides)
@@ -835,14 +835,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[overrideSubCategory]]
    */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
-
-  /** @internal */
-  public getAttribution(div: HTMLTableElement, vp: ScreenViewport): void {
-    if (this.viewFlags.backgroundMap) {
-      this._backgroundMap.addLogoCards(div, vp);
-      this._overlayMap.addLogoCards(div, vp);
-    }
-  }
 
   /** @internal */
   public get wantShadows(): boolean {
