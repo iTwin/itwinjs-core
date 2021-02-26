@@ -33,4 +33,5 @@ export enum StandardTypeNames {
   Composite = "composite",
   Array = "array",
   Struct = "struct",
+  URL = "url",
 }
