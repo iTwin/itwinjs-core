@@ -95,10 +95,11 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
   const [persistenceUnit, setPersistenceUnit] = React.useState(() => {
     const quantityTypeKey = getQuantityTypeKey(quantityType);
     const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
+    // istanbul ignore else
     if (quantityTypeDefinition)
       return quantityTypeDefinition.persistenceUnit;
-    // istanbul ignore next
-    throw Error(`Unable to locate a quantity type with type ${quantityType}`);
+    else
+      throw Error(`Unable to locate a quantity type with type ${quantityType}`);
   });
 
   React.useEffect(() => {

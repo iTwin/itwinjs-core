@@ -10,7 +10,7 @@ import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
 import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { Checkbox } from "@bentley/ui-core";
-import { FormatPanel } from "../../ui-components";
+import { FormatPanel, FormatPrecision, FormatSample } from "../../ui-components";
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
   const traitStr = Format.getTraitString(trait);
@@ -137,5 +137,28 @@ describe("FormatPanel", () => {
     const spanElement = renderedComponent.getByTestId("format-sample-formatted") as HTMLSpanElement;
     expect(spanElement.textContent).to.be.eql(`123.45 m`);
   });
+});
 
+describe("FormatSample", () => {
+  it("should render FormatSample with hideLabels", async () => {
+    const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+    const pu = await unitsProvider.findUnitByName("Units.M");
+    const formatterSpec = await provideFormatSpec(initialFormatProps, pu, unitsProvider, "numeric");
+    const renderedComponent = render(<FormatSample formatSpec={formatterSpec} hideLabels />);
+    expect(renderedComponent.container.querySelector(".icon-progress-forward-2")).to.not.be.null;
+  });
+});
+
+describe("FormatPrecision", () => {
+  it("should render FormatPrecision with fractional type & no precision", async () => {
+    const formatProps: FormatProps = { type: "fractional" };
+    const renderedComponent = render(<FormatPrecision formatProps={formatProps} />);
+    expect(renderedComponent.getByTestId("fraction-precision-selector")).to.exist;
+  });
+
+  it("should render FormatPrecision with decimal type & no precision", async () => {
+    const formatProps: FormatProps = { type: "decimal" };
+    const renderedComponent = render(<FormatPrecision formatProps={formatProps} />);
+    expect(renderedComponent.getByTestId("decimal-precision-selector")).to.exist;
+  });
 });
