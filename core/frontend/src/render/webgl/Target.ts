@@ -892,9 +892,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
 
     // Apply any screen-space effects that shift pixels from their original locations.
-    this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
+    this.beginPerfMetricRecord("Screenspace Effects", true);
     this.renderSystem.screenSpaceEffects.apply(this);
-    this.endPerfMetricRecord(true); // Screenspace Effects
+    this.endPerfMetricRecord(true); // End "Screenspace Effects"
 
     // Restore the state
     this.uniforms.branch.pop();
