@@ -139,7 +139,7 @@ export class AzureBlobStorage extends CloudStorageService {
         const blockSize = 100 * 1024 * 1024;
         const concurrency = 1;
         const result = await Azure.uploadStreamToBlockBlob(Azure.Aborter.none, source, blocks, blockSize, concurrency, blobOptions);
-        return resolve(result.eTag);
+        return resolve(result.eTag ?? "");
       } catch (maybeErr) {
         if (typeof (maybeErr) !== "undefined" && maybeErr) {
           return reject(maybeErr);

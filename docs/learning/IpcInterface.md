@@ -73,7 +73,7 @@ class MyClassHandler extends IpcHandler implements MyInterface
   import { AsyncMethodsOf, PromiseReturnType } from "@bentley/imodeljs-frontend";
 
   const callMyBackend = async <T extends AsyncMethodsOf<MyInterface>>(methodName: T,...args: Parameters<MyInterface[T]>) => {
-    return IpcApp.callBackend(myChannel, methodName, ...args) as PromiseReturnType<MyInterface[T]>;
+    return IpcApp.callIpcChannel(myChannel, methodName, ...args) as PromiseReturnType<MyInterface[T]>;
   };
 ```
 

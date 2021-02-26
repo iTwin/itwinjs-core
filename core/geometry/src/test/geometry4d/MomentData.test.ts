@@ -193,7 +193,8 @@ describe("MomentData", () => {
     let x0 = 0;
     for (const sampleSet of [
       Sample.createSmoothCurvePrimitives(),
-      Sample.createBsplineCurves(true)]) {
+      Sample.createBsplineCurves(true),
+      Sample.createSimpleParityRegions()]) {
       for (const g of sampleSet) {
         const range = g.range();
         const dy = range.yLength() * 2.0;

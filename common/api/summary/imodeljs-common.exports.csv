@@ -115,6 +115,7 @@ public;DisplayStyleLoadProps
 beta;DisplayStyleModelAppearanceProps 
 beta;DisplayStyleOverridesOptions
 public;DisplayStyleProps 
+beta;DisplayStyleRealityModelPlanarClipMaskProps 
 public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
@@ -149,6 +150,7 @@ internal;ElementGraphicsRequestProps
 alpha;ElementIdsAndRangesProps
 public;ElementLoadProps
 public;ElementProps 
+alpha;ElementsChanged
 beta;EntityMetaData 
 beta;EntityMetaDataProps
 public;EntityProps
@@ -191,7 +193,6 @@ public;GeometricModel2dProps
 public;GeometricModel3dProps 
 public;GeometricModelProps 
 public;GeometryAppearanceProps
-internal;GeometryChangeNotifications
 public;GeometryClass
 beta;GeometryContainmentRequestProps
 beta;GeometryContainmentResponseProps
@@ -249,6 +250,7 @@ public;ImageSourceFormat
 internal;ImdlFlags
 internal;ImdlHeader 
 public;class IModel 
+internal;IModelChangeNotifications
 alpha;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
@@ -372,6 +374,10 @@ public;Placement2dProps
 public;Placement3d 
 public;Placement3dProps
 public;PlacementProps = Placement2dProps | Placement3dProps
+beta;PlanarClipMaskMode
+beta;PlanarClipMaskPriority
+beta;PlanarClipMaskProps
+beta;PlanarClipMaskSettings
 beta;PlanProjectionSettings
 beta;PlanProjectionSettingsProps
 internal;PntsHeader 

@@ -22,28 +22,9 @@ Writing an iTwin.js application requires the following software:
 
 [Click here and use the registration dashboard to create a new iModel](/getting-started/registration-dashboard?tab=1&create=bentleyExample)
 
-## 3. Get the sample code
+## 3. Get, build, and develop code
 
-The samples are included in the [imodeljs-samples](https://github.com/imodeljs/imodeljs-samples) repo on GitHub. For a complete list of samples see the README.
-
-> `git clone https://github.com/imodeljs/imodeljs-samples.git`
-
-## 4. Configure
-
-Edit imodeljs-samples/interactive-app/basic-viewport-app/.env.local
-  > `imjs_test_imodel` =  The name of your iModel created in step 2<br/>
-
-## 5. Build and run a sample app
-
-> `cd interactive-app`
-
-> `cd basic-viewport-app`
-
-> `npm install`
-
-> `npm run build`
-
-> `npm run start:servers`
+[Follow the "Developing a web viewer" tutorial]($docs/learning/tutorials/develop-web-viewer.md)
 
 &nbsp;
 &nbsp;

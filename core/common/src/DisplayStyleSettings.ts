@@ -15,11 +15,12 @@ import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
 import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
+import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
 import { GroundPlaneProps } from "./GroundPlane";
 import { HiddenLine } from "./HiddenLine";
-import { FeatureAppearance, FeatureAppearanceProps, SubCategoryOverride } from "./imodeljs-common";
+import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMaskProps, PlanarClipMaskSettings, SubCategoryOverride } from "./imodeljs-common";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
 import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
@@ -30,7 +31,9 @@ import { SpatialClassificationProps } from "./SpatialClassificationProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
-import { ClipStyle, ClipStyleProps } from "./ClipStyle";
+import { Cartographic } from "./geometry/Cartographic";
+import { IModel } from "./IModel";
+import { calculateSolarDirection } from "./SolarCalculate";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -47,6 +50,14 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
  */
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
   /** The Id of the model whose appearance is to be overridden. */
+  modelId?: Id64String;
+}
+
+/** Describes the [[PlanarClipMaskSettings]] applied to a model.
+ * @beta
+ */
+export interface DisplayStyleRealityModelPlanarClipMaskProps extends PlanarClipMaskProps {
+  /** The Id of the model to mask. */
   modelId?: Id64String;
 }
 
@@ -82,10 +93,13 @@ export interface ContextRealityModelProps {
   description?: string;
   /** @beta */
   classifiers?: SpatialClassificationProps.Properties[];
+  /** @beta */
+  planarClipMask?: PlanarClipMaskProps;
   /** Appearance overrides.  Only the color, transparency, emphasized and nonLocatable properties are applicable.
    * @beta
    */
   appearanceOverrides?: FeatureAppearanceProps;
+
 }
 
 /** Describes the style in which monochrome color is applied by a [[DisplayStyleSettings]].
@@ -158,6 +172,11 @@ export interface DisplayStyleSettingsProps {
    * @beta
    */
   clipStyle?: ClipStyleProps;
+  /** Overrides to the planar clip masks.  Currently only supported for reality models
+   * @beta
+   */
+  planarClipOvr?: DisplayStyleRealityModelPlanarClipMaskProps[];
+
 }
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
@@ -358,6 +377,7 @@ export class DisplayStyleSettings {
   private _monochromeMode: MonochromeMode;
   private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
   private readonly _modelAppearanceOverrides: Map<Id64String, FeatureAppearance> = new Map<Id64String, FeatureAppearance>();
+  private readonly _planarClipMaskOverrides: Map<Id64String, PlanarClipMaskSettings> = new Map<Id64String, PlanarClipMaskSettings>();
   private readonly _excludedElements: ExcludedElements;
   private _backgroundMap: BackgroundMapSettings;
   private _mapImagery: MapImagerySettings;
@@ -434,6 +454,10 @@ export class DisplayStyleSettings {
    * @beta
    */
   public readonly onPlanProjectionSettingsChanged = new BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>();
+  /** Event raised just before changing the planar clip mask overrides for an attached reality  model.
+   * @beta
+   */
+  public readonly onRealityModelPlanarClipMaskChanged = new BeEvent<(idOrIndex: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => void>();
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -462,6 +486,7 @@ export class DisplayStyleSettings {
 
     this.populateSubCategoryOverridesFromJSON();
     this.populateModelAppearanceOverridesFromJSON();
+    this.populatePlanarClipMaskOverridesFromJSON();
 
     this._clipStyle = ClipStyle.fromJSON(this._json.clipStyle);
   }
@@ -491,6 +516,20 @@ export class DisplayStyleSettings {
           const appearance = FeatureAppearance.fromJSON(ovrJson);
           if (appearance.anyOverridden)
             this.changeModelAppearanceOverride(modelId, false, appearance);
+        }
+      }
+    }
+  }
+  private populatePlanarClipMaskOverridesFromJSON(): void {
+    this._planarClipMaskOverrides.clear();
+    const ovrsArray = JsonUtils.asArray(this._json.planarClipOvr);
+    if (undefined !== ovrsArray) {
+      for (const ovrJson of ovrsArray) {
+        const modelId = Id64.fromJSON(ovrJson.modelId);
+        if (Id64.isValid(modelId)) {
+          const mask = PlanarClipMaskSettings.fromJSON(ovrJson);
+          if (mask.isValid)
+            this.changePlanarClipMaskOverride(modelId, false, mask);
         }
       }
     }
@@ -664,23 +703,23 @@ export class DisplayStyleSettings {
     return this._subCategoryOverrides.get(id);
   }
 
-  /** Returns true if an [[SubCategoryOverride]s are defined by this style. */
+  /** Returns true if an [[SubCategoryOverride]]s are defined by this style. */
   public get hasSubCategoryOverride(): boolean {
     return this._subCategoryOverrides.size > 0;
   }
 
-  /** Customize the way a [[Model]]  is drawn by this display style.
-   * @param modelId The ID of the [[model]] whose appearance is to be overridden.
-   * @param ovr The overrides to apply to the [[Model]].
+  /** Customize the way a [Model]($backend)   is drawn by this display style.
+   * @param modelId The ID of the [Model]($backend)  whose appearance is to be overridden.
+   * @param ovr The overrides to apply to the [Model]($backend) .
    * @see [[dropModelAppearanceOverride]]
    */
   public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void {
     this.changeModelAppearanceOverride(modelId, true, ovr);
   }
 
-  /** Remove any appearance overrides applied to a [[Model]] by this style.
-   * @param modelId The ID of the [[Model]].
-   * @param ovr The overrides to apply to the [[Model]].
+  /** Remove any appearance overrides applied to a [Model]($backend)  by this style.
+   * @param modelId The ID of the [Model]($backend) .
+   * @param ovr The overrides to apply to the [Model]($backend) .
    * @see [[overrideModelAppearance]]
    */
   public dropModelAppearanceOverride(id: Id64String): void {
@@ -692,8 +731,8 @@ export class DisplayStyleSettings {
     return this._modelAppearanceOverrides;
   }
 
-  /** Obtain the override applied to a [[Model]] by this style.
-   * @param id The ID of the [[Model]].
+  /** Obtain the override applied to a [Model]($backend)  by this style.
+   * @param id The ID of the [Model]($backend).
    * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
    * @see [[overrideModelAppearance]]
    */
@@ -704,6 +743,32 @@ export class DisplayStyleSettings {
   /** Returns true if model appearance overrides are defined by this style. */
   public get hasModelAppearanceOverride(): boolean {
     return this._modelAppearanceOverrides.size > 0;
+  }
+
+  /** Set the planar clip mask for a persistent reality [Model]($backend)  drawn by this display style.  Masking of BIM models is not supported although they can be used for masking for reality models and background maps.
+ * @param modelId The ID of the persistent reality [Model]($backend)
+ * @param planarClipMask The clip mask to apply to the [Model]($backend).
+
+ * @see [[dropModelPlanarClipMaskOverride]]
+ * @beta
+ */
+  public overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMaskSettings): boolean { return this.changePlanarClipMaskOverride(modelId, true, planarClipMask); }
+
+  /** Remove planar clip mask applied to a [Model]($backend)  by this style.
+   * @param modelId The ID of the [Model]($backend).
+   * @param planarClipMask The planar clip mask to apply to the [Model]($backend).
+   * @see [[overrideModelPlanarClipMask]]
+   * @beta
+   */
+  public dropModelPlanarClipMaskOverride(id: Id64String): boolean { return this.changePlanarClipMaskOverride(id, true); }
+
+  /** Obtain the planar clip applied to a [Model]($backend)  by this style.
+    * @param id The ID of the [Model]($backend) .
+    * @returns The corresponding planar clip mask, or undefined if none exist.
+    * @beta
+    */
+  public getModelPlanarClipMask(id: Id64String): PlanarClipMaskSettings | undefined {
+    return this._planarClipMaskOverrides.get(id);
   }
 
   /** The set of elements that will not be drawn by this display style.
@@ -790,7 +855,7 @@ export class DisplayStyleSettings {
       };
     }
 
-    const viewflags = this.viewFlags.toFullyDefinedJSON();
+    const viewflags: Partial<ViewFlagProps> = this.viewFlags.toFullyDefinedJSON();
     const props: DisplayStyleSettingsProps = {
       viewflags,
       backgroundColor: this.backgroundColor.toJSON(),
@@ -1011,6 +1076,68 @@ export class DisplayStyleSettings {
 
     for (const [key, value] of this._modelAppearanceOverrides.entries()) {
       const otherValue = other._modelAppearanceOverrides.get(key);
+      if (undefined === otherValue || !value.equals(otherValue))
+        return false;
+    }
+
+    return true;
+  }
+  private findIndexOfPlanarClipMaskOverrideInJSON(id: Id64String, allowAppend: boolean): number {
+    const ovrsArray = JsonUtils.asArray(this._json.planarClipOvr);
+    if (undefined === ovrsArray) {
+      if (allowAppend) {
+        this._json.planarClipOvr = [];
+        return 0;
+      } else {
+        return -1;
+      }
+    } else {
+      for (let i = 0; i < ovrsArray.length; i++) {
+        if (ovrsArray[i].modelId === id)
+          return i;
+      }
+
+      return allowAppend ? ovrsArray.length : -1;
+    }
+  }
+
+  /** @internal */
+  public raiseRealityModelPlanarClipMaskChangedEvent(idOrIndex: Id64String | number, ovr?: PlanarClipMaskSettings) {
+    this.onRealityModelPlanarClipMaskChanged.raiseEvent(idOrIndex, ovr);
+  }
+
+  private changePlanarClipMaskOverride(id: Id64String, updateJson: boolean, ovr?: PlanarClipMaskSettings): boolean {
+    this.raiseRealityModelPlanarClipMaskChangedEvent(id, ovr);
+    if (undefined === ovr) {
+      // undefined => drop the override if present.
+      this._planarClipMaskOverrides.delete(id);
+      if (updateJson) {
+        const index = this.findIndexOfPlanarClipMaskOverrideInJSON(id, false);
+        if (index < 0)
+          return false;
+        this._json.planarClipOvr!.splice(index, 1);
+      }
+    } else {
+      // add override, or update if present.
+      this._planarClipMaskOverrides.set(id, ovr);
+      if (updateJson) {
+        const index = this.findIndexOfPlanarClipMaskOverrideInJSON(id, true);
+        if (index < 0)
+          return false;
+        this._json.planarClipOvr![index] = ovr.toJSON();
+        this._json.planarClipOvr![index].modelId = id;
+      }
+    }
+    return true;
+  }
+
+  /** @internal */
+  public equalPlanarClipMaskOverrides(other: DisplayStyleSettings): boolean {
+    if (this._planarClipMaskOverrides.size !== other._planarClipMaskOverrides.size)
+      return false;
+
+    for (const [key, value] of this._planarClipMaskOverrides.entries()) {
+      const otherValue = other._planarClipMaskOverrides.get(key);
       if (undefined === otherValue || !value.equals(otherValue))
         return false;
     }
@@ -1238,6 +1365,52 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this.onLightsChanged.raiseEvent(lights);
     this._lights = lights;
     this._json3d.lights = lights.toJSON();
+  }
+
+  /** Adjust the solar light direction based on a date and time at a geographic location.
+   * This replaces `this.lights` with a copy that records the time point and the computed direction.
+   * @param timePoint The time in UNIX milliseconds.
+   * @param location The geographic location; or an iModel, in which case the iModel's [[EcefLocation]] is used.
+   * @see [[sunTime]] to get the current sun time.
+   * @see [[clearSunTime]] to clear the time point.
+   * @note If `location` is an iModel lacking an EcefLocation, a location in Exton, Pennsylvania will be used to compute the light direction instead.
+   */
+  public setSunTime(timePoint: number, location: IModel | Cartographic): void {
+    let cartoCenter;
+    if (location instanceof IModel) {
+      if (location.ecefLocation)
+        cartoCenter = Cartographic.fromEcef(location.ecefLocation.origin);
+
+      if (!cartoCenter)
+        cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+    } else {
+      cartoCenter = location;
+    }
+
+    const direction = calculateSolarDirection(new Date(timePoint), cartoCenter);
+    this.lights = this.lights.clone({ solar: { direction, timePoint } });
+  }
+
+  /** Clear the solar time point stored in `this.lights.solarLight`.
+   * @note This does not affect the solar light direction.
+   * @see [[sunTime]] to get the current sun time.
+   * @see [[setSunTime]] to set the time point and the solar light direction derived from it.
+   */
+  public clearSunTime(): void {
+    if (this.lights.solar.timePoint === undefined)
+      return;
+
+    const solar = this.lights.solar.toJSON() ?? { };
+    solar.timePoint = undefined;
+    this.lights = this.lights.clone({ solar });
+  }
+
+  /** The time point from which the solar light direction was derived, in UNIX milliseconds.
+   * @see [[setSunTime]] to change the time point and solar direction.
+   * @see [[clearSunTime]] to reset the time point to `undefined`.
+   */
+  public get sunTime(): number | undefined {
+    return this.lights.solar.timePoint;
   }
 
   /** Get the plan projection settings associated with the specified model, if defined.

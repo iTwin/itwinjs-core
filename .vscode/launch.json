@@ -947,7 +947,8 @@
         "--remote-debugging-port=9223"
       ],
       "env": {
-        "SVT_LOG_LEVEL": "TRACE"
+        "SVT_LOG_LEVEL": "TRACE",
+        "NODE_ENV": "development"
       },
       "outFiles": [
         "${workspaceFolder}/test-apps/ui-test-app/lib/**/*.js",

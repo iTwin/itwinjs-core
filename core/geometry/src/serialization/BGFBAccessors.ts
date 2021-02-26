@@ -4941,10 +4941,18 @@ auxData(obj?: PolyfaceAuxData): PolyfaceAuxData|null {
 }
 
 /**
+ * @returns number
+ */
+expectedClosure(): number {
+  const offset = this.bb!.__offset(this.bb_pos, 38);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
+
+/**
  * @param flatbuffers.Builder builder
  */
 static startPolyface(builder: flatbuffers.Builder) {
-  builder.startObject(17);
+  builder.startObject(18);
 }
 
 /**
@@ -5337,6 +5345,14 @@ static addAuxData(builder: flatbuffers.Builder, auxDataOffset: flatbuffers.Offse
 
 /**
  * @param flatbuffers.Builder builder
+ * @param number expectedClosure
+ */
+static addExpectedClosure(builder: flatbuffers.Builder, expectedClosure: number) {
+  builder.addFieldInt32(17, expectedClosure, 0);
+}
+
+/**
+ * @param flatbuffers.Builder builder
  * @returns flatbuffers.Offset
  */
 static endPolyface(builder: flatbuffers.Builder): flatbuffers.Offset {
@@ -5344,7 +5360,7 @@ static endPolyface(builder: flatbuffers.Builder): flatbuffers.Offset {
   return offset;
 }
 
-static createPolyface(builder: flatbuffers.Builder, pointOffset: flatbuffers.Offset, paramOffset: flatbuffers.Offset, normalOffset: flatbuffers.Offset, doubleColorOffset: flatbuffers.Offset, intColorOffset: flatbuffers.Offset, pointIndexOffset: flatbuffers.Offset, paramIndexOffset: flatbuffers.Offset, normalIndexOffset: flatbuffers.Offset, colorIndexOffset: flatbuffers.Offset, colorTableOffset: flatbuffers.Offset, numPerFace: number, numPerRow: number, meshStyle: number, twoSided: boolean, faceIndexOffset: flatbuffers.Offset, faceDataOffset: flatbuffers.Offset, auxDataOffset: flatbuffers.Offset): flatbuffers.Offset {
+static createPolyface(builder: flatbuffers.Builder, pointOffset: flatbuffers.Offset, paramOffset: flatbuffers.Offset, normalOffset: flatbuffers.Offset, doubleColorOffset: flatbuffers.Offset, intColorOffset: flatbuffers.Offset, pointIndexOffset: flatbuffers.Offset, paramIndexOffset: flatbuffers.Offset, normalIndexOffset: flatbuffers.Offset, colorIndexOffset: flatbuffers.Offset, colorTableOffset: flatbuffers.Offset, numPerFace: number, numPerRow: number, meshStyle: number, twoSided: boolean, faceIndexOffset: flatbuffers.Offset, faceDataOffset: flatbuffers.Offset, auxDataOffset: flatbuffers.Offset, expectedClosure: number): flatbuffers.Offset {
   Polyface.startPolyface(builder);
   Polyface.addPoint(builder, pointOffset);
   Polyface.addParam(builder, paramOffset);
@@ -5363,6 +5379,7 @@ static createPolyface(builder: flatbuffers.Builder, pointOffset: flatbuffers.Off
   Polyface.addFaceIndex(builder, faceIndexOffset);
   Polyface.addFaceData(builder, faceDataOffset);
   Polyface.addAuxData(builder, auxDataOffset);
+  Polyface.addExpectedClosure(builder, expectedClosure);
   return Polyface.endPolyface(builder);
 }
 }
