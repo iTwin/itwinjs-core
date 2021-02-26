@@ -15,6 +15,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
 import "./MapUrlDialog.scss";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 export const MAP_TYPES = {
   wms: "WMS",
@@ -40,6 +41,7 @@ interface MapUrlDialogProps {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapUrlDialog(props: MapUrlDialogProps) {
   const { isOverlay, onOkResult, mapTypesOptions } = props;
+  const supportWmsAuthentication = (mapTypesOptions?.supportWmsAuthentication ? true : false);
 
   const [dialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate(props.layerToEdit ? "mapLayers:CustomAttach.EditCustomLayer" : "mapLayers:CustomAttach.AttachCustomLayer"));
   const [typeLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Type"));
@@ -82,11 +84,10 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     || !IModelApp.viewManager?.selectedView?.iModel?.contextId
     || !IModelApp.viewManager?.selectedView?.iModel?.iModelId);
 
-  //const [authSupported] = React.useState(() =>
   const isAuthSupported = React.useCallback(() => {
-    return ((mapType === MAP_TYPES.wms || mapType === MAP_TYPES.wms) && (mapTypesOptions?.supportWmsAuthentication ? true : false))
+    return ((mapType === MAP_TYPES.wms || mapType === MAP_TYPES.wms) && supportWmsAuthentication)
       || mapType === MAP_TYPES.arcGis;
-  }, []);
+  }, [mapType, supportWmsAuthentication]);
 
   const [layerIdxToEdit] = React.useState((): number | undefined => {
     if (props.layerToEdit === undefined || !props.layerToEdit.name || !props.layerToEdit.url) {
@@ -279,10 +280,17 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     { type: DialogButtonType.Cancel, onClick: handleCancel },
   ], [readyToSave, handleCancel, handleOk]);
 
+  const handleOnKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === SpecialKey.Enter) {
+      if (readyToSave())
+        handleOk();
+    }
+  }, [handleOk, readyToSave]);
+
   return (
     <div ref={dialogContainer}>
       <Dialog
-        style={{ zIndex: 21000 }}
+        className="map-layer-url-dialog"
         title={dialogTitle}
         opened={true}
         resizable={true}
@@ -302,7 +310,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             <span className="map-layer-source-label">{nameLabel}</span>
             <Input placeholder="Enter Map Name" onChange={onNameChange} value={props.layerToEdit?.name || layerToEdit?.name} disabled={props.askForCredentialsOnly} />
             <span className="map-layer-source-label">{urlLabel}</span>
-            <Input placeholder="Enter Map Source URL" onChange={onUrlChange} value={props.layerToEdit?.url || layerToEdit?.url} disabled={props.askForCredentialsOnly} />
+            <Input placeholder="Enter Map Source URL" onKeyPress={handleOnKeyDown} onChange={onUrlChange} value={props.layerToEdit?.url || layerToEdit?.url} disabled={props.askForCredentialsOnly} />
             {isAuthSupported() &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>
@@ -313,7 +321,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
                 <span className="map-layer-source-label">{passwordLabel}</span>
                 <LabeledInput type="password" placeholder={serverRequireCredentials ? "Password required" : passwordLabel}
                   status={!password && serverRequireCredentials ? InputStatus.Warning : undefined}
-                  onChange={onPasswordChange} />
+                  onChange={onPasswordChange}
+                  onKeyPress={handleOnKeyDown} />
               </>
             }
 

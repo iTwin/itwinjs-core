@@ -92,22 +92,32 @@ export abstract class MapLayerImageryProvider {
     return new ImageSource(byteArray, imageFormat);
   }
 
-  public async setStatus(status: MapLayerImageryProviderStatus) {
+  public setStatus(status: MapLayerImageryProviderStatus) {
     if (this.status !== status) {
       this.status = status;
       this.onStatusChanged.raiseEvent(this);
     }
   }
 
-  public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
+  public async makeTileRequest(url: string) {
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     tileRequestOptions.auth = this.getRequestAuthorization();
+    return request(this._requestContext, url, tileRequestOptions);
+  }
+
+  public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
+
     try {
       const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
       if (tileUrl.length === 0)
         return undefined;
 
-      const tileResponse: Response = await request(this._requestContext, tileUrl, tileRequestOptions);
+      const tileResponse: Response = await this.makeTileRequest(tileUrl);
+
+      if (!this._hasSuccessfullyFetchedTile) {
+        this._hasSuccessfullyFetchedTile = true;
+      }
+
       return this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
       if (error?.status === 401) {

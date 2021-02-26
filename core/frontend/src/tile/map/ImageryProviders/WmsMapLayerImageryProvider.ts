@@ -67,8 +67,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
       // When credentials will be provided, a new provider will be created, and initialization should be fine.
       if (error?.status === 401) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
-      }
-      else {
+      } else {
         throw new ServerError(IModelStatus.ValidationFailed, "");
       }
     }
