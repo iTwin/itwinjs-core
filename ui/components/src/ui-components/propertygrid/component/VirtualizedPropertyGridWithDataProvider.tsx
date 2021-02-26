@@ -31,6 +31,7 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
  * @alpha
  */
 export function VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps) {
+  // eslint-disable-next-line deprecation/deprecation
   const modelSource = usePropertyGridModelSource({ dataProvider: props.dataProvider, onPropertyLinkClick: props.onPropertyLinkClick });
   const model = usePropertyGridModel({ modelSource });
   const eventHandler = usePropertyGridEventHandler({ modelSource });
