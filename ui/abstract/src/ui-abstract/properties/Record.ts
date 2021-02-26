@@ -15,7 +15,7 @@ import { PropertyValue, PropertyValueFormat } from "./Value";
  */
 export interface LinkElementsInfo {
   /** Callback to link click event */
-  onClick?: (record: PropertyRecord, text: string) => void;
+  onClick: (text: string) => void;
   /**
    * Function that specifies which parts of display value need to be clickable.
    *

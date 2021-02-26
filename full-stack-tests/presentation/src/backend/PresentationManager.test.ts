@@ -40,7 +40,6 @@ describe("PresentationManager", () => {
 
     it("formats property with default kind of quantity format when it doesn't have format for requested unit system", async () => {
       expect(await getAreaDisplayValue(PresentationUnitSystem.BritishImperial)).to.eq("150.1235 cm²");
-
     });
 
     it("formats property using default format when it doesn't have format for requested unit system", async () => {
