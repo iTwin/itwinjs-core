@@ -279,6 +279,6 @@ steps:
   #    codeCoverageTool: Cobertura
   #    summaryFileLocation: $(Build.SourcesDirectory)/**/**/lib/test/coverage/cobertura-coverage.xml
   #  condition: succeededOrFailed()
-  - publish: $(Build.SourcesDirectory)/**/**/lib/test/coverage
-    displayName: Save BDFs
+  - publish: $(Build.SourcesDirectory)/ui/components/lib/test/coverage
+    displayName: Save ui-components BDFs
     artifact: bdf
