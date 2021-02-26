@@ -5,13 +5,16 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
-import { BasePropertyEditorParams, PropertyEditorParamTypes, SliderEditorParams, StandardEditorNames } from "@bentley/ui-abstract";
+import { BasePropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue,
+  SliderEditorParams, SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
 import { SliderEditor } from "../../ui-components/editors/SliderEditor";
 import TestUtils from "../TestUtils";
 import { EditorContainer } from "../../ui-components/editors/EditorContainer";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 describe("<SliderEditor />", () => {
   before(async () => {
@@ -225,6 +228,30 @@ describe("<SliderEditor />", () => {
 
     expect(spyOnCommit.calledOnce).to.be.true;
     cleanup();
+  });
+
+  class MineDataController extends DataControllerBase {
+    public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+    }
+  }
+
+  it("should not commit if DataController fails to validate", async () => {
+    PropertyEditorManager.registerDataController("myData", MineDataController);
+    const propertyRecord = TestUtils.createNumericProperty("Test", 50, StandardEditorNames.Slider);
+    propertyRecord.property.dataController = "myData";
+
+    const spyOnCommit = sinon.spy();
+    const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
+    expect(renderedComponent).not.to.be.undefined;
+    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    expect(popupButton).not.to.be.null;
+
+    fireEvent.keyDown(popupButton, { key: SpecialKey.Enter });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCommit.called).to.be.false;
+
+    PropertyEditorManager.deregisterDataController("myData");
   });
 
 });

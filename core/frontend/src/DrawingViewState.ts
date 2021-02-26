@@ -449,4 +449,9 @@ export class DrawingViewState extends ViewState2d {
   public get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachment || this._attachment.view.areAllTileTreesLoaded);
   }
+
+  /** @internal */
+  public get secondaryViewports() {
+    return this._attachment ? [ this._attachment.viewport ] : super.secondaryViewports;
+  }
 }

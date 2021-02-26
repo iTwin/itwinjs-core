@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-webpack-tools",
-  "version": "2.13.0-dev.16",
+  "version": "2.14.0-dev.2",
   "description": "Configuration and scripts for iModel.js Extensions.",
   "license": "MIT",
   "repository": {
@@ -26,7 +26,7 @@
   "types": "./index.d.ts",
   "dependencies": {
     "@babel/core": "7.7.4",
-    "@bentley/webpack-tools-core": "2.13.0-dev.16",
+    "@bentley/webpack-tools-core": "2.14.0-dev.2",
     "@svgr/webpack": "4.3.3",
     "babel-loader": "8.1.0",
     "babel-plugin-named-asset-import": "^0.3.5",
@@ -62,7 +62,7 @@
     "webpack": "4.42.0",
     "webpack-sources": "^1.4.3",
     "yargonaut": "^1.1.2",
-    "yargs": "^15.0.0"
+    "yargs": "^16.0.0"
   },
   "devDependencies": {
     "rimraf": "^3.0.2"

@@ -21,7 +21,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "yargs": "^15.0.0"
+    "yargs": "^16.0.0"
   },
   "devDependencies": {}
 }

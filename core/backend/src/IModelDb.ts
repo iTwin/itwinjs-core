@@ -83,7 +83,7 @@ export interface ComputedProjectExtents {
   outliers?: Id64Array;
 }
 
-/** An iModel database file. The database file is either a local copy (briefcase) of an iModel managed by iModelHub or a read-only *snapshot* used for archival and data transfer purposes.
+/** An iModel database file. The database file is either briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
  * @public
@@ -174,29 +174,29 @@ export abstract class IModelDb extends IModel {
     super.initialize(props.rootSubject.name, props);
   }
 
-  /** Type guard for instanceof [[BriefcaseDb]] */
-  public isBriefcaseDb(): this is BriefcaseDb { return this instanceof BriefcaseDb; }
-  /** Returns true if this is an iModel from iModelHub (briefcase)
+  /** Returns true if this is a BriefcaseDb
    * @see [[BriefcaseDb.open]]
    */
-  public get isBriefcase(): boolean { return this.isBriefcaseDb(); }
+  public get isBriefcase(): boolean { return false; }
+  /** Type guard for instanceof [[BriefcaseDb]] */
+  public isBriefcaseDb(): this is BriefcaseDb { return this.isBriefcase; }
 
-  /** Type guard for instanceof [[SnapshotDb]] */
-  public isSnapshotDb(): this is SnapshotDb { return this instanceof SnapshotDb; }
-  /** Returns true if this is a *snapshot* iModel
+  /** Returns true if this is a SnapshotDb
    * @see [[SnapshotDb.open]]
    */
-  public get isSnapshot(): boolean { return this.isSnapshotDb(); }
+  public get isSnapshot(): boolean { return false; }
+  /** Type guard for instanceof [[SnapshotDb]] */
+  public isSnapshotDb(): this is SnapshotDb { return this.isSnapshot; }
 
-  /** Type guard for instanceof [[StandaloneDb]]
-   * @internal
-   */
-  public isStandaloneDb(): this is StandaloneDb { return this instanceof StandaloneDb; }
   /** Returns true if this is a *standalone* iModel
    * @see [[StandaloneDb.open]]
    * @internal
    */
-  public get isStandalone(): boolean { return this.isStandaloneDb(); }
+  public get isStandalone(): boolean { return false; }
+  /** Type guard for instanceof [[StandaloneDb]]
+   * @internal
+   */
+  public isStandaloneDb(): this is StandaloneDb { return this.isStandalone; }
 
   /** Return `true` if the underlying nativeDb is open and valid.
    * @internal
@@ -2137,6 +2137,9 @@ export class BriefcaseDb extends IModelDb {
   /** @beta */
   public readonly txns = new TxnManager(this);
 
+  /** override superclass method */
+  public get isBriefcase(): boolean { return true; }
+
   /** Returns `true` if this is a briefcase can be used to make changesets */
   public readonly allowLocalChanges: boolean;
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
@@ -2165,7 +2168,7 @@ export class BriefcaseDb extends IModelDb {
 
   public static tryFindByKey(key: string): BriefcaseDb | undefined {
     const db = super.tryFindByKey(key);
-    return db instanceof BriefcaseDb ? db : undefined;
+    return db?.isBriefcaseDb() ? db : undefined;
   }
 
   /** @internal */
@@ -2431,12 +2434,13 @@ export class BriefcaseDb extends IModelDb {
   }
 }
 
-/** A *snapshot* iModel database file that is typically used for archival and data transfer purposes.
+/** A *snapshot* iModel database file that is used for archival and data transfer purposes.
  * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
  * @public
  */
 export class SnapshotDb extends IModelDb {
+  public get isSnapshot(): boolean { return true; }
   private _createClassViewsOnClose?: boolean;
   /** The full path to the snapshot iModel file.
    * @deprecated use pathName
@@ -2455,7 +2459,7 @@ export class SnapshotDb extends IModelDb {
 
   public static tryFindByKey(key: string): SnapshotDb | undefined {
     const db = super.tryFindByKey(key);
-    return db instanceof SnapshotDb ? db : undefined;
+    return db?.isSnapshotDb() ? db : undefined;
   }
 
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
@@ -2618,6 +2622,7 @@ export class SnapshotDb extends IModelDb {
  * @internal
  */
 export class StandaloneDb extends IModelDb {
+  public get isStandalone(): boolean { return true; }
   /** @beta */
   public readonly txns: TxnManager;
   /** The full path to the standalone iModel file.
@@ -2631,7 +2636,7 @@ export class StandaloneDb extends IModelDb {
 
   public static tryFindByKey(key: string): StandaloneDb | undefined {
     const db = super.tryFindByKey(key);
-    return db instanceof StandaloneDb ? db : undefined;
+    return db?.isStandaloneDb() ? db : undefined;
   }
 
   /** This property is always undefined as a StandaloneDb does not accept nor generate changesets. */

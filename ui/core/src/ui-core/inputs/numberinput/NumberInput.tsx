@@ -44,158 +44,164 @@ export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step
   onChange?: (value: number | undefined, stringValue: string) => void;
   /** if true up/down buttons are shown larger and side by side */
   showTouchButtons?: boolean;
+  /** Provides ability to return reference to HTMLInputElement */
+  ref?: React.Ref<HTMLInputElement>;
 }
 
-/** Input component for numbers with up and down buttons to increment and decrement the value.
- * @beta
- */
-export function NumberInput(props: NumberInputProps) {
-  const { containerClassName, value, min, max, precision, format, parse,
-    onChange, onBlur, onKeyDown, step, snap, showTouchButtons, ...otherProps } = props;
-  const currentValueRef = React.useRef(value);
+const ForwardRefNumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
+  function ForwardRefNumberInput(props, ref) {
+    const { containerClassName, value, min, max, precision, format, parse,
+      onChange, onBlur, onKeyDown, step, snap, showTouchButtons, ...otherProps } = props;
+    const currentValueRef = React.useRef(value);
 
-  /**
+    /**
    * Used internally to parse the argument x to it's numeric representation.
    * If the argument cannot be converted to finite number returns 0; If a
    * "precision" prop is specified uses it round the number with that
    * precision (no fixed precision here because the return value is float, not
    * string).
    */
-  const parseInternal = React.useCallback((x: string) => {
-    let n: number | undefined | null;
+    const parseInternal = React.useCallback((x: string) => {
+      let n: number | undefined | null;
 
-    if (parse)
-      n = parse(x);
-    if (undefined === n || null === n) {
-      n = parseFloat(x);
-      if (isNaN(n) || !isFinite(n)) {
-        n = 0;
+      if (parse)
+        n = parse(x);
+      if (undefined === n || null === n) {
+        n = parseFloat(x);
+        if (isNaN(n) || !isFinite(n)) {
+          n = 0;
+        }
       }
-    }
 
-    const localPrecision = undefined === precision ? 10 : precision;
-    const q = Math.pow(10, localPrecision);
-    const localMin = undefined === min ? Number.MIN_SAFE_INTEGER : min;
-    const localMax = undefined === max ? Number.MAX_SAFE_INTEGER : max;
-    n = Math.min(Math.max(n, localMin), localMax);
-    n = Math.round(n * q) / q;
+      const localPrecision = undefined === precision ? 10 : precision;
+      const q = Math.pow(10, localPrecision);
+      const localMin = undefined === min ? Number.MIN_SAFE_INTEGER : min;
+      const localMax = undefined === max ? Number.MAX_SAFE_INTEGER : max;
+      n = Math.min(Math.max(n, localMin), localMax);
+      n = Math.round(n * q) / q;
 
-    return n;
-  }, [parse, precision, min, max]);
+      return n;
+    }, [parse, precision, min, max]);
 
-  /**
+    /**
    * This is used internally to format a number to its display representation.
    * It will invoke the format function if one is provided.
    */
-  const formatInternal = React.useCallback((num: number | undefined | null) => {
-    const localPrecision = undefined === precision || null === precision ? 0 : precision;
-    const str = undefined === num || null === num ? "" : num.toFixed(localPrecision);
+    const formatInternal = React.useCallback((num: number | undefined | null) => {
+      const localPrecision = undefined === precision || null === precision ? 0 : precision;
+      const str = undefined === num || null === num ? "" : num.toFixed(localPrecision);
 
-    if (format)
-      return format(num, str);
+      if (format)
+        return format(num, str);
 
-    return str;
-  }, [format, precision]);
+      return str;
+    }, [format, precision]);
 
-  const [formattedValue, setFormattedValue] = React.useState(() => formatInternal(value));
+    const [formattedValue, setFormattedValue] = React.useState(() => formatInternal(value));
 
-  // See if new initialValue props have changed since component mounted
-  React.useEffect(() => {
-    currentValueRef.current = value;
-    const currentFormattedValue = formatInternal(currentValueRef.current);
-    setFormattedValue(currentFormattedValue);
-  }, [formatInternal, value]);
+    // See if new initialValue props have changed since component mounted
+    React.useEffect(() => {
+      currentValueRef.current = value;
+      const currentFormattedValue = formatInternal(currentValueRef.current);
+      setFormattedValue(currentFormattedValue);
+    }, [formatInternal, value]);
 
-  const handleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setFormattedValue(event.currentTarget.value);
-  }, []);
+    const handleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+      setFormattedValue(event.currentTarget.value);
+    }, []);
 
-  const updateValue = React.useCallback((newVal: number) => {
-    const newFormattedVal = formatInternal(newVal);
-    onChange && onChange(newVal, newFormattedVal);
-    setFormattedValue(newFormattedVal);
-  }, [onChange, formatInternal]);
+    const updateValue = React.useCallback((newVal: number) => {
+      const newFormattedVal = formatInternal(newVal);
+      onChange && onChange(newVal, newFormattedVal);
+      setFormattedValue(newFormattedVal);
+    }, [onChange, formatInternal]);
 
-  const updateValueFromString = React.useCallback((strValue: string) => {
-    const newVal = parseInternal(strValue);
-    updateValue(newVal);
-  }, [parseInternal, updateValue]);
+    const updateValueFromString = React.useCallback((strValue: string) => {
+      const newVal = parseInternal(strValue);
+      updateValue(newVal);
+    }, [parseInternal, updateValue]);
 
-  const handleBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
-    const newVal = parseInternal(event.target.value);
-    onBlur && onBlur(event);
-    updateValue(newVal);
-  }, [parseInternal, updateValue, onBlur]);
+    const handleBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
+      const newVal = parseInternal(event.target.value);
+      onBlur && onBlur(event);
+      updateValue(newVal);
+    }, [parseInternal, updateValue, onBlur]);
 
-  const getIncrementValue = React.useCallback((increment: boolean) => {
-    if (typeof step === "function") {
-      const stepVal = step(increment ? "up" : "down");
-      return stepVal ? stepVal : 1;
-    }
+    const getIncrementValue = React.useCallback((increment: boolean) => {
+      if (typeof step === "function") {
+        const stepVal = step(increment ? "up" : "down");
+        return stepVal ? stepVal : 1;
+      }
 
-    return !step ? 1 : step;
-  }, [step]);
+      return !step ? 1 : step;
+    }, [step]);
 
-  /**
+    /**
    * The internal method that actually sets the new value on the input
    */
-  const applyStep = React.useCallback((increment: boolean) => {
-    const incrementValue = getIncrementValue(increment);
+    const applyStep = React.useCallback((increment: boolean) => {
+      const incrementValue = getIncrementValue(increment);
 
-    let num = parseInternal(formattedValue) + (increment ? incrementValue : -incrementValue);
-    if (snap) {
-      num = Math.round(num / incrementValue) * incrementValue;
-    }
+      let num = parseInternal(formattedValue) + (increment ? incrementValue : -incrementValue);
+      if (snap) {
+        num = Math.round(num / incrementValue) * incrementValue;
+      }
 
-    const localMin = undefined === min ? Number.MIN_SAFE_INTEGER : min;
-    const localMax = undefined === max ? Number.MAX_SAFE_INTEGER : max;
-    num = Math.min(Math.max(num, localMin), localMax);
+      const localMin = undefined === min ? Number.MIN_SAFE_INTEGER : min;
+      const localMax = undefined === max ? Number.MAX_SAFE_INTEGER : max;
+      num = Math.min(Math.max(num, localMin), localMax);
 
-    updateValue(num);
-  }, [formattedValue, getIncrementValue, max, min, parseInternal, snap, updateValue]);
+      updateValue(num);
+    }, [formattedValue, getIncrementValue, max, min, parseInternal, snap, updateValue]);
 
-  const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     // istanbul ignore else
-    if (event.key === SpecialKey.Enter) {
-      updateValueFromString(event.currentTarget.value);
-      event.preventDefault();
-    } else if (event.key === SpecialKey.Escape) {
-      setFormattedValue(formatInternal(currentValueRef.current));
-      event.preventDefault();
-    } else if (event.key === SpecialKey.ArrowDown) {
+      if (event.key === SpecialKey.Enter) {
+        updateValueFromString(event.currentTarget.value);
+        event.preventDefault();
+      } else if (event.key === SpecialKey.Escape) {
+        setFormattedValue(formatInternal(currentValueRef.current));
+        event.preventDefault();
+      } else if (event.key === SpecialKey.ArrowDown) {
+        applyStep(false);
+        event.preventDefault();
+      } else if (event.key === SpecialKey.ArrowUp) {
+        applyStep(true);
+        event.preventDefault();
+      }
+      onKeyDown && onKeyDown(event);
+    }, [applyStep, formatInternal, updateValueFromString, onKeyDown]);
+
+    const handleDownClick = React.useCallback((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       applyStep(false);
       event.preventDefault();
-    } else if (event.key === SpecialKey.ArrowUp) {
+    }, [applyStep]);
+
+    const handleUpClick = React.useCallback((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       applyStep(true);
       event.preventDefault();
-    }
-    onKeyDown && onKeyDown(event);
-  }, [applyStep, formatInternal, updateValueFromString, onKeyDown]);
+    }, [applyStep]);
 
-  const handleDownClick = React.useCallback((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    applyStep(false);
-    event.preventDefault();
-  }, [applyStep]);
-
-  const handleUpClick = React.useCallback((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    applyStep(true);
-    event.preventDefault();
-  }, [applyStep]);
-
-  const containerClasses = classnames("core-number-input-container", containerClassName, showTouchButtons && "core-number-buttons-for-touch");
-  return (
-    <div className={containerClasses} >
-      <Input value={formattedValue} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={handleBlur} {...otherProps} />
-      <div className={classnames("core-number-input-buttons-container", showTouchButtons && "core-number-buttons-for-touch")}>
-        { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
-        <div className="core-number-input-button core-number-input-button-up" tabIndex={-1} onClick={handleUpClick}>
-          <WebFontIcon iconName="icon-caret-up" />
-        </div>
-        { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
-        <div className="core-number-input-button core-number-input-button-down" tabIndex={-1} onClick={handleDownClick}>
-          <WebFontIcon iconName="icon-caret-down" />
+    const containerClasses = classnames("core-number-input-container", containerClassName, showTouchButtons && "core-number-buttons-for-touch");
+    return (
+      <div className={containerClasses} >
+        <Input ref={ref} value={formattedValue} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={handleBlur} {...otherProps} />
+        <div className={classnames("core-number-input-buttons-container", showTouchButtons && "core-number-buttons-for-touch")}>
+          { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
+          <div className="core-number-input-button core-number-input-button-up" tabIndex={-1} onClick={handleUpClick}>
+            <WebFontIcon iconName="icon-caret-up" />
+          </div>
+          { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
+          <div className="core-number-input-button core-number-input-button-down" tabIndex={-1} onClick={handleDownClick}>
+            <WebFontIcon iconName="icon-caret-down" />
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+);
+
+/** Input component for numbers with up and down buttons to increment and decrement the value.
+ * @beta
+ */
+export const NumberInput: (props: NumberInputProps) => JSX.Element | null = ForwardRefNumberInput;

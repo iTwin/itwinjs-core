@@ -44,11 +44,6 @@ describe("Markup", () => {
     assert.equal(text.node.innerHTML, 'test1<tspan dy="10" x="0">test2</tspan><tspan dy="10" x="0">test3</tspan>', "innerHTML");
     assert.equal(text.getMarkup(), val, "getMarkup");
 
-    const domStr = nested.svg();
-    assert.equal(domStr,
-      '<g class="svg-nested"><text transform="matrix(1,0,0,1,20,15)" style="font-family: sans-serif; font-size: 30px; stroke: none; fill: red;">test1<tspan dy="10" x="0">test2</tspan><tspan dy="10" x="0">test3</tspan></text></g>',
-      "writeDataToDom");
-
     let outline = text.getOutline(1);
     let trn = outline.attr("transform");
     assert.equal(trn, "matrix(1,0,0,1,20,15)", "transform of outline");

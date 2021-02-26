@@ -106,7 +106,7 @@ public;HorizontalAlignment
 public;HorizontalTabs(props: TabsProps): JSX.Element
 public;Icon(props: IconProps): JSX.Element | null
 public;IconHelper
-public;IconInput(props: IconInputProps): JSX.Element
+public;IconInput: (props: IconInputProps) => JSX.Element | null
 public;IconInputProps 
 public;IconProps 
 public;IconSpec = string | ConditionalStringValue | React.ReactNode
@@ -153,6 +153,7 @@ public;LoadingStatus
 public;LoadingStatusProps 
 beta;LocalUiSettings 
 public;MainTabsProps 
+internal;mergeRefs
 public;MessageBox 
 public;MessageBoxProps 
 public;MessageContainer 
@@ -170,7 +171,7 @@ public;NoChildrenProps
 beta;NodeCheckboxProps
 beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
 beta;NodeCheckboxRenderProps = Omit
-beta;NumberInput(props: NumberInputProps): JSX.Element
+beta;NumberInput: (props: NumberInputProps) => JSX.Element | null
 beta;NumberInputProps 
 beta;NumericInput 
 internal;NumericInputDefaultProps = Pick
@@ -213,7 +214,7 @@ beta;ScrollPositionMaintainer
 public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
 public;SearchBoxProps 
-public;Select(props: SelectProps): JSX.Element
+public;Select: (props: SelectProps) => JSX.Element | null
 public;SelectOption
 public;SelectProps 
 beta;SessionUiSettings 
@@ -253,7 +254,7 @@ public;TimeFormat
 public;Timer
 public;Title(props: TextProps): JSX.Element
 public;Title2(props: TextProps): JSX.Element
-public;Toggle(props: ToggleProps): JSX.Element
+public;Toggle: (props: ToggleProps) => JSX.Element | null
 public;ToggleButtonType
 public;ToggleProps 
 internal;TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10
@@ -273,9 +274,9 @@ public;TreeProps
 public;UiCore
 public;UiEvent
 beta;UiSetting
-beta;UiSettings
-beta;UiSettingsResult
-beta;UiSettingsStatus
+public;UiSettings
+public;UiSettingsResult
+public;UiSettingsStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;useDisposable

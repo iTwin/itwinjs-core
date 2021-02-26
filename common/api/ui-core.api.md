@@ -7,6 +7,7 @@
 import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import Component from 'react-select';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
@@ -100,7 +101,7 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     onSuggestionSelected: (selected: AutoSuggestData) => void;
     options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
     // @internal
-    renderInputComponent?: ReactAutosuggest.RenderInputComponent<AutoSuggestData>;
+    renderInputComponent?: any;
     // @internal
     renderSuggestionsContainer?: ReactAutosuggest.RenderSuggestionsContainer;
     setFocus?: boolean;
@@ -187,6 +188,8 @@ export function Centered(props: CommonDivProps): JSX.Element;
 
 // @public
 export class Checkbox extends React.PureComponent<CheckboxProps> {
+    // @internal
+    constructor(props: CheckboxProps);
     // (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -211,6 +214,7 @@ export interface CheckBoxInfo {
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
     indeterminate?: boolean;
     inputClassName?: string;
+    inputRef?: React.Ref<HTMLInputElement>;
     inputStyle?: React.CSSProperties;
     label?: string;
     labelClassName?: string;
@@ -942,12 +946,13 @@ export class IconHelper {
 }
 
 // @public
-export function IconInput(props: IconInputProps): JSX.Element;
+export const IconInput: (props: IconInputProps) => JSX.Element | null;
 
 // @public
 export interface IconInputProps extends InputProps {
     containerClassName?: string;
     icon: React.ReactNode;
+    ref?: React.Ref<HTMLInputElement>;
 }
 
 // @public
@@ -972,6 +977,7 @@ export interface ImageCheckBoxProps extends CommonProps {
     imageOff: string | React.ReactNode;
     imageOn: string | React.ReactNode;
     inputClassName?: string;
+    inputRef?: React.Ref<HTMLInputElement>;
     inputStyle?: React.CSSProperties;
     onClick?: (checked: boolean) => any;
     tooltip?: string;
@@ -1243,6 +1249,9 @@ export interface MainTabsProps extends TabsProps {
     orientation: Orientation;
 }
 
+// @internal
+export function mergeRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
+
 // @public
 export class MessageBox extends React.PureComponent<MessageBoxProps> {
     // (undocumented)
@@ -1353,7 +1362,7 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 };
 
 // @beta
-export function NumberInput(props: NumberInputProps): JSX.Element;
+export const NumberInput: (props: NumberInputProps) => JSX.Element | null;
 
 // @beta
 export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange"> {
@@ -1364,6 +1373,7 @@ export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step
     onChange?: (value: number | undefined, stringValue: string) => void;
     parse?: ((value: string) => number | null | undefined);
     precision?: number;
+    ref?: React.Ref<HTMLInputElement>;
     showTouchButtons?: boolean;
     snap?: boolean;
     step?: StepFunctionProp;
@@ -1817,7 +1827,7 @@ export interface SearchBoxProps extends CommonProps {
 }
 
 // @public
-export function Select(props: SelectProps): JSX.Element;
+export const Select: (props: SelectProps) => JSX.Element | null;
 
 // @public
 export interface SelectOption {
@@ -1831,6 +1841,7 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
     options: (string | SelectOption)[] | {
         [key: string]: (string | SelectOption);
     };
+    ref?: React.Ref<HTMLSelectElement>;
     setFocus?: boolean;
 }
 
@@ -2063,6 +2074,7 @@ export type ThemedSelectProps = {
     controlShouldRenderValue?: boolean;
     defaultMenuIsOpen?: boolean;
     defaultValue?: ValueType<OptionType>;
+    divRef?: React.Ref<HTMLDivElement>;
     escapeClearsValue?: boolean;
     filterOption?: ((option: OptionType, rawInput: string) => boolean) | null;
     formatGroupLabel?: typeof formatGroupLabel;
@@ -2105,6 +2117,7 @@ export type ThemedSelectProps = {
     options: OptionsType;
     pageSize?: number;
     placeholder?: string;
+    ref?: React.Ref<Component>;
     styles?: React.CSSProperties;
     tabIndex?: string;
     tabSelectsValue?: boolean;
@@ -2167,7 +2180,7 @@ export function Title(props: TextProps): JSX.Element;
 export function Title2(props: TextProps): JSX.Element;
 
 // @public
-export function Toggle(props: ToggleProps): JSX.Element;
+export const Toggle: (props: ToggleProps) => JSX.Element | null;
 
 // @public
 export enum ToggleButtonType {
@@ -2183,6 +2196,7 @@ export interface ToggleProps extends CommonProps {
     large?: boolean;
     onBlur?: (event: React.FocusEvent) => any;
     onChange?: (checked: boolean) => any;
+    ref?: React.Ref<HTMLInputElement>;
     rounded?: boolean;
     setFocus?: boolean;
     showCheckmark?: boolean;
@@ -2355,7 +2369,7 @@ export class UiSetting<T> {
     settingNamespace: string;
 }
 
-// @beta
+// @public
 export interface UiSettings {
     // (undocumented)
     deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
@@ -2365,7 +2379,7 @@ export interface UiSettings {
     saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
 }
 
-// @beta
+// @public
 export interface UiSettingsResult {
     // (undocumented)
     setting?: any;
@@ -2373,7 +2387,7 @@ export interface UiSettingsResult {
     status: UiSettingsStatus;
 }
 
-// @beta
+// @public
 export enum UiSettingsStatus {
     // (undocumented)
     AuthorizationError = 4,

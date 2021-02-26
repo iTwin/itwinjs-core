@@ -293,9 +293,6 @@ PropertyRecord {
             "Movies": PropertyRecord {
               "description": "some display value 1 with link www.testLink.com",
               "isReadonly": true,
-              "links": Object {
-                "matcher": [Function],
-              },
               "property": Object {
                 "displayLabel": "SDD",
                 "name": "Florida$Movies",
@@ -327,9 +324,6 @@ PropertyRecord {
             "Movies": PropertyRecord {
               "description": "some display value 2 with link http://www.testLinkTwo.com",
               "isReadonly": true,
-              "links": Object {
-                "matcher": [Function],
-              },
               "property": Object {
                 "displayLabel": "SDD",
                 "name": "Florida$Movies",

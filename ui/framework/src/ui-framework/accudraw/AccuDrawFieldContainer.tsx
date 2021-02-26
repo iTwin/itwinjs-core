@@ -16,12 +16,11 @@ import {
 } from "@bentley/ui-abstract";
 import { CommonProps, Orientation, UiSettings } from "@bentley/ui-core";
 import { AccuDrawInputField } from "./AccuDrawInputField";
-import { CompassMode, IModelApp, ItemField, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { CompassMode, IModelApp, ItemField, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+
 import angleIcon from "./angle.svg?sprite";
 import distanceIcon from "./distance.svg?sprite";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ContentControlActivatedEventArgs } from "../content/ContentControl";
 
 /** @alpha */
 export interface AccuDrawFieldContainerProps extends CommonProps {
@@ -58,7 +57,7 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   const [zLock, setZLock] = React.useState(false);
   const [angleLock, setAngleLock] = React.useState(false);
   const [distanceLock, setDistanceLock] = React.useState(false);
-  const [showZ, setShowZ] = React.useState(showZOverride || determineShowZ(IModelApp.accuDraw.currentView));
+  const [showZ, setShowZ] = React.useState(true);
 
   const getInputRef = (field: AccuDrawField): React.RefObject<HTMLInputElement> => {
     let inputRef: React.RefObject<HTMLInputElement>;
@@ -165,13 +164,15 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   );
 
   React.useEffect(() => {
+    setShowZ(showZOverride || determineShowZ(IModelApp.viewManager.selectedView));
+
     // istanbul ignore next
-    const handleContentControlActivated = (args: ContentControlActivatedEventArgs) => {
-      setShowZ(determineShowZ(args.activeContentControl.viewport));
+    const handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
+      setShowZ(determineShowZ(args.current));
     };
 
-    return FrontstageManager.onContentControlActivatedEvent.addListener(handleContentControlActivated);
-  }, []);
+    return IModelApp.viewManager.onSelectedViewportChanged.addListener(handleSelectedViewportChanged);
+  }, [showZOverride]);
 
   const delay = 250;
 

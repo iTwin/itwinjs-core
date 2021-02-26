@@ -4,14 +4,96 @@
 
 ```ts
 
-import { PrimitiveTool } from '@bentley/imodeljs-frontend';
+import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
+import { BeButtonEvent } from '@bentley/imodeljs-frontend';
+import { DynamicsContext } from '@bentley/imodeljs-frontend';
+import { ElementSetTool } from '@bentley/imodeljs-frontend';
+import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
+import { Transform } from '@bentley/geometry-core';
 
 // @alpha
-export abstract class EditTool extends PrimitiveTool {
+export class DeleteElementsTool extends ElementSetTool {
+    // (undocumented)
+    protected get allowDragSelect(): boolean;
+    // (undocumented)
+    protected get allowGroups(): boolean;
+    // (undocumented)
+    protected get allowSelectionSet(): boolean;
+    // (undocumented)
+    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    processAgendaImmediate(): Promise<void>;
+    // (undocumented)
+    protected get requireAcceptForSelectionSetOperation(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class EditTools {
     // (undocumented)
     static callCommand(methodName: string, ...args: any[]): Promise<any>;
+    static initialize(): Promise<void>;
     // (undocumented)
     static startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T>;
+}
+
+// @alpha
+export class MoveElementsTool extends TransformElementsTool {
+    // (undocumented)
+    protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export abstract class TransformElementsTool extends ElementSetTool {
+    // (undocumented)
+    protected get allowDragSelect(): boolean;
+    // (undocumented)
+    protected get allowGroups(): boolean;
+    // (undocumented)
+    protected get allowSelectionSet(): boolean;
+    // (undocumented)
+    protected abstract calculateTransform(ev: BeButtonEvent): Transform | undefined;
+    // (undocumented)
+    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    protected createAgendaGraphics(changed: boolean): Promise<void>;
+    // (undocumented)
+    protected initAgendaDynamics(): Promise<boolean>;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onProcessComplete(): Promise<void>;
+    // (undocumented)
+    processAgenda(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected transformAgenda(transform: Transform): Promise<void>;
+    // (undocumented)
+    protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void;
+    // (undocumented)
+    protected updateAnchorLocation(transform: Transform): void;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
+    // (undocumented)
+    protected get wantMakeCopy(): boolean;
 }
 
 
