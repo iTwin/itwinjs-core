@@ -106,9 +106,7 @@ export class StateTracker {
       addedKeys.push(expandedNode.key);
     }
 
-    if (removedKeys.length !== 0)
-      await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesCollapsed", removedKeys);
-    if (addedKeys.length !== 0)
-      await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesExpanded", addedKeys);
+    await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesCollapsed", removedKeys);
+    await this.updateHierarchyStateIfNeeded(imodel.key, rulesetId, "nodesExpanded", addedKeys);
   }
 }
