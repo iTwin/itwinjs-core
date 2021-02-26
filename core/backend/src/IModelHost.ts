@@ -447,7 +447,7 @@ export class IModelHost {
     }
 
     UsageLoggingUtilities.configure({ hostApplicationId: IModelHost.applicationId, hostApplicationVersion: IModelHost.applicationVersion, clientAuthManager: this._clientAuthIntrospectionManager });
-    process.once('beforeExit', IModelHost.shutdown);
+    process.once("beforeExit", IModelHost.shutdown);
   }
 
   private static _briefcaseCacheDir: string;
@@ -494,7 +494,7 @@ export class IModelHost {
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;
-    process.removeListener('beforeExit', IModelHost.shutdown);
+    process.removeListener("beforeExit", IModelHost.shutdown);
   }
 
   /**
