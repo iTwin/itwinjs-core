@@ -47,6 +47,12 @@ export interface IModelTileTreeParams extends TileTreeParams {
 /** @internal */
 export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams {
   const location = Transform.fromJSON(props.location);
+
+  // Note: this is a temporary workaround. For an empty model, the tile tree's location has Number.MAX_VALUE for all components of the origin. They should be zero.
+  // Proper fix will be made in native code.
+  if (location.origin.x === Number.MAX_VALUE)
+    location.origin.setZero();
+
   const { formatVersion, id, rootTile, contentIdQualifier, maxInitialTilesToSkip, geometryGuid } = props;
 
   let contentRange;
