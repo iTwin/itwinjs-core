@@ -26,9 +26,10 @@ import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { RenderMemory } from "../render/RenderMemory";
 import { SpatialClassifiers } from "../SpatialClassifiers";
 import { SceneContext } from "../ViewContext";
+import { ScreenViewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 import {
-  BatchedTileIdMap, createClassifierTileTreeReference, DisclosedTileTreeSet, getCesiumAccessTokenAndEndpointUrl, RealityTile, RealityTileLoader, RealityTileParams,
+  BatchedTileIdMap, createClassifierTileTreeReference, DisclosedTileTreeSet, getCesiumAccessTokenAndEndpointUrl, getCesiumOSMBuildingsUrl, RealityTile, RealityTileLoader, RealityTileParams,
   RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
   TileTreeOwner,
   TileTreeReference, TileTreeSupplier,
@@ -264,7 +265,7 @@ class RealityModelTileProps implements RealityTileParams {
       this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume)?.range;
     else {
       // A node without content should probably be selectable even if not additive refinement - But restrict it to that case here
-      // to avoid potential problems with existing reality models, but still avoid overselection in the OSM world buidling set.
+      // to avoid potential problems with existing reality models, but still avoid overselection in the OSM world building set.
       if (this.additiveRefinement || parent?.additiveRefinement)
         this.noContentButTerminateOnSelection = true;
     }
@@ -431,7 +432,7 @@ export namespace RealityModelTileTree {
     public get modelId() { return this._modelId; }
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
-    public get planarClipMaskPrority(): number {
+    public get planarClipMaskPriority(): number {
       if (this._planarClipMask?.settings.priority !== undefined)
         return this._planarClipMask.settings.priority;
 
@@ -496,13 +497,13 @@ export namespace RealityModelTileTree {
       }
 
       if (iModel.ecefLocation) {
-      // In initial publishing version the iModel ecef Transform was used to locate the reality model.
-      // This would work well only for tilesets published from that iModel but for iModels the ecef transform is calculated
-      // at the center of the project extents and the reality model location may differ greatly, and the curvature of the earth
-      // could introduce significant errors.
-      // The publishing was modified to calculate the ecef transform at the reality model range center and at the same time the "iModelPublishVersion"
-      // member was added to the root object.  In order to continue to locate reality models published from older versions at the
-      // project extents center we look for Tileset version 0.0 and no root.iModelVersion.
+        // In initial publishing version the iModel ecef Transform was used to locate the reality model.
+        // This would work well only for tilesets published from that iModel but for iModels the ecef transform is calculated
+        // at the center of the project extents and the reality model location may differ greatly, and the curvature of the earth
+        // could introduce significant errors.
+        // The publishing was modified to calculate the ecef transform at the reality model range center and at the same time the "iModelPublishVersion"
+        // member was added to the root object.  In order to continue to locate reality models published from older versions at the
+        // project extents center we look for Tileset version 0.0 and no root.iModelVersion.
         const ecefOrigin = realityTileRange.localXYZToWorld(.5, .5, .5)!;
         const dbOrigin = rootTransform.multiplyPoint3d(ecefOrigin);
         const realityOriginToProjectDistance = iModel.projectExtents.distanceToPoint(dbOrigin);
@@ -675,6 +676,12 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     if (undefined !== tree)
       tree.collectStatistics(stats);
   }
+
+  public addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {
+    if (this._url === getCesiumOSMBuildingsUrl()) {
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.i18n.translate("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
+    }
+  }
 }
 
 interface RDSClientProps {
@@ -764,7 +771,7 @@ export class RealityModelTileClient {
     return props;
   }
 
-  // This is to set the root url fromt the provided root document path.
+  // This is to set the root url from the provided root document path.
   // If the root document is stored on PW Context Share then the root document property of the Reality Data is provided,
   // otherwise the full path to root document is given.
   // The base URL contains the base URL from which tile relative path are constructed.
