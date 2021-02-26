@@ -22,6 +22,7 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { SimpleMeshPrimitive } from "./primitives/mesh/SimpleMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
@@ -247,6 +248,11 @@ export abstract class RenderSystem implements IDisposable {
     const params = MeshParams.create(args);
     return this.createMesh(params, instances);
   }
+
+    /** @internal */
+    public createSimpleMesh(simpleMesh: SimpleMeshPrimitive): RenderGraphic | undefined {
+    }
+
 
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {

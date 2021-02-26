@@ -219,7 +219,7 @@ export abstract class GltfReader {
   private graphicFromMesh(mesh: Mesh, meshGraphicArgs: MeshGraphicArgs, instances?: InstancedGraphicParams) {
     const realityMesh = instances ? undefined : RealityMeshPrimitive.createFromMesh(mesh);
 
-    return realityMesh ? this._system.createSimpleMesh().getGraphics() : mesh.getGraphics(meshGraphicArgs, this._system, instances);
+    return realityMesh ? this._system.createSimpleMesh(realityMesh) : mesh.getGraphics(meshGraphicArgs, this._system, instances);
 
 
   }
