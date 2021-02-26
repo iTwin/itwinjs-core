@@ -10,7 +10,7 @@ import "./Tab.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, Rectangle, Timer, useRefs, useResizeObserver } from "@bentley/ui-core";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { useDragTab } from "../base/DragManager";
 import { MeasureContext, NineZoneDispatchContext, TabNodeContext } from "../base/NineZone";
 import { TabState } from "../base/NineZoneState";
@@ -68,14 +68,14 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
   const widgetContext = React.useContext(WidgetContext);
   const measure = React.useContext(MeasureContext);
   const { id } = tab;
-  assert(widget);
+  assert(!!widget);
   const handleDragStart = useDragTab({
     tabId: id,
   });
   const widgetId = widget.id;
   const handleTabDragStart = React.useCallback(() => {
-    assert(ref.current);
-    assert(initialPointerPosition.current);
+    assert(!!ref.current);
+    assert(!!initialPointerPosition.current);
     const nzBounds = measure();
     let bounds = Rectangle.create(ref.current.getBoundingClientRect());
     bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
