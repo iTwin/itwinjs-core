@@ -53,7 +53,9 @@ describe("PrimitivePropertyValueRenderer", () => {
     it("renders primitive property wrapped in an anchored tag when property record has it", () => {
       const renderer = new PrimitivePropertyValueRenderer();
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
-      stringProperty.links = { onClick: sinon.spy() };
+      stringProperty.links = {
+        onClick: sinon.spy(),
+      };
 
       const element = renderer.render(stringProperty);
       const renderedElement = render(<>{element}</>);
@@ -61,6 +63,30 @@ describe("PrimitivePropertyValueRenderer", () => {
       renderedElement.getByText("Test property");
 
       expect(renderedElement.container.getElementsByClassName("core-underlined-button")).to.not.be.empty;
+    });
+
+    it("renders primitive property applying default links behavior - matches all links using regex if PropertyRecord does not have LinkElementsInfo", () => {
+      const renderer = new PrimitivePropertyValueRenderer();
+      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property www.test.com");
+
+      const element = renderer.render(stringProperty);
+      const renderedElement = render(<>{element}</>);
+
+      expect(renderedElement.container.getElementsByClassName("core-underlined-button")[0].textContent).to.be.eq("www.test.com");
+    });
+
+    it("renders primitive property applying custom LinkElementsInfo specified in PropertyRecord's LinkElementsInfo", () => {
+      const renderer = new PrimitivePropertyValueRenderer();
+      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
+      stringProperty.links = {
+        onClick: sinon.spy(),
+        matcher: () => [{ start: 0, end: 4 }],
+      };
+
+      const element = renderer.render(stringProperty);
+      const renderedElement = render(<>{element}</>);
+
+      expect(renderedElement.container.getElementsByClassName("core-underlined-button")[0].textContent).to.be.eq("Test");
     });
 
     it("renders async value with default value in context", async () => {
