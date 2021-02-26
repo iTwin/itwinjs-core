@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  ActionButton, CommonToolbarItem, ConditionalBooleanValue, GroupButton, SpecialKey, ToolbarItemsManager, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  ActionButton, CommonToolbarItem, ConditionalBooleanValue, GroupButton, ToolbarItemsManager, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
 } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { ToolbarItem, ToolbarOpacitySetting, ToolbarWithOverflow } from "@bentley/ui-components";
@@ -23,7 +23,6 @@ import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { ToolbarHelper } from "./ToolbarHelper";
 import { useDefaultToolbarItems } from "./useDefaultToolbarItems";
 import { useUiItemsProviderToolbarItems } from "./useUiItemsProviderToolbarItems";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 /** Private function to set up sync event monitoring of toolbar items */
 function useToolbarItemSyncEffect(uiDataProvider: ToolbarItemsManager, syncIdsOfInterest: string[]) {
@@ -250,12 +249,6 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
       defaultItemsManager.items = props.items;
     }
   }, [props.items]); // eslint-disable-line react-hooks/exhaustive-deps
-  const handleKeyDown = React.useCallback((e: React.KeyboardEvent): void => {
-    // istanbul ignore else
-    if (e.key === SpecialKey.Escape) {
-      KeyboardShortcutManager.setFocusToHome();
-    }
-  }, []);
 
   // process default items
   const defaultItems = useDefaultToolbarItems(defaultItemsManager);
@@ -293,7 +286,6 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
     items={toolbarItems}
     useDragInteraction={isDragEnabled}
     toolbarOpacitySetting={useProximityOpacity && !UiFramework.isMobile() ? ToolbarOpacitySetting.Proximity : /* istanbul ignore next */ ToolbarOpacitySetting.Defaults}
-    onKeyDown={handleKeyDown}
   />;
 }
 

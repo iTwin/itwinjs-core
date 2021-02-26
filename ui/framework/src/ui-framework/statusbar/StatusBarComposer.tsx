@@ -10,11 +10,11 @@ import classnames from "classnames";
 import * as React from "react";
 import {
   AbstractStatusBarActionItem, AbstractStatusBarLabelItem, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,
-  isAbstractStatusBarActionItem, isAbstractStatusBarLabelItem, SpecialKey, StatusBarItemsManager, StatusBarLabelSide, StatusBarSection,
+  isAbstractStatusBarActionItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarLabelSide, StatusBarSection,
 } from "@bentley/ui-abstract";
 import { CommonProps, Icon, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { eqlOverflown, FooterIndicator } from "@bentley/ui-ninezone";
-import { KeyboardShortcutManager, SyncUiEventArgs, SyncUiEventDispatcher } from "../../ui-framework";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../ui-framework";
 import { Indicator } from "../statusfields/Indicator";
 import { StatusBarOverflow } from "./Overflow";
 import { StatusBarOverflowPanel } from "./OverflowPanel";
@@ -338,12 +338,6 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
   const handleOnClose = React.useCallback(() => {
     setIsOverflowPanelOpen(false);
   }, []);
-  const handleKeyDown = React.useCallback((e: React.KeyboardEvent): void => {
-    // istanbul ignore else
-    if (e.key === SpecialKey.Escape) {
-      KeyboardShortcutManager.setFocusToHome();
-    }
-  }, []);
   const leftItems = React.useMemo(() => getSectionItems(StatusBarSection.Left), [getSectionItems]);
   const centerItems = React.useMemo(() => getSectionItems(StatusBarSection.Center), [getSectionItems]);
   const rightItems = React.useMemo(() => getSectionItems(StatusBarSection.Right), [getSectionItems]);
@@ -360,7 +354,6 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
       className={className}
       ref={refs}
       style={props.style}
-      onKeyDown={handleKeyDown}
       role="presentation"
     >
       <StatusBarSpaceBetween className={props.mainClassName}>
