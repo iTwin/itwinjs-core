@@ -8,7 +8,7 @@
 
 import { ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import {
-  BriefcasePushAndPullNotifications, IModelChangeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
+  BriefcasePushAndPullNotifications, IModelChangeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion, IModelVersionProps, IpcAppChannel, IpcAppFunctions,
   IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -174,17 +174,16 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async hasPendingTxns(key: string): Promise<boolean> {
     return IModelDb.findByKey(key).nativeDb.hasPendingTxns();
   }
-  public async pullAndMergeChanges(key: string): Promise<IModelConnectionProps> {
+  public async pullAndMergeChanges(key: string, version?: IModelVersionProps): Promise<void> {
     const iModelDb = BriefcaseDb.findByKey(key);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    await iModelDb.pullAndMergeChanges(requestContext);
-    return iModelDb.getConnectionProps();
+    await iModelDb.pullAndMergeChanges(requestContext, version ? IModelVersion.fromJSON(version) : undefined);
   }
-  public async pushChanges(key: string, description: string): Promise<IModelConnectionProps> {
+  public async pushChanges(key: string, description: string): Promise<string> {
     const iModelDb = BriefcaseDb.findByKey(key);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     await iModelDb.pushChanges(requestContext, description);
-    return iModelDb.getConnectionProps();
+    return iModelDb.changeSetId;
   }
   public async toggleInteractiveEditingSession(key: string, startSession: boolean): Promise<boolean> {
     const imodel = IModelDb.findByKey(key);

@@ -8,25 +8,25 @@
 
 import { BeEvent, Config, GuidString, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
+  BriefcaseDownloader, BriefcaseProps, DownloadBriefcaseStatus, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
+import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp, IModelAppOptions } from "./imodeljs-frontend";
 import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
+export type DownloadBriefcaseId =
+  { syncMode?: SyncMode, briefcaseId?: never } |
+  { briefcaseId: number, syncMode?: never };
+
 /**
- * Options to download a briefcase
- * @alpha
- */
-export interface DownloadBriefcaseOptions {
-  /** This setting defines the operations allowed when synchronizing changes between the briefcase and iModelHub */
-  syncMode: SyncMode;
-  fileName?: string;
-}
+* Options to download a briefcase
+* @alpha
+*/
+export type DownloadBriefcaseOptions = DownloadBriefcaseId & { fileName?: string };
 
 /** receive notifications from backend */
 class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNotifications {
@@ -116,9 +116,6 @@ export class NativeApp {
   public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
     asOf: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {
 
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
-
     let stopProgressEvents = () => { };
     if (progress !== undefined) {
       stopProgressEvents = IpcApp.addListener(`nativeApp.progress-${iModelId}`, (_evt: Event, data: { loaded: number, total: number }) => {
@@ -126,17 +123,13 @@ export class NativeApp {
       });
     }
 
-    const briefcaseId = downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.callNativeHost("acquireNewBriefcaseId", iModelId);
-    requestContext.enter();
+    const briefcaseId = (undefined !== downloadOptions.briefcaseId) ? downloadOptions.briefcaseId :
+      (downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.callNativeHost("acquireNewBriefcaseId", iModelId));
 
-    const fileName = downloadOptions.fileName ?? await this.callNativeHost("getBriefcaseFileName", { briefcaseId, iModelId });
-    requestContext.enter();
-
+    const fileName = downloadOptions.fileName ?? await this.getBriefcaseFileName({ briefcaseId, iModelId });
     const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, contextId, asOf: asOf.toJSON(), fileName };
 
     const doDownload = async (): Promise<void> => {
-      const locRequestContext = new FrontendRequestContext();
-      locRequestContext.enter();
       try {
         await this.callNativeHost("downloadBriefcase", requestProps, progress !== undefined);
       } finally {
@@ -162,8 +155,6 @@ export class NativeApp {
    * @param fileName the briefcase fileName
    */
   public static async deleteBriefcase(fileName: string): Promise<void> {
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
     await this.callNativeHost("deleteBriefcaseFiles", fileName);
   }
 

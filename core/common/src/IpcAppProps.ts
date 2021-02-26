@@ -9,6 +9,7 @@
 import { IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
+import { IModelVersionProps } from "./IModelVersion";
 import { ElementsChanged, ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
@@ -73,8 +74,10 @@ export interface IpcAppFunctions {
   /** Determine whether there are outstanding txns . */
   hasPendingTxns: (key: string) => Promise<boolean>;
 
-  pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
-  pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
+  /** pull (and potentially merge local) changesets up to the specified version into this Briefcase. */
+  pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
+
+  pushChanges: (key: string, description: string) => Promise<string>;
 
   /** Cancels currently pending or active generation of tile content.
      * @param _iModelToken Identifies the iModel
