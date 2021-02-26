@@ -37,7 +37,8 @@
   },
   "BackgroundMap": {
     "MapBoxCopyright": "© Mapbox, © OpenStreetMap contributors",
-    "CesiumWorldTerrainAttribution": "Cesium World Terrain: Data available from the U.S. Geological Survey, © CGIAR-CSI, Produced using Copernicus data and information funded by the European Union - EU-DEM layers, Data available from Land Information New Zealand, Data available from data.gov.uk, Data courtesy Geoscience Australia"
+    "CesiumWorldTerrainAttribution": "Cesium World Terrain: Data available from the U.S. Geological Survey, © CGIAR-CSI, Produced using Copernicus data and information funded by the European Union - EU-DEM layers, Data available from Land Information New Zealand, Data available from data.gov.uk, Data courtesy Geoscience Australia",
+    "OpenStreetMapContributors": "contributors"
   },
   "ExtensionErrors": {
     "Success": "Extension '{{extensionName}}' loaded",
