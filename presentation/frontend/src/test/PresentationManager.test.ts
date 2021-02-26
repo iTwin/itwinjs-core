@@ -31,6 +31,7 @@ import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
+import { StateTracker } from "../presentation-frontend/StateTracker";
 
 describe("PresentationManager", () => {
 
@@ -139,6 +140,14 @@ describe("PresentationManager", () => {
       sinon.stub(IpcApp, "addListener");
       const mgr = PresentationManager.create();
       expect(mgr.rpcRequestsHandler.clientId).to.eq(mgr.ipcRequestsHandler?.clientId);
+    });
+
+    it("sets custom StateTracker if supplied with props", async () => {
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      sinon.stub(IpcApp, "addListener");
+      const tracker = moq.Mock.ofType<StateTracker>();
+      const mgr = PresentationManager.create({ stateTracker: tracker.object });
+      expect(mgr.stateTracker).to.eq(tracker.object);
     });
 
     it("starts listening to update events", async () => {

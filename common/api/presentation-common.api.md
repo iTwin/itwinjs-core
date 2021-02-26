@@ -1593,6 +1593,7 @@ export enum PresentationIpcEvents {
 // @internal (undocumented)
 export interface PresentationIpcInterface {
     setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void>;
+    updateHierarchyState(params: UpdateHierarchyStateParams<NodeKeyJSON>): Promise<void>;
 }
 
 // @public
@@ -2439,6 +2440,18 @@ export type TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | 
 
 // @alpha (undocumented)
 export const UPDATE_FULL = "FULL";
+
+// @internal (undocumented)
+export interface UpdateHierarchyStateParams<TNodeKey> extends CommonIpcParams {
+    // (undocumented)
+    changeType: "nodesExpanded" | "nodesCollapsed";
+    // (undocumented)
+    imodelKey: string;
+    // (undocumented)
+    nodeKeys: Array<TNodeKey>;
+    // (undocumented)
+    rulesetId: string;
+}
 
 // @alpha (undocumented)
 export interface UpdateInfo {
