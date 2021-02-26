@@ -26,7 +26,7 @@ describe("NavigationPropertyValueRenderer", () => {
       elementRender.getByText("Rod");
     });
 
-    it("renders navigation property from raw value", () => {
+    it("renders navigation property from property name", () => {
       const renderer = new NavigationPropertyValueRenderer();
       const property = TestUtils.createNavigationProperty("Category", instanceKey, "");
 
@@ -51,7 +51,9 @@ describe("NavigationPropertyValueRenderer", () => {
     it("renders navigation property wrapped in an anchored tag when property record has it", () => {
       const renderer = new NavigationPropertyValueRenderer();
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
-      stringProperty.links = { onClick: sinon.spy() };
+      stringProperty.links = {
+        onClick: sinon.spy(),
+      };
 
       const element = renderer.render(stringProperty);
       const renderedElement = render(<>{element}</>);

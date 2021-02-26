@@ -6,8 +6,8 @@
  * @module PropertyGrid
  */
 
-import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { useDebouncedAsyncValue } from "../../common/UseDebouncedAsyncValue";
 import { PropertyGridCommons } from "../component/PropertyGridCommons";
 import { IPropertyDataProvider } from "../PropertyDataProvider";
@@ -38,9 +38,11 @@ export function usePropertyData(props: { dataProvider: IPropertyDataProvider, on
   return useMemo(() => {
     if (value) {
       for (const categoryName in value.records) {
+        // Support for deprecated onPropertyLinkClick
         // istanbul ignore else
-        if (value.records.hasOwnProperty(categoryName))
+        if (onPropertyLinkClick && value.records.hasOwnProperty(categoryName))
           PropertyGridCommons.assignRecordClickHandlers(value.records[categoryName], onPropertyLinkClick);
+
       }
     }
     return { value, inProgress };
