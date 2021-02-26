@@ -8,22 +8,18 @@
  */
 
 import { dispose } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
-import { PackedFeatureTable, Quantization } from "@bentley/imodeljs-common";
-import { Mesh } from "../../render-primitives";
+import { Range3d } from "@bentley/geometry-core";
+import { OctEncodedNormal, QPoint2dList, QPoint3dList, Quantization, RenderTexture } from "@bentley/imodeljs-common";
 import { IndexedGeometry } from "../../webgl";
-import { SimpleMeshGeometryParams, SimpleMeshPrimitive } from "../primitives/mesh/SimpleMeshPrimitive";
-import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
-import { RenderGraphic } from "../RenderGraphic";
+import { SimpleMeshPrimitive } from "../primitives/mesh/SimpleMeshPrimitive";
+import { SimpleMeshGeometryParams } from "./SimpleMesh";
 import { RenderMemory } from "../RenderMemory";
-import { RenderSimpleMeshGeometry, RenderSystem } from "../RenderSystem";
+import { RenderSimpleMeshGeometry } from "../RenderSystem";
 import { GL } from "./GL";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
-
-
 
 /** @internal */
 export class RealityMeshGeometry extends IndexedGeometry implements RenderSimpleMeshGeometry {
@@ -33,8 +29,11 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderSimple
   public get hasFeatures(): boolean { return this._meshParams.featureID !== undefined; }
   public get supportsThematicDisplay() { return true; }
 
-  private constructor(private _meshParams: SimpleMeshGeometryParams, private readonly _transform: Transform | undefined) {
+  private constructor(private _meshParams: SimpleMeshGeometryParams, public readonly texture: RenderTexture) {
     super(_meshParams);
+  }
+  public static create(meshParams: SimpleMeshGeometryParams, texture: RenderTexture): RealityMeshGeometry {
+    return new RealityMeshGeometry(meshParams, texture);
   }
 
   public dispose() {
@@ -42,16 +41,8 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderSimple
     dispose(this._meshParams);
   }
 
-  public static createGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined) {
-    const params = SimpleMeshGeometryParams.createFromPrimitive(terrainMesh);
-    return new RealityMeshGeometry(params!, transform);
-  }
   public getRange(): Range3d {
     return Range3d.createXYZXYZ(this.qOrigin[0], this.qOrigin[1], this.qOrigin[2], this.qOrigin[0] + Quantization.rangeScale16 * this.qScale[0], this.qOrigin[1] + Quantization.rangeScale16 * this.qScale[1], this.qOrigin[2] + Quantization.rangeScale16 * this.qScale[2]);
-  }
-
-  public static createGraphic(_system: RenderSystem, _mesh: RealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string): RenderGraphic | undefined {
-    return undefined;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -73,7 +64,10 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderSimple
 }
 
 export class RealityMeshPrimitive  extends SimpleMeshPrimitive implements RenderMemory.Consumer {
+  protected constructor(indices: number[], points: QPoint3dList, uvParams: QPoint2dList, normals: OctEncodedNormal[], public readonly texture: RenderTexture) {
+    super(indices, points, uvParams, normals);
+  }
   public collectStatistics(stats: RenderMemory.Statistics): void {
     stats.addRealityMesh(this.bytesUsed);
-    }
+  }
 }

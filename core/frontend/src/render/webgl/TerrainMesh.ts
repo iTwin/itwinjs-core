@@ -12,7 +12,7 @@ import { Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
 import { IndexedGeometry, Matrix4 } from "../../webgl";
 import { GraphicBranch } from "../GraphicBranch";
-import { SimpleMeshGeometryParams } from "../primitives/mesh/SimpleMeshPrimitive";
+import { SimpleMeshGeometryParams } from "./SimpleMesh";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";

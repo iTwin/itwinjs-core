@@ -23,7 +23,6 @@ import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimi
 import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { System } from "../render/webgl/System";
 import { TileContent } from "./internal";
 
 /* eslint-disable no-restricted-syntax */
@@ -217,11 +216,14 @@ export abstract class GltfReader {
   }
 
   private graphicFromMesh(mesh: Mesh, meshGraphicArgs: MeshGraphicArgs, instances?: InstancedGraphicParams) {
-    const realityMesh = instances ? undefined : RealityMeshPrimitive.createFromMesh(mesh);
+    const realityMeshPrimitive = instances  ? undefined : RealityMeshPrimitive.createFromMesh(mesh);
+    if (realityMeshPrimitive) {
+      const realityMesh = this._system.createRealityMesh(realityMeshPrimitive);
+      if (realityMesh)
+        return realityMesh;
+    }
 
-    return realityMesh ? this._system.createSimpleMesh(realityMesh) : mesh.getGraphics(meshGraphicArgs, this._system, instances);
-
-
+    return mesh.getGraphics(meshGraphicArgs, this._system, instances);
   }
 
   private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
@@ -261,11 +263,11 @@ export abstract class GltfReader {
         let renderGraphic: RenderGraphic | undefined;
         if (0 !== meshes.length) {
           if (1 === meshes.length) {
-            renderGraphic = meshes[0].getGraphics(meshGraphicArgs, this._system, instances);
+            renderGraphic = this.graphicFromMesh(meshes[0], meshGraphicArgs, instances);
           } else {
             const thisList: RenderGraphic[] = [];
             for (const mesh of meshes) {
-              renderGraphic = mesh.getGraphics(meshGraphicArgs, this._system, instances);
+              renderGraphic = this.graphicFromMesh(mesh, meshGraphicArgs, instances);
               if (undefined !== renderGraphic)
                 thisList.push(renderGraphic);
             }

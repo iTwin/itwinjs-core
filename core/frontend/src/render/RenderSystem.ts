@@ -22,7 +22,6 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
-import { SimpleMeshPrimitive } from "./primitives/mesh/SimpleMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
@@ -31,6 +30,7 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
+import { RealityMeshPrimitive } from "./webgl/RealityMesh";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -249,11 +249,6 @@ export abstract class RenderSystem implements IDisposable {
     return this.createMesh(params, instances);
   }
 
-    /** @internal */
-    public createSimpleMesh(simpleMesh: SimpleMeshPrimitive): RenderGraphic | undefined {
-    }
-
-
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
@@ -273,6 +268,8 @@ export abstract class RenderSystem implements IDisposable {
   public createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform: Transform): RenderSimpleMeshGeometry | undefined { return undefined; }
   /** @internal */
   public createTerrainMeshGraphic(_terrainGeometry: RenderSimpleMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  /** @internal */
+  public createRealityMesh(_mesh: RealityMeshPrimitive): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public get maxTerrainImageryLayers() { return 0; }
   /** @internal */

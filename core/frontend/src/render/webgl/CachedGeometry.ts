@@ -31,6 +31,7 @@ import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
 import { TerrainMeshGeometry } from "./TerrainMesh";
 import { TextureHandle } from "./Texture";
 import { VertexLUT } from "./VertexLUT";
+import { RealityMeshGeometry } from "./RealityMesh";
 
 const scratchVec3a = new Vector3d();
 const scratchVec3b = new Vector3d();
@@ -56,6 +57,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get asMesh(): MeshGeometry | undefined { return undefined; }
   public get asEdge(): EdgeGeometry | undefined { return undefined; }
   public get asTerrainMesh(): TerrainMeshGeometry | undefined { return undefined; }
+  public get asRealityMesh(): RealityMeshGeometry | undefined { return undefined; }
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
   public get isInstanced() { return undefined !== this.asInstanced; }
@@ -273,8 +275,6 @@ export abstract class IndexedGeometry extends CachedGeometry {
   public get qOrigin() { return this._params.positions.origin; }
   public get qScale() { return this._params.positions.scale; }
 }
-
-
 
 /** a cube of quads in normalized device coordinates for skybox rendering techniques
  * @internal

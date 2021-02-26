@@ -42,7 +42,7 @@ export class TerrainMeshPrimitive extends SimpleMeshPrimitive {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-  stats.addTerrain(this.bytesUsed);
+    stats.addTerrain(this.bytesUsed);
   }
 
   public addVertex(point: Point3d, uvParam: QPoint2d, normal?: OctEncodedNormal) {
