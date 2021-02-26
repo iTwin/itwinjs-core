@@ -156,7 +156,6 @@ describe("DisplayStyle", () => {
           expect(a.name).to.equal(e.name);
           expect(a.url).to.equal(e.tilesetUrl);
           expect(a.orbitGtBlob).to.equal(e.orbitGtBlob);
-          expect(a.attribution).to.equal(e.attribution);
           expect(a.realityDataId).to.equal(e.realityDataId);
           expect(a.description).to.equal(e.description);
           expect(a.treeRef).not.to.be.undefined;
@@ -206,7 +205,6 @@ describe("DisplayStyle", () => {
         tilesetUrl: "bing.com",
         name: "bing",
         description: "an unpopular search engine",
-        attribution: { heading: "Bing", notice: "Attributed to Bing"},
         classifiers: [{
           modelId: "0x321",
           expand: 1.5,
@@ -224,7 +222,7 @@ describe("DisplayStyle", () => {
         tilesetUrl: "google.com",
         name: "google",
         description: "a popular search engine",
-        attribution: { heading: "Google", notice: "Attributed to Google"},
+
         classifiers: [{
           modelId: "0x321",
           expand: 1.5,
@@ -285,7 +283,6 @@ describe("DisplayStyle", () => {
         tilesetUrl: "google.com",
         name: "google",
         description: "a popular search engine",
-        attribution: { heading: "Google", notice: "Attributed to Google"},
         planarClipMask: { mode: PlanarClipMaskMode.IncludeSubCategories, modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]), transparency: .5, subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]), priority: 1024 },
         classifiers: [{
           modelId: "0x123",

@@ -250,7 +250,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const tilesetUrl = getCesiumOSMBuildingsUrl();
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
       currentIndex = this._contextRealityModels.length;
-      this.attachRealityModel({ tilesetUrl, name, planarClipMask: { mode: PlanarClipMaskMode.None }, attribution: { heading: "OpenStreetMap", notice: "&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors" }});
+      this.attachRealityModel({ tilesetUrl, name, planarClipMask: { mode: PlanarClipMaskMode.None }});
     }
 
     if (options.appearanceOverrides)
@@ -326,7 +326,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.settings.dropModelAppearanceOverride(modelId);
   }
 
-  /** Returns true if model appearance overridess are defined by this style.
+  /** Returns true if model appearance overrides are defined by this style.
    * @beta
    */
 

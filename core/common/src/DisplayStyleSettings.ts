@@ -78,13 +78,6 @@ export interface OrbitGtBlobProps {
   accountName: string;
 }
 
-/** JSON representation of the attribution properties for a reality model. These are used to create the logo card for the model using [IModelApp.makeLogoCard]($frontend).
- * @beta
- */
-export interface RealityModelAttribution {
-  heading: string;
-  notice: string;
-}
 /** JSON representation of a context reality model
  * A context reality model is one that is not directly attached to the iModel but is instead included in the display style to
  * provide context only when that display style is applied.
@@ -106,8 +99,7 @@ export interface ContextRealityModelProps {
    * @beta
    */
   appearanceOverrides?: FeatureAppearanceProps;
-  /** @beta */
-  attribution?: RealityModelAttribution;
+
 }
 
 /** Describes the style in which monochrome color is applied by a [[DisplayStyleSettings]].
