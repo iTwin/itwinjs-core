@@ -55,18 +55,18 @@ export class ProcessSettingsTabActivationEvent extends BeUiEvent<ProcessSettings
  * @alpha
  */
 export interface ProcessSettingsTabActivationEventArgs {
-  readonly requestedSettingsTabId: string;
   readonly tabSelectionFunc: (tabId: string) => void;
+  readonly requestedSettingsTabId: string;
 }
 
-/** Event class for [[this.onProcessSettingsContainerClose]] which is emitted when the settings container will be close. This allows the current
+/** Event class for [[this.onProcessSettingsContainerClose]] which is emitted when the settings container will be closed. This allows the current
  * settings page to save its settings before calling the function to close the container.
  * @alpha
  */
 export class ProcessSettingsContainerCloseEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> { }
 
-/** Event class for [[this.onCloseSettingsContainer]] which is emitted when the settings container should be closed given the closing function and its args.
- * @alpha
+/** Event class for [[this.onCloseSettingsContainer]] which is monitored by the settings container and indicates that some out process want to close the settings container.
+ * @internal
  */
 export class CloseSettingsContainerEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> { }
 
@@ -106,25 +106,27 @@ export class SettingsManager {
   private _providers: ReadonlyArray<SettingsProvider> = [];
 
   /** Event raised when SettingsProviders are changed.
-   * @alpha
    */
   public readonly onSettingsProvidersChanged = new SettingsProvidersChangedEvent();
 
-  /** Event raised to for settings page to monitor to intercept SettingTab changes so changed settings can be saved before continuing tab activation.
-   * @alpha
+  /** Event raised solely for a settings page to monitor so it can save its settings before continuing tab activation.
+   * See React hook function `useSaveBeforeActivatingNewSettingsTab`.
    */
   public readonly onProcessSettingsTabActivation = new ProcessSettingsTabActivationEvent();
 
-  /** Event raised to change the active settings tab shown in UI.
-   * @alpha
-   */
-  public readonly onActivateSettingsTab = new ActivateSettingsTabEvent();
-
-  /** Event raised to change the active settings tab shown in UI.
-   * @alpha
+  /** Event raised when the settings container will be closed. Any setting page component that is 'modal' should register to
+   * listen to this event so that it can save its state before closing. See React hook function `useSaveBeforeClosingSettingsContainer`.
    */
   public readonly onProcessSettingsContainerClose = new ProcessSettingsContainerCloseEvent();
 
+  /** Event raised to change the active settings tab shown in UI. Monitored by the SettingsContainer.
+   * @internal
+   */
+  public readonly onActivateSettingsTab = new ActivateSettingsTabEvent();
+
+  /** Event monitored by SettingsContainer to process request to close the settings container.
+   * @internal
+   */
   public readonly onCloseSettingsContainer = new CloseSettingsContainerEvent();
 
   /** @alpha */
@@ -134,18 +136,16 @@ export class SettingsManager {
     this.onSettingsProvidersChanged.emit({ providers: p });
   }
 
-  public processSettingsTabActivation(settingsTabId: string, tabSelectionFunc: (tabId: string) => void) {
-    this.onProcessSettingsTabActivation.emit({ requestedSettingsTabId: settingsTabId, tabSelectionFunc });
-  }
-
+  /** Called by application when an tool, keyin, or other process want to change the active settings tab/page giving the current tab/page and opportunity
+   * to save its state.
+   */
   public activateSettingsTab(settingsTabId: string) {
     this.onActivateSettingsTab.emit({ settingsTabId });
   }
 
-  public processSettingsContainerClose(closeFunc: (args: any) => void, closeFuncArgs?: any) {
-    this.onProcessSettingsContainerClose.emit({ closeFunc, closeFuncArgs });
-  }
-
+  /** Called by application when the Settings Container is to be closed. The function to invoke to actually close the Settings Container is
+   * passed in and executed once the active settings tab/page has a chance to save its settings.
+   */
   public closeSettingsContainer(closeFunc: (args: any) => void, closeFuncArgs?: any) {
     this.onCloseSettingsContainer.emit({ closeFunc, closeFuncArgs});
   }

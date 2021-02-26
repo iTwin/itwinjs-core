@@ -8,8 +8,45 @@
 
 import "./SettingsContainer.scss";
 import * as React from "react";
-import { ActivateSettingsTabEventArgs, ProcessSettingsContainerCloseEventArgs, SettingsManager } from "./SettingsManager";
+import { ActivateSettingsTabEventArgs, ProcessSettingsContainerCloseEventArgs, ProcessSettingsTabActivationEventArgs, SettingsManager } from "./SettingsManager";
 import { VerticalTabs } from "../tabs/VerticalTabs";
+
+/*  ---------------------------------------------------------------------------------------------------
+// A typical implementation of a saveFunction callback
+const saveChanges = React.useCallback((afterSaveFunction: (args: any) => void, args?: any) => {
+  if (dataIsDirty) {
+    // prompt user to save changes passing in function and arguments to call after saving changes.
+    ModalDialogManager.openDialog(<CustomSavePromptModalDialog customProps={customProps}
+      onDialogCloseArgs={args} onDialogClose={afterSaveFunction} />);
+    return;
+  }
+  afterSaveFunction(args);
+}, []);
+---------------------------------------------------------------------------------------------------------- */
+
+/** Hook to use within Settings Page component to allow saving the current page's data before the Setting Container is closed.
+ * @alpha
+ */
+export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void) {
+  React.useEffect (()=>{
+    const handleProcessSettingsContainerClose = ({closeFunc, closeFuncArgs}: ProcessSettingsContainerCloseEventArgs) => {
+      saveFunction (closeFunc, closeFuncArgs);
+    };
+    return settingsManager.onProcessSettingsContainerClose.addListener(handleProcessSettingsContainerClose);
+  }, [saveFunction, settingsManager]);
+}
+
+/** Hook to use within Settings Page component to allow saving the current page's data before loading to the requested Setting Tab's page.
+ * @alpha
+ */
+export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void) {
+  React.useEffect (()=>{
+    const handleProcessSettingsTabActivation = ({tabSelectionFunc, requestedSettingsTabId}: ProcessSettingsTabActivationEventArgs) => {
+      saveFunction (tabSelectionFunc, requestedSettingsTabId);
+    };
+    return settingsManager.onProcessSettingsTabActivation.addListener(handleProcessSettingsTabActivation);
+  }, [saveFunction, settingsManager]);
+}
 
 /**
  * @alpha
@@ -75,7 +112,7 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
     const selectedTab = tabs[tabIndex];
     if (selectedTab) {
       if (openTab && openTab.pageWillHandleCloseRequest)
-        settingsManager.processSettingsTabActivation(selectedTab.tabId, processTabSelectionById);
+        settingsManager.onProcessSettingsTabActivation.emit({ requestedSettingsTabId:selectedTab.tabId, tabSelectionFunc: processTabSelectionById});
       else
         processTabSelection(selectedTab);
     }
@@ -89,7 +126,7 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
         tabToActivate = tabs.find((tab)=>tab.label.toLowerCase() === idToFind);
       if (tabToActivate) {
         if (openTab && openTab.pageWillHandleCloseRequest)
-          settingsManager.processSettingsTabActivation(tabToActivate.tabId, processTabSelectionById);
+          settingsManager.onProcessSettingsTabActivation.emit({ requestedSettingsTabId:tabToActivate.tabId, tabSelectionFunc: processTabSelectionById});
         else
           processTabSelection(tabToActivate);
       }
@@ -101,7 +138,7 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
   React.useEffect (()=>{
     const handleSettingsContainerClose = ({closeFunc, closeFuncArgs}: ProcessSettingsContainerCloseEventArgs) => {
       if (openTab && openTab.pageWillHandleCloseRequest)
-        settingsManager.processSettingsContainerClose(closeFunc, closeFuncArgs);
+        settingsManager.onProcessSettingsContainerClose.emit({ closeFunc, closeFuncArgs });
       else
         closeFunc(closeFuncArgs);
     };

@@ -11,7 +11,9 @@ import {
 import { FormatProps, FormatterSpec } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
 import { FormatSample, QuantityFormatPanel } from "@bentley/ui-components";
-import { Button, ButtonType, Dialog, Listbox, ListboxItem, ProcessSettingsContainerCloseEventArgs, ProcessSettingsTabActivationEventArgs, SettingsEntry } from "@bentley/ui-core";
+import { Button, ButtonType, Dialog, Listbox, ListboxItem, SettingsEntry,
+  useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer,
+} from "@bentley/ui-core";
 import { ModalDialogManager, UiFramework } from "@bentley/ui-framework";
 
 function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
@@ -37,7 +39,8 @@ export function getQuantityFormatsSettingsManagerEntry(itemPriority: number): Se
 
 export function QuantityFormatSettingsPanel({ initialQuantityType }: { initialQuantityType: QuantityTypeArg }) {
   const [activeQuantityType, setActiveQuantityType] = React.useState(getQuantityTypeKey(initialQuantityType));
-  const [activeFormatterSpec, setActiveFormatterSpec] = React.useState<FormatterSpec | undefined>(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(getQuantityTypeKey(initialQuantityType)));
+  const [activeFormatterSpec, setActiveFormatterSpec] =
+    React.useState<FormatterSpec | undefined>(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(getQuantityTypeKey(initialQuantityType)));
   const [saveEnabled, setSaveEnabled] = React.useState(false);
   const [clearEnabled, setClearEnabled] = React.useState(IModelApp.quantityFormatter.hasActiveOverride(initialQuantityType, true));
   const newQuantityTypeRef = React.useRef<QuantityTypeKey>();
@@ -87,19 +90,8 @@ export function QuantityFormatSettingsPanel({ initialQuantityType }: { initialQu
     afterSaveFunction(args);
   }, [activeFormatterSpec, activeQuantityType]);
 
-  React.useEffect (()=>{
-    const handleProcessSettingsTabActivation = ({requestedSettingsTabId, tabSelectionFunc}: ProcessSettingsTabActivationEventArgs) => {
-      saveChanges (tabSelectionFunc, requestedSettingsTabId);
-    };
-    return UiFramework.settingsManager.onProcessSettingsTabActivation.addListener(handleProcessSettingsTabActivation);
-  }, [saveChanges]);
-
-  React.useEffect (()=>{
-    const handleProcessSettingsContainerClose = ({closeFunc, closeFuncArgs}: ProcessSettingsContainerCloseEventArgs) => {
-      saveChanges (closeFunc, closeFuncArgs);
-    };
-    return UiFramework.settingsManager.onProcessSettingsContainerClose.addListener(handleProcessSettingsContainerClose);
-  }, [saveChanges]);
+  useSaveBeforeActivatingNewSettingsTab(UiFramework.settingsManager, saveChanges);
+  useSaveBeforeClosingSettingsContainer(UiFramework.settingsManager, saveChanges);
 
   const processListboxValueChange = React.useCallback((newQuantityType: QuantityTypeKey) => {
     const volumeFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(newQuantityType);
