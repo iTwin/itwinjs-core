@@ -223,7 +223,6 @@ import { Range3d } from '@bentley/geometry-core';
 import { Range3dProps } from '@bentley/geometry-core';
 import { Ray3d } from '@bentley/geometry-core';
 import { ReadonlySortedArray } from '@bentley/bentleyjs-core';
-import { RealityModelAttribution } from '@bentley/imodeljs-common';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { RemoveFunction } from '@bentley/imodeljs-common';
@@ -1838,8 +1837,6 @@ export class ContextRealityModelState {
     // (undocumented)
     get appearanceOverrides(): FeatureAppearance | undefined;
     set appearanceOverrides(overrides: FeatureAppearance | undefined);
-    // (undocumented)
-    readonly attribution?: RealityModelAttribution;
     // (undocumented)
     get classifiers(): SpatialClassifiers | undefined;
     // (undocumented)
@@ -5559,7 +5556,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
-    get planarClipMaskPrority(): number;
+    get planarclipMaskPriority(): number;
     // (undocumented)
     setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
     // (undocumented)
@@ -7164,14 +7161,12 @@ export namespace RealityModelTileTree {
         // (undocumented)
         protected _planarClipMask?: PlanarClipMaskState;
         // (undocumented)
-        get planarClipMaskPrority(): number;
+        get planarClipMaskPriority(): number;
         // (undocumented)
         unionFitRange(union: Range3d): void;
     }
     // (undocumented)
     export interface ReferenceProps {
-        // (undocumented)
-        attribution?: RealityModelAttribution;
         // (undocumented)
         classifiers?: SpatialClassifiers;
         // (undocumented)
@@ -10293,7 +10288,7 @@ export abstract class TileTreeReference {
     get isLoadingComplete(): boolean;
     // @internal
     protected get _isLoadingComplete(): boolean;
-    get planarClipMaskPrority(): number;
+    get planarclipMaskPriority(): number;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }

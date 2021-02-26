@@ -408,7 +408,6 @@ public;QueryResponseStatus
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
-beta;RealityModelAttribution
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
