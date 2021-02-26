@@ -722,7 +722,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._endPaint();
     this.endPerfMetricRecord(this.drawForReadPixels);
 
-    this.endPerfMetricFrame(this.drawForReadPixels); ///////////// WHy is this here???
+    this.endPerfMetricFrame(this.drawForReadPixels);
   }
 
   private drawPass(pass: RenderPass): void {
