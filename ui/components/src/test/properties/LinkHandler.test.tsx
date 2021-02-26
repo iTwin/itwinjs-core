@@ -130,6 +130,14 @@ describe("LinkHandler", () => {
 
       expect(typeof withLinks(stringValue, links)).to.equal(typeof {});
     });
+
+    it("calls highlight callback if provided with no links", () => {
+      const testString = "Example text";
+      const highlightSpy = sinon.spy();
+
+      withLinks(testString, undefined, highlightSpy);
+      expect(highlightSpy).to.be.calledOnce;
+    });
   });
 
   describe("<LinksRenderer />", () => {
