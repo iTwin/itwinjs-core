@@ -9,7 +9,7 @@
 import { castDraft, Draft, produce } from "immer";
 import { Point, PointProps, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
-import { assert } from "./assert";
+import { assert } from "@bentley/bentleyjs-core";
 
 /** @internal future */
 export interface TabState {
@@ -411,7 +411,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     }
     case "WIDGET_DRAG": {
       const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
-      assert(floatingWidget);
+      assert(!!floatingWidget);
       const newBounds = Rectangle.create(floatingWidget.bounds).offset(action.dragBy);
       setRectangleProps(floatingWidget.bounds, newBounds);
       return;
@@ -463,7 +463,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     case "FLOATING_WIDGET_RESIZE": {
       const { resizeBy } = action;
       const floatingWidget = state.floatingWidgets.byId[action.id];
-      assert(floatingWidget);
+      assert(!!floatingWidget);
       const bounds = Rectangle.create(floatingWidget.bounds);
       const newBounds = bounds.inset(-resizeBy.left, -resizeBy.top, -resizeBy.right, -resizeBy.bottom);
       setRectangleProps(floatingWidget.bounds, newBounds);
@@ -560,7 +560,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
         home = floatingWidget.home;
       } else {
-        assert(action.side);
+        assert(!!action.side);
         const panel = state.panels[action.side];
         const widgetIndex = panel.widgets.indexOf(action.widgetId);
         home = {
@@ -579,13 +579,13 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     }
     case "WIDGET_TAB_DRAG": {
       const draggedTab = state.draggedTab;
-      assert(draggedTab);
+      assert(!!draggedTab);
       const newPosition = Point.create(draggedTab.position).offset(action.dragBy);
       setPointProps(draggedTab.position, newPosition);
       return;
     }
     case "WIDGET_TAB_DRAG_END": {
-      assert(state.draggedTab);
+      assert(!!state.draggedTab);
       const target = action.target;
       if (isTabTargetTabState(target)) {
         if (isToolSettingsFloatingWidget(state, target.widgetId)) {

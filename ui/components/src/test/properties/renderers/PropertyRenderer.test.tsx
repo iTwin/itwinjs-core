@@ -6,7 +6,6 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { LinksRenderer } from "../../../ui-components/properties/LinkHandler";
 import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
@@ -15,6 +14,7 @@ import { PropertyRenderer } from "../../../ui-components/properties/renderers/Pr
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../TestUtils";
 import { fireEvent, render } from "@testing-library/react";
+import { PropertyRecord } from "@bentley/ui-abstract";
 
 describe("PropertyRenderer", () => {
   describe("getLabelOffset", () => {
