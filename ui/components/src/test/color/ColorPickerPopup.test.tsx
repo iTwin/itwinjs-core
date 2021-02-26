@@ -45,12 +45,13 @@ describe("<ColorPickerPopup/>", () => {
       spyOnColorPick();
     }
 
-    const renderedComponent = render(<ColorPickerPopup initialColor={colorDef} onColorChange={handleColorPick} />);
+    const renderedComponent = render(<ColorPickerPopup initialColor={colorDef} onColorChange={handleColorPick} showCaret />);
     expect(renderedComponent.getByTestId("components-colorpicker-popup-button")).to.exist;
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
-    // renderedComponent.debug();
     expect(pickerButton.tagName).to.be.equal("BUTTON");
+    expect(renderedComponent.container.querySelector(".icon-caret-down")).not.to.be.null;
     fireEvent.click(pickerButton);
+    expect(renderedComponent.container.querySelector(".icon-caret-up")).not.to.be.null;
 
     const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
     expect(popupDiv).not.to.be.undefined;

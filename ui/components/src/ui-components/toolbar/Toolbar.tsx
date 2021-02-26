@@ -62,7 +62,7 @@ export function Toolbar(props: ToolbarProps) {
         const nextCount = isOpening ? (prev + 1) : (prev - 1);
         // eslint-disable-next-line no-console
         // console.log(`new popup count = ${nextCount}`);
-        return nextCount < 0 ? 0 : nextCount;
+        return nextCount < 0 ? /* istanbul ignore next */ 0 : nextCount;
       });
     });
   }, []);
