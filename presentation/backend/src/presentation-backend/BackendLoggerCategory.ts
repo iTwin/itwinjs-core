@@ -20,6 +20,9 @@ export enum PresentationBackendLoggerCategory {
 
   /** The logger category used by Presentation RPC implementation. */
   Rpc = "presentation-backend.Rpc",
+
+  /** The logger category used by Presentation IPC implementation. */
+  Ipc = "presentation-backend.Ipc",
 }
 
 /**

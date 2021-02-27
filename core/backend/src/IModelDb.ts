@@ -142,6 +142,14 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
+    IModelHost.onBeforeShutdown.addListener(() => {
+      if (this.isOpen) {
+        try {
+          this.abandonChanges();
+          this.close();
+        } catch { }
+      }
+    });
   }
 
   /** Close this IModel, if it is currently open. */
@@ -2538,7 +2546,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.saveChanges();
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-
+    nativeDb.saveChanges();
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue()); // WIP: clean up copied file on error?
     if (options?.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
@@ -2612,6 +2620,8 @@ export class SnapshotDb extends IModelDb {
     if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views", Logger.logError, loggerCategory);
+      } else {
+        this.saveChanges();
       }
     }
   }

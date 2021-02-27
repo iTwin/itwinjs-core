@@ -96,5 +96,8 @@ export interface IpcAppFunctions {
   reverseSingleTxn: (key: string) => Promise<IModelStatus>;
   reverseAllTxn: (key: string) => Promise<IModelStatus>;
   reinstateTxn: (key: string) => Promise<IModelStatus>;
+
+  /** Query the number of concurrent threads supported by the host's IO or CPU thread pool. */
+  queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
 }
 
