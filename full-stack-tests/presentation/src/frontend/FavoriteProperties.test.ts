@@ -18,11 +18,14 @@ import { initialize, initializeWithClientServices, terminate } from "../Integrat
 describe("Favorite properties", () => {
 
   let imodel: IModelConnection;
+  async function openIModel() {
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    expect(imodel).is.not.null;
+  }
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
-    expect(imodel).is.not.null;
+    await openIModel();
   });
 
   after(async () => {
@@ -259,8 +262,10 @@ describe("Favorite properties", () => {
   describe("#with-services", () => {
 
     before(async () => {
+      await imodel.close();
       await terminate();
       await initializeWithClientServices();
+      await openIModel();
     });
 
     it("favorite properties survive Presentation re-initialization", async () => {

@@ -21,6 +21,7 @@ export * from "./presentation-common/RulesetVariables";
 export * from "./presentation-common/RulesetsFactory";
 export * from "./presentation-common/Update";
 export * from "./presentation-common/Utils";
+export * from "./presentation-common/PresentationIpcInterface";
 
 /**
  * @module RPC
