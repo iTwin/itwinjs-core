@@ -6,8 +6,9 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
-import { detectIsMobile } from "@bentley/webgl-compatibility";
+import {
+  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue, ProcessDetector,
+} from "@bentley/bentleyjs-core";
 import {
   defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
   RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
@@ -160,7 +161,7 @@ export class TileAdmin {
    * @returns the TileAdmin
    */
   public static create(props?: TileAdmin.Props): TileAdmin {
-    return this.createForDeviceType(detectIsMobile() ? "mobile" : "non-mobile", props);
+    return this.createForDeviceType(ProcessDetector.isMobileBrowser ? "mobile" : "non-mobile", props);
   }
 
   /** Strictly for tests.
