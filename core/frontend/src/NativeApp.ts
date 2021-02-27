@@ -8,12 +8,11 @@
 
 import { BeEvent, Config, GuidString, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, DownloadBriefcaseStatus, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
+  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp, IModelAppOptions } from "./imodeljs-frontend";
 import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
