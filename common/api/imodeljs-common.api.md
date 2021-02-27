@@ -4100,6 +4100,7 @@ export interface IpcAppFunctions {
     pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
     // (undocumented)
     pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
+    queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)

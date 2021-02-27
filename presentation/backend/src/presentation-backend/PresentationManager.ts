@@ -27,6 +27,7 @@ import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetV
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
 import { UpdatesTracker } from "./UpdatesTracker";
 import { BackendDiagnosticsOptions, getElementKey, WithClientRequestContext } from "./Utils";
+import { PresentationIpcHandler } from "./PresentationIpcHandler";
 
 /**
  * Presentation manager working mode.
@@ -304,6 +305,7 @@ export class PresentationManager {
   private _isOneFrontendPerBackend: boolean;
   private _isDisposed: boolean;
   private _disposeIModelOpenedListener?: () => void;
+  private _disposeIpcHandler?: () => void;
   private _updatesTracker?: UpdatesTracker;
 
   /** Get / set active locale used for localizing presentation data */
@@ -361,6 +363,10 @@ export class PresentationManager {
         pollInterval: props!.updatesPollInterval!, // set if `isChangeTrackingEnabled == true`
       });
     }
+
+    if (IpcHost.isValid) {
+      this._disposeIpcHandler = PresentationIpcHandler.register();
+    }
   }
 
   /**
@@ -379,6 +385,9 @@ export class PresentationManager {
       this._updatesTracker.dispose();
       this._updatesTracker = undefined;
     }
+
+    if (this._disposeIpcHandler)
+      this._disposeIpcHandler();
 
     this._isDisposed = true;
   }
