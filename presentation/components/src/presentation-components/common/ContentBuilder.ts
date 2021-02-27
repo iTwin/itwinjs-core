@@ -14,7 +14,6 @@ import {
   ArrayValue, EnumerationChoicesInfo, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValue,
   StructValue, PropertyValueFormat as UiPropertyValueFormat,
 } from "@bentley/ui-abstract";
-import { matchLinks } from "@bentley/ui-components";
 import { Omit } from "@bentley/ui-core";
 
 const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: ArrayTypeDescription, values: Value[], displayValues: DisplayValue[]): ArrayValue => {
@@ -53,16 +52,6 @@ const createStructValue = (description: StructTypeDescription, valueObj: ValuesD
     valueFormat: UiPropertyValueFormat.Struct,
     members,
   } as StructValue;
-};
-
-/**
- * A helper method to get links from string.
- * @internal
- */
-export const getLinks = (value: string): Array<{ start: number, end: number }> => {
-  return matchLinks(value).map((linkInfo: { index: number, lastIndex: number }) => {
-    return { start: linkInfo.index, end: linkInfo.lastIndex };
-  });
 };
 
 const createPrimitiveValue = (value: Value, displayValue: DisplayValue): PrimitiveValue => {
@@ -116,10 +105,6 @@ const createRecord = (propertyDescription: PropertyDescription, typeDescription:
     record.isReadonly = true;
   if (extendedData)
     record.extendedData = extendedData;
-  if (displayValue && DisplayValue.isPrimitive(displayValue) && getLinks(displayValue).length !== 0)
-    record.links = {
-      matcher: getLinks,
-    };
   return record;
 };
 

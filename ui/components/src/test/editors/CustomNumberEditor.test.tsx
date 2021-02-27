@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { mount } from "enzyme";
+import { mount, shallow } from "enzyme";
 import React from "react";
 import * as sinon from "sinon";
-import { IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render } from "@testing-library/react";
+import { IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { CustomNumberEditor } from "../../ui-components/editors/CustomNumberEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
 // cSpell:ignore customnumber
 
@@ -26,6 +28,11 @@ describe("<CustomNumberEditor />", () => {
     const record = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
     const renderedComponent = render(<CustomNumberEditor propertyRecord={record} />);
     expect(renderedComponent).not.to.be.undefined;
+  });
+
+  it("renders correctly with style", () => {
+    const record = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
+    shallow(<CustomNumberEditor propertyRecord={record}  style={{color: "red"}} />).should.matchSnapshot();
   });
 
   it("change input value", () => {
@@ -67,7 +74,6 @@ describe("<CustomNumberEditor />", () => {
     // renderedComponent.debug();
     fireEvent.keyDown(inputField, { key: "Escape" });
     expect(inputField.value).to.be.equal(displayVal);
-    await TestUtils.flushAsyncOperations();
   });
 
   it("CustomNumberPropertyEditor with undefined initial display value", async () => {
@@ -177,6 +183,29 @@ describe("<CustomNumberEditor />", () => {
     expect(textEditor.state("iconSpec")).to.eq(iconSpec);
 
     wrapper.unmount();
+  });
+
+  class MineDataController extends DataControllerBase {
+    public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+    }
+  }
+
+  it("should not commit if DataController fails to validate", async () => {
+    PropertyEditorManager.registerDataController("myData", MineDataController);
+    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
+    propertyRecord.property.dataController = "myData";
+
+    const spyOnCommit = sinon.spy();
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
+    const inputNode = wrapper.queryByTestId("components-customnumber-editor") as HTMLInputElement;
+    expect(inputNode).not.to.be.null;
+
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCommit.calledOnce).to.be.false;
+
+    PropertyEditorManager.deregisterDataController("myData");
   });
 
 });

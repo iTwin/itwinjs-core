@@ -17,6 +17,7 @@ linkify
     validate: (text: string, pos: number, self: LinkifyIt.LinkifyIt): number => {
       const tail = text.slice(pos);
 
+      // istanbul ignore else
       if (!self.re.pw) {
         self.re.pw = new RegExp(
           `(//|\\\\\\\\)${self.re.src_host}:` +
@@ -31,6 +32,7 @@ linkify
         if (matches !== null)
           return matches[0].length;
       }
+      // istanbul ignore next
       return 0;
     },
   })
@@ -52,6 +54,7 @@ linkify
         if (matches !== null)
           return matches[0].length;
       }
+      // istanbul ignore next
       return 0;
     },
     normalize: (match: LinkifyIt.Match) => {

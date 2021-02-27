@@ -11,6 +11,7 @@ import * as React from "react";
 import { InputStatus } from "../inputs/InputStatus";
 import { CommonProps } from "../utils/Props";
 import { Omit } from "../utils/typeUtils";
+import { mergeRefs } from "../utils/hooks/useRefs";
 
 /** Properties for [[Checkbox]] React component
  * @public
@@ -39,6 +40,8 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
   onBlur?: (e: React.FocusEvent) => void;
   /** Indicates whether the checkbox should set focus */
   setFocus?: boolean;
+  /** Provides ability to return reference to HTMLInputElement */
+  inputRef?: React.Ref<HTMLInputElement>;
 }
 
 /** A React component that renders a simple checkbox with label.
@@ -47,6 +50,15 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
  */
 export class Checkbox extends React.PureComponent<CheckboxProps> {
   private _checkboxInput = React.createRef<HTMLInputElement>();
+  private _refs = mergeRefs(this._checkboxInput);
+
+  /** @internal */
+  constructor(props: CheckboxProps) {
+    super(props);
+
+    if (props.inputRef)
+      this._refs = mergeRefs(this._checkboxInput, props.inputRef);
+  }
 
   private _onCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,7 +90,7 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
 
   public render() {
     const { status, disabled, label, indeterminate, className, inputClassName, inputStyle, labelClassName, labelStyle, // eslint-disable-line @typescript-eslint/no-unused-vars
-      onClick, onBlur, setFocus, ...inputProps } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+      onClick, onBlur, setFocus, inputRef, ...inputProps } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const checkBoxClass = classnames("core-checkbox",
       disabled && "core-disabled",
       !label && "core-checkbox-no-label",
@@ -92,7 +104,7 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
         {label &&
           <span className="core-checkbox-label">{label}</span>
         }
-        <input type="checkbox" ref={this._checkboxInput} {...inputProps}
+        <input type="checkbox" ref={this._refs} {...inputProps}
           disabled={disabled} className={inputClassName} style={inputStyle}
           onClick={this._onCheckboxClick} onBlur={this._onCheckboxBlur} />
         <span className="core-checkbox-checkmark"></span>

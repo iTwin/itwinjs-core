@@ -273,9 +273,9 @@ steps:
   #       #   readXML(comp, filePath)
   #     arguments: --output '$(Build.BinariesDirectory)'
   #   condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
-  # - task: PublishCodeCoverageResults@1
-  #   displayName: "Publish code coverage"
-  #   inputs:
-  #     codeCoverageTool: Cobertura
-  #     summaryFileLocation: $(Build.SourcesDirectory)/**/**/lib/test/coverage/cobertura-coverage.xml
-  #   condition: succeededOrFailed()
+  #- task: PublishCodeCoverageResults@1
+  #  displayName: "Publish code coverage"
+  #  inputs:
+  #    codeCoverageTool: Cobertura
+  #    summaryFileLocation: $(Build.SourcesDirectory)/**/**/lib/test/coverage/cobertura-coverage.xml
+  #  condition: succeededOrFailed()
