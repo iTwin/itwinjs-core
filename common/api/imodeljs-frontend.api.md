@@ -5556,7 +5556,6 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
-    get planarclipMaskPriority(): number;
     // (undocumented)
     setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
     // (undocumented)
@@ -7161,7 +7160,6 @@ export namespace RealityModelTileTree {
         // (undocumented)
         protected _planarClipMask?: PlanarClipMaskState;
         // (undocumented)
-        get planarClipMaskPriority(): number;
         // (undocumented)
         unionFitRange(union: Range3d): void;
     }
@@ -10288,7 +10286,6 @@ export abstract class TileTreeReference {
     get isLoadingComplete(): boolean;
     // @internal
     protected get _isLoadingComplete(): boolean;
-    get planarclipMaskPriority(): number;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }
