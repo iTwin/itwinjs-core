@@ -7,6 +7,10 @@
  */
 
 import { assert, PriorityQueue } from "@bentley/bentleyjs-core";
+import { TileTreeContentIds } from "@bentley/imodeljs-common";
+import { IModelApp } from "../IModelApp";
+import { IpcApp } from "../IpcApp";
+import { IModelConnection } from "../IModelConnection";
 import { Tile, TileRequest } from "./internal";
 
 /**
@@ -30,6 +34,9 @@ export class TileRequestChannelHooks {
    * over IPC may signal to the tile generation process that it should cease generating content for those tiles.
    */
   public processCancellations(): void { }
+
+  /** Invoked when an iModel is closed, to clean up any state associated with that iModel. */
+  public onIModelClosed(_iModel: IModelConnection): void { }
 }
 
 /**
@@ -177,5 +184,137 @@ export class TileRequestChannel {
   private dropActiveRequest(request: TileRequest): void {
     assert(this._active.has(request) || request.isCanceled);
     this._active.delete(request);
+  }
+}
+
+class IModelTileCacheHooks extends TileRequestChannelHooks {
+  public onNoContent(_request: TileRequest): boolean {
+    // ###TODO: Mark tile as "not found in cache" so it uses RPC channel instead.
+    // ###TODO: store this on each channel instead?
+    IModelApp.tileAdmin.onCacheMiss();
+    return true;
+  }
+}
+
+class IModelTileRpcHooks extends TileRequestChannelHooks {
+  private readonly _canceled = new Map<IModelConnection, Map<string, Set<string>>>();
+
+  public onActiveRequestCanceled(request: TileRequest): void {
+    const tree = request.tile.tree;
+    let entry = this._canceled.get(tree.iModel);
+    if (!entry)
+      this._canceled.set(tree.iModel, entry = new Map<string, Set<string>>());
+
+    let ids = entry.get(tree.id);
+    if (!ids)
+      entry.set(tree.id, ids = new Set<string>());
+
+    ids.add(request.tile.contentId);
+  }
+
+  public processCancellations(): void {
+    for (const [imodel, entries] of this._canceled) {
+      const treeContentIds: TileTreeContentIds[] = [];
+      for (const [treeId, tileIds] of entries) {
+        const contentIds = Array.from(tileIds);
+        treeContentIds.push({ treeId, contentIds });
+        // ###TODO add to totalAbortedRequests
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        IpcApp.callIpcHost("cancelTileContentRequests", imodel.getRpcProps(), treeContentIds);
+    }
+
+    this._canceled.clear();
+  }
+
+  public onIModelClosed(imodel: IModelConnection): void {
+    this._canceled.delete(imodel);
+  }
+}
+
+class ElementGraphicsHooks extends TileRequestChannelHooks {
+  private readonly _canceled = new Map<IModelConnection, string[]>();
+
+  public onActiveRequestCanceled(request: TileRequest): void {
+    const imodel = request.tile.tree.iModel;
+    let ids = this._canceled.get(imodel);
+    if (!ids)
+      this._canceled.set(imodel, ids = []);
+
+    ids.push(request.tile.contentId);
+  }
+
+  public processCancellations(): void {
+    for (const [imodel, requestIds] of this._canceled) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      IpcApp.callIpcHost("cancelElementGraphicsRequests", imodel.key, requestIds);
+      // ###TODO add to totalAbortedRequests
+    }
+
+    this._canceled.clear();
+  }
+
+  public onIModelClosed(imodel: IModelConnection): void {
+    this._canceled.delete(imodel);
+  }
+}
+
+export class TileRequestChannels {
+  public readonly iModelTileCache?: TileRequestChannel;
+  public readonly iModelTileRpc: TileRequestChannel;
+  public readonly elementGraphicsRpc: TileRequestChannel;
+  private _rpcConcurrency: number;
+  private readonly _rpcUsesIpc: boolean;
+  private readonly _httpConcurrency = 6;
+  private readonly _channels = new Map<string, TileRequestChannel>();
+
+  public constructor(rpcConcurrency: number, rpcUsesIpc: boolean) {
+    this._rpcConcurrency = rpcConcurrency;
+    this._rpcUsesIpc = rpcUsesIpc;
+
+    // ###TODO: leave undefined if no cloud storage tile cache is configured.
+    this.add(this.iModelTileCache = new TileRequestChannel("iModelTileCache", this._httpConcurrency, new IModelTileCacheHooks()));
+    this.add(this.iModelTileRpc = new TileRequestChannel("iModelTileRpc", rpcConcurrency, rpcUsesIpc ? new IModelTileRpcHooks() : undefined));
+    this.add(this.elementGraphicsRpc = new TileRequestChannel("elementGraphicsRpc", rpcConcurrency, rpcUsesIpc ? new ElementGraphicsHooks() : undefined));
+  }
+
+  public get(name: string): TileRequestChannel | undefined {
+    return this._channels.get(name);
+  }
+
+  public add(channel: TileRequestChannel): void {
+    if (this.get(channel.name))
+      throw new Error(`Tile request channel ${channel.name} is already registered.`);
+
+    this._channels.set(channel.name, channel);
+  }
+
+  public delete(name: string): void {
+    const channel = this.get(name);
+    if (!channel)
+      return;
+
+    channel.cancelAndClearAll();
+    this._channels.delete(name);
+  }
+
+  public getForUrlDomain(url: URL | string): TileRequestChannel {
+    if (typeof url === "string")
+      url = new URL(url);
+
+    return this.getForHttp(url.hostname);
+  }
+
+  public getForHttp(name: string): TileRequestChannel {
+    let channel = this.get(name);
+    if (!channel)
+      this.add(channel = new TileRequestChannel(name, this._httpConcurrency));
+
+    return channel;
+  }
+
+  public [Symbol.iterator](): Iterable<TileRequestChannel> {
+    return this._channels.values()[Symbol.iterator]();
   }
 }
