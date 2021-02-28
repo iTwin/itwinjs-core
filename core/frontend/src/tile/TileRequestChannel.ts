@@ -22,6 +22,52 @@ class TileRequestQueue extends PriorityQueue<TileRequest> {
   }
 }
 
+/** Statistics regarding the current and cumulative state of one or more [[TileRequestChannel]]s. Useful for monitoring performance and diagnosing problems.
+ * @see [[TileRequestChannel.statistics]] for a specific channel's statistics.
+ * @see [[TileRequestChannels.statistics]] for statistics from all channels.
+ * @beta
+ */
+export class TileRequestChannelStatistics {
+  /** The number of queued requests that have not yet been dispatched. */
+  public numPendingRequests = 0;
+  /** The number of requests that have been dispatched but not yet completed. */
+  public numActiveRequests = 0;
+  /** The number of requests canceled during the most recent update. */
+  public numCanceled = 0;
+  /** The total number of completed requests during this session. */
+  public totalCompletedRequests = 0;
+  /** The total number of failed requests during this session. */
+  public totalFailedRequests = 0;
+  /** The total number of timed-out requests during this session. */
+  public totalTimedOutRequests = 0;
+  /** The total number of completed requests during this session which produced an empty tile.
+   * These tiles also contribute to [[totalCompletedRequests]], but not to [[totalUndisplayableTiles]].
+   */
+  public totalEmptyTiles = 0;
+  /** The total number of completed requests during this session that produced an undisplayable tile.
+   * These tiles also contribute to [[totalCompletedRequests]], but not to [[totalEmptyTiles]].
+   */
+  public totalUndisplayableTiles = 0;
+  /** The total number of tiles whose contents were not found in cloud storage cache and therefore resulted in a backend request to generate the tile content. */
+  public totalCacheMisses = 0;
+  /** The total number of tiles for which content requests were dispatched. */
+  public totalDispatchedRequests = 0;
+  /** The total number of tiles for which content requests were dispatched and then canceled on the backend before completion. */
+  public totalAbortedRequests = 0;
+
+  public addTo(stats: TileRequestChannelStatistics): void {
+    for (const propName in this) {
+      const key = propName as keyof TileRequestChannelStatistics;
+      const val = this[key];
+      if (typeof val === "number") {
+        // This type guard ought to suffice but doesn't.
+        assert(typeof stats[key] === "number");
+        (stats[key] as number) += val;
+      }
+    }
+  }
+}
+
 /**
  * @internal
  */
@@ -31,8 +77,7 @@ export class TileRequestChannel {
   private readonly _active = new Set<TileRequest>();
   private _pending = new TileRequestQueue();
   private _previouslyPending = new TileRequestQueue();
-  private _numDispatched = 0;
-  private _numCanceled = 0;
+  protected _statistics = new TileRequestChannelStatistics();
 
   public constructor(name:  string, maxActiveRequests: number) {
     this.name = name;
@@ -51,16 +96,14 @@ export class TileRequestChannel {
     return this.numActive + this.numPending;
   }
 
-  public get totalDispatched(): number {
-    return this._numDispatched;
-  }
-
-  public get totalCanceled(): number {
-    return this._numCanceled;
+  public get statistics(): Readonly<TileRequestChannelStatistics> {
+    this._statistics.numPendingRequests = this.numPending;
+    this._statistics.numActiveRequests = this.numActive;
+    return this._statistics;
   }
 
   public resetStatistics(): void {
-    this._numDispatched = this._numCanceled = 0;
+    this._statistics = new TileRequestChannelStatistics();
   }
 
   public swapPending(): void {
@@ -75,6 +118,8 @@ export class TileRequestChannel {
   }
 
   public process(): void {
+    this._statistics.numCanceled = 0;
+
     // Recompute priority of each request.
     for (const pending of this._pending)
       pending.priority = pending.tile.computeLoadPriority(pending.viewports);
@@ -138,7 +183,7 @@ export class TileRequestChannel {
   /** Invoked when an iModel is closed, to clean up any state associated with that iModel. */
   public onIModelClosed(_iModel: IModelConnection): void { }
   private dispatch(request: TileRequest): void {
-    ++this._numDispatched;
+    ++this._statistics.totalDispatchedRequests;
     this._active.add(request);
     request.dispatch(() => {
       this.dropActiveRequest(request);
@@ -149,7 +194,7 @@ export class TileRequestChannel {
 
   private cancel(request: TileRequest): void {
     request.cancel();
-    ++this._numCanceled;
+    ++this._statistics.numCanceled;
   }
 
   private dropActiveRequest(request: TileRequest): void {
@@ -161,8 +206,7 @@ export class TileRequestChannel {
 class CloudStorageCacheChannel extends TileRequestChannel {
   public onNoContent(_request: TileRequest): boolean {
     // ###TODO: Mark tile as "not found in cache" so it uses RPC channel instead.
-    // ###TODO: store this on each channel instead?
-    IModelApp.tileAdmin.onCacheMiss();
+    ++this._statistics.totalCacheMisses;
     return true;
   }
 }
@@ -189,7 +233,7 @@ class IModelTileChannel extends TileRequestChannel {
       for (const [treeId, tileIds] of entries) {
         const contentIds = Array.from(tileIds);
         treeContentIds.push({ treeId, contentIds });
-        // ###TODO add to totalAbortedRequests
+        this._statistics.totalAbortedRequests += contentIds.length;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -220,7 +264,7 @@ class ElementGraphicsChannel extends TileRequestChannel {
     for (const [imodel, requestIds] of this._canceled) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       IpcApp.callIpcHost("cancelElementGraphicsRequests", imodel.key, requestIds);
-      // ###TODO add to totalAbortedRequests
+      this._statistics.totalAbortedRequests += requestIds.length;
     }
 
     this._canceled.clear();
@@ -297,7 +341,7 @@ export class TileRequestChannels {
     return channel;
   }
 
-  public [Symbol.iterator](): Iterable<TileRequestChannel> {
+  public [Symbol.iterator](): Iterator<TileRequestChannel> {
     return this._channels.values()[Symbol.iterator]();
   }
 
@@ -308,5 +352,13 @@ export class TileRequestChannels {
   /** @internal */
   public setRpcConcurrency(concurrency: number): void {
     this._rpcConcurrency = concurrency;
+  }
+
+  public get statistics(): TileRequestChannelStatistics {
+    const stats = new TileRequestChannelStatistics();
+    for (const channel of this)
+      channel.statistics.addTo(stats);
+
+    return stats;
   }
 }
