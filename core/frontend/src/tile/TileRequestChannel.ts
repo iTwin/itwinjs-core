@@ -13,41 +13,6 @@ import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Tile, TileRequest } from "./internal";
 
-/**
- * @beta
- */
-export class TileRequestChannelHooks {
-  /** Invoked when `Tile.requestContent` returns `undefined`. Return true if the request can be retried, e.g., via different channel.
-   * If so, the tile will remain marked as "not loaded" and, if re-selected for display, a new TileRequest will be enqueued for it.
-   * Otherwise, the tile will be marked as "failed to load" and no further requests will be made for its content.
-   */
-  public onNoContent(_request: TileRequest): boolean {
-    return false;
-  }
-
-  /** Invoked when a request that was previously dispatched is canceled before a response is received.
-   * Some channels accumulate such requests for later cancellation in [[processCancellations]].
-   */
-  public onActiveRequestCanceled(_request: TileRequest): void { }
-
-  /** Invoked to do any additional work to cancel tiles accumulated by [[onActiveRequestCanceled]]. For example, a channel that requests tile content
-   * over IPC may signal to the tile generation process that it should cease generating content for those tiles.
-   */
-  public processCancellations(): void { }
-
-  /** Invoked when an iModel is closed, to clean up any state associated with that iModel. */
-  public onIModelClosed(_iModel: IModelConnection): void { }
-}
-
-/**
- * @beta
- */
-export interface TileRequestChannelProps {
-  name: string;
-  throttle: number | "http" | "rpc";
-  hooks?: TileRequestChannelHooks;
-}
-
 class TileRequestQueue extends PriorityQueue<TileRequest> {
   public constructor() {
     super((lhs, rhs) => {
@@ -63,17 +28,15 @@ class TileRequestQueue extends PriorityQueue<TileRequest> {
 export class TileRequestChannel {
   public readonly name: string;
   private _maxActive: number;
-  private readonly _hooks?: TileRequestChannelHooks;
   private readonly _active = new Set<TileRequest>();
   private _pending = new TileRequestQueue();
   private _previouslyPending = new TileRequestQueue();
   private _numDispatched = 0;
   private _numCanceled = 0;
 
-  public constructor(name:  string, maxActiveRequests: number, hooks?: TileRequestChannelHooks) {
+  public constructor(name:  string, maxActiveRequests: number) {
     this.name = name;
     this._maxActive = maxActiveRequests;
-    this._hooks = hooks;
   }
 
   public get numActive(): number {
@@ -143,18 +106,6 @@ export class TileRequestChannel {
     }
   }
 
-  public onNoContent(request: TileRequest): boolean {
-    return this._hooks ? this._hooks.onNoContent(request) : false;
-  }
-
-  public onActiveRequestCanceled(request: TileRequest): void {
-    this._hooks?.onActiveRequestCanceled(request);
-  }
-
-  public processCancellations(): void {
-    this._hooks?.processCancellations();
-  }
-
   public cancelAndClearAll(): void {
     for (const active of this._active)
       active.cancel();
@@ -166,6 +117,26 @@ export class TileRequestChannel {
     this._pending.clear();
   }
 
+  /** Invoked when `Tile.requestContent` returns `undefined`. Return true if the request can be retried, e.g., via different channel.
+   * If so, the tile will remain marked as "not loaded" and, if re-selected for display, a new TileRequest will be enqueued for it.
+   * Otherwise, the tile will be marked as "failed to load" and no further requests will be made for its content.
+   */
+  public onNoContent(_request: TileRequest): boolean {
+    return false;
+  }
+
+  /** Invoked when a request that was previously dispatched is canceled before a response is received.
+   * Some channels accumulate such requests for later cancellation in [[processCancellations]].
+   */
+  public onActiveRequestCanceled(_request: TileRequest): void { }
+
+  /** Invoked to do any additional work to cancel tiles accumulated by [[onActiveRequestCanceled]]. For example, a channel that requests tile content
+   * over IPC may signal to the tile generation process that it should cease generating content for those tiles.
+   */
+  public processCancellations(): void { }
+
+  /** Invoked when an iModel is closed, to clean up any state associated with that iModel. */
+  public onIModelClosed(_iModel: IModelConnection): void { }
   private dispatch(request: TileRequest): void {
     ++this._numDispatched;
     this._active.add(request);
@@ -187,7 +158,7 @@ export class TileRequestChannel {
   }
 }
 
-class IModelTileCacheHooks extends TileRequestChannelHooks {
+class CloudStorageCacheChannel extends TileRequestChannel {
   public onNoContent(_request: TileRequest): boolean {
     // ###TODO: Mark tile as "not found in cache" so it uses RPC channel instead.
     // ###TODO: store this on each channel instead?
@@ -196,7 +167,7 @@ class IModelTileCacheHooks extends TileRequestChannelHooks {
   }
 }
 
-class IModelTileRpcHooks extends TileRequestChannelHooks {
+class IModelTileChannel extends TileRequestChannel {
   private readonly _canceled = new Map<IModelConnection, Map<string, Set<string>>>();
 
   public onActiveRequestCanceled(request: TileRequest): void {
@@ -233,7 +204,7 @@ class IModelTileRpcHooks extends TileRequestChannelHooks {
   }
 }
 
-class ElementGraphicsHooks extends TileRequestChannelHooks {
+class ElementGraphicsChannel extends TileRequestChannel {
   private readonly _canceled = new Map<IModelConnection, string[]>();
 
   public onActiveRequestCanceled(request: TileRequest): void {
@@ -261,22 +232,31 @@ class ElementGraphicsHooks extends TileRequestChannelHooks {
 }
 
 export class TileRequestChannels {
-  public readonly iModelTileCache?: TileRequestChannel;
+  public readonly cloudStorageCache?: TileRequestChannel;
   public readonly iModelTileRpc: TileRequestChannel;
   public readonly elementGraphicsRpc: TileRequestChannel;
+  public readonly httpConcurrency = 6;
   private _rpcConcurrency: number;
-  private readonly _rpcUsesIpc: boolean;
-  private readonly _httpConcurrency = 6;
   private readonly _channels = new Map<string, TileRequestChannel>();
 
   public constructor(rpcConcurrency: number, rpcUsesIpc: boolean) {
     this._rpcConcurrency = rpcConcurrency;
-    this._rpcUsesIpc = rpcUsesIpc;
 
     // ###TODO: leave undefined if no cloud storage tile cache is configured.
-    this.add(this.iModelTileCache = new TileRequestChannel("iModelTileCache", this._httpConcurrency, new IModelTileCacheHooks()));
-    this.add(this.iModelTileRpc = new TileRequestChannel("iModelTileRpc", rpcConcurrency, rpcUsesIpc ? new IModelTileRpcHooks() : undefined));
-    this.add(this.elementGraphicsRpc = new TileRequestChannel("elementGraphicsRpc", rpcConcurrency, rpcUsesIpc ? new ElementGraphicsHooks() : undefined));
+    this.add(this.cloudStorageCache = new CloudStorageCacheChannel("cloudStorageCache", this.httpConcurrency))
+
+    const imodelChannelName = "requestTileContent";
+    const elementGraphicsChannelName = "requestElementGraphics";
+    if (rpcUsesIpc) {
+      this.iModelTileRpc = new IModelTileChannel(imodelChannelName, rpcConcurrency);
+      this.elementGraphicsRpc = new ElementGraphicsChannel(elementGraphicsChannelName, rpcConcurrency);
+    } else {
+      this.iModelTileRpc = new TileRequestChannel(imodelChannelName, rpcConcurrency);
+      this.elementGraphicsRpc = new TileRequestChannel(elementGraphicsChannelName, rpcConcurrency);
+    }
+
+    this.add(this.iModelTileRpc);
+    this.add(this.elementGraphicsRpc);
   }
 
   public get(name: string): TileRequestChannel | undefined {
@@ -299,22 +279,34 @@ export class TileRequestChannels {
     this._channels.delete(name);
   }
 
-  public getForUrlDomain(url: URL | string): TileRequestChannel {
+  /** Extract the host name from a URL for use as the name of the corresponding [[TileRequestChannel]].
+   * @throws TypeError if `url` is a string and does not represent a valid URL.
+   */
+  public static getNameFromUrl(url: URL | string): string {
     if (typeof url === "string")
       url = new URL(url);
 
-    return this.getForHttp(url.hostname);
+    return url.hostname;
   }
 
   public getForHttp(name: string): TileRequestChannel {
     let channel = this.get(name);
     if (!channel)
-      this.add(channel = new TileRequestChannel(name, this._httpConcurrency));
+      this.add(channel = new TileRequestChannel(name, this.httpConcurrency));
 
     return channel;
   }
 
   public [Symbol.iterator](): Iterable<TileRequestChannel> {
     return this._channels.values()[Symbol.iterator]();
+  }
+
+  public get rpcConcurrency(): number {
+    return this._rpcConcurrency;
+  }
+
+  /** @internal */
+  public setRpcConcurrency(concurrency: number): void {
+    this._rpcConcurrency = concurrency;
   }
 }
