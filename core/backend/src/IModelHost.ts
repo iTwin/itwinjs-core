@@ -211,7 +211,7 @@ export class IModelHost {
   public static get introspectionClient(): IntrospectionClient | undefined { return this._clientAuthIntrospectionManager?.introspectionClient; }
 
   /** @alpha */
-  public static readonly telemetry: TelemetryManager = new TelemetryManager();
+  public static readonly telemetry = new TelemetryManager();
 
   public static backendVersion = "";
   private static _cacheDir = "";
@@ -445,8 +445,7 @@ export class IModelHost {
     }
 
     UsageLoggingUtilities.configure({ hostApplicationId: IModelHost.applicationId, hostApplicationVersion: IModelHost.applicationVersion, clientAuthManager: this._clientAuthIntrospectionManager });
-
-    IModelHost.onAfterStartup.raiseEvent();
+    process.once("beforeExit", IModelHost.shutdown);
   }
 
   private static _briefcaseCacheDir: string;
@@ -488,10 +487,12 @@ export class IModelHost {
   public static async shutdown(): Promise<void> {
     if (!this._isValid)
       return;
+
     this._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;
+    process.removeListener("beforeExit", IModelHost.shutdown);
   }
 
   /**

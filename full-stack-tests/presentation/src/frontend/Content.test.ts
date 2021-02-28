@@ -26,6 +26,11 @@ describe("Content", () => {
     expect(imodel).is.not.null;
   };
 
+  const closeIModel = async () => {
+    if (imodel && imodel.isOpen)
+      await imodel.close();
+  };
+
   before(async () => {
     await initialize();
     await openIModel();
@@ -413,6 +418,7 @@ describe("Content", () => {
 
     beforeEach(async () => {
       // re-initialize to set backend response timeout to 500 ms
+      await closeIModel();
       await terminate();
       await initialize(500);
       await openIModel();
@@ -427,7 +433,7 @@ describe("Content", () => {
     });
 
     afterEach(async () => {
-      await imodel.close();
+      await closeIModel();
       raceStub.restore();
     });
 

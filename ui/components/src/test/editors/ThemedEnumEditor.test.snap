@@ -4,6 +4,11 @@ exports[`<ThemedEnumEditor /> renders correctly 1`] = `
 <ThemedSelect
   className="components-cell-editor components-enum-editor"
   data-testid="components-select-editor"
+  divRef={
+    Object {
+      "current": null,
+    }
+  }
   isMulti={false}
   onChange={[Function]}
   options={Array []}

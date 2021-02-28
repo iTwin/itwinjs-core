@@ -236,6 +236,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     model.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     model.ready.then(() => {
+      // istanbul ignore else
       if (model === this.state.model)
         this._onModelReady();
     });
@@ -733,7 +734,7 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
   public shouldComponentUpdate(nextProps: BreadcrumbDropdownProps) {
     return this.props.tree !== nextProps.tree ||
       this.props.node !== nextProps.node ||
-      (nextProps.node && nextProps.node.isDirty()) ||
+      (nextProps.node && /* istanbul ignore next */ nextProps.node.isDirty()) ||
       this.props.onInputStart !== nextProps.onInputStart ||
       this.props.delimiter !== nextProps.delimiter ||
       this.props.width !== nextProps.width ||
