@@ -74,6 +74,9 @@ export class QParams2d {
   /** Creates parameters supporting quantization of values within the range [0.0, 1.0]. */
   public static fromZeroToOne(rangeScale = Quantization.rangeScale16) { return QParams2d.fromRange(Range2d.createArray([Point2d.create(0, 0), Point2d.create(1, 1)]), undefined, rangeScale); }
 
+  /** Create parameters from origin and scale components */
+  public static fromOriginAndScale(ox: number, oy: number, sx: number, sy: number) { return new QParams2d(ox, oy, sx, sy); }
+
   // Return the range diagonal.
   public get rangeDiagonal(): Vector2d { return Vector2d.createFrom({ x: 0 === this.scale.x ? 0 : Quantization.rangeScale16 / this.scale.x, y: 0 === this.scale.y ? 0 : Quantization.rangeScale16 / this.scale.y }); }
 

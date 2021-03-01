@@ -22,6 +22,7 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
@@ -30,7 +31,6 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { RealityMeshPrimitive } from "./webgl/RealityMesh";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh

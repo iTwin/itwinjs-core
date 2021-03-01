@@ -89,7 +89,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderSimple
   }
 
   public static createGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined) {
-    const params = SimpleMeshGeometryParams.createFromPrimitive(terrainMesh);
+    const params = SimpleMeshGeometryParams.createFromTerrainMesh(terrainMesh);
     return new TerrainMeshGeometry(params!, undefined, transform, undefined, false);
   }
   public getRange(): Range3d {

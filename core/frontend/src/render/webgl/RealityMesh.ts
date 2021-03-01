@@ -9,14 +9,13 @@
 
 import { dispose } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { OctEncodedNormal, QPoint2dList, QPoint3dList, Quantization, RenderTexture } from "@bentley/imodeljs-common";
+import { Quantization, RenderTexture } from "@bentley/imodeljs-common";
 import { IndexedGeometry } from "../../webgl";
-import { SimpleMeshPrimitive } from "../primitives/mesh/SimpleMeshPrimitive";
-import { SimpleMeshGeometryParams } from "./SimpleMesh";
 import { RenderMemory } from "../RenderMemory";
 import { RenderSimpleMeshGeometry } from "../RenderSystem";
 import { GL } from "./GL";
 import { RenderOrder, RenderPass } from "./RenderFlags";
+import { SimpleMeshGeometryParams } from "./SimpleMesh";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -63,11 +62,3 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderSimple
   }
 }
 
-export class RealityMeshPrimitive  extends SimpleMeshPrimitive implements RenderMemory.Consumer {
-  protected constructor(indices: number[], points: QPoint3dList, uvParams: QPoint2dList, normals: OctEncodedNormal[], public readonly texture: RenderTexture) {
-    super(indices, points, uvParams, normals);
-  }
-  public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addRealityMesh(this.bytesUsed);
-  }
-}

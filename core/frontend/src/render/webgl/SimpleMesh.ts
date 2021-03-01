@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { dispose } from "@bentley/bentleyjs-core";
 import { AttributeMap, BufferHandle, BufferParameters, IndexedGeometryParams, QBufferHandle2d, QBufferHandle3d, TechniqueId } from "../../webgl";
+import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
+import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { GL } from "./GL";
 import assert = require("assert");
-import { SimpleMeshPrimitive } from "../primitives/mesh/SimpleMeshPrimitive";
+import { OctEncodedNormal } from "@bentley/imodeljs-common";
 
 /** @internal */
 
@@ -33,29 +35,40 @@ export class SimpleMeshGeometryParams extends IndexedGeometryParams {
     this.featureID = featureID;
   }
 
-  public static createFromPrimitive(mesh: SimpleMeshPrimitive) {
+  private static createFromBuffers(posBuf: QBufferHandle3d, uvParamBuf: QBufferHandle2d, indices: Uint16Array, normals: OctEncodedNormal[], featureID: number) {
+    const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
+
+    let normBuf: BufferHandle | undefined;
+    if (normals.length > 0) {
+      const normalBytes = new Uint8Array(normals.length * 2);
+      const normalShorts = new Uint16Array(normalBytes.buffer);
+      for (let i = 0; i < normals.length; i++)
+        normalShorts[i] = normals[i].value;
+      normBuf = BufferHandle.createArrayBuffer(normalBytes);
+    }
+
+    if (undefined === indBuf || (normals.length > 0 && undefined === normBuf))
+      return undefined;
+
+    return new SimpleMeshGeometryParams(posBuf, normBuf, uvParamBuf, indBuf, indices.length, featureID);
+
+  }
+
+  public static createFromRealityMesh(mesh: RealityMeshPrimitive) {
+    const posBuf = QBufferHandle3d.create(mesh.pointQParams, mesh.points);
+    const uvParamBuf = QBufferHandle2d.create(mesh.uvQParams, mesh.uvs);
+    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, mesh.indices, mesh.normals, mesh.featureID);
+  }
+
+  public static createFromTerrainMesh(mesh: TerrainMeshPrimitive) {
     const posBuf = QBufferHandle3d.create(mesh.points.params, mesh.points.toTypedArray());
     const uvParamBuf = QBufferHandle2d.create(mesh.uvParams.params, mesh.uvParams.toTypedArray());
 
     const indArray = new Uint16Array(mesh.indices.length);
     for (let i = 0; i < mesh.indices.length; i++)
       indArray[i] = mesh.indices[i];
+    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, indArray, mesh.normals, mesh.featureID);
 
-    const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indArray);
-
-    let normBuf: BufferHandle | undefined;
-    if (mesh.normals.length > 0) {
-      const normalBytes = new Uint8Array(mesh.normals.length * 2);
-      const normalShorts = new Uint16Array(normalBytes.buffer);
-      for (let i = 0; i < mesh.normals.length; i++)
-        normalShorts[i] = mesh.normals[i].value;
-      normBuf = BufferHandle.createArrayBuffer(normalBytes);
-    }
-
-    if (undefined === posBuf || undefined === uvParamBuf || undefined === indBuf || (mesh.normals.length > 0 && undefined === normBuf))
-      return undefined;
-
-    return new SimpleMeshGeometryParams(posBuf, normBuf, uvParamBuf, indBuf, mesh.indices.length, mesh.featureID);
   }
   public get isDisposed(): boolean {
     return super.isDisposed && this.uvParams.isDisposed;

@@ -51,7 +51,7 @@ import { PointCloudGeometry } from "./PointCloud";
 import { PointStringGeometry } from "./PointString";
 import { PolylineGeometry } from "./Polyline";
 import { Primitive, SkyCubePrimitive, SkySpherePrimitive } from "./Primitive";
-import { RealityMeshGeometry, RealityMeshPrimitive } from "./RealityMesh";
+import { RealityMeshGeometry } from "./RealityMesh";
 import { RenderBuffer, RenderBufferMultiSample } from "./RenderBuffer";
 import { TextureUnit } from "./RenderFlags";
 import { RenderState } from "./RenderState";
@@ -61,6 +61,7 @@ import { Techniques } from "./Technique";
 import { TerrainMeshGeometry } from "./TerrainMesh";
 import { Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
+import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -517,7 +518,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return TerrainMeshGeometry.createGraphic(this, terrainGeometry as TerrainMeshGeometry, featureTable, tileId, baseColor, baseTransparent, textures);
   }
   public createRealityMesh(realityMesh: RealityMeshPrimitive): RenderGraphic | undefined {
-    const params = SimpleMeshGeometryParams.createFromPrimitive(realityMesh);
+    const params = SimpleMeshGeometryParams.createFromRealityMesh(realityMesh);
     return params ? Primitive.create(() =>  RealityMeshGeometry.create(params, realityMesh.texture)) : undefined;
   }
 
