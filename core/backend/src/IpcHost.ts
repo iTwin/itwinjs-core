@@ -10,8 +10,8 @@ import {
   ClientRequestContext, ClientRequestContextProps, Guid, IModelStatus, Logger, LogLevel, OpenMode, SessionProps,
 } from "@bentley/bentleyjs-core";
 import {
-  BriefcasePushAndPullNotifications, IModelChangeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion, IModelVersionProps,
-  IpcAppChannel, IpcAppFunctions, IpcAuthorizationConfiguration, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
+  AuthorizationConfiguration, BriefcasePushAndPullNotifications, IModelChangeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion,
+  IModelVersionProps, IpcAppChannel, IpcAppFunctions, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
   RemoveFunction, StandaloneOpenOptions, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -20,22 +20,26 @@ import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
-export abstract class IpcAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
+export abstract class AuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
   protected _session?: SessionProps;
-  protected _clientConfiguration?: IpcAuthorizationConfiguration;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  protected get session() { return this._session!; }
+  protected _config?: AuthorizationConfiguration;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  protected get config() { return this._config!; }
   protected _accessToken?: AccessToken;
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
-  public async initialize(requestContext: ClientRequestContextProps, config: IpcAuthorizationConfiguration): Promise<void> {
-    this._clientConfiguration = config;
+  public async initialize(requestContext: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
+    this._config = config;
     this._session = { applicationId: requestContext.applicationId, applicationVersion: requestContext.applicationVersion, sessionId: requestContext.sessionId };
   }
-  public get clientConfiguration() { return this._clientConfiguration; }
+  public get clientConfiguration() { return this._config; }
   public abstract getAccessToken(): Promise<AccessToken>;
   public abstract get isAuthorized(): boolean;
-  public getClientRequestContext() { return new ClientRequestContext(Guid.createValue(), this._session?.applicationId, this._session?.applicationVersion, this._session?.sessionId); }
+  public getClientRequestContext() { return new ClientRequestContext(Guid.createValue(), this.session.applicationId, this.session.applicationVersion, this.session.sessionId); }
   public async getAuthorizedContext() {
-    return new AuthorizedClientRequestContext(await this.getAccessToken(), Guid.createValue(), this._session?.applicationId, this._session?.applicationVersion, this._session?.sessionId);
+    return new AuthorizedClientRequestContext(await this.getAccessToken(), Guid.createValue(), this.session.applicationId, this.session.applicationVersion, this.session.sessionId);
   }
 }
 
@@ -169,8 +173,8 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public get channelName() { return IpcAppChannel.Functions; }
   private getAuthBackend() {
     const client = IModelHost.authorizationClient;
-    if (!(client instanceof IpcAuthorizationBackend))
-      throw new IModelError(IModelStatus.BadArg, "IModelHost.authorizationClient must be a IpcAuthorizationBackend");
+    if (!(client instanceof AuthorizationBackend))
+      throw new IModelError(IModelStatus.BadArg, "IModelHost.authorizationClient must be a AuthorizationBackend");
     return client;
   }
 

@@ -21,7 +21,7 @@ import {
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcParams, IModelVersion, IpcAuthorizationConfiguration, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { AuthorizationConfiguration, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelAppOptions,
   IModelConnection, NativeApp, NativeAppLogger, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOptions,
@@ -658,7 +658,7 @@ window.addEventListener("beforeunload", async () => { // eslint-disable-line @ty
   await SampleAppIModelApp.closeCurrentIModel();
 });
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | IpcAuthorizationConfiguration {
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | AuthorizationConfiguration {
   let redirectUri = "http://localhost:3000/signin-callback";
   if (ProcessDetector.isMobileAppFrontend) {
     redirectUri = "imodeljs://app/signin-callback";
@@ -692,11 +692,11 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | IpcAu
 
 async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationFrontend): Promise<FrontendAuthorizationClient> {
   if (ProcessDetector.isElectronAppFrontend) {
-    const desktopClient = new DesktopAuthorizationFrontend(oidcConfiguration as IpcAuthorizationConfiguration);
+    const desktopClient = new DesktopAuthorizationFrontend(oidcConfiguration as AuthorizationConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else if (ProcessDetector.isMobileAppFrontend) {
-    const mobileClient = new MobileAuthorizationFrontend(oidcConfiguration as IpcAuthorizationConfiguration);
+    const mobileClient = new MobileAuthorizationFrontend(oidcConfiguration as AuthorizationConfiguration);
     await mobileClient.initialize(requestContext);
     return mobileClient;
   } else {

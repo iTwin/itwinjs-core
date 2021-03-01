@@ -8,7 +8,7 @@ import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
 } from "@bentley/frontend-authorization-client";
 import {
-  CloudStorageContainerUrl, CloudStorageTileCache, IpcAuthorizationConfiguration, RpcConfiguration, TileContentIdentifier,
+  AuthorizationConfiguration, CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import { FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
 import { MobileAuthorizationFrontend } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -62,7 +62,7 @@ async function openIModel(filename: string, writable: boolean): Promise<IModelCo
   return iModelConnection;
 }
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | IpcAuthorizationConfiguration {
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | AuthorizationConfiguration {
   const redirectUri = ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
   const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
@@ -86,13 +86,13 @@ async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientC
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | IpcAuthorizationConfiguration): Promise<DesktopAuthorizationFrontend | BrowserAuthorizationClient | MobileAuthorizationFrontend> {
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | AuthorizationConfiguration): Promise<DesktopAuthorizationFrontend | BrowserAuthorizationClient | MobileAuthorizationFrontend> {
   if (ProcessDetector.isElectronAppFrontend) {
-    const desktopClient = new DesktopAuthorizationFrontend(oidcConfiguration as IpcAuthorizationConfiguration);
+    const desktopClient = new DesktopAuthorizationFrontend(oidcConfiguration as AuthorizationConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else if (ProcessDetector.isMobileAppFrontend) {
-    const mobileClient = new MobileAuthorizationFrontend(oidcConfiguration as IpcAuthorizationConfiguration);
+    const mobileClient = new MobileAuthorizationFrontend(oidcConfiguration as AuthorizationConfiguration);
     await mobileClient.initialize(requestContext);
     return mobileClient;
   } else {
