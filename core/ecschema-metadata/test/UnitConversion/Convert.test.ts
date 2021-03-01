@@ -13,8 +13,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { Float } from "../../src/UnitConversion/Float";
 import { deserializeXml } from "./DeserializeSchema";
-import { UnitConvertorContext } from '../../src/UnitConversion/Convert'
-import { getConversion, setSchema } from '../../src/UnitConversion/ConvertNew'
+import { UnitConvertorContext } from "../../src/UnitConversion/Convert";
+import { getConversion, setSchema } from "../../src/UnitConversion/ConvertNew";
 
 interface TestData {
   From: string;
@@ -31,10 +31,18 @@ describe("A unit tree creator", () => {
   );
 
   before(() => {
-    const schemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+    const schemaFile = path.join(
+      __dirname,
+      "..",
+      "..",
+      "node_modules",
+      "@bentley",
+      "units-schema",
+      "Units.ecschema.xml"
+    );
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     const schema: Schema = deserializeXml(context, schemaXml as string);
-    setSchema(schema)
+    setSchema(schema);
   });
 
   // Old converter from Convert.ts
@@ -46,12 +54,12 @@ describe("A unit tree creator", () => {
       const to = new SchemaItemKey(test.To, schemaKey);
       const map = await converter.processSchemaItem(from, to);
       const actual = map.evaluate(test.Input);
-      const ulp = Float.ulp(Math.max(test.Input, test.Expect!));
+      const ulp = Float.ulp(Math.max(test.Input, test.Expect));
       expect(
         Float.equals(test.Expect!, actual, 3 * ulp),
         `${test.Input} ${test.From} in ${test.To} should be ${
           test.Expect
-        } and not ${actual} error = ${Math.abs(test.Expect! - actual)} > ${
+        } and not ${actual} error = ${Math.abs(test.Expect - actual)} > ${
           3 * ulp
         }`
       ).to.be.true;

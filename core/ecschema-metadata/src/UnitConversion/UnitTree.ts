@@ -158,7 +158,30 @@ export class UnitGraph {
     name: string,
     defaultSchema: Schema
   ): Promise<Unit | Constant> {
-    const itemKey = this.createSchemaItemKey(name, defaultSchema);
+    const nameArr = name.split(":")
+    if (nameArr.length > 1) {
+      // Create schema key with schema name
+      const schemaKey = new SchemaKey(nameArr[0])
+      // Get schema with schema key
+      const schema = await this._context.getSchema(schemaKey);
+      if (!schema) {
+        throw new BentleyError(
+          BentleyStatus.ERROR,
+          "Cannot find schema",
+          () => {
+            return { schema: nameArr[0] };
+          }
+        );
+      } else {
+        defaultSchema = schema
+      }
+      name = nameArr[1];
+    }
+    console.log(nameArr, defaultSchema.fullName)
+
+    // Create schema item key with name and schema
+    const itemKey = this.createSchemaItemKey(name, defaultSchema);  // Maybe use getSchemaItemKey in schema instead?
+    // Get schema item with schema item key
     const item = await this._context.getSchemaItem(itemKey);
     if (!item)
       throw new BentleyError(
