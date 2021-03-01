@@ -84,6 +84,10 @@ export class TileRequestChannel {
     this._maxActive = maxActiveRequests;
   }
 
+  public setMaxActive(max: number): void {
+    this._maxActive = max;
+  }
+
   public get numActive(): number {
     return this._active.size;
   }
@@ -389,6 +393,8 @@ export class TileRequestChannels {
   /** @internal */
   public setRpcConcurrency(concurrency: number): void {
     this._rpcConcurrency = concurrency;
+    this.iModelTileRpc.setMaxActive(concurrency);
+    this.elementGraphicsRpc.setMaxActive(concurrency);
   }
 
   public get statistics(): TileRequestChannelStatistics {
