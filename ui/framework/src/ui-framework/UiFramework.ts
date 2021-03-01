@@ -88,7 +88,6 @@ export class UiFramework {
   private static _uiVersion = "";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
   private static _uiSettings: UiSettings;
-  private static _escapeToHome = false;
 
   /** Get Show Ui event.
    * @public
@@ -491,12 +490,6 @@ export class UiFramework {
       ConfigurableUiManager.closeUi();
     }
   };
-
-  /** Determines if Escape sends focus to Home
-   * @alpha
-   */
-  public static get escapeToHome(): boolean { return UiFramework._escapeToHome; }
-  public static set escapeToHome(v: boolean) { UiFramework._escapeToHome = v; }
 
   /** Determines whether a ContextMenu is open
    * @alpha
