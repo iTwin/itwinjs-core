@@ -557,7 +557,7 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
   return tree! as IModelTileTree;
 }
 
-describe("mirukuru TileTree", () => {
+describe.only("mirukuru TileTree", () => {
   let imodel: IModelConnection;
 
   class TestTarget extends MockRender.OnScreenTarget {
@@ -682,6 +682,15 @@ describe("mirukuru TileTree", () => {
       ++treeCounter;
       if (treeCounter >= numRetries)
         IModelApp.tileAdmin.requestTileTreeProps = requestTileTreeProps;
+
+      throw new ServerTimeoutError("fake timeout");
+    };
+
+    const requestTileContent = IModelTileRpcInterface.getClient().requestTileContent;
+    IModelTileRpcInterface.getClient().requestTileContent = async () => {
+      ++tileCounter;
+      if (tileCounter >= numRetries)
+        IModelTileRpcInterface.getClient().requestTileContent = requestTileContent;
 
       throw new ServerTimeoutError("fake timeout");
     };
