@@ -155,6 +155,9 @@ export class TileRequestChannel {
     for (const active of this._active)
       if (active.viewports.isEmpty)
         this.cancel(active);
+
+    // Batch-cancel running requests.
+    this.processCancellations();
   }
 
   public fill(): void {
@@ -345,20 +348,16 @@ export class TileRequestChannels {
     return this._channels.get(name);
   }
 
+  public has(channel: TileRequestChannel): boolean {
+    const existing = this.get(channel.name);
+    return existing !== undefined && existing === channel;
+  }
+
   public add(channel: TileRequestChannel): void {
     if (this.get(channel.name))
       throw new Error(`Tile request channel ${channel.name} is already registered.`);
 
     this._channels.set(channel.name, channel);
-  }
-
-  public delete(name: string): void {
-    const channel = this.get(name);
-    if (!channel)
-      return;
-
-    channel.cancelAndClearAll();
-    this._channels.delete(name);
   }
 
   /** Extract the host name from a URL for use as the name of the corresponding [[TileRequestChannel]].
@@ -403,5 +402,27 @@ export class TileRequestChannels {
   public resetStatistics(): void {
     for (const channel of this)
       channel.resetStatistics();
+  }
+
+  public swapPending(): void {
+    for (const channel of this)
+      channel.swapPending();
+  }
+
+  public process(): void {
+    for (const channel of this)
+      channel.process();
+  }
+
+  public onIModelClosed(iModel: IModelConnection): void {
+    for (const channel of this)
+      channel.onIModelClosed(iModel);
+  }
+
+  public onShutDown(): void {
+    for (const channel of this)
+      channel.cancelAndClearAll();
+
+    this._channels.clear();
   }
 }

@@ -128,10 +128,6 @@ export class TileAdmin {
   private readonly _maximumLevelsToSkip: number;
   private readonly _mobileRealityTileMinToleranceRatio: number;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
-  private _activeRequests = new Set<TileRequest>();
-  private _pendingRequests = new Queue();
-  private _swapPendingRequests = new Queue();
-  private _numCanceled = 0;
   private _totalElided = 0;
   private _rpcInitialized = false;
   private readonly _tileExpirationTime: BeDuration;
@@ -553,14 +549,7 @@ export class TileAdmin {
     }
 
     this._removeIModelConnectionOnCloseListener();
-
-    for (const request of this._activeRequests)
-      request.cancel();
-
-    this._activeRequests.clear();
-
-    for (const queued of this._pendingRequests)
-      queued.cancel();
+    this.requestChannels.onShutDown();
 
     for (const req of this._tileTreePropsRequests)
       req.abandon();
@@ -735,76 +724,17 @@ export class TileAdmin {
   }
 
   private processQueue(): void {
-    this._numCanceled = 0;
-
     // Mark all requests as being associated with no Viewports, indicating they are no longer needed.
     this._viewportSetsForRequests.clearAll();
 
-    // Process all requests, enqueueing on new queue.
-    const previouslyPending = this._pendingRequests;
-    this._pendingRequests = this._swapPendingRequests;
-    this._swapPendingRequests = previouslyPending;
+    // Notify channels that we are enqueuing new requests.
+    this.requestChannels.swapPending();
 
-    // We will repopulate pending requests queue from each viewport. We do NOT sort by priority while doing so.
+    // Repopulate pending requests queue from each viewport. We do NOT sort by priority while doing so.
     this._requestsPerViewport.forEach((value, key) => this.processRequests(key, value));
 
-    // Recompute priority of each request.
-    for (const req of this._pendingRequests)
-      req.priority = req.tile.computeLoadPriority(req.viewports);
-
-    // Sort pending requests by priority.
-    this._pendingRequests.sort();
-
-    // Cancel any previously pending requests which are no longer needed.
-    for (const queued of previouslyPending)
-      if (queued.viewports.isEmpty)
-        this.cancel(queued);
-
-    previouslyPending.clear();
-
-    // Cancel any active requests which are no longer needed.
-    // NB: Do NOT remove them from the active set until their http activity has completed.
-    for (const active of this._activeRequests)
-      if (active.viewports.isEmpty)
-        this.cancel(active);
-
-    // If the backend is servicing a single client, ask it to immediately stop processing requests for content we no longer want.
-    /* ###TODO cancel requests.
-    if (undefined !== this._canceledIModelTileRequests && this._canceledIModelTileRequests.size > 0) {
-      for (const [iModelConnection, entries] of this._canceledIModelTileRequests) {
-        const treeContentIds: TileTreeContentIds[] = [];
-        for (const [treeId, tileIds] of entries) {
-          const contentIds = Array.from(tileIds);
-          treeContentIds.push({ treeId, contentIds });
-          this._totalAbortedRequests += contentIds.length;
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IpcApp.callIpcHost("cancelTileContentRequests", iModelConnection.getRpcProps(), treeContentIds);
-      }
-
-      this._canceledIModelTileRequests.clear();
-    }
-
-    if (this._canceledElementGraphicsRequests && this._canceledElementGraphicsRequests.size > 0) {
-      for (const [connection, requestIds] of this._canceledElementGraphicsRequests) {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IpcApp.callIpcHost("cancelElementGraphicsRequests", connection.key, requestIds);
-        this._totalAbortedRequests += requestIds.length;
-      }
-
-      this._canceledElementGraphicsRequests.clear();
-    }
-    */
-
-    // Fill up the active requests from the queue.
-    while (this._activeRequests.size < this._maxActiveRequests) {
-      const request = this._pendingRequests.pop();
-      if (undefined === request)
-        break;
-      else
-        this.dispatch(request);
-    }
+    // Ask channels to update their queues and dispatch requests.
+    this.requestChannels.process();
   }
 
   /** Exported strictly for tests. @internal */
@@ -870,15 +800,16 @@ export class TileAdmin {
         if (TileLoadStatus.NotLoaded === tile.loadStatus) {
           const request = new TileRequest(tile, vp);
           tile.request = request;
-          this._pendingRequests.append(request);
+          assert(this.requestChannels.has(request.channel));
+          request.channel.append(request);
         }
       } else {
         const req = tile.request;
         assert(undefined !== req);
         if (undefined !== req) {
-          // Request may already be dispatched (in this._activeRequests) - if so do not re-enqueue!
+          // Request may already be dispatched (in channel's active requests) - if so do not re-enqueue!
           if (req.isQueued && 0 === req.viewports.length)
-            this._pendingRequests.append(req);
+            req.channel.append(req);
 
           req.addViewport(vp);
           assert(0 < req.viewports.length);
@@ -922,25 +853,6 @@ export class TileAdmin {
 
     // Dispatch TileTreeProps requests not associated with this iModel.
     this.dispatchTileTreePropsRequests();
-  }
-
-  private dispatch(req: TileRequest): void {
-    this._activeRequests.add(req);
-    req.dispatch(() => {
-      this.dropActiveRequest(req);
-    }).catch((_) => {
-      //
-    });
-  }
-
-  private cancel(req: TileRequest) {
-    req.cancel();
-    ++this._numCanceled;
-  }
-
-  private dropActiveRequest(req: TileRequest) {
-    assert(this._activeRequests.has(req) || req.isCanceled);
-    this._activeRequests.delete(req);
   }
 
   private initializeRpc(): void {
