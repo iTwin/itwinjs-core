@@ -7,7 +7,7 @@
  */
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import {
-  AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, HttpRequestOptions, RequestOptions,
+  AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, HttpRequestOptions, RequestGlobalOptions, RequestOptions,
   RequestQueryOptions, WsgClient, WsgInstance, WsgRequestOptions,
 } from "@bentley/itwin-client";
 import { CustomRequestOptions } from "./CustomRequestOptions";
@@ -85,8 +85,13 @@ export class IModelBaseHandler extends WsgClient {
     super("sv1.1");
     this.baseUrl = "https://api.bentley.com/imodelhub";
     this._fileHandler = fileHandler;
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    this._agent = require("https").Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
+    const agentOptions = { keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" };
+    if (RequestGlobalOptions.httpsProxy) {
+      this._agent = RequestGlobalOptions.createHttpsProxy(agentOptions);
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      this._agent = require("https").Agent(agentOptions);
+    }
   }
 
   /**
