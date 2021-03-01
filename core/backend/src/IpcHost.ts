@@ -153,8 +153,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return cancelTileContentRequests(tokenProps, contentIds);
   }
   public async cancelElementGraphicsRequests(key: string, requestIds: string[]): Promise<void> {
-    const iModel = IModelDb.findByKey(key);
-    return iModel.nativeDb.cancelElementGraphicsRequests(requestIds);
+    return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(requestIds);
   }
   private async createAuthorizedClientRequestContext(): Promise<AuthorizedClientRequestContext> {
     const accessToken = await IModelHost.authorizationClient?.getAccessToken();
@@ -190,30 +189,24 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return iModelDb.changeSetId;
   }
   public async toggleInteractiveEditingSession(key: string, startSession: boolean): Promise<boolean> {
-    const imodel = IModelDb.findByKey(key);
-    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = imodel.nativeDb.setGeometricModelTrackingEnabled(startSession);
+    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key).nativeDb.setGeometricModelTrackingEnabled(startSession);
     if (val.error)
       throw new IModelError(val.error.status, "Failed to toggle interactive editing session");
 
     return val.result!;
   }
   public async isInteractiveEditingSupported(key: string): Promise<boolean> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.isGeometricModelTrackingSupported();
+    return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();
   }
   public async reverseSingleTxn(key: string): Promise<IModelStatus> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.reverseTxns(1);
+    return IModelDb.findByKey(key).nativeDb.reverseTxns(1);
   }
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.reverseAll();
+    return IModelDb.findByKey(key).nativeDb.reverseAll();
   }
   public async reinstateTxn(key: string): Promise<IModelStatus> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.reinstateTxn();
+    return IModelDb.findByKey(key).nativeDb.reinstateTxn();
   }
-
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
     return IModelJsNative.queryConcurrency(pool);
   }
