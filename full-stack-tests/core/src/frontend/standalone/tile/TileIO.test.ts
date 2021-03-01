@@ -439,7 +439,7 @@ describe("TileIO (mock render)", () => {
     const modelProps = await imodel.models.getProps("0x22");
     expect(modelProps.length).to.equal(1);
 
-    const tree = await imodel.tiles.getTileTreeProps(modelProps[0].id!.toString());
+    const tree = await IModelApp.tileAdmin.requestTileTreeProps(imodel, modelProps[0].id!.toString());
 
     expect(tree.id).to.equal(modelProps[0].id);
     expect(tree.maxTilesToSkip).to.equal(1);
@@ -600,7 +600,7 @@ describe("mirukuru TileTree", () => {
     const modelProps = await imodel.models.getProps("0x1c");
     expect(modelProps.length).to.equal(1);
 
-    const treeProps = await imodel.tiles.getTileTreeProps(modelProps[0].id!);
+    const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, modelProps[0].id!);
     expect(treeProps.id).to.equal(modelProps[0].id);
     expect(treeProps.rootTile).not.to.be.undefined;
 
@@ -611,7 +611,7 @@ describe("mirukuru TileTree", () => {
     const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
     const tree = new IModelTileTree(params);
 
-    const response: TileRequest.Response = await tree.staticBranch.requestContent(() => false);
+    const response: TileRequest.Response = await tree.staticBranch.requestContent();
     expect(response).not.to.be.undefined;
     expect(response).instanceof(Uint8Array);
 
@@ -636,7 +636,7 @@ describe("mirukuru TileTree", () => {
     const test = async (tree: IModelTileTree, expectedVersion: number, expectedRootContentId: string) => {
       expect(tree).not.to.be.undefined;
       expect(tree.staticBranch.contentId).to.equal(expectedRootContentId);
-      const response = await tree.staticBranch.requestContent(() => false);
+      const response = await tree.staticBranch.requestContent();
       expect(response).instanceof(Uint8Array);
 
       // The model contains a single rectangular element.
@@ -662,7 +662,7 @@ describe("mirukuru TileTree", () => {
     await test(modelTree, CurrentImdlVersion.Combined, "-3-0-0-0-0-1");
 
     // Test directly loading a tile tree of version 3.0
-    const v3Props = await imodel.tiles.getTileTreeProps("0x1c");
+    const v3Props = await IModelApp.tileAdmin.requestTileTreeProps(imodel, "0x1c");
     expect(v3Props).not.to.be.undefined;
 
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: false, allowInstancing: false };
@@ -677,20 +677,11 @@ describe("mirukuru TileTree", () => {
     let tileCounter = 0;
     const numRetries = 3;
 
-    const getTileTreeProps = imodel.tiles.getTileTreeProps;
-    imodel.tiles.getTileTreeProps = async () => {
+    const requestTileTreeProps = IModelApp.tileAdmin.requestTileTreeProps;
+    IModelApp.tileAdmin.requestTileTreeProps = async () => {
       ++treeCounter;
       if (treeCounter >= numRetries)
-        imodel.tiles.getTileTreeProps = getTileTreeProps;
-
-      throw new ServerTimeoutError("fake timeout");
-    };
-
-    const getTileContent = imodel.tiles.getTileContent;
-    imodel.tiles.getTileContent = async () => {
-      ++tileCounter;
-      if (tileCounter >= numRetries)
-        imodel.tiles.getTileContent = getTileContent;
+        IModelApp.tileAdmin.requestTileTreeProps = requestTileTreeProps;
 
       throw new ServerTimeoutError("fake timeout");
     };
@@ -789,7 +780,7 @@ describe.skip("TileAdmin", () => {
       await cleanup();
 
       await super.startup({
-        tileAdmin: TileAdmin.create(props),
+        tileAdmin: await TileAdmin.create(props),
       });
 
       theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
@@ -828,7 +819,7 @@ describe.skip("TileAdmin", () => {
         let actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
         expect(actualTreeIdStr).to.equal(expectedTreeIdStrNoEdges);
 
-        const treePropsNoEdges = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
+        const treePropsNoEdges = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
         expect(treePropsNoEdges.id).to.equal(actualTreeIdStr);
 
         const treeNoEdges = await getTileTree(imodel, "0x1c", false, animationId);
@@ -844,7 +835,7 @@ describe.skip("TileAdmin", () => {
         actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
         expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
 
-        const treeProps = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
+        const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
         expect(treeProps.id).to.equal(actualTreeIdStr);
 
         const tree = await getTileTree(imodel, "0x1c", true, animationId);
@@ -864,7 +855,7 @@ describe.skip("TileAdmin", () => {
       }
 
       private static async rootTileHasEdges(tree: IModelTileTree, imodel: IModelConnection): Promise<boolean> {
-        const response = await tree.staticBranch.requestContent(() => false) as Uint8Array;
+        const response = await tree.staticBranch.requestContent() as Uint8Array;
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
@@ -906,7 +897,7 @@ describe.skip("TileAdmin", () => {
           treeId = `${v.toString(16)}_1-0x1c`;
         }
 
-        const tree = await imodel.tiles.getTileTreeProps(treeId);
+        const tree = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
 
         expect(tree).not.to.be.undefined;
         expect(tree.id).to.equal(treeId);
@@ -941,7 +932,7 @@ describe.skip("TileAdmin", () => {
         const flags = useProjectExtents ? "1" : "0";
         const treeId = `8_${flags}-0x1c`;
 
-        const treeProps = await imodel.tiles.getTileTreeProps(treeId);
+        const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
         const qualifier = treeProps.contentIdQualifier;
         expect(qualifier !== undefined).to.equal(useProjectExtents);
         if (undefined !== qualifier)
@@ -965,7 +956,7 @@ describe.skip("TileAdmin", () => {
           return new Uint8Array(1);
         };
 
-        await tree.staticBranch.requestContent(() => false);
+        await tree.staticBranch.requestContent();
 
         intfc.requestTileContent = requestTileContent;
 

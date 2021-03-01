@@ -25,7 +25,7 @@ describe("Tile unloading", async () => {
   };
 
   before(async () => {
-    await IModelApp.startup({ tileAdmin: TileAdmin.create(tileOpts) });
+    await IModelApp.startup({ tileAdmin: await TileAdmin.create(tileOpts) });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
   });
 

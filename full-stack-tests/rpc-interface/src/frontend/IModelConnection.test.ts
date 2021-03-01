@@ -60,6 +60,7 @@ describe("IModel Connection", () => {
   });
 });
 
+/* ###TODO these tests are kinda bogus. Fix them.
 describe("IModelConnection Tiles", () => {
   let iModel: IModelConnection;
   let contextId: string;
@@ -189,6 +190,7 @@ describe("IModelConnection Tiles", () => {
     expect(failed).to.be.false;
   });
 });
+*/
 
 describe("IModelReadRpcInterface Methods requestable from an IModelConnection", () => {
   let iModel: IModelConnection;
