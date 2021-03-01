@@ -288,7 +288,7 @@ class ElementGraphicsChannel extends TileRequestChannel {
 }
 
 export class TileRequestChannels {
-  public readonly cloudStorageCache?: TileRequestChannel;
+  private _cloudStorageCache?: TileRequestChannel;
   public readonly iModelTileRpc: TileRequestChannel;
   public readonly elementGraphicsRpc: TileRequestChannel;
   public readonly httpConcurrency = 6;
@@ -297,9 +297,6 @@ export class TileRequestChannels {
 
   public constructor(rpcConcurrency: number, rpcUsesIpc: boolean) {
     this._rpcConcurrency = rpcConcurrency;
-
-    // ###TODO: leave undefined if no cloud storage tile cache is configured.
-    this.add(this.cloudStorageCache = new CloudStorageCacheChannel("cloudStorageCache", this.httpConcurrency))
 
     const imodelChannelName = "requestTileContent";
     const elementGraphicsChannelName = "requestElementGraphics";
@@ -313,6 +310,16 @@ export class TileRequestChannels {
 
     this.add(this.iModelTileRpc);
     this.add(this.elementGraphicsRpc);
+  }
+
+  public get cloudStorageCache(): TileRequestChannel | undefined {
+    return this._cloudStorageCache;
+  }
+
+  public enableCloudStorageCache(): void {
+    assert(undefined === this._cloudStorageCache);
+    if (!this._cloudStorageCache)
+      this.add(this._cloudStorageCache = new CloudStorageCacheChannel("cloudStorageCache", this.httpConcurrency));
   }
 
   public get(name: string): TileRequestChannel | undefined {
