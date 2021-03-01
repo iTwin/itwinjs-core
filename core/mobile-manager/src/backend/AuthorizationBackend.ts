@@ -9,7 +9,7 @@
 import { assert, ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
 import { IpcAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
 import { IpcAuthorizationConfiguration } from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps } from "@bentley/itwin-client";
+import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
@@ -23,7 +23,9 @@ export class MobileAuthorizationBackend extends IpcAuthorizationBackend {
   /** Used to initialize the client - must be awaited before any other methods are called */
   public async initialize(requestContext: ClientRequestContext, config: IpcAuthorizationConfiguration): Promise<void> {
     await super.initialize(requestContext, config);
-    this._clientConfiguration!.issuerUrl = await this.getUrl(requestContext);
+    if (!this._clientConfiguration!.issuerUrl) {
+      this._clientConfiguration!.issuerUrl = await this.getUrl(requestContext);
+    }
 
     MobileHost.device.authStateChanged = (tokenString?: string) => {
       let token: AccessToken | undefined;

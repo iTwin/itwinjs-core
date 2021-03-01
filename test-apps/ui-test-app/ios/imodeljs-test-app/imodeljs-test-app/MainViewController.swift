@@ -68,8 +68,8 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         let bundlePath = Bundle.main.bundlePath;
         let mainPath = bundlePath.appending ("/Assets/main.js");
         let main = URL(fileURLWithPath: mainPath);
-        // let client = MobileAuthorizationClient(viewController: self);
-        let client = ProxyAuthClient();
+        let client = MobileAuthorizationClient(viewController: self);
+        //let client = ProxyAuthClient();
         host.loadBackend(main, withAuthClient: client,withInspect: true)
     }
 

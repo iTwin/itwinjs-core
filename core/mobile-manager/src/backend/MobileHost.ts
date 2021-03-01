@@ -83,7 +83,6 @@ class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
 export class MobileHost {
   private static _device?: MobileDevice;
   public static get device() { return this._device!; }
-  private static _authInitialized: boolean = false;
   public static readonly onMemoryWarning = new BeEvent();
   public static readonly onOrientationChanged = new BeEvent();
   public static readonly onEnterForeground = new BeEvent();
@@ -100,8 +99,18 @@ export class MobileHost {
     return new Promise<void>((resolve, reject) => {
 
       let progressCb: MobileProgressCallback | undefined;
+      let lastReportedOn = Date.now();
+      const minTimeBeforeReportingProgress = 1000;
       if (progress) {
         progressCb = (_bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => {
+          const currentTime = Date.now();
+          const timeSinceLastEvent = currentTime - lastReportedOn;
+          // report all event for last 5 Mbs so we never miss 100% progress event
+          const lastEvent = (totalBytesExpectedToWrite - totalBytesWritten) < 1024 * 1024 * 5;
+          if (timeSinceLastEvent < minTimeBeforeReportingProgress && !lastEvent)
+            return;
+
+          lastReportedOn = currentTime;
           const percent = Number((100 * (totalBytesWritten / totalBytesExpectedToWrite)).toFixed(2));
           progress({ total: totalBytesExpectedToWrite, loaded: totalBytesWritten, percent });
         };

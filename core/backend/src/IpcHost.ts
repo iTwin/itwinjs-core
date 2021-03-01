@@ -183,10 +183,6 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async cancelElementGraphicsRequests(key: string, requestIds: string[]): Promise<void> {
     return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(requestIds);
   }
-  private async createAuthorizedClientRequestContext(): Promise<AuthorizedClientRequestContext> {
-    const accessToken = await IModelHost.authorizationClient?.getAccessToken();
-    return new AuthorizedClientRequestContext(accessToken!, "", ClientRequestContext.current.applicationId, ClientRequestContext.current.applicationVersion, ClientRequestContext.current.sessionId);
-  }
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
     const auth = this.getAuthBackend();
     const requestContext = args.readonly === true ? auth.getClientRequestContext() : await auth.getAuthorizedContext();
