@@ -55,7 +55,9 @@ describe("DoublePropertyValueRenderer", () => {
     it("renders double property wrapped in an anchored tag when property record has it", () => {
       const renderer = new DoublePropertyValueRenderer();
       const property = createDoubleProperty(0.45, "zero point forty five meters");
-      property.links = { onClick: sinon.spy() };
+      property.links = {
+        onClick: sinon.spy(),
+      };
 
       const element = renderer.render(property);
       const renderedElement = render(<>{element}</>);

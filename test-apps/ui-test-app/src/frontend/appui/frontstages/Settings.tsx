@@ -52,8 +52,6 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
   private _darkLabel = UiFramework.i18n.translate("SampleApp:settingsStage.dark");
   private _lightLabel = UiFramework.i18n.translate("SampleApp:settingsStage.light");
   private _systemPreferredLabel = UiFramework.i18n.translate("SampleApp:settingsStage.systemPreferred");
-  private _escapeToHomeTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.escapeToHomeTitle");
-  private _escapeToHomeDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.escapeToHomeDescription");
   private _accuDrawNotificationsTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsTitle");
   private _accuDrawNotificationsDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsDescription");
   private _widgetOpacityTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.widgetOpacityTitle");
@@ -104,12 +102,6 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
     await SampleAppIModelApp.appUiSettings.snapWidgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
   };
 
-  private _onEscapeToHomeChange = async () => {
-    UiFramework.escapeToHome = !UiFramework.escapeToHome;
-
-    await SampleAppIModelApp.appUiSettings.escapeToHome.saveSetting(SampleAppIModelApp.uiSettings);
-  };
-
   private _onAccuDrawNotificationsChange = async () => {
     FrameworkAccuDraw.displayNotifications = !FrameworkAccuDraw.displayNotifications;
 
@@ -152,9 +144,6 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
         />
         <SettingsItem title={this._snapWidgetOpacityTitle} description={this._snapWidgetOpacityDescription}
           settingUi={ <Toggle isOn={UiShowHideManager.snapWidgetOpacity} showCheckmark={false} onChange={this._onSnapWidgetOpacityChange} /> }
-        />
-        <SettingsItem title={this._escapeToHomeTitle} description={this._escapeToHomeDescription}
-          settingUi={ <Toggle isOn={UiFramework.escapeToHome} showCheckmark={false} onChange={this._onEscapeToHomeChange} /> }
         />
         <SettingsItem title={this._accuDrawNotificationsTitle} description={this._accuDrawNotificationsDescription}
           settingUi={ <Toggle isOn={FrameworkAccuDraw.displayNotifications} showCheckmark={false} onChange={this._onAccuDrawNotificationsChange} /> }
