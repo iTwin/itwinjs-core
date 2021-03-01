@@ -8,12 +8,17 @@ import { Range3d, Transform } from "@bentley/geometry-core";
 import { IModelTileTreeProps, ServerTimeoutError, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import {
   IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileAdmin, TileContent, TileDrawArgs,
-  TileLoadPriority, TileRequest, TileTree,
+  TileLoadPriority, TileRequest, TileRequestChannel, TileTree,
 } from "@bentley/imodeljs-frontend";
 
 class MockTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     resolve([]);
+  }
+
+  public getRequestChannel() {
+    // This is never called.
+    return { } as unknown as TileRequestChannel;
   }
 
   public async requestContent(_canceled: () => boolean): Promise<TileRequest.Response> {

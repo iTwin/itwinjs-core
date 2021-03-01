@@ -215,7 +215,6 @@ class CloudStorageCacheChannel extends TileRequestChannel {
   }
 
   public onNoContent(request: TileRequest): boolean {
-    // ###TODO: Mark tile as "not found in cache" so it uses RPC channel instead.
     assert(request.tile instanceof IModelTile);
     request.tile.cacheMiss = true;
     ++this._statistics.totalCacheMisses;

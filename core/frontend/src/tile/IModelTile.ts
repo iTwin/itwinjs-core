@@ -16,7 +16,7 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import {
   addRangeGraphic, ImdlReader, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
-  TileTreeLoadStatus, TileVisibility,
+  TileRequestChannel, TileTreeLoadStatus, TileVisibility,
 } from "./internal";
 
 /** Parameters used to construct an [[IModelTile]].
@@ -86,6 +86,12 @@ export class IModelTile extends Tile {
   public get hasSizeMultiplier() { return undefined !== this.sizeMultiplier; }
   public get maximumSize(): number {
     return super.maximumSize * (this.sizeMultiplier ?? 1.0);
+  }
+
+  public get requestChannel(): TileRequestChannel {
+    const channels = IModelApp.tileAdmin.requestChannels;
+    const cloud = !this.cacheMiss ? channels.cloudStorageCache : undefined;
+    return cloud ?? channels.iModelTileRpc;
   }
 
   public async requestContent(): Promise<TileRequest.Response> {

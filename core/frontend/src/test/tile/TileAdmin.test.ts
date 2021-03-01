@@ -130,6 +130,10 @@ describe("TileAdmin", () => {
         resolve(undefined);
       }
 
+      public get requestChannel() {
+        return IModelApp.tileAdmin.requestChannels.getForHttp("test-tile");
+      }
+
       public async requestContent(): Promise<TileRequest.Response> {
         return Promise.resolve("content");
       }
