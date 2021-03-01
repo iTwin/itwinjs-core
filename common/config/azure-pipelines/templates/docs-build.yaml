@@ -36,7 +36,7 @@ steps:
   displayName: Install BeMetalsmith
   inputs:
     command: custom
-    customCommand: "@bentley/bemetalsmith@4.x"
+    customCommand: "npm i @bentley/bemetalsmith@4.x"
     workingDir: $(Agent.TempDirectory)/bemetalsmith
 
 - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }} --siteTitle iTwin.js"
