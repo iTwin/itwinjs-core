@@ -1331,7 +1331,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
    */
   export const nonMobileGpuMemoryLimits = {
     default: 1024 * 1024 * 1024, // 1 GB
-    aggressive: 500 * 1024 * 1024, // 400 MB
+    aggressive: 500 * 1024 * 1024, // 500 MB
     relaxed: 2.5 * 1024 * 1024 * 1024, // 2.5 GB
   };
 
@@ -1344,7 +1344,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
   export const mobileGpuMemoryLimits = {
     default: 200 * 1024 * 1024, // 200 MB
     aggressive: 75 * 1024 * 1024, // 75 MB
-    relaxed: 500 * 1024 * 1024 * 1024, // 500 MB
+    relaxed: 500 * 1024 * 1024, // 500 MB
   };
 }
 
