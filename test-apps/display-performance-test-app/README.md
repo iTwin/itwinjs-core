@@ -1,17 +1,17 @@
 # How to Utilize the Performance Tests
 
-## To run a performance test with electron
+## To run a performance test with electron:
 
 * Run the command "npm run start:electron".
 
-## To run a performance test on a web browser
+## To run a performance test on a web browser:
 
 * Run the command "npm run start:web" to just run the backend. Then, go to a web browser and go to the site http:\\\\localhost:3000 to start the test.
 * Run the command "npm run test:chrome" to run the backend and automatically bring up a Google Chrome browser window to start the test. This will also automatically kill **ALL** Google Chrome browser windows once the test has completed.
 * Run the command "npm run test:edge" to run the backend and automatically bring up an Edge browser window to start the test. This will also automatically kill **ALL** Edge browser windows once the test has completed.
 * Run the command "npm run test:firefox" to run the backend and automatically bring up a FireFox browser window to start the test. This will also automatically kill **ALL** FireFox browser windows once the test has completed.
 
-## Options available for a performance test run
+## Options available for a performance test run:
 
 These options will work for running with electron or for a browser (though specifying a specific browser when running with electron will have no effect). Always use a double backslash when specifying a file path. All of these options can be specified in any order, and you can use any number of these options.  For example, to specify everything, your command could look like this: "npm run start:web chrome d:\\\\develop\\\\testConfig.json c:\\\\performanceOutput\\\\".
 
@@ -54,7 +54,7 @@ The default configuration file allows you to specify the following:
 You can specify filename options that you wish to ignore:
 When you chose to produce images through an 'image' or 'both' test, the program will name them in the following format: modelName_viewName_renderMode_viewFlagOpts_renderModeOpts_tilePropsOpts.png (for example, SmallTextTest008_Wireframe_-fll+scL+cmL+slL-clp+con_+solShd_+inst.png). If you chose to do a 'readPixels' test, the program will save the images produced from this in the following format: depth/elemId/type_readPixelsSelectorOpts_modelName_viewName_renderMode_viewFlagOpts_renderModeOpts_tilePropsOpts.png (for example, type_+geom+dist_TimingTest01_V0_HiddenLine_-fll+scL+cmL+slL-clp+con_+solShd_+inst.png). The read pixels selector options, view flag options, render mode options, and tile properties options will all be an abbreviated string representation of the actual property. For example, the render mode option 'enableInstancing' would be shown as '+inst' in the filename. The 'filenameOptsToIgnore' property allows you to specify either an array of strings or a single space delimited string, where each string item is an abbreviated string representation of a read pixels selector option, view flag option, render mode option, or tile properties option. These options will not be included in the image names.
 
-You can specify which saved view you wish to use for each test with the viewName property.  If external saved views exist for the local file you can specify which external saved view to use with the extViewName property (you can also specify external saved views by name using the viewName property if the name does not clash with a normal saved view).  You can also specify a saved view to use via the viewString property.  The viewString property must include the _viewname and_viewStatePropsString properties (and optionally the _selectedElements and/or_overrideElements properties) which you can copy from the external saved view file.
+You can specify which saved view you wish to use for each test with the viewName property.  If external saved views exist for the local file you can specify which external saved view to use with the extViewName property (you can also specify external saved views by name using the viewName property if the name does not clash with a normal saved view).  You can also specify a saved view to use via the viewString property.  The viewString property must include the _viewname and _viewStatePropsString properties (and optionally the _selectedElements and/or _overrideElements properties) which you can copy from the external saved view file.
 
 If you wish to specify multiple saved views in the same model, you can use a asterisk wildcard instead of a specific view name to test multiple views matching the given wildcard. This is NOT case-sensitive. For example, to test all views, set viewName to "*". To test all views with the word 'Edge' in them, set viewName to "*edge*". To test views starting with the word edge, use "edge*". Additionally, you can use the savedViewType setting to "external", "internal", or "both" to specify if you only want to test all of the external saved views, local saved views, or both the local and external saved views. If nothing is specified, the savedViewType will default to using both sets of saved views.
 
