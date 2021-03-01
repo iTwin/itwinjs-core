@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { BriefcaseQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -324,16 +324,19 @@ export class HubUtility {
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
     status = HubUtility.applyChangeSetsToNativeDb(nativeDb, changeSets, ChangeSetApplyOption.Merge);
 
+    // Reverse changes until there's a schema change set (note that schema change sets cannot be reversed)
+    const reverseChangeSets = changeSets.reverse();
+    const schemaChangeIndex = reverseChangeSets.findIndex((token: ChangeSetToken) => token.changeType === ChangesType.Schema);
+    const filteredChangeSets = reverseChangeSets.slice(0, schemaChangeIndex); // exclusive of element at schemaChangeIndex
     if (status === ChangeSetStatus.Success) {
       Logger.logInfo(HubUtility.logCategory, "Reversing all available change sets");
-      changeSets.reverse();
-      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, changeSets, ChangeSetApplyOption.Reverse);
+      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Reverse);
     }
 
     if (status === ChangeSetStatus.Success) {
       Logger.logInfo(HubUtility.logCategory, "Reinstating all available change sets");
-      changeSets.reverse();
-      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, changeSets, ChangeSetApplyOption.Reinstate);
+      filteredChangeSets.reverse();
+      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Reinstate);
     }
 
     nativeDb.closeIModel();
