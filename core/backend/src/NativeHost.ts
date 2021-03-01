@@ -65,15 +65,20 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public async getConfig(): Promise<any> {
     return Config.App.getContainer();
   }
+  private async createAuthorizedClientRequestContext(): Promise<AuthorizedClientRequestContext> {
+    const accessToken = await IModelHost.authorizationClient?.getAccessToken();
+    return new AuthorizedClientRequestContext(accessToken!, "", ClientRequestContext.current.applicationId, ClientRequestContext.current.applicationVersion, ClientRequestContext.current.sessionId);
+  }
+
   public async acquireNewBriefcaseId(iModelId: GuidString): Promise<number> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = await this.createAuthorizedClientRequestContext();
     return BriefcaseManager.acquireNewBriefcaseId(requestContext, iModelId);
   }
   public async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
     return BriefcaseManager.getFileName(props);
   }
   public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean): Promise<LocalBriefcaseProps> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = await this.createAuthorizedClientRequestContext();
 
     const args = {
       ...request,

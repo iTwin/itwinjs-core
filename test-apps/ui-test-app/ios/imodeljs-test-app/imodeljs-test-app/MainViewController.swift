@@ -9,7 +9,7 @@ import WebKit
 
 class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     private var webView : WKWebView? = nil
-
+    private var timer = Timer()
     func setupBackend () {
         let host = IModelJsHost.sharedInstance();
         let bundlePath = Bundle.main.bundlePath;
@@ -17,7 +17,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         let main = URL(fileURLWithPath: mainPath);
         let client = MobileAuthorizationClient(viewController: self);
         host.loadBackend(main, withAuthClient: client,withInspect: true)
-
     }
 
     func setupFrontend (bimFile: URL?) {
@@ -73,8 +72,11 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackend()
-        setupFrontend(bimFile: nil)
+        timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { (Timer) in
+            self.setupFrontend(bimFile: nil);
+        })
     }
 
 }
+
 

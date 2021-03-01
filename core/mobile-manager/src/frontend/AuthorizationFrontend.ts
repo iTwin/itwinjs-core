@@ -22,6 +22,9 @@ export class MobileAuthorizationFrontend extends ImsAuthorizationClient implemen
   /** Used to initialize the client - must be awaited before any other methods are called */
   public async initialize(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
+    this.onUserStateChanged.addListener((token?: AccessToken) => {
+      this._accessToken = token;
+    });
     this._clientConfiguration.issuerUrl = await this.getUrl(requestContext);
     await NativeApp.callNativeHost("initializeAuth", requestContext, this._clientConfiguration);
   }

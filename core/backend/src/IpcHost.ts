@@ -18,19 +18,19 @@ import { IModelHost, IModelHostConfiguration } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
- * Options for [[IpcHost.startup]]
- * @beta
- */
+  * Options for [[IpcHost.startup]]
+  * @beta
+  */
 export interface IpcHostOptions {
   /** The Ipc socket to use for communications with frontend. Allows undefined only for headless tests. */
   socket?: IpcSocketBackend;
 }
 
 /**
- * Used by applications that have a dedicated backend. IpcHosts may send messages to their corresponding IpcApp.
- * @note if either end terminates, the other must too.
- * @beta
-*/
+  * Used by applications that have a dedicated backend. IpcHosts may send messages to their corresponding IpcApp.
+  * @note if either end terminates, the other must too.
+  * @beta
+ */
 export class IpcHost {
   private static _ipc: IpcSocketBackend | undefined;
   /** Get the implementation of the [IpcSocketBackend]($common) interface. */
@@ -156,8 +156,12 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     const iModel = IModelDb.findByKey(key);
     return iModel.nativeDb.cancelElementGraphicsRequests(requestIds);
   }
+  private async createAuthorizedClientRequestContext(): Promise<AuthorizedClientRequestContext> {
+    const accessToken = await IModelHost.authorizationClient?.getAccessToken();
+    return new AuthorizedClientRequestContext(accessToken!, "", ClientRequestContext.current.applicationId, ClientRequestContext.current.applicationVersion, ClientRequestContext.current.sessionId);
+  }
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
-    const requestContext = ClientRequestContext.current;
+    const requestContext = args.readonly ? ClientRequestContext.current : await this.createAuthorizedClientRequestContext();
     const db = await BriefcaseDb.open(requestContext, args);
     requestContext.enter();
     return db.toJSON();
@@ -176,13 +180,13 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
   public async pullAndMergeChanges(key: string): Promise<IModelConnectionProps> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = await this.createAuthorizedClientRequestContext();
     await iModelDb.pullAndMergeChanges(requestContext);
     return iModelDb.getConnectionProps();
   }
   public async pushChanges(key: string, description: string): Promise<IModelConnectionProps> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = await this.createAuthorizedClientRequestContext();
     await iModelDb.pushChanges(requestContext, description);
     return iModelDb.getConnectionProps();
   }
@@ -211,4 +215,3 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return imodel.nativeDb.reinstateTxn();
   }
 }
-

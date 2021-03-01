@@ -21,7 +21,6 @@ export const nativeAppNotify = "nativeApp-notify";
  */
 export interface NativeAuthorizationConfiguration {
   issuerUrl?: string;
-  redirectUrl?: string;
   stateKey?: string;
 
   /** Client application's identifier as registered with the Bentley IMS OIDC/OAuth2 provider. */
