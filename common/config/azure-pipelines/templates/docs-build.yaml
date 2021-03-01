@@ -37,11 +37,11 @@ steps:
   inputs:
     command: custom
     customCommand: "@bentley/bemetalsmith@4.x"
-    workingDir: $(Agent.ArtifactsDirectory)/bemetalsmith
+    workingDir: $(Agent.TempDirectory)/bemetalsmith
 
 - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }} --siteTitle iTwin.js"
   displayName: Run bmsBuild
-  workingDirectory: $(Agent.ArtifactsDirectory)/bemetalsmith
+  workingDirectory: $(Agent.TempDirectory)/bemetalsmith
 
 # Update the .updated.json file after the bmsBuild
 - task: PublishPipelineArtifact@1
