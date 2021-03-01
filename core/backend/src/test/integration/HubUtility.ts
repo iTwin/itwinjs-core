@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
