@@ -53,7 +53,7 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "imjs_buddi_resolve_url_using_region"
-            value = "&quot;102&quot;"
+            value = "102"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
