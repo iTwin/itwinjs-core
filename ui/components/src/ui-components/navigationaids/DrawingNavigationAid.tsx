@@ -322,6 +322,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       this._lastPanTime = t - 16.667;
     const delta = t - this._lastPanTime;
     this._lastPanTime = t;
+    // istanbul ignore else
     if (!this.state.panningDirection.isAlmostZero && this.state.isMoving) {
       const { panningDirection } = this.state;
       const offset = panningDirection.scale(delta / 1000 / this.state.drawingZoom);
