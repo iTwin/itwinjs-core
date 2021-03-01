@@ -48,13 +48,16 @@ export class AuthorizedClientRequestContext extends ClientRequestContext {
     this.accessToken = accessToken;
   }
 
-  /**
-   * @internal
-   */
+  /** @internal */
   public toJSON(): AuthorizedClientRequestContextProps {
     const obj = super.toJSON() as AuthorizedClientRequestContextProps;
     obj.accessToken = this.accessToken.toJSON();
     return obj;
+  }
+  /** @internal */
+  public static fromJSON(json: AuthorizedClientRequestContextProps): AuthorizedClientRequestContext {
+    return new AuthorizedClientRequestContext(AccessToken.fromJson(json.accessToken), json.activityId, json.applicationId, json.applicationVersion, json.sessionId);
+
   }
 }
 

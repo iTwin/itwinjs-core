@@ -8,7 +8,7 @@
  * @module Authentication
  */
 
-import { assert, AuthStatus, BentleyError, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, ClientRequestContextProps, Guid, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
 import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
@@ -41,12 +41,12 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
    * Used to initialize the client - must be awaited before any other methods are called.
    * The call attempts a silent sign-if possible.
    */
-  public async initialize(requestContext: ClientRequestContext, config: AuthorizationConfiguration): Promise<void> {
-    await super.initialize(requestContext, config);
+  public async initialize(props: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
+    await super.initialize(props, config);
     this._tokenStore = new ElectronTokenStore(config.clientId);
-    this._session = { applicationId: requestContext.applicationId, applicationVersion: requestContext.applicationVersion, sessionId: requestContext.sessionId };
+    this._session = { applicationId: props.applicationId, applicationVersion: props.applicationVersion, sessionId: props.sessionId };
 
-    const url = await this.getUrl(requestContext);
+    const url = await this.getUrl(ClientRequestContext.fromJSON(props));
     const tokenRequestor = new NodeRequestor(); // the Node.js based HTTP client
     this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(
       url,

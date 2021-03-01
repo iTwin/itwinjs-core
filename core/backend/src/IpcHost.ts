@@ -37,7 +37,7 @@ export abstract class AuthorizationBackend extends ImsAuthorizationClient implem
   public get clientConfiguration() { return this._config; }
   public abstract getAccessToken(): Promise<AccessToken>;
   public abstract get isAuthorized(): boolean;
-  public getClientRequestContext() { return new ClientRequestContext(Guid.createValue(), this.session.applicationId, this.session.applicationVersion, this.session.sessionId); }
+  public getClientRequestContext() { return ClientRequestContext.fromJSON(this.session); }
   public async getAuthorizedContext() {
     return new AuthorizedClientRequestContext(await this.getAccessToken(), Guid.createValue(), this.session.applicationId, this.session.applicationVersion, this.session.sessionId);
   }

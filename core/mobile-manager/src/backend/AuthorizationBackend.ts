@@ -6,7 +6,7 @@
  * @module OIDC
  */
 
-import { assert, ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, ClientRequestContextProps, Guid } from "@bentley/bentleyjs-core";
 import { AuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
 import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps } from "@bentley/itwin-client";
@@ -16,13 +16,11 @@ import { MobileHost } from "./MobileHost";
  * @alpha
  */
 export class MobileAuthorizationBackend extends AuthorizationBackend {
-  // TODO: Affan, this shouldn't be necessary - remove arg from MobileHost.device methods
-  private getRequestContext() {
-    return new ClientRequestContext(Guid.createValue(), this._session?.applicationId, this._session?.applicationVersion, this._session?.sessionId);
-  }
+  private getRequestContext() { return ClientRequestContext.fromJSON(this.session); }
   /** Used to initialize the client - must be awaited before any other methods are called */
-  public async initialize(requestContext: ClientRequestContext, config: AuthorizationConfiguration): Promise<void> {
-    await super.initialize(requestContext, config);
+  public async initialize(props: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
+    await super.initialize(props, config);
+    const requestContext = ClientRequestContext.fromJSON(props);
     this.config.issuerUrl = await this.getUrl(requestContext);
 
     MobileHost.device.authStateChanged = (tokenString?: string) => {
