@@ -5,7 +5,7 @@
 
 import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IpcAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { NativeApp } from "@bentley/imodeljs-frontend";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 
@@ -14,8 +14,8 @@ import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
  */
 export class MobileAuthorizationFrontend extends ImsAuthorizationClient implements FrontendAuthorizationClient {
   private _accessToken?: AccessToken;
-  private _clientConfiguration: IpcAuthorizationConfiguration;
-  public constructor(clientConfiguration: IpcAuthorizationConfiguration) {
+  private _clientConfiguration: AuthorizationConfiguration;
+  public constructor(clientConfiguration: AuthorizationConfiguration) {
     super();
     this._clientConfiguration = clientConfiguration;
   }

@@ -6,27 +6,24 @@
  * @module OIDC
  */
 
-import { assert, ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
-import { IpcAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
-import { IpcAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { assert, ClientRequestContext, ClientRequestContextProps, Guid } from "@bentley/bentleyjs-core";
+import { AuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
+import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
  * @alpha
  */
-export class MobileAuthorizationBackend extends IpcAuthorizationBackend {
-  // TODO: Affan, this shouldn't be necessary - remove arg from MobileHost.device methods
-  private getRequestContext() {
-    return new ClientRequestContext(Guid.createValue(), this._session?.applicationId, this._session?.applicationVersion, this._session?.sessionId);
-  }
+export class MobileAuthorizationBackend extends AuthorizationBackend {
+  private getRequestContext() { return ClientRequestContext.fromJSON(this.session); }
   /** Used to initialize the client - must be awaited before any other methods are called */
-  public async initialize(requestContext: ClientRequestContext, config: IpcAuthorizationConfiguration): Promise<void> {
-    await super.initialize(requestContext, config);
-    if (!this._clientConfiguration!.issuerUrl) {
-      this._clientConfiguration!.issuerUrl = await this.getUrl(requestContext);
+  public async initialize(props: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
+    await super.initialize(props, config);
+    if (!this.config.issuerUrl) {
+      const requestContext = ClientRequestContext.fromJSON(props);
+      this.config.issuerUrl = await this.getUrl(requestContext);
     }
-
     MobileHost.device.authStateChanged = (tokenString?: string) => {
       let token: AccessToken | undefined;
       if (tokenString) {

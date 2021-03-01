@@ -8,7 +8,7 @@
  */
 
 import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IpcAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { NativeApp } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 
@@ -17,11 +17,11 @@ import { AccessToken } from "@bentley/itwin-client";
  * @alpha
  */
 export class DesktopAuthorizationFrontend {
-  private _clientConfiguration: IpcAuthorizationConfiguration;
+  private _clientConfiguration: AuthorizationConfiguration;
   private _accessToken?: AccessToken;
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
-  public constructor(clientConfiguration: IpcAuthorizationConfiguration) {
+  public constructor(clientConfiguration: AuthorizationConfiguration) {
     this._clientConfiguration = clientConfiguration;
   }
 

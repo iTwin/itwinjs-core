@@ -8,9 +8,9 @@
  * @module Authentication
  */
 
-import { assert, AuthStatus, BentleyError, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
-import { IpcAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
-import { IpcAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, ClientRequestContextProps, Guid, Logger } from "@bentley/bentleyjs-core";
+import { AuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
+import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
@@ -30,7 +30,7 @@ const loggerCategory = "electron-backend";
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
  * @alpha
  */
-export class DesktopAuthorizationBackend extends IpcAuthorizationBackend {
+export class DesktopAuthorizationBackend extends AuthorizationBackend {
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
 
@@ -41,12 +41,12 @@ export class DesktopAuthorizationBackend extends IpcAuthorizationBackend {
    * Used to initialize the client - must be awaited before any other methods are called.
    * The call attempts a silent sign-if possible.
    */
-  public async initialize(requestContext: ClientRequestContext, config: IpcAuthorizationConfiguration): Promise<void> {
-    await super.initialize(requestContext, config);
+  public async initialize(props: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
+    await super.initialize(props, config);
     this._tokenStore = new ElectronTokenStore(config.clientId);
-    this._session = { applicationId: requestContext.applicationId, applicationVersion: requestContext.applicationVersion, sessionId: requestContext.sessionId };
+    this._session = { applicationId: props.applicationId, applicationVersion: props.applicationVersion, sessionId: props.sessionId };
 
-    const url = await this.getUrl(requestContext);
+    const url = await this.getUrl(ClientRequestContext.fromJSON(props));
     const tokenRequestor = new NodeRequestor(); // the Node.js based HTTP client
     this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(
       url,
@@ -92,7 +92,7 @@ export class DesktopAuthorizationBackend extends IpcAuthorizationBackend {
       return;
 
     // Create the authorization request
-    const nativeConfig = this._clientConfiguration!;
+    const nativeConfig = this.config;
     const authReqJson: AuthorizationRequestJson = {
       client_id: nativeConfig.clientId, // eslint-disable-line @typescript-eslint/naming-convention
       redirect_uri: nativeConfig.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
@@ -278,7 +278,7 @@ export class DesktopAuthorizationBackend extends IpcAuthorizationBackend {
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
     /* eslint-disable @typescript-eslint/naming-convention */
-    const nativeConfig = this._clientConfiguration!;
+    const nativeConfig = this.config;
     const extras: StringMap = { code_verifier: codeVerifier };
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
@@ -299,7 +299,7 @@ export class DesktopAuthorizationBackend extends IpcAuthorizationBackend {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
-    const nativeConfig = this._clientConfiguration!;
+    const nativeConfig = this.config;
     /* eslint-disable @typescript-eslint/naming-convention */
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_REFRESH_TOKEN,
@@ -322,7 +322,7 @@ export class DesktopAuthorizationBackend extends IpcAuthorizationBackend {
     const refreshToken = this._tokenResponse.refreshToken!;
 
     /* eslint-disable @typescript-eslint/naming-convention */
-    const nativeConfig = this._clientConfiguration!;
+    const nativeConfig = this.config;
     const revokeTokenRequestJson: RevokeTokenRequestJson = {
       token: refreshToken,
       token_type_hint: "refresh_token",

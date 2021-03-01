@@ -9,14 +9,14 @@
 import * as path from "path";
 import { BeEvent, ClientRequestContextProps, Config, GuidString, IModelStatus } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, IModelError, InternetConnectivityStatus, IpcAuthorizationConfiguration, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
+  AuthorizationConfiguration, BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
-import { IpcAuthorizationBackend, IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
+import { AuthorizationBackend, IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
 /**
@@ -27,14 +27,14 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 
   private getAuthBackend() {
     const client = IModelHost.authorizationClient;
-    if (!(client instanceof IpcAuthorizationBackend))
-      throw new IModelError(IModelStatus.BadArg, "IModelHost.authorizationClient must be a IpcAuthorizationBackend");
+    if (!(client instanceof AuthorizationBackend))
+      throw new IModelError(IModelStatus.BadArg, "IModelHost.authorizationClient must be a AuthorizationBackend");
     return client;
   }
   private async getAuthContext() {
     return this.getAuthBackend().getAuthorizedContext();
   }
-  public async initializeAuth(props: ClientRequestContextProps, config: IpcAuthorizationConfiguration): Promise<void> {
+  public async initializeAuth(props: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
     return this.getAuthBackend().initialize(props, config);
   }
   public async signIn(): Promise<void> {

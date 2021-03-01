@@ -27,7 +27,7 @@ export interface SessionProps {
  */
 export interface ClientRequestContextProps extends SessionProps {
   /** Used for logging to correlate all service requests that originated from this client request */
-  readonly activityId: GuidString;
+  readonly activityId?: GuidString;
 }
 
 /** Provides generic context for a server application to get details of a particular
@@ -88,6 +88,9 @@ export class ClientRequestContext {
       applicationVersion: this.applicationVersion,
       sessionId: this.sessionId,
     };
+  }
+  public static fromJSON(json: ClientRequestContextProps): ClientRequestContext {
+    return new ClientRequestContext(json.activityId, json.applicationId, json.applicationVersion, json.sessionId);
   }
 }
 

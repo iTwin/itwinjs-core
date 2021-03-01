@@ -9,7 +9,7 @@
 import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
 import { AccessTokenProps } from "@bentley/itwin-client";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
-import { IpcAuthorizationConfiguration } from "./IpcAppProps";
+import { AuthorizationConfiguration } from "./IpcAppProps";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";
@@ -52,7 +52,7 @@ export interface NativeAppNotifications {
  * @internal
  */
 export interface NativeAppFunctions {
-  initializeAuth: (props: ClientRequestContextProps, config: IpcAuthorizationConfiguration) => Promise<void>;
+  initializeAuth: (props: ClientRequestContextProps, config: AuthorizationConfiguration) => Promise<void>;
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
   signIn: () => Promise<void>;

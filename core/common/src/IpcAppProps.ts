@@ -16,7 +16,7 @@ import { ElementsChanged, ModelGeometryChangesProps } from "./ModelGeometryChang
  * Client configuration to generate OIDC/OAuth tokens for native applications
  * @alpha
  */
-export interface IpcAuthorizationConfiguration {
+export interface AuthorizationConfiguration {
   issuerUrl?: string;
   redirectUrl?: string;
   stateKey?: string;
