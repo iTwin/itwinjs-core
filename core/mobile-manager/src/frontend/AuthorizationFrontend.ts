@@ -5,8 +5,8 @@
 
 import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { NativeAuthorizationConfiguration } from "@bentley/imodeljs-common";
-import { FrontendRequestContext, NativeApp } from "@bentley/imodeljs-frontend";
+import { IpcAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { NativeApp } from "@bentley/imodeljs-frontend";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
@@ -14,8 +14,8 @@ import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
  */
 export class MobileAuthorizationFrontend extends ImsAuthorizationClient implements FrontendAuthorizationClient {
   private _accessToken?: AccessToken;
-  private _clientConfiguration: NativeAuthorizationConfiguration;
-  public constructor(clientConfiguration: NativeAuthorizationConfiguration) {
+  private _clientConfiguration: IpcAuthorizationConfiguration;
+  public constructor(clientConfiguration: IpcAuthorizationConfiguration) {
     super();
     this._clientConfiguration = clientConfiguration;
   }

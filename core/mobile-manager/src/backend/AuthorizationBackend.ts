@@ -7,21 +7,21 @@
  */
 
 import { assert, ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
-import { NativeAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
-import { NativeAuthorizationConfiguration } from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
+import { IpcAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
+import { IpcAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { AccessToken, AccessTokenProps } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
  * @alpha
  */
-export class MobileAuthorizationBackend extends NativeAuthorizationBackend {
+export class MobileAuthorizationBackend extends IpcAuthorizationBackend {
   // TODO: Affan, this shouldn't be necessary - remove arg from MobileHost.device methods
   private getRequestContext() {
     return new ClientRequestContext(Guid.createValue(), this._session?.applicationId, this._session?.applicationVersion, this._session?.sessionId);
   }
   /** Used to initialize the client - must be awaited before any other methods are called */
-  public async initialize(requestContext: ClientRequestContext, config: NativeAuthorizationConfiguration): Promise<void> {
+  public async initialize(requestContext: ClientRequestContext, config: IpcAuthorizationConfiguration): Promise<void> {
     await super.initialize(requestContext, config);
     this._clientConfiguration!.issuerUrl = await this.getUrl(requestContext);
 
@@ -103,7 +103,7 @@ export class MobileAuthorizationBackend extends NativeAuthorizationBackend {
 
     const expiresAt = this._accessToken.getExpiresAt();
     assert(!!expiresAt, "Invalid token in MobileAuthorizationClient");
-    if (expiresAt.getTime() - Date.now() > (this.clientConfiguration.expiryBuffer || 60 * 10) * 1000)
+    if (expiresAt.getTime() - Date.now() > (this.clientConfiguration!.expiryBuffer || 60 * 10) * 1000)
       return true;
 
     return false;

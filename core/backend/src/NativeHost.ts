@@ -7,37 +7,17 @@
  */
 
 import * as path from "path";
-import { BeEvent, ClientRequestContextProps, Config, Guid, GuidString, IModelStatus, SessionProps } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContextProps, Config, GuidString, IModelStatus } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications,
-  nativeAppNotify, NativeAuthorizationConfiguration, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
+  BriefcaseProps, IModelError, InternetConnectivityStatus, IpcAuthorizationConfiguration, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
+  NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
-import {
-  AccessToken, AccessTokenProps, AuthorizationClient, AuthorizedClientRequestContext, ImsAuthorizationClient, RequestGlobalOptions,
-} from "@bentley/itwin-client";
+import { AccessToken, AccessTokenProps, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
-import { IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
+import { IpcAuthorizationBackend, IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
-
-export abstract class NativeAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
-  protected _session?: SessionProps;
-  protected _clientConfiguration?: NativeAuthorizationConfiguration;
-  protected _accessToken?: AccessToken;
-  public abstract signIn(): Promise<void>;
-  public abstract signOut(): Promise<void>;
-  public async initialize(requestContext: ClientRequestContextProps, config: NativeAuthorizationConfiguration): Promise<void> {
-    this._clientConfiguration = config;
-    this._session = { applicationId: requestContext.applicationId, applicationVersion: requestContext.applicationVersion, sessionId: requestContext.sessionId };
-  }
-  public get clientConfiguration() { return this._clientConfiguration!; }
-  public abstract getAccessToken(): Promise<AccessToken>;
-  public abstract get isAuthorized(): boolean;
-  public async getAuthorizedContext() {
-    return new AuthorizedClientRequestContext(await this.getAccessToken(), Guid.createValue(), this._session?.applicationId, this._session?.applicationVersion, this._session?.sessionId);
-  }
-}
 
 /**
  * Implementation of NativeAppFunctions
@@ -47,14 +27,14 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 
   private getAuthBackend() {
     const client = IModelHost.authorizationClient;
-    if (!(client instanceof NativeAuthorizationBackend))
-      throw new IModelError(IModelStatus.BadArg, "IModelHost.authorizationClient must be a NativeAuthorizationBackend");
+    if (!(client instanceof IpcAuthorizationBackend))
+      throw new IModelError(IModelStatus.BadArg, "IModelHost.authorizationClient must be a IpcAuthorizationBackend");
     return client;
   }
   private async getAuthContext() {
     return this.getAuthBackend().getAuthorizedContext();
   }
-  public async initializeAuth(props: ClientRequestContextProps, config: NativeAuthorizationConfiguration): Promise<void> {
+  public async initializeAuth(props: ClientRequestContextProps, config: IpcAuthorizationConfiguration): Promise<void> {
     return this.getAuthBackend().initialize(props, config);
   }
   public async signIn(): Promise<void> {
