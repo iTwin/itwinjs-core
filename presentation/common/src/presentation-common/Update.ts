@@ -6,7 +6,8 @@
  * @module Core
  */
 
-import { Node, NodeJSON } from "./hierarchy/Node";
+import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
+import { Node, NodeJSON, PartialNode, PartialNodeJson } from "./hierarchy/Node";
 
 /** @alpha */
 export const UPDATE_FULL = "FULL";
@@ -118,24 +119,61 @@ export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo 
 export namespace PartialHierarchyModification { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Serialize given object to JSON. */
   export function toJSON(obj: PartialHierarchyModification): PartialHierarchyModificationJSON {
-    return {
-      ...obj,
-      node: Node.toJSON(obj.node),
-    };
+    switch (obj.type) {
+      case "Insert":
+        return {
+          type: "Insert",
+          node: Node.toJSON(obj.node),
+          position: obj.position,
+          parent: obj.parent,
+        };
+
+      case "Update":
+        return {
+          type: "Update",
+          target: NodeKey.toJSON(obj.target),
+          changes: Node.toPartialJson(obj.changes),
+        };
+
+      case "Delete":
+        return {
+          type: "Delete",
+          target: NodeKey.toJSON(obj.target),
+        };
+    }
   }
 
   /** Deserialize given object from JSON */
   export function fromJSON(json: PartialHierarchyModificationJSON): PartialHierarchyModification {
-    return {
-      ...json,
-      node: Node.fromJSON(json.node),
-    };
+    switch (json.type) {
+      case "Insert":
+        return {
+          type: "Insert",
+          node: Node.fromJSON(json.node),
+          position: json.position,
+          parent: json.parent,
+        };
+
+      case "Update":
+        return {
+          type: "Update",
+          target: NodeKey.fromJSON(json.target),
+          changes: Node.fromPartialJson(json.changes),
+        };
+
+      case "Delete":
+        return {
+          type: "Delete",
+          target: NodeKey.fromJSON(json.target),
+        };
+    }
   }
 }
 
 /** @alpha */
 export interface NodeInsertionInfo {
   type: "Insert";
+  parent?: string;
   position: number;
   node: Node;
 }
@@ -143,6 +181,7 @@ export interface NodeInsertionInfo {
 /** @alpha */
 export interface NodeInsertionInfoJSON {
   type: "Insert";
+  parent?: string;
   position: number;
   node: NodeJSON;
 }
@@ -150,35 +189,27 @@ export interface NodeInsertionInfoJSON {
 /** @alpha */
 export interface NodeDeletionInfo {
   type: "Delete";
-  node: Node;
+  target: NodeKey;
 }
 
 /** @alpha */
 export interface NodeDeletionInfoJSON {
   type: "Delete";
-  node: NodeJSON;
+  target: NodeKeyJSON;
 }
 
 /** @alpha */
 export interface NodeUpdateInfo {
   type: "Update";
-  node: Node;
-  changes: Array<{
-    name: string;
-    old: unknown;
-    new: unknown;
-  }>;
+  target: NodeKey;
+  changes: PartialNode;
 }
 
 /** @alpha */
 export interface NodeUpdateInfoJSON {
   type: "Update";
-  node: NodeJSON;
-  changes: Array<{
-    name: string;
-    old: unknown;
-    new: unknown;
-  }>;
+  target: NodeKeyJSON;
+  changes: PartialNodeJson;
 }
 
 /** @alpha */

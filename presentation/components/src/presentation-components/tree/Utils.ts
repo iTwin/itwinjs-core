@@ -6,7 +6,7 @@
  * @module Tree
  */
 
-import { LabelDefinition, Node, NodeKey, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
+import { LabelDefinition, Node, NodeKey, PartialNode, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";
@@ -47,7 +47,24 @@ export function createTreeNodeItem(
   return item;
 }
 
-function createTreeNodeId(key: NodeKey): string {
+/** @internal */
+export function createPartialTreeNodeItem(
+  node: PartialNode,
+  parentId: string | undefined,
+  props: CreateTreeNodeItemProps,
+): Partial<DelayLoadedTreeNodeItem> {
+  const item: Partial<DelayLoadedTreeNodeItem> = {};
+  if (node.key !== undefined) {
+    item.id = createTreeNodeId(node.key);
+    item.label = createNodeLabelRecord(node, !!props.appendChildrenCountForGroupingNodes);
+  }
+
+  assignOptionalTreeNodeItemFields(item, node, parentId);
+  return item;
+}
+
+/** @internal */
+export function createTreeNodeId(key: NodeKey): string {
   return [...key.pathFromRoot].reverse().join("/");
 }
 
