@@ -61,6 +61,10 @@ export interface IModelTileContent extends TileContent {
 export class IModelTile extends Tile {
   private _sizeMultiplier?: number;
   private _emptySubRangeMask?: number;
+  /** True if an attempt to look up this tile's content in the cloud storage tile cache failed.
+   * See CloudStorageCacheChannel.onNoContent and IModelTile.requestChannel
+   */
+  public cacheMiss = false;
 
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     super(params, tree);

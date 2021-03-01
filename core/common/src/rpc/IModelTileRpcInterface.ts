@@ -48,7 +48,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelTileRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.2.0";
+  public static interfaceVersion = "2.3.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -57,6 +57,13 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
 
   /** @beta */
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
+    return this.forward(arguments);
+  }
+
+  /** Returns true if an external tile cache is configured on the backend.
+   * @internal
+   */
+  public async isUsingExternalTileCache(): Promise<boolean> {
     return this.forward(arguments);
   }
 

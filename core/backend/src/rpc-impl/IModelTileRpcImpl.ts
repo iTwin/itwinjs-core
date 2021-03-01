@@ -207,6 +207,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
   }
 
+  public async isUsingExternalTileCache(): Promise<boolean> {
+    return IModelHost.usingExternalTileCache;
+  }
+
   public async queryVersionInfo(): Promise<TileVersionInfo> {
     return IModelHost.platform.getTileVersionInfo();
   }
