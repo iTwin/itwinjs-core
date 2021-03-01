@@ -97,25 +97,21 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
   const processTabSelection = React.useCallback((tab: SettingsTab) => {
     if (tab.disabled)
       return;
-    if (onSettingsTabSelected)
-      onSettingsTabSelected(tab);
+    onSettingsTabSelected && onSettingsTabSelected(tab);
     setOpenTab(tab);
   }, [onSettingsTabSelected]);
 
   const processTabSelectionById = React.useCallback((tabId: string) => {
     const tabToActivate = tabs.find((tab)=>tab.tabId === tabId);
-    if (tabToActivate)
-      processTabSelection (tabToActivate);
+    tabToActivate && processTabSelection (tabToActivate);
   }, [processTabSelection, tabs]);
 
   const onActivateTab =  React.useCallback((tabIndex: number) => {
     const selectedTab = tabs[tabIndex];
-    if (selectedTab) {
-      if (openTab && openTab.pageWillHandleCloseRequest)
-        settingsManager.onProcessSettingsTabActivation.emit({ requestedSettingsTabId:selectedTab.tabId, tabSelectionFunc: processTabSelectionById});
-      else
-        processTabSelection(selectedTab);
-    }
+    if (openTab && openTab.pageWillHandleCloseRequest)
+      settingsManager.onProcessSettingsTabActivation.emit({ requestedSettingsTabId:selectedTab.tabId, tabSelectionFunc: processTabSelectionById});
+    else
+      processTabSelection(selectedTab);
   }, [openTab, processTabSelection, processTabSelectionById, settingsManager, tabs]);
 
   React.useEffect (()=>{
@@ -124,6 +120,7 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
       let tabToActivate = tabs.find((tab)=>tab.tabId.toLowerCase() === idToFind);
       if (!tabToActivate)
         tabToActivate = tabs.find((tab)=>tab.label.toLowerCase() === idToFind);
+      // istanbul ignore else
       if (tabToActivate) {
         if (openTab && openTab.pageWillHandleCloseRequest)
           settingsManager.onProcessSettingsTabActivation.emit({ requestedSettingsTabId:tabToActivate.tabId, tabSelectionFunc: processTabSelectionById});
@@ -157,11 +154,11 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
       </div>
       <div className="core-settings-container-right">
         <div className="core-settings-container-right-header">
-          <span className="core-settings-container-main-header">{openTab?.label}</span>
-          {openTab?.subLabel && <span className="core-settings-container-main-sub-header">{openTab?.subLabel}</span>}
+          <span className="core-settings-container-main-header">{openTab.label}</span>
+          {openTab.subLabel && <span className="core-settings-container-main-sub-header">{openTab.subLabel}</span>}
         </div>
         <div className="core-settings-container-right-contents">
-          {openTab?.page ?? null}
+          {openTab.page}
         </div>
       </div>
     </div>

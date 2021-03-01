@@ -180,9 +180,7 @@ export class SettingsManager {
     // Consult the registered SettingsProviders
     this._providers.forEach((p) => {
       const entries = p.getSettingEntries(stageId, stageUsage);
-      if (entries) {
-        allSettingEntries.push(...entries);
-      }
+      entries && allSettingEntries.push(...entries);
     });
 
     return allSettingEntries.length > 0 ? allSettingEntries : undefined;
