@@ -1,0 +1,20 @@
+[
+  {
+    "FromSchema": "Units1",
+    "From": "YRD",
+    "ToSchema": "Units1",
+    "To": "CM",
+    "Input": 2,
+    "Expect": 182.88,
+    "Comment": "YRD in Units1 is defined as 'Units2:FT' "
+  },
+  {
+    "FromSchema": "Units1",
+    "From": "CHAIN",
+    "ToSchema": "Units1",
+    "To": "CM",
+    "Input": 2,
+    "Expect": 4023.36,
+    "Comment": "CHAIN in Units1 is defined as 'FT' which is defined as 'Units2:IN'"
+  }
+]

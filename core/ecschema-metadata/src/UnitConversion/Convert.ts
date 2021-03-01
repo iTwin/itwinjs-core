@@ -68,21 +68,21 @@ export class UnitConvertorContext {
   public async processUnits(from: Unit, to: Unit): Promise<LinearMap> {
     if (from.key.matches(to.key)) return LinearMap.identity;
 
-    const fromPhenomenon = await from.phenomenon;
-    const toPhenomenon = await to.phenomenon;
+    // const fromPhenomenon = await from.phenomenon;
+    // const toPhenomenon = await to.phenomenon;
 
-    if (
-      !fromPhenomenon ||
-      !toPhenomenon ||
-      !fromPhenomenon.key.matches(toPhenomenon.key)
-    )
-      throw new BentleyError(
-        BentleyStatus.ERROR,
-        `Source and target units do not belong to same phenomenon`,
-        () => {
-          return { from, to };
-        }
-      );
+    // if (
+    //   !fromPhenomenon ||
+    //   !toPhenomenon ||
+    //   !fromPhenomenon.key.matches(toPhenomenon.key)
+    // )
+    //   throw new BentleyError(
+    //     BentleyStatus.ERROR,
+    //     `Source and target units do not belong to same phenomenon`,
+    //     () => {
+    //       return { from, to };
+    //     }
+    //   );
 
     await this._uGraph.addUnit(from);
     await this._uGraph.addUnit(to);
