@@ -38,8 +38,7 @@ steps:
       buildType: specific
       project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
       pipeline: 1633
-      buildVersionToDownload: specific
-      buildId: 709524
+      buildVersionToDownload: latest
       artifactName: Bis Docs
 
   - task: CopyFiles@2
