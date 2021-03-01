@@ -25,6 +25,7 @@ interface ToggleEditorState {
  */
 export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
   private _isMounted = false;
+  private _inputElement = React.createRef<HTMLInputElement>();
 
   /** @internal */
   public readonly state: Readonly<ToggleEditorState> = {
@@ -45,6 +46,14 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
       };
     }
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._inputElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    return document.activeElement === this._inputElement.current;
   }
 
   private _updateToggleValue = (toggleValue: boolean): any => {
@@ -112,6 +121,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 
     return (
       <Toggle
+        ref={this._inputElement}
         onBlur={this.props.onBlur}
         className={className}
         style={this.props.style}

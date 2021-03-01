@@ -127,12 +127,12 @@ export abstract class IModelDb extends IModel {
   public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
   private _nativeDb?: IModelJsNative.DgnDb;
-  /** Get the in-memory handle of the native Db
-   * @internal
-   */
+  /** @internal*/
   public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb!; }
 
-  /** Get the full path fileName of this iModelDb */
+  /** Get the full path fileName of this iModelDb
+   * @note this member is only valid while the iModel is opened.
+   */
   public get pathName() { return this.nativeDb.getFilePath(); }
 
   /** @internal */
@@ -142,6 +142,14 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
+    IModelHost.onBeforeShutdown.addListener(() => {
+      if (this.isOpen) {
+        try {
+          this.abandonChanges();
+          this.close();
+        } catch { }
+      }
+    });
   }
 
   /** Close this IModel, if it is currently open. */
@@ -2140,10 +2148,11 @@ export class BriefcaseDb extends IModelDb {
   /** override superclass method */
   public get isBriefcase(): boolean { return true; }
 
-  /** Returns `true` if this is a briefcase can be used to make changesets */
-  public readonly allowLocalChanges: boolean;
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: number;
+
+  /** Returns `true` if this is briefcaseDb is opened writable and can be used to make changesets */
+  public get allowLocalChanges(): boolean { return this.openMode === OpenMode.ReadWrite && this.briefcaseId !== 0; }
 
   /** Event raised just before a BriefcaseDb is opened.
    *  * If the open requires authorization [AuthorizedClientRequestContext]($itwin-client) is passed in to the event handler. Otherwise [[ClientRequestContext]] is passed in
@@ -2214,7 +2223,6 @@ export class BriefcaseDb extends IModelDb {
     this.concurrencyControl = new ConcurrencyControl(this);
     this.concurrencyControl.setPolicy(new ConcurrencyControl.PessimisticPolicy());
     this.briefcaseId = this.nativeDb.getBriefcaseId();
-    this.allowLocalChanges = this.openMode === OpenMode.ReadWrite && this.briefcaseId !== 0;
   }
 
   /** Commit pending changes to this iModel.
@@ -2363,17 +2371,30 @@ export class BriefcaseDb extends IModelDb {
       this.concurrencyControl.onClose();
   }
 
+  private closeAndReopen(openMode: OpenMode) {
+    const fileName = this.pathName;
+    this.nativeDb.closeIModel();
+    this.nativeDb.openIModel(fileName, openMode);
+  }
+
   /** Pull and Merge changes from iModelHub
    * @param requestContext Context used for authorization to pull change sets
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
    */
   public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    requestContext.enter();
     if (this.allowLocalChanges)
       this.concurrencyControl.onMergeChanges();
-    await BriefcaseManager.pullAndMergeChanges(requestContext, this, version);
-    requestContext.enter();
+
+    if (this.isReadonly) // we allow pulling changes into a briefcase that is readonly - close and reopen it writeable
+      this.closeAndReopen(OpenMode.ReadWrite);
+    try {
+      await BriefcaseManager.pullAndMergeChanges(requestContext, this, version);
+    } finally {
+      if (this.isReadonly) // if the briefcase was opened readonly - close and reopen it readonly
+        this.closeAndReopen(OpenMode.Readonly);
+    }
+
     if (this.allowLocalChanges)
       this.concurrencyControl.onMergedChanges();
 
@@ -2525,7 +2546,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.saveChanges();
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-
+    nativeDb.saveChanges();
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue()); // WIP: clean up copied file on error?
     if (options?.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
@@ -2599,6 +2620,8 @@ export class SnapshotDb extends IModelDb {
     if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views", Logger.logError, loggerCategory);
+      } else {
+        this.saveChanges();
       }
     }
   }

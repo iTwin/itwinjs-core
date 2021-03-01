@@ -123,6 +123,14 @@ export class PropertyEditorManager {
     PropertyEditorManager._dataControllers[controllerName] = controller;
   }
 
+  /** @internal */
+  public static deregisterDataController(controllerName: string): void {
+    // istanbul ignore else
+    if (PropertyEditorManager._dataControllers.hasOwnProperty(controllerName)) {
+      delete PropertyEditorManager._dataControllers[controllerName];
+    }
+  }
+
   public static createEditor(editType: string, editorName?: string, dataControllerName?: string): PropertyEditorBase {
     const fullEditorName = PropertyEditorManager.getFullEditorName(editType, editorName);
 
