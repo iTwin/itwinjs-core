@@ -250,9 +250,10 @@ export class AzureFileHandler implements FileHandler {
       let clientRequest;
       if (isHttps) {
         const url = new URL(downloadUrl);
+        const searchStr = url.searchParams.toString();
         const options: https.RequestOptions = {
           hostname: url.hostname,
-          path: `${url.pathname}?${url.searchParams.toString()}`,
+          path: searchStr ? `${url.pathname}?${searchStr}` : url.pathname,
           port: url.port,
           agent: this.agent,
         };
