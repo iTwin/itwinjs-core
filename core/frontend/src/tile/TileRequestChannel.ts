@@ -295,17 +295,21 @@ export class TileRequestChannels {
   private _rpcConcurrency: number;
   private readonly _channels = new Map<string, TileRequestChannel>();
 
-  public constructor(rpcConcurrency: number, rpcUsesIpc: boolean) {
-    this._rpcConcurrency = rpcConcurrency;
+  public constructor(rpcConcurrency: number | undefined) {
+    this._rpcConcurrency = rpcConcurrency ?? this.httpConcurrency;
 
     const imodelChannelName = "requestTileContent";
     const elementGraphicsChannelName = "requestElementGraphics";
-    if (rpcUsesIpc) {
+    if (undefined !== rpcConcurrency) {
+      // RPC uses IPC so it should be throttled based on the concurrency supported by the backend process.
+      // IPC means "single user" so we can also cancel requests in progress on the backend.
       this.iModelTileRpc = new IModelTileChannel(imodelChannelName, rpcConcurrency);
       this.elementGraphicsRpc = new ElementGraphicsChannel(elementGraphicsChannelName, rpcConcurrency);
     } else {
-      this.iModelTileRpc = new TileRequestChannel(imodelChannelName, rpcConcurrency);
-      this.elementGraphicsRpc = new TileRequestChannel(elementGraphicsChannelName, rpcConcurrency);
+      // RPC uses HTTP so it should be throttled based on HTTP limits.
+      // HTTP means "multiple users" so we cannot cancel requests in progress on the backend.
+      this.iModelTileRpc = new TileRequestChannel(imodelChannelName, this.rpcConcurrency);
+      this.elementGraphicsRpc = new TileRequestChannel(elementGraphicsChannelName, this.rpcConcurrency);
     }
 
     this.add(this.iModelTileRpc);

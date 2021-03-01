@@ -414,7 +414,7 @@ export class IModelApp {
 
     this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
     this._viewManager = (opts.viewManager !== undefined) ? opts.viewManager : new ViewManager();
-    this._tileAdmin = (opts.tileAdmin !== undefined) ? opts.tileAdmin : TileAdmin.create();
+    this._tileAdmin = (opts.tileAdmin !== undefined) ? opts.tileAdmin : await TileAdmin.create();
     this._notifications = (opts.notifications !== undefined) ? opts.notifications : new NotificationManager();
     this._toolAdmin = (opts.toolAdmin !== undefined) ? opts.toolAdmin : new ToolAdmin();
     this._accuDraw = (opts.accuDraw !== undefined) ? opts.accuDraw : new AccuDraw();

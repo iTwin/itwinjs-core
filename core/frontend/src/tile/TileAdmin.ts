@@ -14,13 +14,15 @@ import {
   IModelTileTreeProps, ModelGeometryChanges, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
+import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModelState } from "../ModelState";
-import { DisclosedTileTreeSet, IModelTile, LRUTileList, Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileUsageMarker } from "./internal";
-import { IpcApp } from "../IpcApp";
+import {
+  DisclosedTileTreeSet, IModelTile, LRUTileList, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree, TileTreeOwner, TileUsageMarker,
+} from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -103,6 +105,7 @@ export interface GpuMemoryLimits {
  * @beta
  */
 export class TileAdmin {
+  public readonly requestChannels: TileRequestChannels;
   private readonly _viewports = new Set<Viewport>();
   private readonly _requestsPerViewport = new Map<Viewport, Set<Tile>>();
   private readonly _tileUsagePerViewport = new Map<Viewport, Set<TileUsageMarker>>();
@@ -160,15 +163,16 @@ export class TileAdmin {
    * @param props Options for customizing the behavior of the TileAdmin.
    * @returns the TileAdmin
    */
-  public static create(props?: TileAdmin.Props): TileAdmin {
-    return this.createForDeviceType(ProcessDetector.isMobileBrowser ? "mobile" : "non-mobile", props);
+  public static async create(props?: TileAdmin.Props): Promise<TileAdmin> {
+    const rpcConcurrency = IpcApp.isValid ? (await IpcApp.callIpcHost("queryConcurrency", "cpu")) : undefined;
+    return this.createForDeviceType(ProcessDetector.isMobileBrowser ? "mobile" : "non-mobile", props, rpcConcurrency);
   }
 
   /** Strictly for tests.
    * @internal
    */
-  public static createForDeviceType(type: "mobile" | "non-mobile", props?: TileAdmin.Props): TileAdmin {
-    return new this("mobile" === type, props);
+  public static createForDeviceType(type: "mobile" | "non-mobile", props?: TileAdmin.Props, rpcConcurrency?: number): TileAdmin {
+    return new this("mobile" === type, rpcConcurrency, props);
   }
 
   /** @internal */
@@ -209,10 +213,12 @@ export class TileAdmin {
       this._totalCacheMisses = this._totalDispatchedRequests = this._totalAbortedRequests = 0;
   }
 
-  protected constructor(isMobile: boolean, options?: TileAdmin.Props) {
+  protected constructor(isMobile: boolean, rpcConcurrency: number | undefined, options?: TileAdmin.Props) {
     this._isMobile = isMobile;
     if (undefined === options)
       options = {};
+
+    this.requestChannels = new TileRequestChannels(rpcConcurrency);
 
     this._maxActiveRequests = options.maxActiveRequests ?? 10;
     this._maxActiveTileTreePropsRequests = options.maxActiveTileTreePropsRequests ?? 10;
