@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { ChangeSetQuery, ChangesType } from "@bentley/imodelhub-client";
+import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { UserCancelledError } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
-import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
-import { UserCancelledError } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseIdValue, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration,
@@ -362,28 +363,29 @@ describe("BriefcaseManager (#integration)", () => {
     const iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
 
-    let arrayIndex: number;
-    for (arrayIndex = readOnlyTestVersions.length - 1; arrayIndex >= 0; arrayIndex--) {
-      await iModelPullAndPush.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[arrayIndex]));
-      assert.equal(readOnlyTestElementCounts[arrayIndex], getElementCount(iModelPullAndPush));
+    let revIndex: number;
+    for (revIndex = readOnlyTestVersions.length - 1; revIndex >= 0; revIndex--) {
+      // Stop at a schema change
+      const changeSetId = await IModelVersion.named(readOnlyTestVersions[revIndex]).evaluateChangeSet(requestContext, readOnlyTestIModel.id, IModelHost.iModelClient);
+      const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, readOnlyTestIModel.id, new ChangeSetQuery().byId(changeSetId));
+      assert.equal(changeSets.length, 1);
+      if (changeSets[0].changesType === ChangesType.Schema)
+        break;
 
-      await iModelPullOnly.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[arrayIndex]));
-      assert.equal(readOnlyTestElementCounts[arrayIndex], getElementCount(iModelPullOnly));
+      await iModelPullAndPush.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[revIndex]));
+      assert.equal(readOnlyTestElementCounts[revIndex], getElementCount(iModelPullAndPush));
+
+      await iModelPullOnly.reverseChanges(requestContext, IModelVersion.named(readOnlyTestVersions[revIndex]));
+      assert.equal(readOnlyTestElementCounts[revIndex], getElementCount(iModelPullOnly));
     }
 
-    await iModelPullAndPush.reverseChanges(requestContext, IModelVersion.first());
-    await iModelPullOnly.reverseChanges(requestContext, IModelVersion.first());
+    for (let fwdIndex = 0; fwdIndex < revIndex; fwdIndex++) {
+      await iModelPullAndPush.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[fwdIndex]));
+      assert.equal(readOnlyTestElementCounts[fwdIndex], getElementCount(iModelPullAndPush));
 
-    for (arrayIndex = 0; arrayIndex < readOnlyTestVersions.length; arrayIndex++) {
-      await iModelPullAndPush.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[arrayIndex]));
-      assert.equal(readOnlyTestElementCounts[arrayIndex], getElementCount(iModelPullAndPush));
-
-      await iModelPullOnly.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[arrayIndex]));
-      assert.equal(readOnlyTestElementCounts[arrayIndex], getElementCount(iModelPullOnly));
+      await iModelPullOnly.reinstateChanges(requestContext, IModelVersion.named(readOnlyTestVersions[fwdIndex]));
+      assert.equal(readOnlyTestElementCounts[fwdIndex], getElementCount(iModelPullOnly));
     }
-
-    await iModelPullAndPush.reinstateChanges(requestContext, IModelVersion.latest());
-    await iModelPullOnly.reinstateChanges(requestContext, IModelVersion.latest());
 
     const file1 = iModelPullAndPush.pathName;
     const file2 = iModelPullOnly.pathName;
@@ -625,15 +627,8 @@ describe("BriefcaseManager (#integration)", () => {
     // User1 pushes a change set
     await testUtility.pushTestChangeSet();
 
-    // User2 should not be able to re-open the iModel since it's still open
-    let errorThrown2 = false;
-    try {
-      await IModelTestUtils.openBriefcaseUsingRpc(args);
-    } catch (error) {
-      assert.isTrue(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen);
-      errorThrown2 = true;
-    }
-    assert.isTrue(errorThrown2);
+    // User2 should be able to re-open the iModel
+    await IModelTestUtils.openBriefcaseUsingRpc(args);
 
     // User2 closes and reopens the iModel pullAndPush as of the newer version
     // - the changes will still be there, AND
