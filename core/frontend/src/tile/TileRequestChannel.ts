@@ -162,9 +162,8 @@ export class TileRequestChannel {
 
     // Batch-cancel running requests.
     this.processCancellations();
-  }
 
-  public fill(): void {
+    // Dispatch requests from the queue up to our maximum.
     while (this._active.size < this._maxActive) {
       const request = this._pending.pop();
       if (!request)
