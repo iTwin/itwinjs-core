@@ -55,7 +55,6 @@
     "@bentley/backend-itwin-client": "^2.14.0-dev.5",
     "@bentley/bentleyjs-core": "^2.14.0-dev.5",
     "@bentley/ecschema-metadata": "^2.14.0-dev.5",
--
     "@bentley/geometry-core": "^2.14.0-dev.5",
     "@bentley/imodelhub-client": "^2.14.0-dev.5",
     "@bentley/imodeljs-common": "^2.14.0-dev.5",
@@ -74,7 +73,6 @@
     "@bentley/config-loader": "2.14.0-dev.5",
     "@bentley/ecschema-metadata": "2.14.0-dev.5",
     "@bentley/eslint-plugin": "2.14.0-dev.5",
--
     "@bentley/geometry-core": "2.14.0-dev.5",
     "@bentley/imodelhub-client": "2.14.0-dev.5",
     "@bentley/imodeljs-common": "2.14.0-dev.5",
