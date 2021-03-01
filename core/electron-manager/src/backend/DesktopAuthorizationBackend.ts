@@ -8,9 +8,9 @@
  * @module Authentication
  */
 
-import { assert, AuthStatus, BentleyError, ClientRequestContext, Guid, Logger, SessionProps } from "@bentley/bentleyjs-core";
-import { NativeAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
-import { NativeAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
+import { IpcAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
+import { IpcAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
@@ -30,7 +30,7 @@ const loggerCategory = "electron-backend";
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
  * @alpha
  */
-export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
+export class DesktopAuthorizationBackend extends IpcAuthorizationBackend {
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
 
@@ -41,7 +41,7 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
    * Used to initialize the client - must be awaited before any other methods are called.
    * The call attempts a silent sign-if possible.
    */
-  public async initialize(requestContext: ClientRequestContext, config: NativeAuthorizationConfiguration): Promise<void> {
+  public async initialize(requestContext: ClientRequestContext, config: IpcAuthorizationConfiguration): Promise<void> {
     await super.initialize(requestContext, config);
     this._tokenStore = new ElectronTokenStore(config.clientId);
     this._session = { applicationId: requestContext.applicationId, applicationVersion: requestContext.applicationVersion, sessionId: requestContext.sessionId };
@@ -92,10 +92,11 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
       return;
 
     // Create the authorization request
+    const nativeConfig = this._clientConfiguration!;
     const authReqJson: AuthorizationRequestJson = {
-      client_id: this.clientConfiguration.clientId, // eslint-disable-line @typescript-eslint/naming-convention
-      redirect_uri: this.clientConfiguration.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
-      scope: this.clientConfiguration.scope,
+      client_id: nativeConfig.clientId, // eslint-disable-line @typescript-eslint/naming-convention
+      redirect_uri: nativeConfig.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
+      scope: nativeConfig.scope,
       response_type: AuthorizationRequest.RESPONSE_TYPE_CODE, // eslint-disable-line @typescript-eslint/naming-convention
       extras: { prompt: "consent", access_type: "offline" }, // eslint-disable-line @typescript-eslint/naming-convention
     };
@@ -109,7 +110,7 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
     LoopbackWebServer.addCorrelationState(authorizationRequest.state, authorizationEvents);
 
     // Start a web server to listen to the browser requests
-    LoopbackWebServer.start(this.clientConfiguration);
+    LoopbackWebServer.start(nativeConfig);
 
     const authorizationHandler = new ElectronAuthorizationRequestHandler(authorizationEvents);
 
@@ -211,7 +212,7 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
   }
 
   private isValidToken(tokenResponse: TokenResponse): boolean {
-    const buffer = this.clientConfiguration.expiryBuffer || 60 * 10;
+    const buffer = this.clientConfiguration!.expiryBuffer || 60 * 10;
     return tokenResponse.isValid(-buffer);
   }
 
@@ -277,12 +278,13 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
     /* eslint-disable @typescript-eslint/naming-convention */
+    const nativeConfig = this._clientConfiguration!;
     const extras: StringMap = { code_verifier: codeVerifier };
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
       code: authCode,
-      redirect_uri: this.clientConfiguration.redirectUri,
-      client_id: this.clientConfiguration.clientId,
+      redirect_uri: nativeConfig.redirectUri,
+      client_id: nativeConfig.clientId,
       extras,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
@@ -297,12 +299,13 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
+    const nativeConfig = this._clientConfiguration!;
     /* eslint-disable @typescript-eslint/naming-convention */
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_REFRESH_TOKEN,
       refresh_token: refreshToken,
-      redirect_uri: this.clientConfiguration.redirectUri,
-      client_id: this.clientConfiguration.clientId,
+      redirect_uri: nativeConfig.redirectUri,
+      client_id: nativeConfig.clientId,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -319,10 +322,11 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
     const refreshToken = this._tokenResponse.refreshToken!;
 
     /* eslint-disable @typescript-eslint/naming-convention */
+    const nativeConfig = this._clientConfiguration!;
     const revokeTokenRequestJson: RevokeTokenRequestJson = {
       token: refreshToken,
       token_type_hint: "refresh_token",
-      client_id: this.clientConfiguration.clientId,
+      client_id: nativeConfig.clientId,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 

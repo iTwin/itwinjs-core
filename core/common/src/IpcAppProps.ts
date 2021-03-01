@@ -12,6 +12,36 @@ import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./
 import { IModelVersionProps } from "./IModelVersion";
 import { ElementsChanged, ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
+/**
+ * Client configuration to generate OIDC/OAuth tokens for native applications
+ * @alpha
+ */
+export interface IpcAuthorizationConfiguration {
+  issuerUrl?: string;
+  redirectUrl?: string;
+  stateKey?: string;
+
+  /**
+   * Upon signing in, the client application receives a response from the Bentley IMS OIDC/OAuth2 provider at this URI
+   * For mobile/desktop applications, must be `http://localhost:${redirectPort}` or `https://localhost:${redirectPort}`
+   */
+  redirectUri: string;
+
+  /** Client application's identifier as registered with the OIDC/OAuth2 provider. */
+  clientId: string;
+
+  /** List of space separated scopes to request access to various resources. */
+  scope: string;
+
+  /**
+   * Time in seconds that's used as a buffer to check the token for validity/expiry.
+   * The checks for authorization, and refreshing access tokens all use this buffer - i.e., the token is considered expired if the current time is within the specified
+   * time of the actual expiry.
+   * @note If unspecified this defaults to 10 minutes.
+   */
+  expiryBuffer?: number;
+}
+
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
  */
