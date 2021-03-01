@@ -13,11 +13,11 @@ import {
   BeEvent, BriefcaseStatus, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { CheckpointQuery, CheckpointV2Query } from "@bentley/imodelhub-client";
-import { DownloadBriefcaseStatus, IModelError } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, DownloadBriefcaseStatus, IModelError } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";

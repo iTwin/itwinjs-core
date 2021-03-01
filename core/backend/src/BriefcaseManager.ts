@@ -40,6 +40,7 @@ export type BriefcaseId = number;
 /** The reserved BriefcaseId values used to identify special kinds of IModelDbs.
  * @see [[BriefcaseId]]
  * @public
+ * @deprecated use [BriefcaseIdValue]($common) from `@bentley/imodeljs-common`
  */
 export enum BriefcaseIdValue {
   /** Indicates an invalid/illegal BriefcaseId */
@@ -52,7 +53,7 @@ export enum BriefcaseIdValue {
   FirstValid = 2,
 
   /** All valid iModelHub issued BriefcaseIds will be equal or lower than this */
-  LastValid = BriefcaseIdValue.Max - 11,
+  LastValid = BriefcaseIdValue.Max - 11, // eslint-disable-line deprecation/deprecation
 
   /** A Standalone copy of an iModel. Standalone files may accept changesets, but can never create new changesets.
    * Checkpoints are Standalone files that may not accept any new changesets after they are created.
@@ -220,6 +221,7 @@ export class BriefcaseManager {
    * @note this does check whether the id was actually acquired by the caller.
    */
   public static isValidBriefcaseId(id: BriefcaseId) {
+    // eslint-disable-next-line deprecation/deprecation
     return id >= BriefcaseIdValue.FirstValid && id <= BriefcaseIdValue.LastValid;
   }
 
