@@ -97,16 +97,6 @@ export class Tiles {
   }
 
   /** @internal */
-  public async getTileTreeProps(id: string): Promise<IModelTileTreeProps> {
-    return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id);
-  }
-
-  /** @internal */
-  public async getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array> {
-    return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId, isCanceled, guid, qualifier);
-  }
-
-  /** @internal */
   public async purgeTileTrees(modelIds: Id64Array | undefined): Promise<void> {
     return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
   }

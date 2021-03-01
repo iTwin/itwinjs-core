@@ -84,17 +84,8 @@ export class IModelTile extends Tile {
     return super.maximumSize * (this.sizeMultiplier ?? 1.0);
   }
 
-  public async requestContent(isCanceled: () => boolean): Promise<TileRequest.Response> {
-    const handleCacheMiss = () => {
-      const cancelMe = isCanceled();
-      if (!cancelMe)
-        IModelApp.tileAdmin.onCacheMiss();
-
-      return cancelMe;
-    };
-
-    const tree = this.iModelTree;
-    return tree.iModel.tiles.getTileContent(tree.id, this.contentId, handleCacheMiss, tree.geometryGuid, tree.contentIdQualifier);
+  public async requestContent(): Promise<TileRequest.Response> {
+    return IModelApp.tileAdmin.generateTileContent(this);
   }
 
   public async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<IModelTileContent> {

@@ -62,13 +62,24 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
 
   /** @internal */
   public async requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps> { return this.forward(arguments); }
-  /** @internal */
+
+  /** @deprecated Use generateTileContent.
+   * @internal
+   */
   public async requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array> {
     const cached = await IModelTileRpcInterface.checkCache(iModelToken, treeId, contentId, guid);
     if (undefined === cached && undefined !== isCanceled && isCanceled())
       throw new AbandonedError();
 
     return cached || this.forward(arguments);
+  }
+
+  /** Ask the backend to generate content for the specified tile. This function, unlike the deprecated `requestTileContent`, does not check the cloud storage tile cache -
+   * Use `CloudStorageTileCache.retrieve` for that.
+   * @internal
+   */
+  public async generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<Uint8Array> {
+    return this.forward(arguments);
   }
 
   /** @internal */

@@ -11,7 +11,7 @@ import { TileTreeContentIds } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
-import { Tile, TileRequest } from "./internal";
+import { IModelTile, Tile, TileRequest } from "./internal";
 
 class TileRequestQueue extends PriorityQueue<TileRequest> {
   public constructor() {
@@ -182,6 +182,11 @@ export class TileRequestChannel {
 
   /** Invoked when an iModel is closed, to clean up any state associated with that iModel. */
   public onIModelClosed(_iModel: IModelConnection): void { }
+
+  public async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
+    return tile.requestContent(isCanceled);
+  }
+
   private dispatch(request: TileRequest): void {
     ++this._statistics.totalDispatchedRequests;
     this._active.add(request);
@@ -204,6 +209,11 @@ export class TileRequestChannel {
 }
 
 class CloudStorageCacheChannel extends TileRequestChannel {
+  public async requestContent(tile: Tile): Promise<TileRequest.Response> {
+    assert(tile instanceof IModelTile);
+    return IModelApp.tileAdmin.requestCachedTileContent(tile);
+  }
+
   public onNoContent(_request: TileRequest): boolean {
     // ###TODO: Mark tile as "not found in cache" so it uses RPC channel instead.
     ++this._statistics.totalCacheMisses;

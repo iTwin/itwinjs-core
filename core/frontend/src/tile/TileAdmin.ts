@@ -10,8 +10,8 @@ import {
   assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue, ProcessDetector,
 } from "@bentley/bentleyjs-core";
 import {
-  defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
-  RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
+  CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelRpcProps, IModelTileRpcInterface,
+  IModelTileTreeProps, ModelGeometryChanges, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -19,7 +19,7 @@ import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModelState } from "../ModelState";
-import { DisclosedTileTreeSet, LRUTileList, Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileUsageMarker } from "./internal";
+import { DisclosedTileTreeSet, IModelTile, LRUTileList, Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileUsageMarker } from "./internal";
 import { IpcApp } from "../IpcApp";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
@@ -658,19 +658,28 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array> {
+  public async requestCachedTileContent(tile: IModelTile): Promise<Uint8Array | undefined> {
+    return CloudStorageTileCache.getCache().retrieve(this.getTileRequestProps(tile));
+  }
+
+  /** @internal */
+  public async generateTileContent(tile: IModelTile): Promise<Uint8Array> {
     this.initializeRpc();
+    const props = this.getTileRequestProps(tile);
+    return IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
+  }
 
-    const iModelRpcProps = iModel.getRpcProps();
+  /** @internal */
+  private getTileRequestProps(tile: IModelTile) /*: { tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string }*/ {
+    const tree = tile.iModelTree;
+    const tokenProps = tree.iModel.getRpcProps();
+    let guid = tree.geometryGuid || tokenProps.changeSetId || "first";
+    if (tree.contentIdQualifier)
+      guid = `${guid}_${tree.contentIdQualifier}`;
 
-    if (!guid)
-      guid = iModelRpcProps.changeSetId || "first";
-
-    if (qualifier)
-      guid = `${guid}_${qualifier}`;
-
-    const intfc = IModelTileRpcInterface.getClient();
-    return intfc.requestTileContent(iModelRpcProps, treeId, contentId, isCanceled, guid);
+    const contentId = tile.contentId;
+    const treeId = tree.id;
+    return { tokenProps, treeId, contentId, guid };
   }
 
   /** @internal */
