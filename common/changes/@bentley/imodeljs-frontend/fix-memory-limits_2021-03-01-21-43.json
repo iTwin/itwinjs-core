@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "Fixed incorrect GPU memory limits.",
+      "comment": "Fix incorrect GPU memory limits.",
       "type": "none"
     }
   ],
