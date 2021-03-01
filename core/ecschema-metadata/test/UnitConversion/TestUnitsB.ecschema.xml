@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECSchema schemaName="UnitsB" alias="uB" version="01.00.05" description="Creating another schema to test unit conversion across schemas" displayLabel="Units Testing" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <UnitSystem typeName="SI" />
+    <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
+    <Phenomenon typeName="NUMBER" definition="NUMBER" displayLabel="Number" />
+
+    <Unit typeName="unitB1" phenomenon="LENGTH" unitSystem="SI" definition="UnitsC:unitC2" />
+    <Unit typeName="unitB2" phenomenon="LENGTH" unitSystem="SI" definition="UnitsB:unitB3" />
+    <Unit typeName="unitB3" phenomenon="LENGTH" unitSystem="SI" definition="UnitsB:unitB4" numerator="2.0"/>
+    <Unit typeName="unitB4" phenomenon="LENGTH" unitSystem="SI" definition="UnitsC:unitC3" denominator="4.0"/>
+    <Unit typeName="unitB5" phenomenon="LENGTH" unitSystem="SI" definition="unitB6"/>
+    <Unit typeName="unitB6" phenomenon="LENGTH" unitSystem="SI" definition="unitB7" numerator="2.0"/>
+    <Unit typeName="unitB7" phenomenon="LENGTH" unitSystem="SI" definition="UnitsC:unitC4" denominator="4.0"/>
+</ECSchema>

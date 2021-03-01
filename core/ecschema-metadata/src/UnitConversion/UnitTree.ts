@@ -177,7 +177,6 @@ export class UnitGraph {
       }
       name = nameArr[1];
     }
-    console.log(nameArr, defaultSchema.fullName)
 
     // Create schema item key with name and schema
     const itemKey = this.createSchemaItemKey(name, defaultSchema);  // Maybe use getSchemaItemKey in schema instead?

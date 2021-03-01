@@ -1,0 +1,77 @@
+[
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA1",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 42,
+    "Expect": 0.42,
+    "Comment": "unitA1 -> UnitsB:unitB1*UnitsC:unitC1 | UnitsB:unitB1 -> UnitsC:unitC2 -> CM | UnitsC:unitC1 -> M",
+    "Comment2": "Like converting CM to M, divide by factor of 100"
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "unitA1",
+    "Input": 42,
+    "Expect": 4200
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA2",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 10,
+    "Expect": 0.5,
+    "Comment": "All self-schema references in definitions formatted in 'schemaName:schemaItem' ",
+    "Comment2": "unitA2 -> UnitsA:unitA3*UnitsB:unitB2 | UnitsA:unitA3 -> M | UnitsB:unitB2 -> unitB3 -> UnitsB:unitB4 -> UnitsC:unitC3 -> UnitsC:unitC2 -> CM",
+    "Comment3": "Like converting CM to M, divide by factor 100. Also multiply by factor of 5 bc of numerators along the way. Overall, divide by factor of 20"
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "unitA2",
+    "Input": 10,
+    "Expect": 200
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA4",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 10,
+    "Expect": 0.00025,
+    "Comment": "All self-schema references in definitions formatted in 'schemaItem' with no schemaName in front",
+    "Comment2": "unitA4 -> unitA5*UnitsB:unitB5 | unitA5 -> UnitsB:unitB5 | UnitsB:unitB5 -> unitB6 -> unitB7 -> UnitsC:unitC4 -> unitC5 -> unitC2 -> CM",
+    "Comment3": "Divide by factor of 200, then by another factor of 200"
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "unitA4",
+    "Input": 10,
+    "Expect": 400000
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA6",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 10,
+    "Expect": 0.05,
+    "Comment": "All self-schema references in definitions formatted in 'schemaItem' with no schemaName in front",
+    "Comment2": "unitA6 -> unitA5(-1)*UnitsB:unitB5(2) | unitA5 -> UnitsB:unitB5 | UnitsB:unitB5 -> unitB6 -> unitB7 -> UnitsC:unitC4 -> unitC5 -> unitC2 -> CM",
+    "Comment3": "Exponent should cancel out so that it is just multiply divide by factor 200"
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "UnitA6",
+    "Input": 10,
+    "Expect": 2000
+  }
+]

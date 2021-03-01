@@ -29,21 +29,25 @@ describe("Testing creating second schema", () => {
   const context = new SchemaContext();
 
   const testData: TestData[] = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "./unit-test-data2.json"), "utf-8")
+    fs.readFileSync(path.join(__dirname, "./unit-cross-test-data.json"), "utf-8")
   );
 
   before(() => {
-    const schemaFile = path.join(__dirname, "TestUnits.ecschema.xml");
-    const schemaXml = fs.readFileSync(schemaFile, "utf-8");
-    deserializeXml(context, schemaXml);
+    const testSchemaFileA = path.join(__dirname, "TestUnitsA.ecschema.xml");
+    const testSchemaXmlA = fs.readFileSync(testSchemaFileA, "utf-8");
+    deserializeXml(context, testSchemaXmlA);
 
-    const testSchemaFile = path.join(__dirname, "TestUnits2.ecschema.xml");
-    const testSchemaXml = fs.readFileSync(testSchemaFile, "utf-8");
-    deserializeXml(context, testSchemaXml);
+    const testSchemaFileB = path.join(__dirname, "TestUnitsB.ecschema.xml");
+    const testSchemaXmlB = fs.readFileSync(testSchemaFileB, "utf-8");
+    deserializeXml(context, testSchemaXmlB);
+
+    const testSchemaFileC = path.join(__dirname, "TestUnitsC.ecschema.xml");
+    const testSchemaXmlC = fs.readFileSync(testSchemaFileC, "utf-8");
+    deserializeXml(context, testSchemaXmlC);
   });
 
   testData.forEach((test: TestData) => {
-    it.only(`should convert ${test.From} to ${test.To}`, async () => {
+    it(`should convert ${test.From} to ${test.To}`, async () => {
       const converter = new UnitConvertorContext(context);
       const fromSchemaKey = new SchemaKey(test.FromSchema);
       const toSchemaKey = new SchemaKey(test.ToSchema);
