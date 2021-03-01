@@ -53,7 +53,6 @@ export abstract class RealityTileLoader {
   public get containsPointClouds(): boolean { return this._containsPointClouds; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
   public forceTileLoad(_tile: Tile): boolean { return false; }
-  public onActiveRequestCanceled(_tile: Tile): void { }
 
   public processSelectedTiles(selected: Tile[], _args: TileDrawArgs): Tile[] { return selected; }
 

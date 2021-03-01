@@ -166,10 +166,6 @@ export class IModelTile extends Tile {
     }
   }
 
-  public onActiveRequestCanceled(): void {
-    IModelApp.tileAdmin.cancelIModelTileRequest(this);
-  }
-
   protected get rangeGraphicColor(): ColorDef {
     return this.hasSizeMultiplier ? ColorDef.red : super.rangeGraphicColor;
   }

@@ -227,9 +227,6 @@ export abstract class Tile {
   }
 
   /** @internal */
-  public onActiveRequestCanceled(): void { }
-
-  /** @internal */
   public computeLoadPriority(_viewports: Iterable<Viewport>): number {
     return this.depth;
   }

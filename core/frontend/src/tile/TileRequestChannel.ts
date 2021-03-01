@@ -106,6 +106,22 @@ export class TileRequestChannel {
     this._statistics = new TileRequestChannelStatistics();
   }
 
+  public recordTimeout(): void {
+    ++this._statistics.totalTimedOutRequests;
+  }
+
+  public recordFailure(): void {
+    ++this._statistics.totalFailedRequests;
+  }
+
+  public recordCompletion(tile: Tile): void {
+    ++this._statistics.totalCompletedRequests;
+    if (tile.isEmpty)
+      ++this._statistics.totalEmptyTiles;
+    else if (!tile.isDisplayable)
+      ++this._statistics.totalUndisplayableTiles;
+  }
+
   public swapPending(): void {
     const previouslyPending = this._pending;
     this._pending = this._previouslyPending;
@@ -113,7 +129,7 @@ export class TileRequestChannel {
   }
 
   public append(request: TileRequest): void {
-    // ###TODO assert(request.channel === this);
+    assert(request.channel === this);
     this._pending.append(request);
   }
 
@@ -146,8 +162,8 @@ export class TileRequestChannel {
       const request = this._pending.pop();
       if (!request)
         break;
-      else
-        this.dispatch(request);
+
+      this.dispatch(request);
     }
   }
 
@@ -382,5 +398,10 @@ export class TileRequestChannels {
       channel.statistics.addTo(stats);
 
     return stats;
+  }
+
+  public resetStatistics(): void {
+    for (const channel of this)
+      channel.resetStatistics();
   }
 }

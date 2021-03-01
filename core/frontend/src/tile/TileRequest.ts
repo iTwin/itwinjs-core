@@ -90,7 +90,7 @@ export class TileRequest {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();
         this._state = TileRequest.State.Failed;
-        IModelApp.tileAdmin.onTileTimedOut(this.tile);
+        this.channel.recordTimeout();
       } else {
         // Unknown error - not retryable
         this.setFailed();
@@ -117,7 +117,7 @@ export class TileRequest {
   public cancel(): void {
     this.notifyAndClear();
     if (TileRequest.State.Dispatched === this._state)
-      this.tile.onActiveRequestCanceled();
+      this.channel.onActiveRequestCanceled(this);
 
     this._state = TileRequest.State.Failed;
   }
@@ -138,7 +138,7 @@ export class TileRequest {
     this.notifyAndClear();
     this._state = TileRequest.State.Failed;
     this.tile.setNotFound();
-    IModelApp.tileAdmin.onTileFailed(this.tile);
+    this.channel.recordFailure();
   }
 
   /** Invoked when the raw tile content becomes available, to convert it into a tile graphic. */
@@ -166,7 +166,7 @@ export class TileRequest {
       this._state = TileRequest.State.Completed;
       this.tile.setContent(content);
       this.notifyAndClear();
-      IModelApp.tileAdmin.onTileCompleted(this.tile);
+      this.channel.recordCompletion(this.tile);
     } catch (_err) {
       this.setFailed();
     }

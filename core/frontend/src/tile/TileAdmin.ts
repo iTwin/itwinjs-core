@@ -132,15 +132,7 @@ export class TileAdmin {
   private _pendingRequests = new Queue();
   private _swapPendingRequests = new Queue();
   private _numCanceled = 0;
-  private _totalCompleted = 0;
-  private _totalFailed = 0;
-  private _totalTimedOut = 0;
-  private _totalEmpty = 0;
-  private _totalUndisplayable = 0;
   private _totalElided = 0;
-  private _totalCacheMisses = 0;
-  private _totalDispatchedRequests = 0;
-  private _totalAbortedRequests = 0;
   private _rpcInitialized = false;
   private readonly _tileExpirationTime: BeDuration;
   private _nextPruneTime: BeTimePoint;
@@ -148,9 +140,6 @@ export class TileAdmin {
   private readonly _treeExpirationTime: BeDuration;
   private readonly _contextPreloadParentDepth: number;
   private readonly _contextPreloadParentSkip: number;
-  private _canceledIModelTileRequests?: Map<IModelConnection, Map<string, Set<string>>>;
-  private _canceledElementGraphicsRequests?: Map<IModelConnection, string[]>;
-  private _cancelBackendTileRequests: boolean;
   private _tileTreePropsRequests: TileTreePropsRequest[] = [];
   private _cleanup?: () => void;
   private readonly _lruList = new LRUTileList();
@@ -189,18 +178,8 @@ export class TileAdmin {
     }
 
     return {
-      numPendingRequests: this._pendingRequests.length,
-      numActiveRequests: this._activeRequests.size,
-      numCanceled: this._numCanceled,
-      totalCompletedRequests: this._totalCompleted,
-      totalFailedRequests: this._totalFailed,
-      totalTimedOutRequests: this._totalTimedOut,
-      totalEmptyTiles: this._totalEmpty,
-      totalUndisplayableTiles: this._totalUndisplayable,
+      ...this.requestChannels.statistics,
       totalElidedTiles: this._totalElided,
-      totalCacheMisses: this._totalCacheMisses,
-      totalDispatchedRequests: this._totalDispatchedRequests,
-      totalAbortedRequests: this._totalAbortedRequests,
       numActiveTileTreePropsRequests,
       numPendingTileTreePropsRequests: this._tileTreePropsRequests.length - numActiveTileTreePropsRequests,
     };
@@ -208,9 +187,8 @@ export class TileAdmin {
 
   /** Resets the cumulative (per-session) statistics like totalCompletedRequests, totalEmptyTiles, etc. */
   public resetStatistics(): void {
-    this._totalCompleted = this._totalFailed = this._totalTimedOut =
-      this._totalEmpty = this._totalUndisplayable = this._totalElided =
-      this._totalCacheMisses = this._totalDispatchedRequests = this._totalAbortedRequests = 0;
+    this.requestChannels.resetStatistics();
+    this._totalElided = 0;
   }
 
   protected constructor(isMobile: boolean, rpcConcurrency: number | undefined, options?: TileAdmin.Props) {
@@ -255,8 +233,6 @@ export class TileAdmin {
 
     const minSpatialTol = options.minimumSpatialTolerance;
     this._minimumSpatialTolerance = minSpatialTol ? Math.max(minSpatialTol, 0) : 0;
-
-    this._cancelBackendTileRequests = true === options.cancelBackendTileRequests;
 
     const clamp = (seconds: number, min: number, max: number): BeDuration => {
       seconds = Math.min(seconds, max);
@@ -696,32 +672,8 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public onTileFailed(_tile: Tile) {
-    ++this._totalFailed;
-  }
-
-  /** @internal */
-  public onTileTimedOut(_tile: Tile) {
-    ++this._totalTimedOut;
-  }
-
-  /** @internal */
   public onTilesElided(numElided: number) {
     this._totalElided += numElided;
-  }
-
-  /** @internal */
-  public onCacheMiss() {
-    ++this._totalCacheMisses;
-  }
-
-  /** @internal */
-  public onTileCompleted(tile: Tile) {
-    ++this._totalCompleted;
-    if (tile.isEmpty)
-      ++this._totalEmpty;
-    else if (!tile.isDisplayable)
-      ++this._totalUndisplayable;
   }
 
   /** Invoked when a Tile marks itself as "ready" - i.e., its content is loaded (or determined not to exist, or not to be needed).
@@ -741,39 +693,6 @@ export class TileAdmin {
    */
   public onTileContentDisposed(tile: Tile): void {
     this._lruList.drop(tile);
-  }
-
-  /** @internal */
-  public cancelIModelTileRequest(tile: Tile): void {
-    if (undefined === this._canceledIModelTileRequests)
-      return;
-
-    let iModelEntry = this._canceledIModelTileRequests.get(tile.tree.iModel);
-    if (undefined === iModelEntry) {
-      iModelEntry = new Map<string, Set<string>>();
-      this._canceledIModelTileRequests.set(tile.tree.iModel, iModelEntry);
-    }
-
-    let contentIds = iModelEntry.get(tile.tree.id);
-    if (undefined === contentIds) {
-      contentIds = new Set<string>();
-      iModelEntry.set(tile.tree.id, contentIds);
-    }
-
-    contentIds.add(tile.contentId);
-  }
-
-  /** @internal */
-  public cancelElementGraphicsRequest(tile: Tile): void {
-    const requests = this._canceledElementGraphicsRequests;
-    if (!requests)
-      return;
-
-    let ids = requests.get(tile.tree.iModel);
-    if (!ids)
-      requests.set(tile.tree.iModel, ids = []);
-
-    ids.push(tile.contentId);
   }
 
   /** @internal */
@@ -850,6 +769,7 @@ export class TileAdmin {
         this.cancel(active);
 
     // If the backend is servicing a single client, ask it to immediately stop processing requests for content we no longer want.
+    /* ###TODO cancel requests.
     if (undefined !== this._canceledIModelTileRequests && this._canceledIModelTileRequests.size > 0) {
       for (const [iModelConnection, entries] of this._canceledIModelTileRequests) {
         const treeContentIds: TileTreeContentIds[] = [];
@@ -875,6 +795,7 @@ export class TileAdmin {
 
       this._canceledElementGraphicsRequests.clear();
     }
+    */
 
     // Fill up the active requests from the queue.
     while (this._activeRequests.size < this._maxActiveRequests) {
@@ -999,16 +920,11 @@ export class TileAdmin {
       return false;
     });
 
-    // Remove any canceled requests for this iModel.
-    this._canceledIModelTileRequests?.delete(iModel);
-    this._canceledElementGraphicsRequests?.delete(iModel);
-
     // Dispatch TileTreeProps requests not associated with this iModel.
     this.dispatchTileTreePropsRequests();
   }
 
   private dispatch(req: TileRequest): void {
-    ++this._totalDispatchedRequests;
     this._activeRequests.add(req);
     req.dispatch(() => {
       this.dropActiveRequest(req);
@@ -1045,14 +961,6 @@ export class TileAdmin {
       if (usingCache)
         this.requestChannels.enableCloudStorageCache();
     }).catch(() => { });
-
-    if (IpcApp.isValid) {
-      this._canceledElementGraphicsRequests = new Map<IModelConnection, string[]>();
-      if (this._cancelBackendTileRequests)
-        this._canceledIModelTileRequests = new Map<IModelConnection, Map<string, Set<string>>>();
-    } else {
-      this._cancelBackendTileRequests = false;
-    }
   }
 
   /** The geometry of one or models has changed during an [[InteractiveEditingSession]]. Invalidate the scenes and feature overrides of any viewports
@@ -1302,13 +1210,6 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @alpha
      */
     contextPreloadParentSkip?: number;
-
-    /** In a single-client application, when a request for tile content is cancelled, whether to ask the backend to cancel the corresponding tile generation task.
-     * Has no effect unless `NativeAppRpcInterface` is registered.
-     * Default value: false.
-     * @internal
-     */
-    cancelBackendTileRequests?: boolean;
 
     /** For iModel tile trees, the maximum number of levels of the tree to skip loading when selecting tiles.
      * When selecting tiles, if a given tile is too coarse to display and its graphics have not yet been loaded, we can skip loading its graphics and instead try to select one or more of its children
