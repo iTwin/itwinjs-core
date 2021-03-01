@@ -153,12 +153,9 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     e.stopPropagation();
   };
 
-  private onPressEscape(e: KeyboardEvent): void {
+  private onPressEscape(_e: KeyboardEvent): void {
     // istanbul ignore else
     if (this._propertyEditor && this._propertyEditor.containerHandlesEscape) {
-      // istanbul ignore else
-      if (this._editorRef && this._editorRef.hasFocus)
-        e.stopPropagation();
       this._commitCancel();
     }
   }
