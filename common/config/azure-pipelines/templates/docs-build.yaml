@@ -32,12 +32,9 @@ steps:
     stagingDir: ${{ parameters.stagingDir }}
 
 # Currently BeMetalsmith is an internal only tool
-- task: Npm@1
+- script: npm install @bentley/bemetalsmith@4.x
   displayName: Install BeMetalsmith
-  inputs:
-    command: custom
-    customCommand: "install @bentley/bemetalsmith@4.x"
-    workingDir: $(Agent.TempDirectory)
+  workingDirectory: $(Agent.TempDirectory)
 
 - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }} --siteTitle iTwin.js"
   displayName: Run bmsBuild
