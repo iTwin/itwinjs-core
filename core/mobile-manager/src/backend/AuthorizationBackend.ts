@@ -20,8 +20,8 @@ export class MobileAuthorizationBackend extends AuthorizationBackend {
   /** Used to initialize the client - must be awaited before any other methods are called */
   public async initialize(props: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
     await super.initialize(props, config);
+    const requestContext = ClientRequestContext.fromJSON(props);
     if (!this.config.issuerUrl) {
-      const requestContext = ClientRequestContext.fromJSON(props);
       this.config.issuerUrl = await this.getUrl(requestContext);
     }
     MobileHost.device.authStateChanged = (tokenString?: string) => {
