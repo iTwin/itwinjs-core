@@ -6,8 +6,8 @@
  * @module OIDC
  */
 
-import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { BackendRequestContext, NativeAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
+import { assert, ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
+import { NativeAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
 import { NativeAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
@@ -16,14 +16,14 @@ import { MobileHost } from "./MobileHost";
  * @alpha
  */
 export class MobileAuthorizationBackend extends NativeAuthorizationBackend {
-  private _accessToken?: AccessToken;
-  private _clientConfiguration?: NativeAuthorizationConfiguration;
-  public get clientConfiguration() { return this._clientConfiguration!; }
+  // TODO: Affan, this shouldn't be necessary - remove arg from MobileHost.device methods
+  private getRequestContext() {
+    return new ClientRequestContext(Guid.createValue(), this._session?.applicationId, this._session?.applicationVersion, this._session?.sessionId);
+  }
   /** Used to initialize the client - must be awaited before any other methods are called */
   public async initialize(requestContext: ClientRequestContext, config: NativeAuthorizationConfiguration): Promise<void> {
-    requestContext.enter();
-    this._clientConfiguration = config;
-    this._clientConfiguration.issuerUrl = await this.getUrl(requestContext);
+    await super.initialize(requestContext, config);
+    this._clientConfiguration!.issuerUrl = await this.getUrl(requestContext);
 
     MobileHost.device.authStateChanged = (tokenString?: string) => {
       let token: AccessToken | undefined;
@@ -49,10 +49,9 @@ export class MobileAuthorizationBackend extends NativeAuthorizationBackend {
   }
 
   /** Start the sign-in process */
-  public async signIn(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
+  public async signIn(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authSignIn(requestContext, (err?: string) => {
+      MobileHost.device.authSignIn(this.getRequestContext(), (err?: string) => {
         if (!err) {
           resolve();
         } else {
@@ -63,10 +62,9 @@ export class MobileAuthorizationBackend extends NativeAuthorizationBackend {
   }
 
   /** Start the sign-out process */
-  public async signOut(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
+  public async signOut(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authSignOut(requestContext, (err?: string) => {
+      MobileHost.device.authSignOut(this.getRequestContext(), (err?: string) => {
         if (!err) {
           resolve();
         } else {
@@ -77,13 +75,12 @@ export class MobileAuthorizationBackend extends NativeAuthorizationBackend {
   }
 
   /** return accessToken */
-  public async getAccessToken(requestContext: ClientRequestContext = new BackendRequestContext()): Promise<AccessToken> {
-    requestContext.enter();
+  public async getAccessToken(): Promise<AccessToken> {
     if (this.isAuthorized) {
       return this._accessToken!;
     }
     return new Promise<AccessToken>((resolve, reject) => {
-      MobileHost.device.authGetAccessToken(requestContext, (tokenString?: string, err?: string) => {
+      MobileHost.device.authGetAccessToken(this.getRequestContext(), (tokenString?: string, err?: string) => {
         if (!err && tokenString) {
           this._accessToken = AccessToken.fromJson(JSON.parse(tokenString) as AccessTokenProps);
           resolve(this._accessToken);

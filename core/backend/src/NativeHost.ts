@@ -7,12 +7,14 @@
  */
 
 import * as path from "path";
-import { BeEvent, ClientRequestContext, ClientRequestContextProps, Config, GuidString, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContextProps, Config, Guid, GuidString, IModelStatus, SessionProps } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel,
-  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, NativeAuthorizationConfiguration, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
+  BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications,
+  nativeAppNotify, NativeAuthorizationConfiguration, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, AuthorizationClient, AuthorizedClientRequestContext, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
+import {
+  AccessToken, AccessTokenProps, AuthorizationClient, AuthorizedClientRequestContext, ImsAuthorizationClient, RequestGlobalOptions,
+} from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
@@ -20,11 +22,21 @@ import { IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
 export abstract class NativeAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
-  public abstract signIn(requestContext: ClientRequestContext): Promise<void>;
-  public abstract signOut(requestContext: ClientRequestContext): Promise<void>;
-  public abstract initialize(requestContext: ClientRequestContext, config: NativeAuthorizationConfiguration): Promise<void>;
-  public abstract getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+  protected _session?: SessionProps;
+  protected _clientConfiguration?: NativeAuthorizationConfiguration;
+  protected _accessToken?: AccessToken;
+  public abstract signIn(): Promise<void>;
+  public abstract signOut(): Promise<void>;
+  public async initialize(requestContext: ClientRequestContextProps, config: NativeAuthorizationConfiguration): Promise<void> {
+    this._clientConfiguration = config;
+    this._session = { applicationId: requestContext.applicationId, applicationVersion: requestContext.applicationVersion, sessionId: requestContext.sessionId };
+  }
+  public get clientConfiguration() { return this._clientConfiguration!; }
+  public abstract getAccessToken(): Promise<AccessToken>;
   public abstract get isAuthorized(): boolean;
+  public async getAuthorizedContext() {
+    return new AuthorizedClientRequestContext(await this.getAccessToken(), Guid.createValue(), this._session?.applicationId, this._session?.applicationVersion, this._session?.sessionId);
+  }
 }
 
 /**
@@ -39,22 +51,20 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
       throw new IModelError(IModelStatus.BadArg, "IModelHost.authorizationClient must be a NativeAuthorizationBackend");
     return client;
   }
-  private getClientRequestContext(props: ClientRequestContextProps) {
-    const requestContext = new ClientRequestContext(props.activityId, props.applicationId, props.applicationVersion, props.sessionId);
-    requestContext.enter();
-    return requestContext;
+  private async getAuthContext() {
+    return this.getAuthBackend().getAuthorizedContext();
   }
   public async initializeAuth(props: ClientRequestContextProps, config: NativeAuthorizationConfiguration): Promise<void> {
-    return this.getAuthBackend().initialize(this.getClientRequestContext(props), config);
+    return this.getAuthBackend().initialize(props, config);
   }
-  public async signIn(props: ClientRequestContextProps): Promise<void> {
-    return this.getAuthBackend().signIn(this.getClientRequestContext(props));
+  public async signIn(): Promise<void> {
+    return this.getAuthBackend().signIn();
   }
-  public async signOut(props: ClientRequestContextProps): Promise<void> {
-    return this.getAuthBackend().signOut(this.getClientRequestContext(props));
+  public async signOut(): Promise<void> {
+    return this.getAuthBackend().signOut();
   }
-  public async getAccessTokenProps(props: ClientRequestContextProps): Promise<AccessTokenProps> {
-    return (await this.getAuthBackend().getAccessToken(this.getClientRequestContext(props))).toJSON();
+  public async getAccessTokenProps(): Promise<AccessTokenProps> {
+    return (await this.getAuthBackend().getAccessToken()).toJSON();
   }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();
@@ -66,15 +76,12 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     return Config.App.getContainer();
   }
   public async acquireNewBriefcaseId(iModelId: GuidString): Promise<number> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    return BriefcaseManager.acquireNewBriefcaseId(requestContext, iModelId);
+    return BriefcaseManager.acquireNewBriefcaseId(await this.getAuthContext(), iModelId);
   }
   public async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
     return BriefcaseManager.getFileName(props);
   }
   public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean): Promise<LocalBriefcaseProps> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-
     const args = {
       ...request,
       onProgress: (_a: number, _b: number) => checkAbort(),
@@ -87,7 +94,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
       };
     }
 
-    const downloadPromise = BriefcaseManager.downloadBriefcase(requestContext, args);
+    const downloadPromise = BriefcaseManager.downloadBriefcase(await this.getAuthContext(), args);
     const checkAbort = () => {
       const job = Downloads.isInProgress(args.fileName!);
       return (job && (job.request as any).abort === 1) ? 1 : 0;
@@ -103,13 +110,10 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 
   public async deleteBriefcaseFiles(fileName: string): Promise<void> {
-    const context = ClientRequestContext.current instanceof AuthorizedClientRequestContext ? ClientRequestContext.current : undefined;
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, context);
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, await this.getAuthContext());
   }
 
   public async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
-    const requestContext: ClientRequestContext = ClientRequestContext.current;
-    requestContext.enter();
     return BriefcaseManager.getCachedBriefcases(iModelId);
   }
 

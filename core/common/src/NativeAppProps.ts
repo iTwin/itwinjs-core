@@ -84,12 +84,12 @@ export interface NativeAppFunctions {
   initializeAuth: (props: ClientRequestContextProps, config: NativeAuthorizationConfiguration) => Promise<void>;
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
-  signIn: (requestContext: ClientRequestContextProps) => Promise<void>;
+  signIn: () => Promise<void>;
 
   /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
-  signOut: (requestContext: ClientRequestContextProps) => Promise<void>;
+  signOut: () => Promise<void>;
 
-  getAccessTokenProps: (requestContext: ClientRequestContextProps) => Promise<AccessTokenProps>;
+  getAccessTokenProps: () => Promise<AccessTokenProps>;
 
   /** Check if the internet is reachable. */
   checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;

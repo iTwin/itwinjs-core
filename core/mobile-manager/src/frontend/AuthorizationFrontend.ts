@@ -26,24 +26,20 @@ export class MobileAuthorizationFrontend extends ImsAuthorizationClient implemen
     await NativeApp.callNativeHost("initializeAuth", requestContext, this._clientConfiguration);
   }
   /** Start the sign-in process */
-  public async signIn(requestContext: ClientRequestContext): Promise<void> {
-    await NativeApp.callNativeHost("signIn", requestContext);
+  public async signIn(): Promise<void> {
+    await NativeApp.callNativeHost("signIn");
   }
 
   /** Start the sign-out process */
-  public async signOut(requestContext: ClientRequestContext): Promise<void> {
-    return NativeApp.callNativeHost("signOut", requestContext);
+  public async signOut(): Promise<void> {
+    return NativeApp.callNativeHost("signOut");
   }
 
   /** return accessToken */
-  public async getAccessToken(requestContext: ClientRequestContext = new FrontendRequestContext()): Promise<AccessToken> {
-    requestContext.enter();
-    if (this.isAuthorized) {
-      return this._accessToken!;
-    }
-    const tokenProps = await NativeApp.callNativeHost("getAccessTokenProps", requestContext);
-    this._accessToken = AccessToken.fromJson(tokenProps);
-    return this._accessToken;
+  public async getAccessToken(): Promise<AccessToken> {
+    if (!this.isAuthorized)
+      this._accessToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
+    return this._accessToken!;
   }
 
   /** Set to true if there's a current authorized user or client (in the case of agent applications).
@@ -63,10 +59,7 @@ export class MobileAuthorizationFrontend extends ImsAuthorizationClient implemen
 
   /** Set to true if the user has signed in, but the token has expired and requires a refresh */
   public get hasExpired(): boolean {
-    if (!this._accessToken)
-      return false;
-
-    return !this.isAuthorized;
+    return this.hasSignedIn && !this.isAuthorized;
   }
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
