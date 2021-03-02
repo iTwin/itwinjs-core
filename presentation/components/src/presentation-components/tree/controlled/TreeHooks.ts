@@ -86,6 +86,16 @@ export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderP
   useModelSourceUpdateOnRulesetVariablesChange(modelSourceUpdateProps);
 
   const nodeLoader = usePagedTreeNodeLoader(dataProvider, props.pagingSize, modelSource);
+  // When node loader is changed, all node loads automatically get cancelled; need to resume
+  useResumeNodeLoading(modelSource, nodeLoader);
+  return nodeLoader;
+}
+
+/** Starts loading children for nodes that are marked as loading, each time arguments change. */
+function useResumeNodeLoading(
+  modelSource: TreeModelSource,
+  nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>,
+): void {
   useEffect(
     () => {
       let subscriptions: Subscription | undefined;
@@ -105,8 +115,6 @@ export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderP
     },
     [modelSource, nodeLoader],
   );
-
-  return nodeLoader;
 }
 
 interface ModelSourceUpdateProps {
