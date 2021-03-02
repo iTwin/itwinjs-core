@@ -178,7 +178,6 @@ describe("TileAdmin", () => {
       public get is3d() { return true; }
       public get maxDepth() { return undefined; }
       public get viewFlagOverrides() { return new ViewFlagOverrides(); }
-      public get isContentUnbounded() { return false; }
 
       protected _selectTiles(args: TileDrawArgs): Tile[] {
         const tiles = [];
@@ -225,7 +224,6 @@ describe("TileAdmin", () => {
       }
 
       public get treeOwner() { return this._owner; }
-      public get castsShadows() { return true; }
     }
 
     class Provider implements TiledGraphicsProvider {
