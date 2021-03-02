@@ -227,12 +227,11 @@ public;SelectProps
 beta;SessionUiSettings 
 beta;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager }: SettingsContainerProps) => JSX.Element
 beta;SettingsContainerProps
-beta;SettingsEntry
 beta;SettingsManager
 beta;SettingsProvider
 beta;SettingsProvidersChangedEvent 
 beta;SettingsProvidersChangedEventArgs
-beta;SettingsTab
+beta;SettingsTabEntry
 internal;shallowDiffers: (a:
 internal;Size 
 public;SizeProps

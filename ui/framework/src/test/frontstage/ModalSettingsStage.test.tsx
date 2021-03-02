@@ -9,7 +9,7 @@ import { render } from "@testing-library/react";
 import { CoreTools, FrontstageDef, FrontstageManager, FrontstageProps, ModalFrontstage, ModalFrontstageInfo, SettingsModalFrontstage } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { UiFramework } from "../../ui-framework/UiFramework";
-import { SettingsEntry, SettingsManager, SettingsProvider, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "@bentley/ui-core";
+import { SettingsManager, SettingsProvider, SettingsTabEntry, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "@bentley/ui-core";
 import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 
@@ -91,7 +91,7 @@ describe("ModalSettingsStage", () => {
   class TestSettingsProvider implements SettingsProvider {
     public readonly id = "AppSettingsProvider";
 
-    public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsEntry> | undefined {
+    public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
       return [
         {tabId:"page1", itemPriority:10, pageWillHandleCloseRequest:true, label: "Page 1", tooltip:"Page1", icon: "icon-measure",
           page: <TestModalSettingsPage settingsManager={UiFramework.settingsManager} title="Page 1"/>},

@@ -12,7 +12,7 @@ import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities, Sta
 import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
-import { Centered, SettingsContainer, SettingsTab } from "@bentley/ui-core";
+import { Centered, SettingsContainer } from "@bentley/ui-core";
 import { FrontstageManager, ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "./FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
@@ -20,29 +20,16 @@ import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: string}) {
   const id=FrontstageManager.activeFrontstageDef?.id??"none";
   const stageUsage=FrontstageManager.activeFrontstageDef?.usage??StageUsage.General;
-  const entries = UiFramework.settingsManager.getSettingEntries(id, stageUsage);
+  const tabEntries = UiFramework.settingsManager.getSettingEntries(id, stageUsage);
   const noSettingsAvailableLabel = React.useRef(UiFramework.i18n.translate("UiFramework:settings.noSettingsAvailable"));
 
-  const tabs: SettingsTab[] = !entries ? []: entries.sort((a, b)=> a.itemPriority - b.itemPriority).map((entry) => {
-    return {
-      tabId: entry.tabId,
-      label: entry.label,
-      page: entry.page,
-      subLabel: entry.subLabel,
-      icon: entry.icon,
-      tooltip: entry.tooltip,
-      disabled: ConditionalBooleanValue.getValue(entry.isDisabled),
-      pageWillHandleCloseRequest: entry.pageWillHandleCloseRequest,
-    };
-  });
-
   const currentSettingsTab = React.useCallback(() => {
-    const categoryToFind = initialSettingsTabId ? initialSettingsTabId.toLowerCase() : tabs[0].tabId.toLowerCase();
-    let foundTab = tabs.find((entry) => entry.tabId.toLowerCase() === categoryToFind);
+    const categoryToFind = initialSettingsTabId ? initialSettingsTabId.toLowerCase() : tabEntries[0].tabId.toLowerCase();
+    let foundTab = tabEntries.find((entry) => entry.tabId.toLowerCase() === categoryToFind);
     if (!foundTab)
-      foundTab = tabs.find((entry) => entry.label.toLowerCase() === categoryToFind);
+      foundTab = tabEntries.find((entry) => entry.label.toLowerCase() === categoryToFind);
     return foundTab;
-  },[initialSettingsTabId, tabs]);
+  },[initialSettingsTabId, tabEntries]);
 
   React.useEffect (()=>{
     const handleFrontstageCloseRequested = ({modalFrontstage, stageCloseFunc}: ModalFrontstageRequestedCloseEventArgs) => {
@@ -52,12 +39,12 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
       }
     };
     return FrontstageManager.onCloseModalFrontstageRequestedEvent.addListener(handleFrontstageCloseRequested);
-  }, [entries]);
+  }, [tabEntries]);
 
   return (
     <div className="uifw-settings-container">
-      {tabs.length ?
-        <SettingsContainer tabs={tabs} currentSettingsTab={currentSettingsTab()} settingsManager={UiFramework.settingsManager} /> :
+      {tabEntries.length ?
+        <SettingsContainer tabs={tabEntries} currentSettingsTab={currentSettingsTab()} settingsManager={UiFramework.settingsManager} /> :
         <Centered>{noSettingsAvailableLabel.current}</Centered>
       }
     </div>

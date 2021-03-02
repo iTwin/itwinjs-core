@@ -10,8 +10,8 @@ import { BeUiEvent, Logger } from "@bentley/bentleyjs-core";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { UiCore } from "../UiCore";
 
-/** @beta */
-export interface SettingsEntry {
+/** Interface used to populate a tab entry in the SettingContainer control @beta */
+export interface SettingsTabEntry {
   /** unique id for entry */
   readonly tabId: string;
   /** localized display label */
@@ -97,7 +97,7 @@ export interface ActivateSettingsTabEventArgs {
 export interface SettingsProvider {
   /** Id of provider, used to remove registration. */
   readonly id: string;
-  getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsEntry> | undefined;
+  getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined;
 }
 
 /** Settings Manager class. Hold registration of settings providers and supplies events for the provided settings pages to listen.
@@ -175,15 +175,15 @@ export class SettingsManager {
     return result;
   }
 
-  /** Get an array of SettingsEntry objects to populate the settings container. */
-  public getSettingEntries(stageId: string, stageUsage: string): Array<SettingsEntry> | undefined {
-    const allSettingEntries: SettingsEntry[] = [];
+  /** Get an array of SettingsTabEntry objects to populate the settings container. */
+  public getSettingEntries(stageId: string, stageUsage: string): Array<SettingsTabEntry> {
+    const allSettingEntries: SettingsTabEntry[] = [];
     // Consult the registered SettingsProviders
     this._providers.forEach((p) => {
       const entries = p.getSettingEntries(stageId, stageUsage);
       entries && allSettingEntries.push(...entries);
     });
 
-    return allSettingEntries.length > 0 ? allSettingEntries : undefined;
+    return allSettingEntries;
   }
 }

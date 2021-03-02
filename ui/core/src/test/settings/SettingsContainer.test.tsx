@@ -7,8 +7,8 @@ import * as React from "react";
 import { fireEvent, render, wait } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { SettingsContainer, SettingsTab, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer";
-import { SettingsManager } from "../../ui-core/settings/SettingsManager";
+import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer";
+import { SettingsManager, SettingsTabEntry } from "../../ui-core/settings/SettingsManager";
 import TestUtils from "../TestUtils";
 
 // cSpell:ignore sublabel
@@ -20,7 +20,7 @@ const waitForSpy = async (spy: sinon.SinonSpy, options: { timeout: number } = { 
   }, { timeout: options.timeout, interval: 10 });
 };
 
-function TestModalSettingsPage({settingsManager, title}: {settingsManager: SettingsManager, title: string}) {
+function TestModalSettingsPage({ settingsManager, title }: { settingsManager: SettingsManager, title: string }) {
 
   const saveChanges = (afterSaveFunction: (args: any) => void, args?: any) => {
     // for testing just immediately call afterSaveFunction
@@ -35,13 +35,17 @@ function TestModalSettingsPage({settingsManager, title}: {settingsManager: Setti
 describe("<SettingsContainer />", () => {
   const settingsManager = new SettingsManager();
 
-  const tabs: SettingsTab[] = [
-    {tabId:"page1", pageWillHandleCloseRequest:true, label: "Page 1", tooltip:"Page1", icon: "icon-measure",
-      disabled: false, page: <TestModalSettingsPage settingsManager={settingsManager} title="Page 1"/>},
-    {tabId:"page2", label: "Page2", subLabel:"sublabel page2", tooltip:<span>react-tooltip</span>, icon: "icon-paintbrush",
-      disabled: false, page: <div>Page 2</div>},
-    {tabId:"page3", label: "page3", subLabel:"sublabel page2", disabled: false, page: <div>Page 3</div>},
-    {tabId:"tab-page4", label: "page4", subLabel:"disabled page4", disabled: true, page: <div>Page 4</div>},
+  const tabs: SettingsTabEntry[] = [
+    {
+      tabId: "page1", itemPriority: 10, pageWillHandleCloseRequest: true, label: "Page 1", tooltip: "Page1", icon: "icon-measure",
+      page: <TestModalSettingsPage settingsManager={settingsManager} title="Page 1" />,
+    },
+    {
+      tabId: "page2", itemPriority: 20, label: "Page2", subLabel: "sublabel page2", tooltip: <span>react-tooltip</span>, icon: "icon-paintbrush",
+      page: <div>Page 2</div>,
+    },
+    { tabId: "page3", itemPriority: 30, label: "page3", subLabel: "sublabel page2", page: <div>Page 3</div> },
+    { tabId: "tab-page4", itemPriority: 40, label: "page4", subLabel: "disabled page4", isDisabled: true, page: <div>Page 4</div> },
   ];
 
   it("should render", async () => {
@@ -53,14 +57,14 @@ describe("<SettingsContainer />", () => {
       onSettingsTabSelected={spyMethod} />);
     let activePageSelector = `li[data-for='page2']`;
     const liPage2 = wrapper.container.querySelector(activePageSelector) as HTMLLIElement;
-    expect (liPage2.classList.contains("core-active")).to.be.true;
+    expect(liPage2.classList.contains("core-active")).to.be.true;
 
     const tab3 = wrapper.getByTestId("page3");
     fireEvent.click(tab3);
     await TestUtils.flushAsyncOperations();
     activePageSelector = `li[data-for='page3']`;
     const liPage3 = wrapper.container.querySelector(activePageSelector) as HTMLLIElement;
-    expect (liPage3.classList.contains("core-active")).to.be.true;
+    expect(liPage3.classList.contains("core-active")).to.be.true;
     expect(spyMethod.calledOnce).to.be.true;
   });
 
@@ -73,7 +77,7 @@ describe("<SettingsContainer />", () => {
       onSettingsTabSelected={spyMethod} />);
     let activePageSelector = `li[data-for='page1']`;
     const liPage1 = wrapper.container.querySelector(activePageSelector) as HTMLLIElement;
-    expect (liPage1.classList.contains("core-active")).to.be.true;
+    expect(liPage1.classList.contains("core-active")).to.be.true;
 
     const tab3 = wrapper.getByTestId("page3");
     fireEvent.click(tab3);
@@ -81,7 +85,7 @@ describe("<SettingsContainer />", () => {
 
     activePageSelector = `li[data-for='page3']`;
     const liPage3 = wrapper.container.querySelector(activePageSelector) as HTMLLIElement;
-    expect (liPage3.classList.contains("core-active")).to.be.true;
+    expect(liPage3.classList.contains("core-active")).to.be.true;
     expect(spyMethod.calledOnce).to.be.true;
   });
 
@@ -91,16 +95,16 @@ describe("<SettingsContainer />", () => {
     const wrapper = render(<SettingsContainer tabs={tabs} settingsManager={settingsManager}
       onSettingsTabSelected={spyMethod} currentSettingsTab={tabs[1]} />);
 
-    settingsManager.activateSettingsTab ("page3");
+    settingsManager.activateSettingsTab("page3");
     await waitForSpy(spyMethod, { timeout: 500 });
 
     const activePageSelector = `li[data-for='page3']`;
     const liPage3 = wrapper.container.querySelector(activePageSelector) as HTMLLIElement;
-    expect (liPage3.classList.contains("core-active")).to.be.true;
+    expect(liPage3.classList.contains("core-active")).to.be.true;
     expect(spyMethod.calledOnce).to.be.true;
 
     spyMethod.resetHistory();
-    settingsManager.closeSettingsContainer (spyMethod);
+    settingsManager.closeSettingsContainer(spyMethod);
     await waitForSpy(spyMethod, { timeout: 200 });
   });
 
@@ -110,12 +114,12 @@ describe("<SettingsContainer />", () => {
     const wrapper = render(<SettingsContainer tabs={tabs} settingsManager={settingsManager}
       onSettingsTabSelected={spyMethod} />);
 
-    settingsManager.activateSettingsTab ("page4");
+    settingsManager.activateSettingsTab("page4");
     await TestUtils.flushAsyncOperations();
     // should not activate page 4 since it is disabled
     const activePageSelector = `li[data-for='page1']`;
     const liPage1 = wrapper.container.querySelector(activePageSelector) as HTMLLIElement;
-    expect (liPage1.classList.contains("core-active")).to.be.true;
+    expect(liPage1.classList.contains("core-active")).to.be.true;
   });
 
   it("should trigger close activation", async () => {
@@ -126,10 +130,10 @@ describe("<SettingsContainer />", () => {
     const wrapper = render(<SettingsContainer tabs={tabs} settingsManager={settingsManager} />);
     const activePageSelector = `li[data-for='page1']`;
     const liPage1 = wrapper.container.querySelector(activePageSelector) as HTMLLIElement;
-    expect (liPage1.classList.contains("core-active")).to.be.true;
+    expect(liPage1.classList.contains("core-active")).to.be.true;
 
     // trigger the close container processing
-    settingsManager.closeSettingsContainer (spyMethod);
+    settingsManager.closeSettingsContainer(spyMethod);
     await waitForSpy(spyMethod, { timeout: 200 });
 
     wrapper.unmount();

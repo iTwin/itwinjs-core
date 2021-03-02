@@ -7,11 +7,10 @@ import * as React from "react";
 import { render } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { SettingsContainer, SettingsTab, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer";
-import { SettingsEntry, SettingsManager, SettingsProvider } from "../../ui-core/settings/SettingsManager";
-import { ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer";
+import { SettingsManager, SettingsProvider, SettingsTabEntry } from "../../ui-core/settings/SettingsManager";
 
-function TestModalSettingsPage({settingsManager, title}: {settingsManager: SettingsManager, title: string}) {
+function TestModalSettingsPage({ settingsManager, title }: { settingsManager: SettingsManager, title: string }) {
 
   const saveChanges = (afterSaveFunction: (args: any) => void, args?: any) => {
     // for testing just immediately call afterSaveFunction
@@ -29,14 +28,18 @@ describe("<SettingsManager />", () => {
   class TestSettingsProvider implements SettingsProvider {
     public readonly id = "AppSettingsProvider";
 
-    public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsEntry> | undefined {
+    public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
       return [
-        {tabId:"page1", itemPriority:10, pageWillHandleCloseRequest:true, label: "Page 1", tooltip:"Page1", icon: "icon-measure",
-          page: <TestModalSettingsPage settingsManager={settingsManager} title="Page 1"/>},
-        {tabId:"page2", itemPriority:20, label: "Page2", subLabel:"sublabel page2", tooltip:<span>react-tooltip</span>, icon: "icon-paintbrush",
-          page: <div>Page 2</div>},
-        {tabId:"page3", itemPriority:30, label: "page3", page: <div>Page 3</div>},
-        {tabId:"page4", itemPriority:40, label: "page4", subLabel:"disabled page4", isDisabled: true, page: <div>Page 4</div>},
+        {
+          tabId: "page1", itemPriority: 10, pageWillHandleCloseRequest: true, label: "Page 1", tooltip: "Page1", icon: "icon-measure",
+          page: <TestModalSettingsPage settingsManager={settingsManager} title="Page 1" />,
+        },
+        {
+          tabId: "page2", itemPriority: 20, label: "Page2", subLabel: "Sub-label page2", tooltip: <span>react-tooltip</span>, icon: "icon-paintbrush",
+          page: <div>Page 2</div>,
+        },
+        { tabId: "page3", itemPriority: 30, label: "page3", page: <div>Page 3</div> },
+        { tabId: "page4", itemPriority: 40, label: "page4", subLabel: "Disabled page4", isDisabled: true, page: <div>Page 4</div> },
       ];
     }
   }
@@ -44,30 +47,17 @@ describe("<SettingsManager />", () => {
   it("should render", async () => {
     const testProvider = new TestSettingsProvider();
 
-    expect (settingsManager.getSettingEntries ("testStage", "General")).to.be.undefined;
+    expect(settingsManager.getSettingEntries("testStage", "General").length).to.be.eql(0);
 
     settingsManager.addSettingsProvider(testProvider);
     settingsManager.addSettingsProvider(testProvider); // second add is ignored.
 
-    const tabEntries = settingsManager.getSettingEntries ("testStage", "General");
+    const tabEntries = settingsManager.getSettingEntries("testStage", "General");
 
-    const tabs: SettingsTab[] = !tabEntries ? []: tabEntries.sort((a, b)=> a.itemPriority - b.itemPriority).map((entry) => {
-      return {
-        tabId: entry.tabId,
-        label: entry.label,
-        page: entry.page,
-        subLabel: entry.subLabel,
-        icon: entry.icon,
-        tooltip: entry.tooltip,
-        disabled: ConditionalBooleanValue.getValue(entry.isDisabled),
-        pageWillHandleCloseRequest: entry.pageWillHandleCloseRequest,
-      };
-    });
-
-    const wrapper = render(<SettingsContainer tabs={tabs} settingsManager={settingsManager} />);
+    const wrapper = render(<SettingsContainer tabs={tabEntries ?? []} settingsManager={settingsManager} />);
     const activePageSelector = `li[data-for='page1']`;
     const liPage1 = wrapper.container.querySelector(activePageSelector) as HTMLLIElement;
-    expect (liPage1.classList.contains("core-active")).to.be.true;
+    expect(liPage1.classList.contains("core-active")).to.be.true;
     wrapper.unmount();
     expect(settingsManager.removeSettingsProvider(testProvider.id)).to.be.true;
     expect(settingsManager.removeSettingsProvider(testProvider.id)).to.be.false;
@@ -77,11 +67,11 @@ describe("<SettingsManager />", () => {
     const spyCloseMethod = sinon.spy();
 
     const handleProcessSettingsContainerClose = () => {
-      spyCloseMethod ();
+      spyCloseMethod();
     };
 
-    settingsManager.onCloseSettingsContainer.addOnce (handleProcessSettingsContainerClose);
-    settingsManager.closeSettingsContainer(()=>{});
+    settingsManager.onCloseSettingsContainer.addOnce(handleProcessSettingsContainerClose);
+    settingsManager.closeSettingsContainer(() => { });
     expect(spyCloseMethod.calledOnce).to.be.true;
   });
 
@@ -89,10 +79,10 @@ describe("<SettingsManager />", () => {
     const spyChangeTabMethod = sinon.spy();
 
     const handleProcessChangeTab = () => {
-      spyChangeTabMethod ();
+      spyChangeTabMethod();
     };
 
-    settingsManager.onActivateSettingsTab.addOnce (handleProcessChangeTab);
+    settingsManager.onActivateSettingsTab.addOnce(handleProcessChangeTab);
     settingsManager.activateSettingsTab("test-tab-id");
     expect(spyChangeTabMethod.calledOnce).to.be.true;
   });

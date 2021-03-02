@@ -21,7 +21,7 @@ import {
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus,
   MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
-  SearchBox, Select, SettingsContainer, SettingsTab, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
+  SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
   Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails, UiFramework } from "@bentley/ui-framework";
@@ -36,13 +36,17 @@ import { QuantityFormatSettingsPanel } from "../QuantityFormatStage";
 import { ConnectedUiSettingsPage } from "../Settings";
 
 function MySettingsPage() {
-  const tabs: SettingsTab[] = [
-    {tabId:"Quantity", pageWillHandleCloseRequest:true, label: "Quantity", tooltip:"Quantity Format Settings", icon: "icon-measure",
-      disabled: false, page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} />},
-    {tabId:"UI", label: "UI", subLabel:"UI and Accudraw", tooltip:"UI Settings", icon: "icon-paintbrush",
-      disabled: false, page: <ConnectedUiSettingsPage />},
-    {tabId:"page3", label: "page3", disabled: false, page: <div>Page 3</div>},
-    {tabId:"page4", label: "page4", subLabel:"disabled page4", disabled: true, page: <div>Page 4</div>},
+  const tabs: SettingsTabEntry[] = [
+    {
+      itemPriority: 10, tabId: "Quantity", pageWillHandleCloseRequest: true, label: "Quantity", tooltip: "Quantity Format Settings", icon: "icon-measure",
+      page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} />,
+    },
+    {
+      itemPriority: 20, tabId: "UI", label: "UI", subLabel: "UI and Accudraw", tooltip: "UI Settings", icon: "icon-paintbrush",
+      page: <ConnectedUiSettingsPage />,
+    },
+    { itemPriority: 30, tabId: "page3", label: "page3", page: <div>Page 3</div> },
+    { itemPriority: 40, tabId: "page4", label: "page4", subLabel: "disabled page4", isDisabled: true, page: <div>Page 4</div> },
   ];
 
   return (
@@ -112,7 +116,7 @@ function providePrimaryChildren(formatProps: FormatProps, fireFormatChange: (new
 }
 
 async function provideFormatSpec(formatProps: FormatProps, persistenceUnit: UnitProps, unitsProvider: UnitsProvider, formatName?: string) {
-  const actualFormat = await Format.createFromJSON(formatName ?? "custom",unitsProvider, formatProps);
+  const actualFormat = await Format.createFromJSON(formatName ?? "custom", unitsProvider, formatProps);
   return FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, persistenceUnit);
 }
 
@@ -133,7 +137,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
       if (formatterSpec) {
         const pu = formatterSpec.persistenceUnit;
         if (pu) {
-          const actualFormat = await  Format.createFromJSON("custom", unitsProvider, formatProps);
+          const actualFormat = await Format.createFromJSON("custom", unitsProvider, formatProps);
           await actualFormat.fromJSON(unitsProvider, formatProps);
           const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
           setFormattedValue(newSpec.applyFormatting(initialMagnitude));

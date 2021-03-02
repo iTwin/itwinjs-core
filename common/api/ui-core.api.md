@@ -1902,26 +1902,13 @@ export const SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsT
 // @beta (undocumented)
 export interface SettingsContainerProps {
     // (undocumented)
-    currentSettingsTab?: SettingsTab;
+    currentSettingsTab?: SettingsTabEntry;
     // (undocumented)
-    onSettingsTabSelected?: (tab: SettingsTab) => void;
+    onSettingsTabSelected?: (tab: SettingsTabEntry) => void;
     // (undocumented)
     settingsManager: SettingsManager;
     // (undocumented)
-    tabs: SettingsTab[];
-}
-
-// @beta (undocumented)
-export interface SettingsEntry {
-    readonly icon?: string | JSX.Element;
-    readonly isDisabled?: boolean | ConditionalBooleanValue;
-    readonly itemPriority: number;
-    readonly label: string;
-    readonly page: JSX.Element;
-    readonly pageWillHandleCloseRequest?: boolean;
-    readonly subLabel?: string;
-    readonly tabId: string;
-    readonly tooltip?: string | JSX.Element;
+    tabs: SettingsTabEntry[];
 }
 
 // @beta
@@ -1930,7 +1917,7 @@ export class SettingsManager {
     // (undocumented)
     addSettingsProvider(settingsProvider: SettingsProvider): void;
     closeSettingsContainer(closeFunc: (args: any) => void, closeFuncArgs?: any): void;
-    getSettingEntries(stageId: string, stageUsage: string): Array<SettingsEntry> | undefined;
+    getSettingEntries(stageId: string, stageUsage: string): Array<SettingsTabEntry>;
     // @internal
     readonly onActivateSettingsTab: ActivateSettingsTabEvent;
     // @internal
@@ -1948,7 +1935,7 @@ export class SettingsManager {
 // @beta
 export interface SettingsProvider {
     // (undocumented)
-    getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsEntry> | undefined;
+    getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined;
     readonly id: string;
 }
 
@@ -1963,9 +1950,10 @@ export interface SettingsProvidersChangedEventArgs {
 }
 
 // @beta
-export interface SettingsTab {
-    readonly disabled?: boolean;
+export interface SettingsTabEntry {
     readonly icon?: string | JSX.Element;
+    readonly isDisabled?: boolean | ConditionalBooleanValue;
+    readonly itemPriority: number;
     readonly label: string;
     readonly page: JSX.Element;
     readonly pageWillHandleCloseRequest?: boolean;

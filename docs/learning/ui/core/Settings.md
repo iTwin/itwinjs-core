@@ -2,16 +2,57 @@
 
 The [SettingsManager]($ui-core) allows the registration of [SettingsProvider]($ui-core) classes to provide the settings to display with the [SettingsContainer]($ui-core) component. In an application that employees App-UI, the [SettingsModalFrontstage]($ui-framework) frontstage will display the SettingsContainer and its entries.
 
-## SettingsEntry
+## SettingsTabEntry
 
-Registered [SettingsProvider]($ui-core) instance will implement the method `getSettingEntries` to return an array of [SettingsProvider]($ui-core) items. Each SettingsEntry will populate a Tab entry in the [SettingsContainer]($ui-core) component. The `tabId` property is a string and must be unique across all registered SettingsProviders. A common practice is to prefix the tabId with the package name to ensure uniqueness. The `page` property holds the React.Element that will be used to construct the component to edit settings for this entry.  It is the `page's` responsibility to persist and retrieve persisted settings. If the `page` contains multiple properties that must be saved together the SettingEntry can set the `pageWillHandleCloseRequest` property to `true`. The `page's` control should then register to be notified when the setting container is closing or when the active SettingsEnty is changing so that any unsaved data can be saved. Two React hooks are provided to assist: `settingsManager.onProcessSettingsTabActivation` and `settingsManager.onProcessSettingsContainerClose`.
+Registered [SettingsProvider]($ui-core) instance will implement the method `getSettingEntries` to return an array of [SettingsProvider]($ui-core) items. Each SettingsTabEntry will populate a Tab entry in the [SettingsContainer]($ui-core) component. The `tabId` property is a string and must be unique across all registered SettingsProviders. A common practice is to prefix the tabId with the package name to ensure uniqueness. The `page` property holds the React.Element that will be used to construct the component to edit settings for this entry.  It is the `page's` responsibility to persist and retrieve persisted settings. If the `page` contains multiple properties that must be saved together the SettingEntry can set the `pageWillHandleCloseRequest` property to `true`. The `page's` control should then register to be notified when the setting container is closing or when the active SettingsEnty is changing so that any unsaved data can be saved. Two React hooks are provided to assist: `settingsManager.onProcessSettingsTabActivation` and `settingsManager.onProcessSettingsContainerClose`.
 
 ## Example
 
-Below is an example of a settings page component that has `pageWillHandleCloseRequest` set to true so it can save its data before unmounting.
+### Example SettingsProvider
+
+Example below shows a settings provide that provides two settings pages. The first one depicts a page that has properties that cannot be saved immediately as individual properties are changed. It must be treated as a modal where once all values are define a save button is used the save the changes.  The second settings page handles settings that can be immediately saved when changed and does not require any special processing when the page is closed.
 
 ```tsx
-export function ExampleSettingsPage() {
+// Sample UI items provider that dynamically adds ui items
+export class ExampleSettingsProvider implements SettingsProvider {
+  public readonly id = "myApp:ExampleSettingsProvider";
+
+  public getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
+    // It is possible to use arguments stageId and stageUsage to determine if a settings entry is to be provided for display. In this example
+    // we will just assume to always provide this SettingsTabEntry.
+    return [
+      {
+        itemPriority: 60,
+        tabId: "myApp:ExampleModalSettingsPage",
+        label:"Modal Feature",
+        page: <ExampleModalSettingsPage />,
+        icon: "icon-paintbrush",
+        tooltip: "My Example Modal Feature Settings",
+        pageWillHandleCloseRequest: true,
+      },
+      {
+        itemPriority: 70,
+        tabId: "myApp:ExampleSimpleSettingsPage",
+        label:"Simple Feature",
+        page: <ExampleSimpleSettingsPage />,
+        tooltip: "My Example Simple Feature Settings",
+      },
+    ];
+  }
+
+  public static initializeAppSettingProvider() {
+    // Assuming running in AppUI-based application the SettingsManager instance is available via UiFramework.settingsManager
+    UiFramework.settingsManager.addSettingsProvider(new AppSettingsProvider());
+  }
+}
+```
+
+### Example Page Definition
+
+Below is an example of a settings page component that has `pageWillHandleCloseRequest` set to true so it can save its data before unmounting. When setting `pageWillHandleCloseRequest` it is the page components responsibility to call the `afterSaveFunction` to allow the processing that prompted the settings to be saved to continue.
+
+```tsx
+export function ExampleModalSettingsPage() {
   const [mySettingsData, setMySettingsData] = React.useState(getInitialSettingsData());
   const [saveEnabled, setSaveEnabled] = React.useState(false);
 
@@ -106,4 +147,4 @@ function SaveFormatModalDialog({ persistChangesFunc, persistChangesFuncArg, onDi
 - [SettingsManager]($ui-core)
 - [SettingsProvider]($ui-core)
 - [SettingsContainer]($ui-core)
-- [SettingsEntry]($ui-core)
+- [SettingsTabEntry]($ui-core)

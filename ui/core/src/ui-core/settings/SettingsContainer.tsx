@@ -8,8 +8,9 @@
 
 import "./SettingsContainer.scss";
 import * as React from "react";
-import { ActivateSettingsTabEventArgs, ProcessSettingsContainerCloseEventArgs, ProcessSettingsTabActivationEventArgs, SettingsManager } from "./SettingsManager";
+import { ActivateSettingsTabEventArgs, ProcessSettingsContainerCloseEventArgs, ProcessSettingsTabActivationEventArgs, SettingsManager, SettingsTabEntry } from "./SettingsManager";
 import { VerticalTabs } from "../tabs/VerticalTabs";
+import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 
 /*  ---------------------------------------------------------------------------------------------------
 // A typical implementation of a saveFunction callback
@@ -48,55 +49,37 @@ export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsM
   }, [saveFunction, settingsManager]);
 }
 
-/** Interface that defines a SettingTab entry that will be displayed in a Settings Container.
- * @beta
- */
-export interface SettingsTab {
-  /** unique id for entry */
-  readonly tabId: string;
-  /** localized display label */
-  readonly label: string;
-  /** Setting page content to display when tab item is selected. */
-  readonly page: JSX.Element;
-  /** If the page content needs to save any unsaved content before closing the this value is set to true. */
-  readonly pageWillHandleCloseRequest?: boolean;
-  /** Optional sub-label to show below label. */
-  readonly subLabel?: string;
-  /** Icon specification */
-  readonly icon?: string | JSX.Element;
-  /** Tooltip. Allows JSX|Element to support react-tooltip component */
-  readonly tooltip?: string | JSX.Element;
-  /** Allows Settings entry to be disabled */
-  readonly disabled?: boolean;
-}
-
 /**
  * @beta
  */
 export interface SettingsContainerProps {
-  tabs: SettingsTab[];
+  tabs: SettingsTabEntry[];
   // sets tab to set as active tab
-  currentSettingsTab?: SettingsTab;
+  currentSettingsTab?: SettingsTabEntry;
   // If plugging into a SPA and you need to modify the route, you can pass in additional logic here
-  onSettingsTabSelected?: (tab: SettingsTab) => void;
+  onSettingsTabSelected?: (tab: SettingsTabEntry) => void;
   // The SettingsManager that can have event handlers registered against it so pages can save its settings before the page is closed.
   settingsManager: SettingsManager;
 }
 
 /**
- * Note that SettingsContainer is not rendered if tabs is empty
+ * SettingsContainer component that displays Setting Tabs on Left and the P
+ * Note: that SettingsContainer is not rendered if tabs array is empty
  * @beta
  */
 export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsTab, settingsManager}: SettingsContainerProps) => {
+  // sort the tabs based on itemPriority
+  tabs = tabs.sort((a, b)=> a.itemPriority - b.itemPriority);
+
   const [openTab, setOpenTab] = React.useState(()=>{
-    if (currentSettingsTab && !currentSettingsTab.disabled)
+    if (currentSettingsTab && !ConditionalBooleanValue.getValue(currentSettingsTab.isDisabled))
       return currentSettingsTab;
     else
       return tabs[0];
   });
 
-  const processTabSelection = React.useCallback((tab: SettingsTab) => {
-    if (tab.disabled)
+  const processTabSelection = React.useCallback((tab: SettingsTabEntry) => {
+    if (ConditionalBooleanValue.getValue(tab.isDisabled))
       return;
     onSettingsTabSelected && onSettingsTabSelected(tab);
     setOpenTab(tab);
@@ -145,7 +128,7 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
 
   const labels=tabs.map((tab)=> {
     return {label:tab.label, subLabel: tab.subLabel, icon: tab.icon,
-      tooltip: tab.tooltip, tabId: tab.tabId, disabled: tab.disabled};
+      tooltip: tab.tooltip, tabId: tab.tabId, disabled: ConditionalBooleanValue.getValue(tab.isDisabled)};
   });
   const activeIndex = tabs.findIndex((tab)=>tab.tabId === openTab.tabId);
   return (

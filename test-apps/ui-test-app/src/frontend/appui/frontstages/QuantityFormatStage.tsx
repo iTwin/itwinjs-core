@@ -11,7 +11,8 @@ import {
 import { FormatProps, FormatterSpec } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
 import { FormatSample, QuantityFormatPanel } from "@bentley/ui-components";
-import { Button, ButtonType, Dialog, Listbox, ListboxItem, SettingsEntry,
+import {
+  Button, ButtonType, Dialog, Listbox, ListboxItem, SettingsTabEntry,
   useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer,
 } from "@bentley/ui-core";
 import { ModalDialogManager, UiFramework } from "@bentley/ui-framework";
@@ -22,11 +23,11 @@ function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
 }
 
 /**
- * Return a SettingsEntry that can be used to define the available settings that can be set for an application.
+ * Return a SettingsTabEntry that can be used to define the available settings that can be set for an application.
  * @param itemPriority - Used to define the order of the entry in the Settings Stage
  * @alpha
  */
-export function getQuantityFormatsSettingsManagerEntry(itemPriority: number): SettingsEntry {
+export function getQuantityFormatsSettingsManagerEntry(itemPriority: number): SettingsTabEntry {
   return {
     itemPriority, tabId: "ui-test-app:Quantity", label: "Quantity",
     page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} />,

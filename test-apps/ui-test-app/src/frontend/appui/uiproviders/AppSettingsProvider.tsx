@@ -5,7 +5,7 @@
 import * as React from "react";
 
 import { UiFramework } from "@bentley/ui-framework";
-import { SettingsEntry, SettingsProvider } from "@bentley/ui-core";
+import { SettingsTabEntry, SettingsProvider } from "@bentley/ui-core";
 import { getQuantityFormatsSettingsManagerEntry } from "../frontstages/QuantityFormatStage";
 import { ConnectedUiSettingsPage } from "../frontstages/Settings";
 
@@ -13,11 +13,11 @@ import { ConnectedUiSettingsPage } from "../frontstages/Settings";
 export class AppSettingsProvider implements SettingsProvider {
   public readonly id = "AppSettingsProvider";
 
-  public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsEntry> | undefined {
+  public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
     return [
       getQuantityFormatsSettingsManagerEntry(10),
       {
-        itemPriority: 20, tabId: "ui-test-app:UI", label:"UI",
+        itemPriority: 20, tabId: "ui-test-app:UI", label: "UI",
         page: <ConnectedUiSettingsPage />,
         isDisabled: false,
         icon: "icon-paintbrush",
