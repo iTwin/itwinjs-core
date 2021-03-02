@@ -8,6 +8,7 @@ alpha;AnalysisStyleProps
 internal;AntiAliasPref
 public;AreaFillProps
 public;AreaPattern
+alpha;AuthorizationConfiguration
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
 public;AuxCoordSystemProps 
@@ -100,12 +101,9 @@ beta;CustomAttribute
 beta;CutStyle
 beta;CutStyleProps
 beta;DecorationGeometryProps
-alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 alpha;DeletedElementGeometryChange
-alpha;DesktopAuthorizationClientConfiguration
-internal;DesktopAuthorizationClientMessages
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 

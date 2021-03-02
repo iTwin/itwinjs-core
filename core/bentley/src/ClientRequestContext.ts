@@ -10,7 +10,9 @@ import { Guid, GuidString } from "./Id";
 
 // cSpell:ignore csrf
 
-/** Properties that identify a session. */
+/** Properties that identify a session.
+ * @public
+ */
 export interface SessionProps {
   /** Used for logging and usage tracking to identify the application  */
   readonly applicationId: string;

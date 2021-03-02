@@ -7,19 +7,12 @@
 import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
-import { DesktopAuthorizationClient } from '@bentley/imodeljs-backend';
 import { IModelAppOptions } from '@bentley/imodeljs-frontend';
 import { IModelHostConfiguration } from '@bentley/imodeljs-backend';
 import { IpcHandler } from '@bentley/imodeljs-backend';
 import { PromiseReturnType } from '@bentley/imodeljs-frontend';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
 import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
-
-// @internal
-export class DesktopAuthorizationClientIpc {
-    static get desktopAuthorizationClient(): DesktopAuthorizationClient | undefined;
-    static initializeIpc(): void;
-    }
 
 // @beta
 export class ElectronApp {

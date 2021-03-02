@@ -51,7 +51,6 @@ import { ContentIdProvider } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { CurvePrimitive } from '@bentley/geometry-core';
-import { DesktopAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { DevToolsStatsOptions } from '@bentley/imodeljs-common';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogItemValue } from '@bentley/ui-abstract';
@@ -138,6 +137,7 @@ import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
+import { IModelVersionProps } from '@bentley/imodeljs-common';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
@@ -1607,10 +1607,10 @@ export class BriefcaseConnection extends IModelConnection {
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
     // @internal
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
-    // @beta (undocumented)
-    pullAndMergeChanges(): Promise<IModelConnectionProps>;
-    // @beta (undocumented)
-    pushChanges(description: string): Promise<IModelConnectionProps>;
+    // @beta
+    pullAndMergeChanges(version?: IModelVersionProps): Promise<void>;
+    // @beta
+    pushChanges(description: string): Promise<string>;
     // @beta (undocumented)
     saveChanges(description?: string): Promise<void>;
 }
@@ -2189,19 +2189,6 @@ export interface DepthRangeNpc {
     minimum: number;
 }
 
-// @alpha
-export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: DesktopAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-}
-
 // @internal
 export class DevTools {
     static connectToBackendInstance(tokenProps: IModelRpcProps): DevTools;
@@ -2412,12 +2399,19 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get wantShadows(): boolean;
 }
 
-// @alpha
-export interface DownloadBriefcaseOptions {
-    // (undocumented)
+// @beta
+export type DownloadBriefcaseId = {
+    syncMode?: SyncMode;
+    briefcaseId?: never;
+} | {
+    briefcaseId: number;
+    syncMode?: never;
+};
+
+// @beta
+export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
     fileName?: string;
-    syncMode: SyncMode;
-}
+};
 
 // @alpha
 export interface DrawClipOptions {
@@ -4737,8 +4731,8 @@ export class IpcApp {
     // (undocumented)
     static shutdown(): Promise<void>;
     // (undocumented)
-    static startup(opts?: {
-        ipcApp?: IpcAppOptions;
+    static startup(opts: {
+        ipcApp: IpcAppOptions;
         iModelApp?: IModelAppOptions;
     }): Promise<void>;
 }
@@ -6292,11 +6286,6 @@ export class NativeApp {
     static get isValid(): boolean;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
-    // (undocumented)
-    static onUserStateChanged: BeEvent<(_arg: {
-        accessToken: any;
-        err?: string;
-    }) => void>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
@@ -6306,7 +6295,7 @@ export class NativeApp {
     static shutdown(): Promise<void>;
     // @internal
     static startup(opts: {
-        ipcApp?: IpcAppOptions;
+        ipcApp: IpcAppOptions;
         iModelApp?: IModelAppOptions;
     }): Promise<void>;
     }

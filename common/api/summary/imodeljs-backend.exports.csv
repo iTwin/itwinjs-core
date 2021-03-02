@@ -3,6 +3,7 @@ Release Tag;API Item
 beta;AliCloudStorageService 
 public;AnnotationElement2d 
 beta;AppActivityMonitor
+internal;class AuthorizationBackend 
 public;AuthorizedBackendRequestContext 
 beta;AutoPush
 beta;AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void
@@ -62,7 +63,6 @@ public;DefinitionGroupGroupsDefinitions
 public;DefinitionModel 
 public;DefinitionPartition 
 public;class DefinitionSet 
-alpha;DesktopAuthorizationClient 
 public;DetailCallout 
 public;class DetailingSymbol 
 internal;DevTools

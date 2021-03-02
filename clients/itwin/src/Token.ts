@@ -41,7 +41,9 @@ class TokenPrefixToTypeContainer {
   public static tokenPrefixToConstructorDict: { [key: string]: any } = {};
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
+/** Properties for transmitting AccessTokens between processes
+ * @beta
+ */
 export interface AccessTokenProps {
   tokenString: string;
   startsAt?: string;

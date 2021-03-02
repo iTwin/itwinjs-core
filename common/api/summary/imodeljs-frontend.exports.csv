@@ -115,13 +115,13 @@ internal;DefineACSByPointsTool
 alpha;DepthPointOptions
 alpha;DepthPointSource
 public;DepthRangeNpc
-alpha;DesktopAuthorizationClient 
 internal;DevTools
 beta;DisclosedTileTreeSet 
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
-alpha;DownloadBriefcaseOptions
+beta;DownloadBriefcaseId =
+beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 

@@ -17,13 +17,16 @@ import { IModelApp, IModelAppOptions } from "./imodeljs-frontend";
 import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
+/** Properties for specifying the Briefcaseid for downloading
+ * @beta
+ */
 export type DownloadBriefcaseId =
   { syncMode?: SyncMode, briefcaseId?: never } |
   { briefcaseId: number, syncMode?: never };
 
 /**
 * Options to download a briefcase
-* @alpha
+* @beta
 */
 export type DownloadBriefcaseOptions = DownloadBriefcaseId & { fileName?: string };
 

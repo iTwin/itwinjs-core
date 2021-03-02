@@ -11,6 +11,7 @@ import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
 const loggerCategory = ITwinClientLoggerCategory.Authorization;
 
+/** @beta */
 export interface UserInfoProps {
   id: string;
   email?: { id: string, isVerified?: boolean };

@@ -7,6 +7,7 @@
 import { AccessToken } from '@bentley/itwin-client';
 import { Angle } from '@bentley/geometry-core';
 import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
@@ -30,6 +31,7 @@ import { ChangesType } from '@bentley/imodelhub-client';
 import { ChannelRootAspectProps } from '@bentley/imodeljs-common';
 import { ClientAuthIntrospectionManager } from '@bentley/backend-itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ClientRequestContextProps } from '@bentley/bentleyjs-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
 import { CloudStorageProvider } from '@bentley/imodeljs-common';
@@ -46,7 +48,6 @@ import { CreateSnapshotIModelProps } from '@bentley/imodeljs-common';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { DefinitionElementProps } from '@bentley/imodeljs-common';
-import { DesktopAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { DisplayStyle3dProps } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
@@ -68,7 +69,6 @@ import { ExternalSourceAspectProps } from '@bentley/imodeljs-common';
 import { FilePropertyProps } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { FontProps } from '@bentley/imodeljs-common';
-import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { FunctionalElementProps } from '@bentley/imodeljs-common';
 import { GeoCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { GeometricElement2dProps } from '@bentley/imodeljs-common';
@@ -163,6 +163,7 @@ import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
 import { SectionLocationProps } from '@bentley/imodeljs-common';
 import { SectionType } from '@bentley/imodeljs-common';
+import { SessionProps } from '@bentley/bentleyjs-core';
 import { SheetBorderTemplateProps } from '@bentley/imodeljs-common';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SheetTemplateProps } from '@bentley/imodeljs-common';
@@ -229,6 +230,34 @@ export class AnnotationElement2d extends GraphicalElement2d {
 // @beta
 export interface AppActivityMonitor {
     isIdle: boolean;
+}
+
+// @internal (undocumented)
+export abstract class AuthorizationBackend extends ImsAuthorizationClient {
+    // (undocumented)
+    protected _accessToken?: AccessToken;
+    // (undocumented)
+    get clientConfiguration(): AuthorizationConfiguration | undefined;
+    // (undocumented)
+    protected get config(): AuthorizationConfiguration;
+    // (undocumented)
+    protected _config?: AuthorizationConfiguration;
+    // (undocumented)
+    abstract getAccessToken(): Promise<AccessToken>;
+    // (undocumented)
+    getAuthorizedContext(): Promise<AuthorizedClientRequestContext>;
+    // (undocumented)
+    getClientRequestContext(): ClientRequestContext;
+    // (undocumented)
+    initialize(requestContext: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void>;
+    // (undocumented)
+    protected get session(): SessionProps;
+    // (undocumented)
+    protected _session?: SessionProps;
+    // (undocumented)
+    abstract signIn(): Promise<void>;
+    // (undocumented)
+    abstract signOut(): Promise<void>;
 }
 
 // @public
@@ -410,7 +439,7 @@ export class BisCoreSchema extends Schema {
 export class BriefcaseDb extends IModelDb {
     // (undocumented)
     abandonChanges(): void;
-    readonly allowLocalChanges: boolean;
+    get allowLocalChanges(): boolean;
     // @internal (undocumented)
     beforeClose(): void;
     // (undocumented)
@@ -1165,19 +1194,6 @@ export abstract class DefinitionSet extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
 }
-
-// @alpha
-export class DesktopAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: DesktopAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-    }
 
 // @public
 export class DetailCallout extends Callout {
@@ -2485,7 +2501,7 @@ export abstract class IModelDb extends IModel {
     static readonly maxLimit = 10000;
     // (undocumented)
     readonly models: IModelDb.Models;
-    // @internal
+    // @internal (undocumented)
     get nativeDb(): IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
@@ -2681,7 +2697,7 @@ export class IModelHost {
     static get appAssetsDir(): string | undefined;
     static applicationId: string;
     static applicationVersion: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
     static backendVersion: string;
@@ -2694,6 +2710,7 @@ export class IModelHost {
     static configuration?: IModelHostConfiguration;
     // @internal
     static elementEditors: Map<string, IElementEditor>;
+    // @deprecated
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
@@ -3012,6 +3029,8 @@ export abstract class IpcHandler {
 // @beta
 export class IpcHost {
     static addListener(channel: string, listener: IpcListener): RemoveFunction;
+    // @internal (undocumented)
+    static authorization: AuthorizationBackend;
     static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static get isValid(): boolean;
     // @internal (undocumented)
@@ -3326,6 +3345,7 @@ export class NativeHost {
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
+    static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
     static shutdown(): Promise<void>;
     static startup(opt?: {

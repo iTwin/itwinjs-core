@@ -10,18 +10,19 @@ import { ClientRequestContext, ClientRequestContextProps, Guid, GuidString, Sess
 import { AccessToken, AccessTokenProps } from "./Token";
 
 /** The properties of AuthorizedSession.
- * @public
+ * @beta
  */
 export interface AuthorizedSessionProps extends SessionProps {
   accessTokenProps: AccessTokenProps;
 }
 
+/** @beta */
 export interface AuthorizedSession extends SessionProps {
   accessToken?: AccessToken;
 }
 
 /** The properties of AuthorizedClientRequestContext.
- * @public
+ * @beta
  */
 export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
   accessToken: AccessTokenProps;

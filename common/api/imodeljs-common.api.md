@@ -4,6 +4,7 @@
 
 ```ts
 
+import { AccessTokenProps } from '@bentley/itwin-client';
 import { Angle } from '@bentley/geometry-core';
 import { AngleProps } from '@bentley/geometry-core';
 import { AnyGeometryQuery } from '@bentley/geometry-core';
@@ -16,6 +17,7 @@ import { BriefcaseStatus } from '@bentley/bentleyjs-core';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ClientRequestContextProps } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
@@ -275,6 +277,20 @@ export namespace AreaPattern {
         symbolId?: Id64String;
         weight?: number;
     }
+}
+
+// @alpha
+export interface AuthorizationConfiguration {
+    clientId: string;
+    expiryBuffer?: number;
+    // (undocumented)
+    issuerUrl?: string;
+    redirectUri: string;
+    // (undocumented)
+    redirectUrl?: string;
+    scope: string;
+    // (undocumented)
+    stateKey?: string;
 }
 
 export { AuthStatus }
@@ -1606,9 +1622,6 @@ export interface DecorationGeometryProps {
     readonly id: Id64String;
 }
 
-// @alpha
-export const defaultDesktopAuthorizationClientExpiryBuffer: number;
-
 // @internal (undocumented)
 export const defaultTileOptions: TileOptions;
 
@@ -1622,38 +1635,6 @@ export interface DefinitionElementProps extends ElementProps {
 export interface DeletedElementGeometryChange {
     readonly id: Id64String;
     readonly type: DbOpcode.Delete;
-}
-
-// @alpha
-export interface DesktopAuthorizationClientConfiguration {
-    clientId: string;
-    expiryBuffer?: number;
-    redirectUri: string;
-    scope: string;
-}
-
-// @internal
-export class DesktopAuthorizationClientMessages {
-    // (undocumented)
-    static readonly getAccessToken: string;
-    // (undocumented)
-    static readonly getAccessTokenComplete: string;
-    // (undocumented)
-    static readonly initialize: string;
-    // (undocumented)
-    static readonly initializeComplete: string;
-    // (undocumented)
-    static readonly onUserStateChanged: string;
-    // (undocumented)
-    static readonly onUserStateChangedComplete: string;
-    // (undocumented)
-    static readonly signIn: string;
-    // (undocumented)
-    static readonly signInComplete: string;
-    // (undocumented)
-    static readonly signOut: string;
-    // (undocumented)
-    static readonly signOutComplete: string;
 }
 
 // @internal
@@ -4096,10 +4077,9 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
+    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
     // (undocumented)
-    pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
-    // (undocumented)
-    pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
+    pushChanges: (key: string, description: string) => Promise<string>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
@@ -4724,11 +4704,17 @@ export interface NativeAppFunctions {
     checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
     deleteBriefcaseFiles: (_fileName: string) => Promise<void>;
     downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean) => Promise<LocalBriefcaseProps>;
+    // (undocumented)
+    getAccessTokenProps: () => Promise<AccessTokenProps>;
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
     getConfig: () => Promise<any>;
+    // (undocumented)
+    initializeAuth: (props: ClientRequestContextProps, config: AuthorizationConfiguration) => Promise<void>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
+    signIn: () => Promise<void>;
+    signOut: () => Promise<void>;
     storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
     storageKeys: (_storageId: string) => Promise<string[]>;
     storageMgrClose: (_storageId: string, _deleteOnClose: boolean) => Promise<void>;
@@ -4744,10 +4730,7 @@ export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
     // (undocumented)
-    notifyUserStateChanged: (arg: {
-        accessToken: any;
-        err?: string;
-    }) => void;
+    notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
 }
 
 // @internal (undocumented)
@@ -7053,9 +7036,7 @@ export type SubLayerId = string | number;
 export enum SyncMode {
     // (undocumented)
     FixedVersion = 1,
-    // (undocumented)
     PullAndPush = 2,
-    // (undocumented)
     PullOnly = 3
 }
 

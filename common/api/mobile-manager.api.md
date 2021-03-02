@@ -6,6 +6,7 @@
 
 import { AccessToken } from '@bentley/itwin-client';
 import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
+import { AuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CancelRequest } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
@@ -44,9 +45,6 @@ export abstract class AndroidDevice extends MobileDevice {
 // @beta (undocumented)
 export class AndroidHost extends MobileHost {
 }
-
-// @alpha
-export const defaultMobileAuthorizationClientExpiryBuffer: number;
 
 // @beta (undocumented)
 export interface DownloadTask {
@@ -118,25 +116,17 @@ export class MobileApp {
 }
 
 // @alpha
-export class MobileAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: MobileAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+export class MobileAuthorizationFrontend extends ImsAuthorizationClient implements FrontendAuthorizationClient {
+    constructor(clientConfiguration: AuthorizationConfiguration);
+    getAccessToken(): Promise<AccessToken>;
     get hasExpired(): boolean;
     get hasSignedIn(): boolean;
     initialize(requestContext: ClientRequestContext): Promise<void>;
     get isAuthorized(): boolean;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message?: string | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-}
-
-// @alpha
-export interface MobileAuthorizationClientConfiguration {
-    clientId: string;
-    expiryBuffer?: number;
-    redirectUri: string;
-    scope: string;
+    readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
+    signIn(): Promise<void>;
+    signOut(): Promise<void>;
 }
 
 // @beta (undocumented)
@@ -150,7 +140,7 @@ export abstract class MobileDevice {
     // (undocumented)
     abstract authGetAccessToken(ctx: ClientRequestContext, callback: (accessToken?: string, err?: string) => void): void;
     // (undocumented)
-    abstract authInit(ctx: ClientRequestContext, settings: MobileDeviceAuthSettings, callback: (err?: string) => void): void;
+    abstract authInit(ctx: ClientRequestContext, settings: AuthorizationConfiguration, callback: (err?: string) => void): void;
     // (undocumented)
     abstract authSignIn(ctx: ClientRequestContext, callback: (err?: string) => void): void;
     // (undocumented)
@@ -180,29 +170,11 @@ export abstract class MobileDevice {
 }
 
 // @beta (undocumented)
-export interface MobileDeviceAuthSettings {
-    // (undocumented)
-    clientId: string;
-    // (undocumented)
-    issuerUrl: string;
-    // (undocumented)
-    redirectUrl: string;
-    // (undocumented)
-    scope: string;
-    // (undocumented)
-    stateKey?: string;
-}
-
-// @beta (undocumented)
 export class MobileHost {
-    // (undocumented)
-    static authInit(ctx: ClientRequestContext, settings: MobileDeviceAuthSettings): Promise<void>;
     // (undocumented)
     static get device(): MobileDevice;
     // @internal (undocumented)
     static downloadFile(downloadUrl: string, downloadTo: string, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
-    // (undocumented)
-    static getAccessToken(ctx: ClientRequestContext): Promise<AccessToken>;
     // (undocumented)
     static get isValid(): boolean;
     // (undocumented)
@@ -214,15 +186,9 @@ export class MobileHost {
     // (undocumented)
     static readonly onOrientationChanged: BeEvent<import("@bentley/bentleyjs-core").Listener>;
     // (undocumented)
-    static readonly onUserStateChanged: BeEvent<(accessToken?: string | undefined, err?: string | undefined) => void>;
-    // (undocumented)
     static readonly onWillTerminate: BeEvent<import("@bentley/bentleyjs-core").Listener>;
     // @internal (undocumented)
     static reconnect(connection: number): void;
-    // (undocumented)
-    static signIn(ctx: ClientRequestContext): Promise<void>;
-    // (undocumented)
-    static signOut(ctx: ClientRequestContext): Promise<void>;
     static startup(opt?: {
         mobileHost?: {
             device?: MobileDevice;
