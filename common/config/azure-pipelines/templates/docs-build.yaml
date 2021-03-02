@@ -33,6 +33,7 @@ steps:
 
 # Currently BeMetalsmith is an internal only tool
 - script: |
+    cd $(Agent.TempDirectory)
     npm install @bentley/bemetalsmith@4.x
     ls
   displayName: Install BeMetalsmith
