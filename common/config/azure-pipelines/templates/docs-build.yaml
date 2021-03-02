@@ -35,6 +35,7 @@ steps:
 - script: |
     cd $(Agent.TempDirectory)
     npm install @bentley/bemetalsmith@4.x
+    ls -a ..
     ls -a
   displayName: Install BeMetalsmith
   workingDirectory: $(Agent.TempDirectory)
