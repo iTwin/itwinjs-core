@@ -13,26 +13,30 @@ parameters:
     default: $(Agent.BuildDirectory)/tempDocsBuild/public_build
 
 steps:
-- script: node common/scripts/install-run-rush.js install
-  displayName: rush install
-  workingDirectory: ${{ parameters.workingDir }}
+# - script: node common/scripts/install-run-rush.js install
+#   displayName: rush install
+#   workingDirectory: ${{ parameters.workingDir }}
 
-- script: node common/scripts/install-run-rush.js compile -v
-  displayName: rush compile
-  workingDirectory: ${{ parameters.workingDir }}
+# - script: node common/scripts/install-run-rush.js compile -v
+#   displayName: rush compile
+#   workingDirectory: ${{ parameters.workingDir }}
 
-- script: node common/scripts/install-run-rush.js docs
-  displayName: rush docs
-  workingDirectory: ${{ parameters.workingDir }}
+# - script: node common/scripts/install-run-rush.js docs
+#   displayName: rush docs
+#   workingDirectory: ${{ parameters.workingDir }}
 
-# Gathers all the pieces to run BeMetalsmith
-- template: ../templates/gather-docs.yaml
-  parameters:
-    workingDir: ${{ parameters.workingDir }}
-    stagingDir: ${{ parameters.stagingDir }}
+# # Gathers all the pieces to run BeMetalsmith
+# - template: ../templates/gather-docs.yaml
+#   parameters:
+#     workingDir: ${{ parameters.workingDir }}
+#     stagingDir: ${{ parameters.stagingDir }}
 
 # Currently BeMetalsmith is an internal only tool
 - script: npm install @bentley/bemetalsmith@4.x
+  displayName: Install BeMetalsmith
+  workingDirectory: $(Agent.TempDirectory)
+
+- script: ls
   displayName: Install BeMetalsmith
   workingDirectory: $(Agent.TempDirectory)
 
