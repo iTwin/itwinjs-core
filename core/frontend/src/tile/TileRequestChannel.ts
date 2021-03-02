@@ -25,6 +25,7 @@ class TileRequestQueue extends PriorityQueue<TileRequest> {
 /** Statistics regarding the current and cumulative state of one or more [[TileRequestChannel]]s. Useful for monitoring performance and diagnosing problems.
  * @see [[TileRequestChannel.statistics]] for a specific channel's statistics.
  * @see [[TileRequestChannels.statistics]] for statistics from all channels.
+ * @see [[TileAdmin.statistics]] for additional statistics.
  * @beta
  */
 export class TileRequestChannelStatistics {
@@ -55,6 +56,7 @@ export class TileRequestChannelStatistics {
   /** The total number of tiles for which content requests were dispatched and then canceled on the backend before completion. */
   public totalAbortedRequests = 0;
 
+  /** @internal */
   public addTo(stats: TileRequestChannelStatistics): void {
     for (const propName in this) {
       const key = propName as keyof TileRequestChannelStatistics;
@@ -68,10 +70,17 @@ export class TileRequestChannelStatistics {
   }
 }
 
-/**
- * @internal
+/** A channel over which requests for tile content can be made. The channel may request content over HTTP, calls to the backend via IPC or RPC, or any other method like generating the content
+ * on the frontend. The channel consists of a queue of pending requests and a set of "active" requests (dispatched and awaiting a response). Incoming requests are placed onto the queue. Requests are popped of the queue in order of priority and dispatched, until the maximum number of simultaneously-active requests is reached.
+ * The maximum number of active requests depends on the transport mechanism. For HTTP 1.1, browsers impose a limit of 6 simultaneous connections to a given domain, so ideally each unique domain will use its own unique channel with a limit of 6 active requests. Even for requests satisfied entirely by the frontend, imposing a limit is important for throttling the amount of work done at one time, especially because as the user navigates the view, tiles that were previously requested may no longer be of interest and we shouldn't waste resources producing their content.
+ * A channel must be registered with [[TileRequestChannels]] and must have a unique name among all registered channels.
+ * @see [[TileRequestChannels.getForHttp]] to obtain (and register if not already registered) an HTTP-based channel.
+ * @see [[TileAdmin.requestChannels]] for the channels configured for use with the iTwin.js display system.
+ * @see [[Tile.requestChannel]] to specify the channel to be used to request a given tile's content.
+ * @beta
  */
 export class TileRequestChannel {
+  /** The channel's name. It must be unique among all registered [[TileRequestChannels]]. */
   public readonly name: string;
   private _maxActive: number;
   private readonly _active = new Set<TileRequest>();
@@ -79,45 +88,61 @@ export class TileRequestChannel {
   private _previouslyPending = new TileRequestQueue();
   protected _statistics = new TileRequestChannelStatistics();
 
+  /** Create a new channel.
+   * @param name The unique name of the channel.
+   * @param maxActiveRequests The maximum number of requests that can be dispatched and awaiting a response at any given time. Requests beyond this maximum are enqueued for deferred dispatch.
+   * @see [[TileRequestChannels.getForHttp]] to create an HTTP-based channel.
+   */
   public constructor(name:  string, maxActiveRequests: number) {
     this.name = name;
     this._maxActive = maxActiveRequests;
   }
 
+  /** Adjust the maximum number of active requests. This is intended primarily for debugging.
+   * @note If `max` is less the the current value of `numActive`, `numActive` will not decrease to `max` until a sufficient number of dispatched requests are resolved.
+   */
   public setMaxActive(max: number): void {
     this._maxActive = max;
   }
 
+  /** The number of requests that have been dispatched and are awaiting a response. */
   public get numActive(): number {
     return this._active.size;
   }
 
+  /** The number of requests that have been enqueued for later dispatch. */
   public get numPending(): number {
     return this._pending.length;
   }
 
+  /** The total number of requests in this channel, whether dispatched or enqueued. */
   public get size(): number {
     return this.numActive + this.numPending;
   }
 
+  /** Statistics intended primarily for debugging. */
   public get statistics(): Readonly<TileRequestChannelStatistics> {
     this._statistics.numPendingRequests = this.numPending;
     this._statistics.numActiveRequests = this.numActive;
     return this._statistics;
   }
 
+  /** Reset all of this channel's [[statistics]] to zero. */
   public resetStatistics(): void {
     this._statistics = new TileRequestChannelStatistics();
   }
 
+  /** Invoked by [[TileRequest]] when a request times out. @internal */
   public recordTimeout(): void {
     ++this._statistics.totalTimedOutRequests;
   }
 
+  /** Invoked by [[TileRequest]] when a request fails to produce a response. @internal */
   public recordFailure(): void {
     ++this._statistics.totalFailedRequests;
   }
 
+  /** Invoked by [[TileRequest]] after a request completes. @internal */
   public recordCompletion(tile: Tile): void {
     ++this._statistics.totalCompletedRequests;
     if (tile.isEmpty)
@@ -126,17 +151,22 @@ export class TileRequestChannel {
       ++this._statistics.totalUndisplayableTiles;
   }
 
+  /** Invoked by [[TileRequestChannels.swapPending]] when [[TileAdmin]] is about to start enqueuing new requests. @internal */
   public swapPending(): void {
     const previouslyPending = this._pending;
     this._pending = this._previouslyPending;
     this._previouslyPending = previouslyPending;
   }
 
+  /** Invoked by [[TileAdmin.processRequests]] to enqueue a request. Ordering is ignored - the queue will be re-sorted later.
+   * @internal
+   */
   public append(request: TileRequest): void {
     assert(request.channel === this);
     this._pending.append(request);
   }
 
+  /** Invoked by [[TileRequestChannels.process]] to process the active and pending requests. @internal */
   public process(): void {
     this._statistics.numCanceled = 0;
 
@@ -173,6 +203,7 @@ export class TileRequestChannel {
     }
   }
 
+  /** Cancel all active and queued requests and clear the active set and queue. @internal */
   public cancelAndClearAll(): void {
     for (const active of this._active)
       active.cancel();
@@ -184,9 +215,10 @@ export class TileRequestChannel {
     this._pending.clear();
   }
 
-  /** Invoked when `Tile.requestContent` returns `undefined`. Return true if the request can be retried, e.g., via different channel.
-   * If so, the tile will remain marked as "not loaded" and, if re-selected for display, a new TileRequest will be enqueued for it.
+  /** Invoked when [[Tile.requestContent]] returns `undefined`. Return true if the request can be retried, e.g., via different channel.
+   * If so, the tile will remain marked as "not loaded" and, if re-selected for display, a new [[TileRequest]] will be enqueued for it.
    * Otherwise, the tile will be marked as "failed to load" and no further requests will be made for its content.
+   * The default implementation always returns `false`.
    */
   public onNoContent(_request: TileRequest): boolean {
     return false;
@@ -205,6 +237,7 @@ export class TileRequestChannel {
   /** Invoked when an iModel is closed, to clean up any state associated with that iModel. */
   public onIModelClosed(_iModel: IModelConnection): void { }
 
+  /** Request content for the specified tile. The default implementation simply forwards to [[Tile.requestContent]]. */
   public async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
     return tile.requestContent(isCanceled);
   }
@@ -230,6 +263,9 @@ export class TileRequestChannel {
   }
 }
 
+/** Handles requests to the cloud storage tile cache, if one is configured. If a tile's content is not found in the cache, subsequent requests for the same tile will
+ * use the IModelTileChannel instead.
+ */
 class CloudStorageCacheChannel extends TileRequestChannel {
   public async requestContent(tile: Tile): Promise<TileRequest.Response> {
     assert(tile instanceof IModelTile);
@@ -244,6 +280,7 @@ class CloudStorageCacheChannel extends TileRequestChannel {
   }
 }
 
+/** For an [[IpcApp]], allows backend tile generation requests in progress to be canceled. */
 class IModelTileChannel extends TileRequestChannel {
   private readonly _canceled = new Map<IModelConnection, Map<string, Set<string>>>();
 
@@ -281,6 +318,7 @@ class IModelTileChannel extends TileRequestChannel {
   }
 }
 
+/** For an [[IpcApp]], allows backend element graphics requests in progress to be canceled. */
 class ElementGraphicsChannel extends TileRequestChannel {
   private readonly _canceled = new Map<IModelConnection, string[]>();
 
@@ -308,14 +346,27 @@ class ElementGraphicsChannel extends TileRequestChannel {
   }
 }
 
+/** A set of named [[TileRequestChannel]]s via which content for [[Tile]]s can be requested.
+ * @see [[TileAdmin.requestChannels]] for the channels configured for use with the iTwin.js display system.
+ * @see [[TileRequestChannels.getForHttp]] for the most typical way of obtaining or registering a channel.
+ * @beta
+ */
 export class TileRequestChannels {
   private _cloudStorageCache?: TileRequestChannel;
+  /** @internal */
   public readonly iModelTileRpc: TileRequestChannel;
+  /** The channel over which [[TileAdmin.requestElementGraphics]] executes. If you implement a [[TiledGraphicsProvider]] or [[TileTree]] that obtains its
+   * content from `requestElementGraphics`, use this channel.
+   */
   public readonly elementGraphicsRpc: TileRequestChannel;
+  /** @internal */
   public readonly httpConcurrency = 6;
   private _rpcConcurrency: number;
   private readonly _channels = new Map<string, TileRequestChannel>();
 
+  /** `rpcConcurrency` is defined if [[IpcApp.isValid]]; otherwise RPC requests are made over HTTP and use the same limits.
+   * @internal
+   */
   public constructor(rpcConcurrency: number | undefined) {
     this._rpcConcurrency = rpcConcurrency ?? this.httpConcurrency;
 
@@ -337,25 +388,34 @@ export class TileRequestChannels {
     this.add(this.elementGraphicsRpc);
   }
 
+  /** If a cloud storage tile cache is configured, [[IModelTile]]s first request their content via this channel.
+   * @internal
+   */
   public get cloudStorageCache(): TileRequestChannel | undefined {
     return this._cloudStorageCache;
   }
 
+  /** Lazily called by [[TileAdmin]] once it can determine whether a cloud storage cache is configured. @internal */
   public enableCloudStorageCache(): void {
     assert(undefined === this._cloudStorageCache);
     if (!this._cloudStorageCache)
       this.add(this._cloudStorageCache = new CloudStorageCacheChannel("cloudStorageCache", this.httpConcurrency));
   }
 
+  /** Look up a registered channel by its name. */
   public get(name: string): TileRequestChannel | undefined {
     return this._channels.get(name);
   }
 
+  /** Return whether the specified channel has been registered. Primarily for debugging. */
   public has(channel: TileRequestChannel): boolean {
     const existing = this.get(channel.name);
     return existing !== undefined && existing === channel;
   }
 
+  /** Add a new channel.
+   * @throws Error if a channel by the same name has already been registered.
+   */
   public add(channel: TileRequestChannel): void {
     if (this.get(channel.name))
       throw new Error(`Tile request channel ${channel.name} is already registered.`);
@@ -365,6 +425,7 @@ export class TileRequestChannels {
 
   /** Extract the host name from a URL for use as the name of the corresponding [[TileRequestChannel]].
    * @throws TypeError if `url` is a string and does not represent a valid URL.
+   * @see [[getForHttp]] to obtain or register a channel for the host name.
    */
   public static getNameFromUrl(url: URL | string): string {
     if (typeof url === "string")
@@ -373,6 +434,10 @@ export class TileRequestChannels {
     return url.hostname;
   }
 
+  /** Obtain a channel that requests content over HTTP using HTTP 1.1 limits on simultaneous connections.
+   * If a channel with the specified name does not already exist, it will be created and registered.
+   * @see [[getNameFromUrl]] to obtain a channel name corresponding to a hostname.
+   */
   public getForHttp(name: string): TileRequestChannel {
     let channel = this.get(name);
     if (!channel)
@@ -381,21 +446,26 @@ export class TileRequestChannels {
     return channel;
   }
 
+  /** Iterator over all of the channels. */
   public [Symbol.iterator](): Iterator<TileRequestChannel> {
     return this._channels.values()[Symbol.iterator]();
   }
 
+  /** The maximum number of active requests for a channel that uses an RpcInterface to satisfy its requests.
+   * For web-based applications, this is the same as [[httpConcurrency]], but for [[IpcApp]]s it is determined by the number of workers threads allocated by the backend.
+   */
   public get rpcConcurrency(): number {
     return this._rpcConcurrency;
   }
 
-  /** @internal */
+  /** Chiefly for debugging. @internal */
   public setRpcConcurrency(concurrency: number): void {
     this._rpcConcurrency = concurrency;
     this.iModelTileRpc.setMaxActive(concurrency);
     this.elementGraphicsRpc.setMaxActive(concurrency);
   }
 
+  /** Statistics intended primarily for debugging. */
   public get statistics(): TileRequestChannelStatistics {
     const stats = new TileRequestChannelStatistics();
     for (const channel of this)
@@ -404,26 +474,31 @@ export class TileRequestChannels {
     return stats;
   }
 
+  /** Reset all [[statistics]] to zero. */
   public resetStatistics(): void {
     for (const channel of this)
       channel.resetStatistics();
   }
 
+  /** Invoked by [[TileAdmin.processQueue]] when it is about to start enqueuing new requests. @internal */
   public swapPending(): void {
     for (const channel of this)
       channel.swapPending();
   }
 
+  /** Invoked by [[TileAdmin.processQueue]] when it is about to start enqueuing new requests. @internal */
   public process(): void {
     for (const channel of this)
       channel.process();
   }
 
+  /** Invoked by [[TileAdmin.onIModelClosed]]. @internal */
   public onIModelClosed(iModel: IModelConnection): void {
     for (const channel of this)
       channel.onIModelClosed(iModel);
   }
 
+  /** Invoked by [[TileAdmin.onShutDown]]. @internal */
   public onShutDown(): void {
     for (const channel of this)
       channel.cancelAndClearAll();

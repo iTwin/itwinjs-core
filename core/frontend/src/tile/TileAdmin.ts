@@ -819,6 +819,8 @@ export class TileAdmin {
 
     // Dispatch TileTreeProps requests not associated with this iModel.
     this.dispatchTileTreePropsRequests();
+
+    this.requestChannels.onIModelClosed(iModel);
   }
 
   private initializeRpc(): void {
