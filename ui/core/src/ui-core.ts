@@ -275,7 +275,7 @@ export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
  */
 /**
  * @docs-group-description Settings
- * Manager and UI Components that allow user to modify settings for different packages and extensions.
+ * Manager and UI Components that allow users to modify settings for different packages and extensions.
  */
 /**
  * @docs-group-description Slider

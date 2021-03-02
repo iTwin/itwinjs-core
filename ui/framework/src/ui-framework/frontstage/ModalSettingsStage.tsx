@@ -21,7 +21,7 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
   const id=FrontstageManager.activeFrontstageDef?.id??"none";
   const stageUsage=FrontstageManager.activeFrontstageDef?.usage??StageUsage.General;
   const tabEntries = UiFramework.settingsManager.getSettingEntries(id, stageUsage);
-  const noSettingsAvailableLabel = React.useRef(UiFramework.i18n.translate("UiFramework:settings.noSettingsAvailable"));
+  const noSettingsAvailableLabel = React.useRef(UiFramework.translate("settings.noSettingsAvailable"));
 
   const currentSettingsTab = React.useCallback(() => {
     const categoryToFind = initialSettingsTabId ? initialSettingsTabId.toLowerCase() : tabEntries[0].tabId.toLowerCase();
@@ -57,7 +57,7 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
  */
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
   public static id = "ui-framework.modalSettingsStage";
-  public title: string = UiFramework.i18n.translate("UiFramework:settings.settingsStageLabel");
+  public title: string = UiFramework.translate("settings.settingsStageLabel");
   constructor(public initialSettingsTabId?: string ) {}
   public notifyCloseRequest = true;
   public get content(): React.ReactNode {
@@ -67,7 +67,7 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
 
   public static getBackstageActionItem(groupPriority: number, itemPriority: number) {
     return BackstageItemUtilities.createActionItem(SettingsModalFrontstage.id, groupPriority, itemPriority, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()),
-      UiFramework.i18n.translate("UiFramework:settings.settingsStageLabel"),
+      UiFramework.translate("settings.settingsStageLabel"),
       undefined, IconSpecUtilities.createSvgIconSpec(settingsIconSvg), { isHidden: SettingsModalFrontstage.noSettingsAvailable() });
   }
 
@@ -83,8 +83,8 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
       }
       FrontstageManager.openModalFrontstage(new SettingsModalFrontstage(initialSettingsTab));
     } else {
-      const briefMessage =  UiFramework.i18n.translate("UiFramework:settings.noSettingsAvailable");
-      const detailedMessage =  UiFramework.i18n.translate("UiFramework:settings.noSettingsProvidersRegistered");
+      const briefMessage =  UiFramework.translate("settings.noSettingsAvailable");
+      const detailedMessage =  UiFramework.translate("settings.noSettingsProvidersRegistered");
       const info = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, detailedMessage, OutputMessageType.Toast);
       IModelApp.notifications.outputMessage(info);
       Logger.logInfo(UiFramework.loggerCategory(this), detailedMessage);

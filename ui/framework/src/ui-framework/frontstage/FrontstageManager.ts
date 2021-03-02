@@ -585,14 +585,13 @@ export class FrontstageManager {
    * @returns Top-most modal Frontstage, or undefined if there is none.
    */
   public static get activeModalFrontstage(): ModalFrontstageInfo | undefined {
-    // istanbul ignore else
     if (FrontstageManager._modalFrontstages.length > 0) {
       const frontstageItem = FrontstageManager._modalFrontstages[FrontstageManager._modalFrontstages.length - 1];
       const modalFrontstage = frontstageItem.modalFrontstage;
       return modalFrontstage;
+    } else {
+      return undefined;
     }
-
-    return undefined;
   }
 
   /** Gets the number of modal Frontstages.

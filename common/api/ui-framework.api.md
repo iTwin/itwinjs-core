@@ -6341,7 +6341,7 @@ export class UiFramework {
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setIsUiVisible(visible: boolean): void;
-    // (undocumented)
+    // @beta
     static get settingsManager(): SettingsManager;
     // @beta (undocumented)
     static setUiSettings(uiSettings: UiSettings, immediateSync?: boolean): void;

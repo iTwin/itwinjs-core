@@ -49,7 +49,7 @@ export class ExampleSettingsProvider implements SettingsProvider {
 
 ### Example Page Definition
 
-Below is an example of a settings page component that has `pageWillHandleCloseRequest` set to true so it can save its data before unmounting. When setting `pageWillHandleCloseRequest` it is the page components responsibility to call the `afterSaveFunction` to allow the processing that prompted the settings to be saved to continue.
+Below is an example of a settings page component that has `pageWillHandleCloseRequest` set to true so it can save its data before unmounting. When setting `pageWillHandleCloseRequest` it is the page component's responsibility to call the `afterSaveFunction` to allow the processing that prompted the settings to be saved to continue.
 
 ```tsx
 export function ExampleModalSettingsPage() {
