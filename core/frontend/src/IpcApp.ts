@@ -109,8 +109,11 @@ export class IpcApp {
    */
   public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
-    if (undefined !== retVal.error)
-      throw new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
+    if (undefined !== retVal.error) {
+      const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
+      err.stack = retVal.error.stack;
+      throw err;
+    }
     return retVal.result;
   }
 

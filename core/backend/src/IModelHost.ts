@@ -229,7 +229,7 @@ export class IModelHost {
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
   /** @internal */
-  public static readonly session: SessionProps;
+  public static readonly session: SessionProps = { applicationId: "2686", applicationVersion: "1.0.0", sessionId: "" };
 
   /** A uniqueId for this session */
   public static get sessionId() { return this.session.sessionId; }
@@ -363,9 +363,9 @@ export class IModelHost {
       return; // we're already initialized
     this._isValid = true;
 
-    if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
-    if (!IModelHost.applicationVersion) IModelHost.applicationVersion = "1.0.0"; // Default to placeholder version.
-    if (!IModelHost.sessionId) IModelHost.sessionId = Guid.createValue();
+    if (IModelHost.sessionId === "")
+      IModelHost.sessionId = Guid.createValue();
+
     this.logStartup();
 
     await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.

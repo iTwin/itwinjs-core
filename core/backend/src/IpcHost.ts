@@ -46,6 +46,11 @@ export abstract class AuthorizationBackend extends ImsAuthorizationClient {
 export interface IpcHostOptions {
   /** The Ipc socket to use for communications with frontend. Allows undefined only for headless tests. */
   socket?: IpcSocketBackend;
+
+  /** don't send stack information on exceptions */
+  exceptions?: {
+    noStack?: boolean;
+  };
 }
 
 /**
@@ -54,6 +59,7 @@ export interface IpcHostOptions {
   * @beta
  */
 export class IpcHost {
+  public static noStack = false;
   private static _ipc: IpcSocketBackend | undefined;
   /** Get the implementation of the [IpcSocketBackend]($common) interface. */
   private static get ipc(): IpcSocketBackend { return this._ipc!; }
@@ -116,6 +122,9 @@ export class IpcHost {
 
   public static async startup(opt?: { ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
     this._ipc = opt?.ipcHost?.socket;
+    if (opt?.ipcHost?.exceptions?.noStack)
+      this.noStack = true;
+
     if (this.isValid) // for tests, we use IpcHost but don't have a frontend
       IpcAppHandler.register();
     await IModelHost.startup(opt?.iModelHost);
@@ -159,7 +168,10 @@ export abstract class IpcHandler {
 
         return { result: await func.call(impl, ...args) };
       } catch (err) {
-        return { error: { name: err.constructor.name, message: err.message ?? "", errorNumber: err.errorNumber ?? 0 } };
+        const ret: IpcInvokeReturn = { error: { name: err.constructor.name, message: err.message ?? "", errorNumber: err.errorNumber ?? 0 } };
+        if (!IpcHost.noStack)
+          ret.error.stack = err.stack ?? "";
+        return ret;
       }
     });
   }
