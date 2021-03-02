@@ -144,6 +144,27 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     }
   }
 
+  private _getInitialDisplayValue(): string {
+    const record = this.props.propertyRecord;
+    let initialDisplayValue = "";
+    let numberValue = 0;
+    // istanbul ignore else
+    if (record) {
+      // istanbul ignore else
+      if (record.value.valueFormat === PropertyValueFormat.Primitive) {
+        const primitiveValue = record.value;
+        numberValue = (undefined !== primitiveValue.value) ? primitiveValue.value as number : /* istanbul ignore next */ 0;
+        // istanbul ignore else
+        if (primitiveValue.displayValue)
+          initialDisplayValue = primitiveValue.displayValue;
+        else
+          initialDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(numberValue);
+      }
+    }
+
+    return initialDisplayValue;
+  }
+
   private async setStateFromProps() {
     const record = this.props.propertyRecord;
     // istanbul ignore next
@@ -165,19 +186,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       return;
     }
 
-    let initialDisplayValue = "";
-    let numberValue = 0;
-
-    // istanbul ignore else
-    if (record.value.valueFormat === PropertyValueFormat.Primitive) {
-      const primitiveValue = record.value;
-      numberValue = (undefined !== primitiveValue.value) ? primitiveValue.value as number : /* istanbul ignore next */ 0;
-      if (primitiveValue.displayValue)
-        initialDisplayValue = primitiveValue.displayValue;
-      else
-        initialDisplayValue = this._formatParams.formatFunction(numberValue);
-    }
-
+    const initialDisplayValue = this._getInitialDisplayValue();
     let size: number | undefined;
     let maxLength: number | undefined;
     let iconSpec: string | undefined;
@@ -207,22 +216,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   }
 
   private _resetToOriginalValue() {
-    const record = this.props.propertyRecord;
-    let initialDisplayValue = "";
-    let numberValue = 0;
-    // istanbul ignore else
-    if (record) {
-      // istanbul ignore else
-      if (record.value.valueFormat === PropertyValueFormat.Primitive) {
-        const primitiveValue = record.value;
-        numberValue = (undefined !== primitiveValue.value) ? primitiveValue.value as number : /* istanbul ignore next */ 0;
-        // istanbul ignore else
-        if (primitiveValue.displayValue)
-          initialDisplayValue = primitiveValue.displayValue;
-        else
-          initialDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(numberValue);
-      }
-    }
+    const initialDisplayValue = this._getInitialDisplayValue();
 
     this.setState({ inputValue: initialDisplayValue });
   }
@@ -230,9 +224,16 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   private _onKeyPress = (e: KeyboardEvent) => {
     // istanbul ignore else
     if (e.key === SpecialKey.Escape) {
-      e.preventDefault();
-      e.stopPropagation();
-      this._resetToOriginalValue();
+      const initialDisplayValue = this._getInitialDisplayValue();
+      if (initialDisplayValue !== this.state.inputValue) {
+        e.preventDefault();
+        e.stopPropagation();
+        this._resetToOriginalValue();
+      } else {
+        // istanbul ignore else
+        if (this.props.onCancel)
+          this.props.onCancel();
+      }
     }
 
     // istanbul ignore else

@@ -14,6 +14,7 @@ alpha;ClientAuthDetail
 alpha;ClientAuthIntrospectionManager
 beta;DelegationAuthorizationClient 
 beta;DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
+internal;HttpRequestHost
 internal;ImsClientAuthDetail 
 internal;ImsClientAuthIntrospectionManager 
 internal;ImsIntrospectionResponse 
@@ -26,6 +27,5 @@ beta;OidcAgentClient = AgentAuthorizationClient
 beta;OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration
 beta;OidcDelegationClient = DelegationAuthorizationClient
 beta;OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration
-internal;RequestHost
 internal;StorageServiceFileHandler 
 internal;UrlFileHandler 
