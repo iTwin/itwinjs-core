@@ -272,7 +272,7 @@ class ProxyTile extends Tile {
   public get hasChildren() { return false; }
   public get hasGraphics() { return true; }
 
-  public get requestChannel(): TileRequestChannel { throw new Error("Proxy tile has no content"); }
+  public get channel(): TileRequestChannel { throw new Error("Proxy tile has no content"); }
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> { return undefined; }
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> { return {}; }
   protected _loadChildren(_resolve: (children: Tile[]) => void, _reject: (error: Error) => void): void { }

@@ -45,7 +45,7 @@ export class MapTileLoader extends RealityTileLoader {
 
   public getRequestChannel(_tile: Tile) {
     // ###TODO use hostname from url - but so many layers to go through to get that...
-    return IModelApp.tileAdmin.requestChannels.getForHttp("imagery");
+    return IModelApp.tileAdmin.channels.getForHttp("imagery");
   }
 
   public async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {

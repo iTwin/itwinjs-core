@@ -207,7 +207,7 @@ class RootTile extends Tile {
     resolve(children);
   }
 
-  public get requestChannel(): TileRequestChannel {
+  public get channel(): TileRequestChannel {
     throw new Error("Root iModel tile has no content");
   }
 

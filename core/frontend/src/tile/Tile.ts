@@ -108,12 +108,12 @@ export abstract class Tile {
   protected abstract _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
 
   /** Return the channel via which this tile's content should be requested.
-   * @note The channel *must* be registered with `IModelApp.tileAdmin.requestChannels`.
+   * @note The channel *must* be registered with `IModelApp.tileAdmin.channels`.
    * @see [[TileRequestChannels.getForHttp]] to create a channel that requests content over HTTP.
-   * @see [[TileAdmin.requestChannels]].
+   * @see [[TileAdmin.channels]].
    * @beta
    */
-  public abstract get requestChannel(): TileRequestChannel;
+  public abstract get channel(): TileRequestChannel;
 
   /** Return a Promise that resolves to the raw data representing this tile's content. */
   public abstract requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;

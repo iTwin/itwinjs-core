@@ -123,7 +123,7 @@ export class TileStatisticsTracker {
       display: "inline",
       min: 0,
       step: 1,
-      value: IModelApp.tileAdmin.requestChannels.rpcConcurrency,
+      value: IModelApp.tileAdmin.channels.rpcConcurrency,
       handler: (value, _input) => this.updateMaxActive(value),
     });
 
@@ -131,7 +131,7 @@ export class TileStatisticsTracker {
   }
 
   private updateMaxActive(value: number): void {
-    IModelApp.tileAdmin.requestChannels.setRpcConcurrency(value);
+    IModelApp.tileAdmin.channels.setRpcConcurrency(value);
   }
 
   private clearInterval(): void {

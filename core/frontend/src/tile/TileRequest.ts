@@ -32,7 +32,7 @@ export class TileRequest {
   public constructor(tile: Tile, vp: Viewport) {
     this._state = TileRequest.State.Queued;
     this.tile = tile;
-    this.channel = tile.requestChannel;
+    this.channel = tile.channel;
     this.viewports = IModelApp.tileAdmin.getViewportSetForRequest(vp);
   }
 

@@ -62,7 +62,7 @@ export class IModelTile extends Tile {
   private _sizeMultiplier?: number;
   private _emptySubRangeMask?: number;
   /** True if an attempt to look up this tile's content in the cloud storage tile cache failed.
-   * See CloudStorageCacheChannel.onNoContent and IModelTile.requestChannel
+   * See CloudStorageCacheChannel.onNoContent and IModelTile.channel
    */
   public cacheMiss = false;
 
@@ -88,8 +88,8 @@ export class IModelTile extends Tile {
     return super.maximumSize * (this.sizeMultiplier ?? 1.0);
   }
 
-  public get requestChannel(): TileRequestChannel {
-    const channels = IModelApp.tileAdmin.requestChannels;
+  public get channel(): TileRequestChannel {
+    const channels = IModelApp.tileAdmin.channels;
     const cloud = !this.cacheMiss ? channels.cloudStorageCache : undefined;
     return cloud ?? channels.iModelTileRpc;
   }

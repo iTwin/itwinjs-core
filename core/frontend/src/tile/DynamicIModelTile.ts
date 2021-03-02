@@ -150,7 +150,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     resolve(this._elements.array);
   }
 
-  public get requestChannel(): TileRequestChannel {
+  public get channel(): TileRequestChannel {
     throw new Error("Root dynamic tile has no content");
   }
 
@@ -198,7 +198,7 @@ class ElementTile extends Tile {
     resolve([]);
   }
 
-  public get requestChannel(): TileRequestChannel {
+  public get channel(): TileRequestChannel {
     throw new Error("ElementTile has no content");
   }
 
@@ -337,8 +337,8 @@ class GraphicsTile extends Tile {
     resolve(undefined);
   }
 
-  public get requestChannel(): TileRequestChannel {
-    return IModelApp.tileAdmin.requestChannels.elementGraphicsRpc;
+  public get channel(): TileRequestChannel {
+    return IModelApp.tileAdmin.channels.elementGraphicsRpc;
   }
 
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {

@@ -105,7 +105,7 @@ export interface GpuMemoryLimits {
  * @beta
  */
 export class TileAdmin {
-  public readonly requestChannels: TileRequestChannels;
+  public readonly channels: TileRequestChannels;
   private readonly _viewports = new Set<Viewport>();
   private readonly _requestsPerViewport = new Map<Viewport, Set<Tile>>();
   private readonly _tileUsagePerViewport = new Map<Viewport, Set<TileUsageMarker>>();
@@ -182,7 +182,7 @@ export class TileAdmin {
     }
 
     return {
-      ...this.requestChannels.statistics,
+      ...this.channels.statistics,
       totalElidedTiles: this._totalElided,
       numActiveTileTreePropsRequests,
       numPendingTileTreePropsRequests: this._tileTreePropsRequests.length - numActiveTileTreePropsRequests,
@@ -191,7 +191,7 @@ export class TileAdmin {
 
   /** Resets the cumulative (per-session) statistics like totalCompletedRequests, totalEmptyTiles, etc. */
   public resetStatistics(): void {
-    this.requestChannels.resetStatistics();
+    this.channels.resetStatistics();
     this._totalElided = 0;
   }
 
@@ -203,7 +203,7 @@ export class TileAdmin {
     if (undefined === options)
       options = {};
 
-    this.requestChannels = new TileRequestChannels(rpcConcurrency);
+    this.channels = new TileRequestChannels(rpcConcurrency);
 
     this._maxActiveTileTreePropsRequests = options.maxActiveTileTreePropsRequests ?? 10;
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
@@ -515,7 +515,7 @@ export class TileAdmin {
     }
 
     this._removeIModelConnectionOnCloseListener();
-    this.requestChannels.onShutDown();
+    this.channels.onShutDown();
 
     for (const req of this._tileTreePropsRequests)
       req.abandon();
@@ -694,13 +694,13 @@ export class TileAdmin {
     this._viewportSetsForRequests.clearAll();
 
     // Notify channels that we are enqueuing new requests.
-    this.requestChannels.swapPending();
+    this.channels.swapPending();
 
     // Repopulate pending requests queue from each viewport. We do NOT sort by priority while doing so.
     this._requestsPerViewport.forEach((value, key) => this.processRequests(key, value));
 
     // Ask channels to update their queues and dispatch requests.
-    this.requestChannels.process();
+    this.channels.process();
   }
 
   /** Exported strictly for tests. @internal */
@@ -766,7 +766,7 @@ export class TileAdmin {
         if (TileLoadStatus.NotLoaded === tile.loadStatus) {
           const request = new TileRequest(tile, vp);
           tile.request = request;
-          assert(this.requestChannels.has(request.channel));
+          assert(this.channels.has(request.channel));
           request.channel.append(request);
         }
       } else {
@@ -820,7 +820,7 @@ export class TileAdmin {
     // Dispatch TileTreeProps requests not associated with this iModel.
     this.dispatchTileTreePropsRequests();
 
-    this.requestChannels.onIModelClosed(iModel);
+    this.channels.onIModelClosed(iModel);
   }
 
   private initializeRpc(): void {
@@ -839,7 +839,7 @@ export class TileAdmin {
     // Ugh this is all so gross and stupid. Can't we just ensure rpc interfaces get registered deterministically?
     IModelTileRpcInterface.getClient().isUsingExternalTileCache().then((usingCache) => {
       if (usingCache)
-        this.requestChannels.enableCloudStorageCache();
+        this.channels.enableCloudStorageCache();
     }).catch(() => { });
   }
 

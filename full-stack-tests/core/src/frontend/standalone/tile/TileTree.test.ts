@@ -16,7 +16,7 @@ class MockTile extends Tile {
     resolve([]);
   }
 
-  public get requestChannel() {
+  public get channel() {
     // This is never called.
     return { } as unknown as TileRequestChannel;
   }

@@ -79,7 +79,7 @@ export class RealityTile extends Tile {
     return false;
   }
 
-  public get requestChannel(): TileRequestChannel {
+  public get channel(): TileRequestChannel {
     return this.realityRoot.loader.getRequestChannel(this);
   }
 

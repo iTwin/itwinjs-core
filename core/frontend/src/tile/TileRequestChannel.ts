@@ -75,8 +75,8 @@ export class TileRequestChannelStatistics {
  * The maximum number of active requests depends on the transport mechanism. For HTTP 1.1, browsers impose a limit of 6 simultaneous connections to a given domain, so ideally each unique domain will use its own unique channel with a limit of 6 active requests. Even for requests satisfied entirely by the frontend, imposing a limit is important for throttling the amount of work done at one time, especially because as the user navigates the view, tiles that were previously requested may no longer be of interest and we shouldn't waste resources producing their content.
  * A channel must be registered with [[TileRequestChannels]] and must have a unique name among all registered channels.
  * @see [[TileRequestChannels.getForHttp]] to obtain (and register if not already registered) an HTTP-based channel.
- * @see [[TileAdmin.requestChannels]] for the channels configured for use with the iTwin.js display system.
- * @see [[Tile.requestChannel]] to specify the channel to be used to request a given tile's content.
+ * @see [[TileAdmin.channels]] for the channels configured for use with the iTwin.js display system.
+ * @see [[Tile.channel]] to specify the channel to be used to request a given tile's content.
  * @beta
  */
 export class TileRequestChannel {
@@ -347,7 +347,7 @@ class ElementGraphicsChannel extends TileRequestChannel {
 }
 
 /** A set of named [[TileRequestChannel]]s via which content for [[Tile]]s can be requested.
- * @see [[TileAdmin.requestChannels]] for the channels configured for use with the iTwin.js display system.
+ * @see [[TileAdmin.channels]] for the channels configured for use with the iTwin.js display system.
  * @see [[TileRequestChannels.getForHttp]] for the most typical way of obtaining or registering a channel.
  * @beta
  */
