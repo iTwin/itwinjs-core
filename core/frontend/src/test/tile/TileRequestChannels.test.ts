@@ -5,23 +5,6 @@
 import { expect } from "chai";
 import { TileRequestChannel, TileRequestChannels } from "../../tile/internal";
 
-describe("TileRequestChannel", () => {
-  it("observes limits on max active requests", async () => {
-  });
-
-  it("changes max active requests", async () => {
-  });
-
-  it("processes requests", async () => {
-  });
-
-  it("can override Tile.requestContent", () => {
-  });
-
-  it("can accumulate cancellations", async () => {
-  });
-});
-
 // Assumes no minification or uglification.
 function expectClassName(obj: Object, name: string): void {
   expect(obj.constructor.name).to.equal(name);
@@ -92,6 +75,8 @@ describe("TileRequestChannels", () => {
   });
 
   it("extracts hostname from url", () => {
+    expect(TileRequestChannels.getNameFromUrl("https://www.google.com/stuff")).to.equal("google.com");
+    expect(() => TileRequestChannels.getNameFromUrl("not a url")).to.throw(TypeError);
   });
 
   it("changes RPC concurrency", () => {
@@ -105,11 +90,5 @@ describe("TileRequestChannels", () => {
     expect(channels.rpcConcurrency).to.equal(concurrency);
     expect(channels.elementGraphicsRpc.concurrency).to.equal(concurrency);
     expect(channels.iModelTileRpc.concurrency).to.equal(concurrency);
-  });
-
-  it("produces statistics", () => {
-  });
-
-  it("processes requests", async () => {
   });
 });
