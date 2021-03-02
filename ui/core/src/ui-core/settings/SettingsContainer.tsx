@@ -48,7 +48,7 @@ export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsM
   }, [saveFunction, settingsManager]);
 }
 
-/**
+/** Interface that defines a SettingTab entry that will be displayed in a Settings Container.
  * @alpha
  */
 export interface SettingsTab {
@@ -85,6 +85,7 @@ export interface SettingsContainerProps {
 
 /**
  * Note that SettingsContainer is not rendered if tabs is empty
+ * @alpha
  */
 export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsTab, settingsManager}: SettingsContainerProps) => {
   const [openTab, setOpenTab] = React.useState(()=>{

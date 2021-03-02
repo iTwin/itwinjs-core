@@ -167,7 +167,12 @@ export class UiFramework {
     // Initialize ui-components, ui-core & ui-abstract
     await UiComponents.initialize(UiFramework._i18n);
 
+    UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
+    });
+
     UiFramework._initialized = true;
+
     return readFinishedPromise;
   }
 
@@ -184,7 +189,7 @@ export class UiFramework {
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
     UiFramework._hideIsolateEmphasizeActionHandler = undefined;
-    UiFramework._settingsManager= undefined;
+    UiFramework._settingsManager = undefined;
 
     UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
 

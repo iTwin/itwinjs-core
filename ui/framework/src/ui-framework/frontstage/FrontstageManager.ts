@@ -160,6 +160,9 @@ export interface ModalFrontstageInfo {
   title: string;
   content: React.ReactNode;
   appBarRight?: React.ReactNode;
+  /** Set notifyCloseRequest to true on stages that register to listen for `onCloseModalFrontstageRequestedEvent` so
+   * that the stage can save unsaved data before closing. Used by the ModalSettingsStage.
+   * @alpha */
   notifyCloseRequest?: boolean;
 }
 
@@ -281,7 +284,9 @@ export class FrontstageManager {
   /** Get Modal Frontstage Closed event. */
   public static readonly onModalFrontstageClosedEvent = new ModalFrontstageClosedEvent();
 
-  /** Get Modal Frontstage Requested Closed event. */
+  /** Get Modal Frontstage Requested Closed event.
+   * @alpha
+   */
   public static readonly onCloseModalFrontstageRequestedEvent = new ModalFrontstageRequestedCloseEvent();
 
   /** Get Tool Activated event. */
@@ -532,6 +537,7 @@ export class FrontstageManager {
   /** Closes the top-most modal Frontstage.
    */
   public static closeModalFrontstage(): void {
+    // istanbul ignore else
     if (FrontstageManager._modalFrontstages.length > 0){
       const topMostStageItem = FrontstageManager._modalFrontstages[FrontstageManager._modalFrontstages.length - 1];
       if (topMostStageItem.modalFrontstage.notifyCloseRequest)
@@ -547,6 +553,7 @@ export class FrontstageManager {
 
   private static popModalFrontstage(): void {
     const frontstageItem = FrontstageManager._modalFrontstages.pop();
+    // istanbul ignore else
     if (frontstageItem) {
       const modalFrontstage = frontstageItem.modalFrontstage;
       const timeTracker = frontstageItem.timeTracker;
@@ -578,6 +585,7 @@ export class FrontstageManager {
    * @returns Top-most modal Frontstage, or undefined if there is none.
    */
   public static get activeModalFrontstage(): ModalFrontstageInfo | undefined {
+    // istanbul ignore else
     if (FrontstageManager._modalFrontstages.length > 0) {
       const frontstageItem = FrontstageManager._modalFrontstages[FrontstageManager._modalFrontstages.length - 1];
       const modalFrontstage = frontstageItem.modalFrontstage;

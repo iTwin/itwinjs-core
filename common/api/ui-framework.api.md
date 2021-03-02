@@ -120,6 +120,7 @@ import { Ruleset } from '@bentley/presentation-common';
 import { SafeAreaInsets } from '@bentley/ui-ninezone';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
+import { SettingsManager } from '@bentley/ui-core';
 import { SettingsStatus } from '@bentley/product-settings-client';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
@@ -2432,6 +2433,8 @@ export class FrontstageManager {
     // @internal (undocumented)
     static get nineZoneSize(): Size | undefined;
     static set nineZoneSize(size: Size | undefined);
+    // @alpha
+    static readonly onCloseModalFrontstageRequestedEvent: ModalFrontstageRequestedCloseEvent;
     static readonly onContentControlActivatedEvent: ContentControlActivatedEvent;
     static readonly onContentLayoutActivatedEvent: ContentLayoutActivatedEvent;
     static readonly onFrontstageActivatedEvent: FrontstageActivatedEvent;
@@ -3667,6 +3670,8 @@ export interface ModalFrontstageInfo {
     appBarRight?: React.ReactNode;
     // (undocumented)
     content: React.ReactNode;
+    // @alpha
+    notifyCloseRequest?: boolean;
     // (undocumented)
     title: string;
 }
@@ -3678,6 +3683,16 @@ export interface ModalFrontstageProps extends CommonProps {
     isOpen?: boolean;
     navigateBack?: () => any;
     title: string;
+}
+
+// @alpha
+export class ModalFrontstageRequestedCloseEvent extends UiEvent<ModalFrontstageRequestedCloseEventArgs> {
+}
+
+// @alpha
+export interface ModalFrontstageRequestedCloseEventArgs {
+    modalFrontstage: ModalFrontstageInfo;
+    stageCloseFunc: () => void;
 }
 
 // @public
@@ -4673,6 +4688,25 @@ export const setPanelSize: <Base extends {
     };
 }>(base: Base, side: PanelSide, size: number | undefined) => Base;
 
+// @alpha
+export class SettingsModalFrontstage implements ModalFrontstageInfo {
+    constructor(initialSettingsTabId?: string | undefined);
+    // (undocumented)
+    get content(): React.ReactNode;
+    // (undocumented)
+    static getBackstageActionItem(groupPriority: number, itemPriority: number): import("@bentley/ui-abstract").BackstageActionItem;
+    // (undocumented)
+    static id: string;
+    // (undocumented)
+    initialSettingsTabId?: string | undefined;
+    // (undocumented)
+    notifyCloseRequest: boolean;
+    // (undocumented)
+    static showSettingsStage(initialSettingsTab?: string): void;
+    // (undocumented)
+    title: string;
+}
+
 // @internal (undocumented)
 export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
 
@@ -5641,6 +5675,7 @@ export enum SyncUiEventId {
     ModalFrontstageChanged = "modalfrontstagechanged",
     NavigationAidActivated = "navigationaidactivated",
     SelectionSetChanged = "selectionsetchanged",
+    SettingsProvidersChanged = "settingsproviderschanged",
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
     UiSettingsChanged = "uisettingschanged",
@@ -6309,6 +6344,8 @@ export class UiFramework {
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setIsUiVisible(visible: boolean): void;
+    // (undocumented)
+    static get settingsManager(): SettingsManager;
     // @beta (undocumented)
     static setUiSettings(uiSettings: UiSettings, immediateSync?: boolean): void;
     // @beta (undocumented)

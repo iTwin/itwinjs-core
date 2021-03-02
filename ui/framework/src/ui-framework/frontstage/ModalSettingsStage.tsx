@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Settings
+ * @module Frontstage
  */
 
 import "./ModalSettingsStage.scss";
@@ -12,7 +12,7 @@ import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities, Sta
 import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
-import { SettingsContainer, SettingsTab } from "@bentley/ui-core";
+import { Centered, SettingsContainer, SettingsTab } from "@bentley/ui-core";
 import { FrontstageManager, ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "./FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
@@ -21,6 +21,7 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
   const id=FrontstageManager.activeFrontstageDef?.id??"none";
   const stageUsage=FrontstageManager.activeFrontstageDef?.usage??StageUsage.General;
   const entries = UiFramework.settingsManager.getSettingEntries(id, stageUsage);
+  const noSettingsAvailableLabel = React.useRef(UiFramework.i18n.translate("UiFramework:settings.noSettingsAvailable"));
 
   const tabs: SettingsTab[] = !entries ? []: entries.sort((a, b)=> a.itemPriority - b.itemPriority).map((entry) => {
     return {
@@ -45,31 +46,36 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
 
   React.useEffect (()=>{
     const handleFrontstageCloseRequested = ({modalFrontstage, stageCloseFunc}: ModalFrontstageRequestedCloseEventArgs) => {
+      // istanbul ignore else
       if (modalFrontstage instanceof SettingsModalFrontstage && stageCloseFunc) {
         UiFramework.settingsManager.closeSettingsContainer (stageCloseFunc);
       }
     };
     return FrontstageManager.onCloseModalFrontstageRequestedEvent.addListener(handleFrontstageCloseRequested);
-  }, [currentSettingsTab, entries]);
+  }, [entries]);
 
   return (
     <div className="uifw-settings-container">
-      {tabs.length &&
-      <SettingsContainer tabs={tabs} currentSettingsTab={currentSettingsTab()} settingsManager={UiFramework.settingsManager} />
+      {tabs.length ?
+        <SettingsContainer tabs={tabs} currentSettingsTab={currentSettingsTab()} settingsManager={UiFramework.settingsManager} /> :
+        <Centered>{noSettingsAvailableLabel.current}</Centered>
       }
     </div>
   );
 }
 
-/** Modal frontstage displaying and editing settings from registered settings providers.
+/** Modal frontstage displaying and editing settings from registered settings providers. See [SettingsManager]($ui-core)
+ * and [SettingsContainer]($ui-core).
  * @alpha
  */
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
   public static id = "ui-framework.modalSettingsStage";
-  public title: string = UiFramework.i18n.translate("SampleApp:settingsStage.settings");
+  public title: string = UiFramework.i18n.translate("UiFramework:settings.settingsStageLabel");
   constructor(public initialSettingsTabId?: string ) {}
   public notifyCloseRequest = true;
-  public get content(): React.ReactNode { return (<ModalSettingsStage initialSettingsTabId={this.initialSettingsTabId} />); }
+  public get content(): React.ReactNode {
+    return (<ModalSettingsStage initialSettingsTabId={this.initialSettingsTabId} />);
+  }
   private static noSettingsAvailable = () => new ConditionalBooleanValue(() => 0 === UiFramework.settingsManager.providers.length, [SyncUiEventId.SettingsProvidersChanged]);
 
   public static getBackstageActionItem(groupPriority: number, itemPriority: number) {
@@ -81,10 +87,12 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
   public static showSettingsStage(initialSettingsTab?: string) {
     if (UiFramework.settingsManager.providers.length) {
       // Check to see if it is already open
+      // istanbul ignore else
       if (FrontstageManager.activeModalFrontstage && FrontstageManager.activeModalFrontstage instanceof SettingsModalFrontstage){
-        if (initialSettingsTab)
+        if (initialSettingsTab){
           UiFramework.settingsManager.activateSettingsTab(initialSettingsTab);
-        return;
+          return;
+        }
       }
       FrontstageManager.openModalFrontstage(new SettingsModalFrontstage(initialSettingsTab));
     } else {

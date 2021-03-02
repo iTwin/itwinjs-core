@@ -15,7 +15,7 @@ import { IconHelper } from "../utils/IconHelper";
 
 /** TabLabel provides ability to define label, icon, and tooltip for a tab entry. The tooltip can be defined as JSX|Element
  *  to support react-tooltip component or a string that will be use to set the title property.
- * @alpha
+ * @beta
  */
 export interface TabLabel {
   label: string;
@@ -39,7 +39,7 @@ function isTabLabel(item: string|TabLabel): item is TabLabel {
  * @public
  */
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
-  /** Text shown for each tab */
+  /** Text shown for each tab @beta */
   labels: Array <string|TabLabel>;
   /** Handler for activating a tab */
   onActivateTab?: (index: number) => any;

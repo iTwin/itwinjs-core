@@ -1,5 +1,7 @@
 sep=;
 Release Tag;API Item
+alpha;ActivateSettingsTabEvent 
+alpha;ActivateSettingsTabEventArgs
 internal;AnnularSector
 internal;Annulus
 beta;AsyncGetAutoSuggestDataFunc = (value: string) => Promise
@@ -32,6 +34,7 @@ public;CheckListBoxItemProps
 public;CheckListBoxSeparator(): JSX.Element
 internal;Circle
 public;ClassNameProps
+internal;CloseSettingsContainerEvent 
 public;CommonDivProps 
 public;CommonProps 
 public;ContextMenu 
@@ -190,6 +193,10 @@ public;Popup
 beta;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
 beta;PopupContextMenuProps 
 public;PopupProps 
+alpha;ProcessSettingsContainerCloseEvent 
+alpha;ProcessSettingsContainerCloseEventArgs
+alpha;ProcessSettingsTabActivationEvent 
+alpha;ProcessSettingsTabActivationEventArgs
 beta;ProgressBar(props: ProgressBarProps): JSX.Element
 beta;ProgressBarProps 
 beta;ProgressSpinner(props: ProgressSpinnerProps): JSX.Element
@@ -218,6 +225,14 @@ public;Select: (props: SelectProps) => JSX.Element | null
 public;SelectOption
 public;SelectProps 
 beta;SessionUiSettings 
+alpha;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager }: SettingsContainerProps) => JSX.Element
+alpha;SettingsContainerProps
+alpha;SettingsEntry
+alpha;SettingsManager
+alpha;SettingsProvider
+alpha;SettingsProvidersChangedEvent 
+alpha;SettingsProvidersChangedEventArgs
+alpha;SettingsTab
 internal;shallowDiffers: (a:
 internal;Size 
 public;SizeProps
@@ -240,6 +255,7 @@ public;SvgPath
 public;SvgPathProps 
 public;SvgSprite 
 public;SvgSpriteProps 
+beta;TabLabel
 public;Tabs 
 public;TabsProps 
 public;Textarea: (props: TextareaProps) => JSX.Element | null
@@ -287,6 +303,8 @@ internal;useRefEffect
 internal;useRefs
 internal;useRefState
 internal;useResizeObserver
+alpha;useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void
+alpha;useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void): void
 internal;useTargeted: (ref: React.RefObject
 internal;useWidgetOpacityContext(): WidgetOpacityContextProps
 public;VerticalAlignment

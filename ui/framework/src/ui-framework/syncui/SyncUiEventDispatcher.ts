@@ -99,6 +99,7 @@ export class SyncUiEventDispatcher {
   private static _timeoutPeriod = 100;
   private static _secondaryTimeoutPeriod = SyncUiEventDispatcher._timeoutPeriod / 2;
   private static _unregisterListenerFunc?: () => void;
+  private static _unregisterListenerFuncs: Array<() => void> = [];
   private static initialized = false;
 
   /** @internal - used for testing only */
@@ -222,66 +223,60 @@ export class SyncUiEventDispatcher {
 
   /** Initializes the Monitoring of Events that trigger dispatching sync events */
   public static initialize() {
-    if (SyncUiEventDispatcher.initialized)
-      return;
+    // clear any registered listeners - this should only be encountered in unit test scenarios
+    this._unregisterListenerFuncs.forEach((unregisterListenerFunc)=>unregisterListenerFunc());
 
-    SyncUiEventDispatcher.initialized = true;
-
-    FrontstageManager.onContentControlActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onContentControlActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentControlActivated);
-    });
+    }));
 
-    FrontstageManager.onContentLayoutActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onContentLayoutActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentLayoutActivated);
-    });
+    }));
 
-    FrontstageManager.onFrontstageActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onFrontstageActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageActivating);
-    });
+    }));
 
-    FrontstageManager.onFrontstageReadyEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onFrontstageReadyEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageReady);
-    });
+    }));
 
-    FrontstageManager.onModalFrontstageChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onModalFrontstageChangedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ModalFrontstageChanged);
-    });
+    }));
 
-    FrontstageManager.onNavigationAidActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onNavigationAidActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.NavigationAidActivated);
-    });
+    }));
 
-    FrontstageManager.onToolActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onToolActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ToolActivated);
-    });
+    }));
 
-    FrontstageManager.onWidgetStateChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onWidgetStateChangedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
-    });
+    }));
 
-    Backstage.onBackstageEvent.addListener(() => { // eslint-disable-line deprecation/deprecation
+    this._unregisterListenerFuncs.push(Backstage.onBackstageEvent.addListener(() => { // eslint-disable-line deprecation/deprecation
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageEvent);
-    });
+    }));
 
-    WorkflowManager.onTaskActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(WorkflowManager.onTaskActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.TaskActivated);
-    });
+    }));
 
-    WorkflowManager.onWorkflowActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(WorkflowManager.onWorkflowActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WorkflowActivated);
-    });
+    }));
 
-    ContentViewManager.onActiveContentChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(ContentViewManager.onActiveContentChangedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveContentChanged);
-    });
-
-    UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
-    });
+    }));
 
     // istanbul ignore else
     if (IModelApp && IModelApp.viewManager) {
-      IModelApp.viewManager.onSelectedViewportChanged.addListener((args: SelectedViewportChangedArgs) => {
+      this._unregisterListenerFuncs.push(IModelApp.viewManager.onSelectedViewportChanged.addListener((args: SelectedViewportChangedArgs) => {
         SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveViewportChanged);
 
         // if this is the first view being opened up start the default tool so tool admin is happy.
@@ -297,7 +292,7 @@ export class SyncUiEventDispatcher {
           if (args.current.onViewChanged && typeof args.current.onViewChanged.addListener === "function") // not set during unit test
             args.current.onViewChanged.addListener(SyncUiEventDispatcher._dispatchViewChange);
         }
-      });
+      }));
     }
   }
 
