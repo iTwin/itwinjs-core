@@ -91,7 +91,7 @@ export namespace Node {
   }
 
   /** @internal */
-  export function toPartialJson(node: PartialNode): PartialNodeJson {
+  export function toPartialJSON(node: PartialNode): PartialNodeJson {
     if (node.key === undefined) {
       return node;
     }
@@ -117,7 +117,7 @@ export namespace Node {
   }
 
   /** @internal */
-  export function fromPartialJson(json: PartialNodeJson): PartialNode {
+  export function fromPartialJSON(json: PartialNodeJson): PartialNode {
     if (json.key === undefined) {
       return json;
     }

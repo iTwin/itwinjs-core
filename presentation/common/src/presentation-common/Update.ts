@@ -132,7 +132,7 @@ export namespace PartialHierarchyModification { // eslint-disable-line @typescri
         return {
           type: "Update",
           target: NodeKey.toJSON(obj.target),
-          changes: Node.toPartialJson(obj.changes),
+          changes: Node.toPartialJSON(obj.changes),
         };
 
       case "Delete":
@@ -158,7 +158,7 @@ export namespace PartialHierarchyModification { // eslint-disable-line @typescri
         return {
           type: "Update",
           target: NodeKey.fromJSON(json.target),
-          changes: Node.fromPartialJson(json.changes),
+          changes: Node.fromPartialJSON(json.changes),
         };
 
       case "Delete":
