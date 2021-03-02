@@ -1328,7 +1328,7 @@ export interface Node {
 export namespace Node {
     export function fromJSON(json: NodeJSON | string): Node;
     // @internal (undocumented)
-    export function fromPartialJson(json: PartialNodeJson): PartialNode;
+    export function fromPartialJSON(json: PartialNodeJSON): PartialNode;
     // @internal
     export function listFromJSON(json: NodeJSON[] | string): Node[];
     // @internal
@@ -1337,7 +1337,7 @@ export namespace Node {
     export function reviver(key: string, value: any): any;
     export function toJSON(node: Node): NodeJSON;
     // @internal (undocumented)
-    export function toPartialJson(node: PartialNode): PartialNodeJson;
+    export function toPartialJSON(node: PartialNode): PartialNodeJSON;
 }
 
 // @public
@@ -1370,7 +1370,7 @@ export interface NodeInsertionInfo {
     // (undocumented)
     node: Node;
     // (undocumented)
-    parent?: string;
+    parent?: NodeKey;
     // (undocumented)
     position: number;
     // (undocumented)
@@ -1382,7 +1382,7 @@ export interface NodeInsertionInfoJSON {
     // (undocumented)
     node: NodeJSON;
     // (undocumented)
-    parent?: string;
+    parent?: NodeKeyJSON;
     // (undocumented)
     position: number;
     // (undocumented)
@@ -1513,7 +1513,7 @@ export interface NodeUpdateInfo {
 // @alpha (undocumented)
 export interface NodeUpdateInfoJSON {
     // (undocumented)
-    changes: PartialNodeJson;
+    changes: PartialNodeJSON;
     // (undocumented)
     target: NodeKeyJSON;
     // (undocumented)
@@ -1556,7 +1556,7 @@ export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDelet
 export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
 
 // @alpha (undocumented)
-export type PartialNodeJson = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
+export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
 
 // @internal (undocumented)
 export const PRESENTATION_COMMON_ROOT: string;
