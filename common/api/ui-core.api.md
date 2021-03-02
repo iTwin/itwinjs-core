@@ -29,11 +29,11 @@ import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { SliderModeFunction } from 'react-compound-slider';
 import { ValueType } from 'react-select/src/types';
 
-// @alpha
+// @beta
 export class ActivateSettingsTabEvent extends BeUiEvent<ActivateSettingsTabEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface ActivateSettingsTabEventArgs {
     // (undocumented)
     readonly settingsTabId: string;
@@ -1553,11 +1553,11 @@ export interface PopupProps extends CommonProps {
     top: number;
 }
 
-// @alpha
+// @beta
 export class ProcessSettingsContainerCloseEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface ProcessSettingsContainerCloseEventArgs {
     // (undocumented)
     readonly closeFunc: (args: any) => void;
@@ -1565,11 +1565,11 @@ export interface ProcessSettingsContainerCloseEventArgs {
     readonly closeFuncArgs?: any;
 }
 
-// @alpha
+// @beta
 export class ProcessSettingsTabActivationEvent extends BeUiEvent<ProcessSettingsTabActivationEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface ProcessSettingsTabActivationEventArgs {
     // (undocumented)
     readonly requestedSettingsTabId: string;
@@ -1896,10 +1896,10 @@ export class SessionUiSettings implements UiSettings {
     w: Window;
 }
 
-// @alpha
+// @beta
 export const SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager }: SettingsContainerProps) => JSX.Element;
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface SettingsContainerProps {
     // (undocumented)
     currentSettingsTab?: SettingsTab;
@@ -1911,7 +1911,7 @@ export interface SettingsContainerProps {
     tabs: SettingsTab[];
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface SettingsEntry {
     readonly icon?: string | JSX.Element;
     readonly isDisabled?: boolean | ConditionalBooleanValue;
@@ -1924,7 +1924,7 @@ export interface SettingsEntry {
     readonly tooltip?: string | JSX.Element;
 }
 
-// @alpha
+// @beta
 export class SettingsManager {
     activateSettingsTab(settingsTabId: string): void;
     // (undocumented)
@@ -1945,24 +1945,24 @@ export class SettingsManager {
     removeSettingsProvider(providerId: string): boolean;
 }
 
-// @alpha
+// @beta
 export interface SettingsProvider {
     // (undocumented)
     getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsEntry> | undefined;
     readonly id: string;
 }
 
-// @alpha
+// @beta
 export class SettingsProvidersChangedEvent extends BeUiEvent<SettingsProvidersChangedEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface SettingsProvidersChangedEventArgs {
     // (undocumented)
     readonly providers: ReadonlyArray<SettingsProvider>;
 }
 
-// @alpha
+// @beta
 export interface SettingsTab {
     readonly disabled?: boolean;
     readonly icon?: string | JSX.Element;
@@ -2573,10 +2573,10 @@ export function useRefState<T>(): [React.Ref<T>, T | undefined];
 // @internal
 export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
 
-// @alpha
+// @beta
 export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void;
 
-// @alpha
+// @beta
 export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void): void;
 
 // @internal

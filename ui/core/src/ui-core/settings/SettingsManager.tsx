@@ -10,7 +10,7 @@ import { BeUiEvent, Logger } from "@bentley/bentleyjs-core";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { UiCore } from "../UiCore";
 
-/** @alpha */
+/** @beta */
 export interface SettingsEntry {
   /** unique id for entry */
   readonly tabId: string;
@@ -34,12 +34,12 @@ export interface SettingsEntry {
 }
 
 /** Event class for [[this.onSettingsProvidersChanged]] which is emitted when a new SettingsProvider is added or removed.
- * @alpha
+ * @beta
  */
 export class SettingsProvidersChangedEvent extends BeUiEvent<SettingsProvidersChangedEventArgs> { }
 
 /** Arguments of [[this.onSettingsProvidersChanged]] event.
- * @alpha
+ * @beta
  */
 export interface SettingsProvidersChangedEventArgs {
   readonly providers: ReadonlyArray<SettingsProvider>;
@@ -47,12 +47,12 @@ export interface SettingsProvidersChangedEventArgs {
 
 /** Event class for [[this.onProcessSettingsTabActivation]] which is emitted when a new Tab needs to be activated. This allows the current
  * settings page to save its settings before activating the new SettingTab.
- * @alpha
+ * @beta
  */
 export class ProcessSettingsTabActivationEvent extends BeUiEvent<ProcessSettingsTabActivationEventArgs> { }
 
 /** Arguments of [[this.onProcessSettingsTabActivation]] event.
- * @alpha
+ * @beta
  */
 export interface ProcessSettingsTabActivationEventArgs {
   readonly tabSelectionFunc: (tabId: string) => void;
@@ -61,7 +61,7 @@ export interface ProcessSettingsTabActivationEventArgs {
 
 /** Event class for [[this.onProcessSettingsContainerClose]] which is emitted when the settings container will be closed. This allows the current
  * settings page to save its settings before calling the function to close the container.
- * @alpha
+ * @beta
  */
 export class ProcessSettingsContainerCloseEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> { }
 
@@ -71,7 +71,7 @@ export class ProcessSettingsContainerCloseEvent extends BeUiEvent<ProcessSetting
 export class CloseSettingsContainerEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> { }
 
 /** Arguments of [[this.onProcessSettingsContainerClose]] event.
- * @alpha
+ * @beta
  */
 export interface ProcessSettingsContainerCloseEventArgs {
   readonly closeFunc: (args: any) => void;
@@ -79,29 +79,30 @@ export interface ProcessSettingsContainerCloseEventArgs {
 }
 
 /** Event class for [[this.onActivateSettingsTab]] which is emitted when API call needs to set the active settings tab (ie via Tool key-in).
- * @alpha
+ * @beta
  */
 export class ActivateSettingsTabEvent extends BeUiEvent<ActivateSettingsTabEventArgs> { }
 
 /** Arguments of [[this.onActivateSettingsTab]] event.
- * @alpha
+ * @beta
  */
 export interface ActivateSettingsTabEventArgs {
   readonly settingsTabId: string;
 }
 
-/** Setting Provider interface.
- * @alpha
- */
+/** Setting Provider interface. Implemented by classes that want to supply settings pages for display in the SettingContainer. The
+ * classes that implement this interface need to be registered with the [[SettingsManager]].
+ * @beta
+ */
 export interface SettingsProvider {
-  /** Id of provider */
+  /** Id of provider, used to remove registration. */
   readonly id: string;
   getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsEntry> | undefined;
 }
 
-/** Settings Manager class.
- * @alpha
- */
+/** Settings Manager class. Hold registration of settings providers and supplies events for the provided settings pages to listen.
+ * @beta
+ */
 export class SettingsManager {
   private _providers: ReadonlyArray<SettingsProvider> = [];
 
@@ -129,7 +130,7 @@ export class SettingsManager {
    */
   public readonly onCloseSettingsContainer = new CloseSettingsContainerEvent();
 
-  /** @alpha */
+  /** @beta */
   public get providers(): ReadonlyArray<SettingsProvider> { return this._providers; }
   public set providers(p: ReadonlyArray<SettingsProvider>) {
     this._providers = p;
@@ -147,7 +148,7 @@ export class SettingsManager {
    * passed in and executed once the active settings tab/page has a chance to save its settings.
    */
   public closeSettingsContainer(closeFunc: (args: any) => void, closeFuncArgs?: any) {
-    this.onCloseSettingsContainer.emit({ closeFunc, closeFuncArgs});
+    this.onCloseSettingsContainer.emit({ closeFunc, closeFuncArgs });
   }
 
   public addSettingsProvider(settingsProvider: SettingsProvider): void {

@@ -25,7 +25,7 @@ const saveChanges = React.useCallback((afterSaveFunction: (args: any) => void, a
 ---------------------------------------------------------------------------------------------------------- */
 
 /** Hook to use within Settings Page component to allow saving the current page's data before the Setting Container is closed.
- * @alpha
+ * @beta
  */
 export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void) {
   React.useEffect (()=>{
@@ -37,7 +37,7 @@ export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsM
 }
 
 /** Hook to use within Settings Page component to allow saving the current page's data before loading to the requested Setting Tab's page.
- * @alpha
+ * @beta
  */
 export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void) {
   React.useEffect (()=>{
@@ -49,7 +49,7 @@ export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsM
 }
 
 /** Interface that defines a SettingTab entry that will be displayed in a Settings Container.
- * @alpha
+ * @beta
  */
 export interface SettingsTab {
   /** unique id for entry */
@@ -71,7 +71,7 @@ export interface SettingsTab {
 }
 
 /**
- * @alpha
+ * @beta
  */
 export interface SettingsContainerProps {
   tabs: SettingsTab[];
@@ -85,7 +85,7 @@ export interface SettingsContainerProps {
 
 /**
  * Note that SettingsContainer is not rendered if tabs is empty
- * @alpha
+ * @beta
  */
 export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsTab, settingsManager}: SettingsContainerProps) => {
   const [openTab, setOpenTab] = React.useState(()=>{

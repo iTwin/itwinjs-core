@@ -451,7 +451,7 @@ beta;SessionStateActionsUnion = ActionsUnion
 beta;sessionStateMapDispatchToProps:
 beta;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
 internal;setPanelSize: 
-alpha;SettingsModalFrontstage 
+beta;SettingsModalFrontstage 
 internal;settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus
 internal;setWidgetLabel: 
 internal;setWidgetState: 

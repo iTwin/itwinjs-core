@@ -66,7 +66,7 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
 
 /** Modal frontstage displaying and editing settings from registered settings providers. See [SettingsManager]($ui-core)
  * and [SettingsContainer]($ui-core).
- * @alpha
+ * @beta
  */
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
   public static id = "ui-framework.modalSettingsStage";

@@ -4688,7 +4688,7 @@ export const setPanelSize: <Base extends {
     };
 }>(base: Base, side: PanelSide, size: number | undefined) => Base;
 
-// @alpha
+// @beta
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
     constructor(initialSettingsTabId?: string | undefined);
     // (undocumented)
