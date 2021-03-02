@@ -144,7 +144,7 @@ describe("requestTileTreeProps", () => {
   const maxActiveTileTreePropsRequests = 2;
 
   before(async () => {
-    const tileAdmin = await TileAdmin.create({ maxActiveTileTreePropsRequests });
+    const tileAdmin = { maxActiveTileTreePropsRequests };
     await IModelApp.startup({ tileAdmin });
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });

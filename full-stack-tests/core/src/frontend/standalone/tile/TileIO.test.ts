@@ -789,7 +789,7 @@ describe.skip("TileAdmin", () => {
       await cleanup();
 
       await super.startup({
-        tileAdmin: await TileAdmin.create(props),
+        tileAdmin: props,
       });
 
       theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver

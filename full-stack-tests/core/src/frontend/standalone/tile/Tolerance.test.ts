@@ -21,7 +21,7 @@ describe("Tile tolerance", () => {
   const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
 
   before(async () => {
-    await IModelApp.startup({ tileAdmin: await TileAdmin.create({ minimumSpatialTolerance }) });
+    await IModelApp.startup({ tileAdmin: { minimumSpatialTolerance } });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 

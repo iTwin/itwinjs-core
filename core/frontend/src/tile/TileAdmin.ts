@@ -164,14 +164,8 @@ export class TileAdmin {
    */
   public static async create(props?: TileAdmin.Props): Promise<TileAdmin> {
     const rpcConcurrency = IpcApp.isValid ? (await IpcApp.callIpcHost("queryConcurrency", "cpu")) : undefined;
-    return this.createForDeviceType(ProcessDetector.isMobileBrowser ? "mobile" : "non-mobile", props, rpcConcurrency);
-  }
-
-  /** Strictly for tests.
-   * @internal
-   */
-  public static createForDeviceType(type: "mobile" | "non-mobile", props?: TileAdmin.Props, rpcConcurrency?: number): TileAdmin {
-    return new this("mobile" === type, rpcConcurrency, props);
+    const isMobile = ProcessDetector.isMobileBrowser;
+    return new TileAdmin(isMobile, rpcConcurrency, props);
   }
 
   /** @internal */
@@ -201,7 +195,10 @@ export class TileAdmin {
     this._totalElided = 0;
   }
 
-  protected constructor(isMobile: boolean, rpcConcurrency: number | undefined, options?: TileAdmin.Props) {
+  /** Exposed as public strictly for tests.
+   * @internal
+   */
+  public constructor(isMobile: boolean, rpcConcurrency: number | undefined, options?: TileAdmin.Props) {
     this._isMobile = isMobile;
     if (undefined === options)
       options = {};

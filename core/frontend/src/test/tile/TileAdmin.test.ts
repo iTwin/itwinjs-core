@@ -26,7 +26,7 @@ describe("TileAdmin", () => {
     }
 
     function expectAdmin(isMobile: boolean, limits: GpuMemoryLimit | GpuMemoryLimits | undefined, expectedLimit: GpuMemoryLimit, expectedMaxBytes: number | undefined): TileAdmin {
-      const admin = TileAdmin.createForDeviceType(isMobile ? "mobile" : "non-mobile", undefined !== limits ? { gpuMemoryLimits: limits } : undefined);
+      const admin = new TileAdmin(isMobile, undefined, limits ? { gpuMemoryLimits: limits } : undefined);
       expectLimits(admin, expectedLimit, expectedMaxBytes);
       return admin;
     }

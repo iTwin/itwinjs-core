@@ -147,7 +147,7 @@ export class DisplayTestApp {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
-        tileAdmin: await TileAdmin.create(DisplayTestApp.tileAdminProps),
+        tileAdmin: DisplayTestApp.tileAdminProps,
         toolAdmin: new DisplayTestAppToolAdmin(),
         uiAdmin: new UiManager(),
         renderSys,
