@@ -123,9 +123,9 @@ export namespace PartialHierarchyModification { // eslint-disable-line @typescri
       case "Insert":
         return {
           type: "Insert",
-          node: Node.toJSON(obj.node),
+          parent: obj.parent === undefined ? undefined : NodeKey.toJSON(obj.parent),
           position: obj.position,
-          parent: obj.parent,
+          node: Node.toJSON(obj.node),
         };
 
       case "Update":
@@ -149,9 +149,9 @@ export namespace PartialHierarchyModification { // eslint-disable-line @typescri
       case "Insert":
         return {
           type: "Insert",
-          node: Node.fromJSON(json.node),
+          parent: json.parent === undefined ? undefined : NodeKey.fromJSON(json.parent),
           position: json.position,
-          parent: json.parent,
+          node: Node.fromJSON(json.node),
         };
 
       case "Update":
@@ -173,7 +173,7 @@ export namespace PartialHierarchyModification { // eslint-disable-line @typescri
 /** @alpha */
 export interface NodeInsertionInfo {
   type: "Insert";
-  parent?: string;
+  parent?: NodeKey;
   position: number;
   node: Node;
 }
@@ -181,7 +181,7 @@ export interface NodeInsertionInfo {
 /** @alpha */
 export interface NodeInsertionInfoJSON {
   type: "Insert";
-  parent?: string;
+  parent?: NodeKey;
   position: number;
   node: NodeJSON;
 }

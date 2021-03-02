@@ -119,11 +119,21 @@ describe("HierarchyUpdateInfo", () => {
 
 describe("PartialHierarchyModification", () => {
   describe("toJSON", () => {
-    it("serializes `NodeInsertionInfo`", () => {
+    it("serializes `NodeInsertionInfo` without parent", () => {
       const info: NodeInsertionInfo = {
-        node: testNode,
-        position: 123,
         type: "Insert",
+        position: 123,
+        node: testNode,
+      };
+      expect(PartialHierarchyModification.toJSON(info)).to.matchSnapshot();
+    });
+
+    it("serializes `NodeInsertionInfo` with parent", () => {
+      const info: NodeInsertionInfo = {
+        type: "Insert",
+        parent: testNode.key,
+        position: 123,
+        node: testNode,
       };
       expect(PartialHierarchyModification.toJSON(info)).to.matchSnapshot();
     });
@@ -149,9 +159,19 @@ describe("PartialHierarchyModification", () => {
   });
 
   describe("fromJSON", () => {
-    it("deserializes `NodeInsertionInfo` from JSON", () => {
+    it("deserializes `NodeInsertionInfo` without parent from JSON", () => {
       const info: NodeInsertionInfoJSON = {
         type: "Insert",
+        position: 123,
+        node: testNodeJson,
+      };
+      expect(PartialHierarchyModification.fromJSON(info)).to.matchSnapshot();
+    });
+
+    it("deserializes `NodeInsertionInfo` with parent from JSON", () => {
+      const info: NodeInsertionInfoJSON = {
+        type: "Insert",
+        parent: testNodeJson.key,
         position: 123,
         node: testNodeJson,
       };

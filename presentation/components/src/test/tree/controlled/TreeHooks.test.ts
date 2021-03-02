@@ -549,7 +549,7 @@ describe("usePresentationNodeLoader", () => {
         const initialTree = createTreeModel([{ ["root1"]: ["child1"] }]);
         const updatedTree = updateTreeModel(
           initialTree,
-          [{ type: "Insert", parent: "root1", position: 0, node: createNode("inserted_node") }],
+          [{ type: "Insert", parent: createNode("root1").key, position: 0, node: createNode("inserted_node") }],
           {},
         );
         expectTree(updatedTree!, [{ ["root1"]: ["inserted_node", "child1"] }]);
@@ -563,7 +563,7 @@ describe("usePresentationNodeLoader", () => {
         node.hasChildren = true;
         const updatedTree = updateTreeModel(
           initialTree,
-          [{ type: "Insert", parent: "root1", position: 0, node }],
+          [{ type: "Insert", parent: createNode("root1").key, position: 0, node }],
           {},
         );
         expectTree(updatedTree!, [{ ["root1"]: ["inserted_node", "child1"] }]);
@@ -575,7 +575,7 @@ describe("usePresentationNodeLoader", () => {
         const initialTree = createTreeModel([{ ["root1"]: ["child1"] }]);
         const updatedTree = updateTreeModel(
           initialTree,
-          [{ type: "Insert", parent: "child1", position: 0, node: createNode("inserted_node") }],
+          [{ type: "Insert", parent: createNode("child1").key, position: 0, node: createNode("inserted_node") }],
           {},
         );
         expectTree(updatedTree!, [{ ["root1"]: [{ ["child1"]: ["inserted_node"] }] }]);

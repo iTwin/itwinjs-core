@@ -131,7 +131,31 @@ Object {
 }
 `;
 
-exports[`PartialHierarchyModification fromJSON deserializes \`NodeInsertionInfo\` from JSON 1`] = `
+exports[`PartialHierarchyModification fromJSON deserializes \`NodeInsertionInfo\` with parent from JSON 1`] = `
+Object {
+  "node": Object {
+    "key": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
+    },
+    "label": Object {
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
+      "typeName": "string",
+    },
+  },
+  "parent": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+  },
+  "position": 123,
+  "type": "Insert",
+}
+`;
+
+exports[`PartialHierarchyModification fromJSON deserializes \`NodeInsertionInfo\` without parent from JSON 1`] = `
 Object {
   "node": Object {
     "key": Object {
@@ -176,7 +200,31 @@ Object {
 }
 `;
 
-exports[`PartialHierarchyModification toJSON serializes \`NodeInsertionInfo\` 1`] = `
+exports[`PartialHierarchyModification toJSON serializes \`NodeInsertionInfo\` with parent 1`] = `
+Object {
+  "node": Object {
+    "key": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
+    },
+    "labelDefinition": Object {
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
+      "typeName": "string",
+    },
+  },
+  "parent": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+  },
+  "position": 123,
+  "type": "Insert",
+}
+`;
+
+exports[`PartialHierarchyModification toJSON serializes \`NodeInsertionInfo\` without parent 1`] = `
 Object {
   "node": Object {
     "key": Object {

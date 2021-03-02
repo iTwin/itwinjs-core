@@ -211,7 +211,8 @@ export function updateTreeModel(
       switch (modification.type) {
         case "Insert":
           const nodeInput = convertToTreeModelNodeInput(createTreeNodeItem(modification.node));
-          model.insertChild(modification.parent, nodeInput, modification.position);
+          const parentId = modification.parent === undefined ? undefined : createTreeNodeId(modification.parent);
+          model.insertChild(parentId, nodeInput, modification.position);
           break;
 
         case "Update":
