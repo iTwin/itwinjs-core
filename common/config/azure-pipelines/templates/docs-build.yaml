@@ -33,7 +33,6 @@ steps:
 
 # Currently BeMetalsmith is an internal only tool
 - script: |
-    cd $(Build.ArtifactStagingDirectory)
     npm install @bentley/bemetalsmith@4.x
     ls -a ..
     ls -a
