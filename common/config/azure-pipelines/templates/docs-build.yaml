@@ -32,7 +32,9 @@ steps:
 #     stagingDir: ${{ parameters.stagingDir }}
 
 # Currently BeMetalsmith is an internal only tool
-- script: npm install @bentley/bemetalsmith@4.x
+- script: |
+    npm install @bentley/bemetalsmith@4.x
+    ls
   displayName: Install BeMetalsmith
   workingDirectory: $(Agent.TempDirectory)
 
