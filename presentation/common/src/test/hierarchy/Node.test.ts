@@ -26,7 +26,7 @@ describe("Node", () => {
     });
   });
 
-  describe("toPartialJson", () => {
+  describe("toPartialJSON", () => {
     it("serializes partial Node", () => {
       const json = Node.toPartialJSON(testNode);
       expect(json).to.deep.equal(testNodeJson);
@@ -45,7 +45,7 @@ describe("Node", () => {
     });
   });
 
-  describe("fromPartialJson", () => {
+  describe("fromPartialJSON", () => {
     it("creates partial Node from serialized partial JSON", () => {
       const node = Node.fromPartialJSON(testNodeJson);
       expect(node).to.deep.equal(testNode);

@@ -7,7 +7,7 @@
  */
 
 import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
-import { Node, NodeJSON, PartialNode, PartialNodeJson } from "./hierarchy/Node";
+import { Node, NodeJSON, PartialNode, PartialNodeJSON } from "./hierarchy/Node";
 
 /** @alpha */
 export const UPDATE_FULL = "FULL";
@@ -209,7 +209,7 @@ export interface NodeUpdateInfo {
 export interface NodeUpdateInfoJSON {
   type: "Update";
   target: NodeKeyJSON;
-  changes: PartialNodeJson;
+  changes: PartialNodeJSON;
 }
 
 /** @alpha */

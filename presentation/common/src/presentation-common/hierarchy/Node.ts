@@ -75,7 +75,7 @@ export interface NodeJSON {
 /** @alpha */
 export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
 /** @alpha */
-export type PartialNodeJson = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
+export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
 type AllOrNone<T, P extends keyof T> = Omit<T, P> & ({ [K in P]?: never } | Required<Pick<T, P>>);
 
 /** @public */
@@ -91,7 +91,7 @@ export namespace Node {
   }
 
   /** @internal */
-  export function toPartialJSON(node: PartialNode): PartialNodeJson {
+  export function toPartialJSON(node: PartialNode): PartialNodeJSON {
     if (node.key === undefined) {
       return node;
     }
@@ -117,7 +117,7 @@ export namespace Node {
   }
 
   /** @internal */
-  export function fromPartialJSON(json: PartialNodeJson): PartialNode {
+  export function fromPartialJSON(json: PartialNodeJSON): PartialNode {
     if (json.key === undefined) {
       return json;
     }
