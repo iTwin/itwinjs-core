@@ -557,7 +557,7 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
   return tree! as IModelTileTree;
 }
 
-describe.only("mirukuru TileTree", () => {
+describe("mirukuru TileTree", () => {
   let imodel: IModelConnection;
 
   class TestTarget extends MockRender.OnScreenTarget {
