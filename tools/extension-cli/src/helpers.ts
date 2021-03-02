@@ -17,7 +17,7 @@ export async function signIn(): Promise<AccessToken> {
     redirectUri,
     scope: "openid imodel-extension-service-api context-registry-service:read-only offline_access imodel-extension-service:modify",
   });
-  await client.signIn(requestContext);
+  await client.signIn();
   return client.getAccessToken();
 }
 

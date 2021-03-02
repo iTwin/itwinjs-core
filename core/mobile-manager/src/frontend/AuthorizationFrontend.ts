@@ -5,8 +5,8 @@
 
 import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { NativeAuthorizationConfiguration } from "@bentley/imodeljs-common";
-import { FrontendRequestContext, NativeApp } from "@bentley/imodeljs-frontend";
+import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { NativeApp } from "@bentley/imodeljs-frontend";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
@@ -14,36 +14,35 @@ import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
  */
 export class MobileAuthorizationFrontend extends ImsAuthorizationClient implements FrontendAuthorizationClient {
   private _accessToken?: AccessToken;
-  private _clientConfiguration: NativeAuthorizationConfiguration;
-  public constructor(clientConfiguration: NativeAuthorizationConfiguration) {
+  private _clientConfiguration: AuthorizationConfiguration;
+  public constructor(clientConfiguration: AuthorizationConfiguration) {
     super();
     this._clientConfiguration = clientConfiguration;
   }
   /** Used to initialize the client - must be awaited before any other methods are called */
   public async initialize(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
+    this.onUserStateChanged.addListener((token?: AccessToken) => {
+      this._accessToken = token;
+    });
     this._clientConfiguration.issuerUrl = await this.getUrl(requestContext);
     await NativeApp.callNativeHost("initializeAuth", requestContext, this._clientConfiguration);
   }
   /** Start the sign-in process */
-  public async signIn(requestContext: ClientRequestContext): Promise<void> {
-    await NativeApp.callNativeHost("signIn", requestContext);
+  public async signIn(): Promise<void> {
+    await NativeApp.callNativeHost("signIn");
   }
 
   /** Start the sign-out process */
-  public async signOut(requestContext: ClientRequestContext): Promise<void> {
-    return NativeApp.callNativeHost("signOut", requestContext);
+  public async signOut(): Promise<void> {
+    return NativeApp.callNativeHost("signOut");
   }
 
   /** return accessToken */
-  public async getAccessToken(requestContext: ClientRequestContext = new FrontendRequestContext()): Promise<AccessToken> {
-    requestContext.enter();
-    if (this.isAuthorized) {
-      return this._accessToken!;
-    }
-    const tokenProps = await NativeApp.callNativeHost("getAccessTokenProps", requestContext);
-    this._accessToken = AccessToken.fromJson(tokenProps);
-    return this._accessToken;
+  public async getAccessToken(): Promise<AccessToken> {
+    if (!this.isAuthorized)
+      this._accessToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
+    return this._accessToken!;
   }
 
   /** Set to true if there's a current authorized user or client (in the case of agent applications).
@@ -63,10 +62,7 @@ export class MobileAuthorizationFrontend extends ImsAuthorizationClient implemen
 
   /** Set to true if the user has signed in, but the token has expired and requires a refresh */
   public get hasExpired(): boolean {
-    if (!this._accessToken)
-      return false;
-
-    return !this.isAuthorized;
+    return this.hasSignedIn && !this.isAuthorized;
   }
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */

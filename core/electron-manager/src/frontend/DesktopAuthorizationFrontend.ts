@@ -8,8 +8,8 @@
  */
 
 import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { NativeAuthorizationConfiguration } from "@bentley/imodeljs-common";
-import { FrontendRequestContext, NativeApp } from "@bentley/imodeljs-frontend";
+import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { NativeApp } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 
 /**
@@ -17,11 +17,11 @@ import { AccessToken } from "@bentley/itwin-client";
  * @alpha
  */
 export class DesktopAuthorizationFrontend {
-  private _clientConfiguration: NativeAuthorizationConfiguration;
+  private _clientConfiguration: AuthorizationConfiguration;
   private _accessToken?: AccessToken;
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
-  public constructor(clientConfiguration: NativeAuthorizationConfiguration) {
+  public constructor(clientConfiguration: AuthorizationConfiguration) {
     this._clientConfiguration = clientConfiguration;
   }
 
@@ -32,15 +32,13 @@ export class DesktopAuthorizationFrontend {
   }
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
-  public async signIn(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
-    return NativeApp.callNativeHost("signIn", requestContext);
+  public async signIn(): Promise<void> {
+    return NativeApp.callNativeHost("signIn");
   }
 
   /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
-  public async signOut(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
-    return NativeApp.callNativeHost("signOut", requestContext);
+  public async signOut(): Promise<void> {
+    return NativeApp.callNativeHost("signOut");
   }
 
   /** Set to true if there's a current authorized user or client (in the case of agent applications).
@@ -77,11 +75,9 @@ export class DesktopAuthorizationFrontend {
    * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
    * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
    */
-  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
-    requestContext = requestContext ?? new FrontendRequestContext();
-    requestContext.enter();
+  public async getAccessToken(): Promise<AccessToken> {
     if (!this.isAuthorized)
-      this._accessToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps", requestContext));
+      this._accessToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
     return this._accessToken!;
   }
 }

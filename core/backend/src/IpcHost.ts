@@ -6,31 +6,57 @@
  * @module NativeApp
  */
 
-import { ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import {
-  BriefcasePushAndPullNotifications, IModelChangeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion, IModelVersionProps, IpcAppChannel, IpcAppFunctions,
-  IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds,
+  ClientRequestContext, ClientRequestContextProps, Guid, IModelStatus, Logger, LogLevel, OpenMode, SessionProps,
+} from "@bentley/bentleyjs-core";
+import {
+  AuthorizationConfiguration, BriefcasePushAndPullNotifications, IModelChangeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion,
+  IModelVersionProps, IpcAppChannel, IpcAppFunctions, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
+  RemoveFunction, StandaloneOpenOptions, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
+export abstract class AuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
+  protected _session?: SessionProps;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  protected get session() { return this._session!; }
+  protected _config?: AuthorizationConfiguration;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  protected get config() { return this._config!; }
+  protected _accessToken?: AccessToken;
+  public abstract signIn(): Promise<void>;
+  public abstract signOut(): Promise<void>;
+  public async initialize(requestContext: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
+    this._config = config;
+    this._session = { applicationId: requestContext.applicationId, applicationVersion: requestContext.applicationVersion, sessionId: requestContext.sessionId };
+  }
+  public get clientConfiguration() { return this._config; }
+  public abstract getAccessToken(): Promise<AccessToken>;
+  public abstract get isAuthorized(): boolean;
+  public getClientRequestContext() { return ClientRequestContext.fromJSON(this.session); }
+  public async getAuthorizedContext() {
+    return new AuthorizedClientRequestContext(await this.getAccessToken(), Guid.createValue(), this.session.applicationId, this.session.applicationVersion, this.session.sessionId);
+  }
+}
+
 /**
- * Options for [[IpcHost.startup]]
- * @beta
- */
+  * Options for [[IpcHost.startup]]
+  * @beta
+  */
 export interface IpcHostOptions {
   /** The Ipc socket to use for communications with frontend. Allows undefined only for headless tests. */
   socket?: IpcSocketBackend;
 }
 
 /**
- * Used by applications that have a dedicated backend. IpcHosts may send messages to their corresponding IpcApp.
- * @note if either end terminates, the other must too.
- * @beta
-*/
+  * Used by applications that have a dedicated backend. IpcHosts may send messages to their corresponding IpcApp.
+  * @note if either end terminates, the other must too.
+  * @beta
+ */
 export class IpcHost {
   private static _ipc: IpcSocketBackend | undefined;
   /** Get the implementation of the [IpcSocketBackend]($common) interface. */
@@ -145,6 +171,12 @@ export abstract class IpcHandler {
  */
 class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public get channelName() { return IpcAppChannel.Functions; }
+  private getAuthBackend() {
+    const client = IModelHost.authorizationClient;
+    if (!(client instanceof AuthorizationBackend))
+      throw new IModelError(IModelStatus.BadArg, "IModelHost.authorizationClient must be a AuthorizationBackend");
+    return client;
+  }
 
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
     Logger.logRaw(level, category, message, () => metaData);
@@ -153,13 +185,12 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return cancelTileContentRequests(tokenProps, contentIds);
   }
   public async cancelElementGraphicsRequests(key: string, requestIds: string[]): Promise<void> {
-    const iModel = IModelDb.findByKey(key);
-    return iModel.nativeDb.cancelElementGraphicsRequests(requestIds);
+    return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(requestIds);
   }
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
-    const requestContext = ClientRequestContext.current;
+    const auth = this.getAuthBackend();
+    const requestContext = args.readonly === true ? auth.getClientRequestContext() : await auth.getAuthorizedContext();
     const db = await BriefcaseDb.open(requestContext, args);
-    requestContext.enter();
     return db.toJSON();
   }
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
@@ -176,42 +207,35 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
   public async pullAndMergeChanges(key: string, version?: IModelVersionProps): Promise<void> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = await this.getAuthBackend().getAuthorizedContext();
     await iModelDb.pullAndMergeChanges(requestContext, version ? IModelVersion.fromJSON(version) : undefined);
   }
   public async pushChanges(key: string, description: string): Promise<string> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = await this.getAuthBackend().getAuthorizedContext();
     await iModelDb.pushChanges(requestContext, description);
     return iModelDb.changeSetId;
   }
   public async toggleInteractiveEditingSession(key: string, startSession: boolean): Promise<boolean> {
-    const imodel = IModelDb.findByKey(key);
-    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = imodel.nativeDb.setGeometricModelTrackingEnabled(startSession);
+    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key).nativeDb.setGeometricModelTrackingEnabled(startSession);
     if (val.error)
       throw new IModelError(val.error.status, "Failed to toggle interactive editing session");
 
     return val.result!;
   }
   public async isInteractiveEditingSupported(key: string): Promise<boolean> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.isGeometricModelTrackingSupported();
+    return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();
   }
   public async reverseSingleTxn(key: string): Promise<IModelStatus> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.reverseTxns(1);
+    return IModelDb.findByKey(key).nativeDb.reverseTxns(1);
   }
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.reverseAll();
+    return IModelDb.findByKey(key).nativeDb.reverseAll();
   }
   public async reinstateTxn(key: string): Promise<IModelStatus> {
-    const imodel = IModelDb.findByKey(key);
-    return imodel.nativeDb.reinstateTxn();
+    return IModelDb.findByKey(key).nativeDb.reinstateTxn();
   }
-
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
     return IModelJsNative.queryConcurrency(pool);
   }
 }
-

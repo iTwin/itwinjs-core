@@ -8,10 +8,10 @@
  * @module Authentication
  */
 
-import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { NativeAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
-import { NativeAuthorizationConfiguration } from "@bentley/imodeljs-common";
-import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, ClientRequestContextProps, Guid, Logger } from "@bentley/bentleyjs-core";
+import { AuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
+import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
   BaseTokenRequestHandler, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, RevokeTokenRequest, RevokeTokenRequestJson, StringMap,
@@ -30,25 +30,23 @@ const loggerCategory = "electron-backend";
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
  * @alpha
  */
-export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
-  private _clientConfiguration?: NativeAuthorizationConfiguration;
+export class DesktopAuthorizationBackend extends AuthorizationBackend {
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
-  private _accessToken?: AccessToken;
-  private _tokenStore?: ElectronTokenStore;
 
-  public get clientConfiguration() { return this._clientConfiguration!; }
+  private _tokenStore?: ElectronTokenStore;
   public get tokenStore() { return this._tokenStore!; }
 
   /**
    * Used to initialize the client - must be awaited before any other methods are called.
    * The call attempts a silent sign-if possible.
    */
-  public async initialize(requestContext: ClientRequestContext, clientConfiguration: NativeAuthorizationConfiguration): Promise<void> {
-    this._clientConfiguration = clientConfiguration;
-    this._tokenStore = new ElectronTokenStore(this._clientConfiguration.clientId);
+  public async initialize(props: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
+    await super.initialize(props, config);
+    this._tokenStore = new ElectronTokenStore(config.clientId);
+    this._session = { applicationId: props.applicationId, applicationVersion: props.applicationVersion, sessionId: props.sessionId };
 
-    const url = await this.getUrl(requestContext);
+    const url = await this.getUrl(ClientRequestContext.fromJSON(props));
     const tokenRequestor = new NodeRequestor(); // the Node.js based HTTP client
     this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(
       url,
@@ -57,19 +55,19 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
     Logger.logTrace(loggerCategory, "Initialized service configuration", () => ({ configuration: this._configuration }));
 
     // Attempt to load the access token from store
-    await this.loadAccessToken(requestContext);
+    await this.loadAccessToken();
   }
 
   /** Loads the access token from the store, and refreshes it if necessary and possible
    * @return AccessToken if it's possible to get a valid access token, and undefined otherwise.
    */
-  private async loadAccessToken(requestContext: ClientRequestContext): Promise<AccessToken | undefined> {
+  private async loadAccessToken(): Promise<AccessToken | undefined> {
     const tokenResponse = await this.tokenStore.load();
     if (tokenResponse === undefined || tokenResponse.refreshToken === undefined)
       return undefined;
     try {
       Logger.logTrace(loggerCategory, "Refreshing token from storage");
-      await this.refreshAccessToken(requestContext || new ClientRequestContext(), tokenResponse.refreshToken);
+      await this.refreshAccessToken(tokenResponse.refreshToken);
     } catch (err) {
       return undefined;
     }
@@ -84,21 +82,21 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
    *   (i) load any existing authorized user from storage,
    *   (ii) an interactive signin that requires user input.
    */
-  public async signIn(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
+  public async signIn(): Promise<void> {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
     // Attempt to load the access token from store
-    await this.loadAccessToken(requestContext);
+    await this.loadAccessToken();
     if (this._accessToken)
       return;
 
     // Create the authorization request
+    const nativeConfig = this.config;
     const authReqJson: AuthorizationRequestJson = {
-      client_id: this.clientConfiguration.clientId, // eslint-disable-line @typescript-eslint/naming-convention
-      redirect_uri: this.clientConfiguration.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
-      scope: this.clientConfiguration.scope,
+      client_id: nativeConfig.clientId, // eslint-disable-line @typescript-eslint/naming-convention
+      redirect_uri: nativeConfig.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
+      scope: nativeConfig.scope,
       response_type: AuthorizationRequest.RESPONSE_TYPE_CODE, // eslint-disable-line @typescript-eslint/naming-convention
       extras: { prompt: "consent", access_type: "offline" }, // eslint-disable-line @typescript-eslint/naming-convention
     };
@@ -112,7 +110,7 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
     LoopbackWebServer.addCorrelationState(authorizationRequest.state, authorizationEvents);
 
     // Start a web server to listen to the browser requests
-    LoopbackWebServer.start(this.clientConfiguration);
+    LoopbackWebServer.start(nativeConfig);
 
     const authorizationHandler = new ElectronAuthorizationRequestHandler(authorizationEvents);
 
@@ -121,22 +119,20 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
     authorizationHandler.setAuthorizationNotifier(notifier);
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     notifier.setAuthorizationListener(async (authRequest: AuthorizationRequest, authResponse: AuthorizationResponse | null, authError: AuthorizationError | null) => {
-      requestContext.enter();
       Logger.logTrace(loggerCategory, "Authorization listener invoked", () => ({ authRequest, authResponse, authError }));
 
-      const tokenResponse = await this._onAuthorizationResponse(requestContext, authRequest, authResponse, authError);
+      const tokenResponse = await this._onAuthorizationResponse(authRequest, authResponse, authError);
 
       authorizationEvents.onAuthorizationResponseCompleted.raiseEvent(authError ? authError : undefined);
 
-      await this.setTokenResponse(requestContext, tokenResponse);
+      await this.setTokenResponse(tokenResponse);
     });
 
     // Start the signin
     await authorizationHandler.performAuthorizationRequest(this._configuration, authorizationRequest);
   }
 
-  private async _onAuthorizationResponse(requestContext: ClientRequestContext, authRequest: AuthorizationRequest, authResponse: AuthorizationResponse | null, authError: AuthorizationError | null): Promise<TokenResponse | undefined> {
-    requestContext.enter();
+  private async _onAuthorizationResponse(authRequest: AuthorizationRequest, authResponse: AuthorizationResponse | null, authError: AuthorizationError | null): Promise<TokenResponse | undefined> {
 
     // Phase 1 of login has completed to fetch the authorization code - check for errors
     if (authError) {
@@ -153,8 +149,7 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
     }
 
     // Phase 2: Swap the authorization code for the access token
-    const tokenResponse = await this.swapAuthorizationCodeForTokens(requestContext, authResponse.code, authRequest.internal!.code_verifier);
-    requestContext.enter();
+    const tokenResponse = await this.swapAuthorizationCodeForTokens(authResponse.code, authRequest.internal!.code_verifier);
     Logger.logTrace(loggerCategory, "Authorization completed, and issued access token");
     return tokenResponse;
   }
@@ -166,13 +161,11 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
    * - redirects application to the postSignoutRedirectUri specified in the configuration when the sign out is
    *   complete
    */
-  public async signOut(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
-    await this.makeRevokeTokenRequest(requestContext);
+  public async signOut(): Promise<void> {
+    await this.makeRevokeTokenRequest();
   }
 
-  private async getUserProfile(requestContext: ClientRequestContext, tokenResponse: TokenResponse): Promise<any | undefined> {
-    requestContext.enter();
+  private async getUserProfile(tokenResponse: TokenResponse): Promise<any | undefined> {
     const options: RequestOptions = {
       method: "GET",
       headers: {
@@ -181,12 +174,15 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
       accept: "application/json",
     };
 
-    const response = await request(requestContext, this._configuration!.userInfoEndpoint!, options);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const session = this._session!;
+    const httpContext = new ClientRequestContext(Guid.createValue(), session.applicationId, session.applicationVersion, session.sessionId);
+    const response = await httpRequest(httpContext, this._configuration!.userInfoEndpoint!, options);
     return response?.body;
   }
 
-  private async createAccessTokenFromResponse(requestContext: ClientRequestContext, tokenResponse: TokenResponse): Promise<AccessToken> {
-    const profile = await this.getUserProfile(requestContext, tokenResponse);
+  private async createAccessTokenFromResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
+    const profile = await this.getUserProfile(tokenResponse);
 
     const json = {
       /* eslint-disable @typescript-eslint/naming-convention */
@@ -199,9 +195,7 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
     return AccessToken.fromTokenResponseJson(json, profile);
   }
 
-  private async setTokenResponse(requestContext: ClientRequestContext, tokenResponse: TokenResponse | undefined) {
-    requestContext.enter();
-
+  private async setTokenResponse(tokenResponse: TokenResponse | undefined) {
     if (tokenResponse === undefined) {
       this._tokenResponse = undefined;
       this._accessToken = undefined;
@@ -210,9 +204,7 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
       return;
     }
 
-    const accessToken = await this.createAccessTokenFromResponse(requestContext, tokenResponse);
-    requestContext.enter();
-
+    const accessToken = await this.createAccessTokenFromResponse(tokenResponse);
     this._tokenResponse = tokenResponse;
     this._accessToken = accessToken;
     await this.tokenStore.save(this._tokenResponse);
@@ -220,39 +212,35 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
   }
 
   private isValidToken(tokenResponse: TokenResponse): boolean {
-    const buffer = this.clientConfiguration.expiryBuffer || 60 * 10;
+    const buffer = this.clientConfiguration!.expiryBuffer || 60 * 10;
     return tokenResponse.isValid(-buffer);
   }
 
-  private async refreshAccessToken(requestContext: ClientRequestContext, refreshToken: string): Promise<AccessToken> {
-    requestContext.enter();
-
-    const tokenResponse = await this.makeRefreshAccessTokenRequest(requestContext, refreshToken);
+  private async refreshAccessToken(refreshToken: string): Promise<AccessToken> {
+    const tokenResponse = await this.makeRefreshAccessTokenRequest(refreshToken);
 
     Logger.logTrace(loggerCategory, "Refresh token completed, and issued access token");
-    await this.setTokenResponse(requestContext, tokenResponse);
+    await this.setTokenResponse(tokenResponse);
 
     assert(!!this._accessToken);
     return this._accessToken;
   }
 
   /** Returns a promise that resolves to the AccessToken of the currently authorized user.
-   * - The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
-   * - The token is refreshed if it's possible and necessary.
-   * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
-   * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
-   * @throws [[BentleyError]] If signIn() was not called, or there was an authorization error.
-   */
-  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
-    if (requestContext) requestContext.enter();
-
+ * - The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
+ * - The token is refreshed if it's possible and necessary.
+ * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
+ * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
+ * @throws [[BentleyError]] If signIn() was not called, or there was an authorization error.
+ */
+  public async getAccessToken(): Promise<AccessToken> {
     // Ensure user is signed in
     if (this._tokenResponse === undefined || this._tokenResponse.refreshToken === undefined)
       throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggerCategory);
 
     // Refresh token if necessary
     if (!this.isValidToken(this._tokenResponse)) {
-      await this.refreshAccessToken(requestContext || new ClientRequestContext(), this._tokenResponse.refreshToken);
+      await this.refreshAccessToken(this._tokenResponse.refreshToken);
     }
 
     assert(this.isValidToken(this._tokenResponse) && !!this._accessToken);
@@ -285,18 +273,18 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
   }
 
   /** Swap the authorization code for a refresh token and access token */
-  private async swapAuthorizationCodeForTokens(requestContext: ClientRequestContext, authCode: string, codeVerifier: string): Promise<TokenResponse> {
-    requestContext.enter();
+  private async swapAuthorizationCodeForTokens(authCode: string, codeVerifier: string): Promise<TokenResponse> {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
     /* eslint-disable @typescript-eslint/naming-convention */
+    const nativeConfig = this.config;
     const extras: StringMap = { code_verifier: codeVerifier };
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
       code: authCode,
-      redirect_uri: this.clientConfiguration.redirectUri,
-      client_id: this.clientConfiguration.clientId,
+      redirect_uri: nativeConfig.redirectUri,
+      client_id: nativeConfig.clientId,
       extras,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
@@ -307,17 +295,17 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
     return tokenHandler.performTokenRequest(this._configuration, tokenRequest);
   }
 
-  private async makeRefreshAccessTokenRequest(requestContext: ClientRequestContext, refreshToken: string): Promise<TokenResponse> {
-    requestContext.enter();
+  private async makeRefreshAccessTokenRequest(refreshToken: string): Promise<TokenResponse> {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
+    const nativeConfig = this.config;
     /* eslint-disable @typescript-eslint/naming-convention */
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_REFRESH_TOKEN,
       refresh_token: refreshToken,
-      redirect_uri: this.clientConfiguration.redirectUri,
-      client_id: this.clientConfiguration.clientId,
+      redirect_uri: nativeConfig.redirectUri,
+      client_id: nativeConfig.clientId,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -327,30 +315,27 @@ export class DesktopAuthorizationBackend extends NativeAuthorizationBackend {
     return tokenHandler.performTokenRequest(this._configuration, tokenRequest);
   }
 
-  private async makeRevokeTokenRequest(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
-    if (!this._configuration)
-      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+  private async makeRevokeTokenRequest(): Promise<void> {
     if (!this._tokenResponse)
       throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful", Logger.logError, loggerCategory);
 
     const refreshToken = this._tokenResponse.refreshToken!;
 
     /* eslint-disable @typescript-eslint/naming-convention */
+    const nativeConfig = this.config;
     const revokeTokenRequestJson: RevokeTokenRequestJson = {
       token: refreshToken,
       token_type_hint: "refresh_token",
-      client_id: this.clientConfiguration.clientId,
+      client_id: nativeConfig.clientId,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
     const revokeTokenRequest = new RevokeTokenRequest(revokeTokenRequestJson);
     const tokenRequestor = new NodeRequestor();
     const tokenHandler: TokenRequestHandler = new BaseTokenRequestHandler(tokenRequestor);
-    await tokenHandler.performRevokeTokenRequest(this._configuration, revokeTokenRequest);
-    requestContext.enter();
+    await tokenHandler.performRevokeTokenRequest(this._configuration!, revokeTokenRequest);
 
     Logger.logTrace(loggerCategory, "Authorization revoked, and removed access token");
-    await this.setTokenResponse(requestContext, undefined);
+    await this.setTokenResponse(undefined);
   }
 }

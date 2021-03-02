@@ -10,21 +10,24 @@ import { Guid, GuidString } from "./Id";
 
 // cSpell:ignore csrf
 
-/** The data properties of ClientRequestContext.
- * @public
- */
-export interface ClientRequestContextProps {
-  /** Used for logging to correlate all service requests that originated from this client request */
-  readonly activityId: GuidString;
-
-  /** Used for logging and usage tracking to identify the application that created this client request */
+/** Properties that identify a session. */
+export interface SessionProps {
+  /** Used for logging and usage tracking to identify the application  */
   readonly applicationId: string;
 
-  /** Used for logging and usage tracking to identify the application version that created this client request */
+  /** Used for logging and usage tracking to identify the application version  */
   readonly applicationVersion: string;
 
-  /** Used for logging to identify the session that created this client request */
+  /** Used for logging to identify a session  */
   readonly sessionId: GuidString;
+}
+
+/** The properties of ClientRequestContext.
+ * @public
+ */
+export interface ClientRequestContextProps extends SessionProps {
+  /** Used for logging to correlate all service requests that originated from this client request */
+  readonly activityId?: GuidString;
 }
 
 /** Provides generic context for a server application to get details of a particular
@@ -36,7 +39,7 @@ export interface ClientRequestContextProps {
  * @see [AuthorizedClientRequestContext]($itwin-client)
  * @public
  */
-export class ClientRequestContext implements ClientRequestContextProps {
+export class ClientRequestContext {
   /** Used for logging to correlate all service requests that originated from this client request */
   public readonly activityId: GuidString;
 
@@ -85,6 +88,9 @@ export class ClientRequestContext implements ClientRequestContextProps {
       applicationVersion: this.applicationVersion,
       sessionId: this.sessionId,
     };
+  }
+  public static fromJSON(json: ClientRequestContextProps): ClientRequestContext {
+    return new ClientRequestContext(json.activityId, json.applicationId, json.applicationVersion, json.sessionId);
   }
 }
 

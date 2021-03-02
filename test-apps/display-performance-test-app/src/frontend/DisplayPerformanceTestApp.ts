@@ -11,8 +11,8 @@ import { DesktopAuthorizationFrontend, ElectronApp } from "@bentley/electron-man
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
-  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DisplayStyleProps, FeatureAppearance, FeatureAppearanceProps, Hilite,
-  IModelReadRpcInterface, IModelTileRpcInterface, NativeAuthorizationConfiguration, RenderMode, RpcConfiguration, SnapshotIModelRpcInterface,
+  AuthorizationConfiguration, BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DisplayStyleProps, FeatureAppearance, FeatureAppearanceProps,
+  Hilite, IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RpcConfiguration, SnapshotIModelRpcInterface,
   ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
@@ -1001,7 +1001,7 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<D
   if (ProcessDetector.isElectronAppFrontend) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: NativeAuthorizationConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
+    const oidcConfiguration: AuthorizationConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
     const desktopClient = new DesktopAuthorizationFrontend(oidcConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
