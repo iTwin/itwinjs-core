@@ -1370,9 +1370,9 @@ export interface SerializedClientRequestContext {
 
 // @public
 export interface SessionProps {
-    readonly applicationId: string;
-    readonly applicationVersion: string;
-    readonly sessionId: GuidString;
+    applicationId: string;
+    applicationVersion: string;
+    sessionId: GuidString;
 }
 
 // @public

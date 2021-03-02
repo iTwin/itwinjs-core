@@ -4102,6 +4102,7 @@ export type IpcInvokeReturn = {
         name: string;
         message: string;
         errorNumber: number;
+        stack?: string;
     };
 };
 

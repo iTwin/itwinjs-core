@@ -31,7 +31,6 @@ import { ChangesType } from '@bentley/imodelhub-client';
 import { ChannelRootAspectProps } from '@bentley/imodeljs-common';
 import { ClientAuthIntrospectionManager } from '@bentley/backend-itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { ClientRequestContextProps } from '@bentley/bentleyjs-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
 import { CloudStorageProvider } from '@bentley/imodeljs-common';
@@ -249,11 +248,7 @@ export abstract class AuthorizationBackend extends ImsAuthorizationClient {
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
-    initialize(requestContext: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void>;
-    // (undocumented)
-    protected get session(): SessionProps;
-    // (undocumented)
-    protected _session?: SessionProps;
+    initialize(props: SessionProps, config: AuthorizationConfiguration): Promise<void>;
     // (undocumented)
     abstract signIn(): Promise<void>;
     // (undocumented)
@@ -2695,8 +2690,10 @@ export abstract class IModelExportHandler {
 // @public
 export class IModelHost {
     static get appAssetsDir(): string | undefined;
-    static applicationId: string;
-    static applicationVersion: string;
+    static get applicationId(): string;
+    static set applicationId(id: string);
+    static get applicationVersion(): string;
+    static set applicationVersion(version: string);
     // @deprecated (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
@@ -2734,7 +2731,10 @@ export class IModelHost {
     static removeCrashReportProperty(name: string): void;
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
-    static sessionId: GuidString;
+    // @internal (undocumented)
+    static readonly session: SessionProps;
+    static get sessionId(): GuidString;
+    static set sessionId(id: GuidString);
     // @alpha
     static setCrashReportProperty(name: string, value: string): void;
     static shutdown(): Promise<void>;
@@ -3033,6 +3033,8 @@ export class IpcHost {
     static authorization: AuthorizationBackend;
     static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static get isValid(): boolean;
+    // (undocumented)
+    static noStack: boolean;
     // @internal (undocumented)
     static notifyIModelChanges<T extends keyof IModelChangeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<IModelChangeNotifications[T]>): void;
     // @internal (undocumented)
@@ -3050,6 +3052,9 @@ export class IpcHost {
 
 // @beta
 export interface IpcHostOptions {
+    exceptions?: {
+        noStack?: boolean;
+    };
     socket?: IpcSocketBackend;
 }
 
