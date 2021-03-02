@@ -29,13 +29,13 @@ import { Synchronizer } from "./Synchronizer";
 export class BridgeJobDefArgs {
   /** Comment to be used as the initial string for all changesets.  Can be null. */
   public revisionComments?: string;
-  /** Should be run after all documents have been synchronized.  Runs any actions (like project extent calculations) that need to run on the completed imodel */
+  /** Should be run after all documents have been synchronized.  Runs any actions (like project extent calculations) that need to run on the completed iModel */
   public allDocsProcessed: boolean = false;
-  /** Indicates whether the BridgeRunner should update the profile of the imodel's db. This would only need to be set to false if the imodel needs to be opened by legacy products */
+  /** Indicates whether the BridgeRunner should update the profile of the iModel's db. This would only need to be set to false if the iModel needs to be opened by legacy products */
   public updateDbProfile: boolean = true;
-  /** Indicates whether the BridgeRunner should update any of the core domain schemas in the imodel */
+  /** Indicates whether the BridgeRunner should update any of the core domain schemas in the iModel */
   public updateDomainSchemas: boolean = true;
-  /** The module containing the IModel Bridge implementation */
+  /** The module containing the iModel Bridge implementation */
   public bridgeModule?: string;
   /** Path to the source file */
   public sourcePath?: string;
@@ -48,7 +48,7 @@ export class BridgeJobDefArgs {
   public dmsAccessToken?: string;
   /** Additional arguments in JSON format. */
   public argsJson: any;
-  /** Synchronizes a snapshot imodel, outside of iModelHub */
+  /** Synchronizes a snapshot iModel, outside of iModelHub */
   public isSnapshot: boolean = false;
   /** The synchronizer will automatically delete any element that wasn't visited. Some bridges do not visit each element on every run. Set this to false to disable automatic deletion */
   public doDetectDeletedElements: boolean = true;
@@ -179,7 +179,7 @@ export class BridgeRunner {
 
     await iModelDbBuilder.acquire();
     if (undefined === iModelDbBuilder.imodel || !iModelDbBuilder.imodel.isOpen) {
-      throw new IModelError(IModelStatus.BadModel, "Failed to open imodel", Logger.logError, BridgeLoggerCategory.Framework);
+      throw new IModelError(IModelStatus.BadModel, "Failed to open iModel", Logger.logError, BridgeLoggerCategory.Framework);
     }
 
     try {

@@ -11,11 +11,9 @@ export * from "./Synchronizer";
  * Contains classes for supporting Connectors to synchronize data into an iTwin
  */
 
-/**
- * @docs-group-description Framework
+/** @docs-group-description Framework
  * Classes for supporting independent IModelBridge implementations.
  */
-/**
- * @docs-group-description Logging
+/** @docs-group-description Logging
  * Logger categories used by this package.
  */

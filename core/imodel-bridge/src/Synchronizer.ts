@@ -25,7 +25,7 @@ export enum ItemState {
 
 /** @beta */
 export interface ChangeResults {
-  /** Id of the item, if it currently exists in the imodel */
+  /** Id of the item, if it currently exists in the iModel */
   id?: Id64String;
   /** State of the item */
   state: ItemState;

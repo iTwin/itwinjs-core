@@ -22,7 +22,7 @@ export abstract class IModelBridge {
   /** Any initialization steps that the bridge must do in order to begin synchronization. */
   public abstract initialize(params: BridgeJobDefArgs): any;
 
-  /** If the bridge needs to perform any steps once the imodel has been opened */
+  /** If the bridge needs to perform any steps once the iModel has been opened */
   public async onOpenIModel(): Promise<BentleyStatus> {
     return BentleyStatus.SUCCESS;
   }
@@ -42,13 +42,13 @@ export abstract class IModelBridge {
    */
   public abstract importDefinitions(): Promise<any>;
 
-  /** Import schema(s) that every imodel synchronized by this bridge will use. Called in the [Repository channel]($docs/learning/backend/Channel). */
+  /** Import schema(s) that every iModel synchronized by this bridge will use. Called in the [Repository channel]($docs/learning/backend/Channel). */
   public abstract importDynamicSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
 
   /** Import schema(s) that are specific to this particular source, in addition to the previously imported domain schema(s). Called in the [Repository channel]($docs/learning/backend/Channel). */
   public abstract importDomainSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
 
-  /** Convert the source data to BIS and insert into the imodel.  Use the Synchronizer to determine whether an item is new, changed, or unchanged. Called in the [bridge's private channel]($docs/learning/backend/Channel). */
+  /** Convert the source data to BIS and insert into the iModel.  Use the Synchronizer to determine whether an item is new, changed, or unchanged. Called in the [bridge's private channel]($docs/learning/backend/Channel). */
   public abstract updateExistingData(): Promise<any>;
 
   /**

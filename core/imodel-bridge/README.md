@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@bentley/imodel-bridge__ package contains the framework to support bridges.
+The __@bentley/imodel-bridge__ package contains the framework to support Connectors.
 
 ## Documentation
 
