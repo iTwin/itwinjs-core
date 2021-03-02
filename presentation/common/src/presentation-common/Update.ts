@@ -181,7 +181,7 @@ export interface NodeInsertionInfo {
 /** @alpha */
 export interface NodeInsertionInfoJSON {
   type: "Insert";
-  parent?: NodeKey;
+  parent?: NodeKeyJSON;
   position: number;
   node: NodeJSON;
 }
