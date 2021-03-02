@@ -146,7 +146,7 @@ export class AzureFileHandler implements FileHandler {
     fs.mkdirSync(dirPath);
   }
 
-  private async transferFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, source: string, target: string, progressCallback?: ProgressCallback): Promise<void> {
+  private async transferFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, source: string, target: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Using AzCopy with verison ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
 
@@ -158,7 +158,7 @@ export class AzureFileHandler implements FileHandler {
     const azcopy = new AzCopy({ logLocation: azLogDir });
     if (progressCallback) {
       const cb = (args: ProgressEventArgs) => {
-        progressCallback({ total: args.TotalBytesEnumerated, loaded: args.BytesOverWire, percent: args.BytesOverWire ? (args.BytesOverWire / args.TotalBytesEnumerated) * 100.0 : 0 });
+        progressCallback({ total: +args.TotalBytesExpected, loaded: +args.TotalBytesTransferred, percent: +args.PercentComplete });
       };
 
       azcopy.on("azprogress", cb);
@@ -180,7 +180,7 @@ export class AzureFileHandler implements FileHandler {
       Logger.logInfo(loggerCategory, `AzCopy runtime error: ${args}`);
     });
     // start download by spawning in a azcopy process
-    const rc = await azcopy.copy(source, target);
+    const rc = await azcopy.copy(source, target, undefined, cancelRequest);
     if (rc !== 0) {
       throw new Error(`AzCopy failed with return code: ${rc}`);
     }
@@ -355,7 +355,7 @@ export class AzureFileHandler implements FileHandler {
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
     try {
       if (this.useAzCopyForFileTransfer(fileSize)) {
-        await this.transferFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, progressCallback);
+        await this.transferFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, progressCallback, cancelRequest);
       } else {
         await this.downloadFileUsingHttps(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
       }

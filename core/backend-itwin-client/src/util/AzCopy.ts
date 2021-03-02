@@ -6,6 +6,8 @@
  * @module AzCopy
  */
 
+import { BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
+import { CancelRequest, UserCancelledError } from "@bentley/itwin-client";
 import { execFileSync, spawn } from "child_process";
 import { EventEmitter } from "events";
 import * as fs from "fs";
@@ -78,6 +80,7 @@ export interface StringEventArgs extends MessageEventArgs {
 export interface InitEventArgs extends MessageEventArgs {
   LogFileLocation: string;
   JobID: string;
+  IsCleanupJob: boolean;
 }
 
 /** Args for azprogress and azexit events
@@ -85,19 +88,30 @@ export interface InitEventArgs extends MessageEventArgs {
  */
 export interface ProgressEventArgs extends MessageEventArgs {
   ErrorMsg: string;
+  JobID: string;
   ActiveConnections: number;
   CompleteJobOrdered: boolean;
   JobStatus: string;
-  TotalTransfers: number;
-  TransfersCompleted: number;
-  TransfersFailed: number;
-  TransfersSkipped: number;
-  BytesOverWire: number;
-  TotalBytesTransferred: number;
-  TotalBytesEnumerated: number;
+  TotalTransfers: string;
+  FileTransfers: string;
+  FolderPropertyTransfers: string;
+  TransfersCompleted: string;
+  TransfersFailed: string;
+  TransfersSkipped: string;
+  BytesOverWire: string;
+  TotalBytesTransferred: string;
+  TotalBytesEnumerated: string;
+  TotalBytesExpected: string;
+  PercentComplete: string;
+  AverageIOPS: string;
+  AverageE2EMilliseconds: string;
+  ServerBusyPercentage: string;
+  NetworkErrorPercentage: string;
   FailedTransfers: any[];
   SkippedTransfers?: any;
   PerfConstraint: number;
+  PerformanceAdvice?: any;
+  IsCleanupJob: boolean;
 }
 
 /** Declare typed events
@@ -116,7 +130,7 @@ export declare interface AzCopy {
  */
 export class AzCopy extends EventEmitter {
   private static _resolvedExecPath?: string;
-  private static _minimumAzCopyVersionSupported = "10.1.0";
+  private static _minimumAzCopyVersionSupported = "10.9.0";
   private static _currentAzCopyVersion?: string;
   /** Attempt to initialize azcopy utility class */
   private static init() {
@@ -173,7 +187,7 @@ export class AzCopy extends EventEmitter {
    * @param dest Destination for azcopy. For more read azcopy docs.
    * @param options Options for copy.
    */
-  public async copy(source: string, dest: string, options?: CopyOptions): Promise<number> {
+  public async copy(source: string, dest: string, options?: CopyOptions, cancelRequest?: CancelRequest): Promise<number> {
     AzCopy.init();
     const args = ["copy", `${source}`, `${dest}`, "--output-type=json"];
     if (options) {
@@ -226,6 +240,11 @@ export class AzCopy extends EventEmitter {
     const enableEvents = this.listenerCount("azinit") || this.listenerCount("azinfo") || this.listenerCount("azprogress") || this.listenerCount("azexit") || this.listenerCount("azerror");
     return new Promise<number>((resolve, reject) => {
       const cmd = spawn(AzCopy.execPath, args, { cwd: process.cwd(), env: azenv, stdio: "pipe" });
+
+      let cancelled = false;
+      const onCancel = () => new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
+      cancelRequest && (cancelRequest.cancel = () => { cmd.kill(); return cancelled = true; });
+
       cmd.stdout.setEncoding("utf8");
       cmd.stderr.setEncoding("utf8");
       if (enableEvents) {
@@ -250,13 +269,10 @@ export class AzCopy extends EventEmitter {
         this.emit("azruntimeerror", data);
       });
       cmd.on("exit", (code: number) => {
-        resolve(code);
-      });
-      cmd.on("close", (code: number) => {
-        resolve(code);
+        cancelled ? reject(onCancel()) : resolve(code);
       });
       cmd.on("error", (code: number, _signal: string) => {
-        reject(code);
+        reject(cancelled ? onCancel() : code);
       });
     });
   }
