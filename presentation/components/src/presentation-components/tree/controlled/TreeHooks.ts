@@ -138,13 +138,7 @@ function useModelSourceUpdateOnIModelHierarchyUpdate(props: ModelSourceUpdatePro
         }
       }
     },
-    [
-      dataProvider.rulesetId,
-      dataProvider.imodel.key,
-      rerenderWithTreeModel,
-      modelSource,
-      props.treeNodeItemCreationProps,
-    ],
+    [modelSource, dataProvider, rerenderWithTreeModel, props.treeNodeItemCreationProps],
   );
   useEffect(
     () => {
@@ -299,11 +293,12 @@ function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentati
   if (props.dataProvider) {
     dataProvider = props.dataProvider;
   } else {
-    const { preloadingEnabled: _preloadingEnabled, dataProvider: _dataProvider, ...providerProps } = props;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { preloadingEnabled, dataProvider: testDataProvider, ...providerProps } = props;
     dataProvider = new PresentationTreeDataProvider(providerProps);
   }
   if (props.preloadingEnabled && dataProvider.loadHierarchy) {
-    void dataProvider.loadHierarchy();
+    dataProvider.loadHierarchy(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
   return dataProvider;
 }
