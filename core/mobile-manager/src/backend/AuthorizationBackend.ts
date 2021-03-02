@@ -6,14 +6,14 @@
  * @module OIDC
  */
 
-import { assert, ClientRequestContext, ClientRequestContextProps, Guid } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import { AuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
 import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
- * @alpha
+ * @internal
  */
 export class MobileAuthorizationBackend extends AuthorizationBackend {
   private getRequestContext() { return ClientRequestContext.fromJSON(this.session); }
@@ -78,9 +78,9 @@ export class MobileAuthorizationBackend extends AuthorizationBackend {
 
   /** return accessToken */
   public async getAccessToken(): Promise<AccessToken> {
-    if (this.isAuthorized) {
+    if (this._isAuthorized)
       return this._accessToken!;
-    }
+
     return new Promise<AccessToken>((resolve, reject) => {
       MobileHost.device.authGetAccessToken(this.getRequestContext(), (tokenString?: string, err?: string) => {
         if (!err && tokenString) {
@@ -96,7 +96,7 @@ export class MobileAuthorizationBackend extends AuthorizationBackend {
   /** Set to true if there's a current authorized user or client (in the case of agent applications).
    * Set to true if signed in and the access token has not expired, and false otherwise.
    */
-  public get isAuthorized(): boolean {
+  private get _isAuthorized(): boolean {
     if (!this._accessToken)
       return false;
 
@@ -113,7 +113,7 @@ export class MobileAuthorizationBackend extends AuthorizationBackend {
     if (!this._accessToken)
       return false;
 
-    return !this.isAuthorized;
+    return !this._isAuthorized;
   }
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */

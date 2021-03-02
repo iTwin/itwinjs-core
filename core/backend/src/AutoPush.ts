@@ -216,7 +216,7 @@ export class AutoPush {
   private async getRequestContext(): Promise<AuthorizedBackendRequestContext> {
     // Create or refresh requestContext as necessary
     // todo: replace this logic to check the validity of the accessToken
-    const accessToken = await IModelHost.getAccessToken();
+    const accessToken = await IModelHost.getAccessToken(); // eslint-disable-line deprecation/deprecation
     if (!this._requestContext || this._requestContext.accessToken !== accessToken)
       this._requestContext = new AuthorizedBackendRequestContext(accessToken);
 

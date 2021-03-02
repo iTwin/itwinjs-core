@@ -87,7 +87,7 @@ export class NativeApp {
    * This is called by either ElectronApp.startup or MobileApp.startup - it should not be called directly
    * @internal
    */
-  public static async startup(opts: { ipcApp?: IpcAppOptions, iModelApp?: IModelAppOptions }) {
+  public static async startup(opts: { ipcApp: IpcAppOptions, iModelApp?: IModelAppOptions }) {
     await IpcApp.startup(opts);
     if (this._isValid)
       return;

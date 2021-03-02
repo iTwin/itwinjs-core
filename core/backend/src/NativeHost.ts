@@ -7,16 +7,16 @@
  */
 
 import * as path from "path";
-import { BeEvent, ClientRequestContextProps, Config, GuidString, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContextProps, Config, GuidString } from "@bentley/bentleyjs-core";
 import {
-  AuthorizationConfiguration, BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
+  AuthorizationConfiguration, BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
-import { AuthorizationBackend, IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
+import { IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
 /**
@@ -25,26 +25,20 @@ import { NativeAppStorage } from "./NativeAppStorage";
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
 
-  private getAuthBackend() {
-    const client = IModelHost.authorizationClient;
-    if (!(client instanceof AuthorizationBackend))
-      throw new IModelError(IModelStatus.BadArg, "IModelHost.authorizationClient must be a AuthorizationBackend");
-    return client;
-  }
   private async getAuthContext() {
-    return this.getAuthBackend().getAuthorizedContext();
+    return IpcHost.authorization.getAuthorizedContext();
   }
   public async initializeAuth(props: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
-    return this.getAuthBackend().initialize(props, config);
+    return IpcHost.authorization.initialize(props, config);
   }
   public async signIn(): Promise<void> {
-    return this.getAuthBackend().signIn();
+    return IpcHost.authorization.signIn();
   }
   public async signOut(): Promise<void> {
-    return this.getAuthBackend().signOut();
+    return IpcHost.authorization.signOut();
   }
   public async getAccessTokenProps(): Promise<AccessTokenProps> {
-    return (await this.getAuthBackend().getAccessToken()).toJSON();
+    return (await IpcHost.authorization.getAccessToken()).toJSON();
   }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();

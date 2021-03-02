@@ -12,7 +12,7 @@ import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelHost, IModelHostConfiguration, IpcHandler, IpcHost, NativeHost } from "@bentley/imodeljs-backend";
+import { IModelHostConfiguration, IpcHandler, IpcHost, NativeHost } from "@bentley/imodeljs-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { DesktopAuthorizationBackend } from "../ElectronBackend";
@@ -207,7 +207,7 @@ export class ElectronHost {
       ElectronAppHandler.register();
       opts?.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
-    IModelHost.authorizationClient = new DesktopAuthorizationBackend();
+    IpcHost.authorization = new DesktopAuthorizationBackend();
   }
 
 }

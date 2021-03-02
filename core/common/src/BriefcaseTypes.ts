@@ -29,7 +29,6 @@ export enum DownloadBriefcaseStatus {
  * @public
  */
 export enum SyncMode {
-  /** @deprecated - use checkpoint api */
   FixedVersion = 1,
   /** create a briefcase that can be edited. A unique briefcaseId is assigned by iModelHub */
   PullAndPush = 2,

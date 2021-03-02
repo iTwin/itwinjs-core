@@ -200,6 +200,7 @@ export class IModelHostConfiguration {
  */
 export class IModelHost {
   private constructor() { }
+  /** @deprecated use IpcHost.authorization */
   public static authorizationClient?: AuthorizationClient;
 
   private static _imodelClient?: IModelClient;
@@ -249,12 +250,13 @@ export class IModelHost {
 
   /** Get the active authorization/access token for use with various services
    * @throws [[BentleyError]] if the access token cannot be obtained
+   * @deprecated use IpcHost.authorization
    */
   public static async getAccessToken(requestContext: ClientRequestContext = new BackendRequestContext()): Promise<AccessToken> {
     requestContext.enter();
-    if (!this.authorizationClient)
+    if (!this.authorizationClient)// eslint-disable-line deprecation/deprecation
       throw new BentleyError(AuthStatus.Error, "No AuthorizationClient has been supplied to IModelHost", Logger.logError, loggerCategory);
-    return this.authorizationClient.getAccessToken(requestContext);
+    return this.authorizationClient.getAccessToken(requestContext);// eslint-disable-line deprecation/deprecation
   }
 
   private static get _isNativePlatformLoaded(): boolean {
@@ -307,7 +309,7 @@ export class IModelHost {
 
       // Setup an AuthorizationClientRequestContext if authorization is required for the RPC operation
       let accessToken: AccessToken;
-      if (!IModelHost.authorizationClient) {
+      if (!IModelHost.authorizationClient) {// eslint-disable-line deprecation/deprecation
         // Determine the access token from the frontend request
         accessToken = AccessToken.fromTokenString(serializedContext.authorization);
         const userId = serializedContext.userId;
@@ -315,7 +317,7 @@ export class IModelHost {
           accessToken.setUserInfo(new UserInfo(userId));
       } else {
         // Determine the access token from  the backend's authorization client
-        accessToken = await IModelHost.authorizationClient.getAccessToken();
+        accessToken = await IModelHost.authorizationClient.getAccessToken();// eslint-disable-line deprecation/deprecation
       }
 
       return new AuthorizedClientRequestContext(accessToken, serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);

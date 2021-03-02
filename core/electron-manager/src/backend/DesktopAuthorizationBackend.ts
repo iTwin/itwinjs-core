@@ -28,7 +28,7 @@ const loggerCategory = "electron-backend";
 
 /**
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
- * @alpha
+ * @internal
  */
 export class DesktopAuthorizationBackend extends AuthorizationBackend {
   private _configuration: AuthorizationServiceConfiguration | undefined;
@@ -251,9 +251,8 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
    * Set to true if there's a current authorized user. i.e., the user has signed in, and the access token has not expired.
    * @note Returns true only if the current time is within the configuration specified buffer of time short of the actual expiry.
    */
-  public get isAuthorized(): boolean {
+  private get _isAuthorized(): boolean {
     if (!!this._tokenResponse && this.isValidToken(this._tokenResponse)) {
-      assert(!!this._accessToken);
       return true;
     }
     return false;
