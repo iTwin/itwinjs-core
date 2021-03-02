@@ -23,6 +23,7 @@ import { ZoneDef, ZoneState } from "../zones/ZoneDef";
 import { FrontstageDef } from "./FrontstageDef";
 import { FrontstageActivatedEventArgs, FrontstageManager, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "./FrontstageManager";
 import { ModalFrontstage } from "./ModalFrontstage";
+import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Interface defining callbacks for widget changes
  * @public
@@ -354,6 +355,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           onPointerDown={this._handlePointerDown}
           onPointerUp={this._handlePointerUp}
           style={this.props.style}
+          onKeyDown={onEscapeSetFocusToHome}
+          role="presentation"
         >
           {this.renderModalFrontstage()}
           {content}

@@ -354,6 +354,7 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
       className={className}
       ref={refs}
       style={props.style}
+      role="presentation"
     >
       <StatusBarSpaceBetween className={props.mainClassName}>
         <StatusBarLeftSection className={props.leftClassName}>

@@ -30,6 +30,8 @@ import {
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
+import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
+import { StateTracker } from "../presentation-frontend/StateTracker";
 
 describe("PresentationManager", () => {
 
@@ -122,6 +124,30 @@ describe("PresentationManager", () => {
       const props = { clientId: faker.random.uuid() };
       const mgr = PresentationManager.create(props);
       expect(mgr.rpcRequestsHandler.clientId).to.eq(props.clientId);
+    });
+
+    it("sets custom IpcRequestsHandler if supplied with props", async () => {
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      sinon.stub(IpcApp, "addListener");
+      const handler = moq.Mock.ofType<IpcRequestsHandler>();
+      const props = { ipcRequestsHandler: handler.object };
+      const mgr = PresentationManager.create(props);
+      expect(mgr.ipcRequestsHandler).to.eq(handler.object);
+    });
+
+    it("creates RpcRequestsHandler and IpcRequestsHandler with same client id", async () => {
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      sinon.stub(IpcApp, "addListener");
+      const mgr = PresentationManager.create();
+      expect(mgr.rpcRequestsHandler.clientId).to.eq(mgr.ipcRequestsHandler?.clientId);
+    });
+
+    it("sets custom StateTracker if supplied with props", async () => {
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      sinon.stub(IpcApp, "addListener");
+      const tracker = moq.Mock.ofType<StateTracker>();
+      const mgr = PresentationManager.create({ stateTracker: tracker.object });
+      expect(mgr.stateTracker).to.eq(tracker.object);
     });
 
     it("starts listening to update events", async () => {
@@ -266,6 +292,48 @@ describe("PresentationManager", () => {
         rulesetVariables: [],
         displayType: "",
         keys: keys.toJSON(),
+      }), moq.Times.once());
+    });
+
+  });
+
+  describe("ruleset variables", () => {
+    const variableId = faker.random.word();
+    const variableValue = faker.random.word();
+
+    beforeEach(async () => {
+      await manager.vars(testData.rulesetId).setString(variableId, variableValue);
+    });
+
+    it("injects ruleset variables into request options", async () => {
+      await manager.getNodesCount({  // eslint-disable-line deprecation/deprecation
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+      });
+      rpcRequestsHandlerMock.verify(async (x) => x.getNodesCount({
+        imodel: testData.imodelToken,
+        rulesetOrId: testData.rulesetId,
+        rulesetVariables: [{ id: variableId, value: variableValue, type: VariableValueTypes.String }],
+        parentKey: undefined,
+      }), moq.Times.once());
+    });
+
+    it("does not inject ruleset variables into request options in IpcApp", async () => {
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      sinon.stub(IpcApp, "addListener");
+      manager.dispose();
+      manager = PresentationManager.create({
+        rpcRequestsHandler: rpcRequestsHandlerMock.object,
+      });
+      await manager.getNodesCount({  // eslint-disable-line deprecation/deprecation
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+      });
+      rpcRequestsHandlerMock.verify(async (x) => x.getNodesCount({
+        imodel: testData.imodelToken,
+        rulesetOrId: testData.rulesetId,
+        rulesetVariables: [],
+        parentKey: undefined,
       }), moq.Times.once());
     });
 

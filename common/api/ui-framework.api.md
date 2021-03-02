@@ -6260,9 +6260,6 @@ export class UiFramework {
     static closeCursorMenu(): void;
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
-    // @alpha
-    static get escapeToHome(): boolean;
-    static set escapeToHome(v: boolean);
     // @beta
     static get frameworkState(): FrameworkState | undefined;
     // @beta (undocumented)

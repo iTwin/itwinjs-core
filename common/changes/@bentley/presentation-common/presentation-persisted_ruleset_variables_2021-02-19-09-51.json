@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-common",
+      "comment": "Added PresentationIpcInterface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "24278440+saskliutas@users.noreply.github.com"
+}
