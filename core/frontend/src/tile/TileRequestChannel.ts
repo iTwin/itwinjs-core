@@ -82,7 +82,7 @@ export class TileRequestChannelStatistics {
 export class TileRequestChannel {
   /** The channel's name. It must be unique among all registered [[TileRequestChannels]]. */
   public readonly name: string;
-  private _maxActive: number;
+  private _concurrency: number;
   private readonly _active = new Set<TileRequest>();
   private _pending = new TileRequestQueue();
   private _previouslyPending = new TileRequestQueue();
@@ -90,19 +90,29 @@ export class TileRequestChannel {
 
   /** Create a new channel.
    * @param name The unique name of the channel.
-   * @param maxActiveRequests The maximum number of requests that can be dispatched and awaiting a response at any given time. Requests beyond this maximum are enqueued for deferred dispatch.
+   * @param concurrency The maximum number of requests that can be dispatched and awaiting a response at any given time. Requests beyond this maximum are enqueued for deferred dispatch.
    * @see [[TileRequestChannels.getForHttp]] to create an HTTP-based channel.
    */
-  public constructor(name:  string, maxActiveRequests: number) {
+  public constructor(name:  string, concurrency: number) {
     this.name = name;
-    this._maxActive = maxActiveRequests;
+    this._concurrency = concurrency;
+  }
+
+  /** The maximum number of active requests. This is generally only modified for debugging purposes.
+   * @note When reducing `concurrency`, the number of active requests ([[numActive]]) will only decrease to the new value after a sufficient number of dispatched requests are resolved.
+   */
+  public get concurrency(): number {
+    return this._concurrency;
+  }
+  public set concurrency(max: number) {
+    this._concurrency = max;
   }
 
   /** Adjust the maximum number of active requests. This is intended primarily for debugging.
    * @note If `max` is less the the current value of `numActive`, `numActive` will not decrease to `max` until a sufficient number of dispatched requests are resolved.
    */
-  public setMaxActive(max: number): void {
-    this._maxActive = max;
+  public setconcurrency(max: number): void {
+    this._concurrency = max;
   }
 
   /** The number of requests that have been dispatched and are awaiting a response. */
@@ -194,7 +204,7 @@ export class TileRequestChannel {
     this.processCancellations();
 
     // Dispatch requests from the queue up to our maximum.
-    while (this._active.size < this._maxActive) {
+    while (this._active.size < this._concurrency) {
       const request = this._pending.pop();
       if (!request)
         break;
@@ -359,7 +369,7 @@ export class TileRequestChannels {
    * content from `requestElementGraphics`, use this channel.
    */
   public readonly elementGraphicsRpc: TileRequestChannel;
-  /** @internal */
+  /** The maximum number of active requests for a channel that uses HTTP to request content. */
   public readonly httpConcurrency = 6;
   private _rpcConcurrency: number;
   private readonly _channels = new Map<string, TileRequestChannel>();
@@ -400,6 +410,11 @@ export class TileRequestChannels {
     assert(undefined === this._cloudStorageCache);
     if (!this._cloudStorageCache)
       this.add(this._cloudStorageCache = new CloudStorageCacheChannel("cloudStorageCache", this.httpConcurrency));
+  }
+
+  /** The number of registered channels. */
+  public get size(): number {
+    return this._channels.size;
   }
 
   /** Look up a registered channel by its name. */
@@ -461,8 +476,8 @@ export class TileRequestChannels {
   /** Chiefly for debugging. @internal */
   public setRpcConcurrency(concurrency: number): void {
     this._rpcConcurrency = concurrency;
-    this.iModelTileRpc.setMaxActive(concurrency);
-    this.elementGraphicsRpc.setMaxActive(concurrency);
+    this.iModelTileRpc.concurrency = concurrency;
+    this.elementGraphicsRpc.concurrency = concurrency;
   }
 
   /** Statistics intended primarily for debugging. */
