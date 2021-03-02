@@ -30,10 +30,10 @@ export class RealityMeshPrimitive implements RenderMemory.Consumer {
   }
 
   public static createFromGltfMesh(mesh: GltfMeshData): RealityMeshPrimitive | undefined {
-    if (mesh.props.type !== Mesh.PrimitiveType.Mesh || mesh.edges || !mesh.props.displayParams.textureMapping || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices)
+    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.primitive.displayParams.textureMapping || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.triangleIndices)
       return undefined;     // Simple meshes have only triangles without edges and are textured.
 
-    return new RealityMeshPrimitive(mesh.indices, mesh.pointQParams, mesh.points, mesh.uvQParams, mesh.uvs, mesh.normals, mesh.props.displayParams.textureMapping.texture);
+    return new RealityMeshPrimitive(mesh.triangleIndices, mesh.pointQParams, mesh.points, mesh.uvQParams, mesh.uvs, mesh.normals, mesh.primitive.displayParams.textureMapping.texture);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

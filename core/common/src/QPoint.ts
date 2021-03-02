@@ -68,6 +68,14 @@ export class QParams2d {
     return params;
   }
 
+  /** Return the unquantize point for the input values */
+  public unquantize(x: number, y: number, out?: Point2d): Point2d {
+    const pt: Point2d = undefined !== out ? out : new Point2d();
+    pt.x = Quantization.unquantize(x, this.origin.x, this.scale.x);
+    pt.y = Quantization.unquantize(y, this.origin.y, this.scale.y);
+    return pt;
+  }
+
   /** Creates parameters supporting quantization of values within the range [-1.0, 1.0]. */
   public static fromNormalizedRange(rangeScale = Quantization.rangeScale16) { return QParams2d.fromRange(Range2d.createArray([Point2d.create(-1, -1), Point2d.create(1, 1)]), undefined, rangeScale); }
 
@@ -264,6 +272,15 @@ export class QParams3d {
       this.scale.x = this.scale.y = this.scale.z = 0;
     }
   }
+  /** Return the unquantize point for the input values */
+  public unquantize(x: number, y: number, z: number, out?: Point3d): Point3d {
+    const pt: Point3d = undefined !== out ? out : new Point3d();
+    pt.x = Quantization.unquantize(x, this.origin.x, this.scale.x);
+    pt.y = Quantization.unquantize(y, this.origin.y, this.scale.y);
+    pt.z = Quantization.unquantize(z, this.origin.z, this.scale.z);
+    return pt;
+  }
+
   /** Creates parameters to support quantization of values within the specified range. */
   public static fromRange(range: Range3d, out?: QParams3d, rangeScale = Quantization.rangeScale16) {
     const params = undefined !== out ? out : new QParams3d();
