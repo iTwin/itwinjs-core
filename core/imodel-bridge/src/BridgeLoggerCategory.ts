@@ -16,5 +16,4 @@ export enum BridgeLoggerCategory {
    * - [[BridgeSynchronizer]]
    */
   Framework = "imodel-bridge.Framework",
-
 }

@@ -5,7 +5,6 @@
 
 import { BridgeRunner } from "./BridgeRunner";
 import { IModelHost } from "@bentley/imodeljs-backend";
-// import { ChangesType } from "@bentley/imodelhub-client";
 import { Logger } from "@bentley/bentleyjs-core";
 
 async function run(inputParams: string[]) {

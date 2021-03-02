@@ -46,6 +46,22 @@ export class BridgeRunner {
     synchronize(): Promise<BentleyStatus>;
 }
 
+// @beta (undocumented)
+export interface ChangeResults {
+    id?: Id64String;
+    state: ItemState;
+}
+
+// @beta
+export interface DocumentProperties {
+    attributesJson?: string;
+    changeHistoryJson?: string;
+    desktopURN?: string;
+    docGuid?: string;
+    spatialRootTransformJson?: string;
+    webURN?: string;
+}
+
 // @beta
 export abstract class IModelBridge {
     // (undocumented)
@@ -73,8 +89,43 @@ export abstract class IModelBridge {
     abstract updateExistingData(): Promise<any>;
 }
 
+// @beta
+export enum ItemState {
+    Changed = 2,
+    New = 1,
+    Unchanged = 0
+}
+
+// @beta
+export interface SourceItem {
+    checksum?: string;
+    id: string;
+    version?: string;
+}
+
 // @beta (undocumented)
-export const loggerCategory: string;
+export interface SynchronizationResults {
+    childElements?: SynchronizationResults[];
+    element: Element;
+    itemState: ItemState;
+}
+
+// @beta
+export class Synchronizer {
+    constructor(imodel: IModelDb, _supportsMultipleFilesPerChannel: boolean, _requestContext?: AuthorizedClientRequestContext | undefined);
+    detectChanges(scope: Id64String, sourceKind: string, item: SourceItem): ChangeResults;
+    detectDeletedElements(): void;
+    // (undocumented)
+    readonly imodel: IModelDb;
+    insertResultsIntoIModel(results: SynchronizationResults): IModelStatus;
+    onElementSeen(id: Id64String): void;
+    recordDocument(scope: Id64String, sourceItem: SourceItem, kind?: string, knownUrn?: string): SynchronizationResults;
+    // (undocumented)
+    protected _requestContext?: AuthorizedClientRequestContext | undefined;
+    setExternalSourceAspect(element: Element, itemState: ItemState, scope: Id64String, sourceItem: SourceItem, kind: string): IModelStatus;
+    updateIModel(results: SynchronizationResults, scope: Id64String, sourceItem: SourceItem, kind: string): IModelStatus;
+    updateResultsInIModel(results: SynchronizationResults): IModelStatus;
+    }
 
 
 // (No @packageDocumentation comment for this package)

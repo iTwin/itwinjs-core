@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Framework
+ */
+
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-/** @packageDocumentation
- * @module Framework
- */
 import { ChangesType, LockLevel } from "@bentley/imodelhub-client";
 import {
   BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
@@ -21,9 +22,6 @@ import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
 import { IModelBridge } from "./IModelBridge";
 import { ServerArgs } from "./IModelHubUtils";
 import { Synchronizer } from "./Synchronizer";
-
-/** @beta */
-export const loggerCategory: string = BridgeLoggerCategory.Framework;
 
 /** Arguments that define how a bridge job should be run
  * @beta
@@ -65,7 +63,6 @@ class StaticTokenStore {
  */
 export class BridgeRunner {
   private _bridge?: IModelBridge;
-  // private _ldClient: iModelBridgeLDClient;
 
   private _bridgeArgs: BridgeJobDefArgs;
   private _serverArgs?: ServerArgs | IModelBankArgs;
@@ -119,7 +116,7 @@ export class BridgeRunner {
            * --server-user=abeesh.basheer@bentley.com
            * --server-password=ReplaceMe
            */
-          Logger.logError(loggerCategory, `${line} is not supported`);
+          Logger.logError(BridgeLoggerCategory.Framework, `${line} is not supported`);
       }
     }
 
@@ -155,7 +152,7 @@ export class BridgeRunner {
   public async synchronize(): Promise<BentleyStatus> {
     // If we can't load the bridge, no point in trying anything else;
     if (this._bridgeArgs.bridgeModule === undefined) {
-      throw new IModelError(IModelStatus.BadArg, "Bridge module undefined", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadArg, "Bridge module undefined", Logger.logError, BridgeLoggerCategory.Framework);
     }
 
     if (this._bridgeArgs.sourcePath === undefined) {
@@ -164,7 +161,7 @@ export class BridgeRunner {
 
     await this.loadBridge(this._bridgeArgs.bridgeModule);
     if (this._bridge === undefined) {
-      throw new IModelError(IModelStatus.BadArg, "Failed to load bridge", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadArg, "Failed to load bridge", Logger.logError, BridgeLoggerCategory.Framework);
     }
     await this._bridge.initialize(this._bridgeArgs);
 
@@ -182,7 +179,7 @@ export class BridgeRunner {
 
     await iModelDbBuilder.acquire();
     if (undefined === iModelDbBuilder.imodel || !iModelDbBuilder.imodel.isOpen) {
-      throw new IModelError(IModelStatus.BadModel, "Failed to open imodel", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadModel, "Failed to open imodel", Logger.logError, BridgeLoggerCategory.Framework);
     }
 
     try {
@@ -450,18 +447,18 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
   public async initialize() {
     if (undefined === this._serverArgs.getToken) {
-      throw new IModelError(IModelStatus.BadArg, "getToken() undefined", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadArg, "getToken() undefined", Logger.logError, BridgeLoggerCategory.Framework);
     }
 
     const token = await this._serverArgs.getToken();
     this._requestContext = new AuthorizedClientRequestContext(token, this._activityId, this._bridge.getApplicationId(), this._bridge.getApplicationVersion());
     if (this._requestContext === undefined) {
-      throw new IModelError(IModelStatus.BadRequest, "Failed to instantiate AuthorizedClientRequestContext", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Failed to instantiate AuthorizedClientRequestContext", Logger.logError, BridgeLoggerCategory.Framework);
     }
     assert(this._serverArgs.contextId !== undefined);
     UsageLoggingUtilities.postUserUsage(this._requestContext, this._serverArgs.contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
       .catch((err) => {
-        Logger.logError(loggerCategory, `Could not log user usage for bridge`, () => ({ errorStatus: err.status, errorMessage: err.message }));
+        Logger.logError(BridgeLoggerCategory.Framework, `Could not log user usage for bridge`, () => ({ errorStatus: err.status, errorMessage: err.message }));
       });
   }
 
@@ -482,13 +479,13 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new Error("Must initialize IModelId before using");
     let props: LocalBriefcaseProps;
     if (this._bridgeArgs.argsJson && this._bridgeArgs.argsJson.briefcaseId) {
-      props = await BriefcaseManager.downloadBriefcase(this._requestContext, {briefcaseId: this._bridgeArgs.argsJson.briefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
+      props = await BriefcaseManager.downloadBriefcase(this._requestContext, { briefcaseId: this._bridgeArgs.argsJson.briefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
     } else {
-      props = await BriefcaseManager.downloadBriefcase(this._requestContext, {contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
-      if(this._bridgeArgs.argsJson) {
+      props = await BriefcaseManager.downloadBriefcase(this._requestContext, { contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
+      if (this._bridgeArgs.argsJson) {
         this._bridgeArgs.argsJson.briefcaseId = props.briefcaseId; // don't overwrite other arguments if anything is passed in
       } else {
-        this._bridgeArgs.argsJson= {briefcaseId: props.briefcaseId};
+        this._bridgeArgs.argsJson = { briefcaseId: props.briefcaseId };
       }
     }
     let briefcaseDb: BriefcaseDb | undefined;
@@ -520,7 +517,7 @@ class SnapshotDbBuilder extends IModelDbBuilder {
     }
     this._imodel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: this._bridge.getBridgeName() } });
     if (undefined === this._imodel) {
-      throw new IModelError(IModelStatus.BadModel, `Unable to create empty SnapshotDb at ${filePath}`, Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadModel, `Unable to create empty SnapshotDb at ${filePath}`, Logger.logError, BridgeLoggerCategory.Framework);
     }
 
     const synchronizer = new Synchronizer(this._imodel, this._bridge.supportsMultipleFilesPerChannel());
