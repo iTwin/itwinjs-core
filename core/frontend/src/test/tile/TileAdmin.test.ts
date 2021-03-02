@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { Cartographic, ViewFlagOverrides } from "@bentley/imodeljs-common";
-import { BlankConnection, IModelConnection } from "../../IModelConnection";
+import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport, Viewport } from "../../Viewport";
@@ -17,6 +16,7 @@ import {
   GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
   TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
+import { createBlankConnection } from "../createBlankConnection";
 
 describe("TileAdmin", () => {
   describe("memory limit configuration", () => {
@@ -260,20 +260,11 @@ describe("TileAdmin", () => {
     let imodel1: IModelConnection;
     let imodel2: IModelConnection;
 
-    function createIModel(name: string): IModelConnection {
-      return BlankConnection.create({
-        name,
-        location: Cartographic.fromDegrees(-75.686694, 40.065757, 0),
-        extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-        contextId: Guid.createValue(),
-      });
-    }
-
     beforeEach(async () => {
       await MockRender.App.startup();
       IModelApp.stopEventLoop();
-      imodel1 = createIModel("imodel1");
-      imodel2 = createIModel("imodel2");
+      imodel1 = createBlankConnection("imodel1");
+      imodel2 = createBlankConnection("imodel2");
     });
 
     afterEach(async () => {
