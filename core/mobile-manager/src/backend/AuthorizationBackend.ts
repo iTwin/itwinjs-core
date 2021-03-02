@@ -30,8 +30,8 @@ export class MobileAuthorizationBackend extends NativeAuthorizationBackend {
       if (tokenString) {
         const tokenJson = JSON.parse(tokenString) as AccessTokenProps;
         // Patch user info
-        if (typeof tokenJson._userInfo === undefined)
-          tokenJson._userInfo = { id: "" };
+        if (typeof tokenJson.userInfo === undefined)
+          tokenJson.userInfo = { id: "" };
         token = AccessToken.fromJson(tokenJson);
       }
       NativeHost.onUserStateChanged.raiseEvent(token);

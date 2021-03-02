@@ -11,6 +11,7 @@ import {
   CloudStorageContainerUrl, CloudStorageTileCache, NativeAuthorizationConfiguration, RpcConfiguration, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import { FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
+import { AccessToken } from "@bentley/itwin-client";
 import { MobileAuthorizationFrontend } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -119,8 +120,17 @@ async function signIn(): Promise<boolean> {
   if (oidcClient.isAuthorized)
     return true;
 
-  await oidcClient.signIn(requestContext);
-  return oidcClient.hasSignedIn;
+  const retPromise = new Promise<boolean>((resolve, reject) => {
+    oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
+      resolve(token !== undefined);
+    });
+
+    oidcClient.signIn(requestContext).catch((err) => {
+      reject(err);
+    });
+  });
+
+  return retPromise;
 }
 
 class FakeTileCache extends CloudStorageTileCache {

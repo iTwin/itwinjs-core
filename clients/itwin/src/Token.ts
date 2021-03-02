@@ -43,10 +43,10 @@ class TokenPrefixToTypeContainer {
 
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface AccessTokenProps {
-  _tokenString: string;
-  _startsAt?: string;
-  _expiresAt?: string;
-  _userInfo?: UserInfoProps;
+  tokenString: string;
+  startsAt?: string;
+  expiresAt?: string;
+  userInfo?: UserInfoProps;
 }
 
 /** Token issued by DelegationSecureTokenService for API access
@@ -146,21 +146,22 @@ export class AccessToken {
    * @beta
    */
   public static fromJson(jsonObj: AccessTokenProps): AccessToken {
-    const jwt = jsonObj._tokenString;
-    const startsAt = jsonObj._startsAt !== undefined ? new Date(jsonObj._startsAt) : undefined;
-    const expiresAt = jsonObj._expiresAt !== undefined ? new Date(jsonObj._expiresAt) : undefined;
-    const userInfo = jsonObj._userInfo !== undefined ? UserInfo.fromJson(jsonObj._userInfo) : undefined;
+    const jwt = jsonObj.tokenString;
+    const startsAt = jsonObj.startsAt !== undefined ? new Date(jsonObj.startsAt) : undefined;
+    const expiresAt = jsonObj.expiresAt !== undefined ? new Date(jsonObj.expiresAt) : undefined;
+    const userInfo = jsonObj.userInfo !== undefined ? UserInfo.fromJson(jsonObj.userInfo) : undefined;
     return new AccessToken(jwt, startsAt, expiresAt, userInfo);
   }
 
   public toJSON(): AccessTokenProps {
     return {
-      _tokenString: this._tokenString,
-      _startsAt: this._startsAt?.toJSON(),
-      _expiresAt: this._expiresAt?.toJSON(),
-      _userInfo: this._userInfo,
+      tokenString: this._tokenString,
+      startsAt: this._startsAt?.toJSON(),
+      expiresAt: this._expiresAt?.toJSON(),
+      userInfo: this._userInfo,
     };
   }
+
   /**
    * Creates AccessToken from the typical token responses obtained from Authorization servers
    * - The fields from the token response to different names in AccessToken to keep with naming guidelines
