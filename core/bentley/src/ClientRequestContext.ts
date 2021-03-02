@@ -15,13 +15,13 @@ import { Guid, GuidString } from "./Id";
  */
 export interface SessionProps {
   /** Used for logging and usage tracking to identify the application  */
-  readonly applicationId: string;
+  applicationId: string;
 
   /** Used for logging and usage tracking to identify the application version  */
-  readonly applicationVersion: string;
+  applicationVersion: string;
 
   /** Used for logging to identify a session  */
-  readonly sessionId: GuidString;
+  sessionId: GuidString;
 }
 
 /** The properties of ClientRequestContext.

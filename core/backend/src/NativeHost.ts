@@ -7,7 +7,7 @@
  */
 
 import * as path from "path";
-import { BeEvent, ClientRequestContextProps, Config, GuidString } from "@bentley/bentleyjs-core";
+import { BeEvent, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
   AuthorizationConfiguration, BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
@@ -28,7 +28,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   private async getAuthContext() {
     return IpcHost.authorization.getAuthorizedContext();
   }
-  public async initializeAuth(props: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
+  public async initializeAuth(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {
     return IpcHost.authorization.initialize(props, config);
   }
   public async signIn(): Promise<void> {

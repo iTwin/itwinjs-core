@@ -6,8 +6,8 @@
  * @module OIDC
  */
 
-import { assert, ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
-import { AuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
+import { assert, ClientRequestContext, SessionProps } from "@bentley/bentleyjs-core";
+import { AuthorizationBackend, IModelHost, NativeHost } from "@bentley/imodeljs-backend";
 import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
@@ -16,9 +16,9 @@ import { MobileHost } from "./MobileHost";
  * @internal
  */
 export class MobileAuthorizationBackend extends AuthorizationBackend {
-  private getRequestContext() { return ClientRequestContext.fromJSON(this.session); }
+  private getRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
   /** Used to initialize the client - must be awaited before any other methods are called */
-  public async initialize(props: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
+  public async initialize(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {
     await super.initialize(props, config);
     const requestContext = ClientRequestContext.fromJSON(props);
     if (!this.config.issuerUrl) {

@@ -9,7 +9,7 @@ import {
   AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager, IntrospectionClient,
 } from "@bentley/backend-itwin-client";
 import {
-  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector,
+  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector, SessionProps,
 } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
@@ -228,14 +228,20 @@ export class IModelHost {
   /** Event raised just before the backend IModelHost is to be shut down */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
-  /** A uniqueId for this backend session */
-  public static sessionId: GuidString;
+  /** @internal */
+  public static readonly session: SessionProps;
 
-  /** The Id of this backend application - needs to be set only if it is an agent application. The applicationId will otherwise originate at the frontend. */
-  public static applicationId: string;
+  /** A uniqueId for this session */
+  public static get sessionId() { return this.session.sessionId; }
+  public static set sessionId(id: GuidString) { this.session.sessionId = id; }
 
-  /** The version of this backend application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
-  public static applicationVersion: string;
+  /** The Id of this application - needs to be set only if it is an agent application. The applicationId will otherwise originate at the frontend. */
+  public static get applicationId() { return this.session.applicationId; }
+  public static set applicationId(id: string) { this.session.applicationId = id; }
+
+  /** The version of this application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
+  public static get applicationVersion() { return this.session.applicationVersion; }
+  public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
 
   /** Root of the directory holding all the files that iModel.js caches */
   public static get cacheDir(): string { return this._cacheDir; }
@@ -359,7 +365,7 @@ export class IModelHost {
 
     if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
     if (!IModelHost.applicationVersion) IModelHost.applicationVersion = "1.0.0"; // Default to placeholder version.
-    IModelHost.sessionId = Guid.createValue();
+    if (!IModelHost.sessionId) IModelHost.sessionId = Guid.createValue();
     this.logStartup();
 
     await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.

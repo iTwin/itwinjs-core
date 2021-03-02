@@ -6,9 +6,7 @@
  * @module NativeApp
  */
 
-import {
-  ClientRequestContext, ClientRequestContextProps, Guid, IModelStatus, Logger, LogLevel, OpenMode, SessionProps,
-} from "@bentley/bentleyjs-core";
+import { ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode, SessionProps } from "@bentley/bentleyjs-core";
 import {
   AuthorizationConfiguration, BriefcasePushAndPullNotifications, IModelChangeNotifications, IModelConnectionProps, IModelError, IModelRpcProps,
   IModelVersion, IModelVersionProps, IpcAppChannel, IpcAppFunctions, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
@@ -22,24 +20,22 @@ import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /** @internal */
 export abstract class AuthorizationBackend extends ImsAuthorizationClient {
-  protected _session?: SessionProps;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-  protected get session() { return this._session!; }
-  protected _config?: AuthorizationConfiguration;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-  protected get config() { return this._config!; }
   protected _accessToken?: AccessToken;
+  protected _config?: AuthorizationConfiguration;
+  protected get config(): AuthorizationConfiguration { return this._config!; }
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
-  public async initialize(requestContext: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
-    this._config = config;
-    this._session = { applicationId: requestContext.applicationId, applicationVersion: requestContext.applicationVersion, sessionId: requestContext.sessionId };
-  }
   public get clientConfiguration() { return this._config; }
   public abstract getAccessToken(): Promise<AccessToken>;
-  public getClientRequestContext() { return ClientRequestContext.fromJSON(this.session); }
+  public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
   public async getAuthorizedContext() {
-    return new AuthorizedClientRequestContext(await this.getAccessToken(), Guid.createValue(), this.session.applicationId, this.session.applicationVersion, this.session.sessionId);
+    return new AuthorizedClientRequestContext(await this.getAccessToken(), undefined, IModelHost.applicationId, IModelHost.applicationVersion, IModelHost.sessionId);
+  }
+  public async initialize(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {
+    this._config = config;
+    IModelHost.session.applicationId = props.applicationId;
+    IModelHost.applicationVersion = props.applicationVersion;
+    IModelHost.sessionId = props.sessionId;
   }
 }
 

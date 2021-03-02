@@ -33,7 +33,7 @@ export enum SyncMode {
   /** create a briefcase that can be edited. A unique briefcaseId is assigned by iModelHub */
   PullAndPush = 2,
   /** use [BriefcaseIdValue.Standalone](%backend). This makes a briefcase that can accept changesets from iModelHub but can never create changesets. */
-  PullOnly = 3
+  PullOnly = 3,
 }
 
 /**

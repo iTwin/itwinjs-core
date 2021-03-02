@@ -8,8 +8,8 @@
  * @module Authentication
  */
 
-import { assert, AuthStatus, BentleyError, ClientRequestContext, ClientRequestContextProps, Guid, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger, SessionProps } from "@bentley/bentleyjs-core";
+import { AuthorizationBackend, IModelHost, NativeHost } from "@bentley/imodeljs-backend";
 import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
 import {
@@ -23,7 +23,7 @@ import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequ
 import { ElectronTokenStore } from "./ElectronTokenStore";
 import { LoopbackWebServer } from "./LoopbackWebServer";
 
-const loggerCategory = "electron-backend";
+const loggerCategory = "electron-auth";
 // cSpell:ignore openid appauth signin Pkce Signout
 
 /**
@@ -41,10 +41,9 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
    * Used to initialize the client - must be awaited before any other methods are called.
    * The call attempts a silent sign-if possible.
    */
-  public async initialize(props: ClientRequestContextProps, config: AuthorizationConfiguration): Promise<void> {
+  public async initialize(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {
     await super.initialize(props, config);
     this._tokenStore = new ElectronTokenStore(config.clientId);
-    this._session = { applicationId: props.applicationId, applicationVersion: props.applicationVersion, sessionId: props.sessionId };
 
     const url = await this.getUrl(ClientRequestContext.fromJSON(props));
     const tokenRequestor = new NodeRequestor(); // the Node.js based HTTP client
@@ -175,8 +174,7 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    const session = this._session!;
-    const httpContext = new ClientRequestContext(Guid.createValue(), session.applicationId, session.applicationVersion, session.sessionId);
+    const httpContext = ClientRequestContext.fromJSON(IModelHost.session);
     const response = await httpRequest(httpContext, this._configuration!.userInfoEndpoint!, options);
     return response?.body;
   }

@@ -17,8 +17,6 @@ import {
 import { NodeCrypto } from "@openid/appauth/built/node_support";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 
-const loggerCategory = "electron-backend";
-
 /**
  * Utility to setup a local web server that listens to authorization responses to the browser and make the necessary redirections
  * @internal
@@ -39,7 +37,7 @@ export class ElectronAuthorizationRequestHandler extends AuthorizationRequestHan
    * Makes an authorization request on the system browser
    */
   public async performAuthorizationRequest(serviceConfiguration: AuthorizationServiceConfiguration, authRequest: AuthorizationRequest): Promise<void> {
-    Logger.logTrace(loggerCategory, "Making authorization request", () => ({ serviceConfiguration, authRequest }));
+    Logger.logTrace("electron-auth", "Making authorization request", () => ({ serviceConfiguration, authRequest }));
 
     // Setup a promise to process the authorization response
     this._authorizationPromise = new Promise<AuthorizationRequestResponse>((resolve, _reject) => {
