@@ -109,13 +109,6 @@ export class TileRequestChannel {
     this._concurrency = max;
   }
 
-  /** Adjust the maximum number of active requests. This is intended primarily for debugging.
-   * @note If `max` is less the the current value of `numActive`, `numActive` will not decrease to `max` until a sufficient number of dispatched requests are resolved.
-   */
-  public setconcurrency(max: number): void {
-    this._concurrency = max;
-  }
-
   /** The number of requests that have been dispatched and are awaiting a response. */
   public get numActive(): number {
     return this._active.size;

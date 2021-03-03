@@ -82,11 +82,7 @@ export class TileRequest {
       // Set this now, so our `isCanceled` check can see it.
       this._state = TileRequest.State.Loading;
     } catch (err) {
-      if (err instanceof AbandonedError) {
-        // Content not found in cache and we were cancelled while awaiting that response, so not forwarded to backend.
-        this.notifyAndClear();
-        this._state = TileRequest.State.Failed;
-      } else if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
+      if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();
         this._state = TileRequest.State.Failed;

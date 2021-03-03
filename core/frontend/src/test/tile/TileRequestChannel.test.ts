@@ -16,7 +16,7 @@ import {
 
 class TestTile extends Tile {
   public priority;
-  public requestChannel: TileRequestChannel;
+  public requestChannel: LoggingChannel;
   public requestContentCalled = false;
   public readContentCalled = false;
   private _resolveRequest?: (response: TileRequest.Response) => void;
@@ -24,7 +24,7 @@ class TestTile extends Tile {
   private _resolveRead?: (content: TileContent) => void;
   private _rejectRead?: (error: Error) => void;
 
-  public constructor(tree: TestTree, channel: TileRequestChannel, priority = 0) {
+  public constructor(tree: TestTree, channel: LoggingChannel, priority = 0) {
     super({
       contentId: priority.toString(),
       range: new Range3d(0, 0, 0, 1, 1, 1),
@@ -37,6 +37,18 @@ class TestTile extends Tile {
 
   public expectStatus(expected: TileLoadStatus) {
     expect(this.loadStatus).to.equal(expected);
+  }
+
+  public get awaitingRequest() {
+    return undefined !== this._resolveRequest;
+  }
+
+  public get awaitingRead() {
+    return undefined !== this._resolveRead;
+  }
+
+  public get isActive() {
+    return this.channel.isActive(this);
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
@@ -77,19 +89,19 @@ class TestTile extends Tile {
     this.clearPromises();
   }
 
-  public rejectRequest(error: Error): void {
+  public rejectRequest(error: Error = new Error("requestContent")): void {
     expect(this._rejectRequest).not.to.be.undefined;
     this._rejectRequest!(error);
     this.clearPromises();
   }
 
-  public resolveRead(content: TileContent): void {
+  public resolveRead(content: TileContent = { }): void {
     expect(this._resolveRead).not.to.be.undefined;
     this._resolveRead!(content);
     this.clearPromises();
   }
 
-  public rejectRead(error: Error): void {
+  public rejectRead(error: Error = new Error("readContent")): void {
     expect(this._rejectRead).not.to.be.undefined;
     this._rejectRead!(error);
     this.clearPromises();
@@ -106,7 +118,7 @@ class TestTile extends Tile {
 class TestTree extends TileTree {
   private readonly _rootTile: TestTile;
 
-  public constructor(iModel: IModelConnection, channel: TileRequestChannel, priority = TileLoadPriority.Primary) {
+  public constructor(iModel: IModelConnection, channel: LoggingChannel, priority = TileLoadPriority.Primary) {
     super({
       iModel,
       id: "test",
@@ -168,6 +180,14 @@ class LoggingChannel extends TileRequestChannel {
 
   public get active(): Set<TileRequest> {
     return this._active;
+  }
+
+  public isActive(tile: Tile): boolean {
+    for (const active of this.active)
+      if (active.tile === tile)
+        return true;
+
+    return false;
   }
 
   public recordCompletion(tile: Tile): void {
@@ -286,7 +306,7 @@ describe("TileRequestChannel", () => {
     tree.rootTile.expectStatus(TileLoadStatus.Loading);
 
     channel.clear();
-    tree.rootTile.resolveRead({ });
+    tree.rootTile.resolveRead();
     await processOnce();
     channel.expect(["swapPending", "process", "processCancellations", "recordCompletion"]);
     channel.expectRequests(0, 0);
@@ -310,12 +330,12 @@ describe("TileRequestChannel", () => {
     tiles.forEach((x) => x.expectStatus(x === tiles[0] ? TileLoadStatus.Loading : TileLoadStatus.Queued));
     channel.expectRequests(1, 3);
 
-    tiles[0].resolveRead({ });
+    tiles[0].resolveRead();
     await processOnce();
     tiles.forEach((x) => x.expectStatus(x === tiles[0] ? TileLoadStatus.Ready : TileLoadStatus.Queued));
     channel.expectRequests(2, 2);
 
-    tiles[1].rejectRequest(new Error("1"));
+    tiles[1].rejectRequest();
     await processOnce();
     tiles[1].expectStatus(TileLoadStatus.NotFound);
     tiles.slice(2).forEach((x) => x.expectStatus(TileLoadStatus.Queued));
@@ -333,15 +353,15 @@ describe("TileRequestChannel", () => {
     tiles.slice(2, 4).forEach((x) => x.expectStatus(TileLoadStatus.Loading));
     tiles.slice(4).forEach((x) => x.expectStatus(TileLoadStatus.Queued));
 
-    tiles[2].resolveRead({ });
-    tiles[3].resolveRead({ });
+    tiles[2].resolveRead();
+    tiles[3].resolveRead();
     await processOnce();
     channel.expectRequests(2, 0);
     tiles.slice(2, 4).forEach((x) => x.expectStatus(TileLoadStatus.Ready));
     tiles.slice(4).forEach((x) => x.expectStatus(TileLoadStatus.Queued));
 
-    tiles[4].rejectRequest(new Error("4"));
-    tiles[5].rejectRequest(new Error("5"));
+    tiles[4].rejectRequest();
+    tiles[5].rejectRequest();
     await processOnce();
     channel.expectRequests(0, 0);
     tiles.slice(4).forEach((x) => x.expectStatus(TileLoadStatus.NotFound));
@@ -364,13 +384,12 @@ describe("TileRequestChannel", () => {
     async function waitFor(tile: TestTile) {
       await processOnce();
       expect(channel.numActive).to.equal(1);
-      expect(tile.request).not.to.be.undefined;
-      expect(channel.active.has(tile.request!)).to.be.true;
+      expect(tile.isActive).to.be.true;
       tile.expectStatus(TileLoadStatus.Queued);
       tile.resolveRequest();
       await processOnce();
       tile.expectStatus(TileLoadStatus.Loading);
-      tile.resolveRead({ });
+      tile.resolveRead();
       await processOnce();
       tile.expectStatus(TileLoadStatus.Ready);
     }
@@ -385,7 +404,7 @@ describe("TileRequestChannel", () => {
 
     // t14 is now the actively-loading tile. Enqueue some additional ones. The priorities only apply to the queue, not the active set.
     channel.expectRequests(1, 0);
-    expect(channel.active.has(t14.request!)).to.be.true;
+    expect(t14.isActive).to.be.true;
 
     const t15 = new TestTile(tr1, channel, 5);
     const t03 = new TestTile(tr0, channel, 3);
@@ -405,9 +424,118 @@ describe("TileRequestChannel", () => {
   });
 
   it("cancels requests", async () => {
+    const channel = new LoggingChannel("test", 1);
+    IModelApp.tileAdmin.channels.add(channel);
+    const tree = new TestTree(imodel, channel);
+    const tiles = [0, 1, 2, 3].map((x) => new TestTile(tree, channel, x));
+
+    const vp = mockViewport(1, imodel);
+    requestTiles(vp, tiles);
+    IModelApp.tileAdmin.process();
+    channel.expectRequests(1, 3);
+    expect(tiles[0].awaitingRequest).to.be.true;
+
+    // Cancel all of the requests
+    requestTiles(vp, []);
+    IModelApp.tileAdmin.process();
+
+    // Canceled active requests are not removed until the promise resolves or rejects.
+    channel.expectRequests(1, 0);
+    expect(tiles[0].awaitingRequest).to.be.true;
+    expect(tiles[0].isActive).to.be.true;
+
+    tiles[0].rejectRequest();
+    await processOnce();
+    expect(tiles[0].awaitingRead).to.be.false;
+    tiles[0].expectStatus(TileLoadStatus.NotFound);
+    tiles[0] = new TestTile(tree, channel, 0); // reset to an unloaded tile
+    channel.expectRequests(0, 0);
+    tiles.forEach((x) => x.expectStatus(TileLoadStatus.NotLoaded));
+
+    requestTiles(vp, tiles);
+    await processOnce();
+    expect(tiles[0].isActive).to.be.true;
+
+    requestTiles(vp, tiles.slice(1, 3));
+    tiles[0].rejectRequest();
+    await processOnce();
+    channel.expectRequests(0, 2);
+    tiles[0].expectStatus(TileLoadStatus.NotFound);
+    await processOnce();
+    channel.expectRequests(1, 1);
+    expect(tiles[1].isActive).to.be.true;
+
+    // Cancel all requests.
+    requestTiles(vp, []);
+    IModelApp.tileAdmin.process();
+    channel.expectRequests(1, 0);
+    expect(tiles[1].isActive).to.be.true;
+    expect(tiles[1].awaitingRequest).to.be.true;
+
+    tiles[1].resolveRequest();
+    await processOnce();
+    channel.expectRequests(0, 0);
+    expect(tiles[1].awaitingRequest).to.be.false;
+    // If we've already received a response, we process it even if request was canceled.
+    expect(tiles[1].awaitingRead).to.be.true;
+
+    tiles[1].resolveRead();
+    await processOnce();
+    tiles[1].expectStatus(TileLoadStatus.Ready);
+    tiles.slice(2).forEach((x) => x.expectStatus(TileLoadStatus.NotLoaded));
   });
 
   it("changes max active requests", async () => {
+    const channel = new LoggingChannel("test", 3);
+    IModelApp.tileAdmin.channels.add(channel);
+    const tree = new TestTree(imodel, channel);
+    const tiles = [0, 1, 2, 3, 4].map((x) => new TestTile(tree, channel, x));
+
+    const vp = mockViewport(1, imodel);
+    requestTiles(vp, tiles);
+    IModelApp.tileAdmin.process();
+    channel.expectRequests(3, 2);
+
+    channel.concurrency = 1;
+    await processOnce();
+    channel.expectRequests(3, 2);
+
+    tiles[0].rejectRequest();
+    await processOnce();
+    channel.expectRequests(2, 2);
+
+    tiles[1].resolveRequest();
+    await processOnce();
+    tiles[1].resolveRead();
+    await processOnce();
+    channel.expectRequests(1, 2);
+
+    tiles[2].rejectRequest();
+    await processOnce();
+    channel.expectRequests(0, 2);
+    IModelApp.tileAdmin.process();
+    channel.expectRequests(1, 1);
+
+    tiles[3].rejectRequest();
+    await processOnce();
+    channel.expectRequests(0, 1);
+    IModelApp.tileAdmin.process();
+    channel.expectRequests(1, 0);
+
+    const tile = new TestTile(tree, channel, 5);
+    requestTiles(vp, [tiles[4], tile]);
+    IModelApp.tileAdmin.process();
+    channel.expectRequests(1, 1);
+
+    tiles[4].resolveRequest();
+    await processOnce();
+    tiles[4].resolveRead();
+    await processOnce();
+    channel.expectRequests(1, 0);
+
+    tile.rejectRequest();
+    await processOnce();
+    channel.expectRequests(0 ,0);
   });
 
   it("processes requests", async () => {
