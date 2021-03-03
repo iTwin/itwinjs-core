@@ -58,7 +58,7 @@ const computeTexCoord = "return unquantize2d(a_uvParam, u_qTexCoordParams);";
 const overrideFeatureId = "return addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0;";
 
 function createBuilder(shadowable: IsShadowable): ProgramBuilder {
-  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.TerrainMesh, false));
+  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false));
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
@@ -77,16 +77,16 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
   builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
-      const terrainMesh = params.geometry.asTerrainMesh!;
-      if (undefined !== terrainMesh.uvQParams) {
-        uniform.setUniform4fv(terrainMesh.uvQParams);
+      const realityMesh = params.geometry.asRealityMesh!;
+      if (undefined !== realityMesh.uvQParams) {
+        uniform.setUniform4fv(realityMesh.uvQParams);
       }
     });
   });
 
   builder.frag.addUniform("u_texturesPresent", VariableType.Boolean, (program) => {
     program.addGraphicUniform("u_texturesPresent", (uniform, params) => {
-      const textureCount = params.geometry.asTerrainMesh!.textureParams?.textures.length;
+      const textureCount = params.geometry.asRealityMesh!.textureParams?.textures.length;
       uniform.setUniform1i(textureCount ? 1 : 0);
     });
   });
@@ -95,11 +95,11 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
     const textureLabel = `s_texture${i}`;
     builder.frag.addUniform(textureLabel, VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform(textureLabel, (uniform, params) => {
-        const textureUnits = [TextureUnit.TerrainMesh0, TextureUnit.TerrainMesh1, params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder, TextureUnit.TerrainMesh3, TextureUnit.TerrainMesh4, TextureUnit.TerrainMesh5];
-        const terrainMesh = params.geometry.asTerrainMesh!;
-        const terrainTexture = terrainMesh.textureParams ? terrainMesh.textureParams.textures[i] : undefined;
-        if (terrainTexture !== undefined) {
-          const texture = terrainTexture as Texture;
+        const textureUnits = [TextureUnit.RealityMesh0, TextureUnit.RealityMesh1, params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder, TextureUnit.RealityMesh3, TextureUnit.RealityMesh4, TextureUnit.RealityMesh5];
+        const realityMesh = params.geometry.asRealityMesh!;
+        const realityTexture = realityMesh.textureParams ? realityMesh.textureParams.textures[i] : undefined;
+        if (realityTexture !== undefined) {
+          const texture = realityTexture as Texture;
           texture.texture.bindSampler(uniform, textureUnits[i]);
         } else {
           // assert(false, "Terrain Mesh texture not defined when beginning texture.");
@@ -110,8 +110,8 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
     const paramsLabel = `u_texTransform${i}`;
     builder.frag.addUniform(paramsLabel, VariableType.Mat4, (prog) => {
       prog.addGraphicUniform(paramsLabel, (uniform, params) => {
-        const terrainMesh = params.geometry.asTerrainMesh!;
-        const textureParams = terrainMesh.textureParams;
+        const realityMesh = params.geometry.asRealityMesh!;
+        const textureParams = realityMesh.textureParams;
         assert(undefined !== textureParams);
         if (undefined !== textureParams) {
           uniform.setMatrix4(textureParams.matrices[i]);
@@ -123,12 +123,12 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
 }
 
 /** @internal */
-export default function createTerrainMeshBuilder(flags: TechniqueFlags, _featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
+export default function createRealityMeshBuilder(flags: TechniqueFlags, _featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
   const builder = createBuilder(flags.isShadowable);
   const frag = builder.frag;
   const applyTextureStrings = [];
-  let textureCount = System.instance.maxTerrainImageryLayers;
-  let gradientTextureUnit = TextureUnit.TerrainThematicGradient;
+  let textureCount = System.instance.maxRealityImageryLayers;
+  let gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
   const caps = System.instance.capabilities;
   if (Math.min(caps.maxFragTextureUnits, caps.maxVertTextureUnits) < 16 && IsThematic.Yes === thematic) {
     textureCount--; // steal the last bg map layer texture for thematic gradient (just when thematic display is applied)
@@ -157,8 +157,8 @@ export default function createTerrainMeshBuilder(flags: TechniqueFlags, _feature
   frag.addFunction(addUInt32s);
   builder.frag.addUniform("u_terrainColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_terrainColor", (uniform, params) => {
-      const terrainMesh = params.geometry.asTerrainMesh!;
-      const baseColor = (terrainMesh.baseColor ? terrainMesh.baseColor : ColorDef.create(0xff000000)).colors;
+      const realityMesh = params.geometry.asRealityMesh!;
+      const baseColor = (realityMesh.baseColor ? realityMesh.baseColor : ColorDef.create(0xff000000)).colors;
       uniform.setUniform4fv([baseColor.r / 255, baseColor.g / 255, baseColor.b / 255, 1 - baseColor.t / 255]);
     });
   });

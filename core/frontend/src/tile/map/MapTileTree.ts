@@ -122,7 +122,7 @@ export class MapTileTree extends RealityTileTree {
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
 
   public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings) {
-    const maxLayers = IModelApp.renderSystem.maxTerrainImageryLayers;
+    const maxLayers = IModelApp.renderSystem.maxRealityImageryLayers;
     if (this.imageryTrees.length < maxLayers) {
       this.imageryTrees.push(tree);
       this._layerSettings.set(tree.modelId, settings);

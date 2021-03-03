@@ -422,7 +422,7 @@ export class MapTile extends RealityTile {
       return undefined;
 
     const textures = this.getDrapeTextures();
-    const graphic = IModelApp.renderSystem.createTerrainMeshGraphic(geometry, PackedFeatureTable.pack(this.mapLoader.featureTable), this.contentId, this.mapTree.baseColor, this.mapTree.baseTransparent, textures);
+    const graphic = IModelApp.renderSystem.createRealityMeshGraphic(geometry, PackedFeatureTable.pack(this.mapLoader.featureTable), this.contentId, this.mapTree.baseColor, this.mapTree.baseTransparent, textures);
 
     // We no longer need the drape tiles.
     if (this.imageryIsReady)
@@ -657,7 +657,7 @@ export class UpsampledMapTile extends MapTile {
       const upsample = parentMesh.upsample(parentParameterRange);
       this.adjustHeights(upsample.heightRange.low, upsample.heightRange.high);
       const projection = parent.getProjection(this.heightRange);
-      this._geometry = IModelApp.renderSystem.createTerrainMeshGeometry(upsample.mesh, projection.transformFromLocal);
+      this._geometry = IModelApp.renderSystem.createRealityMeshFromTerrain(upsample.mesh, projection.transformFromLocal);
     }
     return this._geometry;
   }

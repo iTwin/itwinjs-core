@@ -35,7 +35,7 @@ import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
-import createTerrainMeshBuilder from "./glsl/TerrainMesh";
+import createRealityMeshBuilder from "./glsl/TerrainMesh";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { RenderPass } from "./RenderFlags";
@@ -638,22 +638,22 @@ class PointCloudTechnique extends VariedTechnique {
   }
 }
 
-class TerrainMeshTechnique extends VariedTechnique {
+class RealityMeshTechnique extends VariedTechnique {
   private static readonly _numVariants = 32;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(TerrainMeshTechnique._numVariants);
+    super(RealityMeshTechnique._numVariants);
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
           for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
             const flags = scratchTechniqueFlags;
-            const terrainMeshFeatureModes = [FeatureMode.None, FeatureMode.Pick];
-            for (const featureMode of terrainMeshFeatureModes) {
+            const realityMeshFeatureModes = [FeatureMode.None, FeatureMode.Pick];
+            for (const featureMode of realityMeshFeatureModes) {
               flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
               flags.isClassified = iClassified;
               flags.isTranslucent = 1 === iTranslucent;
-              const builder = createTerrainMeshBuilder(flags, featureMode, thematic);
+              const builder = createRealityMeshBuilder(flags, featureMode, thematic);
               if (FeatureMode.Pick === featureMode)
                 addUniformFeatureSymbology(builder, false);
               if (flags.isTranslucent) {
@@ -671,7 +671,7 @@ class TerrainMeshTechnique extends VariedTechnique {
     this.finishConstruction();
   }
 
-  protected get _debugDescription() { return "TerrainMesh"; }
+  protected get _debugDescription() { return "RealityMesh"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     let ndx = 0;
@@ -723,7 +723,7 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.Polyline },
   { techniqueId: TechniqueId.PointString },
   { techniqueId: TechniqueId.PointCloud },
-  { techniqueId: TechniqueId.TerrainMesh },
+  { techniqueId: TechniqueId.RealityMesh },
 
   // The following techniques take a trivial amount of time to compile - do them last
   { techniqueId: TechniqueId.OITClearTranslucent },
@@ -915,7 +915,7 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
-    this._list[TechniqueId.TerrainMesh] = new TerrainMeshTechnique(gl);
+    this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
     if (System.instance.capabilities.supportsFragDepth)
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     else
