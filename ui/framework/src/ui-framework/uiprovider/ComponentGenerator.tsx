@@ -51,30 +51,32 @@ function EditorLabel({ uiDataProvider, item, isLeftmostRecord }: { uiDataProvide
 
 function PropertyEditor({ uiDataProvider, record, isLock, setFocus }: { uiDataProvider: UiLayoutDataProvider, record: PropertyRecord, isLock?: boolean, setFocus?: boolean }) {
   const getLatestRecordValue = React.useCallback(() => {
-    const foundItem = uiDataProvider.items.find((item)=>item.property.name === record.property.name);
+    let newRecord = record;
+    // istanbul ignore next
+    const foundItem = isLock ? uiDataProvider.items.find((item)=>item.lockProperty?.property.name === record.property.name) : uiDataProvider.items.find((item)=>item.property.name === record.property.name);
+    // istanbul ignore else
     if (foundItem){
-      return record.copyWithNewValue({
-        value: foundItem.value.value,
-        valueFormat: PropertyValueFormat.Primitive,
-      });
-    } else {
-      // need to look through lock values for match
+      if (isLock) {
+        newRecord =  record.copyWithNewValue({
+          value: foundItem.lockProperty!.value.value,
+          valueFormat: PropertyValueFormat.Primitive,
+        });
+        newRecord.isDisabled = foundItem.lockProperty!.isDisabled;
+      } else {
+        newRecord =  record.copyWithNewValue({
+          value: foundItem.value.value,
+          valueFormat: PropertyValueFormat.Primitive,
+        });
+        newRecord.isDisabled = foundItem.isDisabled;
+      }
     }
-    return record;
-  }, [record, uiDataProvider.items]);
+    return newRecord;
+  }, [record, isLock, uiDataProvider.items]);
 
   const currentRecord = getLatestRecordValue();
 
-  // const initialRecord = React.useRef(record);
   const isMounted = React.useRef(false);
   const [propertyRecord, setPropertyRecord] = React.useState(currentRecord);
-
-  // React.useEffect(() => {
-  //  if (record !== initialRecord.current) {
-  //    initialRecord.current = record;
-  //    setPropertyRecord(record);
-  //  }
-  // }, [record]);
 
   React.useEffect(() => {
     isMounted.current = true;
