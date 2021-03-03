@@ -4,16 +4,13 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/itwin-client';
 import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
 import { AuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CancelRequest } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { IModelAppOptions } from '@bentley/imodeljs-frontend';
 import { IModelHostConfiguration } from '@bentley/imodeljs-backend';
-import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IpcHostOptions } from '@bentley/imodeljs-backend';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { PromiseReturnType } from '@bentley/imodeljs-frontend';
@@ -113,20 +110,6 @@ export class MobileApp {
     static startup(opts?: {
         iModelApp?: IModelAppOptions;
     }): Promise<void>;
-}
-
-// @alpha
-export class MobileAuthorizationFrontend extends ImsAuthorizationClient implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: AuthorizationConfiguration);
-    getAccessToken(): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
-    signIn(): Promise<void>;
-    signOut(): Promise<void>;
 }
 
 // @beta (undocumented)

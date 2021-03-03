@@ -340,6 +340,7 @@ public;ModelSelectorState
 public;ModelState 
 alpha;ModifyElementSource
 alpha;NativeApp
+alpha;NativeAppAuthorization
 internal;NativeAppLogger
 internal;NoRenderApp
 beta;class NotificationHandler

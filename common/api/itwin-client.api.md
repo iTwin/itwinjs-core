@@ -28,6 +28,7 @@ export class AccessToken {
     // @internal (undocumented)
     getUserInfo(): UserInfo | undefined;
     initFromTokenString(tokenStr: string): void;
+    isExpired(buffer: number): boolean;
     // (undocumented)
     protected _prefix: string;
     // (undocumented)

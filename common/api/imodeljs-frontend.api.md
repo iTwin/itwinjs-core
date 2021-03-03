@@ -10,6 +10,7 @@ import { AnalysisStyle } from '@bentley/imodeljs-common';
 import { Angle } from '@bentley/geometry-core';
 import { AngleSweep } from '@bentley/geometry-core';
 import { Arc3d } from '@bentley/geometry-core';
+import { AuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
@@ -236,6 +237,7 @@ import { RgbColor } from '@bentley/imodeljs-common';
 import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
 import { SectionDrawingViewProps } from '@bentley/imodeljs-common';
+import { SessionProps } from '@bentley/bentleyjs-core';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SilhouetteEdgeArgs } from '@bentley/imodeljs-common';
@@ -2411,6 +2413,7 @@ export type DownloadBriefcaseId = {
 // @beta
 export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
     fileName?: string;
+    progressInterval?: number;
 };
 
 // @alpha
@@ -6300,6 +6303,21 @@ export class NativeApp {
     }): Promise<void>;
     }
 
+// @alpha
+export class NativeAppAuthorization {
+    constructor(clientConfiguration: AuthorizationConfiguration);
+    getAccessToken(): Promise<AccessToken>;
+    // (undocumented)
+    hasSignedIn: boolean;
+    initialize(props: SessionProps): Promise<void>;
+    // (undocumented)
+    get isAuthorized(): boolean;
+    // (undocumented)
+    readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
+    signIn(): Promise<void>;
+    signOut(): Promise<void>;
+}
+
 // @internal
 export class NativeAppLogger {
     // (undocumented)
@@ -6500,9 +6518,9 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
     initialize(requestContext: FrontendRequestContext): Promise<void>;
     get isAuthorized(): boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
+    signIn(requestContext?: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
     protected signInSilent(requestContext: ClientRequestContext): Promise<User>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext?: ClientRequestContext): Promise<void>;
     }
 
 // @internal

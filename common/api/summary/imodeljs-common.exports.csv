@@ -274,6 +274,7 @@ beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
 internal;IpcAppChannel
 internal;IpcAppFunctions
+internal;IpcAppNotifications
 internal;IpcInvokeReturn =
 beta;IpcListener = (evt: Event, ...args: any[]) => void
 beta;IpcSocket

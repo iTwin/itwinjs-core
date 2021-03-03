@@ -104,6 +104,7 @@ import { IndexedPolyface } from '@bentley/geometry-core';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { IntrospectionClient } from '@bentley/backend-itwin-client';
+import { IpcAppNotifications } from '@bentley/imodeljs-common';
 import { IpcListener } from '@bentley/imodeljs-common';
 import { IpcSocketBackend } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
@@ -236,19 +237,25 @@ export abstract class AuthorizationBackend extends ImsAuthorizationClient {
     // (undocumented)
     protected _accessToken?: AccessToken;
     // (undocumented)
-    get clientConfiguration(): AuthorizationConfiguration | undefined;
-    // (undocumented)
-    protected get config(): AuthorizationConfiguration;
+    get config(): AuthorizationConfiguration;
     // (undocumented)
     protected _config?: AuthorizationConfiguration;
     // (undocumented)
-    abstract getAccessToken(): Promise<AccessToken>;
+    protected _expireSafety: number;
+    // (undocumented)
+    getAccessToken(): Promise<AccessToken>;
     // (undocumented)
     getAuthorizedContext(): Promise<AuthorizedClientRequestContext>;
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
     initialize(props: SessionProps, config: AuthorizationConfiguration): Promise<void>;
+    // (undocumented)
+    get isAuthorized(): boolean;
+    // (undocumented)
+    abstract refreshToken(): Promise<AccessToken>;
+    // (undocumented)
+    setAccessToken(token?: AccessToken): void;
     // (undocumented)
     abstract signIn(): Promise<void>;
     // (undocumented)
@@ -2694,7 +2701,7 @@ export class IModelHost {
     static set applicationId(id: string);
     static get applicationVersion(): string;
     static set applicationVersion(version: string);
-    // @deprecated (undocumented)
+    // (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
     static backendVersion: string;
@@ -2707,8 +2714,7 @@ export class IModelHost {
     static configuration?: IModelHostConfiguration;
     // @internal
     static elementEditors: Map<string, IElementEditor>;
-    // @deprecated
-    static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    static getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // (undocumented)
@@ -3030,7 +3036,7 @@ export abstract class IpcHandler {
 export class IpcHost {
     static addListener(channel: string, listener: IpcListener): RemoveFunction;
     // @internal (undocumented)
-    static authorization: AuthorizationBackend;
+    static get authorization(): AuthorizationBackend;
     static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static get isValid(): boolean;
     // (undocumented)
@@ -3038,7 +3044,10 @@ export class IpcHost {
     // @internal (undocumented)
     static notifyIModelChanges<T extends keyof IModelChangeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<IModelChangeNotifications[T]>): void;
     // @internal (undocumented)
+    static notifyIpcFrontend<T extends keyof IpcAppNotifications>(methodName: T, ...args: Parameters<IpcAppNotifications[T]>): void;
+    // @internal (undocumented)
     static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>): void;
+    static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
     // (undocumented)
@@ -3350,7 +3359,6 @@ export class NativeHost {
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
-    static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
     static shutdown(): Promise<void>;
     static startup(opt?: {

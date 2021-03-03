@@ -4059,6 +4059,8 @@ export type InterpolationFunction = (v: any, k: number) => number;
 // @internal (undocumented)
 export enum IpcAppChannel {
     // (undocumented)
+    AppNotify = "ipcApp-notify",
+    // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
     IModelChanges = "imodel-changes",
@@ -4090,6 +4092,12 @@ export interface IpcAppFunctions {
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
     toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
+}
+
+// @internal
+export interface IpcAppNotifications {
+    // (undocumented)
+    notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
 }
 
 // @internal
@@ -4704,7 +4712,7 @@ export interface NativeAppFunctions {
     acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
     checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
     deleteBriefcaseFiles: (_fileName: string) => Promise<void>;
-    downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean) => Promise<LocalBriefcaseProps>;
+    downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number) => Promise<LocalBriefcaseProps>;
     // (undocumented)
     getAccessTokenProps: () => Promise<AccessTokenProps>;
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
@@ -4712,6 +4720,8 @@ export interface NativeAppFunctions {
     getConfig: () => Promise<any>;
     // (undocumented)
     initializeAuth: (props: ClientRequestContextProps, config: AuthorizationConfiguration) => Promise<void>;
+    // (undocumented)
+    loginForTests: (token: AccessTokenProps) => Promise<void>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
     signIn: () => Promise<void>;
@@ -4730,8 +4740,6 @@ export interface NativeAppFunctions {
 export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
-    // (undocumented)
-    notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
 }
 
 // @internal (undocumented)
