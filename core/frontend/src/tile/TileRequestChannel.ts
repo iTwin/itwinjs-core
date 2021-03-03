@@ -83,7 +83,8 @@ export class TileRequestChannel {
   /** The channel's name. It must be unique among all registered [[TileRequestChannels]]. */
   public readonly name: string;
   private _concurrency: number;
-  private readonly _active = new Set<TileRequest>();
+  /** Protected strictly for tests. @internal */
+  protected readonly _active = new Set<TileRequest>();
   private _pending = new TileRequestQueue();
   private _previouslyPending = new TileRequestQueue();
   protected _statistics = new TileRequestChannelStatistics();

@@ -166,6 +166,10 @@ class LoggingChannel extends TileRequestChannel {
     expect(this.numPending).to.equal(pending);
   }
 
+  public get active(): Set<TileRequest> {
+    return this._active;
+  }
+
   public recordCompletion(tile: Tile): void {
     this.log("recordCompletion");
     super.recordCompletion(tile);
@@ -344,6 +348,60 @@ describe("TileRequestChannel", () => {
   });
 
   it("dispatches requests in order by priority", async () => {
+    const channel = new LoggingChannel("test", 1);
+    IModelApp.tileAdmin.channels.add(channel);
+    const tr0 = new TestTree(imodel, channel, TileLoadPriority.Dynamic);
+    const tr1 = new TestTree(imodel, channel, TileLoadPriority.Terrain);
+
+    const t00 = new TestTile(tr0, channel, 0);
+    const t04 = new TestTile(tr0, channel, 4);
+    const t10 = new TestTile(tr1, channel, 0);
+    const t14 = new TestTile(tr1, channel, 4);
+
+    const vp = mockViewport(1, imodel);
+    requestTiles(vp, [t10, t04, t00, t14 ]);
+
+    async function waitFor(tile: TestTile) {
+      await processOnce();
+      expect(channel.numActive).to.equal(1);
+      expect(tile.request).not.to.be.undefined;
+      expect(channel.active.has(tile.request!)).to.be.true;
+      tile.expectStatus(TileLoadStatus.Queued);
+      tile.resolveRequest();
+      await processOnce();
+      tile.expectStatus(TileLoadStatus.Loading);
+      tile.resolveRead({ });
+      await processOnce();
+      tile.expectStatus(TileLoadStatus.Ready);
+    }
+
+    await processOnce();
+    channel.expectRequests(1, 3);
+    await waitFor(t00);
+    channel.expectRequests(1, 2);
+    await waitFor(t04);
+    channel.expectRequests(1, 1);
+    await waitFor(t10);
+
+    // t14 is now the actively-loading tile. Enqueue some additional ones. The priorities only apply to the queue, not the active set.
+    channel.expectRequests(1, 0);
+    expect(channel.active.has(t14.request!)).to.be.true;
+
+    const t15 = new TestTile(tr1, channel, 5);
+    const t03 = new TestTile(tr0, channel, 3);
+    const t12 = new TestTile(tr1, channel, 2);
+    requestTiles(vp, [t14, t15, t03, t12]);
+
+    await processOnce();
+    channel.expectRequests(1, 3);
+    await waitFor(t14);
+    channel.expectRequests(1, 2);
+    await waitFor(t03);
+    channel.expectRequests(1, 1);
+    await waitFor(t12);
+    channel.expectRequests(1, 0);
+    await waitFor(t15);
+    channel.expectRequests(0, 0);
   });
 
   it("cancels requests", async () => {
