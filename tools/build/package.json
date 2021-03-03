@@ -16,7 +16,7 @@
     "build": "tsc 1>&2 && npm run copy:rules",
     "clean": "rimraf tslint-rules ../../modules .rush/temp/package-deps*.json",
     "docs": "",
-    "lint": "",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "cover": ""
   },
@@ -30,7 +30,6 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/eslint-plugin": "2.14.0-dev.5",
     "@microsoft/api-extractor": "7.7.3",
     "chai": "^4.1.2",
     "chalk": "^3.0.0",
@@ -59,6 +58,17 @@
     "yargs": "^16.0.0"
   },
   "devDependencies": {
-    "@types/node": "10.14.1"
+    "@bentley/eslint-plugin": "2.14.0-dev.5",
+    "@types/node": "10.14.1",
+    "eslint": "^6.8.0"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended",
+    "rules": {
+      "deprecation/deprecation": "off"
+    }
   }
 }
