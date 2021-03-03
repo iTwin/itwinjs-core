@@ -52,9 +52,10 @@ export enum RpcRequestStatus {
   GatewayTimeout
 }
 
-export namespace RpcRequestStatus {
+/** @public */
+export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no-redeclare
   export function isTransientError(status: RpcRequestStatus) {
-    return status === RpcRequestStatus.BadGateway || status == RpcRequestStatus.ServiceUnavailable || status === RpcRequestStatus.GatewayTimeout;
+    return status === RpcRequestStatus.BadGateway || status === RpcRequestStatus.ServiceUnavailable || status === RpcRequestStatus.GatewayTimeout;
   }
 }
 

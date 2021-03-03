@@ -170,12 +170,12 @@ export class WebAppRpcRequest extends RpcRequest {
   protected computeRetryAfter(attempts: number): number {
     const retryAfter = this._response && this._response.headers.get("Retry-After");
     if (retryAfter) {
-      let r = Number(retryAfter);
+      const r = Number(retryAfter);
       if (Number.isFinite(r)) {
         return r * 1000;
       }
 
-      let d = Date.parse(retryAfter);
+      const d = Date.parse(retryAfter);
       if (!Number.isNaN(d)) {
         return d - Date.now();
       }

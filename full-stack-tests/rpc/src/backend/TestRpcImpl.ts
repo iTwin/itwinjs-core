@@ -243,8 +243,6 @@ export class WebRoutingInterfaceImpl extends RpcInterface implements WebRoutingI
   }
 }
 
-
-
 TestRpcImpl.register();
 TestRpcImpl3.register();
 TestZeroMajorRpcImpl.register();

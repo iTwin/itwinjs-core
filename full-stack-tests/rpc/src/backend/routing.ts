@@ -5,7 +5,7 @@
 import { BentleyCloudRpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "@bentley/imodeljs-common";
 
 export function initializeWebRoutingTest(protocol: BentleyCloudRpcProtocol) {
-  const realFulfill = protocol.fulfill;
+  const realFulfill = protocol.fulfill; // eslint-disable-line @typescript-eslint/unbound-method
   const interceptions = new Map<number, number>();
 
   protocol.fulfill = async (request: SerializedRpcRequest) => {

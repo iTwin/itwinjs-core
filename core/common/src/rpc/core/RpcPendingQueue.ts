@@ -70,7 +70,7 @@ export class RpcPendingQueue {
     ++this._pendingLock;
 
     for (const request of this._pending) {
-      let retry = request.retryAfter ?? request.retryInterval;
+      const retry = request.retryAfter ?? request.retryInterval;
       if (request.connecting || (request.lastSubmitted + retry) > now) {
         continue;
       }
