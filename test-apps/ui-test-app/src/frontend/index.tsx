@@ -6,7 +6,7 @@ import "./index.scss";
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
 import * as React from "react";
-import reactAxe from "react-axe";
+import reactAxe from "@axe-core/react";
 import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,

@@ -2089,7 +2089,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    private pollTileContent(resolve: (arg0: Uint8Array) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
+    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
       requestContext.enter();
 
       let ret;
@@ -2119,7 +2119,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           Logger.logWarning(loggerCategory, "Tile load time (in seconds) greater than specified threshold", () => ({ loadTime, loadTimeThreshold, treeId, tileId, iModelId }));
         }
 
-        resolve(res.content);
+        resolve(res);
       } else { // if the type is a number, it's the TileContentState enum
         // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
         setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId, requestContext), 10);
@@ -2127,10 +2127,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** @internal */
-    public async requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array> {
+    public async requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<IModelJsNative.TileContent> {
       requestContext.enter();
 
-      return new Promise<Uint8Array>((resolve, reject) => {
+      return new Promise<IModelJsNative.TileContent>((resolve, reject) => {
         this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
       });
     }
