@@ -1860,6 +1860,7 @@ export enum PropertyGroupingValue {
 export interface PropertyInfo {
     classInfo: ClassInfo;
     enumerationInfo?: EnumerationInfo;
+    extendedType?: string;
     // @alpha
     kindOfQuantity?: KindOfQuantityInfo;
     name: string;
