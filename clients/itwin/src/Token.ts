@@ -94,6 +94,12 @@ export class AccessToken {
     this._prefix = prefix;
   }
 
+  /** returns true if this token has expired
+   * @param buffer amount of time in milliseconds to return true before the real expiration time.
+   */
+  public isExpired(buffer: number) {
+    return (undefined !== this._expiresAt) && (this._expiresAt.getTime() - buffer >= Date.now());
+  }
   /**
    * Convert this AccessToken to a string that can be passed across the wire
    * Users should overwrite this method in a subclass of AccessToken if their token is not converted to a string in this way.

@@ -7,6 +7,7 @@
  */
 
 import { IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { AccessTokenProps } from "@bentley/itwin-client";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
@@ -53,8 +54,17 @@ export interface TileTreeContentIds {
 /** @internal */
 export enum IpcAppChannel {
   Functions = "ipc-app",
+  AppNotify = "ipcApp-notify",
   IModelChanges = "imodel-changes",
   PushPull = "push-pull",
+}
+
+/**
+ * Interface implemented by the frontend [NotificationHandler]($common) to be notified of events from NativeApp backend.
+ * @internal
+ */
+export interface IpcAppNotifications {
+  notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
 }
 
 /**

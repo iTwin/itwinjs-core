@@ -30,9 +30,8 @@ export class TestUtility {
       this.imodelCloudEnv = new IModelHubCloudEnv();
     }
 
-    const requestContext = new ClientRequestContext();
     const authorizationClient = this.imodelCloudEnv.getAuthorizationClient(undefined, user);
-    await authorizationClient.signIn(requestContext);
+    await authorizationClient.signIn();
     const accessToken = await authorizationClient.getAccessToken();
 
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {

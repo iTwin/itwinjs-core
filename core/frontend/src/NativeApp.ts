@@ -28,7 +28,7 @@ export type DownloadBriefcaseId =
 * Options to download a briefcase
 * @beta
 */
-export type DownloadBriefcaseOptions = DownloadBriefcaseId & { fileName?: string };
+export type DownloadBriefcaseOptions = DownloadBriefcaseId & { fileName?: string, progressInterval?: number };
 
 /** receive notifications from backend */
 class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNotifications {
@@ -36,9 +36,6 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
   public notifyInternetConnectivityChanged(status: InternetConnectivityStatus) {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
-  }
-  public notifyUserStateChanged(props?: AccessTokenProps) {
-    IModelApp.authorizationClient?.onUserStateChanged.raiseEvent(props ? AccessToken.fromJson(props) : undefined);
   }
 }
 
@@ -133,7 +130,7 @@ export class NativeApp {
 
     const doDownload = async (): Promise<void> => {
       try {
-        await this.callNativeHost("downloadBriefcase", requestProps, progress !== undefined);
+        await this.callNativeHost("downloadBriefcase", requestProps, progress !== undefined, downloadOptions.progressInterval);
       } finally {
         stopProgressEvents();
       }

@@ -6,8 +6,8 @@
  * @module OIDC
  */
 
-import { assert, ClientRequestContext, SessionProps } from "@bentley/bentleyjs-core";
-import { AuthorizationBackend, IModelHost, NativeHost } from "@bentley/imodeljs-backend";
+import { ClientRequestContext, SessionProps } from "@bentley/bentleyjs-core";
+import { AuthorizationBackend, IModelHost } from "@bentley/imodeljs-backend";
 import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
@@ -17,13 +17,15 @@ import { MobileHost } from "./MobileHost";
  */
 export class MobileAuthorizationBackend extends AuthorizationBackend {
   private getRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
+
   /** Used to initialize the client - must be awaited before any other methods are called */
   public async initialize(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {
     await super.initialize(props, config);
+
     const requestContext = ClientRequestContext.fromJSON(props);
-    if (!this.config.issuerUrl) {
+    if (!this.config.issuerUrl)
       this.config.issuerUrl = await this.getUrl(requestContext);
-    }
+
     MobileHost.device.authStateChanged = (tokenString?: string) => {
       let token: AccessToken | undefined;
       if (tokenString) {
@@ -36,7 +38,7 @@ export class MobileAuthorizationBackend extends AuthorizationBackend {
 
         token = AccessToken.fromJson(tokenJson);
       }
-      NativeHost.onUserStateChanged.raiseEvent(token);
+      this.setAccessToken(token);
     };
 
     return new Promise<void>((resolve, reject) => {
@@ -77,47 +79,15 @@ export class MobileAuthorizationBackend extends AuthorizationBackend {
   }
 
   /** return accessToken */
-  public async getAccessToken(): Promise<AccessToken> {
-    if (this._isAuthorized)
-      return this._accessToken!;
-
+  public async refreshToken(): Promise<AccessToken> {
     return new Promise<AccessToken>((resolve, reject) => {
       MobileHost.device.authGetAccessToken(this.getRequestContext(), (tokenString?: string, err?: string) => {
         if (!err && tokenString) {
-          this._accessToken = AccessToken.fromJson(JSON.parse(tokenString) as AccessTokenProps);
-          resolve(this._accessToken);
+          resolve(AccessToken.fromJson(JSON.parse(tokenString) as AccessTokenProps));
         } else {
           reject(new Error(err));
         }
       });
     });
-  }
-
-  /** Set to true if there's a current authorized user or client (in the case of agent applications).
-   * Set to true if signed in and the access token has not expired, and false otherwise.
-   */
-  private get _isAuthorized(): boolean {
-    if (!this._accessToken)
-      return false;
-
-    const expiresAt = this._accessToken.getExpiresAt();
-    assert(!!expiresAt, "Invalid token in MobileAuthorizationClient");
-    if (expiresAt.getTime() - Date.now() > (this.clientConfiguration!.expiryBuffer || 60 * 10) * 1000)
-      return true;
-
-    return false;
-  }
-
-  /** Set to true if the user has signed in, but the token has expired and requires a refresh */
-  public get hasExpired(): boolean {
-    if (!this._accessToken)
-      return false;
-
-    return !this._isAuthorized;
-  }
-
-  /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
-  public get hasSignedIn(): boolean {
-    return !!this._accessToken; // Always silently refreshed
   }
 }

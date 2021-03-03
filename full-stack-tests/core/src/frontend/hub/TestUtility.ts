@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContext, Guid, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Guid, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
@@ -30,9 +30,8 @@ export class TestUtility {
       this.imodelCloudEnv = new IModelHubCloudEnv();
     }
 
-    const requestContext = new ClientRequestContext();
     const authorizationClient = this.imodelCloudEnv.getAuthorizationClient(undefined, user);
-    await authorizationClient.signIn(requestContext);
+    await authorizationClient.signIn();
     const accessToken = await authorizationClient.getAccessToken();
 
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {

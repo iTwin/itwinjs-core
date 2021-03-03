@@ -124,8 +124,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Alias for signInRedirect needed to satisfy [[FrontendAuthorizationClient]]
    * @param requestContext
    */
-  public async signIn(requestContext: ClientRequestContext): Promise<void> {
-    return this.signInRedirect(requestContext);
+  public async signIn(): Promise<void> {
+    return this.signInRedirect(new ClientRequestContext());
   }
 
   /**
@@ -243,8 +243,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Alias for signOutRedirect
    * @param requestContext
    */
-  public async signOut(requestContext: ClientRequestContext): Promise<void> {
-    await this.signOutRedirect(requestContext);
+  public async signOut(): Promise<void> {
+    await this.signOutRedirect(new ClientRequestContext());
   }
 
   public async signOutRedirect(requestContext: ClientRequestContext): Promise<void> {

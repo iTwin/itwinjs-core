@@ -8,8 +8,8 @@
  * @module Authentication
  */
 
-import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger, SessionProps } from "@bentley/bentleyjs-core";
-import { AuthorizationBackend, IModelHost, NativeHost } from "@bentley/imodeljs-backend";
+import { AuthStatus, BentleyError, ClientRequestContext, Logger, SessionProps } from "@bentley/bentleyjs-core";
+import { AuthorizationBackend, IModelHost } from "@bentley/imodeljs-backend";
 import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
 import {
@@ -57,6 +57,13 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
     await this.loadAccessToken();
   }
 
+  public async refreshToken(): Promise<AccessToken> {
+    if (this._tokenResponse === undefined || this._tokenResponse.refreshToken === undefined)
+      throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggerCategory);
+
+    return this.refreshAccessToken(this._tokenResponse.refreshToken);
+  }
+
   /** Loads the access token from the store, and refreshes it if necessary and possible
    * @return AccessToken if it's possible to get a valid access token, and undefined otherwise.
    */
@@ -66,11 +73,10 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
       return undefined;
     try {
       Logger.logTrace(loggerCategory, "Refreshing token from storage");
-      await this.refreshAccessToken(tokenResponse.refreshToken);
+      return await this.refreshAccessToken(tokenResponse.refreshToken);
     } catch (err) {
       return undefined;
     }
-    return this._accessToken!;
   }
 
   /**
@@ -86,12 +92,12 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
     // Attempt to load the access token from store
-    await this.loadAccessToken();
-    if (this._accessToken)
-      return;
+    const token = await this.loadAccessToken();
+    if (token)
+      return this.setAccessToken(token);
 
     // Create the authorization request
-    const nativeConfig = this.config;
+    const nativeConfig = this._config!;
     const authReqJson: AuthorizationRequestJson = {
       client_id: nativeConfig.clientId, // eslint-disable-line @typescript-eslint/naming-convention
       redirect_uri: nativeConfig.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
@@ -124,7 +130,10 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
 
       authorizationEvents.onAuthorizationResponseCompleted.raiseEvent(authError ? authError : undefined);
 
-      await this.setTokenResponse(tokenResponse);
+      if (!tokenResponse)
+        await this.clearTokenResponse();
+      else
+        this.setAccessToken(await this.setTokenResponse(tokenResponse));
     });
 
     // Start the signin
@@ -193,80 +202,22 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
     return AccessToken.fromTokenResponseJson(json, profile);
   }
 
-  private async setTokenResponse(tokenResponse: TokenResponse | undefined) {
-    if (tokenResponse === undefined) {
-      this._tokenResponse = undefined;
-      this._accessToken = undefined;
-      await this.tokenStore.delete();
-      NativeHost.onUserStateChanged.raiseEvent(this._accessToken);
-      return;
-    }
-
-    const accessToken = await this.createAccessTokenFromResponse(tokenResponse);
-    this._tokenResponse = tokenResponse;
-    this._accessToken = accessToken;
-    await this.tokenStore.save(this._tokenResponse);
-    NativeHost.onUserStateChanged.raiseEvent(this._accessToken);
+  private async clearTokenResponse() {
+    this._tokenResponse = undefined;
+    await this.tokenStore.delete();
   }
 
-  private isValidToken(tokenResponse: TokenResponse): boolean {
-    const buffer = this.clientConfiguration!.expiryBuffer || 60 * 10;
-    return tokenResponse.isValid(-buffer);
+  private async setTokenResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
+    const accessToken = await this.createAccessTokenFromResponse(tokenResponse);
+    this._tokenResponse = tokenResponse;
+    await this.tokenStore.save(this._tokenResponse);
+    return accessToken;
   }
 
   private async refreshAccessToken(refreshToken: string): Promise<AccessToken> {
     const tokenResponse = await this.makeRefreshAccessTokenRequest(refreshToken);
-
     Logger.logTrace(loggerCategory, "Refresh token completed, and issued access token");
-    await this.setTokenResponse(tokenResponse);
-
-    assert(!!this._accessToken);
-    return this._accessToken;
-  }
-
-  /** Returns a promise that resolves to the AccessToken of the currently authorized user.
- * - The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
- * - The token is refreshed if it's possible and necessary.
- * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
- * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
- * @throws [[BentleyError]] If signIn() was not called, or there was an authorization error.
- */
-  public async getAccessToken(): Promise<AccessToken> {
-    // Ensure user is signed in
-    if (this._tokenResponse === undefined || this._tokenResponse.refreshToken === undefined)
-      throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggerCategory);
-
-    // Refresh token if necessary
-    if (!this.isValidToken(this._tokenResponse)) {
-      await this.refreshAccessToken(this._tokenResponse.refreshToken);
-    }
-
-    assert(this.isValidToken(this._tokenResponse) && !!this._accessToken);
-    return this._accessToken;
-  }
-
-  /**
-   * Set to true if there's a current authorized user. i.e., the user has signed in, and the access token has not expired.
-   * @note Returns true only if the current time is within the configuration specified buffer of time short of the actual expiry.
-   */
-  private get _isAuthorized(): boolean {
-    if (!!this._tokenResponse && this.isValidToken(this._tokenResponse)) {
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Set to true if the user has signed in, but the token has expired and requires a refresh
-   * @note Returns true if the current time is beyond or within the configuration specified buffer of time short of the actual expiry.
-   */
-  public get hasExpired(): boolean {
-    return !!this._tokenResponse && !this.isValidToken(this._tokenResponse);
-  }
-
-  /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
-  public get hasSignedIn(): boolean {
-    return !!this._tokenResponse;
+    return this.setTokenResponse(tokenResponse);
   }
 
   /** Swap the authorization code for a refresh token and access token */
@@ -275,7 +226,7 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
     /* eslint-disable @typescript-eslint/naming-convention */
-    const nativeConfig = this.config;
+    const nativeConfig = this._config!;
     const extras: StringMap = { code_verifier: codeVerifier };
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
@@ -296,7 +247,7 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
-    const nativeConfig = this.config;
+    const nativeConfig = this._config!;
     /* eslint-disable @typescript-eslint/naming-convention */
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_REFRESH_TOKEN,
@@ -319,7 +270,7 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
     const refreshToken = this._tokenResponse.refreshToken!;
 
     /* eslint-disable @typescript-eslint/naming-convention */
-    const nativeConfig = this.config;
+    const nativeConfig = this._config!;
     const revokeTokenRequestJson: RevokeTokenRequestJson = {
       token: refreshToken,
       token_type_hint: "refresh_token",
@@ -333,6 +284,6 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
     await tokenHandler.performRevokeTokenRequest(this._configuration!, revokeTokenRequest);
 
     Logger.logTrace(loggerCategory, "Authorization revoked, and removed access token");
-    await this.setTokenResponse(undefined);
+    await this.clearTokenResponse();
   }
 }

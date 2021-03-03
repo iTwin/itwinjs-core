@@ -7,9 +7,10 @@
  */
 
 import {
-  BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
+  BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
   RemoveFunction,
 } from "@bentley/imodeljs-common";
+import { AccessToken, AccessTokenProps } from "@bentley/itwin-client";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
 /**
@@ -123,6 +124,7 @@ export class IpcApp {
 
   public static async startup(opts: { ipcApp: IpcAppOptions, iModelApp?: IModelAppOptions }) {
     this._ipc = opts.ipcApp.ipc;
+    IpcAppNotifyHandler.register(); // receives notifications from backend
     await IModelApp.startup(opts.iModelApp);
   }
 
@@ -167,5 +169,13 @@ export abstract class NotificationHandler {
    */
   public static register(): RemoveFunction {
     return (new (this as any)() as NotificationHandler).registerImpl(); // create an instance of subclass. "as any" is necessary because base class is abstract
+  }
+}
+
+/** receive notifications from backend */
+class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotifications {
+  public get channelName() { return IpcAppChannel.AppNotify; }
+  public notifyUserStateChanged(props?: AccessTokenProps) {
+    IModelApp.authorizationClient?.onUserStateChanged.raiseEvent(props ? AccessToken.fromJson(props) : undefined);
   }
 }

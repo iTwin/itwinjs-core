@@ -28,6 +28,9 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   private async getAuthContext() {
     return IpcHost.authorization.getAuthorizedContext();
   }
+  public async loginForTests(token: AccessTokenProps) {
+    IpcHost.authorization.setAccessToken(AccessToken.fromJson(token));
+  }
   public async initializeAuth(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {
     return IpcHost.authorization.initialize(props, config);
   }
@@ -55,15 +58,21 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
     return BriefcaseManager.getFileName(props);
   }
-  public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean): Promise<LocalBriefcaseProps> {
+  public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean, progressInterval?: number): Promise<LocalBriefcaseProps> {
     const args = {
       ...request,
       onProgress: (_a: number, _b: number) => checkAbort(),
     };
 
     if (reportProgress) {
+      const interval = progressInterval ?? 500; // by default, only send progress events every 500 milliseconds
+      let nextTime = Date.now() + interval;
       args.onProgress = (loaded, total) => {
-        IpcHost.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
+        const now = Date.now();
+        if (loaded >= total || now >= nextTime) {
+          nextTime = now + interval;
+          IpcHost.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
+        }
         return checkAbort();
       };
     }
@@ -134,9 +143,6 @@ export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
   private constructor() { }
 
-  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
-  public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
-
   public static onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
 
   private static _appSettingsCacheDir?: string;
@@ -169,7 +175,6 @@ export class NativeHost {
     await IpcHost.startup(opt);
     if (IpcHost.isValid) { // for tests, we use NativeHost but don't have a frontend
       NativeAppHandler.register();
-      this.onUserStateChanged.addListener((token?: AccessToken) => NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
     }
   }
 

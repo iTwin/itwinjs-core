@@ -44,7 +44,6 @@ export enum OverriddenBy {
  */
 export interface NativeAppNotifications {
   notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
-  notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
 }
 
 /**
@@ -52,6 +51,8 @@ export interface NativeAppNotifications {
  * @internal
  */
 export interface NativeAppFunctions {
+  loginForTests: (token: AccessTokenProps) => Promise<void>;
+
   initializeAuth: (props: ClientRequestContextProps, config: AuthorizationConfiguration) => Promise<void>;
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
@@ -82,7 +83,7 @@ export interface NativeAppFunctions {
   getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
 
   /** Download a briefcase file for the supplied briefcase properties. */
-  downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean) => Promise<LocalBriefcaseProps>;
+  downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number) => Promise<LocalBriefcaseProps>;
 
   /**
    * Cancels the previously requested download of a briefcase
