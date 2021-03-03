@@ -53,7 +53,11 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
       const settingsResult = await uiSettings.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
       // istanbul ignore else
       if (UiSettingsStatus.Success === settingsResult.status) {
-        setHistoryKeyins(settingsResult.setting);
+        const filteredHistory = (settingsResult.setting as string[]).filter((keyin)=>{
+          const result = IModelApp.tools.parseKeyin(keyin);
+          return result.ok;
+        });
+        setHistoryKeyins(filteredHistory);
       } else {
         setHistoryKeyins([]);
       }

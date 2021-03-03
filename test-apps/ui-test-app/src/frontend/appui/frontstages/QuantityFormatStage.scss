@@ -6,10 +6,14 @@
 @import "~@bentley/ui-core/lib/ui-core/style/typography";
 
 .quantity-types-stage {
+  box-sizing: border-box;
   display: flex;
   height: 100%;
   width: 100%;
-  justify-content: center;
+
+  *, *:before, *:after {
+    box-sizing: inherit;
+  }
 
   .quantity-types-container {
     background: $buic-background-dialog;
@@ -20,12 +24,16 @@
 
     > .left-panel {
       flex-direction: column;
-      min-width: 200px;
+      min-width: 260px;
       width: auto;
       padding: 20px 50px 20px 20px;
       height: auto;
-      .quantity-types-list {
+
+      ul.core-listbox.quantity-types {
         height: 100%;
+        li.core-listbox-item {
+          line-height: 2em;
+        }
       }
     }
 

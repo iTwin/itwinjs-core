@@ -6,17 +6,13 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { UserInfo } from "@bentley/itwin-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue, IconSpecUtilities } from "@bentley/ui-abstract";
-import { BackstageComposer, FrontstageManager, UserProfileBackstageItem } from "@bentley/ui-framework";
+import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UserProfileBackstageItem } from "@bentley/ui-framework";
 import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
 import { LocalFileOpenFrontstage } from "../frontstages/LocalFileStage";
-import { SettingsModalFrontstage } from "../frontstages/Settings";
-import { QuantityFormatModalFrontstage } from "../frontstages/QuantityFormatStage";
 import { RootState, SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
 import stageIconSvg from "./imodeljs.svg?sprite";
-import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
-import measureIconSvg from "@bentley/icons-generic/icons/measure.svg?sprite";
 import { EditFrontstage } from "../frontstages/editing/EditFrontstage";
 import { ViewsFrontstage } from "../frontstages/ViewsFrontstage";
 
@@ -48,7 +44,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
         BackstageItemUtilities.createStageLauncher("IModelOpen", 300, 10, IModelApp.i18n.translate("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
         BackstageItemUtilities.createStageLauncher("IModelIndex", 300, 20, IModelApp.i18n.translate("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
         BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.i18n.translate("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
-        BackstageItemUtilities.createActionItem("SampleApp.settings", 400, 10, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.testFrontstage6"), undefined, IconSpecUtilities.createSvgIconSpec(settingsIconSvg)),
+        SettingsModalFrontstage.getBackstageActionItem (400, 10),
       ];
     }
 
@@ -62,9 +58,8 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
       BackstageItemUtilities.createStageLauncher("IModelOpen", 300, 10, IModelApp.i18n.translate("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
       BackstageItemUtilities.createStageLauncher("IModelIndex", 300, 20, IModelApp.i18n.translate("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
       BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.i18n.translate("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
-      BackstageItemUtilities.createActionItem("SampleApp.settings", 400, 10, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.testFrontstage6"), undefined, IconSpecUtilities.createSvgIconSpec(settingsIconSvg)),
+      SettingsModalFrontstage.getBackstageActionItem (400, 10),
       BackstageItemUtilities.createActionItem("SampleApp.componentExamples", 400, 20, () => FrontstageManager.openModalFrontstage(new ComponentExamplesModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.componentExamples"), undefined, "icon-details", { badgeType: BadgeType.New }),
-      BackstageItemUtilities.createActionItem("SampleApp.quantityFormats", 400, 30, () => FrontstageManager.openModalFrontstage(new QuantityFormatModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.quantityFormat"), undefined, IconSpecUtilities.createSvgIconSpec(measureIconSvg)),
     ];
   });
 
