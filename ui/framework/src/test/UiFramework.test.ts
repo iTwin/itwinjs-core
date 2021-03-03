@@ -9,11 +9,12 @@ import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, MockRender, ViewState } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
-import { ColorTheme, CursorMenuData, UiFramework } from "../ui-framework";
+import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
 import TestUtils, { mockUserInfo } from "./TestUtils";
 import { UiSettings } from "@bentley/ui-core";
+import { OpenSettingsTool } from "../ui-framework/tools/OpenSettingsTool";
 
 describe("UiFramework", () => {
 
@@ -44,6 +45,41 @@ describe("UiFramework", () => {
   it("translate should return the key (in test environment)", async () => {
     await TestUtils.initializeUiFramework(true);
     expect(UiFramework.translate("test1.test2")).to.eq("test1.test2");
+  });
+
+  it("test OpenSettingsTool", async () => {
+    await TestUtils.initializeUiFramework(true);
+
+    const spy = sinon.spy();
+    const tabName = "page1";
+    const handleOpenSetting = (settingsCategory: string)=> {
+      expect (settingsCategory).to.eql(tabName);
+      spy();
+    };
+
+    const handleOpenSetting2 = (_settingsCategory: string)=> {
+      spy();
+    };
+
+    const showSettingsStageToRestore = Object.getOwnPropertyDescriptor(SettingsModalFrontstage, "showSettingsStage")!;
+    Object.defineProperty(SettingsModalFrontstage, "showSettingsStage", {
+      get: () => handleOpenSetting,
+    });
+    const tool = new OpenSettingsTool();
+    // tabid arg
+    tool.parseAndRun(tabName);
+    spy.calledOnce.should.true;
+    spy.resetHistory();
+
+    // No tabid arg
+    Object.defineProperty(SettingsModalFrontstage, "showSettingsStage", {
+      get: () => handleOpenSetting2,
+    });
+    tool.parseAndRun();
+    spy.calledOnce.should.true;
+    spy.resetHistory();
+
+    Object.defineProperty(SettingsModalFrontstage, "showSettingsStage", showSettingsStageToRestore);
   });
 
   it("loggerCategory should correctly handle null or undefined object", () => {
@@ -199,4 +235,5 @@ describe("Requires Presentation", () => {
       await shutdownIModelApp();
     });
   });
+
 });
