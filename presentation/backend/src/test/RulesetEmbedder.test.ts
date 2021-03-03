@@ -91,11 +91,10 @@ describe("RulesetEmbedder", () => {
   }
 
   function initializeCodeSpecs() {
-    /* eslint-disable deprecation/deprecation */
-    rulesetCodeSpec = new CodeSpec(imodelMock.object, rulesetCodeSpecId, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model);
-    subjectCodeSpec = new CodeSpec(imodelMock.object, faker.random.uuid(), BisCodeSpec.subject, CodeScopeSpec.Type.ParentElement);
-    informationPartitionCodeSpec = new CodeSpec(imodelMock.object, faker.random.uuid(), BisCodeSpec.informationPartitionElement, CodeScopeSpec.Type.ParentElement);
-    /* eslint-enable deprecation/deprecation */
+    rulesetCodeSpec = CodeSpec.create(imodelMock.object, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model);
+    rulesetCodeSpec.id = rulesetCodeSpecId;
+    subjectCodeSpec = CodeSpec.create(imodelMock.object, BisCodeSpec.subject, CodeScopeSpec.Type.ParentElement);
+    informationPartitionCodeSpec = CodeSpec.create(imodelMock.object, BisCodeSpec.informationPartitionElement, CodeScopeSpec.Type.ParentElement);
   }
 
   function setupRootSubjectMock() {
@@ -127,12 +126,12 @@ describe("RulesetEmbedder", () => {
 
   function setupMocksForGettingRulesetModel() {
     modelsMock.setup((x) => x.getSubModel(definitionPartitionId)).returns(() => rulesetModelMock.object);
-    elementsMock.setup((x) => x.getElement(new Code({ spec: subjectCodeSpec.id, scope: rootSubjectMock.object.id, value: "PresentationRules" }))).returns(() => subjectMock.object);
-    elementsMock.setup((x) => x.getElement(DefinitionPartition.createCode(imodelMock.object, subjectMock.object.id, "PresentationRules"))).returns(() => definitionPartitionMock.object);
+    elementsMock.setup((x) => x.tryGetElement(new Code({ spec: subjectCodeSpec.id, scope: rootSubjectMock.object.id, value: "PresentationRules" }))).returns(() => subjectMock.object);
+    elementsMock.setup((x) => x.tryGetElement(DefinitionPartition.createCode(imodelMock.object, subjectMock.object.id, "PresentationRules"))).returns(() => definitionPartitionMock.object);
   }
 
   function setupMocksForQueryingRulesets() {
-    elementsMock.setup((x) => x.getElement({ id: rulesetId })).returns(() => rulesetElementMock.object);
+    elementsMock.setup((x) => x.tryGetElement({ id: rulesetId })).returns(() => rulesetElementMock.object);
     imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAny(), moq.It.isAny())).callback((_ecsql, callbackFun) => {
       callbackFun(statementMock.object);
     }).returns(() => ({}));
@@ -186,9 +185,9 @@ describe("RulesetEmbedder", () => {
       classFullName: DefinitionPartition.classFullName,
     };
 
-    elementsMock.setup((x) => x.getElement(new Code({ spec: subjectCodeSpec.id, scope: rootSubjectMock.object.id, value: "PresentationRules" }))).throws(new IModelError(-1, ""));
-    elementsMock.setup((x) => x.getElement(subjectId)).returns(() => subjectMock.object);
-    elementsMock.setup((x) => x.getElement(definitionPartitionId)).returns(() => definitionPartitionMock.object);
+    elementsMock.setup((x) => x.tryGetElement(new Code({ spec: subjectCodeSpec.id, scope: rootSubjectMock.object.id, value: "PresentationRules" }))).throws(new IModelError(-1, ""));
+    elementsMock.setup((x) => x.tryGetElement(subjectId)).returns(() => subjectMock.object);
+    elementsMock.setup((x) => x.tryGetElement(definitionPartitionId)).returns(() => definitionPartitionMock.object);
     elementsMock.setup((x) => x.insertElement(subjectProps)).returns(() => subjectId);
     elementsMock.setup((x) => x.insertElement(definitionPartitionProps)).returns(() => definitionPartitionId);
 
@@ -299,7 +298,7 @@ describe("RulesetEmbedder", () => {
 
       elementsMock.setup((x) => x.insertElement(rulesetProperties)).returns(() => rulesetId);
       elementsMock.setup((x) => x.queryElementIdByCode(RulesetElements.Ruleset.createRulesetCode(modelId, ruleset2.id, imodelMock.object))).returns(() => rulesetId);
-      elementsMock.setup((x) => x.getElement(rulesetId)).throws(new IModelError(-1, ""));
+      elementsMock.setup((x) => x.tryGetElement(rulesetId)).throws(new IModelError(-1, ""));
       imodelMock.setup((x) => x.containsClass(RulesetElements.Ruleset.classFullName)).returns(() => true);
 
       // Act
@@ -319,7 +318,7 @@ describe("RulesetEmbedder", () => {
 
       elementsMock.setup((x) => x.insertElement(rulesetProperties)).returns(() => rulesetId);
       elementsMock.setup((x) => x.queryElementIdByCode(RulesetElements.Ruleset.createRulesetCode(modelId, ruleset2.id, imodelMock.object))).returns(() => rulesetId);
-      elementsMock.setup((x) => x.getElement(rulesetId)).returns(() => rulesetElementMock.object);
+      elementsMock.setup((x) => x.tryGetElement(rulesetId)).returns(() => rulesetElementMock.object);
       imodelMock.setup((x) => x.containsClass(RulesetElements.Ruleset.classFullName)).returns(() => true);
 
       // Act
