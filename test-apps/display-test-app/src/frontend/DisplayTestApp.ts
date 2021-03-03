@@ -3,16 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
-import { DesktopAuthorizationFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
 } from "@bentley/frontend-authorization-client";
 import {
   AuthorizationConfiguration, CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
-import { FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
+import { FrontendRequestContext, IModelApp, IModelConnection, NativeAppAuthorization, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
-import { MobileAuthorizationFrontend } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DisplayTestApp } from "./App";
@@ -87,15 +85,11 @@ async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientC
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | AuthorizationConfiguration): Promise<DesktopAuthorizationFrontend | BrowserAuthorizationClient | MobileAuthorizationFrontend> {
-  if (ProcessDetector.isElectronAppFrontend) {
-    const desktopClient = new DesktopAuthorizationFrontend(oidcConfiguration as AuthorizationConfiguration);
-    await desktopClient.initialize(requestContext);
-    return desktopClient;
-  } else if (ProcessDetector.isMobileAppFrontend) {
-    const mobileClient = new MobileAuthorizationFrontend(oidcConfiguration as AuthorizationConfiguration);
-    await mobileClient.initialize(requestContext);
-    return mobileClient;
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | AuthorizationConfiguration): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
+  if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isMobileAppFrontend) {
+    const auth = new NativeAppAuthorization(oidcConfiguration as AuthorizationConfiguration);
+    await auth.initialize(requestContext);
+    return auth;
   } else {
     const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
     return browserClient;

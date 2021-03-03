@@ -102,7 +102,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
 
   if (props.useClientServices)
-    await frontendAppOptions.authorizationClient!.signIn(new ClientRequestContext());
+    await frontendAppOptions.authorizationClient!.signIn();
 
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,

@@ -52,7 +52,7 @@ export class IModelAppUiSettings implements UiSettings {
   }
 
   private get isSignedIn(): boolean {
-    return !!IModelApp.authorizationClient && IModelApp.authorizationClient.hasSignedIn;
+    return !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
   }
 }
 

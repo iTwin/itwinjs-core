@@ -470,7 +470,7 @@ export namespace RealityModelTileTree {
   }
 
   async function getAccessToken(): Promise<AccessToken | undefined> {
-    if (!IModelApp.authorizationClient)
+    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.isAuthorized)
       return undefined; // Not signed in
     let accessToken: AccessToken;
     try {

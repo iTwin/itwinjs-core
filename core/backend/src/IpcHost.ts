@@ -20,19 +20,24 @@ import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /** @internal */
 export abstract class AuthorizationBackend extends ImsAuthorizationClient {
-  private _accessToken?: AccessToken;
-  private _expireSafety = 60 * 10; // seconds to expire before real expiration time
+  protected _accessToken?: AccessToken;
+  protected _expireSafety = 60 * 10; // seconds to expire before real expiration time
   protected _config?: AuthorizationConfiguration;
+  public get config(): AuthorizationConfiguration { return this._config!; }
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
   public abstract refreshToken(): Promise<AccessToken>;
+
+  public get isAuthorized(): boolean {
+    return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety * 1000);
+  }
 
   public setAccessToken(token?: AccessToken) {
     this._accessToken = token;
     IpcHost.onUserStateChanged.raiseEvent(this._accessToken);
   }
   public async getAccessToken(): Promise<AccessToken> {
-    if (undefined === this._accessToken || this._accessToken.isExpired(this._expireSafety * 1000))
+    if (!this.isAuthorized)
       this.setAccessToken(await this.refreshToken());
     return this._accessToken!;
   }
@@ -79,7 +84,7 @@ export class IpcHost {
   public static get isValid(): boolean { return undefined !== this._ipc; }
 
   /** @internal */
-  public static authorization: AuthorizationBackend;
+  public static get authorization(): AuthorizationBackend { return IModelHost.authorizationClient as AuthorizationBackend; }
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
   public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();

@@ -8,7 +8,6 @@
 
 import { Store } from "redux";
 import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
-import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
@@ -31,8 +30,8 @@ import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "
 import { SyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
-import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as openSettingTools from "./tools/OpenSettingsTool";
+import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 
@@ -154,7 +153,7 @@ export class UiFramework {
 
     const oidcClient = IModelApp.authorizationClient;
     // istanbul ignore next
-    if (isFrontendAuthorizationClient(oidcClient)) {
+    if (oidcClient) {
       const authorized = IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
       if (authorized) {
         const accessToken = await oidcClient.getAccessToken();
@@ -476,7 +475,7 @@ export class UiFramework {
    */
   // istanbul ignore next
   public static async postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: GuidString, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
-    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
+    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.isAuthorized)
       return;
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const telemetryEvent = new TelemetryEvent(eventName, eventId, contextId, iModeId, changeSetId, time, additionalProperties);

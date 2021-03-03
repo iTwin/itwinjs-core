@@ -556,7 +556,7 @@ export class IModelApp {
       const id = _request.id;
       let authorization: string | undefined;
       let userId: string | undefined;
-      if (IModelApp.authorizationClient) {
+      if (IModelApp.authorizationClient?.isAuthorized) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         try {
           const accessToken = await IModelApp.authorizationClient.getAccessToken();

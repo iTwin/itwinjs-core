@@ -1847,7 +1847,7 @@ describe("iModel", () => {
 
     // Create an autopush in manual-schedule mode.
     const autoPushParams: AutoPushParams = { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false };
-    IModelHost.authorizationClient = authorizationClient; // eslint-disable-line deprecation/deprecation
+    IModelHost.authorizationClient = authorizationClient;
     const autoPush = new AutoPush(iModel as any, autoPushParams, activityMonitor);
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.isFalse(autoPush.autoSchedule);

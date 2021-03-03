@@ -6,14 +6,14 @@
  * @module NativeApp
  */
 
-import { BeEvent, Config, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, Config, GuidString, Logger, SessionProps } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
-  NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  AuthorizationConfiguration, BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel,
+  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AccessToken, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { IModelApp, IModelAppOptions } from "./imodeljs-frontend";
+import { IModelAppOptions } from "./imodeljs-frontend";
 import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
@@ -36,6 +36,45 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
   public notifyInternetConnectivityChanged(status: InternetConnectivityStatus) {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
+  }
+}
+
+/**
+ * The frontend of native apps use the backend for authorization.
+ * @alpha
+ */
+export class NativeAppAuthorization {
+  private _clientConfiguration: AuthorizationConfiguration;
+  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+  public isAuthorized = false; // updated by IpcAppNotifyHandler.notifyUserStateChanged
+
+  public constructor(clientConfiguration: AuthorizationConfiguration) {
+    this._clientConfiguration = clientConfiguration;
+  }
+
+  /** Used to initialize the client - must be awaited before any other methods are called */
+  public async initialize(props: SessionProps): Promise<void> {
+    return NativeApp.callNativeHost("initializeAuth", props, this._clientConfiguration);
+  }
+
+  /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
+  public async signIn(): Promise<void> {
+    return NativeApp.callNativeHost("signIn");
+  }
+
+  /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
+  public async signOut(): Promise<void> {
+    return NativeApp.callNativeHost("signOut");
+  }
+
+  /** Returns a promise that resolves to the AccessToken if signed in.
+   * - The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
+   * - The token is refreshed if it's possible and necessary.
+   * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
+   * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
+   */
+  public async getAccessToken(): Promise<AccessToken> {
+    return AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
   }
 }
 

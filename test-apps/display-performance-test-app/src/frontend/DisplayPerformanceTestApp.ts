@@ -7,17 +7,17 @@ import {
   ClientRequestContext, Dictionary, Id64, Id64Arg, Id64String, OpenMode, ProcessDetector, SortedArray, StopWatch,
 } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
-import { DesktopAuthorizationFrontend, ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
-  AuthorizationConfiguration, BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DisplayStyleProps, FeatureAppearance, FeatureAppearanceProps,
-  Hilite, IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RpcConfiguration, SnapshotIModelRpcInterface,
+  AuthorizationConfiguration, BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DisplayStyleProps, FeatureAppearance,
+  FeatureAppearanceProps, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RpcConfiguration, SnapshotIModelRpcInterface,
   ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider, FeatureSymbology,
-  FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport,
+  FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, NativeAppAuthorization, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport,
   SnapshotConnection, Target, TileAdmin, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
@@ -995,14 +995,14 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext): Promise<DesktopAuthorizationFrontend | BrowserAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
 
   if (ProcessDetector.isElectronAppFrontend) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
     const oidcConfiguration: AuthorizationConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
-    const desktopClient = new DesktopAuthorizationFrontend(oidcConfiguration);
+    const desktopClient = new NativeAppAuthorization(oidcConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {
@@ -1030,8 +1030,8 @@ async function signIn(): Promise<boolean> {
   if (oidcClient.isAuthorized)
     return true;
 
-  await oidcClient.signIn(requestContext);
-  return oidcClient.hasSignedIn;
+  await oidcClient.signIn();
+  return oidcClient.isAuthorized;
 }
 
 async function getAllMatchingSavedViews(testConfig: DefaultConfigs): Promise<string[]> {

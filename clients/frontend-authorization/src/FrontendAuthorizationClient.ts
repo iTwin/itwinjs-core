@@ -12,6 +12,8 @@ import { AccessToken } from "@bentley/itwin-client";
  * @beta
  */
 export interface FrontendAuthorizationClient {
+  isAuthorized: boolean;
+
   /** Called to start the sign-in process. Subscribe to  onUserStateChanged to be notified when sign-in completes */
   signIn(): Promise<void>;
 

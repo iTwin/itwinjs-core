@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Config, GuidString } from "@bentley/bentleyjs-core";
-import { DesktopAuthorizationFrontend, ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { BriefcaseDownloader, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, IModelApp, NativeApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection, IModelApp, NativeApp, NativeAppAuthorization, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
@@ -30,7 +30,7 @@ describe("NativeApp (#integration)", () => {
     });
 
     await NativeApp.callNativeHost("loginForTests", (await getAccessTokenFromBackend(TestUsers.regular)).toJSON());
-    IModelApp.authorizationClient = new DesktopAuthorizationFrontend({ clientId: "testapp", redirectUri: "", scope: "" });
+    IModelApp.authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
 
     testProjectName = Config.App.get("imjs_test_project_name");
     testIModelName = Config.App.get("imjs_test_imodel_name");
