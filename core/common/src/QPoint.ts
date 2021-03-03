@@ -68,7 +68,7 @@ export class QParams2d {
     return params;
   }
 
-  /** Return the unquantize point for the input values */
+  /** Return the unquantized point for the input values */
   public unquantize(x: number, y: number, out?: Point2d): Point2d {
     const pt: Point2d = undefined !== out ? out : new Point2d();
     pt.x = Quantization.unquantize(x, this.origin.x, this.scale.x);
@@ -272,7 +272,7 @@ export class QParams3d {
       this.scale.x = this.scale.y = this.scale.z = 0;
     }
   }
-  /** Return the unquantize point for the input values */
+  /** Return the unquantized point for the input values */
   public unquantize(x: number, y: number, z: number, out?: Point3d): Point3d {
     const pt: Point3d = undefined !== out ? out : new Point3d();
     pt.x = Quantization.unquantize(x, this.origin.x, this.scale.x);

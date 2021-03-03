@@ -11,6 +11,7 @@ import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector3
 import {
   BatchType, ColorDef, ElementAlignedBox3d, FeatureTable, FillFlags, GltfBufferData, GltfBufferView, GltfDataType, GltfHeader, GltfMeshMode,
   ImageSource, ImageSourceFormat, LinePixels, MeshEdge, MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList, QPoint3dList,
+  Quantization,
   RenderTexture, TextureMapping, TileReadStatus,
 } from "@bentley/imodeljs-common";
 import { getImageSourceFormatForMimeType, imageElementFromImageSource } from "../ImageUtil";
@@ -24,6 +25,8 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { TileContent } from "./internal";
 
+// eslint-disable-next-line prefer-const
+let forceLUT = false;
 /* eslint-disable no-restricted-syntax */
 
 /* -----------------------------------
@@ -241,7 +244,7 @@ export abstract class GltfReader {
       assert(false);
       return;
     }
-    const realityMeshPrimitive = instances  ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
+    const realityMeshPrimitive = (forceLUT || instances)  ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
       const realityMesh = this._system.createRealityMesh(realityMeshPrimitive);
       if (realityMesh)
@@ -757,16 +760,20 @@ export abstract class GltfReader {
 
     switch (view.type) {
       case GltfDataType.Float: {
-        const params = [];
         data = this.readBufferDataFloat(json, accessorName);
+        mesh.uvRange = Range2d.createNull();
 
         for (let i = 0; i < data.count; i++) {
           const index = view.stride * i; // 2 float per param...
-          params.push(new Point2d(data.buffer[index], data.buffer[index + 1]));
+          mesh.uvRange.extendXY(data.buffer[index], data.buffer[index + 1]);
         }
-        const qPoints = QPoint2dList.fromPoints(params);
-        mesh.uvQParams = qPoints.params;
-        mesh.uvs = qPoints.toTypedArray();
+        mesh.uvQParams = QParams2d.fromRange(mesh.uvRange);
+        mesh.uvs = new Uint16Array(data.count * 2);
+        for (let i = 0, j = 0; i < data.count; i++) {
+          const index = view.stride * i; // 2 float per param...
+          mesh.uvs[j++] = Quantization.quantize(data.buffer[index], mesh.uvQParams.origin.x, mesh.uvQParams.scale.x);
+          mesh.uvs[j++] = Quantization.quantize(data.buffer[index + 1], mesh.uvQParams.origin.y, mesh.uvQParams.scale.y);
+        }
         return true;
       }
 
@@ -785,7 +792,8 @@ export abstract class GltfReader {
         if (undefined === qData || ! (qData.buffer instanceof Uint16Array))
           return false;
 
-        mesh.uvQParams = QParams2d.fromRange(Range2d.createXYXY(rangeMin[0], rangeMin[1], rangeMax[0], rangeMax[1]));
+        mesh.uvRange = Range2d.createXYXY(rangeMin[0], rangeMin[1], rangeMax[0], rangeMax[1]);
+        mesh.uvQParams = QParams2d.fromRange( mesh.uvRange);
         if (2 === view.stride) {
           mesh.uvs = qData.buffer;
         } else {

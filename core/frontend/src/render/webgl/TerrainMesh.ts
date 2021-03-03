@@ -8,7 +8,7 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Range2d, Range3d, Transform } from "@bentley/geometry-core";
+import { Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
 import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
 import { IndexedGeometry, Matrix4 } from "../../webgl";
 import { GraphicBranch } from "../GraphicBranch";
@@ -23,6 +23,7 @@ import { RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
+import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 
 const scratchOverlapRange = Range2d.createNull();
 
@@ -88,15 +89,26 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderSimple
     dispose(this._terrainMeshParams);
   }
 
-  public static createGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined) {
+  public static creatFromTerrainMesh(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined) {
     const params = SimpleMeshGeometryParams.createFromTerrainMesh(terrainMesh);
     return new TerrainMeshGeometry(params!, undefined, transform, undefined, false);
+  }
+
+  public static createFromRealityMesh(realityMesh: RealityMeshPrimitive): TerrainMeshGeometry | undefined {
+    const params = SimpleMeshGeometryParams.createFromRealityMesh(realityMesh);
+    const featureId = 0;
+    if (!params)
+      return undefined;
+    const texture = new TerrainTexture(realityMesh.texture, featureId, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0);
+
+    return new TerrainMeshGeometry(params, TerrainTextureParams.create([texture]), undefined, undefined, false);
+
   }
   public getRange(): Range3d {
     return Range3d.createXYZXYZ(this.qOrigin[0], this.qOrigin[1], this.qOrigin[2], this.qOrigin[0] + Quantization.rangeScale16 * this.qScale[0], this.qOrigin[1] + Quantization.rangeScale16 * this.qScale[1], this.qOrigin[2] + Quantization.rangeScale16 * this.qScale[2]);
   }
 
-  public static createGraphic(system: RenderSystem, terrainMesh: TerrainMeshGeometry, featureTable: PackedFeatureTable, tileId: string, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
+  public static createGraphic(system: RenderSystem, terrainMesh: TerrainMeshGeometry, featureTable: PackedFeatureTable, tileId: string | undefined, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
     const meshes = [];
     if (textures === undefined)
       textures = [];

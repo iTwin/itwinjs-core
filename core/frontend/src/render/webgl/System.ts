@@ -24,7 +24,7 @@ import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
 import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
-import { SimpleMeshGeometryParams } from "./SimpleMesh";
+import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "../primitives/VertexTable";
@@ -51,7 +51,6 @@ import { PointCloudGeometry } from "./PointCloud";
 import { PointStringGeometry } from "./PointString";
 import { PolylineGeometry } from "./Polyline";
 import { Primitive, SkyCubePrimitive, SkySpherePrimitive } from "./Primitive";
-import { RealityMeshGeometry } from "./RealityMesh";
 import { RenderBuffer, RenderBufferMultiSample } from "./RenderBuffer";
 import { TextureUnit } from "./RenderFlags";
 import { RenderState } from "./RenderState";
@@ -61,7 +60,6 @@ import { Techniques } from "./Technique";
 import { TerrainMeshGeometry } from "./TerrainMesh";
 import { Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
-import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -510,16 +508,18 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return MeshGraphic.create(params, instances);
   }
 
-  public createTerrainMeshGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform): RenderSimpleMeshGeometry | undefined {
-    return TerrainMeshGeometry.createGeometry(terrainMesh, transform);
+  public createTerrainMeshGeometry(terrainMesh: TerrainMeshPrimitive, transform?: Transform): RenderSimpleMeshGeometry | undefined {
+    return TerrainMeshGeometry.creatFromTerrainMesh(terrainMesh, transform);
   }
 
-  public createTerrainMeshGraphic(terrainGeometry: RenderSimpleMeshGeometry, featureTable: PackedFeatureTable, tileId: string, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
+  public createTerrainMeshGraphic(terrainGeometry: RenderSimpleMeshGeometry, featureTable: PackedFeatureTable, tileId: string | undefined, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
     return TerrainMeshGeometry.createGraphic(this, terrainGeometry as TerrainMeshGeometry, featureTable, tileId, baseColor, baseTransparent, textures);
   }
   public createRealityMesh(realityMesh: RealityMeshPrimitive): RenderGraphic | undefined {
-    const params = SimpleMeshGeometryParams.createFromRealityMesh(realityMesh);
-    return params ? Primitive.create(() =>  RealityMeshGeometry.create(params, realityMesh.texture)) : undefined;
+    const geom = TerrainMeshGeometry.createFromRealityMesh(realityMesh);
+    if (!geom)
+      return undefined;
+    return Primitive.create(() =>  geom);
   }
 
   public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
