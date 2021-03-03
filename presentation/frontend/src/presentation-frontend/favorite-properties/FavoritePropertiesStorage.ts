@@ -58,7 +58,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   private get isSignedIn() {
     // note: these checks are also done when creating `AuthorizedFrontendRequestContext` but instead of just
     // throwing it also logs error messages which we want to avoid
-    return IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
+    return IModelApp.authorizationClient && IModelApp.authorizationClient.hasSignedIn;
   }
 
   public async loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {

@@ -46,7 +46,8 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
 export class NativeAppAuthorization {
   private _clientConfiguration: AuthorizationConfiguration;
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
-  public isAuthorized = false; // updated by IpcAppNotifyHandler.notifyUserStateChanged
+  public hasSignedIn = false; // updated by IpcAppNotifyHandler.notifyUserStateChanged
+  public get isAuthorized() { return this.hasSignedIn; }
 
   public constructor(clientConfiguration: AuthorizationConfiguration) {
     this._clientConfiguration = clientConfiguration;

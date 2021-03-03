@@ -232,9 +232,10 @@ export async function login(userCredentials?: TestUserCredentials): Promise<Acce
   if (TestConfig.enableMocks)
     return new MockAccessToken();
   const authorizationClient = getCloudEnv().getAuthorizationClient(undefined, userCredentials);
+  const requestContext = new ClientRequestContext();
 
-  await authorizationClient.signIn();
-  return authorizationClient.getAccessToken();
+  await authorizationClient.signIn(requestContext);
+  return authorizationClient.getAccessToken(requestContext);
 }
 
 export async function bootstrapBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {

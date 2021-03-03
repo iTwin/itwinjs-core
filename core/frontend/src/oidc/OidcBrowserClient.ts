@@ -218,14 +218,14 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
    * redirect application to the redirectUri specified in the configuration, and then redirect
    * back to specified successRedirectUri when the sign-in is complete.
    */
-  public async signIn(successRedirectUrl?: string): Promise<void> {
-    const requestContext = new ClientRequestContext();
+  public async signIn(requestContext?: ClientRequestContext, successRedirectUrl?: string): Promise<void> {
+    const requestContext = requestContext ?? new ClientRequestContext();
     requestContext.enter();
     if (!this._userManager)
       throw new BentleyError(AuthStatus.Error, "OidcBrowserClient not initialized", Logger.logError, loggerCategory);
 
     // Non interactive sign-in
-    const status: boolean = await this.nonInteractiveSignIn(requestContext);
+    const status: boolean = await this.nonInteractiveSignIn(requestContext!);
     if (status)
       return;
 
@@ -244,7 +244,8 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
    * - redirects application to the postSignoutRedirectUri specified in the configuration when the sign out is
    *   complete
    */
-  public async signOut(): Promise<void> {
+  public async signOut(requestContext?: ClientRequestContext): Promise<void> {
+    requestContext?.enter();
     await this._userManager!.signoutRedirect();
   }
 

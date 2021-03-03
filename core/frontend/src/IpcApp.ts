@@ -178,7 +178,7 @@ class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotificat
   public notifyUserStateChanged(props?: AccessTokenProps) {
     const auth = IModelApp.authorizationClient;
     if (auth) {
-      auth.isAuthorized = (props !== undefined);
+      auth.hasSignedIn = (props !== undefined);
       auth.onUserStateChanged.raiseEvent(props ? AccessToken.fromJson(props) : undefined);
     }
   }

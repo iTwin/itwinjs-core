@@ -1030,8 +1030,14 @@ async function signIn(): Promise<boolean> {
   if (oidcClient.isAuthorized)
     return true;
 
-  await oidcClient.signIn();
-  return oidcClient.isAuthorized;
+  const retPromise = new Promise<boolean>((resolve, _reject) => {
+    oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
+      resolve(token !== undefined);
+    });
+  });
+
+  await oidcClient.signIn(requestContext);
+  return retPromise;
 }
 
 async function getAllMatchingSavedViews(testConfig: DefaultConfigs): Promise<string[]> {

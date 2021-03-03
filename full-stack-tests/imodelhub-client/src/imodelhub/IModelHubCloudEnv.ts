@@ -35,11 +35,13 @@ class TestIModelHubUserMgr implements FrontendAuthorizationClient {
   public constructor(_userInfo: UserInfo | undefined, private _userCredentials: any) {
   }
 
-  public async signIn(): Promise<void> {
+  public async signIn(_requestContext?: ClientRequestContext): Promise<void> {
+    _requestContext?.enter();
     this._token = await TestUtility.getAccessToken(this._userCredentials);
   }
 
-  public async signOut(): Promise<void> {
+  public async signOut(_requestContext?: ClientRequestContext): Promise<void> {
+    _requestContext?.enter();
     this._token = undefined;
     this.onUserStateChanged.raiseEvent(this._token);
   }

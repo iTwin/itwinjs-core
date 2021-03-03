@@ -38,7 +38,7 @@ export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestCon
   public static async create(activityId: string = Guid.createValue()): Promise<AuthorizedFrontendRequestContext> {
     if (!IModelApp.authorizationClient)
       throw new BentleyError(AuthStatus.Error, "IModelApp.authorizationClient not initialized", Logger.logError, loggerCategory);
-    if (!IModelApp.authorizationClient.isAuthorized)
+    if (!IModelApp.authorizationClient.hasSignedIn)
       throw new BentleyError(AuthStatus.Error, "Not signed in", Logger.logError, loggerCategory);
 
     const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();

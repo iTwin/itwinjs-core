@@ -33,7 +33,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     sinon.stub(IModelApp, "settings").get(() => settingsAdminMock.object);
 
     authorizationClientMock = moq.Mock.ofType<FrontendAuthorizationClient>();
-    authorizationClientMock.setup((x) => x.isAuthorized).returns(() => true);
+    authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => true);
     IModelApp.authorizationClient = authorizationClientMock.object;
 
     storage = new IModelAppFavoritePropertiesStorage();
@@ -93,7 +93,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.isAuthorized).returns(() => false);
+      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
       await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
 
@@ -113,7 +113,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.isAuthorized).returns(() => false);
+      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
       await expect(storage.saveProperties(new Set())).to.eventually.be.rejected;
     });
 
@@ -153,7 +153,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.isAuthorized).returns(() => false);
+      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
       await expect(storage.loadPropertiesOrder("projectId", "imodelId")).to.eventually.be.rejected;
     });
 
@@ -179,7 +179,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.isAuthorized).returns(() => false);
+      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
       await expect(storage.savePropertiesOrder([], "projectId", "imodelId")).to.eventually.be.rejected;
     });
 

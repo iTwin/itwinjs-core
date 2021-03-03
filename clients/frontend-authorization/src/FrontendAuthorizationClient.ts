@@ -5,23 +5,29 @@
 /** @packageDocumentation
  * @module Authorization
  */
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
+import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 
 /**
  * @beta
  */
-export interface FrontendAuthorizationClient {
-  isAuthorized: boolean;
-
-  /** Called to start the sign-in process. Subscribe to  onUserStateChanged to be notified when sign-in completes */
-  signIn(): Promise<void>;
+export interface FrontendAuthorizationClient extends AuthorizationClient {
+  /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
+  signIn(requestContext?: ClientRequestContext): Promise<void>;
 
   /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
-  signOut(): Promise<void>;
+  signOut(requestContext?: ClientRequestContext): Promise<void>;
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
-  readonly onUserStateChanged: BeEvent<(token?: AccessToken) => void>;
+  readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
 
-  getAccessToken(): Promise<AccessToken>;
+  /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
+  hasSignedIn: boolean;
 }
+
+/** FrontendAuthorization type guard.
+ * @beta
+ */
+export const isFrontendAuthorizationClient = (client: AuthorizationClient | undefined): client is FrontendAuthorizationClient => {
+  return client !== undefined && (client as FrontendAuthorizationClient).signIn !== undefined && (client as FrontendAuthorizationClient).signOut !== undefined;
+};

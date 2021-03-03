@@ -23,7 +23,7 @@ import {
 } from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
-  if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.isAuthorized)
+  if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
     return undefined; // Not signed in
 
   try {
