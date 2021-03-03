@@ -11,7 +11,7 @@ import { Viewport } from "../../Viewport";
 import { MockRender } from "../../render/MockRender";
 import { createBlankConnection } from "../createBlankConnection";
 import {
-  Tile, TileContent, TileLoadPriority, TileRequest, TileRequestChannel, TileTree,
+  Tile, TileContent, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileTree,
 } from "../../tile/internal";
 
 class TestTile extends Tile {
@@ -33,6 +33,10 @@ class TestTile extends Tile {
 
     this.requestChannel = channel;
     this.priority = priority;
+  }
+
+  public expectStatus(expected: TileLoadStatus) {
+    expect(this.loadStatus).to.equal(expected);
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
@@ -96,7 +100,6 @@ class TestTile extends Tile {
 }
 
 class TestTree extends TileTree {
-  // This is unused by the tests - it just has to exist.
   private readonly _rootTile: TestTile;
 
   public constructor(iModel: IModelConnection, channel: TileRequestChannel, priority = TileLoadPriority.Primary) {
@@ -120,8 +123,21 @@ class TestTree extends TileTree {
   public prune() { }
 }
 
-function mockViewport(viewportId: number): Viewport {
-  return { viewportId } as Viewport;
+function mockViewport(viewportId: number, iModel: IModelConnection): Viewport {
+  return {
+    viewportId,
+    iModel,
+    invalidateScene: () => { },
+  } as Viewport;
+}
+
+function requestTiles(vp: Viewport, tiles: TestTile[]): void {
+  IModelApp.tileAdmin.requestTiles(vp, new Set<Tile>(tiles));
+}
+
+async function processOnce(): Promise<void> {
+  IModelApp.tileAdmin.process();
+  return new Promise((resolve: any) => setTimeout(resolve, 1));
 }
 
 describe("TileRequestChannel", () => {
@@ -129,7 +145,6 @@ describe("TileRequestChannel", () => {
 
   beforeEach(async () => {
     await MockRender.App.startup();
-    IModelApp.stopEventLoop();
     imodel = createBlankConnection();
   });
 
@@ -139,6 +154,108 @@ describe("TileRequestChannel", () => {
       await MockRender.App.shutdown();
   });
 
+  it("processes one request", async () => {
+    class Channel extends TileRequestChannel {
+      public readonly calledFunctions: string[] = [];
+
+      public constructor() {
+        super("test", 1);
+      }
+
+      private log(functionName: string) {
+        this.calledFunctions.push(functionName);
+      }
+
+      public clear() {
+        this.calledFunctions.length = 0;
+      }
+
+      public expect(functionNames: string[]) {
+        expect(this.calledFunctions).to.deep.equal(functionNames);
+      }
+
+      public expectRequests(active: number, pending: number) {
+        expect(this.numActive).to.equal(active);
+        expect(this.numPending).to.equal(pending);
+      }
+
+      public recordCompletion(tile: Tile): void {
+        this.log("recordCompletion");
+        super.recordCompletion(tile);
+      }
+
+      public swapPending() {
+        this.log("swapPending");
+        super.swapPending();
+      }
+
+      public append(request: TileRequest) {
+        this.log("append");
+        super.append(request);
+      }
+
+      public process() {
+        this.log("process");
+        super.process();
+      }
+
+      protected dispatch(request: TileRequest) {
+        this.log("dispatch");
+        super.dispatch(request);
+      }
+
+      protected dropActiveRequest(request: TileRequest) {
+        this.log("dropActiveRequest");
+        super.dropActiveRequest(request);
+      }
+
+      protected cancel(request: TileRequest) {
+        this.log("cancel");
+        super.cancel(request);
+      }
+
+      public async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
+        this.log("requestContent");
+        return super.requestContent(tile, isCanceled);
+      }
+
+      public processCancellations() {
+        this.log("processCancellations");
+        super.processCancellations();
+      }
+    }
+
+    const channel = new Channel();
+    IModelApp.tileAdmin.channels.add(channel);
+    const tree = new TestTree(imodel, channel);
+    const vp = mockViewport(1, imodel);
+
+    tree.rootTile.expectStatus(TileLoadStatus.NotLoaded);
+    channel.expectRequests(0, 0);
+    requestTiles(vp, [tree.rootTile]);
+    tree.rootTile.expectStatus(TileLoadStatus.NotLoaded);
+    channel.expectRequests(0, 0);
+    channel.expect([]);
+
+    IModelApp.tileAdmin.process();
+    tree.rootTile.expectStatus(TileLoadStatus.Queued);
+    channel.expect(["swapPending", "append", "process", "processCancellations", "dispatch", "requestContent"]);
+    channel.expectRequests(1, 0);
+
+    channel.clear();
+    tree.rootTile.resolveRequest("content");
+    await processOnce();
+    channel.expect(["swapPending", "process", "processCancellations", "dropActiveRequest"]);
+    channel.expectRequests(0, 0);
+    tree.rootTile.expectStatus(TileLoadStatus.Loading);
+
+    channel.clear();
+    tree.rootTile.resolveRead({ });
+    await processOnce();
+    channel.expect(["swapPending", "process", "processCancellations", "recordCompletion"]);
+    channel.expectRequests(0, 0);
+    tree.rootTile.expectStatus(TileLoadStatus.Ready);
+  });
 
   it("observes limits on max active requests", async () => {
   });

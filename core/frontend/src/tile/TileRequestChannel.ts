@@ -252,7 +252,8 @@ export class TileRequestChannel {
     return tile.requestContent(isCanceled);
   }
 
-  private dispatch(request: TileRequest): void {
+  /** Protected only for tests - do not override. @internal */
+  protected dispatch(request: TileRequest): void {
     ++this._statistics.totalDispatchedRequests;
     this._active.add(request);
     request.dispatch(() => {
@@ -262,12 +263,14 @@ export class TileRequestChannel {
     });
   }
 
-  private cancel(request: TileRequest): void {
+  /** Protected only for tests - do not override. @internal */
+  protected cancel(request: TileRequest): void {
     request.cancel();
     ++this._statistics.numCanceled;
   }
 
-  private dropActiveRequest(request: TileRequest): void {
+  /** Protected only for tests - do not override. @internal */
+  protected dropActiveRequest(request: TileRequest): void {
     assert(this._active.has(request) || request.isCanceled);
     this._active.delete(request);
   }
