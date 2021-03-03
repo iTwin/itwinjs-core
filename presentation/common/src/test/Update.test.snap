@@ -16,43 +16,26 @@ Object {
           "typeName": "string",
         },
       },
+      "parent": undefined,
       "position": 123,
       "type": "Insert",
     },
     Object {
-      "changes": Array [
-        Object {
-          "name": "test",
-          "new": "new value",
-          "old": "old value",
-        },
-      ],
-      "node": Object {
-        "key": Object {
-          "instanceKeys": Array [],
-          "pathFromRoot": Array [],
-          "type": "ECInstancesNode",
-        },
-        "label": Object {
-          "displayValue": "TestNode",
-          "rawValue": "test_node",
-          "typeName": "string",
-        },
+      "changes": Object {
+        "backColor": "new value",
+      },
+      "target": Object {
+        "instanceKeys": Array [],
+        "pathFromRoot": Array [],
+        "type": "ECInstancesNode",
       },
       "type": "Update",
     },
     Object {
-      "node": Object {
-        "key": Object {
-          "instanceKeys": Array [],
-          "pathFromRoot": Array [],
-          "type": "ECInstancesNode",
-        },
-        "label": Object {
-          "displayValue": "TestNode",
-          "rawValue": "test_node",
-          "typeName": "string",
-        },
+      "target": Object {
+        "instanceKeys": Array [],
+        "pathFromRoot": Array [],
+        "type": "ECInstancesNode",
       },
       "type": "Delete",
     },
@@ -80,43 +63,26 @@ Object {
           "typeName": "string",
         },
       },
+      "parent": undefined,
       "position": 123,
       "type": "Insert",
     },
     Object {
-      "changes": Array [
-        Object {
-          "name": "test",
-          "new": "new value",
-          "old": "old value",
-        },
-      ],
-      "node": Object {
-        "key": Object {
-          "instanceKeys": Array [],
-          "pathFromRoot": Array [],
-          "type": "ECInstancesNode",
-        },
-        "labelDefinition": Object {
-          "displayValue": "TestNode",
-          "rawValue": "test_node",
-          "typeName": "string",
-        },
+      "changes": Object {
+        "backColor": "new value",
+      },
+      "target": Object {
+        "instanceKeys": Array [],
+        "pathFromRoot": Array [],
+        "type": "ECInstancesNode",
       },
       "type": "Update",
     },
     Object {
-      "node": Object {
-        "key": Object {
-          "instanceKeys": Array [],
-          "pathFromRoot": Array [],
-          "type": "ECInstancesNode",
-        },
-        "labelDefinition": Object {
-          "displayValue": "TestNode",
-          "rawValue": "test_node",
-          "typeName": "string",
-        },
+      "target": Object {
+        "instanceKeys": Array [],
+        "pathFromRoot": Array [],
+        "type": "ECInstancesNode",
       },
       "type": "Delete",
     },
@@ -131,17 +97,10 @@ Object {
 exports[`HierarchyUpdateInfo fromJSON deserializes partial \`HierarchyUpdateInfo\` from JSON 1`] = `
 Array [
   Object {
-    "node": Object {
-      "key": Object {
-        "instanceKeys": Array [],
-        "pathFromRoot": Array [],
-        "type": "ECInstancesNode",
-      },
-      "label": Object {
-        "displayValue": "TestNode",
-        "rawValue": "test_node",
-        "typeName": "string",
-      },
+    "target": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
     },
     "type": "Delete",
   },
@@ -151,17 +110,10 @@ Array [
 exports[`HierarchyUpdateInfo toJSON serializes partial \`HierarchyUpdateInfo\` to JSON 1`] = `
 Array [
   Object {
-    "node": Object {
-      "key": Object {
-        "instanceKeys": Array [],
-        "pathFromRoot": Array [],
-        "type": "ECInstancesNode",
-      },
-      "labelDefinition": Object {
-        "displayValue": "TestNode",
-        "rawValue": "test_node",
-        "typeName": "string",
-      },
+    "target": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
     },
     "type": "Delete",
   },
@@ -170,23 +122,16 @@ Array [
 
 exports[`PartialHierarchyModification fromJSON deserializes \`NodeDeletionInfo\` from JSON 1`] = `
 Object {
-  "node": Object {
-    "key": Object {
-      "instanceKeys": Array [],
-      "pathFromRoot": Array [],
-      "type": "ECInstancesNode",
-    },
-    "label": Object {
-      "displayValue": "TestNode",
-      "rawValue": "test_node",
-      "typeName": "string",
-    },
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
   },
   "type": "Delete",
 }
 `;
 
-exports[`PartialHierarchyModification fromJSON deserializes \`NodeInsertionInfo\` from JSON 1`] = `
+exports[`PartialHierarchyModification fromJSON deserializes \`NodeInsertionInfo\` with parent from JSON 1`] = `
 Object {
   "node": Object {
     "key": Object {
@@ -200,6 +145,31 @@ Object {
       "typeName": "string",
     },
   },
+  "parent": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+  },
+  "position": 123,
+  "type": "Insert",
+}
+`;
+
+exports[`PartialHierarchyModification fromJSON deserializes \`NodeInsertionInfo\` without parent from JSON 1`] = `
+Object {
+  "node": Object {
+    "key": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
+    },
+    "label": Object {
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
+      "typeName": "string",
+    },
+  },
+  "parent": undefined,
   "position": 123,
   "type": "Insert",
 }
@@ -207,24 +177,13 @@ Object {
 
 exports[`PartialHierarchyModification fromJSON deserializes \`NodeUpdateInfo\` from JSON 1`] = `
 Object {
-  "changes": Array [
-    Object {
-      "name": "test",
-      "new": "new value",
-      "old": "old value",
-    },
-  ],
-  "node": Object {
-    "key": Object {
-      "instanceKeys": Array [],
-      "pathFromRoot": Array [],
-      "type": "ECInstancesNode",
-    },
-    "label": Object {
-      "displayValue": "TestNode",
-      "rawValue": "test_node",
-      "typeName": "string",
-    },
+  "changes": Object {
+    "backColor": "new value",
+  },
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
   },
   "type": "Update",
 }
@@ -232,23 +191,16 @@ Object {
 
 exports[`PartialHierarchyModification toJSON serializes \`NodeDeletionInfo\` 1`] = `
 Object {
-  "node": Object {
-    "key": Object {
-      "instanceKeys": Array [],
-      "pathFromRoot": Array [],
-      "type": "ECInstancesNode",
-    },
-    "labelDefinition": Object {
-      "displayValue": "TestNode",
-      "rawValue": "test_node",
-      "typeName": "string",
-    },
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
   },
   "type": "Delete",
 }
 `;
 
-exports[`PartialHierarchyModification toJSON serializes \`NodeInsertionInfo\` 1`] = `
+exports[`PartialHierarchyModification toJSON serializes \`NodeInsertionInfo\` with parent 1`] = `
 Object {
   "node": Object {
     "key": Object {
@@ -262,6 +214,31 @@ Object {
       "typeName": "string",
     },
   },
+  "parent": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+  },
+  "position": 123,
+  "type": "Insert",
+}
+`;
+
+exports[`PartialHierarchyModification toJSON serializes \`NodeInsertionInfo\` without parent 1`] = `
+Object {
+  "node": Object {
+    "key": Object {
+      "instanceKeys": Array [],
+      "pathFromRoot": Array [],
+      "type": "ECInstancesNode",
+    },
+    "labelDefinition": Object {
+      "displayValue": "TestNode",
+      "rawValue": "test_node",
+      "typeName": "string",
+    },
+  },
+  "parent": undefined,
   "position": 123,
   "type": "Insert",
 }
@@ -269,24 +246,13 @@ Object {
 
 exports[`PartialHierarchyModification toJSON serializes \`NodeUpdateInfo\` 1`] = `
 Object {
-  "changes": Array [
-    Object {
-      "name": "test",
-      "new": "new value",
-      "old": "old value",
-    },
-  ],
-  "node": Object {
-    "key": Object {
-      "instanceKeys": Array [],
-      "pathFromRoot": Array [],
-      "type": "ECInstancesNode",
-    },
-    "labelDefinition": Object {
-      "displayValue": "TestNode",
-      "rawValue": "test_node",
-      "typeName": "string",
-    },
+  "changes": Object {
+    "backColor": "new value",
+  },
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
   },
   "type": "Update",
 }
@@ -309,17 +275,10 @@ Object {
       "content": undefined,
       "hierarchy": Array [
         Object {
-          "node": Object {
-            "key": Object {
-              "instanceKeys": Array [],
-              "pathFromRoot": Array [],
-              "type": "ECInstancesNode",
-            },
-            "label": Object {
-              "displayValue": "TestNode",
-              "rawValue": "test_node",
-              "typeName": "string",
-            },
+          "target": Object {
+            "instanceKeys": Array [],
+            "pathFromRoot": Array [],
+            "type": "ECInstancesNode",
           },
           "type": "Delete",
         },
@@ -346,17 +305,10 @@ Object {
       "content": undefined,
       "hierarchy": Array [
         Object {
-          "node": Object {
-            "key": Object {
-              "instanceKeys": Array [],
-              "pathFromRoot": Array [],
-              "type": "ECInstancesNode",
-            },
-            "labelDefinition": Object {
-              "displayValue": "TestNode",
-              "rawValue": "test_node",
-              "typeName": "string",
-            },
+          "target": Object {
+            "instanceKeys": Array [],
+            "pathFromRoot": Array [],
+            "type": "ECInstancesNode",
           },
           "type": "Delete",
         },

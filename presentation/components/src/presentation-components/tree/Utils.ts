@@ -6,7 +6,7 @@
  * @module Tree
  */
 
-import { LabelDefinition, Node, NodeKey, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
+import { LabelDefinition, Node, NodeKey, PartialNode, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";
@@ -22,68 +22,136 @@ export interface CreateTreeNodeItemProps {
 }
 
 /** @internal */
-export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string, props?: CreateTreeNodeItemProps): DelayLoadedTreeNodeItem[] => {
+export function createTreeNodeItems(
+  nodes: ReadonlyArray<Readonly<Node>>,
+  parentId?: string,
+  props?: CreateTreeNodeItemProps,
+): DelayLoadedTreeNodeItem[] {
   const list = new Array<DelayLoadedTreeNodeItem>();
   for (const node of nodes)
     list.push(createTreeNodeItem(node, parentId, props));
   return list;
-};
+}
 
 /** @internal */
-export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string, props?: CreateTreeNodeItemProps): DelayLoadedTreeNodeItem => {
+export function createTreeNodeItem(
+  node: Readonly<Node>,
+  parentId?: string,
+  props?: CreateTreeNodeItemProps,
+): DelayLoadedTreeNodeItem {
   const item: DelayLoadedTreeNodeItem = {
-    id: [...node.key.pathFromRoot].reverse().join("/"),
+    id: createTreeNodeId(node.key),
     label: createNodeLabelRecord(node, !!props?.appendChildrenCountForGroupingNodes),
   };
-  (item as any)[PRESENTATION_TREE_NODE_KEY] = node.key;
-
-  const style: ItemStyle = {};
-  const colorOverrides: ItemColorOverrides = {};
-  if (parentId)
-    item.parentId = parentId;
-  if (node.description)
-    item.description = node.description;
-  if (node.hasChildren)
-    item.hasChildren = true;
-  if (node.isExpanded)
-    item.autoExpand = true;
-  if (node.imageId)
-    item.icon = node.imageId;
-  if (StyleHelper.isBold(node))
-    style.isBold = true;
-  if (StyleHelper.isItalic(node))
-    style.isItalic = true;
-  const foreColor = StyleHelper.getForeColor(node);
-  if (foreColor)
-    colorOverrides.color = foreColor;
-  const backColor = StyleHelper.getBackColor(node);
-  if (backColor)
-    colorOverrides.backgroundColor = backColor;
-  if (node.isCheckboxVisible) {
-    item.isCheckboxVisible = true;
-    if (node.isChecked)
-      item.checkBoxState = CheckBoxState.On;
-    if (!node.isCheckboxEnabled)
-      item.isCheckboxDisabled = true;
-  }
-  if (Object.keys(colorOverrides).length > 0)
-    style.colorOverrides = colorOverrides;
-  if (Object.keys(style).length > 0)
-    item.style = style;
-  if (node.extendedData)
-    item.extendedData = node.extendedData;
-
+  assignOptionalTreeNodeItemFields(item, node, parentId);
   return item;
-};
+}
 
 /** @internal */
-export const pageOptionsUiToPresentation = (pageOptions?: UiPageOptions): PresentationPageOptions | undefined => {
+export function createPartialTreeNodeItem(
+  node: PartialNode,
+  parentId: string | undefined,
+  props: CreateTreeNodeItemProps,
+): Partial<DelayLoadedTreeNodeItem> {
+  const item: Partial<DelayLoadedTreeNodeItem> = {};
+  if (node.key !== undefined) {
+    item.id = createTreeNodeId(node.key);
+    item.label = createNodeLabelRecord(node, !!props.appendChildrenCountForGroupingNodes);
+  }
+
+  assignOptionalTreeNodeItemFields(item, node, parentId);
+  return item;
+}
+
+/** @internal */
+export function createTreeNodeId(key: NodeKey): string {
+  return [...key.pathFromRoot].reverse().join("/");
+}
+
+function assignOptionalTreeNodeItemFields(
+  item: Partial<DelayLoadedTreeNodeItem>,
+  node: Partial<Node>,
+  parentId?: string,
+): void {
+  (item as any)[PRESENTATION_TREE_NODE_KEY] = node.key;
+
+  if (parentId) {
+    item.parentId = parentId;
+  }
+
+  if (node.description) {
+    item.description = node.description;
+  }
+
+  if (node.hasChildren) {
+    item.hasChildren = true;
+  }
+
+  if (node.isExpanded) {
+    item.autoExpand = true;
+  }
+
+  if (node.imageId) {
+    item.icon = node.imageId;
+  }
+
+  if (node.isCheckboxVisible) {
+    item.isCheckboxVisible = true;
+    if (node.isChecked) {
+      item.checkBoxState = CheckBoxState.On;
+    }
+
+    if (!node.isCheckboxEnabled) {
+      item.isCheckboxDisabled = true;
+    }
+  }
+
+  const style = createTreeNodeItemStyle(node);
+  if (Object.keys(style).length > 0) {
+    item.style = style;
+  }
+
+  if (node.extendedData) {
+    item.extendedData = node.extendedData;
+  }
+}
+
+function createTreeNodeItemStyle(node: Partial<Node>): ItemStyle {
+  const style: ItemStyle = {};
+  if (StyleHelper.isBold(node)) {
+    style.isBold = true;
+  }
+
+  if (StyleHelper.isItalic(node)) {
+    style.isItalic = true;
+  }
+
+  const colorOverrides: ItemColorOverrides = {};
+  const foreColor = StyleHelper.getForeColor(node);
+  if (foreColor) {
+    colorOverrides.color = foreColor;
+  }
+
+  const backColor = StyleHelper.getBackColor(node);
+  if (backColor) {
+    colorOverrides.backgroundColor = backColor;
+  }
+
+  if (Object.keys(colorOverrides).length > 0) {
+    style.colorOverrides = colorOverrides;
+  }
+
+  return style;
+}
+
+/** @internal */
+export function pageOptionsUiToPresentation(pageOptions?: UiPageOptions): PresentationPageOptions | undefined {
   if (pageOptions)
     return { ...pageOptions };
   return undefined;
-};
+}
 
-const createNodeLabelRecord = (node: Node, appendChildrenCountForGroupingNodes: boolean): PropertyRecord => {
+function createNodeLabelRecord(node: Node, appendChildrenCountForGroupingNodes: boolean): PropertyRecord {
   let labelDefinition = node.label;
   if (appendChildrenCountForGroupingNodes && NodeKey.isGroupingNodeKey(node.key)) {
     const countDefinition: LabelDefinition = {
@@ -104,4 +172,4 @@ const createNodeLabelRecord = (node: Node, appendChildrenCountForGroupingNodes: 
     };
   }
   return createLabelRecord(labelDefinition, "node_label");
-};
+}

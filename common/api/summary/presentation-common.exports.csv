@@ -170,9 +170,11 @@ public;NestedContentValue
 public;NestedContentValueJSON
 public;Node
 public;Node
+internal;fromPartialJSON(json: PartialNodeJSON): PartialNode
 internal;listFromJSON(json: NodeJSON[] | string): Node[]
 internal;listReviver(key: string, value: any): any
 internal;reviver(key: string, value: any): any
+internal;toPartialJSON(node: PartialNode): PartialNodeJSON
 public;NodeArtifactsRule 
 alpha;NodeDeletionInfo
 alpha;NodeDeletionInfoJSON
@@ -201,6 +203,8 @@ public;PageOptions
 alpha;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
 alpha;PartialHierarchyModification
 alpha;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
+alpha;PartialNode = AllOrNone
+alpha;PartialNodeJSON = AllOrNone
 internal;PRESENTATION_COMMON_ROOT: string
 internal;PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface"
 alpha;PresentationDataCompareOptions

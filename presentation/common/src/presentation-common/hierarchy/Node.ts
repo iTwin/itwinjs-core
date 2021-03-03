@@ -43,7 +43,9 @@ export interface Node {
   /** Is this node's checkbox enabled */
   isCheckboxEnabled?: boolean;
   /** Extended data injected into this node */
-  extendedData?: { [key: string]: any };
+  extendedData?: {
+    [key: string]: any;
+  };
 }
 
 /**
@@ -65,17 +67,39 @@ export interface NodeJSON {
   isCheckboxVisible?: boolean;
   isChecked?: boolean;
   isCheckboxEnabled?: boolean;
-  extendedData?: { [key: string]: any };
+  extendedData?: {
+    [key: string]: any;
+  };
 }
+
+/** @alpha */
+export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
+/** @alpha */
+export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
+type AllOrNone<T, P extends keyof T> = Omit<T, P> & ({ [K in P]?: never } | Required<Pick<T, P>>);
 
 /** @public */
 export namespace Node {
   /** Serialize given [[Node]] to JSON */
   export function toJSON(node: Node): NodeJSON {
-    const { label, ...baseNode } = node;
+    const { key, label, ...baseNode } = node;
     return {
       ...baseNode,
-      key: NodeKey.toJSON(node.key),
+      key: NodeKey.toJSON(key),
+      labelDefinition: LabelDefinition.toJSON(label),
+    };
+  }
+
+  /** @internal */
+  export function toPartialJSON(node: PartialNode): PartialNodeJSON {
+    if (node.key === undefined) {
+      return node;
+    }
+
+    const { key, label, ...baseNode } = node;
+    return {
+      ...baseNode,
+      key: NodeKey.toJSON(key),
       labelDefinition: LabelDefinition.toJSON(label),
     };
   }
@@ -88,6 +112,20 @@ export namespace Node {
     return {
       ...baseJson,
       key: NodeKey.fromJSON(json.key),
+      label: LabelDefinition.fromJSON(labelDefinition),
+    };
+  }
+
+  /** @internal */
+  export function fromPartialJSON(json: PartialNodeJSON): PartialNode {
+    if (json.key === undefined) {
+      return json;
+    }
+
+    const { key, labelDefinition, ...baseJson } = json;
+    return {
+      ...baseJson,
+      key: NodeKey.fromJSON(key),
       label: LabelDefinition.fromJSON(labelDefinition),
     };
   }

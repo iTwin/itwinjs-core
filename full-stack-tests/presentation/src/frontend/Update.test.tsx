@@ -35,7 +35,11 @@ describe("Update", () => {
     await terminate();
   });
 
-  describe("hierarchy", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  describe("detection", () => {
     let hierarchyCompareSpy: SinonSpy<typeof Presentation.presentation.compareHierarchies>;
     let defaultProps: Omit<PresentationTreeNodeLoaderProps, "ruleset">;
 
@@ -46,10 +50,6 @@ describe("Update", () => {
         pagingSize: 100,
         enableHierarchyAutoUpdate: true,
       };
-    });
-
-    afterEach(() => {
-      sinon.restore();
     });
 
     describe("on ruleset modification", () => {
@@ -83,15 +83,11 @@ describe("Update", () => {
         await hierarchy.verifyChange(
           [{
             type: "Update",
-            node: { key: { type: "T_NODE" }, label: { displayValue: "test-2" } },
-            changes: [
-              { name: "Key" },
-              {
-                name: "LabelDefinition",
-                old: { displayValue: "test-1" },
-                new: { displayValue: "test-2" },
-              },
-            ],
+            target: { type: "T_NODE" },
+            changes: {
+              key: {},
+              label: { displayValue: "test-2" },
+            },
           }],
           ["test-2"],
         );
@@ -131,12 +127,12 @@ describe("Update", () => {
           [
             {
               type: "Delete",
-              node: { key: { instanceKeys: [{ className: "Generic:PhysicalObject", id: "0x74" }] } },
+              target: { instanceKeys: [{ className: "Generic:PhysicalObject", id: "0x74" }] },
             },
             {
               type: "Update",
-              node: { key: { instanceKeys: [{ className: "Generic:PhysicalObject", id: "0x75" }] } },
-              changes: [{ name: "Key" }],
+              target: { instanceKeys: [{ className: "Generic:PhysicalObject", id: "0x75" }] },
+              changes: { key: {} },
             }],
           ["Physical Object [0-39]"],
         );
@@ -181,7 +177,7 @@ describe("Update", () => {
           [
             {
               type: "Update",
-              node: { key: { type: StandardNodeTypes.ECClassGroupingNode } },
+              target: { type: StandardNodeTypes.ECClassGroupingNode },
             },
             {
               type: "Insert",
@@ -253,7 +249,7 @@ describe("Update", () => {
         await hierarchy.verifyChange(
           [{
             type: "Delete",
-            node: { key: { type: "T_NODE_1" }, label: { displayValue: "test-1" } },
+            target: { type: "T_NODE_1" },
           }],
           ["test-2"],
         );
@@ -304,11 +300,11 @@ describe("Update", () => {
           [
             {
               type: "Delete",
-              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
+              target: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] },
             },
             {
               type: "Delete",
-              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
+              target: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] },
             },
           ],
           [],
@@ -345,21 +341,13 @@ describe("Update", () => {
           [
             {
               type: "Update",
-              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
-              changes: [{
-                name: "ForeColor",
-                old: "",
-                new: "Red",
-              }],
+              target: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] },
+              changes: { foreColor: "Red" },
             },
             {
               type: "Update",
-              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
-              changes: [{
-                name: "ForeColor",
-                old: "",
-                new: "Red",
-              }],
+              target: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] },
+              changes: { foreColor: "Red" },
             },
           ],
           [
@@ -399,21 +387,13 @@ describe("Update", () => {
           [
             {
               type: "Update",
-              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
-              changes: [{
-                name: "ForeColor",
-                old: "",
-                new: "Red",
-              }],
+              target: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] },
+              changes: { foreColor: "Red" },
             },
             {
               type: "Update",
-              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
-              changes: [{
-                name: "ForeColor",
-                old: "",
-                new: "Red",
-              }],
+              target: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] },
+              changes: { foreColor: "Red" },
             },
           ],
           [
@@ -427,21 +407,13 @@ describe("Update", () => {
           [
             {
               type: "Update",
-              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] } },
-              changes: [{
-                name: "ForeColor",
-                old: "Red",
-                new: "Blue",
-              }],
+              target: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x74" }] },
+              changes: { foreColor: "Blue" },
             },
             {
               type: "Update",
-              node: { key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] } },
-              changes: [{
-                name: "ForeColor",
-                old: "Red",
-                new: "Blue",
-              }],
+              target: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [{ id: "0x75" }] },
+              changes: { foreColor: "Blue" },
             },
           ],
           [
@@ -507,29 +479,114 @@ describe("Update", () => {
           [
             {
               type: "Update",
-              node: { key: { type: "T_ROOT_1" } },
-              changes: [{
-                name: "HasChildren",
-                old: true,
-                new: false,
-              }],
+              target: { type: "T_ROOT_1" },
+              changes: { hasChildren: false },
             },
             {
               type: "Update",
-              node: { key: { type: "T_ROOT_2" } },
-              changes: [{
-                name: "HasChildren",
-                old: true,
-                new: false,
-              }],
+              target: { type: "T_ROOT_2" },
+              changes: { hasChildren: false },
             },
             {
               type: "Delete",
-              node: { key: { type: "T_CHILD_1" } },
+              target: { type: "T_CHILD_1" },
             },
           ],
           ["root-1", "root-2"],
         );
+      });
+    });
+
+    describe("partial update", () => {
+      it("handles node insertion", async () => {
+        const ruleset = await Presentation.presentation.rulesets().add({
+          id: faker.random.uuid(),
+          rules: [{
+            ruleType: RuleTypes.RootNodes,
+            specifications: [{ specType: ChildNodeSpecificationTypes.CustomNode, type: "T_NODE", label: "test-1" }],
+          }],
+        });
+        const hierarchy = await verifyHierarchy({ ...defaultProps, ruleset }, ["test-1"]);
+
+        await Presentation.presentation.rulesets().modify(
+          ruleset,
+          {
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [
+                { specType: ChildNodeSpecificationTypes.CustomNode, type: "T_NODE", label: "test-1" },
+                { specType: ChildNodeSpecificationTypes.CustomNode, type: "T_NODE", label: "test-2" },
+              ],
+            }],
+          },
+        );
+        await hierarchy.verifyChange(
+          [{
+            type: "Insert",
+            parent: undefined,
+            position: 1,
+            node: {
+              key: { type: "T_NODE" },
+              label: { displayValue: "test-2" },
+            },
+          }],
+          ["test-1", "test-2"],
+        );
+      });
+
+      it("handles node update", async () => {
+        const ruleset = await Presentation.presentation.rulesets().add({
+          id: faker.random.uuid(),
+          rules: [{
+            ruleType: RuleTypes.RootNodes,
+            specifications: [{ specType: ChildNodeSpecificationTypes.CustomNode, type: "T_NODE", label: "test-1" }],
+          }],
+        });
+        const hierarchy = await verifyHierarchy({ ...defaultProps, ruleset }, ["test-1"]);
+
+        await Presentation.presentation.rulesets().modify(
+          ruleset,
+          {
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [
+                { specType: ChildNodeSpecificationTypes.CustomNode, type: "T_NODE", label: "test-updated" },
+              ],
+            }],
+          },
+        );
+        await hierarchy.verifyChange(
+          [{
+            type: "Update",
+            target: { type: "T_NODE" },
+            changes: {
+              label: { displayValue: "test-updated" },
+            },
+          }],
+          ["test-updated"],
+        );
+      });
+
+      it("handles node removal", async () => {
+        const ruleset = await Presentation.presentation.rulesets().add({
+          id: faker.random.uuid(),
+          rules: [{
+            ruleType: RuleTypes.RootNodes,
+            specifications: [{ specType: ChildNodeSpecificationTypes.CustomNode, type: "T_NODE", label: "test-1" }],
+          }],
+        });
+        const hierarchy = await verifyHierarchy({ ...defaultProps, ruleset }, ["test-1"]);
+
+        await Presentation.presentation.rulesets().modify(
+          ruleset,
+          {
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [],
+            }],
+          },
+        );
+        await hierarchy.verifyChange([{ type: "Delete", target: { type: "T_NODE" } }], []);
       });
     });
 

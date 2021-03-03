@@ -5164,7 +5164,7 @@ export interface TreeModelRootNode {
 
 // @beta
 export class TreeModelSource {
-    constructor();
+    constructor(_model?: MutableTreeModel);
     getModel(): TreeModel;
     getVisibleNodes(): VisibleTreeNodes;
     modifyModel(callback: (model: MutableTreeModel) => void): void;
