@@ -29,6 +29,16 @@ import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { SliderModeFunction } from 'react-compound-slider';
 import { ValueType } from 'react-select/src/types';
 
+// @beta
+export class ActivateSettingsTabEvent extends BeUiEvent<ActivateSettingsTabEventArgs> {
+}
+
+// @beta
+export interface ActivateSettingsTabEventArgs {
+    // (undocumented)
+    readonly settingsTabId: string;
+}
+
 // @internal
 export class AnnularSector {
     constructor(parent: Annulus, startAngle: number, endAngle: number);
@@ -270,6 +280,10 @@ export class Circle {
 // @public
 export interface ClassNameProps {
     className?: string;
+}
+
+// @internal
+export class CloseSettingsContainerEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> {
 }
 
 // @public
@@ -1540,6 +1554,30 @@ export interface PopupProps extends CommonProps {
 }
 
 // @beta
+export class ProcessSettingsContainerCloseEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> {
+}
+
+// @beta
+export interface ProcessSettingsContainerCloseEventArgs {
+    // (undocumented)
+    readonly closeFunc: (args: any) => void;
+    // (undocumented)
+    readonly closeFuncArgs?: any;
+}
+
+// @beta
+export class ProcessSettingsTabActivationEvent extends BeUiEvent<ProcessSettingsTabActivationEventArgs> {
+}
+
+// @beta
+export interface ProcessSettingsTabActivationEventArgs {
+    // (undocumented)
+    readonly requestedSettingsTabId: string;
+    // (undocumented)
+    readonly tabSelectionFunc: (tabId: string) => void;
+}
+
+// @beta
 export function ProgressBar(props: ProgressBarProps): JSX.Element;
 
 // @beta
@@ -1858,6 +1896,72 @@ export class SessionUiSettings implements UiSettings {
     w: Window;
 }
 
+// @beta
+export const SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager }: SettingsContainerProps) => JSX.Element;
+
+// @beta (undocumented)
+export interface SettingsContainerProps {
+    // (undocumented)
+    currentSettingsTab?: SettingsTabEntry;
+    // (undocumented)
+    onSettingsTabSelected?: (tab: SettingsTabEntry) => void;
+    // (undocumented)
+    settingsManager: SettingsManager;
+    // (undocumented)
+    tabs: SettingsTabEntry[];
+}
+
+// @beta
+export class SettingsManager {
+    activateSettingsTab(settingsTabId: string): void;
+    // (undocumented)
+    addSettingsProvider(settingsProvider: SettingsProvider): void;
+    closeSettingsContainer(closeFunc: (args: any) => void, closeFuncArgs?: any): void;
+    getSettingEntries(stageId: string, stageUsage: string): Array<SettingsTabEntry>;
+    // @internal
+    readonly onActivateSettingsTab: ActivateSettingsTabEvent;
+    // @internal
+    readonly onCloseSettingsContainer: CloseSettingsContainerEvent;
+    readonly onProcessSettingsContainerClose: ProcessSettingsContainerCloseEvent;
+    readonly onProcessSettingsTabActivation: ProcessSettingsTabActivationEvent;
+    readonly onSettingsProvidersChanged: SettingsProvidersChangedEvent;
+    // (undocumented)
+    get providers(): ReadonlyArray<SettingsProvider>;
+    set providers(p: ReadonlyArray<SettingsProvider>);
+    // (undocumented)
+    removeSettingsProvider(providerId: string): boolean;
+}
+
+// @beta
+export interface SettingsProvider {
+    // (undocumented)
+    getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined;
+    readonly id: string;
+}
+
+// @beta
+export class SettingsProvidersChangedEvent extends BeUiEvent<SettingsProvidersChangedEventArgs> {
+}
+
+// @beta
+export interface SettingsProvidersChangedEventArgs {
+    // (undocumented)
+    readonly providers: ReadonlyArray<SettingsProvider>;
+}
+
+// @beta
+export interface SettingsTabEntry {
+    readonly icon?: string | JSX.Element;
+    readonly isDisabled?: boolean | ConditionalBooleanValue;
+    readonly itemPriority: number;
+    readonly label: string;
+    readonly page: JSX.Element;
+    readonly pageWillHandleCloseRequest?: boolean;
+    readonly subLabel?: string;
+    readonly tabId: string;
+    readonly tooltip?: string | JSX.Element;
+}
+
 // @internal
 export const shallowDiffers: (a: {
     [key: string]: any;
@@ -2021,6 +2125,21 @@ export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
 
+// @beta
+export interface TabLabel {
+    // (undocumented)
+    disabled?: boolean;
+    // (undocumented)
+    icon?: string | JSX.Element;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    subLabel?: string;
+    // (undocumented)
+    tabId: string;
+    tooltip?: string | JSX.Element;
+}
+
 // @public
 export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
     constructor(props: MainTabsProps);
@@ -2036,7 +2155,8 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
     activeIndex?: number;
     green?: boolean;
-    labels: string[];
+    // @beta
+    labels: Array<string | TabLabel>;
     onActivateTab?: (index: number) => any;
     // @deprecated
     onClickLabel?: (index: number) => any;
@@ -2440,6 +2560,12 @@ export function useRefState<T>(): [React.Ref<T>, T | undefined];
 
 // @internal
 export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
+
+// @beta
+export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void;
+
+// @beta
+export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void): void;
 
 // @internal
 export const useTargeted: (ref: React.RefObject<Element>) => boolean;

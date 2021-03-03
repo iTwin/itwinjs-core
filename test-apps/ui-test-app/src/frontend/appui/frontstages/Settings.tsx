@@ -11,18 +11,9 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
 import { OptionType, Slider, ThemedSelect, ThemedSelectProps, Toggle } from "@bentley/ui-core";
-import { ColorTheme, FrameworkAccuDraw, ModalFrontstageInfo, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
+import { ColorTheme, FrameworkAccuDraw, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
 import { RootState, SampleAppActions, SampleAppIModelApp, SampleAppUiActionId } from "../..";
-
-/** Modal frontstage displaying the active settings.
- * @alpha
- */
-export class SettingsModalFrontstage implements ModalFrontstageInfo {
-  public title: string = UiFramework.i18n.translate("SampleApp:settingsStage.settings");
-  public get content(): React.ReactNode { return (<SettingsPage />); }
-}
-
-interface SettingsPageProps {
+interface UiSettingsPageProps {
   dragInteraction: boolean;
   onToggleDragInteraction: () => void;
   frameworkVersion: string;
@@ -35,8 +26,8 @@ function isOptionType(value: OptionType | ReadonlyArray<OptionType>): value is O
   return true;
 }
 
-/** SettingsPage displaying the active settings. */
-class SettingsPageComponent extends React.Component<SettingsPageProps> {
+/** UiSettingsPage displaying the active settings. */
+class UiSettingsPageComponent extends React.Component<UiSettingsPageProps> {
   private _themeTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.themeTitle");
   private _themeDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.themeDescription");
   private _autoHideTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.autoHideTitle");
@@ -180,7 +171,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const SettingsPage = connect(mapStateToProps, mapDispatchToProps)(SettingsPageComponent);
+export const ConnectedUiSettingsPage = connect(mapStateToProps, mapDispatchToProps)(UiSettingsPageComponent);
 
 interface SettingsItemProps {
   title: string;

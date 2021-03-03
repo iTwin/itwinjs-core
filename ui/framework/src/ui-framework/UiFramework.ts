@@ -16,7 +16,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiComponents } from "@bentley/ui-components";
-import { LocalUiSettings, UiEvent, UiSettings } from "@bentley/ui-core";
+import { LocalUiSettings, SettingsManager, UiEvent, UiSettings } from "@bentley/ui-core";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
@@ -32,6 +32,7 @@ import { SyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispat
 import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
+import * as openSettingTools from "./tools/OpenSettingsTool";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 
@@ -88,6 +89,7 @@ export class UiFramework {
   private static _uiVersion = "";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
   private static _uiSettings: UiSettings;
+  private static _settingsManager?: SettingsManager;
 
   /** Get Show Ui event.
    * @public
@@ -137,6 +139,7 @@ export class UiFramework {
     [
       restoreLayoutTools,
       keyinPaletteTools,
+      openSettingTools,
     ].forEach((tool) => IModelApp.tools.registerModule(tool, frameworkNamespace));
 
     const readFinishedPromise = frameworkNamespace.readFinished;
@@ -163,7 +166,12 @@ export class UiFramework {
     // Initialize ui-components, ui-core & ui-abstract
     await UiComponents.initialize(UiFramework._i18n);
 
+    UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
+    });
+
     UiFramework._initialized = true;
+
     return readFinishedPromise;
   }
 
@@ -180,6 +188,7 @@ export class UiFramework {
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
     UiFramework._hideIsolateEmphasizeActionHandler = undefined;
+    UiFramework._settingsManager = undefined;
 
     UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
 
@@ -189,6 +198,14 @@ export class UiFramework {
 
   /** Determines if UiFramework has been initialized */
   public static get initialized(): boolean { return UiFramework._initialized; }
+
+  /** Property that returns the SettingManager used by AppUI-based applications.
+   *  @beta */
+  public static get settingsManager() {
+    if (undefined === UiFramework._settingsManager)
+      UiFramework._settingsManager = new SettingsManager();
+    return UiFramework._settingsManager;
+  }
 
   /** @beta */
   public static get frameworkStateKey(): string {
