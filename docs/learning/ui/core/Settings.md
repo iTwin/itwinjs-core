@@ -1,10 +1,10 @@
 # Settings
 
-The [SettingsManager]($ui-core) allows the registration of [SettingsProvider]($ui-core) classes to provide the settings to display with the [SettingsContainer]($ui-core) component. In an application that employees App-UI, the [SettingsModalFrontstage]($ui-framework) frontstage will display the SettingsContainer and its entries.
+The [SettingsManager]($ui-core) allows the registration of [SettingsProvider]($ui-core) classes to provide the settings to display with the [SettingsContainer]($ui-core) component. In an application that employs App UI, the [SettingsModalFrontstage]($ui-framework) frontstage will display the SettingsContainer and its entries.
 
 ## SettingsTabEntry
 
-Registered [SettingsProvider]($ui-core) instance will implement the method `getSettingEntries` to return an array of [SettingsProvider]($ui-core) items. Each SettingsTabEntry will populate a Tab entry in the [SettingsContainer]($ui-core) component. The `tabId` property is a string and must be unique across all registered SettingsProviders. A common practice is to prefix the tabId with the package name to ensure uniqueness. The `page` property holds the React.Element that will be used to construct the component to edit settings for this entry.  It is the `page's` responsibility to persist and retrieve persisted settings. If the `page` contains multiple properties that must be saved together the SettingEntry can set the `pageWillHandleCloseRequest` property to `true`. The `page's` control should then register to be notified when the setting container is closing or when the active SettingsEnty is changing so that any unsaved data can be saved. Two React hooks are provided to assist: `settingsManager.onProcessSettingsTabActivation` and `settingsManager.onProcessSettingsContainerClose`.
+Registered [SettingsProvider]($ui-core) instance will implement the method `getSettingEntries` to return an array of [SettingsProvider]($ui-core) items. Each SettingsTabEntry will populate a Tab entry in the [SettingsContainer]($ui-core) component. The `tabId` property is a string and must be unique across all registered SettingsProviders. A common practice is to prefix the tabId with the package name to ensure uniqueness. The `page` property holds the React.Element that will be used to construct the component to edit settings for this entry.  It is the `page's` responsibility to persist and retrieve persisted settings. If the `page` contains multiple properties that must be saved together the SettingsTabEntry can set the `pageWillHandleCloseRequest` property to `true`. The `page's` control should then register to be notified when the setting container is closing or when the active SettingsEnty is changing so that any unsaved data can be saved. Two React hooks are provided to assist: `settingsManager.onProcessSettingsTabActivation` and `settingsManager.onProcessSettingsContainerClose`.
 
 ## Example
 
@@ -41,7 +41,7 @@ export class ExampleSettingsProvider implements SettingsProvider {
   }
 
   public static initializeAppSettingProvider() {
-    // Assuming running in AppUI-based application the SettingsManager instance is available via UiFramework.settingsManager
+    // Assuming running in App UI based application the SettingsManager instance is available via UiFramework.settingsManager
     UiFramework.settingsManager.addSettingsProvider(new AppSettingsProvider());
   }
 }

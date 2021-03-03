@@ -1,6 +1,6 @@
 # Learning iTwin.js UI
 
-For a quick-start approach to creating an iTwin.js app with AppUI, see [Quick start for AppUI](./QuickStartUi.md).
+For a quick-start approach to creating an iTwin.js app with App UI, see [Quick Start to an App UI user interface](./QuickStartUi.md).
 
 ## React version requirements
 
