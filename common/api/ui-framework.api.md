@@ -1293,6 +1293,8 @@ export class CoreTools {
     // (undocumented)
     static get sectionToolGroup(): GroupItemDef;
     // (undocumented)
+    static get sectionToolGroupWithPanel(): GroupItemDef;
+    // (undocumented)
     static get selectElementCommand(): ToolItemDef;
     // (undocumented)
     static get toggleCameraViewCommand(): ToolItemDef;
