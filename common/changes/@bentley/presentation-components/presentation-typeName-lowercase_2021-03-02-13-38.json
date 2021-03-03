@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/presentation-components",
-      "comment": "Updated `createPropertyDescription` in `ContentBuilder` to set property's typename to lowercase.",
+      "comment": "Always set `PropertyDescription.typename` to lowercase when creating content.",
       "type": "none"
     }
   ],
