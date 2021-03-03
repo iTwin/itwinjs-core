@@ -696,6 +696,11 @@ export abstract class InteractiveTool extends Tool {
   public reloadToolSettingsProperties() {
     IModelApp.toolAdmin.reloadToolSettingsProperties();
   }
+
+  /** Used to bump the value of a tool setting. If no `settingIndex` param is specified, the first setting is bumped.
+   * @beta
+   */
+  public async bumpToolSetting(_settingIndex?: number): Promise<boolean> { return false; }
 }
 
 /** The InputCollector class can be used to implement a command for gathering input (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.

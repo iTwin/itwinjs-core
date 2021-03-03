@@ -1469,6 +1469,13 @@ export class ToolAdmin {
       this.reloadToolSettingsHandler();
   }
 
+  /** Method used to bump the value of a tool setting. If no `settingIndex` param is specified, the first setting is bumped.
+   * @beta
+   */
+  public async bumpToolSetting(settingIndex?: number): Promise<boolean> {
+    return this.currentTool.bumpToolSetting(settingIndex);
+  }
+
   /** Method used by interactive tools to inform one or more UI components to refresh. This is typically used to update labels or icons associated with a specific tool.
    * This method should be used when the caller wants the UI layer to process the sync event immediately. Use dispatchUiSyncEvent when the event may be triggered while other
    * more important user interaction processing is required.
