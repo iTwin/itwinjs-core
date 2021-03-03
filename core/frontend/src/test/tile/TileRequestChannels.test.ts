@@ -75,7 +75,7 @@ describe("TileRequestChannels", () => {
   });
 
   it("extracts hostname from url", () => {
-    expect(TileRequestChannels.getNameFromUrl("https://www.google.com/stuff")).to.equal("google.com");
+    expect(TileRequestChannels.getNameFromUrl("https://www.google.com/stuff")).to.equal("www.google.com");
     expect(() => TileRequestChannels.getNameFromUrl("not a url")).to.throw(TypeError);
   });
 

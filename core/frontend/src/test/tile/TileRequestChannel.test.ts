@@ -47,6 +47,10 @@ class TestTile extends Tile {
     return this.requestChannel;
   }
 
+  public computeLoadPriority() {
+    return this.priority;
+  }
+
   public async requestContent(): Promise<TileRequest.Response> {
     this.requestContentCalled = true;
     expect(this._resolveRequest).to.be.undefined;
@@ -67,7 +71,7 @@ class TestTile extends Tile {
     });
   }
 
-  public resolveRequest(response: TileRequest.Response): void {
+  public resolveRequest(response: TileRequest.Response = new Uint8Array(1)): void {
     expect(this._resolveRequest).not.to.be.undefined;
     this._resolveRequest!(response);
     this.clearPromises();
@@ -132,12 +136,110 @@ function mockViewport(viewportId: number, iModel: IModelConnection): Viewport {
 }
 
 function requestTiles(vp: Viewport, tiles: TestTile[]): void {
+  IModelApp.tileAdmin.clearTilesForViewport(vp);
+  IModelApp.tileAdmin.clearUsageForViewport(vp);
   IModelApp.tileAdmin.requestTiles(vp, new Set<Tile>(tiles));
 }
 
 async function processOnce(): Promise<void> {
   IModelApp.tileAdmin.process();
   return new Promise((resolve: any) => setTimeout(resolve, 1));
+}
+
+class LoggingChannel extends TileRequestChannel {
+  public readonly calledFunctions: string[] = [];
+
+  protected log(functionName: string) {
+    this.calledFunctions.push(functionName);
+  }
+
+  public clear() {
+    this.calledFunctions.length = 0;
+  }
+
+  public expect(functionNames: string[]) {
+    expect(this.calledFunctions).to.deep.equal(functionNames);
+  }
+
+  public expectRequests(active: number, pending: number) {
+    expect(this.numActive).to.equal(active);
+    expect(this.numPending).to.equal(pending);
+  }
+
+  public recordCompletion(tile: Tile): void {
+    this.log("recordCompletion");
+    super.recordCompletion(tile);
+  }
+
+  public recordTimeout() {
+    this.log("recordTimeout");
+    super.recordTimeout();
+  }
+
+  public recordFailure() {
+    this.log("recordFailure");
+    super.recordFailure();
+  }
+
+  public swapPending() {
+    this.log("swapPending");
+    super.swapPending();
+  }
+
+  public append(request: TileRequest) {
+    this.log("append");
+    super.append(request);
+  }
+
+  public process() {
+    this.log("process");
+    super.process();
+  }
+
+  protected dispatch(request: TileRequest) {
+    this.log("dispatch");
+    super.dispatch(request);
+  }
+
+  public cancelAndClearAll() {
+    this.log("cancelAndClearAll");
+    super.cancelAndClearAll();
+  }
+
+  public onNoContent(request: TileRequest): boolean {
+    this.log("onNoContent");
+    return super.onNoContent(request);
+  }
+
+  public onActiveRequestCanceled(request: TileRequest): void {
+    this.log("onActiveRequestCanceled");
+    super.onActiveRequestCanceled(request);
+  }
+
+  public onIModelClosed(iModel: IModelConnection) {
+    this.log("onIModelClosed");
+    super.onIModelClosed(iModel);
+  }
+
+  protected dropActiveRequest(request: TileRequest) {
+    this.log("dropActiveRequest");
+    super.dropActiveRequest(request);
+  }
+
+  protected cancel(request: TileRequest) {
+    this.log("cancel");
+    super.cancel(request);
+  }
+
+  public async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
+    this.log("requestContent");
+    return super.requestContent(tile, isCanceled);
+  }
+
+  public processCancellations() {
+    this.log("processCancellations");
+    super.processCancellations();
+  }
 }
 
 describe("TileRequestChannel", () => {
@@ -154,78 +256,8 @@ describe("TileRequestChannel", () => {
       await MockRender.App.shutdown();
   });
 
-  it("processes one request", async () => {
-    class Channel extends TileRequestChannel {
-      public readonly calledFunctions: string[] = [];
-
-      public constructor() {
-        super("test", 1);
-      }
-
-      private log(functionName: string) {
-        this.calledFunctions.push(functionName);
-      }
-
-      public clear() {
-        this.calledFunctions.length = 0;
-      }
-
-      public expect(functionNames: string[]) {
-        expect(this.calledFunctions).to.deep.equal(functionNames);
-      }
-
-      public expectRequests(active: number, pending: number) {
-        expect(this.numActive).to.equal(active);
-        expect(this.numPending).to.equal(pending);
-      }
-
-      public recordCompletion(tile: Tile): void {
-        this.log("recordCompletion");
-        super.recordCompletion(tile);
-      }
-
-      public swapPending() {
-        this.log("swapPending");
-        super.swapPending();
-      }
-
-      public append(request: TileRequest) {
-        this.log("append");
-        super.append(request);
-      }
-
-      public process() {
-        this.log("process");
-        super.process();
-      }
-
-      protected dispatch(request: TileRequest) {
-        this.log("dispatch");
-        super.dispatch(request);
-      }
-
-      protected dropActiveRequest(request: TileRequest) {
-        this.log("dropActiveRequest");
-        super.dropActiveRequest(request);
-      }
-
-      protected cancel(request: TileRequest) {
-        this.log("cancel");
-        super.cancel(request);
-      }
-
-      public async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
-        this.log("requestContent");
-        return super.requestContent(tile, isCanceled);
-      }
-
-      public processCancellations() {
-        this.log("processCancellations");
-        super.processCancellations();
-      }
-    }
-
-    const channel = new Channel();
+  it("completes one request", async () => {
+    const channel = new LoggingChannel("test", 1);
     IModelApp.tileAdmin.channels.add(channel);
     const tree = new TestTree(imodel, channel);
     const vp = mockViewport(1, imodel);
@@ -243,7 +275,7 @@ describe("TileRequestChannel", () => {
     channel.expectRequests(1, 0);
 
     channel.clear();
-    tree.rootTile.resolveRequest("content");
+    tree.rootTile.resolveRequest();
     await processOnce();
     channel.expect(["swapPending", "process", "processCancellations", "dropActiveRequest"]);
     channel.expectRequests(0, 0);
@@ -258,12 +290,72 @@ describe("TileRequestChannel", () => {
   });
 
   it("observes limits on max active requests", async () => {
+    const channel = new LoggingChannel("test", 2);
+    IModelApp.tileAdmin.channels.add(channel);
+    const tree = new TestTree(imodel, channel);
+    const tiles = [0, 1, 2, 3, 4].map((x) => new TestTile(tree, channel, x));
+    const vp = mockViewport(1, imodel);
+
+    requestTiles(vp, tiles);
+    IModelApp.tileAdmin.process();
+    tiles.forEach((x) => x.expectStatus(TileLoadStatus.Queued));
+    channel.expectRequests(2, 3);
+
+    tiles[0].resolveRequest();
+    await processOnce();
+    tiles.forEach((x) => x.expectStatus(x === tiles[0] ? TileLoadStatus.Loading : TileLoadStatus.Queued));
+    channel.expectRequests(1, 3);
+
+    tiles[0].resolveRead({ });
+    await processOnce();
+    tiles.forEach((x) => x.expectStatus(x === tiles[0] ? TileLoadStatus.Ready : TileLoadStatus.Queued));
+    channel.expectRequests(2, 2);
+
+    tiles[1].rejectRequest(new Error("1"));
+    await processOnce();
+    tiles[1].expectStatus(TileLoadStatus.NotFound);
+    tiles.slice(2).forEach((x) => x.expectStatus(TileLoadStatus.Queued));
+    channel.expectRequests(1, 2);
+
+    tiles.push(new TestTile(tree, channel, 5));
+    requestTiles(vp, tiles);
+    await processOnce();
+    channel.expectRequests(2, 2);
+
+    tiles[2].resolveRequest();
+    tiles[3].resolveRequest();
+    await processOnce();
+    channel.expectRequests(0, 2);
+    tiles.slice(2, 4).forEach((x) => x.expectStatus(TileLoadStatus.Loading));
+    tiles.slice(4).forEach((x) => x.expectStatus(TileLoadStatus.Queued));
+
+    tiles[2].resolveRead({ });
+    tiles[3].resolveRead({ });
+    await processOnce();
+    channel.expectRequests(2, 0);
+    tiles.slice(2, 4).forEach((x) => x.expectStatus(TileLoadStatus.Ready));
+    tiles.slice(4).forEach((x) => x.expectStatus(TileLoadStatus.Queued));
+
+    tiles[4].rejectRequest(new Error("4"));
+    tiles[5].rejectRequest(new Error("5"));
+    await processOnce();
+    channel.expectRequests(0, 0);
+    tiles.slice(4).forEach((x) => x.expectStatus(TileLoadStatus.NotFound));
+  });
+
+  it("dispatches requests in order by priority", async () => {
+  });
+
+  it("cancels requests", async () => {
   });
 
   it("changes max active requests", async () => {
   });
 
   it("processes requests", async () => {
+  });
+
+  it("does not drop active request until response is received", async () => {
   });
 
   it("can override Tile.requestContent", () => {
@@ -274,5 +366,7 @@ describe("TileRequestChannel", () => {
 
   it("produces statistics", async () => {
   });
-});
 
+  it("handles exceptions in readContent and requestContent", async () => {
+  });
+});
