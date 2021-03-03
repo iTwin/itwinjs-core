@@ -34,12 +34,10 @@ steps:
 # Currently BeMetalsmith is an internal only tool
 - script: |
     npm install @bentley/bemetalsmith@4.x
-    ls -a ..
-    ls -a
   displayName: Install BeMetalsmith
   workingDirectory: $(Build.ArtifactStagingDirectory)
 
-- script: ls -a
+- script: dir
   displayName: Install BeMetalsmith
   workingDirectory: $(Build.ArtifactStagingDirectory)
 
@@ -48,9 +46,9 @@ steps:
   workingDirectory: $(Build.ArtifactStagingDirectory)
 
 # Update the .updated.json file after the bmsBuild
-- task: PublishPipelineArtifact@1
-  displayName: Publish Pipeline Artifact - .updated.json
-  inputs:
-    targetPath: ${{ parameters.stagingDir }}/config/.updated.json
-    artifact: .updated.json
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+# - task: PublishPipelineArtifact@1
+#   displayName: Publish Pipeline Artifact - .updated.json
+#   inputs:
+#     targetPath: ${{ parameters.stagingDir }}/config/.updated.json
+#     artifact: .updated.json
+#   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
