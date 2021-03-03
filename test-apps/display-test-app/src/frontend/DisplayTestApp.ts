@@ -111,13 +111,15 @@ async function signIn(): Promise<boolean> {
   const oidcClient = await createOidcClient(requestContext, oidcConfig);
 
   IModelApp.authorizationClient = oidcClient;
+  if (oidcClient.isAuthorized)
+    return true;
 
   const retPromise = new Promise<boolean>((resolve, reject) => {
     oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
       resolve(token !== undefined);
     });
 
-    oidcClient.signIn().catch((err) => {
+    oidcClient.signIn(requestContext).catch((err) => {
       reject(err);
     });
   });

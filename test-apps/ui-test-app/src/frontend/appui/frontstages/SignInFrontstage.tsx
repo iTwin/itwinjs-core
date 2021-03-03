@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, SignIn,
@@ -14,7 +15,7 @@ class SignInControl extends ContentControl {
     super(info, options);
 
     const client = IModelApp.authorizationClient;
-    if (client)
+    if (isFrontendAuthorizationClient(client))
       this.reactNode = <SignIn onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
     else
       this.reactNode = null;

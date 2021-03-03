@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
+import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { SignIn as SignInBase } from "@bentley/ui-components";
 import { CommonProps } from "@bentley/ui-core";
@@ -45,7 +45,9 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
   public componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
-    this._oidcClient = oidcClient;
+    // istanbul ignore if
+    if (isFrontendAuthorizationClient(oidcClient))
+      this._oidcClient = oidcClient;
 
     // istanbul ignore next
     const isAuthorized = this._oidcClient && this._oidcClient.isAuthorized;
@@ -70,7 +72,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
   private _onStartSignin = async () => {
     // istanbul ignore next
     if (this._oidcClient)
-      this._oidcClient.signIn(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      this._oidcClient.signIn(new ClientRequestContext()); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // istanbul ignore else
     if (this.props.onStartSignIn)
