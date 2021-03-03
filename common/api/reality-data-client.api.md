@@ -45,6 +45,10 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     dataAcquisitionDate?: string;
     // (undocumented)
+    dataAcquisitionStartDate?: string;
+    // (undocumented)
+    dataAcquisitionEndDate?: string;
+    // (undocumented)
     dataLocationGuid?: string;
     // (undocumented)
     dataSet?: string;
