@@ -6,8 +6,9 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
-import { detectIsMobile } from "@bentley/webgl-compatibility";
+import {
+  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue, ProcessDetector,
+} from "@bentley/bentleyjs-core";
 import {
   defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
   RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
@@ -160,7 +161,7 @@ export class TileAdmin {
    * @returns the TileAdmin
    */
   public static create(props?: TileAdmin.Props): TileAdmin {
-    return this.createForDeviceType(detectIsMobile() ? "mobile" : "non-mobile", props);
+    return this.createForDeviceType(ProcessDetector.isMobileBrowser ? "mobile" : "non-mobile", props);
   }
 
   /** Strictly for tests.
@@ -1330,7 +1331,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
    */
   export const nonMobileGpuMemoryLimits = {
     default: 1024 * 1024 * 1024, // 1 GB
-    aggressive: 500 * 1024 * 1024, // 400 MB
+    aggressive: 500 * 1024 * 1024, // 500 MB
     relaxed: 2.5 * 1024 * 1024 * 1024, // 2.5 GB
   };
 
@@ -1343,7 +1344,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
   export const mobileGpuMemoryLimits = {
     default: 200 * 1024 * 1024, // 200 MB
     aggressive: 75 * 1024 * 1024, // 75 MB
-    relaxed: 500 * 1024 * 1024 * 1024, // 500 MB
+    relaxed: 500 * 1024 * 1024, // 500 MB
   };
 }
 

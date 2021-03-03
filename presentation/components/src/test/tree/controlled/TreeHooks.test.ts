@@ -12,7 +12,7 @@ import { RegisteredRuleset, Ruleset, VariableValue, VariableValueTypes } from "@
 import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeModelNodeInput, TreeNodeItem } from "@bentley/ui-components";
-import { renderHook } from "@testing-library/react-hooks";
+import { cleanup, renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
 import { PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "../../../presentation-components/tree/controlled/TreeHooks";
 import { createRandomTreeNodeItem, mockPresentationManager } from "../../_helpers/UiComponents";
@@ -42,10 +42,12 @@ describe("usePresentationNodeLoader", () => {
     onIModelHierarchyChanged = mocks.presentationManager.object.onIModelHierarchyChanged;
     onRulesetModified = mocks.rulesetsManager.object.onRulesetModified;
     onRulesetVariableChanged = mocks.rulesetVariablesManager.object.onVariableChanged;
+    mocks.presentationManager.setup((x) => x.stateTracker).returns(() => undefined);
     Presentation.setPresentationManager(mocks.presentationManager.object);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await cleanup();
     Presentation.terminate();
   });
 
