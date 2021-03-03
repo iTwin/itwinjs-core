@@ -166,7 +166,7 @@ export class Rule extends Lint.Rules.TypedRule {
 
     if (type.isClass()) {
       failure = true;
-      message += `\n"${scope ? (scope + ".") : ""}${type.symbol.getName()}" is a class.`;
+      message += `\n"${scope ? (`${scope}.`) : ""}${type.symbol.getName()}" is a class.`;
     } else if (!this.isPrimitive(type)) {
       const asObject = type as ts.ObjectType;
 
@@ -182,13 +182,11 @@ export class Rule extends Lint.Rules.TypedRule {
           }
         }
       } else if (type.isUnionOrIntersection()) {
-        const asUnion = type as ts.UnionOrIntersectionType;
-
-        if (node && this.isPropsUnion(asUnion, node)) {
+        if (node && this.isPropsUnion(type, node)) {
           // special case
         } else {
           let t = 0;
-          for (const member of asUnion.types) {
+          for (const member of type.types) {
             if (!this.checkNode(node, member, `${scope}.[${t}]`)) {
               childFailure = true;
             }
