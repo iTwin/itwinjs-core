@@ -408,7 +408,7 @@ export class AppUi {
     return new CommandItemDef({
       commandId: "bumpToolSettingToggle",
       labelKey: "SampleApp:buttons.bumpToolSettingToggle",
-      execute: () => IModelApp.toolAdmin.bumpToolSetting(2),  // Works with ToolWithSettings
+      execute: async () => IModelApp.toolAdmin.bumpToolSetting(2),  // Works with ToolWithSettings
     });
   }
 

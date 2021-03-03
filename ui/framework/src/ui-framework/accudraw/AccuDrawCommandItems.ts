@@ -146,7 +146,7 @@ export class AccuDrawCommandItems {
     return new CommandItemDef({
       commandId: "bumpToolSetting",
       labelKey: "UiFramework:accuDraw.bumpToolSetting",
-      execute: () => IModelApp.toolAdmin.bumpToolSetting(),
+      execute: async () => IModelApp.toolAdmin.bumpToolSetting(),
     });
   }
 }
