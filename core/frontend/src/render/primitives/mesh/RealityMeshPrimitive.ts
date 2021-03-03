@@ -37,7 +37,7 @@ export class RealityMeshPrimitive implements RenderMemory.Consumer {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addRealityMesh(this.bytesUsed);
+    stats.addTerrain(this.bytesUsed);
   }
   public get bytesUsed() {
     return 8 * (this.indices.length + this.points.length * 3 + this.uvs.length * 2) + 2 * this.normals.length;

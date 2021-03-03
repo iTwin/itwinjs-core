@@ -31,6 +31,7 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
+import { RealityMeshGeometry } from "./webgl/TerrainMesh";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -129,12 +130,6 @@ export interface RenderSystemDebugControl {
    * @internal
    */
   debugShaderFiles?: DebugShaderFile[];
-}
-
-/** @internal */
-export abstract class RenderSimpleMeshGeometry implements IDisposable, RenderMemory.Consumer {
-  public abstract dispose(): void;
-  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
 /** @internal */
@@ -265,9 +260,9 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderSimpleMeshGeometry | undefined { return undefined; }
+  public createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RealityMeshGeometry | undefined { return undefined; }
   /** @internal */
-  public createTerrainMeshGraphic(_terrainGeometry: RenderSimpleMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  public createTerrainMeshGraphic(_terrainGeometry: RealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined { return undefined; }
   /** @internal */

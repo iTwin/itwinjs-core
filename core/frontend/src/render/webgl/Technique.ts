@@ -49,7 +49,6 @@ import {
 } from "./TechniqueFlags";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
 import { createCombine3TexturesProgram } from "./glsl/Combine3Textures";
-import createRealityMeshBuilder from "./glsl/RealityMesh";
 
 /** Defines a rendering technique implemented using one or more shader programs.
  * @internal
@@ -639,25 +638,22 @@ class PointCloudTechnique extends VariedTechnique {
   }
 }
 
-abstract class SimpleMeshTechnique extends VariedTechnique {
-  protected static readonly _numVariants = 32;
-
-  protected abstract get _debugDescription(): string;
-  protected abstract createMeshBuilder(flags: TechniqueFlags, _featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder;
+class TerrainMeshTechnique extends VariedTechnique {
+  private static readonly _numVariants = 32;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(SimpleMeshTechnique._numVariants);
+    super(TerrainMeshTechnique._numVariants);
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
           for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
             const flags = scratchTechniqueFlags;
-            const simpleMeshFeatureModes = [FeatureMode.None, FeatureMode.Pick];
-            for (const featureMode of simpleMeshFeatureModes) {
+            const terrainMeshFeatureModes = [FeatureMode.None, FeatureMode.Pick];
+            for (const featureMode of terrainMeshFeatureModes) {
               flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
               flags.isClassified = iClassified;
               flags.isTranslucent = 1 === iTranslucent;
-              const builder = this.createMeshBuilder(flags, featureMode, thematic);
+              const builder = createTerrainMeshBuilder(flags, featureMode, thematic);
               if (FeatureMode.Pick === featureMode)
                 addUniformFeatureSymbology(builder, false);
               if (flags.isTranslucent) {
@@ -675,6 +671,8 @@ abstract class SimpleMeshTechnique extends VariedTechnique {
     this.finishConstruction();
   }
 
+  protected get _debugDescription() { return "TerrainMesh"; }
+
   public computeShaderIndex(flags: TechniqueFlags): number {
     let ndx = 0;
     if (flags.isClassified)
@@ -688,20 +686,6 @@ abstract class SimpleMeshTechnique extends VariedTechnique {
     if (flags.isThematic)
       ndx += 16;
     return ndx;
-  }
-}
-
-class TerrainMeshTechnique extends SimpleMeshTechnique {
-  protected get _debugDescription() { return "TerrainMesh"; }
-  protected createMeshBuilder(flags: TechniqueFlags, featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
-    return createTerrainMeshBuilder(flags, featureMode, thematic);
-  }
-}
-
-class RealityMeshTechnique extends SimpleMeshTechnique {
-  protected get _debugDescription() { return "RealityMesh"; }
-  protected createMeshBuilder(flags: TechniqueFlags, featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
-    return createRealityMeshBuilder(flags, featureMode, thematic);
   }
 }
 
@@ -932,7 +916,6 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
     this._list[TechniqueId.TerrainMesh] = new TerrainMeshTechnique(gl);
-    this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
     if (System.instance.capabilities.supportsFragDepth)
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     else

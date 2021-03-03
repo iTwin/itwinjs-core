@@ -31,7 +31,7 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSimpleMeshGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture } from "../RenderSystem";
+import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, TerrainTexture } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
@@ -57,7 +57,7 @@ import { RenderState } from "./RenderState";
 import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
-import { TerrainMeshGeometry } from "./TerrainMesh";
+import { RealityMeshGeometry } from "./TerrainMesh";
 import { Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 
@@ -508,18 +508,16 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return MeshGraphic.create(params, instances);
   }
 
-  public createTerrainMeshGeometry(terrainMesh: TerrainMeshPrimitive, transform?: Transform): RenderSimpleMeshGeometry | undefined {
-    return TerrainMeshGeometry.creatFromTerrainMesh(terrainMesh, transform);
+  public createTerrainMeshGeometry(terrainMesh: TerrainMeshPrimitive, transform?: Transform): RealityMeshGeometry | undefined {
+    return RealityMeshGeometry.creatFromTerrainMesh(terrainMesh, transform);
   }
 
-  public createTerrainMeshGraphic(terrainGeometry: RenderSimpleMeshGeometry, featureTable: PackedFeatureTable, tileId: string | undefined, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
-    return TerrainMeshGeometry.createGraphic(this, terrainGeometry as TerrainMeshGeometry, featureTable, tileId, baseColor, baseTransparent, textures);
+  public createTerrainMeshGraphic(terrainGeometry: RealityMeshGeometry, featureTable: PackedFeatureTable, tileId: string | undefined, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
+    return RealityMeshGeometry.createGraphic(this, terrainGeometry, featureTable, tileId, baseColor, baseTransparent, textures);
   }
   public createRealityMesh(realityMesh: RealityMeshPrimitive): RenderGraphic | undefined {
-    const geom = TerrainMeshGeometry.createFromRealityMesh(realityMesh);
-    if (!geom)
-      return undefined;
-    return Primitive.create(() =>  geom);
+    const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh);
+    return geom ?  Primitive.create(() =>  geom) : undefined;
   }
 
   public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {

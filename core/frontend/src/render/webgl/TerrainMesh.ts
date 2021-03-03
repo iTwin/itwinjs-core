@@ -7,28 +7,27 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose, IDisposable } from "@bentley/bentleyjs-core";
 import { Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
-import { IndexedGeometry, Matrix4 } from "../../webgl";
+import { ColorDef, OctEncodedNormal, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
+import { AttributeMap, BufferHandle, BufferParameters, IndexedGeometry, IndexedGeometryParams, Matrix4, QBufferHandle2d, QBufferHandle3d } from "../../webgl";
 import { GraphicBranch } from "../GraphicBranch";
-import { SimpleMeshGeometryParams } from "./SimpleMesh";
+import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { RenderSimpleMeshGeometry, RenderSystem, TerrainTexture } from "../RenderSystem";
+import { RenderSystem, TerrainTexture } from "../RenderSystem";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
-import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 
 const scratchOverlapRange = Range2d.createNull();
 
 /** @internal */
-export class TerrainTextureParams {
+export class RealityTextureParams {
 
   constructor(public matrices: Matrix4[], public textures: RenderTexture[]) { }
   public static create(terrainTextures: TerrainTexture[]) {
@@ -68,19 +67,90 @@ export class TerrainTextureParams {
       matrix.data[6] = matrix.data[7] = -1;
       matrices.push(matrix);
     }
-    return new TerrainTextureParams(matrices, renderTextures);
+    return new RealityTextureParams(matrices, renderTextures);
   }
 }
 
 /** @internal */
-export class TerrainMeshGeometry extends IndexedGeometry implements RenderSimpleMeshGeometry {
-  public get asTerrainMesh(): TerrainMeshGeometry | undefined { return this; }
+
+export class RealityMeshGeometryParams extends IndexedGeometryParams {
+  public readonly uvParams: QBufferHandle2d;
+  public readonly featureID?: number;
+  public readonly normals?: BufferHandle;
+
+  protected constructor(positions: QBufferHandle3d, normals: BufferHandle | undefined, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, featureID?: number) {
+    super(positions, indices, numIndices);
+    let attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.TerrainMesh, false);
+    assert(attrParams !== undefined);
+    this.buffers.addBuffer(uvParams, [BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
+    this.uvParams = uvParams;
+
+    if (undefined !== normals) {
+      attrParams = AttributeMap.findAttribute("a_norm", TechniqueId.TerrainMesh, false);
+      assert(attrParams !== undefined);
+      if (normals.bytesUsed > 0)
+        this.buffers.addBuffer(normals, [BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+      this.normals = normals;
+    }
+
+    this.featureID = featureID;
+  }
+
+  private static createFromBuffers(posBuf: QBufferHandle3d, uvParamBuf: QBufferHandle2d, indices: Uint16Array, normals: OctEncodedNormal[], featureID: number) {
+    const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
+
+    let normBuf: BufferHandle | undefined;
+    if (normals.length > 0) {
+      const normalBytes = new Uint8Array(normals.length * 2);
+      const normalShorts = new Uint16Array(normalBytes.buffer);
+      for (let i = 0; i < normals.length; i++)
+        normalShorts[i] = normals[i].value;
+      normBuf = BufferHandle.createArrayBuffer(normalBytes);
+    }
+
+    if (undefined === indBuf || (normals.length > 0 && undefined === normBuf))
+      return undefined;
+
+    return new RealityMeshGeometryParams(posBuf, normBuf, uvParamBuf, indBuf, indices.length, featureID);
+
+  }
+
+  public static createFromRealityMesh(mesh: RealityMeshPrimitive) {
+    const posBuf = QBufferHandle3d.create(mesh.pointQParams, mesh.points);
+    const uvParamBuf = QBufferHandle2d.create(mesh.uvQParams, mesh.uvs);
+    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, mesh.indices, mesh.normals, mesh.featureID);
+  }
+
+  public static createFromTerrainMesh(mesh: TerrainMeshPrimitive) {
+    const posBuf = QBufferHandle3d.create(mesh.points.params, mesh.points.toTypedArray());
+    const uvParamBuf = QBufferHandle2d.create(mesh.uvParams.params, mesh.uvParams.toTypedArray());
+
+    const indArray = new Uint16Array(mesh.indices.length);
+    for (let i = 0; i < mesh.indices.length; i++)
+      indArray[i] = mesh.indices[i];
+    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, indArray, mesh.normals, mesh.featureID);
+
+  }
+  public get isDisposed(): boolean {
+    return super.isDisposed && this.uvParams.isDisposed;
+  }
+  public get bytesUsed(): number { return this.positions.bytesUsed + (undefined === this.normals ? 0 : this.normals.bytesUsed) + this.uvParams.bytesUsed + this.indices.bytesUsed; }
+
+  public dispose() {
+    super.dispose();
+    dispose(this.uvParams);
+  }
+}
+
+/** @internal */
+export class RealityMeshGeometry extends IndexedGeometry implements IDisposable, RenderMemory.Consumer {
+  public get asTerrainMesh(): RealityMeshGeometry | undefined { return this; }
   public get isDisposed(): boolean { return this._terrainMeshParams.isDisposed; }
   public get uvQParams() { return this._terrainMeshParams.uvParams.params; }
   public get hasFeatures(): boolean { return this._terrainMeshParams.featureID !== undefined; }
   public get supportsThematicDisplay() { return true; }
 
-  private constructor(private _terrainMeshParams: SimpleMeshGeometryParams, public textureParams: TerrainTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean) {
+  private constructor(private _terrainMeshParams: RealityMeshGeometryParams, public textureParams: RealityTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean) {
     super(_terrainMeshParams);
   }
 
@@ -90,25 +160,24 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderSimple
   }
 
   public static creatFromTerrainMesh(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined) {
-    const params = SimpleMeshGeometryParams.createFromTerrainMesh(terrainMesh);
-    return new TerrainMeshGeometry(params!, undefined, transform, undefined, false);
+    const params = RealityMeshGeometryParams.createFromTerrainMesh(terrainMesh);
+    return new RealityMeshGeometry(params!, undefined, transform, undefined, false);
   }
 
-  public static createFromRealityMesh(realityMesh: RealityMeshPrimitive): TerrainMeshGeometry | undefined {
-    const params = SimpleMeshGeometryParams.createFromRealityMesh(realityMesh);
-    const featureId = 0;
+  public static createFromRealityMesh(realityMesh: RealityMeshPrimitive): RealityMeshGeometry | undefined {
+    const params = RealityMeshGeometryParams.createFromRealityMesh(realityMesh);
     if (!params)
       return undefined;
-    const texture = new TerrainTexture(realityMesh.texture, featureId, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0);
+    const texture = new TerrainTexture(realityMesh.texture, realityMesh.featureID, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0);
 
-    return new TerrainMeshGeometry(params, TerrainTextureParams.create([texture]), undefined, undefined, false);
+    return new RealityMeshGeometry(params, RealityTextureParams.create([texture]), undefined, undefined, false);
 
   }
   public getRange(): Range3d {
     return Range3d.createXYZXYZ(this.qOrigin[0], this.qOrigin[1], this.qOrigin[2], this.qOrigin[0] + Quantization.rangeScale16 * this.qScale[0], this.qOrigin[1] + Quantization.rangeScale16 * this.qScale[1], this.qOrigin[2] + Quantization.rangeScale16 * this.qScale[2]);
   }
 
-  public static createGraphic(system: RenderSystem, terrainMesh: TerrainMeshGeometry, featureTable: PackedFeatureTable, tileId: string | undefined, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
+  public static createGraphic(system: RenderSystem, terrainMesh: RealityMeshGeometry, featureTable: PackedFeatureTable, tileId: string | undefined, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
     const meshes = [];
     if (textures === undefined)
       textures = [];
@@ -127,7 +196,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderSimple
     }
     if (layerCount < 2) {
       // If only there is not more than one layer then we can group all of the textures into a single draw call.
-      meshes.push(new TerrainMeshGeometry(terrainMesh._terrainMeshParams, TerrainTextureParams.create(textures), terrainMesh._transform, baseColor, baseTransparent));
+      meshes.push(new RealityMeshGeometry(terrainMesh._terrainMeshParams, RealityTextureParams.create(textures), terrainMesh._transform, baseColor, baseTransparent));
     } else {
       const primaryLayer = layers.shift()!;
       for (const primaryTexture of primaryLayer) {
@@ -152,7 +221,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderSimple
                 layerTextures.push(new TerrainTexture(secondaryTexture.texture, secondaryTexture.featureId, secondaryTexture.scale, secondaryTexture.translate, secondaryTexture.targetRectangle, secondaryTexture.layerIndex, secondaryTexture.transparency, textureRange));
             }
             layerTextures.length = Math.min(layerTextures.length, texturesPerMesh);
-            meshes.push(new TerrainMeshGeometry(terrainMesh._terrainMeshParams, TerrainTextureParams.create(layerTextures), terrainMesh._transform, baseColor, baseTransparent));
+            meshes.push(new RealityMeshGeometry(terrainMesh._terrainMeshParams, RealityTextureParams.create(layerTextures), terrainMesh._transform, baseColor, baseTransparent));
           }
         }
       }
