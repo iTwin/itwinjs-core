@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid, using } from "@bentley/bentleyjs-core";
 import { IModelDb, SnapshotDb } from "@bentley/imodeljs-backend";
 import { PresentationManager } from "@bentley/presentation-backend";
 import { UnitSystemFormat } from "@bentley/presentation-backend/lib/presentation-backend/PresentationManager";
@@ -87,22 +87,23 @@ describe("PresentationManager", () => {
     });
 
     async function getAreaDisplayValue(unitSystem: PresentationUnitSystem, defaultFormats?: { [phenomenon: string]: UnitSystemFormat }): Promise<DisplayValue> {
-      const manager: PresentationManager = new PresentationManager({ defaultFormats });
-      const descriptor = await manager.getContentDescriptor({
-        imodel,
-        rulesetOrId: ruleset,
-        keys,
-        displayType: "Grid",
-        requestContext: new ClientRequestContext(),
-        unitSystem,
+      return using(new PresentationManager({ defaultFormats, activeLocale: "en-PSEUDO" }), async (manager) => {
+        const descriptor = await manager.getContentDescriptor({
+          imodel,
+          rulesetOrId: ruleset,
+          keys,
+          displayType: "Grid",
+          requestContext: new ClientRequestContext(),
+          unitSystem,
+        });
+        expect(descriptor).to.not.be.undefined;
+        const field = findFieldByLabel(descriptor!.fields, "cm2")!;
+        expect(field).not.to.be.undefined;
+        const content = await manager.getContent({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, requestContext: new ClientRequestContext(), unitSystem });
+        const displayValues = content!.contentSet[0].displayValues.rc_generic_PhysicalObject_ncc_MyProp_areaElementAspect as DisplayValuesArray;
+        expect(displayValues.length).is.eq(1);
+        return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;
       });
-      expect(descriptor).to.not.be.undefined;
-      const field = findFieldByLabel(descriptor!.fields, "cm2")!;
-      expect(field).not.to.be.undefined;
-      const content = await manager.getContent({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, requestContext: new ClientRequestContext(), unitSystem });
-      const displayValues = content!.contentSet[0].displayValues.rc_generic_PhysicalObject_ncc_MyProp_areaElementAspect as DisplayValuesArray;
-      expect(displayValues.length).is.eq(1);
-      return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;
     }
   });
 
