@@ -14,7 +14,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   BackendLoggerCategory, BisCoreSchema, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema,
   IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelTransformer, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition,
-  SnapshotDb, SpatialCategory,
+  SnapshotDb, SpatialCategory, Subject,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
@@ -349,55 +349,62 @@ describe("IModelTransformerHub (#integration)", () => {
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: "Master" } });
     populateMaster(masterSeedDb, state0);
     assert.isTrue(IModelJsFs.existsSync(masterSeedFileName));
+    masterSeedDb.saveChanges();
     masterSeedDb.close();
-    const masterIModelId = await HubUtility.pushIModel(requestContext, projectId, masterSeedFileName);
+    const masterIModelId = await HubUtility.pushIModel(requestContext, projectId, masterSeedFileName, masterIModelName, true);
     assert.isTrue(Guid.isGuid(masterIModelId));
     IModelJsFs.removeSync(masterSeedFileName); // now that iModel is pushed, can delete local copy of the seed
+    const masterDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: masterIModelId });
+    masterDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    assert.isTrue(masterDb.isBriefcaseDb());
+    assert.equal(masterDb.contextId, projectId);
+    assert.equal(masterDb.iModelId, masterIModelId);
+    assertPhysicalObjects(masterDb, state0);
+    const changeSetMasterFirst = masterDb.changeSetId;
+
+    // can't copy the baseline version as a template, so create a changeSet
+    const rootSubject = masterDb.elements.getElement<Subject>(IModel.rootSubjectId, Subject);
+    rootSubject.description = new Date().toLocaleTimeString();
+    rootSubject.update();
+    await masterDb.concurrencyControl.request(requestContext);
+    masterDb.saveChanges();
+    await masterDb.pushChanges(requestContext, "State0");
+    const changeSetMasterState0 = masterDb.changeSetId;
+    assert.notEqual(changeSetMasterState0, changeSetMasterFirst);
 
     // create Branch1 iModel using Master as a template
     const branchIModelName1 = HubUtility.generateUniqueName("Branch1");
     await deleteIModelByName(requestContext, projectId, branchIModelName1);
     const branchIModel1 = await IModelHost.iModelClient.iModels.create(requestContext, projectId, branchIModelName1, {
       description: `Branch1 of ${masterIModelName}`,
-      template: { imodelId: masterIModelId },
+      template: { imodelId: masterIModelId, changeSetId: changeSetMasterState0 },
     });
     assert.isDefined(branchIModel1?.id);
     const branchIModelId1: GuidString = branchIModel1!.id!; // eslint-disable-line
+    const branchDb1 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: branchIModelId1 });
+    branchDb1.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    assert.isTrue(branchDb1.isBriefcaseDb());
+    assert.equal(branchDb1.contextId, projectId);
+    assertPhysicalObjects(branchDb1, state0);
+    const changeSetBranch1First = branchDb1.changeSetId;
 
     // create Branch2 iModel using Master as a template
     const branchIModelName2 = HubUtility.generateUniqueName("Branch2");
     await deleteIModelByName(requestContext, projectId, branchIModelName2);
     const branchIModel2 = await IModelHost.iModelClient.iModels.create(requestContext, projectId, branchIModelName2, {
       description: `Branch2 of ${masterIModelName}`,
-      template: { imodelId: masterIModelId },
+      template: { imodelId: masterIModelId, changeSetId: changeSetMasterState0 },
     });
     assert.isDefined(branchIModel2?.id);
     const branchIModelId2: GuidString = branchIModel2!.id!; // eslint-disable-line
+    const branchDb2 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: branchIModelId2 });
+    branchDb2.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    assert.isTrue(branchDb2.isBriefcaseDb());
+    assert.equal(branchDb2.contextId, projectId);
+    assertPhysicalObjects(branchDb2, state0);
+    const changeSetBranch2First = branchDb2.changeSetId;
 
     try {
-      // download briefcases for Master and branches
-      const masterDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: masterIModelId });
-      const branchDb1 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: branchIModelId1 });
-      const branchDb2 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: branchIModelId2 });
-      assert.isTrue(masterDb.isBriefcaseDb());
-      assert.isTrue(branchDb1.isBriefcaseDb());
-      assert.isTrue(branchDb2.isBriefcaseDb());
-      assert.equal(masterDb.contextId, projectId);
-      assert.equal(branchDb1.contextId, projectId);
-      assert.equal(branchDb2.contextId, projectId);
-      assert.equal(count(masterDb, PhysicalObject.classFullName), state0.length);
-      assert.equal(count(branchDb1, PhysicalObject.classFullName), state0.length);
-      assert.equal(count(branchDb2, PhysicalObject.classFullName), state0.length);
-      assertPhysicalObjects(masterDb, state0);
-      assertPhysicalObjects(branchDb1, state0);
-      assertPhysicalObjects(branchDb2, state0);
-      const changeSetMasterFirst = masterDb.changeSetId;
-      const changeSetBranch1First = branchDb1.changeSetId;
-      const changeSetBranch2First = branchDb2.changeSetId;
-      masterDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-      branchDb1.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-      branchDb2.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-
       // record provenance in Branch1 and Branch2 iModels
       const provenanceInserterB1 = new IModelTransformer(masterDb, branchDb1, {
         wasSourceIModelCopiedToTarget: true,
@@ -461,7 +468,7 @@ describe("IModelTransformerHub (#integration)", () => {
       masterDb.saveChanges();
       await masterDb.pushChanges(requestContext, "State0 -> State2"); // a squash of 2 branch changes into 1 in the masterDb change ledger
       const changeSetMasterState2 = masterDb.changeSetId;
-      assert.notEqual(changeSetMasterState2, changeSetMasterFirst);
+      assert.notEqual(changeSetMasterState2, changeSetMasterState0);
       branchDb1.saveChanges(); // saves provenance locally in case of re-merge
 
       // merge changes from Master to Branch2
@@ -548,9 +555,14 @@ describe("IModelTransformerHub (#integration)", () => {
   }
 
   function assertPhysicalObjects(iModelDb: IModelDb, numbers: number[]): void {
+    let numPhysicalObjects = 0;
     for (const n of numbers) {
+      if (n > 0) { // negative "n" value means element was deleted
+        ++numPhysicalObjects;
+      }
       assertPhysicalObject(iModelDb, n);
     }
+    assert.equal(numPhysicalObjects, count(iModelDb, PhysicalObject.classFullName));
   }
 
   function assertPhysicalObject(iModelDb: IModelDb, n: number): void {
