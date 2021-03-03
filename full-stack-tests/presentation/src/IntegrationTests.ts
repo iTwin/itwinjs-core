@@ -72,15 +72,8 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
-  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation, LogLevel.Info);
-  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation_Localization, LogLevel.Info);
-  Logger.setLevel(PresentationBackendLoggerCategory.Package, LogLevel.Info);
-  Logger.setLevel(PresentationFrontendLoggerCategory.Package, LogLevel.Info);
-  Logger.setLevel(PresentationComponentsLoggerCategory.Package, LogLevel.Info);
 
   const libDir = path.resolve("lib");
-  console.log(`Backend's lib directory path: ${libDir}`); // eslint-disable-line no-console
-
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
@@ -112,7 +105,6 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
 
   await initializeTesting(presentationTestingInitProps);
-  console.log(`Backend PID: ${process.pid}`); // eslint-disable-line no-console
 };
 
 export const initialize = async (backendTimeout: number = 0) => {

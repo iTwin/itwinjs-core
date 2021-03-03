@@ -575,7 +575,10 @@ export const buildPagedResponse = async <TItem>(requestedPage: PageOptions | und
   while (true) {
     const partialResult = await getter({ start: pageStart, size: pageSize }, requestIndex++);
     if (partialResult.total !== 0 && partialResult.items.length === 0) {
-      Logger.logError(PresentationFrontendLoggerCategory.Package, "Paged request returned non zero total count but no items");
+      if (requestedPageStart >= partialResult.total)
+        Logger.logWarning(PresentationFrontendLoggerCategory.Package, `Requested page with start index ${requestedPageStart} is out of bounds. Total number of items: ${partialResult.total}`);
+      else
+        Logger.logError(PresentationFrontendLoggerCategory.Package, "Paged request returned non zero total count but no items");
       return { total: 0, items: [] };
     }
     totalCount = partialResult.total;

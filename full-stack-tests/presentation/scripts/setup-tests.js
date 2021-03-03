@@ -7,6 +7,8 @@ const faker = require("faker");
 const chaiJestSnapshot = require("chai-jest-snapshot");
 const chaiAsPromised = require("chai-as-promised");
 
+console.log(`Backend PID: ${process.pid}`);
+
 // Fix node's module loader to strip ?sprite from SVG imports
 const m = require("module");
 const origLoader = m._load;
