@@ -50,16 +50,31 @@ function EditorLabel({ uiDataProvider, item, isLeftmostRecord }: { uiDataProvide
 }
 
 function PropertyEditor({ uiDataProvider, record, isLock, setFocus }: { uiDataProvider: UiLayoutDataProvider, record: PropertyRecord, isLock?: boolean, setFocus?: boolean }) {
-  const initialRecord = React.useRef(record);
-  const isMounted = React.useRef(false);
-  const [propertyRecord, setPropertyRecord] = React.useState(record);
-
-  React.useEffect(() => {
-    if (record !== initialRecord.current) {
-      initialRecord.current = record;
-      setPropertyRecord(record);
+  const getLatestRecordValue = React.useCallback(() => {
+    const foundItem = uiDataProvider.items.find((item)=>item.property.name === record.property.name);
+    if (foundItem){
+      return record.copyWithNewValue({
+        value: foundItem.value.value,
+        valueFormat: PropertyValueFormat.Primitive,
+      });
+    } else {
+      // need to look through lock values for match
     }
-  }, [record]);
+    return record;
+  }, [record, uiDataProvider.items]);
+
+  const currentRecord = getLatestRecordValue();
+
+  // const initialRecord = React.useRef(record);
+  const isMounted = React.useRef(false);
+  const [propertyRecord, setPropertyRecord] = React.useState(currentRecord);
+
+  // React.useEffect(() => {
+  //  if (record !== initialRecord.current) {
+  //    initialRecord.current = record;
+  //    setPropertyRecord(record);
+  //  }
+  // }, [record]);
 
   React.useEffect(() => {
     isMounted.current = true;
@@ -111,8 +126,14 @@ function PropertyEditor({ uiDataProvider, record, isLock, setFocus }: { uiDataPr
     uiDataProvider.applyUiPropertyChange(syncItem);
     // The above call could trigger a complete refresh of the UI, so ensure the component
     // is still mounted before calling set state.
-    if (isMounted.current)
-      setPropertyRecord(newPropertyValue);
+    // if (isMounted.current)
+    //   setPropertyRecord(newPropertyValue);
+    //---------------------------------------------------------------------------------
+    // Instead of above trigger the uiDataProvider to refetch the latest property values from the tool
+    // We may be able to avoid this if we add a function to the uiDataProvider to apply the change to
+    // the cache of items that it has.... basically reverse of getLatestRecordValue callback above.
+    uiDataProvider.reloadDialogItems(true);
+
   }, [propertyRecord, uiDataProvider, record.property.name]);
   // istanbul ignore next
   const handleCancel = React.useCallback(() => {
