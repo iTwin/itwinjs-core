@@ -1,0 +1,146 @@
+[
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA1",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 42,
+    "Expect": 0.42,
+    "Comment": "Like converting CM to M, divide by factor of 100",
+    "Comment2": "unitA1 -> UnitsB:unitB1*UnitsC:unitC1 | UnitsB:unitB1 -> UnitsC:unitC2 -> CM | UnitsC:unitC1 -> M"
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "unitA1",
+    "Input": 42,
+    "Expect": 4200
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA2",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 10,
+    "Expect": 0.5,
+    "Comment": "All self-schema references in definitions formatted in 'schemaName:schemaItem'; Divide by factor 100, then divide by factor of 2. Also multiply by factor of 10. Overall, divide by factor of 20",
+    "Comment2": "unitA2 -> UnitsA:unitA3*UnitsB:unitB2 | UnitsA:unitA3 -> M | UnitsB:unitB2 -> UnitsB:unitB3 -> UnitsB:unitB4 -> UnitsC:unitC3 -> UnitsC:unitC2 -> CM"
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "unitA2",
+    "Input": 10,
+    "Expect": 200
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA4",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 10,
+    "Expect": 0.00025,
+    "Comment": "All self-schema references in definitions formatted in 'schemaItem' with no schemaName in front; Divide by factor of 200, then by another factor of 200",
+    "Comment2": "unitA4 -> unitA5*UnitsB:unitB5 | unitA5 -> UnitsB:unitB5 | UnitsB:unitB5 -> unitB6 -> unitB7 -> UnitsC:unitC4 -> unitC5 -> unitC2 -> CM"
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "unitA4",
+    "Input": 10,
+    "Expect": 400000
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA6",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 10,
+    "Expect": 0.05,
+    "Comment": "Testing with some exponenets; Exponent should cancel out so that it is just multiply divide by factor 200",
+    "Comment2": "unitA6 -> unitA5(-1)*UnitsB:unitB5(2) | unitA5 -> UnitsB:unitB5 | UnitsB:unitB5 -> unitB6 -> unitB7 -> UnitsC:unitC4 -> unitC5 -> unitC2 -> CM"
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "UnitA6",
+    "Input": 10,
+    "Expect": 2000
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA7",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 42,
+    "Expect": 0.42,
+    "Comment": "Similar to first test; using alias name instead of schema name",
+    "Comment2": "unitA7 -> uB:unitB8*uC:unitC1 | uB:unitB8 -> uC:unitC5 -> unitC2 -> CM | uC:unitC1 -> M"
+    },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "unitA7",
+    "Input": 42,
+    "Expect": 4200
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA8",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 10,
+    "Expect": 0.5,
+    "Comment": "Similar to unitA2 to M test; using alias name instead of schema name",
+    "Comment2": "unitA8 -> UnitsA:unitA3*UnitsB:unitB2 | UnitsA:unitA3 -> M | UnitsB:unitB2 -> UnitsB:unitB3 -> UnitsB:unitB4 -> UnitsC:unitC3 -> UnitsC:unitC2 -> CM"
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "unitA8",
+    "Input": 10,
+    "Expect": 200
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA8",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 10,
+    "Expect": 0.5,
+    "Comment": "Similar to unitA2 to M test; using alias name instead of schema name",
+    "Comment2": "unitA8 -> uA:unitA3*uB:unitB9 | uA:unitA3 -> M | uB:unitB9 -> unitB10 -> unitB11 -> uC:unitC4 -> unitC5 -> unitC2 -> CM"
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "unitA8",
+    "Input": 10,
+    "Expect": 200
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "unitA10",
+    "ToSchema": "UnitsA",
+    "To": "M",
+    "Input": 10,
+    "Expect": 0.05,
+    "Comment": "unitA10 -> uA:unitA9(-1)*uB:unitB9(2) | uA:unitA9 -> uB:unitB9 | uB:unitB9 -> unitB10 -> unitB11 -> uC:unitC4 -> unitC5 -> unitC2 -> CM",
+    "Comment2": "Similar to test converting unitA6 to M; using alias name instead of schema name"
+  },
+  {
+    "FromSchema": "UnitsA",
+    "From": "M",
+    "ToSchema": "UnitsA",
+    "To": "UnitA10",
+    "Input": 10,
+    "Expect": 2000
+  }
+]

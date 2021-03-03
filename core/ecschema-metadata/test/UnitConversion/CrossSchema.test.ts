@@ -29,21 +29,24 @@ describe("Testing creating second schema", () => {
   const context = new SchemaContext();
 
   const testData: TestData[] = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "./unit-cross-test-data.json"), "utf-8")
+    fs.readFileSync(
+      path.join(__dirname, "./cross-schema-test-data.json"),
+      "utf-8"
+    )
   );
 
   before(() => {
-    const testSchemaFileA = path.join(__dirname, "TestUnitsA.ecschema.xml");
-    const testSchemaXmlA = fs.readFileSync(testSchemaFileA, "utf-8");
-    deserializeXml(context, testSchemaXmlA);
+    const schemaFileC = path.join(__dirname, "TestUnitsC.ecschema.xml");
+    const schemaXmlC = fs.readFileSync(schemaFileC, "utf-8");
+    deserializeXml(context, schemaXmlC);
 
-    const testSchemaFileB = path.join(__dirname, "TestUnitsB.ecschema.xml");
-    const testSchemaXmlB = fs.readFileSync(testSchemaFileB, "utf-8");
-    deserializeXml(context, testSchemaXmlB);
+    const schemaFileB = path.join(__dirname, "TestUnitsB.ecschema.xml");
+    const schemaXmlB = fs.readFileSync(schemaFileB, "utf-8");
+    deserializeXml(context, schemaXmlB);
 
-    const testSchemaFileC = path.join(__dirname, "TestUnitsC.ecschema.xml");
-    const testSchemaXmlC = fs.readFileSync(testSchemaFileC, "utf-8");
-    deserializeXml(context, testSchemaXmlC);
+    const schemaFileA = path.join(__dirname, "TestUnitsA.ecschema.xml");
+    const schemaXmlA = fs.readFileSync(schemaFileA, "utf-8");
+    deserializeXml(context, schemaXmlA);
   });
 
   testData.forEach((test: TestData) => {

@@ -158,10 +158,25 @@ export class UnitGraph {
     name: string,
     defaultSchema: Schema
   ): Promise<Unit | Constant> {
-    const nameArr = name.split(":")
+    const nameArr = name.split(":");
     if (nameArr.length > 1) {
+      // Check if it is alias or schemaName
+      const ref = defaultSchema.getReferenceSync(nameArr[0]);
+      const refName = defaultSchema.getReferenceNameByAlias(nameArr[0]);
+      if (ref) {
+        // Got schema by schemaName
+        nameArr[0] = ref.name;
+      } else if (refName) {
+        // Got schema by alias
+        nameArr[0] = refName;
+      } else {
+        // Didn't match any referenced schema, check if it is current schemaName or alias
+        if (nameArr[0] === defaultSchema.name || nameArr[0] === defaultSchema.alias)
+          nameArr[0] = defaultSchema.name;
+      }
+
       // Create schema key with schema name
-      const schemaKey = new SchemaKey(nameArr[0])
+      const schemaKey = new SchemaKey(nameArr[0]);
       // Get schema with schema key
       const schema = await this._context.getSchema(schemaKey);
       if (!schema) {
@@ -173,13 +188,13 @@ export class UnitGraph {
           }
         );
       } else {
-        defaultSchema = schema
+        defaultSchema = schema;
       }
       name = nameArr[1];
     }
 
     // Create schema item key with name and schema
-    const itemKey = this.createSchemaItemKey(name, defaultSchema);  // Maybe use getSchemaItemKey in schema instead?
+    const itemKey = this.createSchemaItemKey(name, defaultSchema);
     // Get schema item with schema item key
     const item = await this._context.getSchemaItem(itemKey);
     if (!item)

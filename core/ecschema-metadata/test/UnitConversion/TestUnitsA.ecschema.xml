@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ECSchema schemaName="UnitsA" alias="uA" version="01.00.05" description="Creating another schema to test unit conversion across schemas" displayLabel="Units Testing" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="UnitsB" version="01.00.05" alias="uB"/>
+    <ECSchemaReference name="UnitsC" version="01.00.05" alias="uC"/>
     <UnitSystem typeName="SI" />
     <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
     <Phenomenon typeName="NUMBER" definition="NUMBER" displayLabel="Number" />
@@ -11,4 +13,10 @@
     <Unit typeName="unitA4" phenomenon="LENGTH" unitSystem="SI" definition="unitA5*UnitsB:unitB5"/>
     <Unit typeName="unitA5" phenomenon="LENGTH" unitSystem="SI" definition="UnitsB:unitB5"/>
     <Unit typeName="unitA6" phenomenon="LENGTH" unitSystem="SI" definition="unitA5(-1)*UnitsB:unitB5(2)"/>
+    <Unit typeName="unitA7" phenomenon="LENGTH" unitSystem="SI" definition="uB:unitB8*uC:unitC1"/>
+    <Unit typeName="unitA8" phenomenon="LENGTH" unitSystem="SI" definition="uA:unitA3*uB:unitB9"/>
+
+    <Unit typeName="unitA9" phenomenon="LENGTH" unitSystem="SI" definition="uB:unitB9"/>
+    <Unit typeName="unitA10" phenomenon="LENGTH" unitSystem="SI" definition="uA:unitA9(-1)*uB:unitB9(2)"/>
+    <Unit typeName="unitA11" phenomenon="LENGTH" unitSystem="SI" definition="uD:unitA9(-1)*uB:unitB9(2)"/>
 </ECSchema>
