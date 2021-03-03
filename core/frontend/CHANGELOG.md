@@ -34,6 +34,13 @@ Tue, 09 Mar 2021 20:28:13 GMT
 - Allow the same label to be used in two different units within the same family but in different systems.
 - Fix failure to call screen-space effects `shouldApply` function when reading pixels.
 - fix for running display-performance-test-app with a saved view which has volume classification using overrides
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:52 GMT
+
+### Updates
+
+- Fix incorrect cached transform for plan projection models after the model's range changes.
 - Add workaround for bogus transform in tile tree for empty model.
 
 ## 2.12.1

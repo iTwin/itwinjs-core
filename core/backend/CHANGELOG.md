@@ -21,6 +21,13 @@ Tue, 09 Mar 2021 20:28:13 GMT
 - Undo/Redo shortcuts
 - begin rename project from iModel.js to iTwin.js
 
+## 2.12.2
+Wed, 03 Mar 2021 18:48:52 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.12.6
+
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
 

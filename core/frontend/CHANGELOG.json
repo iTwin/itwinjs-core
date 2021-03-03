@@ -87,6 +87,18 @@
           },
           {
             "comment": "fix for running display-performance-test-app with a saved view which has volume classification using overrides"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/imodeljs-frontend_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix incorrect cached transform for plan projection models after the model's range changes."
           },
           {
             "comment": "Add workaround for bogus transform in tile tree for empty model."

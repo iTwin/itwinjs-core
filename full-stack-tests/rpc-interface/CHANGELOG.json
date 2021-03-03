@@ -20,6 +20,12 @@
       }
     },
     {
+      "version": "2.12.2",
+      "tag": "@bentley/rpcinterface-full-stack-tests_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:53 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/rpcinterface-full-stack-tests_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
