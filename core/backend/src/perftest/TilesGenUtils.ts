@@ -169,7 +169,7 @@ export class BackendTileGenerator {
     const tileTime = new StopWatch(undefined, true);
     let content;
     try {
-      content = await this._iModel.tiles.requestTileContent(this._requestContext, treeInfo.treeId, tile.contentId);
+      content = (await this._iModel.tiles.requestTileContent(this._requestContext, treeInfo.treeId, tile.contentId)).content;
     } catch (err) {
       throw err;
     }

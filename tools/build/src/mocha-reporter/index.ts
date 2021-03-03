@@ -7,7 +7,7 @@
 /* eslint-disable no-console */
 import * as path from "path";
 
-const fs = require("fs-extra")
+const fs = require("fs-extra");
 const { logBuildWarning, logBuildError, failBuild } = require("../scripts/rush/utils");
 
 const Base = require("mocha/lib/reporters/base");

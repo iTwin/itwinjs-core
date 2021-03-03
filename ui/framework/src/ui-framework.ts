@@ -78,6 +78,7 @@ export * from "./ui-framework/frontstage/FrontstageManager";
 export * from "./ui-framework/frontstage/FrontstageProvider";
 export * from "./ui-framework/frontstage/NestedFrontstage";
 export * from "./ui-framework/frontstage/ModalFrontstage";
+export * from "./ui-framework/frontstage/ModalSettingsStage";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
 export * from "./ui-framework/hooks/useActiveViewport";

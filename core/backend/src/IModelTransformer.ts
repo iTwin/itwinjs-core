@@ -153,25 +153,25 @@ export class IModelTransformer extends IModelExportHandler {
     Logger.logInfo(BackendLoggerCategory.IModelImporter, `this.importer.simplifyElementGeometry=${this.importer.simplifyElementGeometry}`);
   }
 
-  /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation.
-   * @param sourceElement The new ExternalSourceAspectProps will be tracking this Element from the source iModel.
-   * @param targetElementId The optional Id of the target Element that will own the ExternalSourceAspect.
-   */
-  private initElementProvenance(sourceElement: Element, targetElementId: Id64String): ExternalSourceAspectProps {
+  /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation. */
+  private initElementProvenance(sourceElementId: Id64String, targetElementId: Id64String): ExternalSourceAspectProps {
+    const elementId = this._isReverseSynchronization ? sourceElementId : targetElementId;
+    const aspectIdentifier = this._isReverseSynchronization ? targetElementId : sourceElementId;
     const aspectProps: ExternalSourceAspectProps = {
       classFullName: ExternalSourceAspect.classFullName,
-      element: { id: targetElementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      element: { id: elementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
       scope: { id: this.targetScopeElementId },
-      identifier: sourceElement.id,
+      identifier: aspectIdentifier,
       kind: ExternalSourceAspect.Kind.Element,
-      version: sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id),
+      version: this.sourceDb.elements.queryLastModifiedTime(sourceElementId),
     };
     const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} a WHERE a.Element.Id=:elementId AND a.Scope.Id=:scopeId AND a.Kind=:kind AND a.Identifier=:identifier LIMIT 1`;
-    aspectProps.id = this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
-      statement.bindId("elementId", targetElementId);
+    const iModelDb = this._isReverseSynchronization ? this.sourceDb : this.targetDb;
+    aspectProps.id = iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
+      statement.bindId("elementId", elementId);
       statement.bindId("scopeId", this.targetScopeElementId);
       statement.bindString("kind", ExternalSourceAspect.Kind.Element);
-      statement.bindString("identifier", sourceElement.id); // ExternalSourceAspect.Identifier is of type string
+      statement.bindString("identifier", aspectIdentifier); // ExternalSourceAspect.Identifier is of type string
       return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
     });
     return aspectProps;
@@ -184,21 +184,24 @@ export class IModelTransformer extends IModelExportHandler {
    */
   private initRelationshipProvenance(sourceRelationship: Relationship, targetRelInstanceId: Id64String): ExternalSourceAspectProps {
     const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, targetRelInstanceId);
+    const elementId = this._isReverseSynchronization ? sourceRelationship.sourceId : targetRelationship.sourceId;
+    const aspectIdentifier = this._isReverseSynchronization ? targetRelInstanceId : sourceRelationship.id;
     const aspectProps: ExternalSourceAspectProps = {
       classFullName: ExternalSourceAspect.classFullName,
-      element: { id: targetRelationship.sourceId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      element: { id: elementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
       scope: { id: this.targetScopeElementId },
-      identifier: sourceRelationship.id,
+      identifier: aspectIdentifier,
       kind: ExternalSourceAspect.Kind.Relationship,
       jsonProperties: JSON.stringify({ targetRelInstanceId }),
     };
     const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} aspect` +
       ` WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind=:kind AND aspect.Identifier=:identifier LIMIT 1`;
-    aspectProps.id = this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
-      statement.bindId("elementId", targetRelationship.sourceId);
+    const iModelDb = this._isReverseSynchronization ? this.sourceDb : this.targetDb;
+    aspectProps.id = iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
+      statement.bindId("elementId", elementId);
       statement.bindId("scopeId", this.targetScopeElementId);
       statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
-      statement.bindString("identifier", sourceRelationship.id);
+      statement.bindString("identifier", aspectIdentifier);
       return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
     });
     return aspectProps;
@@ -395,12 +398,12 @@ export class IModelTransformer extends IModelExportHandler {
     }
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
     if (!this._noProvenance) {
-      // record provenance in ExternalSourceAspect
-      const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement, targetElementProps.id!);
+      const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
+      const iModelDb = this._isReverseSynchronization ? this.sourceDb : this.targetDb;
       if (aspectProps.id === undefined) {
-        this.targetDb.elements.insertAspect(aspectProps);
+        iModelDb.elements.insertAspect(aspectProps);
       } else {
-        this.targetDb.elements.updateAspect(aspectProps);
+        iModelDb.elements.updateAspect(aspectProps);
       }
     }
   }
@@ -540,7 +543,11 @@ export class IModelTransformer extends IModelExportHandler {
     if (!this._noProvenance && Id64.isValidId64(targetRelationshipInstanceId)) {
       const aspectProps: ExternalSourceAspectProps = this.initRelationshipProvenance(sourceRelationship, targetRelationshipInstanceId);
       if (undefined === aspectProps.id) {
-        this.targetDb.elements.insertAspect(aspectProps);
+        if (this._isReverseSynchronization) {
+          this.sourceDb.elements.insertAspect(aspectProps);
+        } else {
+          this.targetDb.elements.insertAspect(aspectProps);
+        }
       }
     }
   }
