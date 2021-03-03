@@ -176,7 +176,7 @@
     },
     {
       "name": "@bentley/presentation-common",
-      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/presentation-components",

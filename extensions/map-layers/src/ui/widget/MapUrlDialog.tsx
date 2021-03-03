@@ -81,8 +81,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   // we don't always want to enable it in the UI.
   const [settingsStorageDisabled] = React.useState(
     !isSettingsStorageAvailable()
-    || !IModelApp.viewManager?.selectedView?.iModel?.contextId
-    || !IModelApp.viewManager?.selectedView?.iModel?.iModelId);
+    || !props?.activeViewport?.iModel?.contextId
+    || !props?.activeViewport?.iModel?.iModelId);
 
   const isAuthSupported = React.useCallback(() => {
     return ((mapType === MAP_TYPES.wms || mapType === MAP_TYPES.wms) && supportWmsAuthentication)
@@ -142,11 +142,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [setPassword, invalidCredentialsProvided, setInvalidCredentialsProvided]);
 
   const doAttach = React.useCallback(async (source: MapLayerSource): Promise<boolean> => {
-
     // Returns a promise, When true, the dialog should closed
     return new Promise<boolean>((resolve, _reject) => {
-
-      const vp = IModelApp.viewManager.selectedView;
+      const vp = props?.activeViewport;
       if (vp === undefined || source === undefined) {
         resolve(true);
         return;
@@ -221,7 +219,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         resolve(true);
       });
     });
-  }, [isOverlay, onOkResult, settingsStorage, invalidCredentialsProvided, layerIdxToEdit, serverRequireCredentials, props.askForCredentialsOnly, settingsStorageDisabled]);
+  }, [props.activeViewport, props.askForCredentialsOnly, settingsStorage, serverRequireCredentials, invalidCredentialsProvided, onOkResult, layerIdxToEdit, isOverlay, settingsStorageDisabled]);
 
   const onNameChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setMapName(event.target.value);

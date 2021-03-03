@@ -43,6 +43,7 @@
     "@bentley/imodeljs-i18n": "2.13.0-dev.20",
     "@bentley/imodeljs-quantity": "2.13.0-dev.20",
     "@bentley/itwin-client": "2.13.0-dev.20",
+    "@bentley/presentation-common": "2.13.0-dev.20",
     "@bentley/react-scripts": "3.4.7",
     "@bentley/ui-abstract": "2.13.0-dev.20",
     "@bentley/ui-components": "2.13.0-dev.20",
