@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-common",
+      "comment": "Added an `extendedType` attribute to `PropertyInfo` interface.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "30312645+aurislt7@users.noreply.github.com"
+}
