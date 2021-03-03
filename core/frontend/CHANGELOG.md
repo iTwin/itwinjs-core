@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Mar 2021 18:48:52 GMT and should not be manually modified.
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:52 GMT
+
+### Updates
+
+- Fix incorrect cached transform for plan projection models after the model's range changes.
+- Add workaround for bogus transform in tile tree for empty model.
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
