@@ -56,6 +56,7 @@ export class EventController {
     const vp = this.vp;
     const listener = (ev: Event) => {
       // decoratorDiv is deprecated from the public API really, so this usage is fine
+      // eslint-disable-next-line deprecation/deprecation
       if (!vp.decorationDiv.contains(ev.target as Element)) ev.preventDefault();
       ToolAdmin.addEvent(ev, vp);
     };
