@@ -9,8 +9,7 @@ import { Tool } from "@bentley/imodeljs-frontend";
 import { SettingsModalFrontstage } from "../frontstage/ModalSettingsStage";
 
 /**
- * Immediate tool that will reset the layout to that specified in the stage definition. A stage Id
- * may be passed in, if not the active stage is used. The stage Id is case sensitive.
+ * Immediate tool that will open the Settings modal stage.
  * @alpha
  */
 export class OpenSettingsTool extends Tool {
