@@ -101,7 +101,7 @@ describe("MapUrlDialog", () => {
     component.unmount();
   });
 
-  it.only("attempt to attach a WMS layer requiring credentials", async () => {
+  it("attempt to attach a WMS layer requiring credentials", async () => {
 
     sandbox.stub(IModelApp.notifications, "outputMessage");
 
