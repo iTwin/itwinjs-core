@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as React from "react";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { FocusTrap } from "../../ui-core/focustrap/FocusTrap";
+import { focusIntoContainer, FocusTrap } from "../../ui-core/focustrap/FocusTrap";
 
 // cspell:ignore focustrap
 
@@ -96,6 +96,59 @@ describe("<FocusTrap />", () => {
 
     activeElement = document.activeElement as HTMLElement;
     expect(activeElement.id).to.eq("test3");
+  });
+
+});
+
+describe("focusIntoContainer", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should focus into first focusable element", async () => {
+    const clock = sandbox.useFakeTimers();
+
+    const component = render(
+      <div data-testid="div1">
+        <span>test</span>
+        <button data-testid="button1">test</button>
+        <button data-testid="button2">test</button>
+      </div>
+    );
+
+    const div1 = component.getByTestId("div1");
+    const button1 = component.getByTestId("button1");
+    const button2 = component.getByTestId("button2");
+
+    expect (focusIntoContainer(div1 as HTMLDivElement)).to.be.true;
+
+    clock.tick(100);
+    await Promise.resolve();
+
+    expect(document.activeElement).to.eq(button1);
+
+    button2.focus();
+    expect (focusIntoContainer(div1 as HTMLDivElement)).to.be.true;
+
+    clock.tick(100);
+    await Promise.resolve();
+
+    expect(document.activeElement).to.eq(button1);
+  });
+
+  it("should return false if no focusable element", async () => {
+    const component = render(
+      <div data-testid="div1">
+        <button className="core-focus-trap-ignore-initial">test</button>
+        <button disabled tabIndex={0}>test</button>
+        <button tabIndex={-1}>test</button>
+      </div>
+    );
+
+    const div1 = component.getByTestId("div1");
+    expect (focusIntoContainer(div1 as HTMLDivElement)).to.be.false;
   });
 
 });
