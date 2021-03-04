@@ -182,7 +182,6 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
       accept: "application/json",
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const httpContext = ClientRequestContext.fromJSON(IModelHost.session);
     const response = await httpRequest(httpContext, this._configuration!.userInfoEndpoint!, options);
     return response?.body;

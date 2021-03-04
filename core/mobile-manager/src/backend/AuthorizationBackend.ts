@@ -7,7 +7,7 @@
  */
 
 import { ClientRequestContext, SessionProps } from "@bentley/bentleyjs-core";
-import { AuthorizationBackend, IModelHost } from "@bentley/imodeljs-backend";
+import { AuthorizationBackend } from "@bentley/imodeljs-backend";
 import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
@@ -16,7 +16,6 @@ import { MobileHost } from "./MobileHost";
  * @internal
  */
 export class MobileAuthorizationBackend extends AuthorizationBackend {
-  private getRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
 
   /** Used to initialize the client - must be awaited before any other methods are called */
   public async initialize(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {
@@ -55,7 +54,7 @@ export class MobileAuthorizationBackend extends AuthorizationBackend {
   /** Start the sign-in process */
   public async signIn(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authSignIn(this.getRequestContext(), (err?: string) => {
+      MobileHost.device.authSignIn(this.getClientRequestContext(), (err?: string) => {
         if (!err) {
           resolve();
         } else {
@@ -68,7 +67,7 @@ export class MobileAuthorizationBackend extends AuthorizationBackend {
   /** Start the sign-out process */
   public async signOut(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authSignOut(this.getRequestContext(), (err?: string) => {
+      MobileHost.device.authSignOut(this.getClientRequestContext(), (err?: string) => {
         if (!err) {
           resolve();
         } else {
@@ -81,7 +80,7 @@ export class MobileAuthorizationBackend extends AuthorizationBackend {
   /** return accessToken */
   public async refreshToken(): Promise<AccessToken> {
     return new Promise<AccessToken>((resolve, reject) => {
-      MobileHost.device.authGetAccessToken(this.getRequestContext(), (tokenString?: string, err?: string) => {
+      MobileHost.device.authGetAccessToken(this.getClientRequestContext(), (tokenString?: string, err?: string) => {
         if (!err && tokenString) {
           resolve(AccessToken.fromJson(JSON.parse(tokenString) as AccessTokenProps));
         } else {
