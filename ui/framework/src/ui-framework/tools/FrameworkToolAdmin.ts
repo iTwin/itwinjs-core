@@ -21,10 +21,7 @@ export class FrameworkToolAdmin extends ToolAdmin {
     let handled = false;
 
     if (wentDown && !UiFramework.isContextMenuOpen) {
-      if (UiFramework.escapeToHome && !KeyboardShortcutManager.isFocusOnHome && e.key === SpecialKey.Escape) {
-        KeyboardShortcutManager.setFocusToHome();
-        handled = true;
-      } else if (KeyboardShortcutManager.isFocusOnHome && e.key !== SpecialKey.Escape) {
+      if (KeyboardShortcutManager.isFocusOnHome && e.key !== SpecialKey.Escape) {
         KeyboardShortcutManager.processKey(e.key, e.altKey, e.ctrlKey, e.shiftKey);
         handled = true;
       }

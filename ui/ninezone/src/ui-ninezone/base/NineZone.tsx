@@ -17,7 +17,7 @@ import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdCon
 import {
   DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
 } from "./NineZoneState";
-import { assert } from "./assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { WidgetTab } from "../widget/Tab";
 
 /** @internal future */
@@ -51,7 +51,7 @@ export function NineZone(props: NineZoneProps) {
   const { children, ...providerProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
   const measurerRef = React.useRef<HTMLDivElement>(null);
   const measure = React.useCallback<() => Rectangle>(() => {
-    assert(measurerRef.current);
+    assert(!!measurerRef.current);
     return Rectangle.create(measurerRef.current.getBoundingClientRect());
   }, []);
   return (

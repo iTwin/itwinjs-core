@@ -221,6 +221,8 @@ export interface RequestBasicCredentials {
 
 // @beta (undocumented)
 export class RequestGlobalOptions {
+    // @internal
+    static createHttpsProxy: (additionalOptions?: https.AgentOptions) => https.Agent | undefined;
     // (undocumented)
     static httpsProxy?: https.Agent;
     // (undocumented)

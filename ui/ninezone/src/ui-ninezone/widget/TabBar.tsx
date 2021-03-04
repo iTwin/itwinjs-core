@@ -10,7 +10,7 @@ import "./TabBar.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Point, Timer } from "@bentley/ui-core";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { isTabTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
 import { WidgetTargetState } from "../base/NineZoneState";
@@ -124,7 +124,7 @@ export function useDrag<T extends HTMLElement>(
   }, [onDragEnd]);
   React.useEffect(() => {
     const listener = () => {
-      assert(initialPointerPosition.current);
+      assert(!!initialPointerPosition.current);
       onDragStart && onDragStart(initialPointerPosition.current);
       initialPointerPosition.current = undefined;
     };
