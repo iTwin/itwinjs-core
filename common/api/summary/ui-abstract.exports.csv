@@ -125,7 +125,7 @@ beta;PropertyChangeResult
 beta;PropertyChangeStatus
 beta;PropertyConverterInfo
 beta;PropertyDescription
-alpha;PropertyDescriptionHelper
+beta;PropertyDescriptionHelper
 beta;PropertyEditorInfo
 beta;PropertyEditorParams = BasePropertyEditorParams
 beta;PropertyEditorParamTypes

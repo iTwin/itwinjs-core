@@ -187,6 +187,8 @@ import { ZoneTargetType } from '@bentley/ui-ninezone';
 // @alpha
 export class AccuDrawCommandItems {
     // (undocumented)
+    static get bumpToolSetting(): CommandItemDef;
+    // (undocumented)
     static get changeCompassMode(): CommandItemDef;
     // (undocumented)
     static get defineACSByPoints(): CommandItemDef;
