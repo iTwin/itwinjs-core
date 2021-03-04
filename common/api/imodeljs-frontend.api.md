@@ -4816,7 +4816,7 @@ export class LocalhostIpcApp {
     static startup(opts: LocalHostIpcAppOpts): Promise<void>;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface LocalHostIpcAppOpts extends WebViewerAppOpts {
     // (undocumented)
     localhostIpcApp?: {

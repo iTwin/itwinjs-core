@@ -282,7 +282,7 @@ beta;LengthDescription
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
 internal;LocalhostIpcApp
-public;LocalHostIpcAppOpts 
+internal;LocalHostIpcAppOpts 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
