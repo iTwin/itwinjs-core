@@ -87,7 +87,7 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@azure-tools/azcopy-node": "^1.0.0",
+    "@azure-tools/azcopy-node": "^2.0.0",
     "@bentley/usage-logging-client": "2.13.0-dev.6",
     "applicationinsights": "^1.7.5",
     "deep-assign": "^2.0.0",
