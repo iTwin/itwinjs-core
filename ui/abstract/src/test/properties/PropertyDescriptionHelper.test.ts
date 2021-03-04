@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  PropertyDescriptionHelper, PropertyEditorParamTypes, SuppressLabelEditorParams,
+  EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, SuppressLabelEditorParams,
 } from "../../ui-abstract";
+
+// cSpell:ignore Picklist
 
 describe("PropertyDescriptionHelper", () => {
   const testName = "name";
@@ -201,4 +203,64 @@ describe("PropertyDescriptionHelper", () => {
       expect(editorDescription.editor?.params?.[0].type).to.eq(PropertyEditorParamTypes.SuppressEditorLabel);
     });
   });
+
+  describe("bumpEnumProperty", () => {
+    const noChoices: EnumerationChoice[] = [
+    ];
+
+    const choices = [
+      { label: "Red", value: 1 },
+      { label: "White", value: 2 },
+      { label: "Blue", value: 3 },
+      { label: "Yellow", value: 4 },
+    ];
+
+    const stringChoices = async (): Promise<EnumerationChoice[]> => {
+      return [
+        { label: "Red", value: "red" },
+        { label: "White", value: "white" },
+        { label: "Blue", value: "blue" },
+        { label: "Yellow", value: "yellow" },
+      ];
+    };
+
+    it("should bump numeric value correctly", async () => {
+      const enumDescription = PropertyDescriptionHelper.buildEnumPicklistEditorDescription(testName, testLabel, choices);
+      expect(enumDescription.enum?.choices).to.eq(choices);
+
+      let newValue = await PropertyDescriptionHelper.bumpEnumProperty(enumDescription, 1);
+      expect(newValue).to.eq(2);
+      newValue = await PropertyDescriptionHelper.bumpEnumProperty(enumDescription, 4);
+      expect(newValue).to.eq(1);
+      newValue = await PropertyDescriptionHelper.bumpEnumProperty(enumDescription, 0);
+      expect(newValue).to.eq(0);
+    });
+
+    it("should bump string value correctly", async () => {
+      const enumDescription = PropertyDescriptionHelper.buildEnumPicklistEditorDescription(testName, testLabel, stringChoices());
+      expect(enumDescription.enum?.choices).not.to.be.undefined;
+
+      let newValue = await PropertyDescriptionHelper.bumpEnumProperty(enumDescription, "red");
+      expect(newValue).to.eq("white");
+      newValue = await PropertyDescriptionHelper.bumpEnumProperty(enumDescription, "yellow");
+      expect(newValue).to.eq("red");
+      newValue = await PropertyDescriptionHelper.bumpEnumProperty(enumDescription, "");
+      expect(newValue).to.eq("");
+    });
+
+    it("should not bump with wrong type description", async () => {
+      const booleanDescription = PropertyDescriptionHelper.buildCheckboxDescription(testName, testLabel);
+      const newValue = await PropertyDescriptionHelper.bumpEnumProperty(booleanDescription, 1);
+      expect(newValue).to.eq(1);
+    });
+
+    it("should not bump with no choices", async () => {
+      const enumDescription = PropertyDescriptionHelper.buildEnumPicklistEditorDescription(testName, testLabel, noChoices);
+      expect(enumDescription.enum?.choices).to.eq(noChoices);
+
+      const newValue = await PropertyDescriptionHelper.bumpEnumProperty(enumDescription, 1);
+      expect(newValue).to.eq(1);
+    });
+  });
+
 });
