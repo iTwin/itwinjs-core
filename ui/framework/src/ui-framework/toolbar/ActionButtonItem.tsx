@@ -1,24 +1,17 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Toolbar
  */
 
 import * as React from "react";
-import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, OnItemExecutedFunc, SpecialKey } from "@bentley/ui-abstract";
+import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, OnItemExecutedFunc } from "@bentley/ui-abstract";
 import { BadgeUtilities } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
-import { KeyboardShortcutManager } from "../../ui-framework";
 import { ToolbarHelper } from "./ToolbarHelper";
-
-function handleKeyDown(e: React.KeyboardEvent): void {
-  // istanbul ignore else
-  if (e.key === SpecialKey.Escape) {
-    KeyboardShortcutManager.setFocusToHome();
-  }
-}
+import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Action button props
  *  @internal
@@ -44,7 +37,7 @@ export function ActionButtonItem(props: ActionButtonProps) {
     title={ConditionalStringValue.getValue(item.label)}
     key={item.id}
     onClick={execute}
-    onKeyDown={handleKeyDown}
+    onKeyDown={onEscapeSetFocusToHome}
     icon={ToolbarHelper.getIconReactNode(item)}
     badge={BadgeUtilities.getComponentForBadgeType(item.badgeType)}
   />);

@@ -12,7 +12,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { WidgetState } from "@bentley/ui-abstract";
 import { Size } from "@bentley/ui-core";
 import { IModelApp, MockRender, ScreenViewport, SpatialViewState } from "@bentley/imodeljs-frontend";
-import { ConfigurableCreateInfo, ConfigurableUiContent, CoreTools, FrontstageManager, RestoreFrontstageLayoutTool, ToolSettingsManager, ToolUiProvider } from "../../ui-framework";
+import { ConfigurableCreateInfo, ConfigurableUiContent, CoreTools, FrontstageManager, ModalFrontstageRequestedCloseEventArgs, RestoreFrontstageLayoutTool, SettingsModalFrontstage, ToolSettingsManager, ToolUiProvider } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
 import { TestFrontstage, TestFrontstage2, TestFrontstage3 } from "./FrontstageTestUtils";
 
@@ -63,11 +63,31 @@ describe("FrontstageManager", () => {
     }
   });
 
+  it("setActiveModalFrontstage from backstage item", async () => {
+    const handleFrontstageCloseRequested = ({stageCloseFunc}: ModalFrontstageRequestedCloseEventArgs) =>{
+      stageCloseFunc();
+    };
+
+    // since we are not really displaying modal stage add listener to mimic the close processing
+    const removeListener = FrontstageManager.onCloseModalFrontstageRequestedEvent.addListener(handleFrontstageCloseRequested);
+
+    expect (FrontstageManager.activeModalFrontstage).to.be.undefined;
+    const backstageItem = SettingsModalFrontstage.getBackstageActionItem(100,10);
+    backstageItem.execute();
+    expect (FrontstageManager.activeModalFrontstage).to.not.be.undefined;
+    FrontstageManager.closeModalFrontstage();
+    await TestUtils.flushAsyncOperations();
+
+    expect(FrontstageManager.activeModalFrontstage).to.be.undefined;
+    removeListener();
+  });
+
   it("should emit onFrontstageRestoreLayoutEvent", async () => {
     const spy = sinon.spy(FrontstageManager.onFrontstageRestoreLayoutEvent, "emit");
 
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
+    expect(FrontstageManager.activeModalFrontstage).to.be.undefined;
     expect(frontstageProvider.frontstageDef).to.not.be.undefined;
     const frontstageDef = frontstageProvider.frontstageDef;
     if (frontstageDef) {

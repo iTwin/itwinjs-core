@@ -7,6 +7,7 @@
 import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import Component from 'react-select';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
@@ -27,6 +28,16 @@ import { RelativePosition } from '@bentley/ui-abstract';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { SliderModeFunction } from 'react-compound-slider';
 import { ValueType } from 'react-select/src/types';
+
+// @beta
+export class ActivateSettingsTabEvent extends BeUiEvent<ActivateSettingsTabEventArgs> {
+}
+
+// @beta
+export interface ActivateSettingsTabEventArgs {
+    // (undocumented)
+    readonly settingsTabId: string;
+}
 
 // @internal
 export class AnnularSector {
@@ -187,6 +198,8 @@ export function Centered(props: CommonDivProps): JSX.Element;
 
 // @public
 export class Checkbox extends React.PureComponent<CheckboxProps> {
+    // @internal
+    constructor(props: CheckboxProps);
     // (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -211,6 +224,7 @@ export interface CheckBoxInfo {
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
     indeterminate?: boolean;
     inputClassName?: string;
+    inputRef?: React.Ref<HTMLInputElement>;
     inputStyle?: React.CSSProperties;
     label?: string;
     labelClassName?: string;
@@ -266,6 +280,10 @@ export class Circle {
 // @public
 export interface ClassNameProps {
     className?: string;
+}
+
+// @internal
+export class CloseSettingsContainerEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> {
 }
 
 // @public
@@ -942,12 +960,13 @@ export class IconHelper {
 }
 
 // @public
-export function IconInput(props: IconInputProps): JSX.Element;
+export const IconInput: (props: IconInputProps) => JSX.Element | null;
 
 // @public
 export interface IconInputProps extends InputProps {
     containerClassName?: string;
     icon: React.ReactNode;
+    ref?: React.Ref<HTMLInputElement>;
 }
 
 // @public
@@ -972,6 +991,7 @@ export interface ImageCheckBoxProps extends CommonProps {
     imageOff: string | React.ReactNode;
     imageOn: string | React.ReactNode;
     inputClassName?: string;
+    inputRef?: React.Ref<HTMLInputElement>;
     inputStyle?: React.CSSProperties;
     onClick?: (checked: boolean) => any;
     tooltip?: string;
@@ -1243,6 +1263,9 @@ export interface MainTabsProps extends TabsProps {
     orientation: Orientation;
 }
 
+// @internal
+export function mergeRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
+
 // @public
 export class MessageBox extends React.PureComponent<MessageBoxProps> {
     // (undocumented)
@@ -1353,7 +1376,7 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 };
 
 // @beta
-export function NumberInput(props: NumberInputProps): JSX.Element;
+export const NumberInput: (props: NumberInputProps) => JSX.Element | null;
 
 // @beta
 export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange"> {
@@ -1364,6 +1387,7 @@ export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step
     onChange?: (value: number | undefined, stringValue: string) => void;
     parse?: ((value: string) => number | null | undefined);
     precision?: number;
+    ref?: React.Ref<HTMLInputElement>;
     showTouchButtons?: boolean;
     snap?: boolean;
     step?: StepFunctionProp;
@@ -1527,6 +1551,30 @@ export interface PopupProps extends CommonProps {
     showShadow: boolean;
     target?: HTMLElement | null;
     top: number;
+}
+
+// @beta
+export class ProcessSettingsContainerCloseEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> {
+}
+
+// @beta
+export interface ProcessSettingsContainerCloseEventArgs {
+    // (undocumented)
+    readonly closeFunc: (args: any) => void;
+    // (undocumented)
+    readonly closeFuncArgs?: any;
+}
+
+// @beta
+export class ProcessSettingsTabActivationEvent extends BeUiEvent<ProcessSettingsTabActivationEventArgs> {
+}
+
+// @beta
+export interface ProcessSettingsTabActivationEventArgs {
+    // (undocumented)
+    readonly requestedSettingsTabId: string;
+    // (undocumented)
+    readonly tabSelectionFunc: (tabId: string) => void;
 }
 
 // @beta
@@ -1817,7 +1865,7 @@ export interface SearchBoxProps extends CommonProps {
 }
 
 // @public
-export function Select(props: SelectProps): JSX.Element;
+export const Select: (props: SelectProps) => JSX.Element | null;
 
 // @public
 export interface SelectOption {
@@ -1831,6 +1879,7 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
     options: (string | SelectOption)[] | {
         [key: string]: (string | SelectOption);
     };
+    ref?: React.Ref<HTMLSelectElement>;
     setFocus?: boolean;
 }
 
@@ -1845,6 +1894,72 @@ export class SessionUiSettings implements UiSettings {
     saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)
     w: Window;
+}
+
+// @beta
+export const SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager }: SettingsContainerProps) => JSX.Element;
+
+// @beta (undocumented)
+export interface SettingsContainerProps {
+    // (undocumented)
+    currentSettingsTab?: SettingsTabEntry;
+    // (undocumented)
+    onSettingsTabSelected?: (tab: SettingsTabEntry) => void;
+    // (undocumented)
+    settingsManager: SettingsManager;
+    // (undocumented)
+    tabs: SettingsTabEntry[];
+}
+
+// @beta
+export class SettingsManager {
+    activateSettingsTab(settingsTabId: string): void;
+    // (undocumented)
+    addSettingsProvider(settingsProvider: SettingsProvider): void;
+    closeSettingsContainer(closeFunc: (args: any) => void, closeFuncArgs?: any): void;
+    getSettingEntries(stageId: string, stageUsage: string): Array<SettingsTabEntry>;
+    // @internal
+    readonly onActivateSettingsTab: ActivateSettingsTabEvent;
+    // @internal
+    readonly onCloseSettingsContainer: CloseSettingsContainerEvent;
+    readonly onProcessSettingsContainerClose: ProcessSettingsContainerCloseEvent;
+    readonly onProcessSettingsTabActivation: ProcessSettingsTabActivationEvent;
+    readonly onSettingsProvidersChanged: SettingsProvidersChangedEvent;
+    // (undocumented)
+    get providers(): ReadonlyArray<SettingsProvider>;
+    set providers(p: ReadonlyArray<SettingsProvider>);
+    // (undocumented)
+    removeSettingsProvider(providerId: string): boolean;
+}
+
+// @beta
+export interface SettingsProvider {
+    // (undocumented)
+    getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined;
+    readonly id: string;
+}
+
+// @beta
+export class SettingsProvidersChangedEvent extends BeUiEvent<SettingsProvidersChangedEventArgs> {
+}
+
+// @beta
+export interface SettingsProvidersChangedEventArgs {
+    // (undocumented)
+    readonly providers: ReadonlyArray<SettingsProvider>;
+}
+
+// @beta
+export interface SettingsTabEntry {
+    readonly icon?: string | JSX.Element;
+    readonly isDisabled?: boolean | ConditionalBooleanValue;
+    readonly itemPriority: number;
+    readonly label: string;
+    readonly page: JSX.Element;
+    readonly pageWillHandleCloseRequest?: boolean;
+    readonly subLabel?: string;
+    readonly tabId: string;
+    readonly tooltip?: string | JSX.Element;
 }
 
 // @internal
@@ -2010,6 +2125,21 @@ export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
 
+// @beta
+export interface TabLabel {
+    // (undocumented)
+    disabled?: boolean;
+    // (undocumented)
+    icon?: string | JSX.Element;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    subLabel?: string;
+    // (undocumented)
+    tabId: string;
+    tooltip?: string | JSX.Element;
+}
+
 // @public
 export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
     constructor(props: MainTabsProps);
@@ -2025,7 +2155,8 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
     activeIndex?: number;
     green?: boolean;
-    labels: string[];
+    // @beta
+    labels: Array<string | TabLabel>;
     onActivateTab?: (index: number) => any;
     // @deprecated
     onClickLabel?: (index: number) => any;
@@ -2063,6 +2194,7 @@ export type ThemedSelectProps = {
     controlShouldRenderValue?: boolean;
     defaultMenuIsOpen?: boolean;
     defaultValue?: ValueType<OptionType>;
+    divRef?: React.Ref<HTMLDivElement>;
     escapeClearsValue?: boolean;
     filterOption?: ((option: OptionType, rawInput: string) => boolean) | null;
     formatGroupLabel?: typeof formatGroupLabel;
@@ -2105,6 +2237,7 @@ export type ThemedSelectProps = {
     options: OptionsType;
     pageSize?: number;
     placeholder?: string;
+    ref?: React.Ref<Component>;
     styles?: React.CSSProperties;
     tabIndex?: string;
     tabSelectsValue?: boolean;
@@ -2167,7 +2300,7 @@ export function Title(props: TextProps): JSX.Element;
 export function Title2(props: TextProps): JSX.Element;
 
 // @public
-export function Toggle(props: ToggleProps): JSX.Element;
+export const Toggle: (props: ToggleProps) => JSX.Element | null;
 
 // @public
 export enum ToggleButtonType {
@@ -2183,6 +2316,7 @@ export interface ToggleProps extends CommonProps {
     large?: boolean;
     onBlur?: (event: React.FocusEvent) => any;
     onChange?: (checked: boolean) => any;
+    ref?: React.Ref<HTMLInputElement>;
     rounded?: boolean;
     setFocus?: boolean;
     showCheckmark?: boolean;
@@ -2426,6 +2560,12 @@ export function useRefState<T>(): [React.Ref<T>, T | undefined];
 
 // @internal
 export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
+
+// @beta
+export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void;
+
+// @beta
+export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void): void;
 
 // @internal
 export const useTargeted: (ref: React.RefObject<Element>) => boolean;

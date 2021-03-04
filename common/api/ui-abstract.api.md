@@ -1328,7 +1328,7 @@ export interface LinkElementsInfo {
         start: number;
         end: number;
     }>;
-    onClick?: (record: PropertyRecord, text: string) => void;
+    onClick: (text: string) => void;
 }
 
 // @internal
@@ -1794,7 +1794,9 @@ export enum StandardTypeNames {
     // (undocumented)
     Struct = "struct",
     // (undocumented)
-    Text = "text"
+    Text = "text",
+    // (undocumented)
+    URL = "url"
 }
 
 // @internal (undocumented)

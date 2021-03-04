@@ -2331,8 +2331,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
     // @internal (undocumented)
-    getAttribution(div: HTMLTableElement, vp: ScreenViewport): void;
-    // @internal (undocumented)
     getBackgroundMapGeometry(): BackgroundMapGeometry | undefined;
     // @internal (undocumented)
     getGlobalGeometryAndHeightRange(): {
@@ -5558,7 +5556,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
-    get planarClipMaskPrority(): number;
+    get planarclipMaskPriority(): number;
     // (undocumented)
     setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
     // (undocumented)
@@ -7163,7 +7161,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         protected _planarClipMask?: PlanarClipMaskState;
         // (undocumented)
-        get planarClipMaskPrority(): number;
+        get planarClipMaskPriority(): number;
         // (undocumented)
         unionFitRange(union: Range3d): void;
     }
@@ -7878,6 +7876,8 @@ export abstract class RenderSystem implements IDisposable {
     antialiasSamples?: number;
     // @internal (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
+    // @beta
+    static contextLossHandler(): Promise<any>;
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
@@ -10263,6 +10263,7 @@ export interface TileTreeParams {
 export abstract class TileTreeReference {
     // (undocumented)
     accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes): void;
+    addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     abstract get castsShadows(): boolean;
     // @internal (undocumented)
@@ -10287,7 +10288,7 @@ export abstract class TileTreeReference {
     get isLoadingComplete(): boolean;
     // @internal
     protected get _isLoadingComplete(): boolean;
-    get planarClipMaskPrority(): number;
+    get planarclipMaskPriority(): number;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }
