@@ -90,6 +90,7 @@ describe("TileUpload (#integration)", () => {
     assert.isDefined(iModel);
 
     // Generate tile
+    // eslint-disable-next-line deprecation/deprecation
     const tile = await tileRpcInterface.requestTileContent(iModel.getRpcProps(), testTileProps.treeId, testTileProps.contentId, undefined, testTileProps.guid);
 
     // Uploads to the cloud storage tile cache happen asynchronously. Don't resolve until they have all finished.
