@@ -331,7 +331,7 @@ class RealityModelTileLoader extends RealityTileLoader {
 
   public getRequestChannel(_tile: Tile) {
     // ###TODO: May want to extract the hostname from the URL.
-    return IModelApp.tileAdmin.channels.getForHttp("reality-model");
+    return IModelApp.tileAdmin.channels.getForHttp("itwinjs-reality-model");
   }
 
   public async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {

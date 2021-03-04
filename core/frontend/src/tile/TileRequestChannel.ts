@@ -377,8 +377,8 @@ export class TileRequestChannels {
   public constructor(rpcConcurrency: number | undefined) {
     this._rpcConcurrency = rpcConcurrency ?? this.httpConcurrency;
 
-    const imodelChannelName = "requestTileContent";
-    const elementGraphicsChannelName = "requestElementGraphics";
+    const imodelChannelName = "itwinjs-tile-rpc";
+    const elementGraphicsChannelName = "itwinjs-elem-rpc";
     if (undefined !== rpcConcurrency) {
       // RPC uses IPC so it should be throttled based on the concurrency supported by the backend process.
       // IPC means "single user" so we can also cancel requests in progress on the backend.
@@ -406,7 +406,7 @@ export class TileRequestChannels {
   public enableCloudStorageCache(): void {
     assert(undefined === this._cloudStorageCache);
     if (!this._cloudStorageCache)
-      this.add(this._cloudStorageCache = new CloudStorageCacheChannel("cloudStorageCache", this.httpConcurrency));
+      this.add(this._cloudStorageCache = new CloudStorageCacheChannel("itwinjs-cloud-cache", this.httpConcurrency));
   }
 
   /** The number of registered channels. */
