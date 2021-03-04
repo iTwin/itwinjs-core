@@ -31,7 +31,6 @@ export interface DtaConfiguration {
   dpiAwareViewports?: boolean; // default ON
   devicePixelRatioOverride?: number; // default undefined
   dpiAwareLOD?: boolean; // default OFF
-  cancelBackendTileRequests?: boolean; // default ON
   disableEdges?: boolean; // default OFF
   useWebGL2?: boolean; // default ON
   doIdleWork?: boolean; // default ON
