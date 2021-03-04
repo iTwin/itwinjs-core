@@ -554,7 +554,9 @@ export class IModelHost {
   /** Whether external tile caching is active.
    * @internal
    */
-  public static get usingExternalTileCache(): boolean { return undefined !== IModelHost.configuration && undefined !== IModelHost.configuration.tileCacheCredentials; }
+  public static get usingExternalTileCache(): boolean {
+    return undefined !== IModelHost.configuration?.tileCacheCredentials;
+  }
 
   /** Whether to restrict tile cache URLs by client IP address.
    * @internal

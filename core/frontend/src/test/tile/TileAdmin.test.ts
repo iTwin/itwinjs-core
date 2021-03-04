@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { Cartographic, ViewFlagOverrides } from "@bentley/imodeljs-common";
-import { BlankConnection, IModelConnection } from "../../IModelConnection";
+import { ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport, Viewport } from "../../Viewport";
@@ -17,6 +16,7 @@ import {
   GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
   TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
+import { createBlankConnection } from "../createBlankConnection";
 
 describe("TileAdmin", () => {
   describe("memory limit configuration", () => {
@@ -26,7 +26,7 @@ describe("TileAdmin", () => {
     }
 
     function expectAdmin(isMobile: boolean, limits: GpuMemoryLimit | GpuMemoryLimits | undefined, expectedLimit: GpuMemoryLimit, expectedMaxBytes: number | undefined): TileAdmin {
-      const admin = TileAdmin.createForDeviceType(isMobile ? "mobile" : "non-mobile", undefined !== limits ? { gpuMemoryLimits: limits } : undefined);
+      const admin = new TileAdmin(isMobile, undefined, undefined !== limits ? { gpuMemoryLimits: limits } : undefined);
       expectLimits(admin, expectedLimit, expectedMaxBytes);
       return admin;
     }
@@ -130,6 +130,10 @@ describe("TileAdmin", () => {
         resolve(undefined);
       }
 
+      public get channel() {
+        return IModelApp.tileAdmin.channels.getForHttp("test-tile");
+      }
+
       public async requestContent(): Promise<TileRequest.Response> {
         return Promise.resolve("content");
       }
@@ -174,7 +178,6 @@ describe("TileAdmin", () => {
       public get is3d() { return true; }
       public get maxDepth() { return undefined; }
       public get viewFlagOverrides() { return new ViewFlagOverrides(); }
-      public get isContentUnbounded() { return false; }
 
       protected _selectTiles(args: TileDrawArgs): Tile[] {
         const tiles = [];
@@ -221,7 +224,6 @@ describe("TileAdmin", () => {
       }
 
       public get treeOwner() { return this._owner; }
-      public get castsShadows() { return true; }
     }
 
     class Provider implements TiledGraphicsProvider {
@@ -256,20 +258,11 @@ describe("TileAdmin", () => {
     let imodel1: IModelConnection;
     let imodel2: IModelConnection;
 
-    function createIModel(name: string): IModelConnection {
-      return BlankConnection.create({
-        name,
-        location: Cartographic.fromDegrees(-75.686694, 40.065757, 0),
-        extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-        contextId: Guid.createValue(),
-      });
-    }
-
     beforeEach(async () => {
       await MockRender.App.startup();
       IModelApp.stopEventLoop();
-      imodel1 = createIModel("imodel1");
-      imodel2 = createIModel("imodel2");
+      imodel1 = createBlankConnection("imodel1");
+      imodel2 = createBlankConnection("imodel2");
     });
 
     afterEach(async () => {
