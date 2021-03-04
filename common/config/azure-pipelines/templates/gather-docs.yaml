@@ -31,6 +31,7 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
     displayName: Copy Reference files to Staging
     failOnStderr: false
+    continueOnError: true
 
   - script: dir /S
     workingDirectory: ${{ parameters.stagingDir }}
