@@ -94,7 +94,7 @@ export interface IModelAppOptions {
   */
   mapLayerOptions?: MapLayerOptions;
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session.
-   * @alpha
+   * @beta
    */
   tileAdmin?: TileAdmin.Props;
   /** If present, supplies the [[NotificationManager]] for this session. */
