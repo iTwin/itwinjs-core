@@ -187,39 +187,41 @@ import { ZoneTargetType } from '@bentley/ui-ninezone';
 // @alpha
 export class AccuDrawCommandItems {
     // (undocumented)
-    static get bumpToolSetting(): CommandItemDef;
+    static get bumpToolSetting(): ToolItemDef;
     // (undocumented)
-    static get changeCompassMode(): CommandItemDef;
+    static get changeCompassMode(): ToolItemDef;
     // (undocumented)
-    static get defineACSByPoints(): CommandItemDef;
+    static get defineACSByPoints(): ToolItemDef;
     // (undocumented)
-    static get lockAngle(): CommandItemDef;
+    static get focusToolSetting(): ToolItemDef;
     // (undocumented)
-    static get lockDistance(): CommandItemDef;
+    static get lockAngle(): ToolItemDef;
     // (undocumented)
-    static get lockSmart(): CommandItemDef;
+    static get lockDistance(): ToolItemDef;
     // (undocumented)
-    static get lockX(): CommandItemDef;
+    static get lockSmart(): ToolItemDef;
     // (undocumented)
-    static get lockY(): CommandItemDef;
+    static get lockX(): ToolItemDef;
     // (undocumented)
-    static get lockZ(): CommandItemDef;
+    static get lockY(): ToolItemDef;
     // (undocumented)
-    static get rotateAxes(): CommandItemDef;
+    static get lockZ(): ToolItemDef;
     // (undocumented)
-    static get rotateCycle(): CommandItemDef;
+    static get rotateAxes(): ToolItemDef;
     // (undocumented)
-    static get rotateFront(): CommandItemDef;
+    static get rotateCycle(): ToolItemDef;
     // (undocumented)
-    static get rotateSide(): CommandItemDef;
+    static get rotateFront(): ToolItemDef;
     // (undocumented)
-    static get rotateToElement(): CommandItemDef;
+    static get rotateSide(): ToolItemDef;
     // (undocumented)
-    static get rotateTop(): CommandItemDef;
+    static get rotateToElement(): ToolItemDef;
     // (undocumented)
-    static get rotateView(): CommandItemDef;
+    static get rotateTop(): ToolItemDef;
     // (undocumented)
-    static get setOrigin(): CommandItemDef;
+    static get rotateView(): ToolItemDef;
+    // (undocumented)
+    static get setOrigin(): ToolItemDef;
 }
 
 // @alpha (undocumented)
@@ -669,6 +671,18 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
     render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: BooleanListenerState;
+}
+
+// @alpha
+export class BumpToolSetting extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(settingIndexStr?: string): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha (undocumented)
@@ -1945,6 +1959,14 @@ export interface ExtensibleToolbarProps {
 
 // @beta
 export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>): BaseItemState;
+
+// @alpha
+export class FocusToolSettings extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @public
 export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
@@ -6099,6 +6121,8 @@ export class ToolSettingsManager {
     static get activeToolLabel(): string;
     static set activeToolLabel(label: string);
     static clearToolSettingsData(): void;
+    // (undocumented)
+    static focusIntoToolSettings(): boolean;
     static initialize(): void;
     static initializeDataForTool(tool: InteractiveTool): void;
     static initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
