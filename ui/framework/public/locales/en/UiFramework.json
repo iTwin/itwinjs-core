@@ -159,6 +159,9 @@
         "flyover": "Toggle Camera"
       }
     },
+    "OpenSettings": {
+      "keyin": "open settings"
+    },
     "RestoreFrontstageLayout": {
       "keyin": "restore frontstage layout",
       "description": "Restore Frontstage to Default Layout",
@@ -295,6 +298,7 @@
     "rotateAxes": "Rotate Axes",
     "rotateToElement": "Rotate To Element",
     "defineACSByPoints": "Define ACS By Points",
+    "bumpToolSetting": "Bump Tool Settings",
     "rotateSubMenu": "AccuDraw Rotate",
     "rotationSet": "AccuDraw rotation mode set to {{rotationString}}",
     "rotation": {
@@ -310,5 +314,10 @@
       "polar": "polar",
       "rectangular": "rectangular"
     }
+  },
+  "settings": {
+    "settingsStageLabel": "Settings",
+    "noSettingsProvidersRegistered": "No SettingsProviders have been registered.",
+    "noSettingsAvailable": "No Settings Available"
   }
 }

@@ -57,6 +57,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     return this._selectElement.current;
   }
 
+  // istanbul ignore next
   public get hasFocus(): boolean {
     return document.activeElement === this._selectElement.current;
   }

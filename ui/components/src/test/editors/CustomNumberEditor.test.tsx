@@ -49,6 +49,7 @@ describe("<CustomNumberEditor />", () => {
 
   it("EditorContainer with CustomNumberPropertyEditor", async () => {
     const spyOnCommit = sinon.spy();
+    const spyOnCancel = sinon.spy();
     function handleCommit(commit: PropertyUpdatedArgs): void {
       const numValue = (commit.newValue as PrimitiveValue).value as number;
       const displayValue = (commit.newValue as PrimitiveValue).displayValue;
@@ -57,7 +58,7 @@ describe("<CustomNumberEditor />", () => {
       spyOnCommit();
     }
     const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
-    const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={spyOnCancel} />);
     // renderedComponent.debug();
     const inputField = renderedComponent.getByTestId("components-customnumber-editor") as HTMLInputElement;
     expect(inputField.value).to.be.equal(displayVal);
@@ -71,9 +72,16 @@ describe("<CustomNumberEditor />", () => {
     expect(spyOnCommit).to.be.calledOnce;
     fireEvent.change(inputField, { target: { value: "66" } });
     expect(inputField.value).to.be.equal("66");
-    // renderedComponent.debug();
-    fireEvent.keyDown(inputField, { key: "Escape" });
+
+    // resetToOriginalValue
+    fireEvent.keyDown(inputField, { key: SpecialKey.Escape });
     expect(inputField.value).to.be.equal(displayVal);
+    expect(spyOnCancel).not.to.be.called;
+
+    // since value is same as original, cancel
+    fireEvent.keyDown(inputField, { key: SpecialKey.Escape });
+    expect(inputField.value).to.be.equal(displayVal);
+    expect(spyOnCancel).to.be.calledOnce;
   });
 
   it("CustomNumberPropertyEditor with undefined initial display value", async () => {
