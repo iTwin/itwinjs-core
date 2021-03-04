@@ -15,7 +15,7 @@ import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
 export function AppBackstageComposer() {
   const [backstageItems] = React.useState(() => [
     BackstageItemUtilities.createStageLauncher("app.SampleFrontstage", 100, 10, IModelApp.i18n.translate("app:backstage.sampleFrontstage"), undefined, IconSpecUtilities.createSvgIconSpec(stageIconSvg)),
-    BackstageItemUtilities.createActionItem("app.Settings", 300, 10, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()), IModelApp.i18n.translate("app:backstage.settings"), undefined, IconSpecUtilities.createSvgIconSpec(settingsIconSvg)),
+    SettingsModalFrontstage.getBackstageActionItem (300, 10),
   ]);
 
   return (
@@ -24,6 +24,8 @@ export function AppBackstageComposer() {
 }
 ```
 
+Note: the static method `SettingsModalFrontstage.getBackstageActionItem` used above, will create an entry for a `Settings` stage.  This stage will display [SettingsTabEntry]($ui-core) items from [SettingsProvider]($ui-core) classes registered with the [SettingsManager]($ui-core). The `SettingsManager` instance is referenced by property `UiFramework.settingsManager`.
+
 See additional info in [Backstage](../../../learning/ui/abstract/Backstage.md).
 
 ## Specifying a Backstage in ConfigurableUiContent
@@ -31,5 +33,5 @@ See additional info in [Backstage](../../../learning/ui/abstract/Backstage.md).
 Below is an example of defining the ConfigurableUiContent and specifying the backstage, using the component from the above example.
 
 ```tsx
-  <ConfigurableUiContent appBackstage={<AppBackstageComposer />} />
+<ConfigurableUiContent appBackstage={<AppBackstageComposer />} />
 ```

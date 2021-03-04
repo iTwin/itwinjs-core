@@ -3,6 +3,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
+      "name": "@axe-core/react",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@azure/storage-blob",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -80,7 +84,7 @@
     },
     {
       "name": "@bentley/geometry-core",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/hypermodeling-frontend",
@@ -120,7 +124,7 @@
     },
     {
       "name": "@bentley/imodeljs-frontend",
-      "allowedCategories": [ "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-i18n",
@@ -136,7 +140,7 @@
     },
     {
       "name": "@bentley/imodeljs-quantity",
-      "allowedCategories": [ "common", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/itwin-client",
@@ -152,6 +156,10 @@
     },
     {
       "name": "@bentley/map-layers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/mobile-manager",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -289,6 +297,10 @@
     {
       "name": "autoprefixer",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "azurite",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "babel-loader",
@@ -576,7 +588,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
@@ -672,7 +684,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "null-loader",

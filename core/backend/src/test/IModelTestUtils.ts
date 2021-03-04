@@ -2,21 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
+import { BackendITwinClientLoggerCategory } from "@bentley/backend-itwin-client";
 import {
-  BeEvent, BentleyLoggerCategory, ChangeSetStatus, Config, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel,
-  OpenMode,
+  BeEvent, BentleyLoggerCategory, ChangeSetStatus, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
 } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { loadEnv } from "@bentley/config-loader";
 import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
   Code, CodeProps, ElementProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, PhysicalElementProps, RelatedElement,
-  RequestNewBriefcaseProps,
-  RpcConfiguration, RpcManager, RpcPendingResponse, SyncMode,
+  RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
+import { assert } from "chai";
+import * as path from "path";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
@@ -429,7 +428,7 @@ export class IModelTestUtils {
   }
 
   public static async startBackend(): Promise<void> {
-    IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
+    loadEnv(path.join(__dirname, "..", "..", ".env"));
     const config = new IModelHostConfiguration();
     config.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
     await IModelHost.startup(config);
@@ -479,6 +478,7 @@ export class IModelTestUtils {
     Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.Licensing, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(BackendITwinClientLoggerCategory.FileHandlers, reset ? LogLevel.Error : LogLevel.Trace);
   }
 
   // Setup typical programmatic log level overrides here

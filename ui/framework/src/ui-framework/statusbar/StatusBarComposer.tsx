@@ -107,7 +107,7 @@ function useStatusBarItemSyncEffect(itemsManager: StatusBarItemsManager, syncIds
         return;
 
       // istanbul ignore else
-      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
+      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
         // process each item that has interest
         itemsManager.refreshAffectedItems(args.eventIds);
       }
@@ -354,6 +354,7 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
       className={className}
       ref={refs}
       style={props.style}
+      role="presentation"
     >
       <StatusBarSpaceBetween className={props.mainClassName}>
         <StatusBarLeftSection className={props.leftClassName}>

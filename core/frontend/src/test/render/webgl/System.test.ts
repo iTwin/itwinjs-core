@@ -98,6 +98,37 @@ describe("Instancing", () => {
   });
 });
 
+describe("ExternalTextures", () => {
+  class TestApp extends MockRender.App {
+    public static async test(enableExternalTextures: boolean, expectEnabled: boolean): Promise<void> {
+      const tileAdminProps: TileAdmin.Props = { enableExternalTextures };
+      const renderSysOpts: RenderSystem.Options = { useWebGL2: false }; // use WebGL1 since instanced arrays cannot be disabled in WebGL2
+
+      await IModelApp.startup({
+        renderSys: renderSysOpts,
+        tileAdmin: TileAdmin.create(tileAdminProps),
+      });
+
+      expect(IModelApp.tileAdmin.enableExternalTextures).to.equal(expectEnabled);
+      await IModelApp.shutdown();
+    }
+  }
+
+  after(async () => {
+    // make sure app shut down if exception occurs during test
+    if (IModelApp.initialized)
+      await TestApp.shutdown();
+  });
+
+  it("should enable external textures if requested", async () => {
+    await TestApp.test(true, true);
+  });
+
+  it("should not enable external textures if not requested", async () => {
+    await TestApp.test(false, false);
+  });
+});
+
 describe("RenderSystem", () => {
   it("should override webgl context attributes", () => {
     const expectAttributes = (system: System, expected: WebGLContextAttributes) => {
@@ -288,6 +319,41 @@ describe("RenderSystem", () => {
       const texture = await promise;
       expect(texture).to.be.undefined;
       expect(idmap.texturesFromImageSources.size).to.equal(0);
+    });
+  });
+
+  describe("context loss", () => {
+    const contextLossHandler = RenderSystem.contextLossHandler;
+
+    beforeEach(async () => {
+      await IModelApp.startup();
+    });
+
+    afterEach(async () => {
+      RenderSystem.contextLossHandler = contextLossHandler;
+      await IModelApp.shutdown();
+    });
+
+    it("invokes handler", async () => {
+      let contextLost = false;
+      RenderSystem.contextLossHandler = async () => {
+        contextLost = true;
+        return Promise.resolve();
+      };
+
+      async function waitForContextLoss(): Promise<void> {
+        if (contextLost)
+          return Promise.resolve();
+
+        await new Promise<void>((resolve: any) => setTimeout(resolve, 10));
+        return waitForContextLoss();
+      }
+
+      const debugControl = IModelApp.renderSystem.debugControl!;
+      expect(debugControl).not.to.be.undefined;
+
+      expect(debugControl.loseContext()).to.be.true;
+      await waitForContextLoss();
     });
   });
 });

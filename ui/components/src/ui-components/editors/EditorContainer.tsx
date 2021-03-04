@@ -11,7 +11,7 @@ import * as React from "react";
 import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
 import { PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { AsyncErrorMessage, PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** Arguments for the Property Updated event callback
  * @beta
@@ -68,6 +68,8 @@ interface CloneProps extends PropertyEditorProps {
  */
 export interface TypeEditor {
   getPropertyValue: () => Promise<PropertyValue | undefined>;
+  htmlElement: HTMLElement | null;
+  hasFocus: boolean;
 }
 
 /**
@@ -76,16 +78,12 @@ export interface TypeEditor {
  */
 export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
-  private _editorRef: any;
+  private _editorRef: TypeEditor | undefined;
   private _propertyEditor: PropertyEditorBase | undefined;
   private _spanRef = React.createRef<HTMLSpanElement>();
 
-  private getEditor(): TypeEditor {
-    return this._editorRef;
-  }
-
   private createEditor(): React.ReactNode {
-    const editorRef = (ref: any) => this._editorRef = ref;
+    const editorRef = (ref: TypeEditor | undefined) => this._editorRef = ref;
 
     const editorProps: CloneProps = {
       ref: editorRef,
@@ -116,13 +114,15 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     this._spanRef.current?.addEventListener("keydown", this._handleKeyDown, true);
   }
   public componentWillUnmount() {
-    this._spanRef.current?.removeEventListener("keydown", this._handleKeyDown, true);
+    // istanbul ignore next
+    if (this._spanRef.current)
+      this._spanRef.current.removeEventListener("keydown", this._handleKeyDown, true);
   }
 
   private _handleEditorBlur = (_e: React.FocusEvent) => {
     // istanbul ignore else
-    if (!this.props.ignoreEditorBlur && this._propertyEditor?.containerHandlesBlur)
-      this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    if (!this.props.ignoreEditorBlur && this._propertyEditor && this._propertyEditor.containerHandlesBlur)
+      this._handleContainerCommit(); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
   private _handleContainerBlur = (e: React.FocusEvent) => {
@@ -153,77 +153,90 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     e.stopPropagation();
   };
 
-  private onPressEscape(e: KeyboardEvent): void {
+  private onPressEscape(_e: KeyboardEvent): void {
     // istanbul ignore else
-    if (this._propertyEditor?.containerHandlesEscape) {
-      // istanbul ignore else
-      if (this._editorRef && this._editorRef === document.activeElement)
-        e.stopPropagation();
+    if (this._propertyEditor && this._propertyEditor.containerHandlesEscape) {
       this._commitCancel();
     }
   }
 
   private onPressEnter(e: KeyboardEvent): void {
     // istanbul ignore else
-    if (this._propertyEditor?.containerHandlesEnter) {
+    if (this._propertyEditor && this._propertyEditor.containerHandlesEnter) {
       // istanbul ignore else
-      if (this._editorRef && this._editorRef === document.activeElement)
+      if (this._editorRef && this._editorRef.hasFocus)
         e.stopPropagation();
-      this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      this._handleContainerCommit(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 
   private onPressTab(e: KeyboardEvent): void {
     // istanbul ignore else
-    if (this._propertyEditor?.containerHandlesTab) {
+    if (this._propertyEditor && this._propertyEditor.containerHandlesTab) {
       e.stopPropagation();
-      this._commit(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      this._handleContainerCommit(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    }
+  }
+
+  private displayInputFieldMessage(errorMessage: AsyncErrorMessage | undefined) {
+    // istanbul ignore else
+    if (errorMessage && this._editorRef) {
+      const details = new NotifyMessageDetails(errorMessage.priority, errorMessage.briefMessage, errorMessage.detailedMessage);
+      const htmlElement = this._editorRef && this._editorRef.htmlElement;
+      // istanbul ignore else
+      if (htmlElement)
+        details.setInputFieldTypeDetails(htmlElement);
+      if (IModelApp.notifications)
+        IModelApp.notifications.outputMessage(details);
     }
   }
 
   private async isNewValueValid(value: PropertyValue): Promise<boolean> {
+    let isValid = true;
+
     // istanbul ignore else
     if (this._propertyEditor && this.props.propertyRecord) {
       const validateResult = await this._propertyEditor.validateValue(value, this.props.propertyRecord);
 
-      // istanbul ignore next
       if (validateResult.encounteredError) {
-        const errorMessage = validateResult.errorMessage;
-        if (errorMessage && this._editorRef) {
-          const details = new NotifyMessageDetails(errorMessage.priority, errorMessage.briefMessage, errorMessage.detailedMessage);
-          details.setInputFieldTypeDetails(this._editorRef);
-          IModelApp.notifications.outputMessage(details);
-        }
-        return !validateResult.encounteredError;
+        this.displayInputFieldMessage(validateResult.errorMessage);
+        isValid = false;
       }
+    } else {
+      isValid = false;
     }
 
-    return true;
+    return isValid;
   }
 
   private _handleEditorCommit = (args: PropertyUpdatedArgs): void => {
-    this.props.onCommit(args);
+    this._commit(args); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
-  private _commit = async () => {
-    const newValue = await this.getEditor().getPropertyValue();
+  private _handleContainerCommit = async (): Promise<void> => {
+    const newValue = this._editorRef && await this._editorRef.getPropertyValue();
     // istanbul ignore else
-    if (newValue) {
-      const isValid = await this.isNewValueValid(newValue);
-      // istanbul ignore else
-      if (isValid) {
-        let doCommit = true;
-        // istanbul ignore else
-        if (this._propertyEditor && this.props.propertyRecord) {
-          const commitResult = await this._propertyEditor.commitValue(newValue, this.props.propertyRecord);
-          if (commitResult.encounteredError)
-            doCommit = false;
-        }
+    if (newValue !== undefined) {
+      this._commit({ propertyRecord: this.props.propertyRecord, newValue });  // eslint-disable-line @typescript-eslint/no-floating-promises
+    }
+  };
 
-        // istanbul ignore else
-        if (doCommit) {
-          this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue });
+  private _commit = async (args: PropertyUpdatedArgs) => {
+    const newValue = args.newValue;
+    const isValid = await this.isNewValueValid(newValue);
+    if (isValid) {
+      let doCommit = true;
+      // istanbul ignore else
+      if (this._propertyEditor && args.propertyRecord) {
+        const commitResult = await this._propertyEditor.commitValue(newValue, args.propertyRecord);
+        if (commitResult.encounteredError) {
+          this.displayInputFieldMessage(commitResult.errorMessage);
+          doCommit = false;
         }
+      }
+
+      if (doCommit) {
+        this.props.onCommit(args);
       }
     }
   };

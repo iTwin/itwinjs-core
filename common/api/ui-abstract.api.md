@@ -98,23 +98,27 @@ export interface AbstractWidgetProps extends ProvidedItem {
 // @alpha
 export enum AccuDrawField {
     // (undocumented)
-    Angle = 4,
+    Angle = 1,
     // (undocumented)
-    Distance = 3,
+    Distance = 0,
     // (undocumented)
-    X = 0,
+    X = 2,
     // (undocumented)
-    Y = 1,
+    Y = 3,
     // (undocumented)
-    Z = 2
+    Z = 4
+}
+
+// @alpha (undocumented)
+export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
 }
 
 // @alpha
 export enum AccuDrawMode {
     // (undocumented)
-    Polar = 1,
+    Polar = 0,
     // (undocumented)
-    Rectangular = 0
+    Rectangular = 1
 }
 
 // @alpha (undocumented)
@@ -149,8 +153,6 @@ export interface AccuDrawSetFieldValueFromUiEventArgs {
     field: AccuDrawField;
     // (undocumented)
     stringValue: string;
-    // (undocumented)
-    value: number;
 }
 
 // @alpha (undocumented)
@@ -161,6 +163,8 @@ export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldVa
 export interface AccuDrawSetFieldValueToUiEventArgs {
     // (undocumented)
     field: AccuDrawField;
+    // (undocumented)
+    formattedValue: string;
     // (undocumented)
     value: number;
 }
@@ -177,17 +181,18 @@ export interface AccuDrawSetModeEventArgs {
 
 // @alpha (undocumented)
 export class AccuDrawUiAdmin {
+    grabInputFocus(): void;
+    get hasInputFocus(): boolean;
+    static readonly onAccuDrawGrabInputFocusEvent: AccuDrawGrabInputFocusEvent;
     static readonly onAccuDrawSetFieldFocusEvent: AccuDrawSetFieldFocusEvent;
     static readonly onAccuDrawSetFieldLockEvent: AccuDrawSetFieldLockEvent;
     static readonly onAccuDrawSetFieldValueFromUiEvent: AccuDrawSetFieldValueFromUiEvent;
     static readonly onAccuDrawSetFieldValueToUiEvent: AccuDrawSetFieldValueToUiEvent;
     static readonly onAccuDrawSetModeEvent: AccuDrawSetModeEvent;
     setFieldFocus(field: AccuDrawField): void;
-    // (undocumented)
     setFieldLock(field: AccuDrawField, lock: boolean): void;
-    setFieldValueFromUi(field: AccuDrawField, value: number, stringValue: string): void;
-    setFieldValueToUi(field: AccuDrawField, value: number): void;
-    // (undocumented)
+    setFieldValueFromUi(field: AccuDrawField, stringValue: string): void;
+    setFieldValueToUi(field: AccuDrawField, value: number, formattedValue: string): void;
     setMode(mode: AccuDrawMode): void;
 }
 
@@ -1323,7 +1328,7 @@ export interface LinkElementsInfo {
         start: number;
         end: number;
     }>;
-    onClick?: (record: PropertyRecord, text: string) => void;
+    onClick: (text: string) => void;
 }
 
 // @internal
@@ -1473,22 +1478,23 @@ export interface PropertyDescription {
     typename: string;
 }
 
-// @alpha
+// @beta
 export class PropertyDescriptionHelper {
-    // (undocumented)
+    // @alpha
     static buildCheckboxDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildEnumPicklistEditorDescription(name: string, label: string, choices: Promise<EnumerationChoice[]> | EnumerationChoice[], additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildTextEditorDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildToggleDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildWeightPickerDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    static bumpEnumProperty(description: PropertyDescription, value: string | number): Promise<string | number>;
 }
 
 // @beta
@@ -1789,7 +1795,9 @@ export enum StandardTypeNames {
     // (undocumented)
     Struct = "struct",
     // (undocumented)
-    Text = "text"
+    Text = "text",
+    // (undocumented)
+    URL = "url"
 }
 
 // @internal (undocumented)
@@ -1931,7 +1939,7 @@ export class ToolbarItemsManager {
 // @beta
 export class ToolbarItemUtilities {
     static createActionButton: (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, execute: () => void, overrides?: Partial<ActionButton> | undefined) => ActionButton;
-    static createGroupButton: (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: readonly (ActionButton | GroupButton)[], overrides?: Partial<GroupButton> | undefined) => GroupButton;
+    static createGroupButton: (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: ReadonlyArray<ActionButton | GroupButton>, overrides?: Partial<GroupButton> | undefined) => GroupButton;
     static isActionButton(item: CommonToolbarItem): item is ActionButton;
     static isCustomDefinition(item: CommonToolbarItem): item is CustomButtonDefinition;
     static isGroupButton(item: CommonToolbarItem): item is GroupButton;

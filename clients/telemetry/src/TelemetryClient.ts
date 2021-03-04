@@ -61,34 +61,34 @@ export interface TelemetryClient {
 
 /** @alpha */
 export class TelemetryManager {
-  protected readonly _subClients: Set<TelemetryClient>;
+  protected readonly _clients: Set<TelemetryClient>;
 
-  constructor(...subClients: TelemetryClient[]) {
-    this._subClients = new Set<TelemetryClient>(subClients);
+  constructor(...clients: TelemetryClient[]) {
+    this._clients = new Set<TelemetryClient>(clients);
   }
 
-  /**
-   *
-   * This function should not throw errors
-   * @param requestContext
-   * @param telemetryEvent
-   */
   public async postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void> {
-    const subClientPromises = Array.from(this._subClients).map(async (subClient) => {
+    const postPerClient = async (subClient: TelemetryClient) => {
       try {
         await subClient.postTelemetry(requestContext, telemetryEvent);
       } catch (err) {
         Logger.logError(TelemetryClientLoggerCategory.Telemetry, `Failed to post telemetry via subclient`, () => err);
       }
-    });
+    };
+
+    const subClientPromises = [];
+    for (const subClient of this._clients) {
+      subClientPromises.push(postPerClient(subClient));
+    }
+
     await Promise.all(subClientPromises);
   }
 
   public addClient(client: TelemetryClient): void {
-    this._subClients.add(client);
+    this._clients.add(client);
   }
 
   public hasClient(client: TelemetryClient): boolean {
-    return this._subClients.has(client);
+    return this._clients.has(client);
   }
 }

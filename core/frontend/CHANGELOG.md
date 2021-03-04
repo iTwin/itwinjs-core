@@ -1,6 +1,69 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+### Updates
+
+- Prevent buggy decorators from invalidating other decorators' cached decorations.
+- Fixed regression introduced recently that prevent WMS map layers from being displayed.
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- The about dialog now works better on smaller screens and mobile devices.
+- Support clearing color/transparency overrides by element ids and not just key.
+- Deprecate detachChangeCache()
+- dont toggle persistent html decoration's dom attachment
+- Fix regressions in image diff tests caused by changes to tile selection logic.
+- added flag to truncate ecsql blob values
+- Smoother frustum transition
+- enter requestContexts in map layer settings service so that activity Id can be tracked in SEQ logs
+- Implement external textures for iModel tiles.
+- Fix failure to compute frustum depth from view attachments causing them to be severely clipped.
+- Added new ArcGis token generator/manager. ArcGISMapLAyerImageryProvider now check for token error messages when fetch tile, inform end-user and raise an event.  Token is generated / appended dynamically to each ArcGIS request.
+- Add options for limiting GPU memory allocated for tile contents.
+- Don't change the imodeljs-icon opacity on mobile devices that don't support hover.
+- Fix locate for particle effects.
+- Add support for defining custom particle effects.
+- NativeApp now uses Ipc
+- Added support for Slope and Hillshade modes for Thematic display of Terrain
+- AccuDraw bi-directional value updates
+- Fixed AccuDraw shortcuts in apps like DR
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Don't allow AccuDraw in exaggerated views.
+- Avoid decoding the same texture image multiple times when receiving multiple simultaneous requests.
+- Add support for altering the image produced by a Viewport using custom screen-space post-processing effects.
+- work on NativeApp and editing commands
+- Improve ElementGeometry documentation.
+- Account for aspect ratio skew in core decorations.
+- Add ability for caller to override format per QuantityType.
+- Add ability to set unit system for quantity formats to the same four supported by Presentation manager.
+- Fix hilite silhouette ignoring weight overrides for polylines.
+- Use optimized planar map corners for size
+- The type of ViewState3d.displayStyle is DisplayStyle3dState, to reduce need to cast.
+- Ensure quantity formatter is initialized once IModelApp.startup is awaited.
+- Added new WMTS capabilities parser and improved general support of WMTS.
+- WmtsCapabilities now using 'xml-js' instead of 'fast-xml-parser'.
+- Apply workaround for Intel HD 620/630 driver bug.
+- Show iModel.js version rather than Application version in iModel.js Card"
+- Bias global reality models to match terrain corrections.
+- Modified OrbitGT point clouds to be able to override their model color.
+- Support global navigation with camera off
+- Add Viewport.onResized event; add option not to preserve order of geometry added to a GraphicBuilder for an overlay decoration (improves performance).
+- Display spatial view in context of section drawing view if so specified.
+- Add support for section-cut graphics display.
+- Add notion of attaching and detaching a ViewState to/from a Viewport. On attach, register event listeners to automatically synchronize the Viewport's state when aspects of the ViewState are modified, eliminating the need to manually synchronize or use specific Viewport APIs. In detach, deallocate Viewport-specific resources such as WebGL objects used for rendering view attachments.
+- #415276 Fixed line widths for wide lines that extend behind the eye.
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT

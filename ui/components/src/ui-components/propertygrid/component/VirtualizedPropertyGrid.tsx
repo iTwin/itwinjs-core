@@ -146,24 +146,27 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
       this.updateOrientation(this.state.width);
 
     if (this.props.model !== prevProps.model) {
-      this._listRef.current?.resetAfterIndex(0);
+      // istanbul ignore else
+      if (this._listRef.current)
+        this._listRef.current.resetAfterIndex(0);
     }
 
     if (this.props.highlight !== prevProps.highlight && this.props.highlight?.activeHighlight && this.state.gridItems.length !== 0) {
-
       let index = 0;
       let foundMatchingItem = false;
       for (const item of this.state.gridItems) {
-        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.derivedRecord.property.name
-          || item instanceof MutableGridCategory && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.name) {
+        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlight.activeHighlight.highlightedItemIdentifier === item.derivedRecord.property.name
+          || item instanceof MutableGridCategory && this.props.highlight.activeHighlight.highlightedItemIdentifier === item.name) {
           foundMatchingItem = true;
           break;
         }
         index++;
       }
-
-      if (foundMatchingItem)
-        this._listRef.current?.scrollToItem(index);
+      if (foundMatchingItem) {
+        // istanbul ignore else
+        if (this._listRef.current)
+          this._listRef.current.scrollToItem(index);
+      }
     }
   }
 
@@ -371,7 +374,7 @@ const FlatGridItemNode = React.memo(
                 style={gridContext.style}
                 category={node.derivedCategory}
                 onExpansionToggled={onExpansionToggled}
-                highlight={gridContext.highlight?.filteredTypes?.includes(FilteredType.Category)?
+                highlight={gridContext.highlight?.filteredTypes?.includes(FilteredType.Category) ?
                   gridContext.highlight :
                   undefined
                 }

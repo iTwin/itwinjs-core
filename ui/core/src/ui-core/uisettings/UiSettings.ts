@@ -7,7 +7,7 @@
  */
 
 /** Interface for getting, saving and deleting settings.
- * @beta
+ * @public
  */
 export interface UiSettings {
   getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
@@ -16,7 +16,7 @@ export interface UiSettings {
 }
 
 /** Enum for [[UiSettings]] status.
- * @beta
+ * @public
  */
 export enum UiSettingsStatus {
   Success = 0,
@@ -27,7 +27,7 @@ export enum UiSettingsStatus {
 }
 
 /** Interface for [[UiSettings]] result.
- * @beta
+ * @public
  */
 export interface UiSettingsResult {
   status: UiSettingsStatus;

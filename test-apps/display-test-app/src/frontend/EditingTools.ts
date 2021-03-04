@@ -2,20 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
-  IModelJson,
-  LineSegment3d,
-  LineString3d,
-  Point3d,
-  Transform,
-  Vector3d,
-  YawPitchRollAngles,
+  Angle, Geometry, IModelJson, LineSegment3d, LineString3d, Matrix3d, Point3d, Range3d, Transform, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
-import { Code, ColorDef, GeometryStreamProps, IModelWriteRpcInterface, LinePixels, PhysicalElementProps } from "@bentley/imodeljs-common";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d, EventHandled, GraphicType, HitDetail, IModelApp, InteractiveEditingSession,
-  LocateFilterStatus, LocateResponse, PrimitiveTool, Tool,
+  Code, ColorDef, Frustum, GeometryStreamProps, IModelWriteRpcInterface, LinePixels, PhysicalElementProps, Placement2d, Placement2dProps, Placement3d,
+} from "@bentley/imodeljs-common";
+import {
+  AccuDraw, AccuDrawFlags, AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, DynamicsContext, ElementEditor3d, ElementSetTool,
+  EventHandled, GraphicType, HitDetail, IModelApp, InteractiveEditingSession, PrimitiveTool, Tool,
+  ToolAssistanceInstruction,
 } from "@bentley/imodeljs-frontend";
 import { setTitle } from "./Title";
 
@@ -35,7 +32,7 @@ export class EditingSessionTool extends Tool {
 
   private async _run(): Promise<void> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
-    if (!imodel)
+    if (!imodel || !imodel.isBriefcaseConnection())
       return;
 
     const session = InteractiveEditingSession.get(imodel);
@@ -54,7 +51,7 @@ export abstract class UndoRedoTool extends Tool {
   public run(): boolean {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (imodel) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises,deprecation/deprecation
       IModelWriteRpcInterface.getClient().undoRedo(imodel.getRpcProps(), this.isUndo);
     }
 
@@ -72,33 +69,380 @@ export class RedoTool extends UndoRedoTool {
   protected get isUndo() { return false; }
 }
 
-/** Delete all elements currently in the selection set. */
-export class DeleteElementsTool extends Tool {
+/** Delete elements immediately from active selection set or prompt user to identify elements to delete. */
+export class DeleteElementsTool extends ElementSetTool {
   public static toolId = "DeleteElements";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 0; }
 
-  public run(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
-    return true;
-  }
+  protected get allowSelectionSet(): boolean { return true; }
+  protected get allowGroups(): boolean { return true; }
+  protected get allowDragSelect(): boolean { return true; }
+  protected get controlKeyContinuesSelection(): boolean { return true; }
+  protected get requireAcceptForSelectionSetOperation(): boolean { return false; }
 
-  private async _run(): Promise<void> {
-    const imodel = IModelApp.viewManager.selectedView?.iModel;
-    if (!imodel)
-      return;
-
-    const elements = imodel.selectionSet.elements;
-    if (0 === elements.size)
-      return;
-
+  public async processAgendaImmediate(): Promise<void> {
+    // TODO: EditCommand...what clears the deleted elements from the selection set?
     try {
-      await IModelWriteRpcInterface.getClient().deleteElements(imodel.getRpcProps(), Array.from(elements));
-      await imodel.saveChanges();
+      // eslint-disable-next-line deprecation/deprecation
+      await IModelWriteRpcInterface.getClient().deleteElements(this.iModel.getRpcProps(), Array.from(this.agenda.elements));
+      await this.iModel.saveChanges();
     } catch (err) {
       alert(err.toString());
     }
+  }
+
+  public onRestartTool(): void {
+    const tool = new DeleteElementsTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+}
+
+/** Base class for applying a transform to element placements. */
+export abstract class TransformElementTool extends ElementSetTool {
+  protected get allowSelectionSet(): boolean { return true; }
+  protected get allowGroups(): boolean { return true; }
+  protected get allowDragSelect(): boolean { return true; }
+  protected get controlKeyContinuesSelection(): boolean { return true; }
+  protected get wantAccuSnap(): boolean { return true; }
+  protected get wantDynamics(): boolean { return true; }
+  protected get wantMakeCopy(): boolean { return false; } // For testing repeat vs. restart...
+  private _elementAlignedBoxes?: Frustum[]; // TODO: Display agenda "graphics" with supplied transform...
+
+  protected abstract calculateTransform(ev: BeButtonEvent): Transform | undefined;
+
+  protected async createAgendaGraphics(changed: boolean): Promise<void> {
+    if (changed) {
+      if (undefined === this._elementAlignedBoxes)
+        return; // Not yet needed...
+    } else {
+      if (undefined !== this._elementAlignedBoxes)
+        return; // Use existing graphics...
+    }
+
+    this._elementAlignedBoxes = new Array<Frustum>();
+    if (0 === this.currentElementCount)
+      return;
+
+    try {
+      const elementProps = await this.iModel.elements.getProps(this.agenda.elements);
+      const range = new Range3d();
+
+      for (const props of elementProps) {
+        const placementProps = (props as any).placement;
+        if (undefined === placementProps)
+          continue;
+
+        const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
+        const placement = hasAngle(placementProps) ? Placement2d.fromJSON(placementProps) : Placement3d.fromJSON(placementProps);
+        range.setFrom(placement instanceof Placement2d ? Range3d.createRange2d(placement.bbox, 0) : placement.bbox);
+
+        const frustum = Frustum.fromRange(range);
+        frustum.multiply(placement.transform);
+        this._elementAlignedBoxes.push(frustum);
+      }
+    } catch { }
+  }
+
+  protected async onAgendaModified(): Promise<void> {
+    await this.createAgendaGraphics(true);
+  }
+
+  protected async initAgendaDynamics(): Promise<boolean> {
+    await this.createAgendaGraphics(false);
+    return super.initAgendaDynamics();
+  }
+
+  protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void {
+    if (undefined === this._elementAlignedBoxes)
+      return;
+
+    const builder = context.target.createGraphicBuilder(GraphicType.WorldOverlay, context.viewport, transform);
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.HiddenLine);
+
+    for (const frust of this._elementAlignedBoxes)
+      builder.addFrustum(frust.clone());
+
+    context.addGraphic(builder.finish());
+  }
+
+  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    const transform = this.calculateTransform(ev);
+    if (undefined === transform)
+      return;
+    this.transformAgendaDynamics(transform, context);
+  }
+
+  protected updateAnchorLocation(transform: Transform): void {
+    // Update anchor point to support creating additional copies (repeat vs. restart)...
+    if (undefined === this.anchorPoint)
+      return;
+    transform.multiplyPoint3d(this.anchorPoint, this.anchorPoint);
+    IModelApp.accuDraw.setContext(AccuDrawFlags.SetOrigin, this.anchorPoint);
+  }
+
+  protected async transformAgenda(transform: Transform): Promise<void> {
+    // TODO: EditCommand...?
+    const editor = await ElementEditor3d.start(this.iModel);
+    await editor.startModifyingElements(this.agenda.elements);
+    await editor.applyTransform(transform.toJSON());
+    await editor.write();
+    await this.saveChanges();
+    await editor.end();
+  }
+
+  public async processAgenda(ev: BeButtonEvent): Promise<void> {
+    const transform = this.calculateTransform(ev);
+    if (undefined === transform)
+      return;
+    await this.transformAgenda(transform);
+    this.updateAnchorLocation(transform);
+  }
+
+  public async onProcessComplete(): Promise<void> {
+    if (this.wantMakeCopy)
+      return; // TODO: Update agenda to hold copies, replace current selection set with copies, etc...
+    return super.onProcessComplete();
+  }
+}
+
+/** Move elements by applying translation to placement. */
+export class MoveElementTool extends TransformElementTool {
+  public static toolId = "MoveElements";
+
+  protected calculateTransform(ev: BeButtonEvent): Transform | undefined {
+    if (undefined === this.anchorPoint)
+      return undefined;
+    return Transform.createTranslation(ev.point.minus(this.anchorPoint));
+  }
+
+  protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
+    let mainMsg;
+    if (!this.isSelectByPoints && !this.wantAdditionalElements)
+      mainMsg = CoreTools.translate(this.wantAdditionalInput ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint");
+    super.provideToolAssistance(mainMsg);
+  }
+
+  public onRestartTool(): void {
+    const tool = new MoveElementTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+}
+
+/** Rotate elements by applying "active angle" to placement. */
+export class RotateElementByAngleTool extends TransformElementTool {
+  public static toolId = "RotateElementsByAngle";
+  protected angle = Angle.createDegrees(45);
+
+  protected get requireAcceptForSelectionSetDynamics(): boolean { return false; }
+
+  protected calculateTransform(ev: BeButtonEvent): Transform | undefined {
+    if (undefined === ev.viewport)
+      return undefined;
+
+    const rotMatrix = AccuDraw.getCurrentOrientation(ev.viewport, true, true);
+    if (undefined === rotMatrix)
+      return undefined;
+
+    const invMatrix = rotMatrix.inverse();
+    if (undefined === invMatrix)
+      return undefined;
+
+    const angMatrix = YawPitchRollAngles.createDegrees(this.angle.degrees, 0, 0).toMatrix3d();
+    if (undefined === angMatrix)
+      return undefined;
+
+    angMatrix.multiplyMatrixMatrix(rotMatrix, rotMatrix);
+    invMatrix.multiplyMatrixMatrix(rotMatrix, rotMatrix);
+
+    return Transform.createFixedPointAndMatrix(ev.point, rotMatrix);
+  }
+
+  protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
+    let mainMsg;
+    if (!this.isSelectByPoints && !this.wantAdditionalElements && this.wantAdditionalInput)
+      mainMsg = "Identify Point to Rotate About";
+    super.provideToolAssistance(mainMsg);
+  }
+
+  public onRestartTool(): void {
+    const tool = new RotateElementByAngleTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+}
+
+/** Rotate elements by applying angle defined by 3 points to placement. */
+export class RotateElementByPointsTool extends TransformElementTool {
+  public static toolId = "RotateElementsByPoints";
+  protected xAxisPoint?: Point3d;
+  protected havePivotPoint = false;
+  protected haveFinalPoint = false;
+
+  protected calculateTransform(ev: BeButtonEvent): Transform | undefined {
+    if (undefined === ev.viewport)
+      return undefined;
+
+    if (undefined === this.anchorPoint || undefined === this.xAxisPoint)
+      return undefined;
+
+    const vec1 = Vector3d.createStartEnd(this.anchorPoint, this.xAxisPoint);
+    const vec2 = Vector3d.createStartEnd(this.anchorPoint, ev.point);
+
+    if (!vec1.normalizeInPlace() || !vec2.normalizeInPlace())
+      return undefined;
+
+    const dot = vec1.dotProduct(vec2);
+    if (dot > (1.0 - Geometry.smallAngleRadians))
+      return undefined;
+
+    if (dot < (-1.0 + Geometry.smallAngleRadians)) {
+      const rotMatrix = AccuDraw.getCurrentOrientation(ev.viewport, true, true);
+      if (undefined === rotMatrix)
+        return undefined;
+
+      const invMatrix = rotMatrix.inverse();
+      if (undefined === invMatrix)
+        return undefined;
+
+      const angMatrix = YawPitchRollAngles.createRadians(Math.PI, 0, 0).toMatrix3d(); // 180 degree rotation...
+      if (undefined === angMatrix)
+        return undefined;
+
+      angMatrix.multiplyMatrixMatrix(rotMatrix, rotMatrix);
+      invMatrix.multiplyMatrixMatrix(rotMatrix, rotMatrix);
+
+      return Transform.createFixedPointAndMatrix(this.anchorPoint, rotMatrix);
+    }
+
+    const zVec = vec1.unitCrossProduct(vec2);
+    if (undefined === zVec)
+      return undefined;
+
+    const yVec = zVec.unitCrossProduct(vec1);
+    if (undefined === yVec)
+      return undefined;
+
+    const matrix1 = Matrix3d.createRows(vec1, yVec, zVec);
+    zVec.unitCrossProduct(vec2, yVec);
+    const matrix2 = Matrix3d.createColumns(vec2, yVec, zVec);
+
+    const matrix = matrix2.multiplyMatrixMatrix(matrix1);
+    if (undefined === matrix)
+      return undefined;
+
+    return Transform.createFixedPointAndMatrix(this.anchorPoint, matrix);
+  }
+
+  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    const transform = this.calculateTransform(ev);
+    if (undefined !== transform)
+      return this.transformAgendaDynamics(transform, context);
+
+    if (undefined === this.anchorPoint)
+      return;
+
+    const builder = context.target.createGraphicBuilder(GraphicType.WorldOverlay, context.viewport);
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code2);
+    builder.addLineString([this.anchorPoint.clone(), ev.point.clone()]);
+    context.addGraphic(builder.finish());
+  }
+
+  protected get wantAdditionalInput(): boolean { return !this.haveFinalPoint; }
+
+  protected wantProcessAgenda(ev: BeButtonEvent): boolean {
+    if (!this.havePivotPoint)
+      this.havePivotPoint = true; // Uses anchorPoint...
+    else if (undefined === this.xAxisPoint)
+      this.xAxisPoint = ev.point.clone();
+    else if (!this.haveFinalPoint)
+      this.haveFinalPoint = true; // Uses button event...
+
+    return super.wantProcessAgenda(ev);
+  }
+
+  protected setupAndPromptForNextAction(): void {
+    super.setupAndPromptForNextAction();
+
+    if (undefined === this.anchorPoint || undefined === this.xAxisPoint)
+      return;
+
+    const hints = new AccuDrawHintBuilder();
+    hints.setXAxis(Vector3d.createStartEnd(this.anchorPoint, this.xAxisPoint));
+    hints.setOrigin(this.anchorPoint);
+    hints.setModePolar();
+    hints.sendHints();
+  }
+
+  protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
+    let mainMsg;
+    if (!this.isSelectByPoints && !this.wantAdditionalElements) {
+      if (!this.havePivotPoint)
+        mainMsg = "Identify Point to Rotate About";
+      else if (undefined === this.xAxisPoint)
+        mainMsg = "Define Start of Rotation";
+      else
+        mainMsg = "Define Amount of Rotation";
+    }
+    super.provideToolAssistance(mainMsg);
+  }
+
+  public onRestartTool(): void {
+    const tool = new RotateElementByPointsTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+}
+
+/** Tool that requires 2 elements to complete. TODO: Subtract Solids */
+export class ExactlyTwoElementsTool extends ElementSetTool {
+  public static toolId = "ExactlyTwoElements";
+  protected needAccept = true; // For testing explict accept after both elements are identified...
+
+  protected get requiredElementCount(): number { return 2; }
+
+  public requireWriteableTarget(): boolean { return false; } // TEMPORARY...
+
+  protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
+    let mainMsg;
+    if (this.wantAdditionalElements)
+      mainMsg = (0 === this.currentElementCount ? "Identify First Element" : "Identify Second Element");
+    super.provideToolAssistance(mainMsg);
+  }
+
+  protected get wantAdditionalInput(): boolean { const needAccept = this.needAccept; this.needAccept = false; return needAccept; }
+
+  public async processAgendaImmediate(): Promise<void> {
+    // console.log(">>> Process Agenda: ExactlyTwoElementsTool"); // eslint-disable-line no-console
+  }
+
+  public onRestartTool(): void {
+    const tool = new ExactlyTwoElementsTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+}
+
+/** Tool that requires at least 2 elements to complete. TODO: Unite Solids */
+export class AtLeastTwoElementsTool extends ElementSetTool {
+  public static toolId = "AtLeastTwoElements";
+
+  protected get requiredElementCount(): number { return 2; }
+  protected get allowSelectionSet(): boolean { return true; }
+  protected get allowGroups(): boolean { return true; }
+  protected get allowDragSelect(): boolean { return true; }
+  protected get controlKeyContinuesSelection(): boolean { return true; }
+
+  public requireWriteableTarget(): boolean { return false; } // TEMPORARY...
+
+  public async processAgendaImmediate(): Promise<void> {
+    // console.log(">>> Process Agenda: ExactlyTwoElementsTool"); // eslint-disable-line no-console
+  }
+
+  public onRestartTool(): void {
+    const tool = new AtLeastTwoElementsTool();
+    if (!tool.run())
+      this.exitTool();
   }
 }
 
@@ -123,139 +467,6 @@ abstract class InteractiveEditingTool extends PrimitiveTool {
       await this._editor.end();
       this._editor = undefined;
     }
-  }
-}
-
-/** Moves elements to a different location. */
-export class MoveElementTool extends InteractiveEditingTool {
-  public static toolId = "MoveElements";
-  private _useSelection = false;
-  private _elementIds: Id64Array = [];
-  private _startPoint?: Point3d;
-  private _endPoint?: Point3d;
-
-  private takeSelectionSet(): void {
-    this._useSelection = (undefined !== this.targetView && this.iModel.selectionSet.isActive);
-    if (!this._useSelection)
-      return;
-
-    this._elementIds.length = 0;
-    for (const id of this.iModel.selectionSet.elements)
-      if (Id64.isValidId64(id) && !Id64.isTransient(id))
-        this._elementIds.push(id);
-  }
-
-  private setupAndPromptForNextAction(): void {
-    IModelApp.accuSnap.enableSnap(true);
-    if (!this._useSelection)
-      IModelApp.accuSnap.enableLocate(true);
-
-    this.showPrompt();
-  }
-
-  private showPrompt(): void {
-    let msg;
-    if (undefined === this._startPoint)
-      msg = this._useSelection ? "Start point for move" : "Identify element";
-    else
-      msg = undefined === this._endPoint ? "End point for move" : "Confirm move";
-
-    IModelApp.notifications.outputPrompt(msg);
-  }
-
-  public requireWriteableTarget(): boolean {
-    return true;
-  }
-
-  public onUnsuspend(): void {
-    this.showPrompt();
-  }
-
-  public onPostInstall(): void {
-    super.onPostInstall();
-    this.takeSelectionSet();
-    this.setupAndPromptForNextAction();
-  }
-
-  public async onStartPoint(pt: Point3d): Promise<void> {
-    const editor = await this.getEditor();
-    await editor.startModifyingElements(this._elementIds);
-    this._startPoint = pt;
-    this.beginDynamics();
-    this.setupAndPromptForNextAction();
-  }
-
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    if (undefined === this._startPoint) {
-      if (!this._useSelection) {
-        const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
-        if (undefined === hit || !hit.isElementHit)
-          return EventHandled.No;
-
-        this._elementIds.push(hit.sourceId);
-      }
-
-      await this.onStartPoint(ev.point);
-      return EventHandled.No;
-    }
-
-    assert(undefined === this._endPoint);
-    this._endPoint = ev.point;
-    this.endDynamics();
-
-    const delta = this._endPoint.minus(this._startPoint);
-    const transform = Transform.createTranslation(delta);
-
-    const editor = await this.getEditor();
-    await editor.applyTransform(transform.toJSON());
-    await editor.write();
-    await this.saveChanges();
-
-    if (this.shouldRestart()) {
-      const startPoint = this._endPoint;
-      this._endPoint = undefined;
-      this.onStartPoint(startPoint); // eslint-disable-line @typescript-eslint/no-floating-promises
-    } else {
-      this.onReinitialize();
-    }
-
-    return EventHandled.No;
-  }
-
-  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
-    if (undefined === this._startPoint)
-      return;
-
-    const builder = context.target.createGraphicBuilder(GraphicType.WorldOverlay, context.viewport);
-    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 3, LinePixels.HiddenLine);
-    builder.addLineString([this._startPoint.clone(), ev.point.clone()]);
-    context.addGraphic(builder.finish());
-  }
-
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
-    return EventHandled.No;
-  }
-
-  private shouldRestart(): boolean {
-    return !this._useSelection && 0 !== this._elementIds.length;
-  }
-
-  public onReinitialize(): void {
-    if (!this.shouldRestart())
-      this.exitTool();
-    else
-      this.onRestartTool();
-  }
-
-  public onRestartTool(): void {
-    const tool = new MoveElementTool();
-    if (!tool.run())
-      tool.exitTool();
-  }
-
-  public async filterHit(hit: HitDetail, _out: LocateResponse): Promise<LocateFilterStatus> {
-    return hit.isElementHit ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 }
 
@@ -302,7 +513,7 @@ export class PlaceLineStringTool extends InteractiveEditingTool {
       return undefined;
 
     const geom = IModelJson.Writer.toIModelJson(LineString3d.create(this._points));
-    return geom ? [ geom ] : undefined;
+    return geom ? [geom] : undefined;
   }
 
   public decorate(context: DecorateContext): void {
@@ -404,13 +615,6 @@ export class PlaceLineStringTool extends InteractiveEditingTool {
       this.setupAndPromptForNextAction();
 
     return true;
-  }
-
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-
-    return wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent) ? EventHandled.Yes : EventHandled.No;
   }
 
   public onRestartTool(): void {

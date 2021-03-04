@@ -82,7 +82,7 @@ Property | Description
 ECInstanceId | Is the unique identifier for an ECInstance.
 ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECClass in the iModel.
 
-> In iModel.js the *ECClassId* is formatted as fully qualified class name when used in the SELECT clause.
+> In iTwin.js the *ECClassId* is formatted as fully qualified class name when used in the SELECT clause.
 
 ### Example
 
@@ -133,7 +133,7 @@ ECSQL supports dates without time (`DATE`), dates with time (`TIMESTAMP`), and t
 
 `TIME 'hh:mm:ss[.nnn]'`
 
-The time stamp format matches the [ISO 8601 standard](https://www.iso.org/iso-8601-date-and-time-format.html) (see also https://en.wikipedia.org/wiki/ISO_8601)
+The time stamp format matches the [ISO 8601 standard](https://www.iso.org/iso-8601-date-and-time-format.html) (see also <https://en.wikipedia.org/wiki/ISO_8601>)
 
 #### Basic functions
 
@@ -219,6 +219,7 @@ ECSQL | Description
 `SELECT Name FROM myschema.Company WHERE Location.Zip=12314` | Returns rows that match the Location's Zip member value
 
 based on this ECSchema snippet:
+
 ```xml
 <ECStructClass typeName="Address">
   <ECProperty propertyName="Street" typeName="string" />
@@ -304,7 +305,7 @@ In ECSchemas ECRelationshipClasses are used to relate two ECClasses. ECRelations
 
 If [navigation properties](#navigation-properties) are defined for the ECRelationship class, use the navigation property instead of a join.
 
-#### Examples
+### Examples
 
 Without navigation property (2 JOINs needed):
 
@@ -382,3 +383,7 @@ See also [SQLite Functions overview](https://www.sqlite.org/lang_corefunc.html).
 ECSQL can perform [spatial queries](./SpatialQueries.md).
 
 ECSQL has a number of [built-in geometry functions](./GeometrySqlFuncs.md)
+
+## Common Table Expressions
+
+ECSQL can do regular and recursive [CTE queries](./CommonTableExp.md)

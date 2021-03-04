@@ -79,8 +79,8 @@ export class UiAdmin {
   /** Get/Set the AccuDrawUi Admin
    * @alpha
    */
-  public get accuDrawUi(): AccuDrawUiAdmin { return this._accuDrawUiAdmin; };
-  public set accuDrawUi(v: AccuDrawUiAdmin) { this._accuDrawUiAdmin = v; };
+  public get accuDrawUi(): AccuDrawUiAdmin { return this._accuDrawUiAdmin; }
+  public set accuDrawUi(v: AccuDrawUiAdmin) { this._accuDrawUiAdmin = v; }
 
   /** @internal */
   public onInitialized() { }

@@ -1,6 +1,45 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+### Updates
+
+- Persist the time point used to compute solar light direction in LightSettingsProps.
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- Deprecate detachChangeCache()
+- Implement external textures for iModel tiles.
+- Moved username/password from MapLayerProps to MapLayerSettings. Raise the 'onMapImageryChanged' event when ever Map imagery is synced.
+- add ResponseHandler for notifications from backend to frontend
+- Mobile IPC fix
+- Mobile IPC fix
+- add IpcSocket
+- remove IpcInterface, getVersion() method is not needed
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Fix brep DataProps to/from flatbuffer to account for base64 string header.
+- Element geometry creation by brep operations. 
+- add EditCommand
+- Improve ElementGeometry documentation.
+- Remove assertion in supplyPathForOperation when defaulting changeSetId.
+- Introduced the the Geographic Coordinate System classes and plugged in the Imodel props.
+- Separated out API to upgrade iModels.
+- Remove unused trueWidth and trueStart properties from GraphicParams.
+- Add option to SectionDrawingProps specifying the spatial view should be drawn in the context of the drawing view.
+- Support for section-cut graphics.
+- Version compare property checksums
+- Add change events to DisplayStyleSettings and ViewDetails.
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT

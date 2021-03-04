@@ -1,6 +1,28 @@
 # Change Log - @bentley/map-layers
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- Provide default props to map-layers widget when used as an extension.
+- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted. 
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Refreshed MapLayerManager UI. Fixed minor issues with layer dragging order.  Code refactoring.
+- Correctly handle WMTS layers (only one layer can be visible at a time)
+- Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fix compile errors for later versions.
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT

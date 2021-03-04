@@ -235,7 +235,7 @@ interface TreeState {
  * @public
  * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
  */
-// eslint-disable-next-line @typescript-eslint/class-name-casing, @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
 
   private _mounted: boolean = false;
@@ -391,7 +391,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
 
     // update cell editing engine if related props changed
     if (shallowDiffers(props.cellEditing, state.prev.cellEditing)) {
-      derivedState.cellEditingEngine = props.cellEditing ? new CellEditingEngine(props.cellEditing) : undefined;
+      derivedState.cellEditingEngine = props.cellEditing ? new CellEditingEngine(props.cellEditing) : /* istanbul ignore next */ undefined;
     }
 
     if (selectedNodesChanged || providerChanged) {
@@ -482,6 +482,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     }
 
     if (this.props.nodeHighlightingProps && shallowDiffers(this.props.nodeHighlightingProps, prevProps.nodeHighlightingProps)) {
+      // istanbul ignore else
       if (this._nodesRenderInfo)
         this._shouldScrollToActiveNode = true;
       else
@@ -498,6 +499,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
       this.assignDataProviderListeners(this.props.dataProvider);
     }
 
+    // istanbul ignore next
     if (this.state.cellEditingEngine && !this.state.cellEditingEngine.hasSubscriptions) {
       this.state.cellEditingEngine.subscribe(this._getCellEditorState, this._setCellEditorState);
     }
@@ -532,6 +534,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     model.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     model.ready.then(async () => {
+      // istanbul ignore else
       if (model === this.state.model)
         await this._onModelReady();
     });
@@ -675,6 +678,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
         if (item) {
           // specific node needs to be reloaded
           const node = this.state.model.node(item.id);
+          // istanbul ignore else
           if (node) {
             const wasExpanded = node.expanded();
             // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -818,6 +822,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     if (++this._nodesRenderInfo.rendered < this._nodesRenderInfo.total)
       return;
 
+    // istanbul ignore else
     if (this.props.onNodesRender)
       this.props.onNodesRender();
 
@@ -845,7 +850,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
       renderOverrides: {
         renderCheckbox: this.props.renderOverrides ? this.props.renderOverrides.renderCheckbox : undefined,
       },
-      renderId: this._nodesRenderInfo ? this._nodesRenderInfo.renderId : undefined,
+      renderId: this._nodesRenderInfo ? this._nodesRenderInfo.renderId : /* istanbul ignore next */ undefined,
       onFinalRenderComplete: this._onNodeFullyRendered,
       highlightProps: this.state.highlightingEngine
         ? this.state.highlightingEngine.createRenderProps(node)
@@ -866,6 +871,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
   }
 
   /** Get loaded node by its ID */
+  // istanbul ignore next
   public getLoadedNode(id: string): TreeNodeItem | undefined {
     const node = this.state.model.node(id);
     return node ? node.payload : undefined;
@@ -907,12 +913,13 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     const baseRenderNode = this.props.renderOverrides && this.props.renderOverrides.renderNode ? this.props.renderOverrides.renderNode : this.defaultRenderNode;
     const renderNode = ({ index, style, isScrolling }: VirtualizedListRowProps) => {
       const node = nodes[index];
-      const key = node.id ? node.id : node.text;
+      const key = node.id ? node.id : /* istanbul ignore next */ node.text;
 
       // Mark selected node's wrapper to make detecting consecutively selected nodes with css selectors possible
       const className = classnames("node-wrapper", { "is-selected": node.selected() });
 
       if (!node.payload) {
+        // istanbul ignore else
         if (!isScrolling) {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this.state.model.requestNodeLoad(toNode(node.getParent()), node.placeholderIndex!);

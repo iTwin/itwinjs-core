@@ -64,6 +64,7 @@ export const DiagnosticCodes = {
   // Class Rule Codes (100-199)
   BaseClassIsSealed: getCode(100),
   BaseClassOfDifferentType: getCode(101),
+  AbstractClassWithNonAbstractBase: getCode(102),
 
   // CA Container Rule Codes (500-599)
   CustomAttributeNotOfConcreteClass: getCode(500),
@@ -91,6 +92,12 @@ export const DiagnosticCodes = {
   AbstractConstraintMustExistWithMultipleConstraints: getCode(1601),
 };
 
+// TODO: Remove once 'import() types' are supported by api-extractor. https://github.com/microsoft/rushstack/pull/1916
+/* eslint-disable no-duplicate-imports, @typescript-eslint/no-unused-vars */
+import { DiagnosticCategory, DiagnosticType } from "./Diagnostic";
+import { SchemaItem } from "../Metadata/SchemaItem";
+/* eslint-enable no-duplicate-imports, @typescript-eslint/no-unused-vars */
+
 /**
  * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
  * @beta
@@ -115,6 +122,10 @@ export const Diagnostics = {
   /** EC-101: Required message parameters: childClass.FullName, baseClass.FullName, baseClass.schemaItemType */
   BaseClassIsOfDifferentType: createClassDiagnosticClass<[string, string, string]>(DiagnosticCodes.BaseClassOfDifferentType,
     "Class '{0}' cannot derive from base class '{1}' of type '{2}'."),
+
+  /** EC-102: Required message parameters: childClass.FullName, baseClass.FullName */
+  AbstractClassWithNonAbstractBase: createClassDiagnosticClass<[string, string]>(DiagnosticCodes.AbstractClassWithNonAbstractBase,
+    "Abstract Class '{0}' cannot derive from base class '{1}' because it is not an abstract class."),
 
   /** EC-500: Required message parameters: CustomAttribute container name and CustomAttributeClass name. */
   CustomAttributeNotOfConcreteClass: createCustomAttributeContainerDiagnosticClass<[string, string]>(DiagnosticCodes.CustomAttributeNotOfConcreteClass,
@@ -198,6 +209,7 @@ export const ECRuleSet: IRuleSet = {
   classRules: [
     baseClassIsSealed,
     baseClassIsOfDifferentType,
+    abstractClassWithNonAbstractBase,
   ],
   propertyRules: [
     incompatibleValueTypePropertyOverride,
@@ -261,7 +273,7 @@ export function* validateSchemaReferencesSync(schema: Schema): Iterable<SchemaDi
 }
 /**
  * EC Rule: Sealed classes cannot be a base class.
- * @internal Should we make all of these methods internal??
+ * @internal
  */
 export async function* baseClassIsSealed(ecClass: AnyClass): AsyncIterable<ClassDiagnostic<any[]>> {
   if (!ecClass.baseClass)
@@ -277,7 +289,7 @@ export async function* baseClassIsSealed(ecClass: AnyClass): AsyncIterable<Class
 
 /**
  * EC Rule: Base and child class must be of the same type (i.e. Entity, Mixin, Relationship, etc.)
- * @internal Should we make all of these methods internal??
+ * @internal
  */
 export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncIterable<ClassDiagnostic<any[]>> {
   if (!ecClass.baseClass)
@@ -292,7 +304,26 @@ export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncItera
   yield new Diagnostics.BaseClassIsOfDifferentType(ecClass, [ecClass.fullName, baseClass.fullName, itemType]);
 }
 
-/** EC Rule: When overriding a class primitive property, the child and base property must be of the same type (string, number, etc...). */
+/**
+ * EC Rule: Abstract class cannot derive from a non-abstract base class.
+ * @internal
+ */
+export async function* abstractClassWithNonAbstractBase(ecClass: AnyClass): AsyncIterable<ClassDiagnostic<any[]>> {
+  if (ecClass.modifier !== ECClassModifier.Abstract || !ecClass.baseClass)
+    return;
+
+  const baseClass = await ecClass.baseClass;
+  // return if rule passed
+  if (baseClass.modifier === ECClassModifier.Abstract)
+    return;
+
+  yield new Diagnostics.AbstractClassWithNonAbstractBase(ecClass, [ecClass.fullName, baseClass.fullName]);
+}
+
+/**
+ * EC Rule: When overriding a class primitive property, the child and base property must be of the same type (string, number, etc...).
+ * @internal
+*/
 export async function* incompatibleValueTypePropertyOverride(property: AnyProperty): AsyncIterable<PropertyDiagnostic<any[]>> {
   if (!property.class.baseClass)
     return;
@@ -327,7 +358,10 @@ export async function* incompatibleValueTypePropertyOverride(property: AnyProper
   }
 }
 
-/** EC Rule: When overriding a class property, the child and base property must be of the same property type (primitive, struct, enumeration, etc...). */
+/**
+ * EC Rule: When overriding a class property, the child and base property must be of the same property type (primitive, struct, enumeration, etc...).
+ * @internal
+ */
 export async function* incompatibleTypePropertyOverride(property: AnyProperty): AsyncIterable<PropertyDiagnostic<any[]>> {
   if (!property.class.baseClass)
     return;
@@ -351,7 +385,10 @@ export async function* incompatibleTypePropertyOverride(property: AnyProperty): 
   }
 }
 
-/** EC Rule: When overriding a kindOfQuantity property, the child and base property units must be the same. */
+/**
+ * EC Rule: When overriding a kindOfQuantity property, the child and base property units must be the same.
+ * @internal
+ */
 export async function* incompatibleUnitPropertyOverride(property: AnyProperty): AsyncIterable<PropertyDiagnostic<any[]>> {
   if (!property.kindOfQuantity || !property.class.baseClass)
     return;
@@ -424,7 +461,7 @@ export async function* validateNavigationProperty(property: AnyProperty): AsyncI
   }
 
   const thatAbstractConstraint = await thatConstraint.abstractConstraint;
-  if (thatAbstractConstraint && thatAbstractConstraint instanceof RelationshipClass) {
+  if (thatAbstractConstraint && thatAbstractConstraint.schemaItemType === SchemaItemType.RelationshipClass) {
     yield new Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin(property, [property.fullName, relationship.fullName]);
   }
 
@@ -447,7 +484,10 @@ export async function* validateNavigationProperty(property: AnyProperty): AsyncI
   return;
 }
 
-/** EC Rule: When overriding a RelationshipClass, the derived abstract constraint must narrow the base constraint classes. */
+/**
+ * EC Rule: When overriding a RelationshipClass, the derived abstract constraint must narrow the base constraint classes.
+ * @internal
+ */
 export async function* abstractConstraintMustNarrowBaseConstraints(ecClass: RelationshipClass): AsyncIterable<SchemaItemDiagnostic<RelationshipClass, any[]>> {
   if (!ecClass.baseClass)
     return;
@@ -462,7 +502,10 @@ export async function* abstractConstraintMustNarrowBaseConstraints(ecClass: Rela
     yield targetResult;
 }
 
-/** EC Rule: When overriding a RelationshipClass, derived constraint classes must narrow base constraint classes. */
+/**
+ * EC Rule: When overriding a RelationshipClass, derived constraint classes must narrow base constraint classes.
+ * @internal
+ */
 export async function* derivedConstraintsMustNarrowBaseConstraints(ecClass: RelationshipClass): AsyncIterable<SchemaItemDiagnostic<RelationshipClass, any[]>> {
   if (!ecClass.baseClass)
     return;
@@ -477,7 +520,10 @@ export async function* derivedConstraintsMustNarrowBaseConstraints(ecClass: Rela
     yield targetResult;
 }
 
-/** EC Rule: All constraint classes must have a common base class specified in the abstract constraint. */
+/**
+ * EC Rule: All constraint classes must have a common base class specified in the abstract constraint.
+ * @internal
+ */
 export async function* constraintClassesDeriveFromAbstractContraint(ecClass: RelationshipClass): AsyncIterable<SchemaItemDiagnostic<RelationshipClass, any[]>> {
   const sourceResult = await applyConstraintClassesDeriveFromAbstractContraint(ecClass, ecClass.source);
   if (sourceResult)
@@ -487,7 +533,10 @@ export async function* constraintClassesDeriveFromAbstractContraint(ecClass: Rel
     yield targetResult;
 }
 
-/** EC Rule: At least on concrete constraint class must be defined in the list of constraint classes. */
+/**
+ * EC Rule: At least on concrete constraint class must be defined in the list of constraint classes.
+ * @internal
+ */
 export async function* atLeastOneConstraintClassDefined(constraint: RelationshipConstraint): AsyncIterable<RelationshipConstraintDiagnostic<any[]>> {
   if (!constraint.constraintClasses || constraint.constraintClasses.length === 0) {
     const constraintType = constraint.isSource ? ECStringConstants.RELATIONSHIP_END_SOURCE : ECStringConstants.RELATIONSHIP_END_TARGET;
@@ -495,7 +544,10 @@ export async function* atLeastOneConstraintClassDefined(constraint: Relationship
   }
 }
 
-/** EC Rule: If multiple constraints exist, an abstract constraint must be defined. */
+/**
+ * EC Rule: If multiple constraints exist, an abstract constraint must be defined.
+ * @internal
+ */
 export async function* abstractConstraintMustExistWithMultipleConstraints(constraint: RelationshipConstraint): AsyncIterable<RelationshipConstraintDiagnostic<any[]>> {
   if (!constraint.constraintClasses || constraint.constraintClasses.length <= 1) {
     return;
@@ -520,7 +572,10 @@ function getPrimitiveType(property: Property): PrimitiveType | undefined {
   return undefined;
 }
 
-/** EC Rule: Enumeration type must be a string or integer */
+/**
+ * EC Rule: Enumeration type must be a string or integer
+ * @internal
+ */
 export async function* enumerationTypeUnsupported(enumeration: Enumeration): AsyncIterable<SchemaItemDiagnostic<Enumeration, any[]>> {
   const type = enumeration.type;
   if (type === PrimitiveType.Integer || type === PrimitiveType.String)
@@ -529,7 +584,10 @@ export async function* enumerationTypeUnsupported(enumeration: Enumeration): Asy
   yield new Diagnostics.EnumerationTypeUnsupported(enumeration, [enumeration.fullName]);
 }
 
-/** EC Rule: Mixin applied to class must derived from the Mixin appliesTo constraint. */
+/**
+ * EC Rule: Mixin applied to class must derived from the Mixin appliesTo constraint.
+ * @internal
+ */
 export async function* mixinAppliedToClassMustDeriveFromConstraint(entityClass: EntityClass): AsyncIterable<SchemaItemDiagnostic<EntityClass, any[]>> {
   for (const lazyMixin of entityClass.mixins) {
     const mixin = await lazyMixin;

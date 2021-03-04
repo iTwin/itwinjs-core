@@ -8,20 +8,22 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
+import { fireEvent, render } from "@testing-library/react";
 import * as moq from "typemoq";
+
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
 import { HorizontalAlignment, LocalUiSettings } from "@bentley/ui-core";
+
 import {
-  CellItem, ColumnDescription, PropertyUpdatedArgs, RowItem, SelectionMode, Table, TableDataChangeEvent, TableDataChangesListener,
-  TableDataProvider, TableProps, TableSelectionTarget,
+  CellItem, ColumnDescription, PropertyUpdatedArgs, PropertyValueRendererManager, RowItem, SelectionMode, Table, TableDataChangeEvent,
+  TableDataChangesListener, TableDataProvider, TableProps, TableSelectionTarget,
 } from "../../../ui-components";
 import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
 import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-import { fireEvent, render } from "@testing-library/react";
 
 describe("Table", () => {
 
@@ -1467,9 +1469,14 @@ describe("Table", () => {
       const row: RowItem = { key: i.toString(), cells: [] };
       const enumValue = i % 4;
       const loremIndex = i % 10;
+      const convertInfo: PropertyConverterInfo = { name: "" };
+
+      const propertyRecord = TestUtils.createPropertyRecord(i, filteringColumns[0], "int");
+      propertyRecord.property.converter = convertInfo;
+
       row.cells.push({
         key: filteringColumns[0].key,
-        record: TestUtils.createPropertyRecord(i, filteringColumns[0], "int"),
+        record: propertyRecord,
       });
       row.cells.push({
         key: filteringColumns[1].key,
@@ -1553,6 +1560,7 @@ describe("Table", () => {
         onRowsLoaded={onRowsLoaded}
         onCellContextMenu={onCellContextMenuSpy}
         pageAmount={50}
+        propertyValueRendererManager={PropertyValueRendererManager.defaultManager}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();

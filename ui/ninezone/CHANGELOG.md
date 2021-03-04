@@ -1,6 +1,25 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+_Version update only_
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Allow all PopupProps to be passed in to FooterPopup.
+- Fix double border issue in minimized active widget tab.
+- Update panel transition to persist content size when collapsing.
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT

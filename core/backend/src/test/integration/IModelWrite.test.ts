@@ -26,7 +26,7 @@ export async function createNewModelAndCategory(requestContext: AuthorizedBacken
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value!);
+  const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
   await rwIModel.concurrencyControl.requestResourcesForInsert(requestContext, [category]);
   requestContext.enter();
   const spatialCategoryId = rwIModel.elements.insertElement(category);
@@ -52,7 +52,6 @@ function toHubLock(props: ConcurrencyControl.LockProps, briefcaseId: number): Lo
   lock.lockType = props.type;
   lock.objectId = props.objectId;
   // lock.releasedWithChangeSet =
-  // lock.seedFileId = concurrencyControl.iModel.briefcase.fileId!;
   return lock;
 }
 
@@ -157,7 +156,6 @@ describe("IModelWriteTest (#integration)", () => {
     codeSpecsLock.lockLevel = LockLevel.Exclusive;
     codeSpecsLock.lockType = LockType.CodeSpecs;
     codeSpecsLock.objectId = "0x1";
-    codeSpecsLock.seedFileId = model.iModelId;
     await model.pullAndMergeChanges(superRequestContext);
     codeSpecsLock.releasedWithChangeSet = model.changeSetId;
     const locks = await IModelHost.iModelClient.locks.update(superRequestContext, model.iModelId, [codeSpecsLock]);
@@ -458,7 +456,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
 
     assert.throws(() => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, newModelCode, true), IModelError);  // s/ have errorNumber=RepositoryStatus.LockNotHeld
-    assert.throws(() => SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, subCategory), IModelError);  // s/ have errorNumber=RepositoryStatus.LockNotHeld
+    assert.throws(() => SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value, subCategory), IModelError);  // s/ have errorNumber=RepositoryStatus.LockNotHeld
 
     // assert.isUndefined(rwIModel.models.tryGetModelProps())
     assert.isUndefined(rwIModel.elements.tryGetElement(newCategoryCode));
@@ -470,8 +468,8 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
 
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, newModelCode, true);
-    SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, subCategory);
-    SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode2.value!, subCategory);
+    SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value, subCategory);
+    SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode2.value, subCategory);
 
     assert.isTrue(undefined !== rwIModel.elements.getElement(newCategoryCode));
     assert.isTrue(undefined !== rwIModel.elements.getElement(newCategoryCode2));
@@ -593,7 +591,7 @@ describe("IModelWriteTest (#integration)", () => {
     const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     assert.isTrue(await rwIModel.concurrencyControl.codes.areAvailable(adminRequestContext, [newCategoryCode]));
-    const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+    const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 }));
     const elid1 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
     const elid2 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
 
@@ -713,7 +711,7 @@ describe("IModelWriteTest (#integration)", () => {
     const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     assert.isTrue(await rwIModel.concurrencyControl.codes.areAvailable(adminRequestContext, [newCategoryCode]));
-    const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+    const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 }));
     const elid1 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
 
     await rwIModel.concurrencyControl.request(adminRequestContext);
@@ -841,7 +839,7 @@ describe("IModelWriteTest (#integration)", () => {
     const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     assert.isTrue(await rwIModel.concurrencyControl.codes.areAvailable(adminRequestContext, [newCategoryCode]));
-    const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+    const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 }));
 
     timer.end();
 
@@ -870,7 +868,7 @@ describe("IModelWriteTest (#integration)", () => {
     const category = rwIModel.elements.getElement(spatialCategoryId);
     assert.isTrue(category.code.value !== undefined);
     const codeStates = await rwIModel.concurrencyControl.codes.query(adminRequestContext, category.code.spec, category.code.scope);
-    const foundCode: MultiCode[] = codeStates.filter((cs) => (cs.value === category.code.value!) && (cs.state === CodeState.Reserved));
+    const foundCode: MultiCode[] = codeStates.filter((cs) => (cs.value === category.code.value) && (cs.state === CodeState.Reserved));
     assert.equal(foundCode.length, 1);
 
     /* NEEDS WORK - query just this one code

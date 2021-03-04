@@ -479,6 +479,23 @@
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
+    {
+      "name": "Backend iTwin Client Tests (Offline)",
+      "presentation": {
+        "group": "3_ClientsTests",
+        "order": 3
+      },
+      "cwd": "${workspaceFolder}/core/backend-itwin-client",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
     // UI TESTS
     {
       "name": "[UI] Tests: Abstract",
@@ -930,7 +947,8 @@
         "--remote-debugging-port=9223"
       ],
       "env": {
-        "SVT_LOG_LEVEL": "TRACE"
+        "SVT_LOG_LEVEL": "TRACE",
+        "NODE_ENV": "development"
       },
       "outFiles": [
         "${workspaceFolder}/test-apps/ui-test-app/lib/**/*.js",
@@ -1107,6 +1125,79 @@
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] display-performance-test-app (chrome)"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[BACKEND] presentation-test-app (chrome)",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/test-apps/presentation-test-app",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/test-apps/presentation-test-app/lib/backend/main.js",
+      "outFiles": [
+        "${workspaceFolder}/test-apps/presentation-test-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[FRONTEND] presentation-test-app (chrome)"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[FRONTEND] presentation-test-app (chrome)",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:3000/",
+      "outFiles": [
+        "${workspaceFolder}/test-apps/presentation-test-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[BACKEND] presentation-test-app (chrome)"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[BACKEND] presentation-test-app (electron)",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/test-apps/presentation-test-app/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/test-apps/presentation-test-app/node_modules/.bin/electron",
+      "runtimeArgs": [
+        "${workspaceFolder}/test-apps/presentation-test-app/lib/backend/main.js",
+        "--remote-debugging-port=9223"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "outFiles": [
+        "${workspaceFolder}/test-apps/presentation-test-app/lib/backend/**/*.js",
+        "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[FRONTEND] presentation-test-app (electron)"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[FRONTEND] presentation-test-app (electron)",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "attach",
+      "port": 9223,
+      "outFiles": [
+        "${workspaceFolder}/test-apps/presentation-test-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js",
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[BACKEND] presentation-test-app (electron)"
       ]
     },
     // FULLSTACK TESTS
@@ -1444,6 +1535,28 @@
       "configurations": [
         "[BACKEND] ui-test-app (electron)",
         "[FRONTEND] ui-test-app (electron)"
+      ]
+    },
+    {
+      "name": "presentation-test-app (chrome)",
+      "presentation": {
+        "group": "1_TestApps",
+        "order": 1
+      },
+      "configurations": [
+        "[BACKEND] presentation-test-app (chrome)",
+        "[FRONTEND] presentation-test-app (chrome)"
+      ]
+    },
+    {
+      "name": "presentation-test-app (electron)",
+      "presentation": {
+        "group": "1_TestApps",
+        "order": 1
+      },
+      "configurations": [
+        "[BACKEND] presentation-test-app (electron)",
+        "[FRONTEND] presentation-test-app (electron)"
       ]
     },
     {

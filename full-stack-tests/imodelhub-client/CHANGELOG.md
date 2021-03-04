@@ -1,6 +1,28 @@
 # Change Log - @bentley/imodelhub-client-tests
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- Test fixes to setup mock with the new PrecedingCheckpointV2 relationship
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Added CheckpointV2 failure info support
+- Fixes for iModels test which create too many iModels
+- Fixed the tests to not delete random iModels
+- Altered iModelHub client tests to re-use iModels where possible
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT

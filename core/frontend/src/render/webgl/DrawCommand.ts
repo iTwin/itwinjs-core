@@ -81,7 +81,7 @@ export const enum PushOrPop {
  * @internal
  */
 export enum DrawOpCode {
-  Primitive = "drawPrimitive", // eslint-disable-line no-shadow
+  Primitive = "drawPrimitive", // eslint-disable-line @typescript-eslint/no-shadow
   PushBranch = "pushBranch",
   PopBranch = "popBranch",
   PushBatch = "pushBatch",

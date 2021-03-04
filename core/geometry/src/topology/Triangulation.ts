@@ -7,12 +7,15 @@
  * @module Topology
  */
 
+import { ClipUtilities } from "../clipping/ClipUtils";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming";
+import { Range1d, Range2d } from "../geometry3d/Range";
 import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
@@ -269,15 +272,17 @@ export class Triangulator {
    * * The loop may be either CCW or CW -- CCW order will be used for triangles.
    * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops
    */
-  public static createTriangulatedGraphFromSingleLoop(data: XAndY[] | GrowableXYZArray): HalfEdgeGraph {
+  public static createTriangulatedGraphFromSingleLoop(data: XAndY[] | GrowableXYZArray): HalfEdgeGraph | undefined{
     const graph = new HalfEdgeGraph();
     const startingNode = Triangulator.createFaceLoopFromCoordinates(graph, data, true, true);
 
     if (!startingNode || graph.countNodes() < 6) return graph;
 
-    Triangulator.triangulateSingleFace(graph, startingNode);
-    Triangulator.flipTriangles(graph);
-    return graph;
+    if (Triangulator.triangulateSingleFace(graph, startingNode)){
+      Triangulator.flipTriangles(graph);
+      return graph;
+    }
+    return undefined;
   }
 
   /**
@@ -487,7 +492,10 @@ export class Triangulator {
    * *  If no ears are currently hashed, attempt to cure self intersections or split the polygon into two before continuing
    */
   private static triangulateSingleFace(graph: HalfEdgeGraph, ear?: HalfEdge): boolean {
-    if (!ear) return false;
+    if (!ear) {
+      Triangulator.setDebugGraph(graph);
+      return false;
+    }
 
     let next;
     let next2;
@@ -511,8 +519,10 @@ export class Triangulator {
         ear = next2;
         continue;
       }
-      if (++numCandidate > maxCandidate)
+      if (++numCandidate > maxCandidate) {
+        Triangulator.setDebugGraph (graph);
         return false;
+      }
       if (Triangulator.isEar(ear)) {
         maxCandidate--;
         numCandidate = 0;
@@ -535,25 +545,110 @@ export class Triangulator {
     }
     return true;  // um .. I'm not sure what this state is.
   }
+    /** @internal  */
+  private static sDebugGraph: HalfEdgeGraph | undefined;
+  /** @internal */
+  private static sEnableDebugGraphCapture = false;
 
-  /** Check whether a polygon node forms a valid ear with adjacent nodes */
+  /**
+   * * returns the (possibly undefined) debug graph.
+   * * sets the debug graph to undefined.
+   * * disables subsequent saving.
+   * @internal */
+  public static claimDebugGraph(): HalfEdgeGraph | undefined {
+    const g = Triangulator.sDebugGraph;
+    Triangulator.sDebugGraph = undefined;
+    Triangulator.sEnableDebugGraphCapture = false;
+    return g;
+  }
+  /** Call (from within the triangulator) to announce a graph to be saved for debug.
+   * * If debug graph capture is not enabled, do nothing.
+   * * If debug graph capture is enabled, save this graph.
+   * * This is called by internal steps at point of failure to preserve the failing graph for unit test examination.
+   * @internal */
+  public static setDebugGraph(graph: HalfEdgeGraph | undefined) { if (Triangulator.sEnableDebugGraphCapture) Triangulator.sDebugGraph = graph; }
+  /**
+   * * Clear the debug graph
+   * * Set capture enabled to indicated value.
+   * * Intended use:
+   *   * By default "enabled" is false so there is no activity in the debug graph.
+   *   * A unit test which needs to see graph after failure calls clearAndEnableDebugGraphCapture (true)
+   *   * run the triangulation step
+   *   * call claimDebugGraph.
+   *   * claimDebugGraph reverts everything to default no-capture state.
+   * @internal */
+  public static clearAndEnableDebugGraphCapture(value: boolean) {
+    Triangulator.sEnableDebugGraphCapture = value;
+    Triangulator.sDebugGraph = undefined;
+  }
+
+  // for reuse over all calls to isEar ....
+  private static _edgeInterval = Range1d.createNull();
+  private static _earRange = Range2d.createNull();
+  private static _edgeRange = Range2d.createNull();
+  private static _planes: Plane3dByOriginAndUnitNormal[] = [
+    Plane3dByOriginAndUnitNormal.createXYPlane(),
+    Plane3dByOriginAndUnitNormal.createXYPlane(),
+    Plane3dByOriginAndUnitNormal.createXYPlane(),
+  ];
+/** Check whether a polygon node forms a valid ear with adjacent nodes */
   private static isEar(ear: HalfEdge) {
     const a = ear.facePredecessor;
     const b = ear;
     const c = ear.faceSuccessor;
+    const area = Triangulator.signedTolerancedCCWTriangleArea(a, b, c);
+    if (area <= 0)
+      return false; // reflex, can't be an ear
+    const planes = this._planes;
+    if (!Plane3dByOriginAndUnitNormal.createOriginAndTargetXY(a, b, planes[0])
+      || !Plane3dByOriginAndUnitNormal.createOriginAndTargetXY(b, c, planes[1])
+      || !Plane3dByOriginAndUnitNormal.createOriginAndTargetXY(c, a, planes[2]))
+      return false;
 
-    if (Triangulator.signedTriangleArea(a, b, c) >= 0) return false; // reflex, can't be an ear
-
-    // now make sure we don't have other points inside the potential ear
-    let p = ear.faceSuccessor.faceSuccessor;
-
-    while (p !== ear.facePredecessor) {
-      if (Triangulator.pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-        Triangulator.signedTriangleArea(p.facePredecessor, p, p.faceSuccessor) >= 0) return false;
-      p = p.faceSuccessor;
+    // now make sure we don't have other points inside the potential ear, or edges crossing.
+    const earRange = this._earRange;
+    const edgeRange = this._edgeRange;
+    const edgeInterval = this._edgeInterval;
+    Range2d.createXYXYXY (a.x, a.y, b.x, b.y, c.x, c.y, earRange);
+    earRange.expandInPlace (Geometry.smallMetricDistance);
+    let p = c;
+    const zeroPlus = 1.0e-8;
+    const zeroMinus = -zeroPlus;
+    const onePlus = 1.0 + zeroPlus;
+    const oneMinus = 1.0 - zeroPlus;
+    const clipTolerance = 1.0e-10 * area;
+    while (p !== a) {
+      const q = p.faceSuccessor;
+      Range2d.createXYXY (p.x, p.y, q.x, q.y, edgeRange);
+      if (earRange.intersectsRange(edgeRange)) {
+        // Does pq impinge on the triangle?
+        Range1d.createXX(zeroMinus, onePlus, edgeInterval);
+        ClipUtilities.clipSegmentBelowPlanesXY(planes, p, q, edgeInterval, clipTolerance);
+        if (!edgeInterval.isNull) {
+          const mate = p.edgeMate;
+          if (mate === a || mate === b) {
+            // this is the back side of a bridge edge
+          } else if (edgeInterval.low > oneMinus) {
+            // the endpoint (q) just touches ... if it is at one of the vertex loops it's ok ...
+            if (!a.findAroundVertex(q)
+              && !b.findAroundVertex(q)
+              && !c.findAroundVertex(q))
+              return false;
+          } else if (edgeInterval.high < zeroPlus) {
+            // the start (p) just touches ... if it is at one of the vertex loops it's ok ...
+            if (!a.findAroundVertex(p)
+              && !b.findAroundVertex(p)
+              && !c.findAroundVertex(p))
+              return false;
+          } else {
+            // significant internal intersection -- this edge really intrudes on the  into the triangle
+            return false;
+          }
+        }
+      }
+    p = p.faceSuccessor;
     }
-
-    return true;
+  return true;
   }
   /** link holeLoopNodes[1], holeLoopNodes[2] etc into the outer loop, producing a single-ring polygon without holes
    *
@@ -662,28 +757,54 @@ export class Triangulator {
     return leftmost;
   }
 
-  /** check if a point lies within a convex triangle */
+  /** check if a point lies within a convex triangle.
+   * i.e. areas of 3 triangles with an edge of abc and p all have zero or positive area.  (abp, bcp, cap)
+   */
   private static pointInTriangle(ax: number, ay: number, bx: number, by: number, cx: number, cy: number, px: number, py: number) {
     return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
       (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
       (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
   }
-
-  /** signed area of a triangle */
-  private static signedTriangleArea(p: HalfEdge, q: HalfEdge, r: HalfEdge) {
+  private static nodeInTriangle(a: HalfEdge, b: HalfEdge, c: HalfEdge, p: HalfEdge) {
+  return Triangulator.signedTolerancedCCWTriangleArea (a,b,p) > 0
+  && Triangulator.signedTolerancedCCWTriangleArea (b,c,p) > 0.0
+  && Triangulator.signedTolerancedCCWTriangleArea (c,a,p) > 0.0;
+  }
+  /** signed area of a triangle
+   * EDL 2/21 This is negative of usual CCW area.  Beware in callers !!!
+   * (This originates in classic earcut code.)
+  */
+  private static signedCWTriangleArea(p: HalfEdge, q: HalfEdge, r: HalfEdge) {
     return 0.5 * ((q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y));
   }
+
+  /** signed area of a triangle, with small positive corrected to zero by relTol
+  */
+ private static signedTolerancedCCWTriangleArea(p: HalfEdge, q: HalfEdge, r: HalfEdge, relTol: number = 1.0e-12) {
+  const ux = q.x - p.x;
+  const uy = q.y - p.y;
+  const vx = r.x - p.x;
+  const vy = r.y - p.y;
+   const area = 0.5 * (ux * vy - uy * vx);
+  if (area < 0.0)
+    return area;
+  const uu = ux * ux + uy * uy;
+  const vv = vx * vx + vy * vy;
+  if (area < relTol * (uu + vv))
+    return 0.0;
+  return area;
+}
 
   /** check if two points are equal */
   private static isAlmostEqualXAndYXY(p1: XAndY, x: number, y: number) {
     return Geometry.isAlmostEqualNumber(p1.x, x) && Geometry.isAlmostEqualNumber(p1.y, y);
   }
 
-  /** check if a polygon diagonal is locally inside the polygon */
+  /** check if a b is inside the sector around a */
   private static locallyInside(a: HalfEdge, b: HalfEdge) {
-    return Triangulator.signedTriangleArea(a.facePredecessor, a, a.faceSuccessor) < 0 ?
-      Triangulator.signedTriangleArea(a, b, a.faceSuccessor) >= 0 && Triangulator.signedTriangleArea(a, a.facePredecessor, b) >= 0 :
-      Triangulator.signedTriangleArea(a, b, a.facePredecessor) < 0 || Triangulator.signedTriangleArea(a, a.faceSuccessor, b) < 0;
+    return Triangulator.signedCWTriangleArea(a.facePredecessor, a, a.faceSuccessor) < 0 ?
+      Triangulator.signedCWTriangleArea(a, b, a.faceSuccessor) >= 0 && Triangulator.signedCWTriangleArea(a, a.facePredecessor, b) >= 0 :
+      Triangulator.signedCWTriangleArea(a, b, a.facePredecessor) < 0 || Triangulator.signedCWTriangleArea(a, a.faceSuccessor, b) < 0;
   }
 
   /**

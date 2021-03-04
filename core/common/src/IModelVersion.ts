@@ -14,12 +14,11 @@ import { IModelError } from "./IModelError";
 /** Properties for IModelVersion
  * @public
  */
-export interface IModelVersionProps {
-  first?: boolean;
-  latest?: boolean;
-  afterChangeSetId?: GuidString;
-  versionName?: string;
-}
+export type IModelVersionProps =
+  { first: true, latest?: never, afterChangeSetId?: never, versionName?: never } |
+  { latest: true, first?: never, afterChangeSetId?: never, versionName?: never } |
+  { afterChangeSetId: GuidString, first?: never, latest?: never, versionName?: never } |
+  { versionName: string, first?: never, latest?: never, afterChangeSetId?: never };
 
 /** Option to specify the version of the iModel to be acquired and used
  * @public
@@ -73,7 +72,10 @@ export class IModelVersion {
   }
 
   public toJSON(): IModelVersionProps {
-    return { first: this._first, latest: this._latest, afterChangeSetId: this._afterChangeSetId, versionName: this._versionName };
+    return this._versionName ? { versionName: this._versionName } :
+      this._afterChangeSetId ? { afterChangeSetId: this._afterChangeSetId } :
+        this._first ? { first: this._first } :
+          { latest: true };
   }
 
   /** Creates a version from an IModelVersionProps */
@@ -122,17 +124,14 @@ export class IModelVersion {
     if (this._first)
       return "";
 
-    if (this._afterChangeSetId) {
+    if (this._afterChangeSetId)
       return this._afterChangeSetId;
-    }
 
-    if (this._latest) {
+    if (this._latest)
       return IModelVersion.getLatestChangeSetId(requestContext, imodelClient, iModelId);
-    }
 
-    if (this._versionName) {
+    if (this._versionName)
       return IModelVersion.getChangeSetFromNamedVersion(requestContext, imodelClient, iModelId, this._versionName);
-    }
 
     throw new IModelError(BentleyStatus.ERROR, "Invalid version");
   }

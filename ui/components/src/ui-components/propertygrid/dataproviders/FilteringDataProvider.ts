@@ -157,7 +157,7 @@ async function matchHierarchy(filterer: IPropertyDataFilterer, categories: Prope
       newRecords[newCategory.name] = filteredRecords;
       newCategories.push(newCategory);
     }
-  };
+  }
 
   return { filteredCategories: newCategories, filteredRecords: newRecords, matchesCount, filteredResultMatches: allFilteredResultMatches, filteredTypes: allFilteredTypes };
 }
@@ -202,14 +202,16 @@ async function matchRecordHierarchy(filterer: IPropertyDataFilterer, records: Pr
   return { filteredRecords: newMatchedRecords, shouldExpandNodeParents: expandParent, matchesCount, filteredResultMatches, filteredTypes };
 }
 
-function copyPropertyCategory(propertyCategory: PropertyCategory, newChildren: PropertyCategory[], expand: boolean) {
-  const newCategory = {
+function copyPropertyCategory(
+  propertyCategory: PropertyCategory,
+  newChildren: PropertyCategory[],
+  expand: boolean,
+): PropertyCategory {
+  return {
     ...propertyCategory,
     childCategories: newChildren,
     expand,
   };
-  newChildren.forEach((child) => child.parentCategory = newCategory);
-  return newCategory;
 }
 
 function copyPropertyRecord(record: PropertyRecord, newChildren: PropertyRecord[], autoExpand: boolean) {

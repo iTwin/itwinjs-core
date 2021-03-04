@@ -159,6 +159,9 @@
         "flyover": "Toggle Camera"
       }
     },
+    "OpenSettings": {
+      "keyin": "open settings"
+    },
     "RestoreFrontstageLayout": {
       "keyin": "restore frontstage layout",
       "description": "Restore Frontstage to Default Layout",
@@ -278,21 +281,43 @@
   },
   "accuDraw": {
     "dialogTitle": "AccuDraw",
+    "subMenu": "AccuDraw",
     "lockSmart": "Smart Lock",
     "lockX": "Lock X",
     "lockY": "Lock Y",
     "lockZ": "Lock Z",
     "lockAngle": "Lock Angle",
     "lockDistance": "Lock Distance",
-    "changeCompassMode": "Change Compass Mode",
+    "changeCompassMode": "Toggle Mode",
     "rotateTop": "Rotate Top",
     "rotateFront": "Rotate Front",
     "rotateSide": "Rotate Side",
     "rotateView": "Rotate View",
-    "setOrigin": "Set Origin",
+    "setOrigin": "Reposition Origin",
     "rotateCycle": "Rotate Cycle",
     "rotateAxes": "Rotate Axes",
     "rotateToElement": "Rotate To Element",
-    "defineACSByPoints": "Define ACS By Points"
+    "defineACSByPoints": "Define ACS By Points",
+    "bumpToolSetting": "Bump Tool Settings",
+    "rotateSubMenu": "AccuDraw Rotate",
+    "rotationSet": "AccuDraw rotation mode set to {{rotationString}}",
+    "rotation": {
+      "top": "top",
+      "front": "front",
+      "side": "side",
+      "view": "view",
+      "context": "context",
+      "ACS": "ACS"
+    },
+    "compassModeSet": "AccuDraw compass mode set to {{modeString}}",
+    "compassMode": {
+      "polar": "polar",
+      "rectangular": "rectangular"
+    }
+  },
+  "settings": {
+    "settingsStageLabel": "Settings",
+    "noSettingsProvidersRegistered": "No SettingsProviders have been registered.",
+    "noSettingsAvailable": "No Settings Available"
   }
 }

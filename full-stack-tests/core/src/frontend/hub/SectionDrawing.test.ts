@@ -3,12 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  DrawingViewState, IModelApp, IModelConnection, RemoteBriefcaseConnection, SectionDrawingModelState,
-} from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, DrawingViewState, IModelApp, IModelConnection, SectionDrawingModelState } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { TestUtility } from "./TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import { TestUtility } from "./TestUtility";
 
 describe("Section Drawings (#integration)", () => {
   const projectName = "iModelJsIntegrationTest";
@@ -23,7 +21,7 @@ describe("Section Drawings (#integration)", () => {
 
     const projectId = await TestUtility.getTestProjectId(projectName);
     const iModelId = await TestUtility.getTestIModelId(projectId, "SectionDrawingLocations");
-    imodel = await RemoteBriefcaseConnection.open(projectId, iModelId);
+    imodel = await CheckpointConnection.openRemote(projectId, iModelId);
   });
 
   after(async () => {

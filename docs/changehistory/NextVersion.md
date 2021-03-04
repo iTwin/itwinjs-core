@@ -3,39 +3,28 @@ publish: false
 ---
 # NextVersion
 
-## Custom particle effects
+## New Settings UI Features
 
-The display system now makes it easy to implement [particle effects](https://en.wikipedia.org/wiki/Particle_system) using [decorators](../learning/frontend/ViewDecorations.md). Particle effects simulate phenomena like fire, smoke, snow, and rain by animating hundreds or thousands of small particles. The new [ParticleCollectionBuilder]($frontend) API allows such collections to be efficiently created and rendered.
+The @bentley/ui-core package has added the [SettingsManager]($ui-core) class that allows any number of [SettingsProvider]($ui-core) classes to be registered. These providers provide [SettingsTabEntry]($ui-core) definitions used to populate the [SettingsContainer]($ui-core) UI component with setting pages used to manage application settings. These new classes are marked as beta in this release and are subject to minor modifications in future releases.
 
-The frontend-devtools package contains an example [SnowEffect]($frontend-devtools), as illustrated in the still image below. When applied to a viewport, the effect is animated, of course.
-![Snow particle effect](./assets/snow.jpg)
+## Breaking Api Changes
 
-## Updated version of Electron
+### @bentley/ui-abstract package
 
-Updated recommended version of Electron from 10.1.3 to 11.1.0. Note that Electron is specified as a peer dependency in iModel.js - so it's recommended but not mandatory that applications migrate to this electron version.
+Property `onClick` in [LinkElementsInfo]($ui-abstract) was changed to be mandatory. Also, the first [PropertyRecord]($ui-abstract) argument was removed from the method. Suggested ways to resolve:
 
-## IpcSocket for use with dedicated backends
+- If you have a function `myFunction(record: PropertyRecord, text: string)` and use the first argument, the issue can be resolved with a lambda:
 
-For cases where a frontend and backend are explicitly paired (e.g. desktop and mobile apps), a more direct communication path is now supported via the [IpcSocket api]($docs/learning/IpcInterface.md). See the [Rpc vs Ipc learning article]($docs/learning/RpcVsIpc.md) for more details.
+  ```ts
+  record.links = {
+    onClick: (text) => myFunction(record, text),
+  };
+  ```
 
-## Breaking API Changes
+- If you were omitting the `onClick` method to get the default behavior, it can still be achieved by not setting `PropertyRecord.links` at all. It's only valid to expect default click behavior when default matcher is used, but if a custom matcher is used, then the click handled can be as simple as this:
 
-### Electron Initialization
-
-The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes `ElectronBackend` and `ElectronFrontend`.
-
-To create an Electron application, you should initialize your frontend via:
-
-```ts
-  import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
-  ElectronFrontend.initialize({ rpcInterfaces });
-```
-
-And your backend via:
-
-```ts
-  import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
-  ElectronBackend.initialize({ rpcInterfaces });
-```
-
-> Note that the class `ElectronRpcManager` is now initialized internally by the calls above, and you do not need to initialize it directly.
+  ```ts
+  record.links = {
+    onClick: (text) => { window.open(text, "_blank"); },
+  };
+  ```

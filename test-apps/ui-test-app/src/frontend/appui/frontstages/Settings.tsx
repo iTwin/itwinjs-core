@@ -10,19 +10,10 @@ import "./Settings.scss";
 import * as React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
-import { OptionType, ThemedSelect, ThemedSelectProps, Toggle } from "@bentley/ui-core";
-import { ColorTheme, ModalFrontstageInfo, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
+import { OptionType, Slider, ThemedSelect, ThemedSelectProps, Toggle } from "@bentley/ui-core";
+import { ColorTheme, FrameworkAccuDraw, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
 import { RootState, SampleAppActions, SampleAppIModelApp, SampleAppUiActionId } from "../..";
-
-/** Modal frontstage displaying the active settings.
- * @alpha
- */
-export class SettingsModalFrontstage implements ModalFrontstageInfo {
-  public title: string = UiFramework.i18n.translate("SampleApp:settingsStage.settings");
-  public get content(): React.ReactNode { return (<SettingsPage />); }
-}
-
-interface SettingsPageProps {
+interface UiSettingsPageProps {
   dragInteraction: boolean;
   onToggleDragInteraction: () => void;
   frameworkVersion: string;
@@ -35,8 +26,8 @@ function isOptionType(value: OptionType | ReadonlyArray<OptionType>): value is O
   return true;
 }
 
-/** SettingsPage displaying the active settings. */
-class SettingsPageComponent extends React.Component<SettingsPageProps> {
+/** UiSettingsPage displaying the active settings. */
+class UiSettingsPageComponent extends React.Component<UiSettingsPageProps> {
   private _themeTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.themeTitle");
   private _themeDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.themeDescription");
   private _autoHideTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.autoHideTitle");
@@ -52,6 +43,10 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
   private _darkLabel = UiFramework.i18n.translate("SampleApp:settingsStage.dark");
   private _lightLabel = UiFramework.i18n.translate("SampleApp:settingsStage.light");
   private _systemPreferredLabel = UiFramework.i18n.translate("SampleApp:settingsStage.systemPreferred");
+  private _accuDrawNotificationsTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsTitle");
+  private _accuDrawNotificationsDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsDescription");
+  private _widgetOpacityTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.widgetOpacityTitle");
+  private _widgetOpacityDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.widgetOpacityDescription");
 
   private _defaultThemeOption = { label: this._systemPreferredLabel, value: SYSTEM_PREFERRED_COLOR_THEME };
   private _themeOptions: Array<OptionType> = [
@@ -98,15 +93,24 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
     await SampleAppIModelApp.appUiSettings.snapWidgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
   };
 
+  private _onAccuDrawNotificationsChange = async () => {
+    FrameworkAccuDraw.displayNotifications = !FrameworkAccuDraw.displayNotifications;
+
+    await SampleAppIModelApp.appUiSettings.accuDrawNotifications.saveSetting(SampleAppIModelApp.uiSettings);
+  };
+
+  private _onWidgetOpacityChange = async (values: readonly number[]) => {
+    if (values.length > 0) {
+      UiFramework.setWidgetOpacity(values[0]);
+      await SampleAppIModelApp.appUiSettings.widgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
+    }
+  };
+
   public render(): React.ReactNode {
     return (
       <div className="uifw-settings">
-        <div className="uifw-settings-item">
-          <div className="panel left-panel">
-            <span className="title">{this._themeTitle}</span>
-            <span className="description">{this._themeDescription}</span>
-          </div>
-          <div className="panel right-panel">
+        <SettingsItem title={this._themeTitle} description={this._themeDescription}
+          settingUi={
             <div className="select-container">
               <ThemedSelect
                 defaultValue={this._getDefaultThemeOption()}
@@ -115,53 +119,33 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
                 options={this._themeOptions}
               />
             </div>
-          </div>
-        </div>
-        <div className="uifw-settings-item">
-          <div className="panel left-panel">
-            <span className="title">{this._autoHideTitle}</span>
-            <span className="description">{this._autoHideDescription}</span>
-          </div>
-          <div className="panel right-panel">
-            <Toggle isOn={UiShowHideManager.autoHideUi} showCheckmark={false} onChange={this._onAutoHideChange} />
-          </div>
-        </div>
-        <div className="uifw-settings-item">
-          <div className="panel left-panel">
-            <span className="title">{this._dragInteractionTitle}</span>
-            <span className="description">{this._dragInteractionDescription}</span>
-          </div>
-          <div className="panel right-panel">
-            <Toggle isOn={this.props.dragInteraction} showCheckmark={false} onChange={this.props.onToggleDragInteraction} />
-          </div>
-        </div>
-        <div className="uifw-settings-item">
-          <div className="panel left-panel">
-            <span className="title">{this._useNewUiTitle}</span>
-            <span className="description">{this._useNewUiDescription}</span>
-          </div>
-          <div className="panel right-panel">
-            <Toggle isOn={this.props.frameworkVersion === "2"} showCheckmark={false} onChange={this.props.onToggleFrameworkVersion} />
-          </div>
-        </div>
-        <div className="uifw-settings-item">
-          <div className="panel left-panel">
-            <span className="title">{this._useProximityOpacityTitle}</span>
-            <span className="description">{this._useProximityOpacityDescription}</span>
-          </div>
-          <div className="panel right-panel">
-            <Toggle isOn={UiShowHideManager.useProximityOpacity} showCheckmark={false} onChange={this._onUseProximityOpacityChange} />
-          </div>
-        </div>
-        <div className="uifw-settings-item">
-          <div className="panel left-panel">
-            <span className="title">{this._snapWidgetOpacityTitle}</span>
-            <span className="description">{this._snapWidgetOpacityDescription}</span>
-          </div>
-          <div className="panel right-panel">
-            <Toggle isOn={UiShowHideManager.snapWidgetOpacity} showCheckmark={false} onChange={this._onSnapWidgetOpacityChange} />
-          </div>
-        </div>
+          }
+        />
+        <SettingsItem title={this._autoHideTitle} description={this._autoHideDescription}
+          settingUi={ <Toggle isOn={UiShowHideManager.autoHideUi} showCheckmark={false} onChange={this._onAutoHideChange} /> }
+        />
+        <SettingsItem title={this._dragInteractionTitle} description={this._dragInteractionDescription}
+          settingUi={ <Toggle isOn={this.props.dragInteraction} showCheckmark={false} onChange={this.props.onToggleDragInteraction} /> }
+        />
+        <SettingsItem title={this._useNewUiTitle} description={this._useNewUiDescription}
+          settingUi={ <Toggle isOn={this.props.frameworkVersion === "2"} showCheckmark={false} onChange={this.props.onToggleFrameworkVersion} /> }
+        />
+        <SettingsItem title={this._useProximityOpacityTitle} description={this._useProximityOpacityDescription}
+          settingUi={ <Toggle isOn={UiShowHideManager.useProximityOpacity} showCheckmark={false} onChange={this._onUseProximityOpacityChange} /> }
+        />
+        <SettingsItem title={this._snapWidgetOpacityTitle} description={this._snapWidgetOpacityDescription}
+          settingUi={ <Toggle isOn={UiShowHideManager.snapWidgetOpacity} showCheckmark={false} onChange={this._onSnapWidgetOpacityChange} /> }
+        />
+        <SettingsItem title={this._accuDrawNotificationsTitle} description={this._accuDrawNotificationsDescription}
+          settingUi={ <Toggle isOn={FrameworkAccuDraw.displayNotifications} showCheckmark={false} onChange={this._onAccuDrawNotificationsChange} /> }
+        />
+        <SettingsItem title={this._widgetOpacityTitle} description={this._widgetOpacityDescription}
+          settingUi={
+            <Slider  values={[UiFramework.getWidgetOpacity()]} step={0.01} showTooltip onChange={this._onWidgetOpacityChange}
+              min={0} max={1.0} showMinMax formatMax={(v: number) => v.toFixed(1)}
+              showTicks showTickLabels getTickCount={() => 10} formatTick={(v: number) => v.toFixed(1)}  />
+          }
+        />
       </div>
     );
   }
@@ -187,4 +171,26 @@ function mapDispatchToProps(dispatch: Dispatch) {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const SettingsPage = connect(mapStateToProps, mapDispatchToProps)(SettingsPageComponent);
+export const ConnectedUiSettingsPage = connect(mapStateToProps, mapDispatchToProps)(UiSettingsPageComponent);
+
+interface SettingsItemProps {
+  title: string;
+  description: string;
+  settingUi: React.ReactNode;
+}
+
+function SettingsItem(props: SettingsItemProps) {
+  const { title, description, settingUi } = props;
+
+  return (
+    <div className="uifw-settings-item">
+      <div className="panel left-panel">
+        <span className="title">{title}</span>
+        <span className="description">{description}</span>
+      </div>
+      <div className="panel right-panel">
+        {settingUi}
+      </div>
+    </div>
+  );
+}

@@ -13,17 +13,21 @@ export const UPDATE_FULL = "FULL";
 
 /** @alpha */
 export interface UpdateInfoJSON {
-  [rulesetId: string]: {
-    hierarchy?: HierarchyUpdateInfoJSON;
-    content?: ContentUpdateInfo;
+  [imodel: string]: {
+    [rulesetId: string]: {
+      hierarchy?: HierarchyUpdateInfoJSON;
+      content?: ContentUpdateInfo;
+    };
   };
 }
 
 /** @alpha */
 export interface UpdateInfo {
-  [rulesetId: string]: {
-    hierarchy?: HierarchyUpdateInfo;
-    content?: ContentUpdateInfo;
+  [imodel: string]: {
+    [rulesetId: string]: {
+      hierarchy?: HierarchyUpdateInfo;
+      content?: ContentUpdateInfo;
+    };
   };
 }
 
@@ -32,12 +36,21 @@ export namespace UpdateInfo {
   /** Serialize given object to JSON. */
   export function toJSON(obj: UpdateInfo): UpdateInfoJSON {
     const json: UpdateInfoJSON = {};
-    for (const key in obj) {
-      // istanbul ignore else
-      if (obj.hasOwnProperty(key)) {
-        json[key] = {
-          hierarchy: obj[key].hierarchy ? HierarchyUpdateInfo.toJSON(obj[key].hierarchy!) : undefined,
-          content: obj[key].content,
+    for (const imodel in obj) {
+      // istanbul ignore if
+      if (!obj.hasOwnProperty(imodel))
+        continue;
+
+      json[imodel] = {};
+      const rulesetObj = obj[imodel];
+      for (const rulesetId in rulesetObj) {
+        // istanbul ignore if
+        if (!rulesetObj.hasOwnProperty(rulesetId))
+          continue;
+
+        json[imodel][rulesetId] = {
+          hierarchy: rulesetObj[rulesetId].hierarchy ? HierarchyUpdateInfo.toJSON(rulesetObj[rulesetId].hierarchy!) : undefined,
+          content: rulesetObj[rulesetId].content,
         };
       }
     }
@@ -47,12 +60,21 @@ export namespace UpdateInfo {
   /** Deserialize given object from JSON */
   export function fromJSON(json: UpdateInfoJSON): UpdateInfo {
     const obj: UpdateInfo = {};
-    for (const key in json) {
-      // istanbul ignore else
-      if (json.hasOwnProperty(key)) {
-        obj[key] = {
-          hierarchy: json[key].hierarchy ? HierarchyUpdateInfo.fromJSON(json[key].hierarchy!) : undefined,
-          content: json[key].content,
+    for (const imodel in json) {
+      // istanbul ignore if
+      if (!json.hasOwnProperty(imodel))
+        continue;
+
+      obj[imodel] = {};
+      const rulesetJson = json[imodel];
+      for (const rulesetId in rulesetJson) {
+        // istanbul ignore if
+        if (!rulesetJson.hasOwnProperty(rulesetId))
+          continue;
+
+        obj[imodel][rulesetId] = {
+          hierarchy: rulesetJson[rulesetId].hierarchy ? HierarchyUpdateInfo.fromJSON(rulesetJson[rulesetId].hierarchy!) : undefined,
+          content: rulesetJson[rulesetId].content,
         };
       }
     }
@@ -67,7 +89,7 @@ export type HierarchyUpdateInfoJSON = typeof UPDATE_FULL | PartialHierarchyModif
 export type HierarchyUpdateInfo = typeof UPDATE_FULL | PartialHierarchyModification[];
 
 /** @alpha */
-export namespace HierarchyUpdateInfo {
+export namespace HierarchyUpdateInfo { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Serialize given object to JSON. */
   export function toJSON(obj: HierarchyUpdateInfo): HierarchyUpdateInfoJSON {
     if (typeof obj === "string")
@@ -93,7 +115,7 @@ export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDelet
 export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo;
 
 /** @alpha */
-export namespace PartialHierarchyModification {
+export namespace PartialHierarchyModification { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Serialize given object to JSON. */
   export function toJSON(obj: PartialHierarchyModification): PartialHierarchyModificationJSON {
     return {
@@ -157,4 +179,41 @@ export interface NodeUpdateInfoJSON {
     old: unknown;
     new: unknown;
   }>;
+}
+
+/** @alpha */
+export interface HierarchyCompareInfoJSON {
+  changes: PartialHierarchyModificationJSON[];
+  continuationToken?: {
+    prevHierarchyNode: string;
+    currHierarchyNode: string;
+  };
+}
+
+/** @alpha */
+export interface HierarchyCompareInfo {
+  changes: PartialHierarchyModification[];
+  continuationToken?: {
+    prevHierarchyNode: string;
+    currHierarchyNode: string;
+  };
+}
+
+/** @alpha */
+export namespace HierarchyCompareInfo {
+  /** Serialize given object to JSON. */
+  export function toJSON(obj: HierarchyCompareInfo): HierarchyCompareInfoJSON {
+    return {
+      ...obj,
+      changes: obj.changes.map((change) => PartialHierarchyModification.toJSON(change)),
+    };
+  }
+
+  /** Deserialize given object from JSON */
+  export function fromJSON(json: HierarchyCompareInfoJSON): HierarchyCompareInfo {
+    return {
+      ...json,
+      changes: json.changes.map((change) => PartialHierarchyModification.fromJSON(change)),
+    };
+  }
 }

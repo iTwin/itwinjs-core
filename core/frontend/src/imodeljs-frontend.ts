@@ -5,10 +5,12 @@
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
+export * from "./BriefcaseConnection";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
 export * from "./ContextRealityModelState";
 export * from "./CoordSystem";
+export * from "./DecorationsCache";
 export * from "./DevTools";
 export * from "./DisplayStyleState";
 export * from "./DrawingViewState";
@@ -17,7 +19,6 @@ export * from "./ElementEditor";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
-export * from "./EventSource";
 export * from "./FeatureLogBatchClient";
 export * from "./FeatureOverrideProvider";
 export * from "./FeatureTrackingManager";
@@ -34,6 +35,7 @@ export * from "./IModelApp";
 export * from "./IModelConnection";
 export * from "./IModelRoutingContext";
 export * from "./InteractiveEditingSession";
+export * from "./IpcApp";
 export * from "./LinePlaneIntersect";
 export * from "./MarginPercent";
 export * from "./Marker";
@@ -44,8 +46,10 @@ export * from "./NativeAppLogger";
 export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
+export * from "./PlanarClipMaskState";
 export * from "./QuantityFormatter";
 export * from "./RenderScheduleState";
+export * from "./CheckpointConnection";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialClassifiers";
@@ -66,8 +70,8 @@ export * from "./ViewPose";
 export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
+export * from "./WebViewerApp";
 export * from "./oidc/DesktopAuthorizationClient";
-export * from "./oidc/MobileAuthorizationClient";
 export * from "./oidc/OidcBrowserClient";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";
@@ -115,6 +119,7 @@ export * from "./tools/ViewTool";
 export * from "./BackgroundMapGeometry";
 export * from "./ViewCreator2d";
 export * from "./ViewCreator3d";
+export * from "./LocalhostIpcApp";
 
 /** @docs-package-description
  * The imodeljs-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
@@ -178,6 +183,10 @@ export * from "./ViewCreator3d";
  * @docs-group-description SelectionSet
  * Classes for working with the set of selected elements.
  * See [the learning articles]($docs/learning/frontend/index.md).
+ */
+/**
+ * @docs-group-description NativeApp
+ * Classes for working with Native Applications
  */
 /**
  * @docs-group-description OIDC

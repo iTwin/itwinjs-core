@@ -245,7 +245,7 @@ export class Element extends Entity implements ElementProps {
   public setJsonProperty(nameSpace: string, value: any) { this.jsonProperties[nameSpace] = value; }
 
   /** Get a display label for this Element. By default returns userLabel if present, otherwise code value. */
-  public getDisplayLabel(): string { return this.userLabel ? this.userLabel : this.code.getValue(); }
+  public getDisplayLabel(): string { return this.userLabel ? this.userLabel : this.code.value; }
 
   /** Get a list of HTML strings that describe this Element for the tooltip. Strings will be listed on separate lines in the tooltip.
    * Any instances of the pattern `%{tag}` will be replaced by the localized value of tag.

@@ -10,7 +10,10 @@ public;HiliteSet
 public;HiliteSetProvider
 public;HiliteSetProviderProps
 beta;IFavoritePropertiesStorage
+alpha;IModelContentChangeEventArgs
+alpha;IModelHierarchyChangeEventArgs
 public;ISelectionProvider
+internal;NodeIdentifier
 public;Presentation
 beta;PresentationFrontendLoggerCategory
 public;PresentationManager 
@@ -29,3 +32,4 @@ public;SelectionManager
 public;SelectionManagerProps
 public;SelectionScopesManager
 public;SelectionScopesManagerProps
+internal;StateTracker

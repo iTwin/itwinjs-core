@@ -195,7 +195,7 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
     const dragRow: RowItem = {
       key: id,
       extendedData: {
-        id, label, icon, type, description, parentId, dataProvider, ...rest,
+        label, icon, type, description, parentId, dataProvider, ...rest, id,
       },
       cells: [
         {

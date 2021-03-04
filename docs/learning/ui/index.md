@@ -1,18 +1,14 @@
-# Learning iModel.js UI
+# Learning iTwin.js UI
 
-This section provides explanations of the concepts that are in the iModel.js UI.
+For a quick-start approach to creating an iTwin.js app with App UI, see [Quick Start to an App UI user interface](./QuickStartUi.md).
 
-## Why React?
+## React version requirements
 
-iModel.js UI bases its controls on the [React](https://reactjs.org/) JavaScript library. For more information about why, see [Why We Chose React](./React.md).
-
-### React version requirements
-
-iModel.js UI is compatible with React 16.8 and later.
+iTwin.js UI bases its controls on the [React](https://reactjs.org/) JavaScript library and is compatible with React 16.8 and later.
 
 ## Library Organization
 
-The iModel.js UI library is divided into these NPM packages in the `@bentley` scope:
+The iTwin.js UI library is divided into these NPM packages in the `@bentley` scope:
 
 |Package Name|Description
 |-----|-----
@@ -24,10 +20,10 @@ The iModel.js UI library is divided into these NPM packages in the `@bentley` sc
 
 See also:
 
-* [UI 2.0](./FrontstageUi2.md).
-* [Creating an IModelApp that supports Extensible UI](./HostAppUI.md).
-* [Augmenting the UI of an IModelApp](./AugmentingUI.md).
-* [Glossary of terms used in iModel.js UI](./UIGlossary)
-* [React](https://reactjs.org/)
-* [Redux](https://redux.js.org/)
-* [React and Typescript](https://github.com/typescript-cheatsheets/react-typescript-cheatsheet/)
+- [Creating an IModelApp that supports Extensible UI](./HostAppUI.md).
+- [Augmenting the UI of an iTwin App](./AugmentingUI.md).
+- [Glossary of terms used in iTwin.js UI](./UIGlossary)
+- [React](https://reactjs.org/)
+- [Redux](https://redux.js.org/)
+- [React and Typescript](https://github.com/typescript-cheatsheets/react-typescript-cheatsheet/)
+- [Why we chose React](./React.md)

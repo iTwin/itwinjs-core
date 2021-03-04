@@ -1,6 +1,30 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- Ignore update records for unrelated iModels.
+- Added IFilteredPresentationTreeDataProvider interface
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Minimaly changed `FavoritePropertiesDataFilterer` interface, to match new `PropertyDataFiltererBase`, added some more `FavoritePropertiesDataFilterer` testing
+- Add `InstanceKeyValueRenderer`.
+- Updated PresentationLabelsProvider to send requests in batches
+- Add class information to navigation properties
+- Add `UnifiedSelectionContext`.
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT

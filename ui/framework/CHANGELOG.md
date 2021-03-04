@@ -1,6 +1,42 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- Changed ModelsTree visibility handler behavior to fully change visibility of node if it matches applied filter
+- Updated ModelsTree rulesets to better handle updates.
+- AccuDraw bi-directional value updates
+- Correctly add and remove widgets provided by UiItemsProviders."
+- ModelsTree: Fix getting display status of element nodes
+- WidgetDef show and expand will correctly activate the tab.
+- Preventing cursor prompt lag
+- Provide dynamic widgets for every section type.
+- Update remaining syncEventId checks to be case insensitive.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Update components that support providing refs via React.forwardRef to work better with document generation.  
+- Fix backstage not updating when props.items are updated.
+- Propagate isDisabled MenuItem property to ContextMenuItem disabled property
+- Added partially visible instances support to VisibilityHandler
+- Initial implementation of AccuDraw UI
+- Prevent unnecessary 1.0 Toolbar rerenders in ToolbarComposer.
+- Updated UI Learning docs
+- Set active viewport to match active content view when overlay is clicked.
+- Add ability to control panel size and state from StagePanelDef.
+- Update to latest react-dnd version.
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT

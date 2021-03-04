@@ -20,7 +20,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
  * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as iModelId argument to those methods.
  *
  * For iModel representation in iModel.js, see [IModel]($common). For the file that is used for that iModel, see [BriefcaseDb]($backend).
- * @beta
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "ContextScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubIModel extends WsgInstance {
@@ -65,10 +65,14 @@ export class HubIModel extends WsgInstance {
   /** Set to true, when iModel has custom access control. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Secured")
   public secured?: boolean;
+
+  /** Data center location id where iModel is stored. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.DataLocationId")
+  public dataLocationId?: string;
 }
 
 /** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
- * @beta
+ * @public
  */
 export enum InitializationState {
   /** Initialization was successful. */
@@ -88,7 +92,7 @@ export enum InitializationState {
 }
 
 /** iModel type
- * @beta
+ * @public
  */
 export enum IModelType {
   /** iModel has no type. */
@@ -241,7 +245,7 @@ class SeedFileHandler {
 
 /**
  * Query object for getting [[HubIModel]] instances. You can use this to modify the [[IModelsHandler.get]] results.
- * @beta
+ * @public
  */
 export class IModelQuery extends InstanceIdQuery {
   /**
@@ -273,6 +277,7 @@ export class IModelQuery extends InstanceIdQuery {
    * @param type Type of the iModel.
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if iModelTemplate is undefined or empty.
+   * @internal
    */
   public byiModelTemplate(iModelTemplate: string) {
     ArgumentCheck.defined("iModelTemplate", iModelTemplate, true);
@@ -283,7 +288,7 @@ export class IModelQuery extends InstanceIdQuery {
 
 /**
  * Create an iModel by cloning another.
- * @beta
+ * @internal
  */
 export interface CloneIModelTemplate {
   /** Source iModel's Id. */
@@ -294,14 +299,14 @@ export interface CloneIModelTemplate {
 
 /**
  * Create an iModel from an empty file.
- * @beta
+ * @internal
  */
 export type EmptyIModelTemplate = "Empty";
 const iModelTemplateEmpty: EmptyIModelTemplate = "Empty";
 
 /**
  * Options used when creating an [[HubIModel]] with [[IModelHandler.create]] or [[IModelsHandler.create]].
- * @beta
+ * @public
  */
 export interface IModelCreateOptions {
   /** iModel seed file path. If not defined, iModel will be created from template. */
@@ -315,7 +320,10 @@ export interface IModelCreateOptions {
    * Default is 2 minutes.
    */
   timeOutInMilliseconds?: number;
-  /** Template used to create the seed file. Works only when path is not provided. Creates iModel from empty file by default. */
+  /**
+   * Template used to create the seed file. Works only when path is not provided. Creates iModel from empty file by default.
+   * @internal
+   */
   template?: CloneIModelTemplate | EmptyIModelTemplate;
 
   /** Type of iModel. */
@@ -364,7 +372,7 @@ export class DefaultIModelCreateOptionsProvider {
 /**
  * Handler for managing [[HubIModel]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
  * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per context workflow.
- * @beta
+ * @public
  */
 export class IModelsHandler {
   private _handler: IModelBaseHandler;
@@ -451,7 +459,6 @@ export class IModelsHandler {
    * @param description Description of the iModel on the Hub.
    * @param iModelTemplate iModel template.
    * @param iModelType iModel type.
-   * @internal
    */
   private async createIModelInstance(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]): Promise<HubIModel> {
     requestContext.enter();
@@ -512,6 +519,7 @@ export class IModelsHandler {
    * @returns State of the seed file initialization.
    * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   * @internal
    */
   public async getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState> {
     const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, iModelId, new SeedFileQuery().latest());
@@ -609,6 +617,7 @@ export class IModelsHandler {
    * @param createOptions Optional arguments for iModel creation.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   * @internal
    */
   public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
     requestContext.enter();
@@ -685,6 +694,7 @@ export class IModelsHandler {
    * @param path Path to download the seed file to, including file name.
    * @param progressCallback Callback for tracking progress.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   * @internal
    */
   public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: ProgressCallback): Promise<void> {
     requestContext.enter();
@@ -771,6 +781,7 @@ export class IModelHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
    * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   * @internal
    */
   public async getInitializationState(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<InitializationState> {
     const imodel = await this.get(requestContext, contextId);
@@ -787,6 +798,7 @@ export class IModelHandler {
    * @param createOptions Optional arguments for iModel creation.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   * @internal
    */
   public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
     requestContext.enter();
@@ -831,6 +843,7 @@ export class IModelHandler {
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   * @internal
    */
   public async download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: ProgressCallback): Promise<void> {
     const imodel = await this.get(requestContext, contextId);
