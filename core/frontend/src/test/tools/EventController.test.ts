@@ -14,6 +14,8 @@ describe("EventController", () => {
     } as ScreenViewport;
 
     const sampleHtmlDecoration = document.createElement("img");
+    // decoratorDiv is deprecated from the public API really, so this usage is fine
+    // eslint-disable-next-line deprecation/deprecation
     fakeViewport.decorationDiv.append(sampleHtmlDecoration);
 
     new EventController(fakeViewport);
