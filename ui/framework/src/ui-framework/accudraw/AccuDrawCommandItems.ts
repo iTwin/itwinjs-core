@@ -6,7 +6,7 @@
  * @module AccuDraw
  */
 
-import { AccuDrawShortcuts, RotationMode } from "@bentley/imodeljs-frontend";
+import { AccuDrawShortcuts, IModelApp, RotationMode } from "@bentley/imodeljs-frontend";
 import { CommandItemDef } from "../../ui-framework";
 
 /** AccuDraw Command Items - useful in Keyboard Shortcuts
@@ -139,6 +139,14 @@ export class AccuDrawCommandItems {
       commandId: "defineACSByPoints",
       labelKey: "UiFramework:accuDraw.defineACSByPoints",
       execute: () => AccuDrawShortcuts.defineACSByPoints(),
+    });
+  }
+
+  public static get bumpToolSetting() {
+    return new CommandItemDef({
+      commandId: "bumpToolSetting",
+      labelKey: "UiFramework:accuDraw.bumpToolSetting",
+      execute: async () => IModelApp.toolAdmin.bumpToolSetting(),
     });
   }
 }
