@@ -6,7 +6,7 @@ import "./index.scss";
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
 import * as React from "react";
-import reactAxe from "react-axe";
+import reactAxe from "@axe-core/react";
 import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
@@ -68,6 +68,7 @@ import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
+import { AppSettingsProvider } from "./appui/uiproviders/AppSettingsProvider";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -282,6 +283,10 @@ export class SampleAppIModelApp {
     await HyperModeling.initialize();
     // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
     await MapLayersUI.initialize(false); // if false then add widget in FrontstageDef
+
+    AppSettingsProvider.initializeAppSettingProvider();
+    // try starting up event loop if not yet started so key-in palette can be opened
+    IModelApp.startEventLoop();
   }
 
   public static loggerCategory(obj: any): string {
@@ -497,7 +502,7 @@ export class SampleAppIModelApp {
   }
 
   public static isEnvVarOn(envVar: string): boolean {
-    return Config.App.has(envVar) && Config.App.get(envVar) === "1";
+    return Config.App.has(envVar) && (Config.App.get(envVar) === "1" || Config.App.get(envVar) === "true");
   }
 
   public static get allowWrite() {

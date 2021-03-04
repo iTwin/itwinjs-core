@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Filter out history key-in that are no longer available in key-in palette.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

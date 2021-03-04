@@ -5,13 +5,8 @@
 /** @packageDocumentation
  * @module IModelHost
  */
-
-import * as os from "os";
-import * as path from "path";
-import * as semver from "semver";
 import {
-  AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient,
-  RequestHost,
+  AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager, IntrospectionClient,
 } from "@bentley/backend-itwin-client";
 import {
   assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector,
@@ -21,6 +16,9 @@ import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } fr
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
+import * as os from "os";
+import * as path from "path";
+import * as semver from "semver";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BackendRequestContext } from "./BackendRequestContext";
@@ -362,7 +360,7 @@ export class IModelHost {
     IModelHost.sessionId = Guid.createValue();
     this.logStartup();
 
-    await RequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
+    await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
 
     // Setup a current context for all requests that originate from this backend
     const requestContext = new BackendRequestContext();

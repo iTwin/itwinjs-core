@@ -138,8 +138,24 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       };
     }
 
+    const proxyUrl = process.env.HTTPS_PROXY;
+    let proxyAuthOptions: puppeteer.AuthOptions | undefined;
+    if (proxyUrl) {
+      const proxyUrlObj = new URL(proxyUrl);
+      proxyAuthOptions = { username: proxyUrlObj.username, password: proxyUrlObj.password };
+      const proxyArg = `--proxy-server=${proxyUrlObj.protocol}//${proxyUrlObj.host}`;
+      if (launchOptions.args)
+        launchOptions.args.push(proxyArg);
+      else
+        launchOptions.args = [proxyArg];
+    }
+
     const browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
+    if (proxyAuthOptions) {
+      await page.authenticate(proxyAuthOptions);
+    }
+
     await page.setRequestInterception(true);
     const onRedirectRequest = this.interceptRedirectUri(page);
     await page.goto(authorizationUrl, { waitUntil: "networkidle2" });

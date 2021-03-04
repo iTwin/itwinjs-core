@@ -1,4 +1,4 @@
-# Quick Start to an AppUI user interface
+# Quick Start to an App UI user interface
 
 ## Use create-react-app to make a Web Viewer app
 
