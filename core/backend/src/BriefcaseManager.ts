@@ -318,6 +318,7 @@ export class BriefcaseManager {
       await IModelHost.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().byId(briefcaseId));
       requestContext.enter();
     } catch (err) {
+      Logger.logInfo(loggerCategory, "Could not find briefcase to release", () => ({ iModelId, briefcaseId }));
       requestContext.enter();
       return; // Briefcase does not exist on the hub, or cannot be accessed
     }
@@ -328,7 +329,7 @@ export class BriefcaseManager {
       Logger.logTrace(loggerCategory, "released briefcase from the server", () => ({ iModelId, briefcaseId }));
     } catch (err) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Could not release briefcase", () => ({ iModelId, briefcaseId })); // Could be that the current user does not have the appropriate access
+      Logger.logError(loggerCategory, "Could not release briefcase", () => ({ iModelId, briefcaseId, exception: err })); // Could be that the current user does not have the appropriate access
     }
   }
 
