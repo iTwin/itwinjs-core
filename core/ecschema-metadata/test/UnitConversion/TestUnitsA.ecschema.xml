@@ -18,5 +18,6 @@
 
     <Unit typeName="unitA9" phenomenon="LENGTH" unitSystem="SI" definition="uB:unitB9"/>
     <Unit typeName="unitA10" phenomenon="LENGTH" unitSystem="SI" definition="uA:unitA9(-1)*uB:unitB9(2)"/>
-    <Unit typeName="unitA11" phenomenon="LENGTH" unitSystem="SI" definition="uD:unitA9(-1)*uB:unitB9(2)"/>
+    <Unit typeName="unitA11" phenomenon="LENGTH" unitSystem="SI" definition="uD:unitD1"/>
+    <Unit typeName="unitA12" phenomenon="LENGTH" unitSystem="SI" definition="uB:unitB12"/>
 </ECSchema>

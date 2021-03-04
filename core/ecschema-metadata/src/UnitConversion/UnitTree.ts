@@ -7,6 +7,7 @@ import {
   Constant,
   Schema,
   SchemaContext,
+  SchemaItem,
   SchemaItemKey,
   SchemaKey,
   Unit,
@@ -158,8 +159,8 @@ export class UnitGraph {
     name: string,
     defaultSchema: Schema
   ): Promise<Unit | Constant> {
-    const nameArr = name.split(":");
-    if (nameArr.length > 1) {
+    const nameArr = SchemaItem.parseFullName(name);
+    if (nameArr[0] !== "") {
       // Check if it is alias or schemaName
       const ref = defaultSchema.getReferenceSync(nameArr[0]);
       const refName = defaultSchema.getReferenceNameByAlias(nameArr[0]);

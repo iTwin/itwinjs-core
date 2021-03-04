@@ -16,4 +16,5 @@
     <Unit typeName="unitB9" phenomenon="LENGTH" unitSystem="SI" definition="unitB10"/>
     <Unit typeName="unitB10" phenomenon="LENGTH" unitSystem="SI" definition="unitB11" numerator="2.0"/>
     <Unit typeName="unitB11" phenomenon="LENGTH" unitSystem="SI" definition="uC:unitC4" denominator="4.0"/>
+    <Unit typeName="unitB12" phenomenon="LENGTH" unitSystem="SI" definition="UnitsD:unitD1"/>
 </ECSchema>

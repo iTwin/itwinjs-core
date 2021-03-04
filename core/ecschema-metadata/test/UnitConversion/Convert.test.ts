@@ -67,22 +67,22 @@ describe("A unit tree creator", () => {
   });
 
   // New converter from ConvertNew.ts
-  // testData.forEach((test: TestData) => {
-  //   it(`should convert ${test.From} to ${test.To}`, async() => {
-  //     const schemaKey = new SchemaKey("Units");
-  //     const from = new SchemaItemKey(test.From, schemaKey);
-  //     const to = new SchemaItemKey(test.To, schemaKey);
-  //     const conversion = getConversion(from, to);
-  //     const actual = test.Input * conversion.multiplier + conversion.offset;
-  //     const ulp = Float.ulp(Math.max(test.Input, test.Expect));
-  //     expect(
-  //       Float.equals(test.Expect, actual, 3 * ulp),
-  //       `${test.Input} ${test.From} in ${test.To} should be ${
-  //         test.Expect
-  //       } and not ${actual} error = ${Math.abs(test.Expect - actual)} > ${
-  //         3 * ulp
-  //       }`
-  //     ).to.be.true;
-  //   });
-  // });
+  testData.forEach((test: TestData) => {
+    it.skip(`should convert ${test.From} to ${test.To}`, async() => {
+      const schemaKey = new SchemaKey("Units");
+      const from = new SchemaItemKey(test.From, schemaKey);
+      const to = new SchemaItemKey(test.To, schemaKey);
+      const conversion = getConversion(from, to);
+      const actual = test.Input * conversion.multiplier + conversion.offset;
+      const ulp = Float.ulp(Math.max(test.Input, test.Expect));
+      expect(
+        Float.equals(test.Expect, actual, 3 * ulp),
+        `${test.Input} ${test.From} in ${test.To} should be ${
+          test.Expect
+        } and not ${actual} error = ${Math.abs(test.Expect - actual)} > ${
+          3 * ulp
+        }`
+      ).to.be.true;
+    });
+  });
 });

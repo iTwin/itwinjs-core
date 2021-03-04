@@ -8794,5 +8794,245 @@
     "Input": 42.42,
     "To": "US_SURVEY_IN",
     "Expect": 0.0016700754
+  },
+  {
+    "From": "GRAD",
+    "Input": 42.42,
+    "To": "ARC_DEG",
+    "Expect": 38.178
+  },
+  {
+    "From": "ARC_DEG",
+    "Input": 42.42,
+    "To": "GRAD",
+    "Expect": 47.13333333333334
+  },
+  {
+    "From": "ARC_MINUTE",
+    "Input": 42.42,
+    "To": "ARC_DEG",
+    "Expect": 0.7070000000000001
+  },
+  {
+    "From": "ARC_DEG",
+    "Input": 42.42,
+    "To": "ARC_MINUTE",
+    "Expect": 2545.2000000000003
+  },
+  {
+    "From": "GRAD",
+    "Input": 42.42,
+    "To": "ARC_QUADRANT",
+    "Expect": 0.42419999999999997
+  },
+  {
+    "From": "ARC_QUADRANT",
+    "Input": 42.42,
+    "To": "GRAD",
+    "Expect": 4242
+  },
+  {
+    "From": "ARC_MINUTE",
+    "Input": 42.42,
+    "To": "ARC_QUADRANT",
+    "Expect": 0.007855555555555555
+  },
+  {
+    "From": "ARC_QUADRANT",
+    "Input": 42.42,
+    "To": "ARC_MINUTE",
+    "Expect": 229068
+  },
+  {
+    "From": "GRAD",
+    "Input": 42.42,
+    "To": "REVOLUTION",
+    "Expect": 0.10604999999999999
+  },
+  {
+    "From": "REVOLUTION",
+    "Input": 42.42,
+    "To": "GRAD",
+    "Expect": 16968
+  },
+  {
+    "From": "ARC_MINUTE",
+    "Input": 42.42,
+    "To": "REVOLUTION",
+    "Expect": 0.0019638888888888887
+  },
+  {
+    "From": "REVOLUTION",
+    "Input": 42.42,
+    "To": "ARC_MINUTE",
+    "Expect":  916272
+  },
+  {
+    "From": "DEG_PER_SEC",
+    "Input": 42.42,
+    "To": "RAD_PER_MIN",
+    "Expect": 44.422120121759676
+  },
+  {
+    "From": "RAD_PER_MIN",
+    "Input": 42.42,
+    "To": "DEG_PER_SEC",
+    "Expect": 40.5081161157492
+  },
+  {
+    "From": "DEG_PER_HR",
+    "Input": 42.42,
+    "To": "RPM",
+    "Expect": 0.001963888888888889
+  },
+  {
+    "From": "RPM",
+    "Input": 42.42,
+    "To": "DEG_PER_HR",
+    "Expect": 916272
+  },
+  {
+    "From": "KILOPASCAL",
+    "Input": 42.42,
+    "To": "PSI",
+    "Expect": 6.152500834515474
+  },
+  {
+    "From": "BARYE",
+    "Input": 42.42,
+    "To": "HECTOPASCAL",
+    "Expect": 0.04242
+  },
+  {
+    "From": "SQ_FT_HR_FAHRENHEIT_PER_BTU",
+    "Input": 42.42,
+    "To": "SQ_M_CELSIUS_PER_WATT",
+    "Expect": 7.470593991803412
+  },
+  {
+    "From": "SQ_M_CELSIUS_PER_WATT",
+    "Input": 42.42,
+    "To": "SQ_FT_HR_FAHRENHEIT_PER_BTU",
+    "Expect": 240.8719309300342
+  },
+  {
+    "From": "FT_PER_IN",
+    "Input": 42.42,
+    "To": "PERCENT_SLOPE",
+    "Expect": 50904
+  },
+  {
+    "From": "PERCENT_SLOPE",
+    "Input": 42.42,
+    "To": "FT_PER_IN",
+    "Expect": 0.03535
+  },
+  {
+    "From": "AT",
+    "Input": 42.42,
+    "To": "AT_GAUGE",
+    "Expect": 41.38677254720012
+  },
+  {
+    "From": "AT_GAUGE",
+    "Input": 42.42,
+    "To": "AT",
+    "Expect": 43.45322745279989
+  },
+  {
+    "From": "AT_GAUGE",
+    "Input": 42.42,
+    "To": "PA_GAUGE",
+    "Expect": 4159980.93
+  },
+  {
+    "From": "PA_GAUGE",
+    "Input": 42.42,
+    "To": "AT_GAUGE",
+    "Expect": 0.0004325636175450151
+  },
+  {
+    "From": "BAR",
+    "Input": 42.42,
+    "To": "BAR_GAUGE",
+    "Expect": 41.406749999999995
+  },
+  {
+    "From": "BAR_GAUGE",
+    "Input": 42.42,
+    "To": "BAR",
+    "Expect": 43.433249999999994
+  },
+  {
+    "From": "TORR",
+    "Input": 42.42,
+    "To": "AT_GAUGE",
+    "Expect": -0.9755570468159765
+  },
+  {
+    "From": "AT_GAUGE",
+    "Input": 42.42,
+    "To": "TORR",
+    "Expect": 31962.42296373057
+  },
+  {
+    "From": "KILOPASCAL_GAUGE",
+    "Input": 42.42,
+    "To": "PA_GAUGE",
+    "Expect": 42420
+  },
+  {
+    "From": "PA_GAUGE",
+    "Input": 42.42,
+    "To": "KILOPASCAL_GAUGE",
+    "Expect": 0.04242
+  },
+  {
+    "From": "KILOPASCAL_GAUGE",
+    "Input": 42.42,
+    "To": "PSIG",
+    "Expect": 6.152500834515474
+  },
+  {
+    "From": "PSIG",
+    "Input": 42.42,
+    "To": "KILOPASCAL_GAUGE",
+    "Expect": 292.47560437620194
+  },
+  {
+    "From": "FAHRENHEIT",
+    "Input": 42.42,
+    "To": "K",
+    "Expect": 278.93888888888887
+  },
+  {
+    "From": "K",
+    "Input": 42.42,
+    "To": "FAHRENHEIT",
+    "Expect": -383.31399999999996
+  },
+  {
+    "From": "CELSIUS",
+    "Input": 42.42,
+    "To": "RANKINE",
+    "Expect": 568.026
+  },
+  {
+    "From": "RANKINE",
+    "Input": 42.42,
+    "To": "CELSIUS",
+    "Expect": -249.58333333333331
+  },
+  {
+    "From": "FAHRENHEIT",
+    "Input": 42.42,
+    "To": "CELSIUS",
+    "Expect": 5.7888888888888985
+  },
+  {
+    "From": "CELSIUS",
+    "Input": 42.42,
+    "To": "FAHRENHEIT",
+    "Expect": 108.35600000000001
   }
 ]
