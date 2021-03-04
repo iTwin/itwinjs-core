@@ -671,7 +671,7 @@ export abstract class InteractiveTool extends Tool {
     this.changeLocateState(enableLocate, enableSnap, cursor, coordLockOvr);
   }
 
-  /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed
+  /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed.
    * @beta
    */
   public supplyToolSettingsProperties(): DialogItem[] | undefined { return undefined; }
@@ -697,7 +697,9 @@ export abstract class InteractiveTool extends Tool {
     IModelApp.toolAdmin.reloadToolSettingsProperties();
   }
 
-  /** Used to bump the value of a tool setting. If no `settingIndex` param is specified, the first setting is bumped.
+  /** Used to "bump" the value of a tool setting. To "bump" a setting means to toggle a boolean value or cycle through enum values.
+   * If no `settingIndex` param is specified, the first setting is bumped.
+   * Return true if the setting was successfully bumped.
    * @beta
    */
   public async bumpToolSetting(_settingIndex?: number): Promise<boolean> { return false; }

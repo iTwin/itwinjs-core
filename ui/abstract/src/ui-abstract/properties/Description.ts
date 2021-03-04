@@ -87,7 +87,7 @@ export interface PropertyDescription {
   dataController?: string;
 }
 
-/** Helper class the builds property descriptions that specify specific PropertyEditors and processes descriptions.
+/** Helper class that builds property descriptions for specific PropertyEditors and processes descriptions.
  * @beta
  */
 export class PropertyDescriptionHelper {

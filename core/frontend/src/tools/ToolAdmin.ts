@@ -1469,7 +1469,10 @@ export class ToolAdmin {
       this.reloadToolSettingsHandler();
   }
 
-  /** Method used to bump the value of a tool setting. If no `settingIndex` param is specified, the first setting is bumped.
+  /** Method used to "bump" the value of a tool setting for the current tool.
+   * To "bump" a setting means to toggle a boolean value or cycle through enum values.
+   * If no `settingIndex` param is specified, the first setting is bumped.
+   * Returns true if the setting was successfully bumped.
    * @beta
    */
   public async bumpToolSetting(settingIndex?: number): Promise<boolean> {
