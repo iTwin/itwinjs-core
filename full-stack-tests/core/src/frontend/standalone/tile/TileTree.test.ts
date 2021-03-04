@@ -7,13 +7,18 @@ import { compareStrings } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import { IModelTileTreeProps, ServerTimeoutError, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import {
-  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileAdmin, TileContent, TileDrawArgs,
-  TileLoadPriority, TileRequest, TileTree,
+  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs,
+  TileLoadPriority, TileRequest, TileRequestChannel, TileTree,
 } from "@bentley/imodeljs-frontend";
 
 class MockTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     resolve([]);
+  }
+
+  public get channel() {
+    // This is never called.
+    return { } as unknown as TileRequestChannel;
   }
 
   public async requestContent(_canceled: () => boolean): Promise<TileRequest.Response> {
@@ -139,7 +144,7 @@ describe("requestTileTreeProps", () => {
   const maxActiveTileTreePropsRequests = 2;
 
   before(async () => {
-    const tileAdmin = TileAdmin.create({ maxActiveTileTreePropsRequests });
+    const tileAdmin = { maxActiveTileTreePropsRequests };
     await IModelApp.startup({ tileAdmin });
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
@@ -159,7 +164,7 @@ describe("requestTileTreeProps", () => {
   it("should process requests in FIFO order", async () => {
     const makePromise = async (id: number) => {
       try {
-        await imodel.tiles.getTileTreeProps(id.toString());
+        await IModelApp.tileAdmin.requestTileTreeProps(imodel, id.toString());
       } catch (err) {
         throw err;
       }
@@ -190,7 +195,7 @@ describe("requestTileTreeProps", () => {
     const fulfilled: string[] = [];
     const getProps = async (id: string) => {
       try {
-        await imodel.tiles.getTileTreeProps(id);
+        await IModelApp.tileAdmin.requestTileTreeProps(imodel, id);
         fulfilled.push(id);
       } catch (_) {
         //
@@ -206,7 +211,7 @@ describe("requestTileTreeProps", () => {
   it.skip("should throttle requests", async () => {
     const numRequests = 10;
     const getProps = async (index: number) => {
-      await imodel.tiles.getTileTreeProps("0x1c");
+      await IModelApp.tileAdmin.requestTileTreeProps(imodel, "0x1c");
       const stats = IModelApp.tileAdmin.statistics;
 
       const numRemaining = numRequests - index;
@@ -238,7 +243,7 @@ describe("requestTileTreeProps", () => {
     const numRequests = 5;
     const promises = [];
     for (let i = 0; i < numRequests; i++)
-      promises.push(imodel.tiles.getTileTreeProps(i.toString()).then((_props) => i).catch((err) => err));
+      promises.push(IModelApp.tileAdmin.requestTileTreeProps(imodel, i.toString()).then((_props) => i).catch((err) => err));
 
     await imodel.close();
 
@@ -277,9 +282,9 @@ describe("requestTileTreeProps", () => {
 
     const promises = [];
     for (let i = 0; i < 3; i++)
-      promises.push(imodel.tiles.getTileTreeProps(i.toString()).then((_props) => i).catch((err) => err));
+      promises.push(IModelApp.tileAdmin.requestTileTreeProps(imodel, i.toString()).then((_props) => i).catch((err) => err));
 
-    promises.push(imodel2.tiles.getTileTreeProps("imodel2").then((_props) => "imodel2").catch((err) => err));
+    promises.push(IModelApp.tileAdmin.requestTileTreeProps(imodel, "imodel2").then((_props) => "imodel2").catch((err) => err));
 
     await imodel.close();
 
