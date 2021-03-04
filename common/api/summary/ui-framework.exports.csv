@@ -65,6 +65,7 @@ beta;BasicToolWidget(props: BasicToolWidgetProps): JSX.Element
 beta;BasicToolWidgetProps
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
+alpha;BumpToolSetting 
 alpha;Calculator 
 internal;CalculatorEngine
 internal;CalculatorKeyType
@@ -186,6 +187,7 @@ beta;ExpandableSectionProps
 internal;expandWidget: 
 beta;ExtensibleToolbarProps
 beta;featureOverridesActiveStateFunc(state: Readonly
+alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 
 internal;FrameworkAccuDraw 
