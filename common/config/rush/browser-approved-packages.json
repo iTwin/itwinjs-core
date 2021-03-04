@@ -515,10 +515,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "fibers",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },

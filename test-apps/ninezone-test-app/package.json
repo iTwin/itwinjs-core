@@ -27,7 +27,6 @@
     "@types/react": "16.9.43",
     "@types/react-dom": "^16.8.0",
     "@types/react-router-dom": "^5.1.5",
-    "fibers": "~5.0.0",
     "typescript": "~4.1.0"
   },
   "dependencies": {
