@@ -67,7 +67,7 @@ describe("Instancing", () => {
 
       await IModelApp.startup({
         renderSys: renderSysOpts,
-        tileAdmin: TileAdmin.create(tileAdminProps),
+        tileAdmin: tileAdminProps,
       });
 
       expect(IModelApp.tileAdmin.enableInstancing).to.equal(expectEnabled);
@@ -106,7 +106,7 @@ describe("ExternalTextures", () => {
 
       await IModelApp.startup({
         renderSys: renderSysOpts,
-        tileAdmin: TileAdmin.create(tileAdminProps),
+        tileAdmin: tileAdminProps,
       });
 
       expect(IModelApp.tileAdmin.enableExternalTextures).to.equal(expectEnabled);
