@@ -6601,6 +6601,8 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     // (undocumented)
     componentDidMount(): Promise<void>;
     // (undocumented)
+    componentDidUpdate(prevProps: ViewSelectorProps): Promise<void>;
+    // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     static readonly defaultProps: ViewSelectorDefaultProps;
