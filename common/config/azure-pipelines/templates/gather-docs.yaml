@@ -54,9 +54,9 @@ steps:
       TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
   # The .updated.json is cached in order to let BeMetalsmith know what needs to be re-built.
-  # - task: DownloadPipelineArtifact@2
-  #   displayName: Download Pipeline Artifact - .updated.json
-  #   inputs:
-  #     runVersion: latestFromBranch
-  #     artifactName: .updated.json
-  #     targetPath: ${{ parameters.stagingDir }}/config/
+  - task: DownloadPipelineArtifact@2
+    displayName: Download Pipeline Artifact - .updated.json
+    inputs:
+      runVersion: latestFromBranch
+      artifactName: .updated.json
+      targetPath: ${{ parameters.stagingDir }}/config/
