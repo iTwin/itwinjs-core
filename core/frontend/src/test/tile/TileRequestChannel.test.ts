@@ -12,7 +12,7 @@ import { Viewport } from "../../Viewport";
 import { MockRender } from "../../render/MockRender";
 import { createBlankConnection } from "../createBlankConnection";
 import {
-  Tile, TileContent, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileTree,
+  Tile, TileContent, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree,
 } from "../../tile/internal";
 
 async function runMicroTasks(): Promise<void> {
@@ -28,6 +28,8 @@ class TestTile extends Tile {
   private _rejectRequest?: (error: Error) => void;
   private _resolveRead?: (content: TileContent) => void;
   private _rejectRead?: (error: Error) => void;
+  public empty?: boolean;
+  public displayable?: boolean;
 
   public constructor(tree: TestTree, channel: LoggingChannel, priority = 0) {
     super({
@@ -54,6 +56,14 @@ class TestTile extends Tile {
 
   public get isActive() {
     return this.channel.isActive(this);
+  }
+
+  public get isDisplayable(): boolean {
+    return this.displayable ?? super.isDisplayable;
+  }
+
+  public get isEmpty(): boolean {
+    return this.empty ?? super.isEmpty;
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
@@ -630,7 +640,77 @@ describe("TileRequestChannel", () => {
     t2.expectStatus(TileLoadStatus.Ready);
   });
 
-  it("produces statistics", async () => {
+  it("records statistics", async () => {
+    const channel = new LoggingChannel(4);
+
+    function expectStats(expected: Partial<TileRequestChannelStatistics>) {
+      const stats = channel.statistics;
+      for (const propName in expected) {
+        const key = propName as keyof TileRequestChannelStatistics;
+        expect(stats[key]).to.equal(expected[key]);
+      }
+    }
+
+    const vp = mockViewport(imodel);
+    const tree = new TestTree(imodel, channel);
+    const tiles = [0, 1, 2, 3, 4, 5, 6].map((x) => {
+      const tile = new TestTile(tree, channel, x);
+      tile.empty = false;
+      tile.displayable = true;
+      return tile;
+    });
+
+    requestTiles(vp, tiles);
+    IModelApp.tileAdmin.process();
+    expectStats({ numActiveRequests: 4, numPendingRequests: 3, totalDispatchedRequests: 4 });
+
+    requestTiles(vp, []);
+    IModelApp.tileAdmin.process();
+    expectStats({ numActiveRequests: 4, numPendingRequests: 0, numCanceled: 7 });
+
+    tiles[0].rejectRequest(new ServerTimeoutError("oh no!"));
+    await runMicroTasks();
+    expectStats({ numActiveRequests: 3, numPendingRequests: 0, totalCompletedRequests: 0, totalFailedRequests: 0,totalTimedOutRequests: 1 });
+
+    await tiles[1].resolveBoth();
+    expectStats({ numActiveRequests: 2, numPendingRequests: 0, totalCompletedRequests: 1 });
+
+    tiles[2].rejectRequest();
+    await runMicroTasks();
+    expectStats({ numActiveRequests: 1, numPendingRequests: 0, totalFailedRequests: 1 });
+
+    tiles[3].resolveRequest();
+    await runMicroTasks();
+    tiles[3].rejectRead();
+    await runMicroTasks();
+    expectStats({ numActiveRequests: 0, numPendingRequests: 0, totalFailedRequests: 2 });
+
+    expectStats({ totalUndisplayableTiles: 0, totalEmptyTiles: 0 });
+    tiles[4].empty = true;
+    tiles[5].displayable = false;
+    tiles[6].empty = true;
+    tiles[6].displayable = false;
+    requestTiles(vp, tiles.slice(4));
+    IModelApp.tileAdmin.process();
+    expectStats({ numActiveRequests: 3, numPendingRequests: 0 });
+
+    await Promise.all(tiles.slice(4).map((x) => x.resolveBoth()));
+    expectStats({ numActiveRequests: 0, numPendingRequests: 0, totalEmptyTiles: 2, totalUndisplayableTiles: 1 });
+
+    IModelApp.tileAdmin.process();
+    expectStats({
+      numPendingRequests: 0,
+      numActiveRequests: 0,
+      numCanceled: 0,
+      totalCompletedRequests: 4,
+      totalFailedRequests: 2,
+      totalTimedOutRequests: 1,
+      totalEmptyTiles: 2,
+      totalUndisplayableTiles: 1,
+      totalCacheMisses: 0,
+      totalDispatchedRequests: 7,
+      totalAbortedRequests: 0,
+    });
   });
 
   it("can retry using a different channel", async () => {
