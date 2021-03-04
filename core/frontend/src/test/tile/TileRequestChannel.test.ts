@@ -645,7 +645,7 @@ describe("TileRequestChannel", () => {
 
     function expectStats(expected: Partial<TileRequestChannelStatistics>) {
       const stats = channel.statistics;
-      for (const propName in expected) {
+      for (const propName in expected) { // eslint-disable-line guard-for-in
         const key = propName as keyof TileRequestChannelStatistics;
         expect(stats[key]).to.equal(expected[key]);
       }
@@ -694,7 +694,7 @@ describe("TileRequestChannel", () => {
     IModelApp.tileAdmin.process();
     expectStats({ numActiveRequests: 3, numPendingRequests: 0 });
 
-    await Promise.all(tiles.slice(4).map((x) => x.resolveBoth()));
+    await Promise.all(tiles.slice(4).map(async (x) => x.resolveBoth()));
     expectStats({ numActiveRequests: 0, numPendingRequests: 0, totalEmptyTiles: 2, totalUndisplayableTiles: 1 });
 
     IModelApp.tileAdmin.process();
@@ -758,7 +758,7 @@ describe("TileRequestChannel", () => {
 
     tiles[2].resolveRequest();
     tiles[3].resolveRequest();
-    await processOnce()
+    await processOnce();
     tiles.slice(1).forEach((x) => expect(x.awaitingRead).to.be.true);
 
     tiles[1].resolveRead();

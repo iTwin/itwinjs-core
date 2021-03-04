@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { Id64, Id64Set } from "@bentley/bentleyjs-core";
-import { Matrix4d, Point3d, Transform, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelTileRpcInterface, MassPropertiesOperation,
+  EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, MassPropertiesOperation,
   MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps,
 } from "@bentley/imodeljs-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";

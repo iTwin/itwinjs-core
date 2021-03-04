@@ -7,11 +7,11 @@
  */
 
 import {
-  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue, ProcessDetector,
+  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, ProcessDetector,
 } from "@bentley/bentleyjs-core";
 import {
-  CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelRpcProps, IModelTileRpcInterface,
-  IModelTileTreeProps, ModelGeometryChanges, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
+  CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface,
+  IModelTileTreeProps, ModelGeometryChanges, RpcOperation, RpcResponseCacheControl, ServerTimeoutError,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
@@ -607,7 +607,7 @@ export class TileAdmin {
   }
 
   /** @internal */
-  private getTileRequestProps(tile: IModelTile) /*: { tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string }*/ {
+  private getTileRequestProps(tile: IModelTile) {
     const tree = tile.iModelTree;
     const tokenProps = tree.iModel.getRpcProps();
     let guid = tree.geometryGuid || tokenProps.changeSetId || "first";

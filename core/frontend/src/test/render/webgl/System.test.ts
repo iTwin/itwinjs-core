@@ -106,7 +106,7 @@ describe("ExternalTextures", () => {
 
       await IModelApp.startup({
         renderSys: renderSysOpts,
-        tileAdmin: await tileAdminProps,
+        tileAdmin: tileAdminProps,
       });
 
       expect(IModelApp.tileAdmin.enableExternalTextures).to.equal(expectEnabled);

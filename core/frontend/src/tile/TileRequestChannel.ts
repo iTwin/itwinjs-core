@@ -58,7 +58,7 @@ export class TileRequestChannelStatistics {
 
   /** @internal */
   public addTo(stats: TileRequestChannelStatistics): void {
-    for (const propName in this) {
+    for (const propName in this) { // eslint-disable-line guard-for-in
       const key = propName as keyof TileRequestChannelStatistics;
       const val = this[key];
       if (typeof val === "number") {
@@ -311,10 +311,10 @@ class IModelTileChannel extends TileRequestChannel {
         const contentIds = Array.from(tileIds);
         treeContentIds.push({ treeId, contentIds });
         this._statistics.totalAbortedRequests += contentIds.length;
-        }
+      }
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IpcApp.callIpcHost("cancelTileContentRequests", imodel.getRpcProps(), treeContentIds);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      IpcApp.callIpcHost("cancelTileContentRequests", imodel.getRpcProps(), treeContentIds);
     }
 
     this._canceled.clear();

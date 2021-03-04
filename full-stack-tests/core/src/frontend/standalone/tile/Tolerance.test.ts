@@ -11,7 +11,7 @@ import {
   RenderMode, TileMetadata, TileProps, TileTreeMetadata,
 } from "@bentley/imodeljs-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileAdmin, TileTreeLoadStatus, ViewState,
+  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus, ViewState,
 } from "@bentley/imodeljs-frontend";
 
 describe("Tile tolerance", () => {

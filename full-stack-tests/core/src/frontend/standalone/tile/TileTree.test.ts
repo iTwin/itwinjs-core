@@ -7,7 +7,7 @@ import { compareStrings } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import { IModelTileTreeProps, ServerTimeoutError, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import {
-  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileAdmin, TileContent, TileDrawArgs,
+  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs,
   TileLoadPriority, TileRequest, TileRequestChannel, TileTree,
 } from "@bentley/imodeljs-frontend";
 

@@ -63,7 +63,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   /** Returns true if an external tile cache is configured on the backend.
    * @internal
    */
-  public async isUsingExternalTileCache(): Promise<boolean> {
+  public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
     return this.forward(arguments);
   }
 

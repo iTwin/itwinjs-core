@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ByteStream, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   BatchType, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId,
-  iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, ServerTimeoutError, TileFormat, TileReadStatus,
+  iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, TileFormat, TileReadStatus,
 } from "@bentley/imodeljs-common";
 import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
@@ -14,7 +14,6 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
-import { testOnScreenViewport } from "../..//TestViewport";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
@@ -888,8 +887,8 @@ describe.skip("TileAdmin", () => {
         const tree = new IModelTileTree(params);
 
         const intfc = IModelTileRpcInterface.getClient();
-        const requestTileContent = intfc.requestTileContent;
-        intfc.requestTileContent = async (_token: IModelRpcProps, tileTreeId: string, _contentId: string, _isCanceled: () => boolean, guid?: string) => {
+        const generateTileContent = intfc.generateTileContent;
+        intfc.generateTileContent = async (_token: IModelRpcProps, tileTreeId: string, _contentId: string, guid: string | undefined) => {
           expect(tileTreeId).to.equal(treeId);
 
           expect(guid).not.to.be.undefined;
@@ -903,7 +902,7 @@ describe.skip("TileAdmin", () => {
 
         await tree.staticBranch.requestContent();
 
-        intfc.requestTileContent = requestTileContent;
+        intfc.generateTileContent = generateTileContent;
 
         await App.stop();
       }

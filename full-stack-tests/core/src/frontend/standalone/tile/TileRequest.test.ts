@@ -88,7 +88,7 @@ describe("CloudStorageCacheChannel", () => {
     const tile = await getTile();
     expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.cloudStorageCache);
 
-    tile.channel.requestContent = () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+    tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
     await loadContent(tile);
     expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
     expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.cloudStorageCache);
@@ -100,12 +100,12 @@ describe("CloudStorageCacheChannel", () => {
     const channel = getChannel();
     expect(tile.channel).to.equal(channel);
 
-    channel.requestContent = () => Promise.resolve(undefined);
+    channel.requestContent = async () => Promise.resolve(undefined);
     await loadContent(tile);
     expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
     expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelTileRpc);
 
-    tile.channel.requestContent = () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+    tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
     await loadContent(tile);
     expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
   });
@@ -115,19 +115,19 @@ describe("CloudStorageCacheChannel", () => {
     const tile = await getTile();
     const channel = getChannel();
 
-    channel.requestContent = () => { throw new ServerTimeoutError("...") };
+    channel.requestContent = async () => { throw new ServerTimeoutError("..."); };
     await loadContent(tile);
     expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
     expect(tile.channel).to.equal(channel);
     expect(tile.cacheMiss).to.be.false;
 
-    channel.requestContent = () => Promise.resolve(undefined);
+    channel.requestContent = async () => Promise.resolve(undefined);
     await loadContent(tile);
     expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
     expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelTileRpc);
     expect(tile.cacheMiss).to.be.true;
 
-    tile.channel.requestContent = () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+    tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
     await loadContent(tile);
     expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
 
@@ -139,11 +139,16 @@ describe("CloudStorageCacheChannel", () => {
 });
 
 describe("RPC channels", () => {
-  before(async () => await IModelApp.startup());
-  after(async () => await IModelApp.shutdown());
+  before(async () => { await IModelApp.startup(); });
+  after(async () => { await IModelApp.shutdown(); });
 
   it("use http or rpc concurrency based on type of app", async () => {
     const channels = IModelApp.tileAdmin.channels;
+    if (IpcApp.isValid)
+      expect(channels.rpcConcurrency).to.equal(await IpcApp.callIpcHost("queryConcurrency", "cpu"));
+    else
+      expect(channels.rpcConcurrency).to.equal(channels.httpConcurrency);
+
     for (const channel of [channels.iModelTileRpc, channels.elementGraphicsRpc])
       expect(channel.concurrency).to.equal(IpcApp.isValid ? channels.rpcConcurrency : channels.httpConcurrency);
   });
