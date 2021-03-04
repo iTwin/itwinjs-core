@@ -2,6 +2,30 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "2.12.1",
+      "tag": "@bentley/geometry-core_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/geometry-core_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Smoother frustum transition"
+          },
+          {
+            "comment": "Improve error handling for rectangle construction and matrix normalization"
+          },
+          {
+            "comment": "IndexedPolyface paramIndex to flatbuffer correction."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.11.0",
       "tag": "@bentley/geometry-core_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",

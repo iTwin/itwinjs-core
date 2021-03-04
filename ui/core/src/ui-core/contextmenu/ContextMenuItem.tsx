@@ -32,7 +32,7 @@ export interface ContextMenuItemProps extends Omit<React.AllHTMLAttributes<HTMLD
   badgeType?: BadgeType;
   /** Icon to display in the right margin. */
   iconRight?: IconSpec;
-  /** Hide the icon container. */
+  /** Hide the icon container. This can be used to eliminate space used to display an icon at the left of the menu item. */
   hideIconContainer?: boolean;
   /** @internal */
   onHover?: () => any;
@@ -69,7 +69,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   public render(): JSX.Element {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { onClick, className, style, onSelect, icon, disabled, hidden, onHover, isSelected, parentMenu, onHotKeyParsed, badgeType, iconRight,
-      ...props } = this.props;
+      hideIconContainer, ...props } = this.props;
     const badge = BadgeUtilities.getComponentForBadgeType(badgeType);
     const isDisabled = ConditionalBooleanValue.getValue(disabled);
     const isHidden = ConditionalBooleanValue.getValue(hidden);
@@ -99,7 +99,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
         aria-disabled={isDisabled}
         aria-hidden={isHidden}
       >
-        {!this.props.hideIconContainer && <div className="core-context-menu-icon">
+        {!hideIconContainer && <div className="core-context-menu-icon">
           {icon !== undefined && <Icon iconSpec={icon} />}
         </div>}
         <div className={"core-context-menu-content"}>

@@ -2,15 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
+import { assert } from "chai";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { FormDataManagementClient, FormDefinition } from "../../FormDataManagementClient";
-import { TestConfig } from "../TestConfig";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-
-chai.should();
 
 describe("FormDataManagementClient", () => {
   let requestContext: AuthorizedClientRequestContext;
@@ -18,17 +16,16 @@ describe("FormDataManagementClient", () => {
   let projectId: string;
 
   before(async function () {
-    if (TestConfig.enableMocks) return;
-    this.enableTimeouts(false);
-
-    requestContext = await TestConfig.getAuthorizedClientRequestContext();
+    const accessToken = await getAccessTokenFromBackend(TestUsers.super);
+    requestContext = new AuthorizedClientRequestContext((accessToken as any) as AccessToken);
 
     const contextRegistry = new ContextRegistryClient();
+    const projectName = "iModelJsIntegrationTest";
     const project: Project | undefined = await contextRegistry.getProject(requestContext, {
       $select: "*",
-      $filter: `Name+eq+'${TestConfig.projectName}'`,
+      $filter: `Name+eq+'${projectName}'`,
     });
-    chai.assert(project, `Project ${TestConfig.projectName} not found for user.`);
+    assert(project, `Project ${projectName} not found for user.`);
     projectId = project.wsgId;
   });
 
@@ -37,6 +34,6 @@ describe("FormDataManagementClient", () => {
       requestContext,
       projectId
     );
-    chai.assert(formDefinitions);
+    assert(formDefinitions);
   });
 });

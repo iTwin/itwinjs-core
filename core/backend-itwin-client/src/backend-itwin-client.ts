@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./BackendITwinClientLoggerCategory";
 export * from "./imodelhub/AzCopyFileHandler";
+export * from "./HttpRequestHost";
+export * from "./imodelhub/LocalhostFileHandler";
 export * from "./imodelhub/AzureFileHandler";
 export * from "./imodelhub/LocalhostFileHandler";
 export * from "./oidc";

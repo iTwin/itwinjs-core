@@ -14,8 +14,8 @@ import {
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import {
   DialogItem, DialogLayoutDataProvider, DialogProperty, DialogPropertyItem, DialogPropertySyncItem,
-  InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus, PropertyDescriptionHelper,
-  PropertyEditorParamTypes, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
+  EnumerationChoice, InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus,
+  PropertyDescriptionHelper, PropertyEditorParamTypes, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
 } from "@bentley/ui-abstract";
 import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
 
@@ -134,7 +134,7 @@ export class ToolWithSettings extends PrimitiveTool {
 
   // ------------- Color Enum ---------------
   private enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
-  private getColorChoices = () => {
+  private getColorChoices = (): EnumerationChoice[] => {
     return this.useLengthProperty.isDisabled ? [
       { label: this.enumAsPicklistMessage(ToolOptionNames.Red), value: ToolOptions.Red },
       { label: this.enumAsPicklistMessage(ToolOptionNames.White), value: ToolOptions.White },
@@ -441,5 +441,26 @@ export class ToolWithSettings extends PrimitiveTool {
 
     // return true is change is valid
     return true;
+  }
+
+  /** Used to bump the value of a tool setting. If no `settingIndex` param is specified, the first setting is bumped.
+   * @beta
+   */
+  public async bumpToolSetting(settingIndex?: number): Promise<boolean> {
+    if (settingIndex === 0 || settingIndex === undefined) {
+      const newValue = await PropertyDescriptionHelper.bumpEnumProperty(this.colorOptionProperty.description, this.colorOptionProperty.value);
+
+      if (newValue !== this.colorOptionProperty.value) {
+        this.colorOptionProperty.value = newValue as number;
+        this.syncToolSettingsProperties([this.colorOptionProperty.syncItem]);
+        return true;
+      }
+    } else if (settingIndex === 2) {
+      this.lockProperty.value = !this.lockProperty.value;
+      this.syncToolSettingsProperties([this.lockProperty.syncItem]);
+      return true;
+    }
+
+    return false;
   }
 }

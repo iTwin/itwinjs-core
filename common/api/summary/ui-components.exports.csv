@@ -92,6 +92,7 @@ beta;ControlledSelectableContentProps
 beta;ControlledTree(props: ControlledTreeProps): JSX.Element
 beta;ControlledTreeProps 
 public;ConvertedPrimitives
+internal;convertPrimitiveRecordToString(record: PropertyRecord): string | Promise
 internal;CubeHover
 beta;CubeNavigationAid 
 beta;CubeNavigationAidProps 
@@ -114,6 +115,7 @@ internal;DateTimeEditor
 internal;DateTimePropertyEditor 
 public;DateTimeTypeConverter 
 public;class DateTimeTypeConverterBase 
+beta;DEFAULT_LINKS_HANDLER: LinkElementsInfo
 public;DelayLoadedTreeNodeItem 
 public;DEPRECATED_FilteringInputProps 
 public;DEPRECATED_Tree 
@@ -176,6 +178,18 @@ alpha;FlatGridItemBase
 alpha;FlatGridItemType
 public;FloatTypeConverter 
 internal;formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined
+alpha;FormatPanel(props: FormatPanelProps): JSX.Element
+alpha;FormatPanelProps 
+alpha;FormatPrecision(props: FormatPrecisionProps): JSX.Element
+alpha;FormatPrecisionProps 
+alpha;FormatSample(props: FormatSampleProps): JSX.Element
+alpha;FormatSampleProps 
+alpha;FormatTypeOption(props: FormatTypeOptionProps): JSX.Element
+alpha;FormatTypeOptionProps 
+alpha;FormatUnitLabel(props: FormatUnitLabelProps): JSX.Element
+alpha;FormatUnitLabelProps 
+alpha;FormatUnits(props: FormatUnitsProps): JSX.Element
+alpha;FormatUnitsProps 
 public;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
@@ -247,10 +261,11 @@ beta;LoadedNodeHierarchy
 beta;LoadedNodeHierarchyItem
 internal;MapMode
 public;MapPayloadToInspireNodeCallback
-public;matchLinks: (text: string) =>
 internal;MenuItem
 alpha;Milestone
 alpha;MilestoneRange
+alpha;MiscFormatOptions(props: MiscFormatOptionsProps): JSX.Element
+alpha;MiscFormatOptionsProps 
 internal;MultiSelectionHandler
 alpha;MutableCategorizedArrayProperty 
 alpha;MutableCategorizedPrimitiveProperty 
@@ -357,6 +372,8 @@ public;PropertyValueRendererContext
 public;PropertyValueRendererManager
 public;PropertyView 
 public;PropertyViewProps 
+alpha;QuantityFormatPanel(props: QuantityFormatPanelProps): JSX.Element
+alpha;QuantityFormatPanelProps 
 beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element
 beta;QuantityProps 
 public;ReactDataGridColumn 

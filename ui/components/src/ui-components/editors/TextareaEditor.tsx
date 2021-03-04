@@ -39,6 +39,7 @@ const DEFAULT_ROWS = 3;
 export class TextareaEditor extends React.PureComponent<PropertyEditorProps, TextareaEditorState> implements TypeEditor {
   private _isMounted = false;
   private _ariaLabel = UiComponents.translate("editor.textarea");
+  private _divElement = React.createRef<HTMLDivElement>();
 
   /** @internal */
   public readonly state: Readonly<TextareaEditorState> = {
@@ -58,6 +59,20 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
     }
 
     return propertyValue;
+  }
+
+  // istanbul ignore next
+  public get htmlElement(): HTMLElement | null {
+    return this._divElement.current;
+  }
+
+  // istanbul ignore next
+  public get hasFocus(): boolean {
+    let containsFocus = false;
+    // istanbul ignore else
+    if (this._divElement.current)
+      containsFocus = this._divElement.current.contains(document.activeElement);
+    return containsFocus;
   }
 
   private _updateTextareaValue = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -172,7 +187,7 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
     textareaProps["aria-label"] = this._ariaLabel;
 
     return (
-      <div className={className}>
+      <div className={className} ref={this._divElement}>
         <PopupButton label={this.state.inputValue}
           closeOnEnter={false}
           setFocus={this.props.setFocus} focusTarget=".uicore-inputs-textarea">

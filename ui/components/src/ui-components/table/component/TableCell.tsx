@@ -150,8 +150,7 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
     this._isMounted = true;
     const content = await this.renderContent(this.props);
 
-    if (this._isMounted)
-      this.setState({ content });
+    this.setState({ content });
   }
 
   /** @internal */

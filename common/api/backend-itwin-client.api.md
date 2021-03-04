@@ -178,6 +178,11 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
 // @beta
 export type DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
+// @internal
+export class HttpRequestHost {
+    static initialize(): Promise<void>;
+    }
+
 // @internal (undocumented)
 export class ImsClientAuthDetail extends ClientAuthDetail {
     constructor(response: ImsIntrospectionResponse);
@@ -294,11 +299,6 @@ export type OidcDelegationClient = DelegationAuthorizationClient;
 
 // @beta @deprecated
 export type OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration;
-
-// @internal
-export class RequestHost {
-    static initialize(): Promise<void>;
-    }
 
 // @internal
 export class StorageServiceFileHandler extends UrlFileHandler {

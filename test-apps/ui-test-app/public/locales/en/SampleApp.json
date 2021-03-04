@@ -44,10 +44,13 @@
     "useProximityOpacityDescription": "Change the toolbar opacity as the mouse gets closer or farther away",
     "snapWidgetOpacityTitle": "Snap Widget Opacity",
     "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close",
-    "escapeToHomeTitle": "Escape To Home",
-    "escapeToHomeDescription": "Pressing the Escape key puts focus in Home position for shortcuts",
     "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
-    "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes"
+    "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
+    "widgetOpacityTitle": "Widget Opacity",
+    "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets"
+  },
+  "QuantityFormatModalFrontstage": {
+    "QuantityFormatStage": "Quantity Format Overrides"
   },
   "backstage": {
     "command": "Command",
@@ -59,7 +62,7 @@
     "testFrontstage5": "Test 5 Frontstage",
     "viewIModel": "View iModel",
     "editIModel": "Edit iModel",
-    "testFrontstage6": "Settings",
+    "quantityFormat": "Quantity Formats",
     "iModelStage": "Review iModel",
     "editStage": "Edit and Modify iModel",
     "task1": "Test 1 Frontstage via Task",
@@ -188,7 +191,8 @@
     "sampleModalDialog": "Sample Modal Dialog",
     "misc": "Miscellaneous",
     "accuDrawDialogVertical": "AccuDraw Dialog - Vertical",
-    "accuDrawDialogHorizontal": "AccuDraw Dialog - Horizontal"
+    "accuDrawDialogHorizontal": "AccuDraw Dialog - Horizontal",
+    "bumpToolSettingToggle": "Bump Tool Setting Toggle"
   },
   "tools": {
     "ToolWithSettings": {
@@ -398,5 +402,17 @@
   },
   "property-grid": {
     "too-many-elements-selected": "Too many elements selected"
+  },
+  "BearingQuantityType": {
+    "label": "Bearing",
+    "description": "Bearing",
+    "bearingGap": {
+      "label": "Add Direction Gap"
+    },
+    "bearingAngleDirection": {
+      "label": "Angle Direction",
+      "clockwise": "Clockwise",
+      "counter-clockwise": "Counter-Clockwise"
+    }
   }
 }

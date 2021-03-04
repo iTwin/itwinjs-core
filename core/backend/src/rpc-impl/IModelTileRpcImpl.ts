@@ -18,6 +18,11 @@ import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 
+interface TileContent {
+  content: Uint8Array;
+  metadata?: object;
+}
+
 interface TileRequestProps {
   requestContext: ClientRequestContext;
   tokenProps: IModelRpcProps;
@@ -126,16 +131,24 @@ interface TileContentRequestProps extends TileRequestProps {
   contentId: string;
 }
 
-async function getTileContent(props: TileContentRequestProps): Promise<Uint8Array> {
+async function getTileContent(props: TileContentRequestProps): Promise<TileContent> {
   const db = IModelDb.findByKey(props.tokenProps.key);
-  return db.tiles.requestTileContent(props.requestContext, props.treeId, props.contentId);
+  const tile = await db.tiles.requestTileContent(props.requestContext, props.treeId, props.contentId);
+  return {
+    content: tile.content,
+    metadata: {
+      backendName: IModelHost.applicationId,
+      tileGenerationTime: tile.elapsedSeconds.toString(),
+      tileSize: tile.content.byteLength.toString(),
+    },
+  };
 }
 
 function generateTileContentKey(props: TileContentRequestProps): string {
   return `${generateTileRequestKey(props)}:${props.contentId}`;
 }
 
-class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileContentRequestProps> {
+class RequestTileContentMemoizer extends TileRequestMemoizer<TileContent, TileContentRequestProps> {
   protected get _timeoutMilliseconds() { return IModelHost.tileContentRequestTimeout; }
   protected get _operationName() { return "requestTileContent"; }
   protected stringify(props: TileContentRequestProps): string { return `${props.treeId}:${props.contentId}`; }
@@ -157,7 +170,7 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileCon
     return this._instance;
   }
 
-  public static async perform(props: TileContentRequestProps): Promise<Uint8Array> {
+  public static async perform(props: TileContentRequestProps): Promise<TileContent> {
     return this.instance.perform(props);
   }
 }
@@ -180,15 +193,19 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
-  public async requestTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, _unused?: () => boolean, guid?: string): Promise<Uint8Array> {
+  public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<Uint8Array> {
     const requestContext = ClientRequestContext.current;
-    const content = await RequestTileContentMemoizer.perform({ requestContext, tokenProps, treeId, contentId });
+    const tile = await RequestTileContentMemoizer.perform({ requestContext, tokenProps, treeId, contentId });
 
     // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
     if (IModelHost.usingExternalTileCache)
-      IModelHost.tileUploader.cacheTile(tokenProps, treeId, contentId, content, guid);
+      IModelHost.tileUploader.cacheTile(tokenProps, treeId, contentId, tile.content, guid, tile.metadata);
 
-    return content;
+    return tile.content;
+  }
+
+  public async requestTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, _unused?: () => boolean, guid?: string): Promise<Uint8Array> {
+    return this.generateTileContent(tokenProps, treeId, contentId, guid);
   }
 
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
@@ -201,6 +218,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
     const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
+  }
+
+  public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+    return IModelHost.usingExternalTileCache;
   }
 
   public async queryVersionInfo(): Promise<TileVersionInfo> {

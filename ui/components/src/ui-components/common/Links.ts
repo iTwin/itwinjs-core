@@ -17,9 +17,10 @@ linkify
     validate: (text: string, pos: number, self: LinkifyIt.LinkifyIt): number => {
       const tail = text.slice(pos);
 
+      // istanbul ignore else
       if (!self.re.pw) {
         self.re.pw = new RegExp(
-          `//${self.re.src_host}:` +
+          `(//|\\\\\\\\)${self.re.src_host}:` +
           // Regex for path according to RFC 3986 standards plus the possibility to write '{}' brackets for ProjectWise monikers
           `([a-zA-Z0-9-._~!$&'()*+,;=@%{}]+/)+[a-zA-Z0-9-._~!$&'()*+,;=@%{}]*`,
           "i");
@@ -31,6 +32,7 @@ linkify
         if (matches !== null)
           return matches[0].length;
       }
+      // istanbul ignore next
       return 0;
     },
   })
@@ -52,6 +54,7 @@ linkify
         if (matches !== null)
           return matches[0].length;
       }
+      // istanbul ignore next
       return 0;
     },
     normalize: (match: LinkifyIt.Match) => {
@@ -64,6 +67,10 @@ linkify
  * @public
  */
 export const matchLinks = (text: string): Array<{ index: number, lastIndex: number, schema: string, url: string }> => {
+  const head = text.slice(0, 5);
+  if (head === "pw://" || head === "pw:\\\\")
+    return Array({ index: 0, lastIndex: text.length, schema: "pw:", url: text});
+
   const matches = linkify.match(text);
   return matches ? matches as Array<{ index: number, lastIndex: number, schema: string, url: string }> : [];
 };
