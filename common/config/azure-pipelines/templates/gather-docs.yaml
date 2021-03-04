@@ -28,8 +28,6 @@ steps:
 
       echo Copying all files from \docs folder
       robocopy /S docs/ ${{ parameters.stagingDir }}/
-
-      dir /S ${{ parameters.stagingDir }}/
     workingDirectory: ${{ parameters.workingDir }}
     displayName: Copy Reference files to Staging
 
