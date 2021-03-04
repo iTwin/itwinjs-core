@@ -2081,6 +2081,19 @@ export abstract class FileNameResolver {
     tryResolveKey(_fileKey: string): string | undefined;
 }
 
+// @alpha
+export class FolderContainsRepositories extends ElementOwnsChildElements {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @alpha
+export class FolderLink extends UrlLink {
+    // @internal (undocumented)
+    static get className(): string;
+}
+
 // @public
 export abstract class FunctionalBreakdownElement extends FunctionalElement {
     // @internal

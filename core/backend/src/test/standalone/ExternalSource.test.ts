@@ -10,8 +10,9 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   BackendRequestContext, ExternalSource, ExternalSourceAttachment, ExternalSourceAttachmentAttachesSource, ExternalSourceGroup,
-  ExternalSourceGroupGroupsSources, ExternalSourceIsInRepository, ExternalSourceOwnsAttachments, IModelDb, LinkElement, RepositoryLink, SnapshotDb,
-  SynchronizationConfigLink, SynchronizationConfigProcessesSources, SynchronizationConfigSpecifiesRootSources,
+  ExternalSourceGroupGroupsSources, ExternalSourceIsInRepository, ExternalSourceOwnsAttachments, FolderContainsRepositories, FolderLink, IModelDb,
+  LinkElement, RepositoryLink, SnapshotDb, SynchronizationConfigLink, SynchronizationConfigProcessesSources,
+  SynchronizationConfigSpecifiesRootSources,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -32,10 +33,12 @@ describe.only("ExternalSource", () => {
 
     const syncJob = insertSynchronizationConfigLink(iModelDb, "Synchronization Job");
 
-    const repositoryM = insertRepositoryLink(iModelDb, "master.dgn", "https://test.bentley.com/master.dgn", "DGN");
-    const repositoryA = insertRepositoryLink(iModelDb, "a.dgn", "https://test.bentley.com/a.dgn", "DGN");
-    const repositoryB = insertRepositoryLink(iModelDb, "b.dgn", "https://test.bentley.com/b.dgn", "DGN");
-    const repositoryC = insertRepositoryLink(iModelDb, "c.dgn", "https://test.bentley.com/c.dgn", "DGN");
+    const folder = insertFolderLink(iModelDb, "Folder", "https://test.bentley.com/folder");
+
+    const repositoryM = insertRepositoryLink(iModelDb, folder, "master.dgn", "https://test.bentley.com/folder/master.dgn", "DGN");
+    const repositoryA = insertRepositoryLink(iModelDb, folder, "a.dgn", "https://test.bentley.com/folder/a.dgn", "DGN");
+    const repositoryB = insertRepositoryLink(iModelDb, folder, "b.dgn", "https://test.bentley.com/folder/b.dgn", "DGN");
+    const repositoryC = insertRepositoryLink(iModelDb, folder, "c.dgn", "https://test.bentley.com/folder/c.dgn", "DGN");
 
     const modelM = insertExternalSource(iModelDb, repositoryM, "M");
     const modelA = insertExternalSource(iModelDb, repositoryA, "A");
@@ -70,10 +73,21 @@ describe.only("ExternalSource", () => {
     return iModelDb.elements.insertElement(configProps);
   }
 
-  function insertRepositoryLink(iModelDb: IModelDb, codeValue: string, url: string, format: string): Id64String {
+  function insertFolderLink(iModelDb: IModelDb, codeValue: string, url: string): Id64String {
+    const folderLinkProps: RepositoryLinkProps = {
+      classFullName: FolderLink.classFullName,
+      model: IModel.repositoryModelId,
+      code: LinkElement.createCode(iModelDb, IModel.repositoryModelId, codeValue),
+      url,
+    };
+    return iModelDb.elements.insertElement(folderLinkProps);
+  }
+
+  function insertRepositoryLink(iModelDb: IModelDb, folderId: Id64String, codeValue: string, url: string, format: string): Id64String {
     const repositoryLinkProps: RepositoryLinkProps = {
       classFullName: RepositoryLink.classFullName,
       model: IModel.repositoryModelId,
+      parent: new FolderContainsRepositories(folderId),
       code: LinkElement.createCode(iModelDb, IModel.repositoryModelId, codeValue),
       url,
       format,

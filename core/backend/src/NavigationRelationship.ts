@@ -93,6 +93,17 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
   }
 }
 
+/** Relates a parent [[FolderLink]] to its [[RepositoryLink]] children.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.13
+ * @alpha
+ */
+export class FolderContainsRepositories extends ElementOwnsChildElements {
+  public static classFullName = "BisCore:FolderContainsRepositories";
+  public constructor(parentId: Id64String, relClassName: string = FolderContainsRepositories.classFullName) {
+    super(parentId, relClassName);
+  }
+}
+
 /** Relates a [[GeometricElement2d]] to its [[TypeDefinitionElement]]
  * @public
  */

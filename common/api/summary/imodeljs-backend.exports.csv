@@ -145,6 +145,8 @@ alpha;ExternalSourceGroupGroupsSources
 alpha;ExternalSourceIsInRepository 
 alpha;ExternalSourceOwnsAttachments 
 public;class FileNameResolver
+alpha;FolderContainsRepositories 
+alpha;FolderLink 
 public;class FunctionalBreakdownElement 
 public;class FunctionalComponentElement 
 public;FunctionalComposite 

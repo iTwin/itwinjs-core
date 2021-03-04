@@ -1276,12 +1276,13 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
   }
 }
 
-/** An information element that links to an embedded file.
- * @public
+/** Represents a folder-like structure that organizes repositories (typically files) in an external system.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.13
+ * @alpha
  */
-export class EmbeddedFileLink extends LinkElement {
+export class FolderLink extends UrlLink {
   /** @internal */
-  public static get className(): string { return "EmbeddedFileLink"; }
+  public static get className(): string { return "FolderLink"; }
 }
 
 /** An information element that links to a repository.
@@ -1308,6 +1309,14 @@ export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
     val.format = this.format;
     return val;
   }
+}
+
+/** An information element that links to an embedded file.
+ * @public
+ */
+export class EmbeddedFileLink extends LinkElement {
+  /** @internal */
+  public static get className(): string { return "EmbeddedFileLink"; }
 }
 
 /** A real world entity is modeled as a Role Element when a set of external circumstances define an important
