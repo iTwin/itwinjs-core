@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { BeDuration } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
-import { ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { ServerTimeoutError, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { Viewport } from "../../Viewport";
@@ -13,6 +14,10 @@ import { createBlankConnection } from "../createBlankConnection";
 import {
   Tile, TileContent, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileTree,
 } from "../../tile/internal";
+
+async function runMicroTasks(): Promise<void> {
+  return BeDuration.wait(1);
+}
 
 class TestTile extends Tile {
   public priority;
@@ -83,7 +88,10 @@ class TestTile extends Tile {
     });
   }
 
-  public resolveRequest(response: TileRequest.Response = new Uint8Array(1)): void {
+  public resolveRequest(response: TileRequest.Response | "undefined" = new Uint8Array(1)): void {
+    if ("undefined" === response)
+      response = undefined; // passing `undefined` to resolveRequest uses the default arg instead...
+
     expect(this._resolveRequest).not.to.be.undefined;
     this._resolveRequest!(response);
     this.clearPromises();
@@ -99,6 +107,13 @@ class TestTile extends Tile {
     expect(this._resolveRead).not.to.be.undefined;
     this._resolveRead!(content);
     this.clearPromises();
+  }
+
+  public async resolveBoth(): Promise<void> {
+    this.resolveRequest();
+    await runMicroTasks();
+    this.resolveRead();
+    await runMicroTasks();
   }
 
   public rejectRead(error: Error = new Error("readContent")): void {
@@ -139,7 +154,7 @@ class TestTree extends TileTree {
   public prune() { }
 }
 
-function mockViewport(viewportId: number, iModel: IModelConnection): Viewport {
+function mockViewport(iModel: IModelConnection, viewportId = 1): Viewport {
   return {
     viewportId,
     iModel,
@@ -155,11 +170,16 @@ function requestTiles(vp: Viewport, tiles: TestTile[]): void {
 
 async function processOnce(): Promise<void> {
   IModelApp.tileAdmin.process();
-  return new Promise((resolve: any) => setTimeout(resolve, 1));
+  return runMicroTasks();
 }
 
 class LoggingChannel extends TileRequestChannel {
   public readonly calledFunctions: string[] = [];
+
+  public constructor(maxActive: number, name = "test") {
+    super(name, maxActive);
+    IModelApp.tileAdmin.channels.add(this);
+  }
 
   protected log(functionName: string) {
     this.calledFunctions.push(functionName);
@@ -281,10 +301,9 @@ describe("TileRequestChannel", () => {
   });
 
   it("completes one request", async () => {
-    const channel = new LoggingChannel("test", 1);
-    IModelApp.tileAdmin.channels.add(channel);
+    const channel = new LoggingChannel(1);
     const tree = new TestTree(imodel, channel);
-    const vp = mockViewport(1, imodel);
+    const vp = mockViewport(imodel);
 
     tree.rootTile.expectStatus(TileLoadStatus.NotLoaded);
     channel.expectRequests(0, 0);
@@ -314,11 +333,10 @@ describe("TileRequestChannel", () => {
   });
 
   it("observes limits on max active requests", async () => {
-    const channel = new LoggingChannel("test", 2);
-    IModelApp.tileAdmin.channels.add(channel);
+    const channel = new LoggingChannel(2);
     const tree = new TestTree(imodel, channel);
     const tiles = [0, 1, 2, 3, 4].map((x) => new TestTile(tree, channel, x));
-    const vp = mockViewport(1, imodel);
+    const vp = mockViewport(imodel);
 
     requestTiles(vp, tiles);
     IModelApp.tileAdmin.process();
@@ -368,8 +386,7 @@ describe("TileRequestChannel", () => {
   });
 
   it("dispatches requests in order by priority", async () => {
-    const channel = new LoggingChannel("test", 1);
-    IModelApp.tileAdmin.channels.add(channel);
+    const channel = new LoggingChannel(1);
     const tr0 = new TestTree(imodel, channel, TileLoadPriority.Dynamic);
     const tr1 = new TestTree(imodel, channel, TileLoadPriority.Terrain);
 
@@ -378,7 +395,7 @@ describe("TileRequestChannel", () => {
     const t10 = new TestTile(tr1, channel, 0);
     const t14 = new TestTile(tr1, channel, 4);
 
-    const vp = mockViewport(1, imodel);
+    const vp = mockViewport(imodel);
     requestTiles(vp, [t10, t04, t00, t14 ]);
 
     async function waitFor(tile: TestTile) {
@@ -424,12 +441,11 @@ describe("TileRequestChannel", () => {
   });
 
   it("cancels requests", async () => {
-    const channel = new LoggingChannel("test", 1);
-    IModelApp.tileAdmin.channels.add(channel);
+    const channel = new LoggingChannel(1);
     const tree = new TestTree(imodel, channel);
     const tiles = [0, 1, 2, 3].map((x) => new TestTile(tree, channel, x));
 
-    const vp = mockViewport(1, imodel);
+    const vp = mockViewport(imodel);
     requestTiles(vp, tiles);
     IModelApp.tileAdmin.process();
     channel.expectRequests(1, 3);
@@ -486,12 +502,11 @@ describe("TileRequestChannel", () => {
   });
 
   it("changes max active requests", async () => {
-    const channel = new LoggingChannel("test", 3);
-    IModelApp.tileAdmin.channels.add(channel);
+    const channel = new LoggingChannel(3);
     const tree = new TestTree(imodel, channel);
     const tiles = [0, 1, 2, 3, 4].map((x) => new TestTile(tree, channel, x));
 
-    const vp = mockViewport(1, imodel);
+    const vp = mockViewport(imodel);
     requestTiles(vp, tiles);
     IModelApp.tileAdmin.process();
     channel.expectRequests(3, 2);
@@ -538,21 +553,140 @@ describe("TileRequestChannel", () => {
     channel.expectRequests(0 ,0);
   });
 
-  it("processes requests", async () => {
+  // A canceled active request is not removed from the active set until its promise is settled.
+  // It is included in `statistics.numCanceled` for every call to `process` during which it is active and canceled.
+  // However, onActiveRequestCanceled is only called once - when the request is initially canceled.
+  it("calls onActiveRequestCanceled only once per cancellation", async () => {
+    class Channel extends LoggingChannel {
+      public numActiveCanceled = 0;
+      public numProcessed = 0;
+
+      public onActiveRequestCanceled() {
+        ++this.numActiveCanceled;
+      }
+
+      public processCancellations() {
+        this.numProcessed += this.statistics.numCanceled;
+      }
+    }
+
+    const channel = new Channel(2);
+    const tree = new TestTree(imodel, channel);
+    const tile = tree.rootTile;
+    const tiles = [tile];
+    const vp = mockViewport(imodel);
+
+    requestTiles(vp, tiles);
+    IModelApp.tileAdmin.process();
+    expect(tile.isActive).to.be.true;
+    expect(channel.numActiveCanceled).to.equal(0);
+    expect(channel.numProcessed).to.equal(0);
+    expect(channel.statistics.numCanceled).to.equal(0);
+
+    for (let i = 1; i < 4; i++) {
+      requestTiles(vp, []);
+      IModelApp.tileAdmin.process();
+      expect(tile.isActive).to.be.true;
+      expect(channel.numActiveCanceled).to.equal(1);
+      expect(channel.statistics.numCanceled).to.equal(1);
+      expect(channel.numProcessed).to.equal(i);
+    }
+
+    await tile.resolveBoth();
+    IModelApp.tileAdmin.process();
+    expect(tile.isActive).to.be.false;
+    expect(channel.numActiveCanceled).to.equal(1);
+    expect(channel.statistics.numCanceled).to.equal(0);
+    tile.expectStatus(TileLoadStatus.Ready);
   });
 
-  it("does not drop active request until response is received", async () => {
-  });
+  it("can retry on server timeout", async () => {
+    const channel = new LoggingChannel(10);
+    const tree = new TestTree(imodel, channel);
+    const t1 = new TestTile(tree, channel, 1);
+    const t2 = new TestTile(tree, channel, 2);
 
-  it("can override Tile.requestContent", () => {
-  });
+    const vp = mockViewport(imodel);
+    requestTiles(vp, [t1, t2]);
+    IModelApp.tileAdmin.process();
+    channel.expectRequests(2, 0);
 
-  it("can accumulate cancellations", async () => {
+    t1.rejectRequest(new Error("Not a server timeout"));
+    t2.rejectRequest(new ServerTimeoutError("Server timeout"));
+    await processOnce();
+    channel.expectRequests(0, 0);
+    t1.expectStatus(TileLoadStatus.NotFound);
+    t2.expectStatus(TileLoadStatus.NotLoaded);
+
+    requestTiles(vp, [t1, t2]);
+    IModelApp.tileAdmin.process();
+    channel.expectRequests(1, 0);
+    expect(t1.isActive).to.be.false;
+    expect(t2.isActive).to.be.true;
+
+    await t2.resolveBoth();
+    channel.expectRequests(0, 0);
+    expect(t2.isActive).to.be.false;
+    t2.expectStatus(TileLoadStatus.Ready);
   });
 
   it("produces statistics", async () => {
   });
 
-  it("handles exceptions in readContent and requestContent", async () => {
+  it("can retry using a different channel", async () => {
+    const channel2 = new LoggingChannel(10, "channel 2");
+    class Channel1 extends LoggingChannel {
+      public constructor() {
+        super(10, "channel 1");
+      }
+
+      public onNoContent(req: TileRequest): boolean {
+        expect(req.channel).to.equal(this);
+        (req.tile as TestTile).requestChannel = channel2;
+        return true;
+      }
+    }
+
+    const channel1 = new Channel1();
+    const tree = new TestTree(imodel, channel1);
+    const tiles = [0 ,1 , 2, 3].map((x) => new TestTile(tree, channel1, x));
+
+    const vp = mockViewport(imodel);
+    requestTiles(vp, tiles);
+    IModelApp.tileAdmin.process();
+    channel1.expectRequests(4, 0);
+    channel2.expectRequests(0, 0);
+    tiles.forEach((x) => expect(x.channel).to.equal(channel1));
+
+    tiles[0].rejectRequest();
+    tiles[1].resolveRequest();
+    tiles[2].resolveRequest("undefined");
+    tiles[3].resolveRequest("undefined");
+    await processOnce();
+    tiles.slice(0, 2).forEach((x) => expect(x.channel).to.equal(channel1));
+    tiles.slice(2).forEach((x) => expect(x.channel).to.equal(channel2));
+    channel1.expectRequests(0, 0);
+    channel2.expectRequests(0, 0);
+
+    requestTiles(vp, tiles.slice(1));
+    IModelApp.tileAdmin.process();
+    channel1.expectRequests(0, 0);
+    channel2.expectRequests(2, 0);
+    expect(tiles[1].awaitingRead).to.be.true;
+    expect(tiles[2].awaitingRequest).to.be.true;
+    expect(tiles[3].awaitingRequest).to.be.true;
+
+    tiles[2].resolveRequest();
+    tiles[3].resolveRequest();
+    await processOnce()
+    tiles.slice(1).forEach((x) => expect(x.awaitingRead).to.be.true);
+
+    tiles[1].resolveRead();
+    tiles[2].resolveRead();
+    tiles[3].rejectRead();
+    await processOnce();
+    channel1.expectRequests(0, 0);
+    channel2.expectRequests(0, 0);
+    expect(tiles.map((x) => x.loadStatus)).to.deep.equal([TileLoadStatus.NotFound, TileLoadStatus.Ready, TileLoadStatus.Ready, TileLoadStatus.NotFound]);
   });
 });
