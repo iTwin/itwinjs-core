@@ -22,7 +22,7 @@ export interface FrontendAuthorizationClient extends AuthorizationClient {
   readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
-  hasSignedIn: boolean;
+  readonly hasSignedIn: boolean;
 }
 
 /** FrontendAuthorization type guard.

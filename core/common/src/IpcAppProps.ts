@@ -19,20 +19,18 @@ import { ElementsChanged, ModelGeometryChangesProps } from "./ModelGeometryChang
  */
 export interface AuthorizationConfiguration {
   issuerUrl?: string;
-  redirectUrl?: string;
-  stateKey?: string;
 
   /**
    * Upon signing in, the client application receives a response from the Bentley IMS OIDC/OAuth2 provider at this URI
    * For mobile/desktop applications, must be `http://localhost:${redirectPort}` or `https://localhost:${redirectPort}`
    */
-  redirectUri: string;
+  readonly redirectUri: string;
 
   /** Client application's identifier as registered with the OIDC/OAuth2 provider. */
-  clientId: string;
+  readonly clientId: string;
 
   /** List of space separated scopes to request access to various resources. */
-  scope: string;
+  readonly scope: string;
 
   /**
    * Time in seconds that's used as a buffer to check the token for validity/expiry.
@@ -40,7 +38,7 @@ export interface AuthorizationConfiguration {
    * time of the actual expiry.
    * @note If unspecified this defaults to 10 minutes.
    */
-  expiryBuffer?: number;
+  readonly expiryBuffer?: number;
 }
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.

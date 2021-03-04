@@ -30,7 +30,7 @@ export type DownloadBriefcaseId =
 */
 export type DownloadBriefcaseOptions = DownloadBriefcaseId & { fileName?: string, progressInterval?: number };
 
-/** receive notifications from backend */
+/** NativeApp notifications from backend */
 class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNotifications {
   public get channelName() { return nativeAppNotify; }
   public notifyInternetConnectivityChanged(status: InternetConnectivityStatus) {
@@ -40,22 +40,32 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
 }
 
 /**
- * The frontend of native apps use the backend for authorization.
+ * Object to be set as `IModelApp.authorizationClient` for the frontend of NativeApps.
+ * Since NativeApps use the backend for all authorization, this class sends signIn/signOut requests to the backend
+ * and then listens for the `onUserStateChanged` event to cache the accessToken. The token is cached
+ * here on the frontend because it is used for every RPC operation, even when we're running as a NativeApp.
+ * We must therefore check for expiration and request refreshes as/when necessary.
  * @alpha
  */
 export class NativeAppAuthorization {
-  private _clientConfiguration: AuthorizationConfiguration;
+  private _config: AuthorizationConfiguration;
+  private _cachedToken?: AccessToken;
+  protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
-  public hasSignedIn = false; // updated by IpcAppNotifyHandler.notifyUserStateChanged
-  public get isAuthorized() { return this.hasSignedIn; }
+  public get hasSignedIn() { return this._cachedToken !== undefined; }
+  public get isAuthorized(): boolean { return this.hasSignedIn && !this._cachedToken!.isExpired(this._expireSafety * 1000); }
 
-  public constructor(clientConfiguration: AuthorizationConfiguration) {
-    this._clientConfiguration = clientConfiguration;
+  public constructor(config: AuthorizationConfiguration) {
+    this._config = config;
+    if (config.expiryBuffer)
+      this._expireSafety = config.expiryBuffer;
+
+    this.onUserStateChanged.addListener((token?: AccessToken) => this._cachedToken = token);
   }
 
-  /** Used to initialize the client - must be awaited before any other methods are called */
+  /** Used to initialize the the backend authorization. Must be awaited before any other methods are called */
   public async initialize(props: SessionProps): Promise<void> {
-    return NativeApp.callNativeHost("initializeAuth", props, this._clientConfiguration);
+    return NativeApp.callNativeHost("initializeAuth", props, this._config);
   }
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
@@ -75,7 +85,8 @@ export class NativeAppAuthorization {
    * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
    */
   public async getAccessToken(): Promise<AccessToken> {
-    return AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
+    // if we have a valid token, return it. Otherwise call backend to refresh the token (which in turn will raise `onUserStateChanged` and we'll cache it for future requests)
+    return this.isAuthorized ? this._cachedToken! : AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
   }
 }
 

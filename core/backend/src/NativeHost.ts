@@ -28,7 +28,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   private async getAuthContext() {
     return IpcHost.authorization.getAuthorizedContext();
   }
-  public async loginForTests(token: AccessTokenProps) {
+  public async silentLogin(token: AccessTokenProps) {
     IpcHost.authorization.setAccessToken(AccessToken.fromJson(token));
   }
   public async initializeAuth(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {

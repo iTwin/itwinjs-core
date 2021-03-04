@@ -51,7 +51,7 @@ export interface NativeAppNotifications {
  * @internal
  */
 export interface NativeAppFunctions {
-  loginForTests: (token: AccessTokenProps) => Promise<void>;
+  silentLogin: (token: AccessTokenProps) => Promise<void>;
 
   initializeAuth: (props: ClientRequestContextProps, config: AuthorizationConfiguration) => Promise<void>;
 
