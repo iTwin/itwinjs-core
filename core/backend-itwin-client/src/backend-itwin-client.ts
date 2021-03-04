@@ -9,7 +9,6 @@ export * from "./imodelhub/LocalhostFileHandler";
 export * from "./imodelhub/AzureFileHandler";
 export * from "./imodelhub/LocalhostFileHandler";
 export * from "./oidc";
-export * from "./RequestHost";
 export * from "./StorageServiceFileHandler";
 export * from "./telemetry";
 export * from "./UrlFileHandler";
