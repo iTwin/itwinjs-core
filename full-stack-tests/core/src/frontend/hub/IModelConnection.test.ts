@@ -204,7 +204,7 @@ describe("IModelConnection (#integration)", () => {
     expect(modelProps.length).to.equal(1);
 
     const treeId = modelProps[0].id!.toString();
-    const tree = await iModel.tiles.getTileTreeProps(treeId);
+    const tree = await IModelApp.tileAdmin.requestTileTreeProps(iModel, treeId);
 
     expect(tree.id).to.equal(modelProps[0].id);
     expect(tree.maxTilesToSkip).to.equal(1);

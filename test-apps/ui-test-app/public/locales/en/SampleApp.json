@@ -191,7 +191,8 @@
     "sampleModalDialog": "Sample Modal Dialog",
     "misc": "Miscellaneous",
     "accuDrawDialogVertical": "AccuDraw Dialog - Vertical",
-    "accuDrawDialogHorizontal": "AccuDraw Dialog - Horizontal"
+    "accuDrawDialogHorizontal": "AccuDraw Dialog - Horizontal",
+    "bumpToolSettingToggle": "Bump Tool Setting Toggle"
   },
   "tools": {
     "ToolWithSettings": {
