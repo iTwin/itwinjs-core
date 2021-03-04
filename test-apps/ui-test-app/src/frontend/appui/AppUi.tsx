@@ -54,6 +54,7 @@ import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFron
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 // cSpell:ignore uitestapp
 
@@ -386,6 +387,10 @@ export class AppUi {
             key: "l",
             item: AccuDrawPopupTools.showHTMLElement,
           },
+          {
+            key: "n",
+            item: AppUi._bumpToolSettingToggle,
+          },
         ],
       },
       {
@@ -397,6 +402,14 @@ export class AppUi {
     ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
 
     ConfigurableUiManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
+  }
+
+  private static get _bumpToolSettingToggle() {
+    return new CommandItemDef({
+      commandId: "bumpToolSettingToggle",
+      labelKey: "SampleApp:buttons.bumpToolSettingToggle",
+      execute: async () => IModelApp.toolAdmin.bumpToolSetting(2),  // Works with ToolWithSettings
+    });
   }
 
   private static get _showShortcutsMenuCommand() {
