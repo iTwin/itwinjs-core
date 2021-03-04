@@ -269,6 +269,6 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.reinstateTxn();
   }
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
-    return IModelJsNative.queryConcurrency(pool);
+    return IModelHost.platform.queryConcurrency(pool);
   }
 }

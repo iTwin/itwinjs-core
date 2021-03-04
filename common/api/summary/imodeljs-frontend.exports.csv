@@ -520,6 +520,9 @@ internal;TilePatch = PlanarTilePatch | EllipsoidPatch
 beta;TileRequest
 beta;TileRequest
 internal;State
+beta;TileRequestChannel
+beta;TileRequestChannels
+beta;TileRequestChannelStatistics
 beta;Tiles
 beta;class TileTree
 beta;TileTreeDiscloser
