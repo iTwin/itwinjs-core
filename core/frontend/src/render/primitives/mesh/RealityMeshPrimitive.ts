@@ -11,6 +11,17 @@ import { GltfMeshData } from "../../../tile/internal";
 import { RenderMemory } from "../../RenderMemory";
 import { Mesh } from "./MeshPrimitives";
 
+export interface RealityMeshProps {
+  readonly indices: Uint16Array;
+  readonly pointQParams: QParams3d;
+  readonly points: Uint16Array;
+  readonly normals: OctEncodedNormal[];
+  readonly uvQParams: QParams2d;
+  readonly uvs: Uint16Array;
+  readonly featureID: number;
+  readonly texture?: RenderTexture;
+}
+
 /** @internal */
 export class RealityMeshPrimitive implements RenderMemory.Consumer {
   public readonly indices: Uint16Array;
@@ -20,20 +31,23 @@ export class RealityMeshPrimitive implements RenderMemory.Consumer {
   public readonly uvQParams: QParams2d;
   public readonly uvs: Uint16Array;
   public readonly featureID: number = 0;
-  protected constructor(indices: Uint16Array, pointQParams: QParams3d, points: Uint16Array, uvQParams: QParams2d, uvs: Uint16Array, normals: OctEncodedNormal[], public readonly texture: RenderTexture) {
-    this.pointQParams = pointQParams;
-    this.points = points;
-    this.uvQParams = uvQParams;
-    this.uvs = uvs;
-    this.normals = normals;
-    this.indices = indices;
+  public readonly texture?: RenderTexture;
+  protected constructor(props: RealityMeshProps) {
+    this.pointQParams = props.pointQParams;
+    this.points = props.points;
+    this.uvQParams = props.uvQParams;
+    this.uvs = props.uvs;
+    this.normals = props.normals;
+    this.indices = props.indices;
+    this.featureID = props.featureID;
+    this.texture = props.texture;
   }
 
   public static createFromGltfMesh(mesh: GltfMeshData): RealityMeshPrimitive | undefined {
-    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.primitive.displayParams.textureMapping || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.triangleIndices)
+    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.primitive.displayParams.textureMapping || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices)
       return undefined;     // Simple meshes have only triangles without edges and are textured.
 
-    return new RealityMeshPrimitive(mesh.triangleIndices, mesh.pointQParams, mesh.points, mesh.uvQParams, mesh.uvs, mesh.normals, mesh.primitive.displayParams.textureMapping.texture);
+    return new RealityMeshPrimitive({ indices: mesh.indices, pointQParams: mesh.pointQParams, points: mesh.points, uvQParams: mesh.uvQParams, uvs: mesh.uvs, normals: mesh.normals, featureID: 0, texture: mesh.primitive.displayParams.textureMapping.texture });
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

@@ -88,6 +88,8 @@ export class QParams2d {
   // Return the range diagonal.
   public get rangeDiagonal(): Vector2d { return Vector2d.createFrom({ x: 0 === this.scale.x ? 0 : Quantization.rangeScale16 / this.scale.x, y: 0 === this.scale.y ? 0 : Quantization.rangeScale16 / this.scale.y }); }
 
+  /** Return true if the point point is quantizable */
+  public isQuantizable(point: Point2d ) { return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y); }
 }
 
 /** Represents a quantized 2d point as an (x, y) pair in the integer range [0, 0xffff].
@@ -303,6 +305,9 @@ export class QParams3d {
 
   // Return the range diagonal.
   public get rangeDiagonal(): Vector3d { return Vector3d.createFrom({ x: this.scale.x === 0 ? 0 : Quantization.rangeScale16 / this.scale.x, y: this.scale.y === 0 ? 0 : Quantization.rangeScale16 / this.scale.y, z: this.scale.z === 0 ? 0 : Quantization.rangeScale16 / this.scale.z }); }
+
+  /** Return true if the point point is quantizable */
+  public isQuantizable(point: Point3d ) { return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y) && Quantization.isQuantizable(point.z, this.origin.z, this.scale.z); }
 }
 
 /** Represents a quantized 3d point as an (x, y, z) triplet in the integer range [0, 0xffff].

@@ -107,7 +107,7 @@ export class GltfMeshData {
   public uvQParams?: QParams2d;
   public uvs?: Uint16Array;
   public uvRange?: Range2d;
-  public triangleIndices?: Uint16Array;
+  public indices?: Uint16Array;
 
   public constructor(props: Mesh) {
     this.primitive = props;
@@ -253,8 +253,8 @@ export abstract class GltfReader {
     const mesh = gltfMesh.primitive;
     const pointCount = gltfMesh.points.length / 3;
     mesh.points.fromTypedArray(gltfMesh.pointRange, gltfMesh.points);
-    if (mesh.triangles && gltfMesh.triangleIndices)
-      mesh.triangles.addFromTypedArray(gltfMesh.triangleIndices);
+    if (mesh.triangles && gltfMesh.indices)
+      mesh.triangles.addFromTypedArray(gltfMesh.indices);
 
     if (gltfMesh.uvs && gltfMesh.uvRange && gltfMesh.uvQParams) {
       /** This is ugly and inefficient... unnecessary if Mesh stored uvs as QPoint2dList */
@@ -707,7 +707,7 @@ export abstract class GltfReader {
     if (undefined === data || !(data.buffer instanceof(Uint16Array)))
       return false;
 
-    mesh.triangleIndices = data.buffer;
+    mesh.indices = data.buffer;
 
     return true;
   }

@@ -35,7 +35,7 @@ import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
-import createRealityMeshBuilder from "./glsl/TerrainMesh";
+import createRealityMeshBuilder from "./glsl/RealityMesh";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { RenderPass } from "./RenderFlags";

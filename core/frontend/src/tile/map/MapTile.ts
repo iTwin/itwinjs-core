@@ -15,7 +15,7 @@ import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPr
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
 import { RenderSystem, TerrainTexture } from "../../render/RenderSystem";
-import { RealityMeshGeometry } from "../../render/webgl/TerrainMesh";
+import { RealityMeshGeometry } from "../../render/webgl/RealityMesh";
 import { ViewingSpace } from "../../ViewingSpace";
 import { ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TraversalSelectionContext } from "../internal";
 import { TileGraphicType } from "../TileTreeReference";
@@ -647,7 +647,6 @@ export class UpsampledMapTile extends MapTile {
       if (undefined === parentMesh) {
         return undefined;
       }
-
       const thisId = this.quadId, parentId = parent.quadId;
       const levelDelta = thisId.level - parentId.level;
       const thisColumn = thisId.column - (parentId.column << levelDelta);
@@ -655,6 +654,9 @@ export class UpsampledMapTile extends MapTile {
       const scale = 1.0 / (1 << levelDelta);
       const parentParameterRange = Range2d.createXYXY(scale * thisColumn, scale * thisRow, scale * (thisColumn + 1), scale * (thisRow + 1));
       const upsample = parentMesh.upsample(parentParameterRange);
+      if (undefined === upsample)
+        return undefined;
+
       this.adjustHeights(upsample.heightRange.low, upsample.heightRange.high);
       const projection = parent.getProjection(this.heightRange);
       this._geometry = IModelApp.renderSystem.createRealityMeshFromTerrain(upsample.mesh, projection.transformFromLocal);

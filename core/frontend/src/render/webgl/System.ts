@@ -57,7 +57,7 @@ import { RenderState } from "./RenderState";
 import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
-import { RealityMeshGeometry } from "./TerrainMesh";
+import { RealityMeshGeometry } from "./RealityMesh";
 import { Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 

@@ -121,16 +121,6 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
     return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, mesh.indices, mesh.normals, mesh.featureID);
   }
 
-  public static createFromTerrainMesh(mesh: TerrainMeshPrimitive) {
-    const posBuf = QBufferHandle3d.create(mesh.points.params, mesh.points.toTypedArray());
-    const uvParamBuf = QBufferHandle2d.create(mesh.uvParams.params, mesh.uvParams.toTypedArray());
-
-    const indArray = new Uint16Array(mesh.indices.length);
-    for (let i = 0; i < mesh.indices.length; i++)
-      indArray[i] = mesh.indices[i];
-    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, indArray, mesh.normals, mesh.featureID);
-
-  }
   public get isDisposed(): boolean {
     return super.isDisposed && this.uvParams.isDisposed;
   }
@@ -160,19 +150,19 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   }
 
   public static createFromTerrainMesh(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined) {
-    const params = RealityMeshGeometryParams.createFromTerrainMesh(terrainMesh);
-    return new RealityMeshGeometry(params!, undefined, transform, undefined, false);
+    const params = RealityMeshGeometryParams.createFromRealityMesh(terrainMesh);
+    return params ? new RealityMeshGeometry(params, undefined, transform, undefined, false) : undefined;
   }
 
   public static createFromRealityMesh(realityMesh: RealityMeshPrimitive): RealityMeshGeometry | undefined {
     const params = RealityMeshGeometryParams.createFromRealityMesh(realityMesh);
     if (!params)
       return undefined;
-    const texture = new TerrainTexture(realityMesh.texture, realityMesh.featureID, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0);
+    const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
-    return new RealityMeshGeometry(params, RealityTextureParams.create([texture]), undefined, undefined, false);
-
+    return new RealityMeshGeometry(params, texture ? RealityTextureParams.create([texture]) : undefined, undefined, undefined, false);
   }
+
   public getRange(): Range3d {
     return Range3d.createXYZXYZ(this.qOrigin[0], this.qOrigin[1], this.qOrigin[2], this.qOrigin[0] + Quantization.rangeScale16 * this.qScale[0], this.qOrigin[1] + Quantization.rangeScale16 * this.qScale[1], this.qOrigin[2] + Quantization.rangeScale16 * this.qScale[2]);
   }

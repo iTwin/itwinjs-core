@@ -28,7 +28,7 @@ import { CompositeFlags, FlashMode, RenderOrder, RenderPass } from "./RenderFlag
 import { System } from "./System";
 import { Target } from "./Target";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
-import { RealityMeshGeometry } from "./TerrainMesh";
+import { RealityMeshGeometry } from "./RealityMesh";
 import { TextureHandle } from "./Texture";
 import { VertexLUT } from "./VertexLUT";
 
