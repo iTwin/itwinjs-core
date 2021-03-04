@@ -193,7 +193,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
-  public async requestTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, _unused?: () => boolean, guid?: string): Promise<Uint8Array> {
+  public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<Uint8Array> {
     const requestContext = ClientRequestContext.current;
     const tile = await RequestTileContentMemoizer.perform({ requestContext, tokenProps, treeId, contentId });
 
@@ -202,6 +202,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
       IModelHost.tileUploader.cacheTile(tokenProps, treeId, contentId, tile.content, guid, tile.metadata);
 
     return tile.content;
+  }
+
+  public async requestTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, _unused?: () => boolean, guid?: string): Promise<Uint8Array> {
+    return this.generateTileContent(tokenProps, treeId, contentId, guid);
   }
 
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
@@ -214,6 +218,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
     const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
+  }
+
+  public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+    return IModelHost.usingExternalTileCache;
   }
 
   public async queryVersionInfo(): Promise<TileVersionInfo> {
