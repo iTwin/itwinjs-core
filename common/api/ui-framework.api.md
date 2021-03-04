@@ -187,6 +187,8 @@ import { ZoneTargetType } from '@bentley/ui-ninezone';
 // @alpha
 export class AccuDrawCommandItems {
     // (undocumented)
+    static get bumpToolSetting(): CommandItemDef;
+    // (undocumented)
     static get changeCompassMode(): CommandItemDef;
     // (undocumented)
     static get defineACSByPoints(): CommandItemDef;
@@ -6598,6 +6600,8 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     constructor(props: ViewSelectorProps);
     // (undocumented)
     componentDidMount(): Promise<void>;
+    // (undocumented)
+    componentDidUpdate(prevProps: ViewSelectorProps): Promise<void>;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)

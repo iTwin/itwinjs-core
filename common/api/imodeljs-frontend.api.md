@@ -4653,6 +4653,8 @@ export abstract class InteractiveTool extends Tool {
     // @beta
     applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): boolean;
     beginDynamics(): void;
+    // @beta
+    bumpToolSetting(_settingIndex?: number): Promise<boolean>;
     changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
     decorate(_context: DecorateContext): void;
     decorateSuspended(_context: DecorateContext): void;
@@ -10377,6 +10379,8 @@ export class ToolAdmin {
     assemblyLock: boolean;
     // @internal (undocumented)
     beginDynamics(): void;
+    // @beta
+    bumpToolSetting(settingIndex?: number): Promise<boolean>;
     // @internal (undocumented)
     callOnCleanup(): void;
     convertTouchEndToButtonUp(ev: BeTouchEvent, button?: BeButton): Promise<void>;

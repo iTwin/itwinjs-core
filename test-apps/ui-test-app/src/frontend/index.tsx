@@ -501,7 +501,7 @@ export class SampleAppIModelApp {
   }
 
   public static isEnvVarOn(envVar: string): boolean {
-    return Config.App.has(envVar) && Config.App.get(envVar) === "1";
+    return Config.App.has(envVar) && (Config.App.get(envVar) === "1" || Config.App.get(envVar) === "true");
   }
 
   public static get allowWrite() {
