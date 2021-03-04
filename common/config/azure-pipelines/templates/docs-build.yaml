@@ -46,4 +46,4 @@ steps:
   inputs:
     targetPath: ${{ parameters.stagingDir }}/config/.updated.json
     artifact: .updated.json
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+  # condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
