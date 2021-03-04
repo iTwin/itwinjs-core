@@ -75,16 +75,7 @@ function PropertyEditor({ uiDataProvider, initialItem, isLock, setFocus }: { uiD
   }, [initialItem, isLock, uiDataProvider.items]);
 
   const currentRecord = getLatestRecordValue();
-
-  const isMounted = React.useRef(false);
   const [propertyRecord, setPropertyRecord] = React.useState(currentRecord);
-
-  React.useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
 
   // monitor tool for sync UI events
   React.useEffect(() => {
@@ -129,11 +120,9 @@ function PropertyEditor({ uiDataProvider, initialItem, isLock, setFocus }: { uiD
     uiDataProvider.applyUiPropertyChange(syncItem);
     // Now have the uiDataProvider refetch the latest property values from the tool
     uiDataProvider.reloadDialogItems(true);
-
   }, [initialItem.property.name, propertyRecord, uiDataProvider]);
   // istanbul ignore next
-  const handleCancel = React.useCallback(() => {
-  }, []);
+  const handleCancel = () => {};
 
   return (
     <div key={initialItem.property.name} className={className} >
