@@ -129,9 +129,9 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
   }, [options, sourceFilterString]);
 
   const handleAddNewMapSource = React.useCallback(() => {
-    ModalDialogManager.openDialog(<MapUrlDialog isOverlay={isOverlay} onOkResult={handleModalUrlDialogOk} mapTypesOptions={mapTypesOptions} />);
+    ModalDialogManager.openDialog(<MapUrlDialog activeViewport={activeViewport} isOverlay={isOverlay} onOkResult={handleModalUrlDialogOk} mapTypesOptions={mapTypesOptions} />);
     return;
-  }, [handleModalUrlDialogOk, isOverlay, mapTypesOptions]);
+  }, [activeViewport, handleModalUrlDialogOk, isOverlay, mapTypesOptions]);
 
   const handleAttach = React.useCallback((mapName: string) => {
     setLayerNameToAdd(mapName);
