@@ -60,7 +60,9 @@ export class NativeAppAuthorization {
     if (config.expiryBuffer)
       this._expireSafety = config.expiryBuffer;
 
-    this.onUserStateChanged.addListener((token?: AccessToken) => this._cachedToken = token);
+    this.onUserStateChanged.addListener((token?: AccessToken) => {
+      this._cachedToken = token;
+    });
   }
 
   /** Used to initialize the the backend authorization. Must be awaited before any other methods are called */
@@ -85,8 +87,11 @@ export class NativeAppAuthorization {
    * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
    */
   public async getAccessToken(): Promise<AccessToken> {
-    // if we have a valid token, return it. Otherwise call backend to refresh the token (which in turn will raise `onUserStateChanged` and we'll cache it for future requests)
-    return this.isAuthorized ? this._cachedToken! : AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
+    // if we have a valid token, return it. Otherwise call backend to refresh the token.
+    if (!this.isAuthorized)
+      this._cachedToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
+
+    return this._cachedToken!;
   }
 }
 
