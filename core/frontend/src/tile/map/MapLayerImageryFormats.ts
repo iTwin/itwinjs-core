@@ -91,7 +91,11 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
 
       return { status: MapLayerSourceStatus.Valid, subLayers };
     } catch (err) {
-      return { status: MapLayerSourceStatus.InvalidUrl };
+      let status = MapLayerSourceStatus.InvalidUrl;
+      if (err?.status === 401) {
+        status = (credentials ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
+      }
+      return { status };
     }
   }
 }

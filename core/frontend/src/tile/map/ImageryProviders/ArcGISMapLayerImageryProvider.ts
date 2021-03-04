@@ -20,7 +20,6 @@ const scratchQuadId = new QuadId(0, 0, 0);
 
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
-  private _hasSuccessfullyFetchedTile = false;
   private _maxDepthFromLod = 0;
   private _copyrightText = "Copyright";
   private _querySupported = false;

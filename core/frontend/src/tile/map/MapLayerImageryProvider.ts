@@ -9,6 +9,8 @@
 import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings } from "@bentley/imodeljs-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
+import { IModelApp } from "../../IModelApp";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../imodeljs-frontend";
 import { ScreenViewport } from "../../Viewport";
 
 import { ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, QuadId } from "../internal";
@@ -25,6 +27,7 @@ export enum MapLayerImageryProviderStatus {
  * @internal
  */
 export abstract class MapLayerImageryProvider {
+  protected _hasSuccessfullyFetchedTile = false;
   public status: MapLayerImageryProviderStatus = MapLayerImageryProviderStatus.Valid;
   public readonly onStatusChanged = new BeEvent<(provider: MapLayerImageryProvider) => void>();
 
@@ -89,17 +92,46 @@ export abstract class MapLayerImageryProvider {
     return new ImageSource(byteArray, imageFormat);
   }
 
-  public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
+  public setStatus(status: MapLayerImageryProviderStatus) {
+    if (this.status !== status) {
+      this.status = status;
+      this.onStatusChanged.raiseEvent(this);
+    }
+  }
+
+  public async makeTileRequest(url: string) {
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     tileRequestOptions.auth = this.getRequestAuthorization();
+    return request(this._requestContext, url, tileRequestOptions);
+  }
+
+  public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
+
     try {
       const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
       if (tileUrl.length === 0)
         return undefined;
 
-      const tileResponse: Response = await request(this._requestContext, tileUrl, tileRequestOptions);
+      const tileResponse: Response = await this.makeTileRequest(tileUrl);
+
+      if (!this._hasSuccessfullyFetchedTile) {
+        this._hasSuccessfullyFetchedTile = true;
+      }
+
       return this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
+      if (error?.status === 401) {
+        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
+
+        // Only report error to end-user if we were previously able to fetch tiles
+        // and then encountered an error, otherwise I assume an error was already reported
+        // through the source validation process.
+        if (this._hasSuccessfullyFetchedTile) {
+          const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+        }
+
+      }
       return undefined;
     }
   }
