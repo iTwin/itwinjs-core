@@ -126,6 +126,7 @@ class OrbitGtTileTreeParams implements TileTreeParams {
 class OrbitGtRootTile extends Tile {
   protected _loadChildren(_resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void { }
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> { return undefined; }
+  public get channel() { return IModelApp.tileAdmin.channels.getForHttp("itwinjs-orbitgit"); }
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> { return {}; }
   public freeMemory(): void { }
 
