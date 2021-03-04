@@ -13,7 +13,7 @@ parameters:
 
 steps:
   - script: |
-      mkdir $${{ parameters.stagingDir }}/reference/
+      mkdir ${{ parameters.stagingDir }}/reference/
 
       echo Copying all reference files to staging
       robocopy /S generated-docs/core/ ${{ parameters.stagingDir }}/reference/
@@ -23,7 +23,7 @@ steps:
       robocopy /S generated-docs/domains/ ${{ parameters.stagingDir }}/reference/
 
       echo Copying extracted code to staging
-      mkdir $${{ parameters.stagingDir }}/extract/
+      mkdir ${{ parameters.stagingDir }}/extract/
       robocopy /S generated-docs/extract/ ${{ parameters.stagingDir }}/extract/
 
       echo Copying all files from \docs folder
