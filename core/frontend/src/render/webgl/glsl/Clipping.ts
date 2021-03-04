@@ -24,7 +24,7 @@ vec4 getClipPlane(int index) {
 export const unpackFloat = `
 float unpackFloat(vec4 v) {
   const float bias = 38.0;
-  v *= 255.0;
+  v = floor(v * 255.0 + 0.5);
   float temp = v.w / 2.0;
   float exponent = floor(temp);
   float sign = (temp - exponent) * 2.0;
