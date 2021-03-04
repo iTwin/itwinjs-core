@@ -10,7 +10,7 @@ import "./DefaultDialogGridContainer.scss";
 import classnames from "classnames";
 import * as React from "react";
 import {
-  BaseDialogItem, DialogItem, DialogItemValue, DialogPropertySyncItem, DialogRow, PropertyDescription, PropertyRecord, PropertyValueFormat, SyncPropertiesChangeEventArgs,
+  BaseDialogItem, DialogItem, DialogItemValue, DialogPropertySyncItem, DialogRow, PropertyValueFormat, SyncPropertiesChangeEventArgs,
   UiLayoutDataProvider,
 } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
