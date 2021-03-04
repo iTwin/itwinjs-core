@@ -24,6 +24,7 @@ import * as React from "react";
 import { BadgeType, FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
+  AccuDrawCommandItems,
   AccuDrawKeyboardShortcuts,
   CommandItemDef,
   ConfigurableUiManager,
@@ -390,6 +391,10 @@ export class AppUi {
           {
             key: "n",
             item: AppUi._bumpToolSettingToggle,
+          },
+          {
+            key: "f",
+            item: AccuDrawCommandItems.focusToolSetting,
           },
         ],
       },

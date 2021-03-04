@@ -832,6 +832,9 @@ export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
 export function FlexWrapContainer(props: CommonDivProps): JSX.Element;
 
 // @internal
+export function focusIntoContainer(focusContainer: HTMLDivElement, initialFocusElement?: React.RefObject<HTMLElement> | string): boolean;
+
+// @internal
 export function FocusTrap(props: FocusTrapProps): JSX.Element | null;
 
 // @internal

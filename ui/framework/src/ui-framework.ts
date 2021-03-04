@@ -215,6 +215,7 @@ export * from "./ui-framework/tools/CoreToolDefinitions";
 export * from "./ui-framework/tools/FrameworkToolAdmin";
 export * from "./ui-framework/tools/MarkupToolDefinitions";
 export * from "./ui-framework/tools/RestoreLayoutTool";
+export * from "./ui-framework/tools/ToolSettingsTools";
 
 export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 

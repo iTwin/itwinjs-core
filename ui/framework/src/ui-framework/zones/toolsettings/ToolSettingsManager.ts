@@ -8,7 +8,7 @@
 
 import { IModelApp, InteractiveTool } from "@bentley/imodeljs-frontend";
 import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
-import { UiEvent } from "@bentley/ui-core";
+import { focusIntoContainer, UiEvent } from "@bentley/ui-core";
 import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 
 // -----------------------------------------------------------------------------
@@ -141,4 +141,19 @@ export class ToolSettingsManager {
     return ToolSettingsManager._toolIdForToolSettings;
   }
 
+  public static focusIntoToolSettings(): boolean {
+    let divElement = document.querySelector("div.nz-toolSettings-docked");
+    if (divElement) {
+      if (focusIntoContainer(divElement as HTMLDivElement))
+        return true;
+    }
+
+    divElement = document.querySelector("div.uifw-tool-settings-grid-container");
+    if (divElement) {
+      if (focusIntoContainer(divElement as HTMLDivElement))
+        return true;
+    }
+
+    return false;
+  }
 }

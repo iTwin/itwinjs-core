@@ -83,6 +83,7 @@ alpha;FilteredText(props: FilteredTextProps): JSX.Element
 alpha;FilteredTextProps 
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer(props: CommonDivProps): JSX.Element
+internal;focusIntoContainer(focusContainer: HTMLDivElement, initialFocusElement?: React.RefObject
 internal;FocusTrap(props: FocusTrapProps): JSX.Element | null
 internal;FocusTrapProps 
 beta;Form 
