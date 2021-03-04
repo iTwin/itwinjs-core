@@ -27,9 +27,9 @@ class ProxyAuthClient : NSObject, AuthorizationClient {
         var jsonString: String? = nil;
         if (token != nil) {
             let jsonDic : [String: Any] = [
-                "_tokenString": token!,
-                "_expiresAt" : expiresAt,
-                "_startsAt" : startsAt,
+                "tokenString": token!,
+                "expiresAt" : expiresAt,
+                "startsAt" : startsAt,
             ];
             do {
                 let jsonData = try JSONSerialization.data(withJSONObject: jsonDic, options: []);
@@ -68,8 +68,8 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         let bundlePath = Bundle.main.bundlePath;
         let mainPath = bundlePath.appending ("/Assets/main.js");
         let main = URL(fileURLWithPath: mainPath);
-        // let client = MobileAuthorizationClient(viewController: self);
-        let client = ProxyAuthClient();
+        let client = MobileAuthorizationClient(viewController: self);
+        // let client = ProxyAuthClient();
         host.loadBackend(main, withAuthClient: client,withInspect: true)
     }
 
