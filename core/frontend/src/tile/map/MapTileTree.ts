@@ -547,7 +547,7 @@ export class MapTileTreeReference extends TileTreeReference {
   }
   public get isGlobal() { return true; }
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
-  public get planarClipMaskPrority(): number { return PlanarClipMaskPriority.BackgroundMap; }
+  public get planarclipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
 
   /** Terrain  tiles do not contribute to the range used by "fit view". */
   public unionFitRange(_range: Range3d): void { }

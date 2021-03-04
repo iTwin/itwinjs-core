@@ -114,7 +114,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
 
     // istanbul ignore else
     if (this.props.repeat !== prevProps.repeat) {
-      this._onRepeatChanged();
+      this._changeRepeatSetting(this.props.repeat);
     }
 
     // istanbul ignore else
@@ -122,7 +122,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
       this._onSetTotalDuration(this.props.totalDuration);
     }
   }
-
   private _handleTimelinePausePlayEvent = (args: GenericUiEventArgs): void => {
     const timelineArgs = args as TimelinePausePlayArgs;
     // istanbul ignore else
@@ -308,12 +307,25 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
         }
       });
   };
+  private _changeRepeatSetting = (newValue?: boolean) => {
+    // istanbul ignore else
+    if (newValue !== undefined) {
+      this.setState(
+        () => ({ repeat: newValue, isSettingsOpen: false }),
+        () => {
+          // istanbul ignore else
+          if (this.props.onSettingsChange) {
+            this.props.onSettingsChange({ loop: this.state.repeat });
+          }
+        });
+    }
+  };
 
   private _onRepeatChanged = () => {
     this.setState(
       (prevState) => ({ repeat: !prevState.repeat, isSettingsOpen: false }),
       () => {
-        // istanbul ignore else
+      // istanbul ignore else
         if (this.props.onSettingsChange) {
           this.props.onSettingsChange({ loop: this.state.repeat });
         }

@@ -345,7 +345,7 @@ export class AzureBlobStorage extends CloudStorageService {
     // (undocumented)
     obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
     // (undocumented)
-    upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
+    upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
 }
 
 // @beta
@@ -731,7 +731,7 @@ export abstract class CloudStorageService {
     // (undocumented)
     terminate(): void;
     // (undocumented)
-    abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
+    abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
 }
 
 // @beta (undocumented)
@@ -749,7 +749,7 @@ export class CloudStorageTileUploader {
     // (undocumented)
     get activeUploads(): Iterable<Promise<void>>;
     // (undocumented)
-    cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined): void;
+    cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): void;
     }
 
 // @beta (undocumented)
@@ -2598,7 +2598,7 @@ export namespace IModelDb {
     export class Tiles {
         constructor(_iModel: IModelDb);
         // (undocumented)
-        requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array>;
+        requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<IModelJsNative.TileContent>;
         // (undocumented)
         requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps>;
     }
