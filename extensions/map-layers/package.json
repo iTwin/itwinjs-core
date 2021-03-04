@@ -111,7 +111,7 @@
       "source-map-support/register",
       "ts-node/register"
     ],
-    "check-coverage": true,
+    "check-coverage": false,
     "statements": 60,
     "branches": 25,
     "functions": 60,
