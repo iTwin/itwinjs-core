@@ -135,8 +135,15 @@ public;ExportPartInfo
 public;ExportPartInstanceInfo
 public;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
 public;ExportPartLinesInfo
+alpha;ExternalSource 
 public;ExternalSourceAspect 
 public;ExternalSourceAspect
+alpha;ExternalSourceAttachment 
+alpha;ExternalSourceAttachmentAttachesSource 
+alpha;ExternalSourceGroup 
+alpha;ExternalSourceGroupGroupsSources 
+alpha;ExternalSourceIsInRepository 
+alpha;ExternalSourceOwnsAttachments 
 public;class FileNameResolver
 public;class FunctionalBreakdownElement 
 public;class FunctionalComponentElement 
@@ -279,6 +286,9 @@ public;SubCategory
 public;Subject 
 public;SubjectOwnsPartitionElements 
 public;SubjectOwnsSubjects 
+alpha;SynchronizationConfigLink 
+alpha;SynchronizationConfigProcessesSources 
+alpha;SynchronizationConfigSpecifiesRootSources 
 beta;TemplateModelCloner 
 beta;TemplateRecipe2d 
 beta;TemplateRecipe3d 
