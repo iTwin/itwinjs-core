@@ -33,6 +33,7 @@ import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "./theme/Th
 import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as openSettingTools from "./tools/OpenSettingsTool";
+import * as toolSettingTools from "./tools/ToolSettingsTools";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 
@@ -140,6 +141,7 @@ export class UiFramework {
       restoreLayoutTools,
       keyinPaletteTools,
       openSettingTools,
+      toolSettingTools,
     ].forEach((tool) => IModelApp.tools.registerModule(tool, frameworkNamespace));
 
     const readFinishedPromise = frameworkNamespace.readFinished;
