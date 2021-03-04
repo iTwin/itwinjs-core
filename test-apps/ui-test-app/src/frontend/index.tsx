@@ -6,24 +6,24 @@ import "./index.scss";
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
 import * as React from "react";
-import reactAxe from "@axe-core/react";
 import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
+import reactAxe from "@axe-core/react";
 import { ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 import {
-  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient, isFrontendAuthorizationClient,
+  BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, isFrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizationConfiguration, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import {
-  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, IModelConnection,
-  NativeApp, NativeAppAuthorization, NativeAppLogger, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOptions,
+  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection, NativeApp,
+  NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOpts,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
@@ -200,7 +200,7 @@ export class SampleAppIModelApp {
 
   public static get appUiSettings(): AppUiSettings { return SampleAppIModelApp._appUiSettings; }
 
-  public static async startup(opts: { webViewerApp: WebViewerAppOptions, iModelApp: IModelAppOptions }): Promise<void> {
+  public static async startup(opts: WebViewerAppOpts & NativeAppOpts): Promise<void> {
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
       NativeAppLogger.initialize();
@@ -694,21 +694,6 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | Autho
     };
 }
 
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | NativeAppAuthorization): Promise<FrontendAuthorizationClient> {
-  if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isMobileAppFrontend) {
-    const auth = new NativeAppAuthorization(oidcConfiguration as AuthorizationConfiguration);
-    await auth.initialize(requestContext);
-    return auth;
-  } else {
-    await BrowserAuthorizationCallbackHandler.handleSigninCallback((oidcConfiguration as BrowserAuthorizationClientConfiguration).redirectUri);
-    const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
-    try {
-      await browserClient.signInSilent(requestContext);
-    } catch (err) { }
-    return browserClient;
-  }
-}
-
 // main entry point.
 async function main() {
   // initialize logging
@@ -742,7 +727,8 @@ async function main() {
     rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
   }
 
-  const opts = {
+  const authConfig = getOidcConfiguration();
+  const opts: WebViewerAppOpts & NativeAppOpts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
       toolAdmin: new FrameworkToolAdmin(),
@@ -753,13 +739,24 @@ async function main() {
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
     },
-    webViewerApp: { rpcParams },
+    webViewerApp: {
+      rpcParams,
+      authConfig,
+    },
+    nativeApp: {
+      authConfig,
+    },
   };
 
   // Start the app.
   await SampleAppIModelApp.startup(opts);
 
-  IModelApp.authorizationClient = await createOidcClient(new ClientRequestContext(), getOidcConfiguration());
+  const auth = IModelApp.authorizationClient;
+  if (auth instanceof BrowserAuthorizationClient) {
+    try {
+      await auth.signInSilent(new ClientRequestContext());
+    } catch (err) { }
+  }
 
   // Add ApplicationInsights telemetry client
   const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");

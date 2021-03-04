@@ -34,8 +34,7 @@ export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any
  * @beta
  */
 export interface IpcAppOptions {
-  /** The platform-specific implementation of the [IpcSocketFrontend]($common) interface */
-  ipc: IpcSocketFrontend;
+  iModelApp?: IModelAppOptions;
 }
 
 /**
@@ -122,10 +121,10 @@ export class IpcApp {
     return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
-  public static async startup(opts: { ipcApp: IpcAppOptions, iModelApp?: IModelAppOptions }) {
-    this._ipc = opts.ipcApp.ipc;
+  public static async startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions) {
+    this._ipc = ipc;
     IpcAppNotifyHandler.register(); // receives notifications from backend
-    await IModelApp.startup(opts.iModelApp);
+    await IModelApp.startup(opts?.iModelApp);
   }
 
   public static async shutdown() {

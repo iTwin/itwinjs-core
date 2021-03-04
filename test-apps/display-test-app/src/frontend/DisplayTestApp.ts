@@ -2,14 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
-import {
-  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
-} from "@bentley/frontend-authorization-client";
-import {
-  AuthorizationConfiguration, CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier,
-} from "@bentley/imodeljs-common";
-import { FrontendRequestContext, IModelApp, IModelConnection, NativeAppAuthorization, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
+import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -61,41 +57,6 @@ async function openIModel(filename: string, writable: boolean): Promise<IModelCo
   return iModelConnection;
 }
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | AuthorizationConfiguration {
-  const redirectUri = ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
-  const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
-
-  return ProcessDetector.isElectronAppFrontend || ProcessDetector.isMobileAppFrontend
-    ? {
-      clientId: "imodeljs-electron-test",
-      redirectUri,
-      scope: `${baseOidcScope} offline_access`,
-    }
-    : {
-      clientId: "imodeljs-spa-test",
-      redirectUri,
-      scope: `${baseOidcScope} imodeljs-router`,
-      responseType: "code",
-    };
-}
-
-async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientConfiguration): Promise<void> {
-  if (!ProcessDetector.isElectronAppFrontend) {
-    await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
-  }
-}
-
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | AuthorizationConfiguration): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
-  if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isMobileAppFrontend) {
-    const auth = new NativeAppAuthorization(oidcConfiguration as AuthorizationConfiguration);
-    await auth.initialize(requestContext);
-    return auth;
-  } else {
-    const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
-    return browserClient;
-  }
-}
-
 // Wraps the signIn process
 // In the case of use in web applications:
 // - called the first time to start the signIn process - resolves to false
@@ -105,21 +66,19 @@ async function createOidcClient(requestContext: ClientRequestContext, oidcConfig
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const requestContext = new FrontendRequestContext();
-  const oidcConfig = getOidcConfiguration();
-  await handleOidcCallback(oidcConfig);
-  const oidcClient = await createOidcClient(requestContext, oidcConfig);
+  if (!ProcessDetector.isMobileAppFrontend || ProcessDetector.isElectronAppFrontend)
+    await BrowserAuthorizationCallbackHandler.handleSigninCallback(DisplayTestApp.getAuthConfig().redirectUri);
 
-  IModelApp.authorizationClient = oidcClient;
-  if (oidcClient.isAuthorized)
+  const auth = IModelApp.authorizationClient!;
+  if (auth.isAuthorized)
     return true;
 
   const retPromise = new Promise<boolean>((resolve, reject) => {
-    oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
+    auth.onUserStateChanged.addListener((token: AccessToken | undefined) => {
       resolve(token !== undefined);
     });
 
-    oidcClient.signIn(requestContext).catch((err) => {
+    auth.signIn().catch((err) => {
       reject(err);
     });
   });

@@ -8,12 +8,12 @@
 
 import { BeEvent, Config, GuidString, Logger, SessionProps } from "@bentley/bentleyjs-core";
 import {
-  AuthorizationConfiguration, BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel,
-  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  AuthorizationConfiguration, BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
+  nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { AccessToken, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { IModelAppOptions } from "./imodeljs-frontend";
+import { IModelApp } from "./imodeljs-frontend";
 import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
@@ -91,6 +91,17 @@ export class NativeAppAuthorization {
 }
 
 /**
+ * Options for [[NativeApp.startup]]
+ * @alpha
+ */
+export interface NativeAppOpts extends IpcAppOptions {
+  nativeApp?: {
+    /** if present, [[IModelApp.authorizationClient]] will be set to an instance of NativeAppAuthorization and will be initialized. */
+    authConfig?: AuthorizationConfiguration;
+  };
+}
+
+/**
  * The frontend of a native application
  * @see [Native Applications]($docs/learning/NativeApps.md)
  * @alpha
@@ -138,8 +149,8 @@ export class NativeApp {
    * This is called by either ElectronApp.startup or MobileApp.startup - it should not be called directly
    * @internal
    */
-  public static async startup(opts: { ipcApp: IpcAppOptions, iModelApp?: IModelAppOptions }) {
-    await IpcApp.startup(opts);
+  public static async startup(ipc: IpcSocketFrontend, opts?: NativeAppOpts) {
+    await IpcApp.startup(ipc, opts);
     if (this._isValid)
       return;
     this._isValid = true;
@@ -148,6 +159,12 @@ export class NativeApp {
 
     Config.App.merge(await this.callNativeHost("getConfig"));
     NativeApp.hookBrowserConnectivityEvents();
+
+    if (opts?.nativeApp?.authConfig) {
+      const auth = new NativeAppAuthorization(opts.nativeApp.authConfig);
+      IModelApp.authorizationClient = auth;
+      await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
+    }
 
     // initialize current online state.
     if (window.navigator.onLine) {
