@@ -30,6 +30,11 @@ steps:
       robocopy /E docs/ ${{ parameters.stagingDir }}/
     workingDirectory: ${{ parameters.workingDir }}
     displayName: Copy Reference files to Staging
+    failOnStderr: false
+
+  - script: dir /S
+    workingDirectory: ${{ parameters.stagingDir }}
+    displayName: Log files
 
   # BIS Docs are pulled from a separate internal build currently. This will change in the future
   - task: DownloadBuildArtifacts@0
