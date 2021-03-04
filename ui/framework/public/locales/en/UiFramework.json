@@ -303,6 +303,7 @@
     "rotateAxes": "Rotate Axes",
     "rotateToElement": "Rotate To Element",
     "defineACSByPoints": "Define ACS By Points",
+    "bumpToolSetting": "Bump Tool Settings",
     "rotateSubMenu": "AccuDraw Rotate",
     "rotationSet": "AccuDraw rotation mode set to {{rotationString}}",
     "rotation": {
