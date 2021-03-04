@@ -19,11 +19,24 @@ export class EventController {
 
   constructor(public vp: ScreenViewport) {
     const element = vp.parentDiv;
-    if (element === undefined)
-      return;
+    if (element === undefined) return;
 
     // Put events  on the parentDiv to allows us to stopPropagation of events to the view canvas when they are meant for a sibling of view canvas (markup canvas, for example).
-    this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
+    this.addDomListeners(
+      [
+        "mousedown",
+        "mouseup",
+        "mousemove",
+        "mouseover",
+        "mouseout",
+        "wheel",
+        "touchstart",
+        "touchend",
+        "touchcancel",
+        "touchmove",
+      ],
+      element
+    );
 
     element.oncontextmenu = element.onselectstart = () => false;
   }
@@ -42,12 +55,15 @@ export class EventController {
   private addDomListeners(domType: string[], element: HTMLElement) {
     const vp = this.vp;
     const listener = (ev: Event) => {
-      ev.preventDefault();
+      // decoratorDiv is deprecated from the public API really, so this usage is fine
+      if (!vp.decorationDiv.contains(ev.target as Element)) ev.preventDefault();
       ToolAdmin.addEvent(ev, vp);
     };
     domType.forEach((type) => {
       element.addEventListener(type, listener, false);
-      this._removals.push(() => element.removeEventListener(type, listener, false));
+      this._removals.push(() =>
+        element.removeEventListener(type, listener, false)
+      );
     });
   }
 }
