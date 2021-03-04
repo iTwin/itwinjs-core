@@ -8,12 +8,12 @@ import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
-  AuthorizationConfiguration,
   Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
+import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode,
-  TileAdmin, Tool, ToolAdmin,
+  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem,
+  SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -22,8 +22,9 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, RotateElementByAngleTool, RotateElementByPointsTool, UndoTool } from "./EditingTools";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
+import {
+  EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, RotateElementByAngleTool, RotateElementByPointsTool, UndoTool,
+} from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
@@ -39,7 +40,6 @@ import {
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
-import { BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];

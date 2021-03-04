@@ -66,7 +66,7 @@ async function openIModel(filename: string, writable: boolean): Promise<IModelCo
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  if (!ProcessDetector.isMobileAppFrontend || ProcessDetector.isElectronAppFrontend)
+  if (!ProcessDetector.isMobileAppFrontend && !ProcessDetector.isElectronAppFrontend)
     await BrowserAuthorizationCallbackHandler.handleSigninCallback(DisplayTestApp.getAuthConfig().redirectUri);
 
   const auth = IModelApp.authorizationClient!;

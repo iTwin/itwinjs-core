@@ -12,6 +12,7 @@ import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { IModelAppOptions } from '@bentley/imodeljs-frontend';
 import { IModelHostConfiguration } from '@bentley/imodeljs-backend';
 import { IpcHostOptions } from '@bentley/imodeljs-backend';
+import { NativeAppOpts } from '@bentley/imodeljs-frontend';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { PromiseReturnType } from '@bentley/imodeljs-frontend';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
@@ -107,9 +108,7 @@ export class MobileApp {
     // (undocumented)
     static onWillTerminate: BeEvent<() => void>;
     // @internal
-    static startup(opts?: {
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    static startup(opts?: NativeAppOpts): Promise<void>;
 }
 
 // @beta (undocumented)

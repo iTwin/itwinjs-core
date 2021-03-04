@@ -61,7 +61,7 @@ export class AuthenticationError extends ResponseError {
 // @beta
 export interface AuthorizationClient {
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    isAuthorized: boolean;
+    readonly isAuthorized: boolean;
 }
 
 // @public

@@ -282,6 +282,7 @@ beta;LengthDescription
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
 internal;LocalhostIpcApp
+public;LocalHostIpcAppOpts 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -342,6 +343,7 @@ alpha;ModifyElementSource
 alpha;NativeApp
 alpha;NativeAppAuthorization
 internal;NativeAppLogger
+alpha;NativeAppOpts 
 internal;NoRenderApp
 beta;class NotificationHandler
 public;NotificationManager
@@ -614,7 +616,7 @@ public;WalkViewTool
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
 beta;WebViewerApp
-beta;WebViewerAppOptions
+beta;WebViewerAppOpts
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities

@@ -29,6 +29,7 @@ class LocalTransport extends IpcWebSocketTransport {
   }
 }
 
+/** @internal */
 export interface LocalHostIpcAppOpts extends WebViewerAppOpts {
   localhostIpcApp?: {
     socketPort?: number;

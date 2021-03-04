@@ -29,6 +29,7 @@ import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
+import { BrowserAuthorizationClientConfiguration } from '@bentley/frontend-authorization-client';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
 import { Capabilities } from '@bentley/webgl-compatibility';
@@ -4736,15 +4737,13 @@ export class IpcApp {
     // (undocumented)
     static shutdown(): Promise<void>;
     // (undocumented)
-    static startup(opts: {
-        ipcApp: IpcAppOptions;
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    static startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions): Promise<void>;
 }
 
 // @beta
 export interface IpcAppOptions {
-    ipc: IpcSocketFrontend;
+    // (undocumented)
+    iModelApp?: IModelAppOptions;
 }
 
 // @alpha
@@ -4814,13 +4813,15 @@ export interface LoadedExtensionProps {
 // @internal
 export class LocalhostIpcApp {
     // (undocumented)
-    static startup(opts: {
-        localhostIpcApp?: {
-            socketPort?: number;
-        };
-        webViewerApp: WebViewerAppOptions;
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    static startup(opts: LocalHostIpcAppOpts): Promise<void>;
+}
+
+// @public (undocumented)
+export interface LocalHostIpcAppOpts extends WebViewerAppOpts {
+    // (undocumented)
+    localhostIpcApp?: {
+        socketPort?: number;
+    };
 }
 
 // @public
@@ -6299,18 +6300,17 @@ export class NativeApp {
     // (undocumented)
     static shutdown(): Promise<void>;
     // @internal
-    static startup(opts: {
-        ipcApp: IpcAppOptions;
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    static startup(ipc: IpcSocketFrontend, opts?: NativeAppOpts): Promise<void>;
     }
 
 // @alpha
 export class NativeAppAuthorization {
-    constructor(clientConfiguration: AuthorizationConfiguration);
+    constructor(config: AuthorizationConfiguration);
+    // (undocumented)
+    protected _expireSafety: number;
     getAccessToken(): Promise<AccessToken>;
     // (undocumented)
-    hasSignedIn: boolean;
+    get hasSignedIn(): boolean;
     initialize(props: SessionProps): Promise<void>;
     // (undocumented)
     get isAuthorized(): boolean;
@@ -6335,6 +6335,14 @@ export class NativeAppLogger {
     // (undocumented)
     static logWarning(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
     }
+
+// @alpha
+export interface NativeAppOpts extends IpcAppOptions {
+    // (undocumented)
+    nativeApp?: {
+        authConfig?: AuthorizationConfiguration;
+    };
+}
 
 // @internal
 export class NoRenderApp {
@@ -12756,18 +12764,19 @@ export class WebViewerApp {
     // (undocumented)
     static shutdown(): Promise<void>;
     // (undocumented)
-    static startup(opts: {
-        webViewerApp: WebViewerAppOptions;
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    static startup(opts: WebViewerAppOpts): Promise<void>;
 }
 
 // @beta
-export interface WebViewerAppOptions {
+export interface WebViewerAppOpts {
     // (undocumented)
-    routing?: RpcRoutingToken;
+    iModelApp?: IModelAppOptions;
     // (undocumented)
-    rpcParams: BentleyCloudRpcParams;
+    webViewerApp: {
+        rpcParams: BentleyCloudRpcParams;
+        routing?: RpcRoutingToken;
+        authConfig?: BrowserAuthorizationClientConfiguration;
+    };
 }
 
 // @internal

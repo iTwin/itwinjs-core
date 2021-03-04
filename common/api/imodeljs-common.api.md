@@ -281,16 +281,12 @@ export namespace AreaPattern {
 
 // @alpha
 export interface AuthorizationConfiguration {
-    clientId: string;
-    expiryBuffer?: number;
+    readonly clientId: string;
+    readonly expiryBuffer?: number;
     // (undocumented)
     issuerUrl?: string;
-    redirectUri: string;
-    // (undocumented)
-    redirectUrl?: string;
-    scope: string;
-    // (undocumented)
-    stateKey?: string;
+    readonly redirectUri: string;
+    readonly scope: string;
 }
 
 export { AuthStatus }
@@ -4720,12 +4716,12 @@ export interface NativeAppFunctions {
     getConfig: () => Promise<any>;
     // (undocumented)
     initializeAuth: (props: ClientRequestContextProps, config: AuthorizationConfiguration) => Promise<void>;
-    // (undocumented)
-    loginForTests: (token: AccessTokenProps) => Promise<void>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
     signIn: () => Promise<void>;
     signOut: () => Promise<void>;
+    // (undocumented)
+    silentLogin: (token: AccessTokenProps) => Promise<void>;
     storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
     storageKeys: (_storageId: string) => Promise<string[]>;
     storageMgrClose: (_storageId: string, _deleteOnClose: boolean) => Promise<void>;

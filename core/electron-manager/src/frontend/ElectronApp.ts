@@ -33,6 +33,7 @@ class ElectronIpc implements IpcSocketFrontend {
   }
 }
 
+/** @beta */
 export type ElectronAppOpts = NativeAppOpts;
 
 /**
