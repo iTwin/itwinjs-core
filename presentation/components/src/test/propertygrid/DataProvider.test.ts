@@ -613,8 +613,7 @@ describe("PropertyDataProvider", () => {
 
           it("returns favorite nested content in a separate category when it's categorized", async () => {
             field1.nestedFields[0].category = createRandomCategory("custom");
-            // eslint-disable-next-line deprecation/deprecation
-            favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: field1.nestedFields[0].name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
+            favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: field1.nestedFields[0].name }), imodelMock.object, moq.It.isAny())).returns(() => true);
             const values = {
               [field1.name]: [{
                 primaryKeys: [createRandomECInstanceKey()],
@@ -951,8 +950,7 @@ describe("PropertyDataProvider", () => {
               nestedContentField.rebuildParentship();
               const descriptor = createRandomDescriptor(undefined, [nestedContentField], categories);
 
-              // eslint-disable-next-line deprecation/deprecation
-              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField.name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
+              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField.name }), imodelMock.object, moq.It.isAny())).returns(() => true);
 
               const propertyValue: string = faker.random.words(2);
               const nestedContentValue: NestedContentValue[] = [{
@@ -993,8 +991,7 @@ describe("PropertyDataProvider", () => {
               nestedContentField.rebuildParentship();
               const descriptor = createRandomDescriptor(undefined, [nestedContentField], categories);
 
-              // eslint-disable-next-line deprecation/deprecation
-              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField.name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
+              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField.name }), imodelMock.object, moq.It.isAny())).returns(() => true);
 
               const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
               const displayValues: ValuesDictionary<any> = { [nestedContentField.name]: "*** Varies ***" };
@@ -1026,10 +1023,8 @@ describe("PropertyDataProvider", () => {
               nestedContentField.rebuildParentship();
               const descriptor = createRandomDescriptor(undefined, [nestedContentField], categories);
 
-              // eslint-disable-next-line deprecation/deprecation
-              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField1.name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
-              // eslint-disable-next-line deprecation/deprecation
-              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField2.name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
+              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField1.name }), imodelMock.object, moq.It.isAny())).returns(() => true);
+              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: propertiesField2.name }), imodelMock.object, moq.It.isAny())).returns(() => true);
 
               const values: ValuesDictionary<any> = { [nestedContentField.name]: undefined };
               const displayValues: ValuesDictionary<any> = { [nestedContentField.name]: "*** Varies ***" };
@@ -1059,8 +1054,7 @@ describe("PropertyDataProvider", () => {
               const nestedContentField = createRandomNestedContentField([propertiesField1, propertiesField2], category);
               const descriptor = createRandomDescriptor(undefined, [nestedContentField], [category]);
 
-              // eslint-disable-next-line deprecation/deprecation
-              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: nestedContentField.nestedFields[0].name }), moq.It.isAny(), moq.It.isAny())).returns(() => true);
+              favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isObjectWith<Field>({ name: nestedContentField.nestedFields[0].name }), imodelMock.object, moq.It.isAny())).returns(() => true);
 
               const values = {
                 [nestedContentField.name]: [{ primaryKeys: [createRandomECInstanceKey()] }],
