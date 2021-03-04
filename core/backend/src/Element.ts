@@ -1291,17 +1291,21 @@ export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
   /** @internal */
   public static get className(): string { return "RepositoryLink"; }
   public repositoryGuid?: GuidString;
+  /** @note This property was added to the BisCore schema in version 1.0.13 */
+  public format?: string;
 
   /** @internal */
   public constructor(props: RepositoryLinkProps, iModel: IModelDb) {
     super(props, iModel);
     this.repositoryGuid = props.repositoryGuid;
+    this.format = props.format;
   }
 
   /** @internal */
   public toJSON(): RepositoryLinkProps {
     const val = super.toJSON() as RepositoryLinkProps;
     val.repositoryGuid = this.repositoryGuid;
+    val.format = this.format;
     return val;
   }
 }
