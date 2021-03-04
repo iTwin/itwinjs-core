@@ -93,10 +93,10 @@ export interface IModelAppOptions {
    * @beta
   */
   mapLayerOptions?: MapLayerOptions;
-  /** If present, supplies the [[TileAdmin]] for this session.
-   * @alpha
+  /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session.
+   * @beta
    */
-  tileAdmin?: TileAdmin;
+  tileAdmin?: TileAdmin.Props;
   /** If present, supplies the [[NotificationManager]] for this session. */
   notifications?: NotificationManager;
   /** If present, supplies the [[ToolAdmin]] for this session. */
@@ -414,7 +414,7 @@ export class IModelApp {
 
     this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
     this._viewManager = (opts.viewManager !== undefined) ? opts.viewManager : new ViewManager();
-    this._tileAdmin = (opts.tileAdmin !== undefined) ? opts.tileAdmin : TileAdmin.create();
+    this._tileAdmin = await TileAdmin.create(opts.tileAdmin);
     this._notifications = (opts.notifications !== undefined) ? opts.notifications : new NotificationManager();
     this._toolAdmin = (opts.toolAdmin !== undefined) ? opts.toolAdmin : new ToolAdmin();
     this._accuDraw = (opts.accuDraw !== undefined) ? opts.accuDraw : new AccuDraw();

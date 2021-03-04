@@ -7,11 +7,11 @@ import { expect } from "chai";
 import { ByteStream } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
-  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
+  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, IModelTileRpcInterface, iModelTileTreeIdToString,
   RenderMode, TileMetadata, TileProps, TileTreeMetadata,
 } from "@bentley/imodeljs-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileAdmin, TileTreeLoadStatus, ViewState,
+  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus, ViewState,
 } from "@bentley/imodeljs-frontend";
 
 describe("Tile tolerance", () => {
@@ -21,7 +21,7 @@ describe("Tile tolerance", () => {
   const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
 
   before(async () => {
-    await IModelApp.startup({ tileAdmin: TileAdmin.create({ minimumSpatialTolerance }) });
+    await IModelApp.startup({ tileAdmin: { minimumSpatialTolerance } });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 
@@ -58,7 +58,7 @@ describe("Tile tolerance", () => {
   }
 
   async function expectTolerance(contentId: string, expectedTolerance: number, epsilon = 0.000001): Promise<void> {
-    const content = await imodel.tiles.getTileContent(treeId, contentId, () => false, undefined, undefined);
+    const content = await IModelTileRpcInterface.getClient().generateTileContent(imodel.getRpcProps(), treeId, contentId, undefined);
     const stream = new ByteStream(content.buffer);
     const header = new ImdlHeader(stream);
     expect(header.isValid).to.be.true;
@@ -68,7 +68,7 @@ describe("Tile tolerance", () => {
   }
 
   it("should match between frontend and backend", async () => {
-    const treeProps = await imodel.tiles.getTileTreeProps(treeId);
+    const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
     const tree: TileTreeMetadata = { ...treeProps, modelId, is2d: false, contentRange: undefined };
 
     // treeProps.rootTile.contentId is a lie...must be computed on front-end.

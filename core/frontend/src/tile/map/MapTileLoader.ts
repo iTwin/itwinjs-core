@@ -11,6 +11,7 @@ import { Range1d } from "@bentley/geometry-core";
 import { Feature, FeatureTable } from "@bentley/imodeljs-common";
 import { request } from "@bentley/itwin-client";
 import { IModelConnection } from "../../IModelConnection";
+import { IModelApp } from "../../IModelApp";
 import { RenderSystem } from "../../render/RenderSystem";
 import { MapCartoRectangle, MapTile, RealityTile, RealityTileLoader, TerrainMeshProvider, TerrainTileContent, TileRequest } from "../internal";
 import { Tile, TileLoadPriority } from "../Tile";
@@ -41,6 +42,12 @@ export class MapTileLoader extends RealityTileLoader {
 
   public get maxDepth(): number { return this._terrainProvider.maxDepth; }
   public get terrainProvider(): TerrainMeshProvider { return this._terrainProvider; }
+
+  public getRequestChannel(_tile: Tile) {
+    // ###TODO use hostname from url - but so many layers to go through to get that...
+    return IModelApp.tileAdmin.channels.getForHttp("itwinjs-imagery");
+  }
+
   public async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
     if (!this.terrainProvider.requiresLoadedContent)
       return new Uint8Array();

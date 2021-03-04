@@ -6,12 +6,12 @@
  * @module Tiles
  */
 
-import { AbandonedError, assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
+import { assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { ImageSource } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet } from "../ViewportSet";
-import { Tile, TileTree } from "./internal";
+import { Tile, TileRequestChannel, TileTree } from "./internal";
 
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile]] to execute the request for tile content and
  * convert the result into a renderable graphic. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.
@@ -20,6 +20,8 @@ import { Tile, TileTree } from "./internal";
 export class TileRequest {
   /** The requested tile. While the request is pending or active, `tile.request` points back to this TileRequest. */
   public readonly tile: Tile;
+  /** The channel via which the request will be executed. */
+  public readonly channel: TileRequestChannel;
   /** The set of [[Viewport]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no viewport cares about it. */
   public viewports: ReadonlyViewportSet;
   private _state: TileRequest.State;
@@ -30,6 +32,7 @@ export class TileRequest {
   public constructor(tile: Tile, vp: Viewport) {
     this._state = TileRequest.State.Queued;
     this.tile = tile;
+    this.channel = tile.channel;
     this.viewports = IModelApp.tileAdmin.getViewportSetForRequest(vp);
   }
 
@@ -73,21 +76,17 @@ export class TileRequest {
     let response;
     let gotResponse = false;
     try {
-      response = await this.tile.requestContent(() => this.isCanceled);
+      response = await this.channel.requestContent(this.tile, () => this.isCanceled);
       gotResponse = true;
 
       // Set this now, so our `isCanceled` check can see it.
       this._state = TileRequest.State.Loading;
     } catch (err) {
-      if (err instanceof AbandonedError) {
-        // Content not found in cache and we were cancelled while awaiting that response, so not forwarded to backend.
-        this.notifyAndClear();
-        this._state = TileRequest.State.Failed;
-      } else if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
+      if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();
         this._state = TileRequest.State.Failed;
-        IModelApp.tileAdmin.onTileTimedOut(this.tile);
+        this.channel.recordTimeout();
       } else {
         // Unknown error - not retryable
         this.setFailed();
@@ -100,6 +99,13 @@ export class TileRequest {
     if (!gotResponse || this.isCanceled)
       return;
 
+    if (undefined === response && this.channel.onNoContent(this)) {
+      // Invalidate scene - if tile is re-selected, it will be re-requested - presumably via a different channel.
+      this.notifyAndClear();
+      this._state = TileRequest.State.Failed;
+      return;
+    }
+
     return this.handleResponse(response);
   }
 
@@ -107,7 +113,7 @@ export class TileRequest {
   public cancel(): void {
     this.notifyAndClear();
     if (TileRequest.State.Dispatched === this._state)
-      this.tile.onActiveRequestCanceled();
+      this.channel.onActiveRequestCanceled(this);
 
     this._state = TileRequest.State.Failed;
   }
@@ -128,7 +134,7 @@ export class TileRequest {
     this.notifyAndClear();
     this._state = TileRequest.State.Failed;
     this.tile.setNotFound();
-    IModelApp.tileAdmin.onTileFailed(this.tile);
+    this.channel.recordFailure();
   }
 
   /** Invoked when the raw tile content becomes available, to convert it into a tile graphic. */
@@ -156,7 +162,7 @@ export class TileRequest {
       this._state = TileRequest.State.Completed;
       this.tile.setContent(content);
       this.notifyAndClear();
-      IModelApp.tileAdmin.onTileCompleted(this.tile);
+      this.channel.recordCompletion(this.tile);
     } catch (_err) {
       this.setFailed();
     }

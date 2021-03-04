@@ -47,7 +47,7 @@ describe("Animated tile trees (#integration)", () => {
       let treeProps;
       let threw = false;
       try {
-        treeProps = await imodel.tiles.getTileTreeProps(treeId);
+        treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
       } catch (_) {
         threw = true;
       }

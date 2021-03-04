@@ -18,7 +18,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import {
-  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileUsageMarker, ViewportIdSet,
+  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, ViewportIdSet,
 } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
@@ -106,6 +106,14 @@ export abstract class Tile {
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   protected abstract _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
+
+  /** Return the channel via which this tile's content should be requested.
+   * @note The channel *must* be registered with `IModelApp.tileAdmin.channels`.
+   * @see [[TileRequestChannels.getForHttp]] to create a channel that requests content over HTTP.
+   * @see [[TileAdmin.channels]].
+   * @beta
+   */
+  public abstract get channel(): TileRequestChannel;
 
   /** Return a Promise that resolves to the raw data representing this tile's content. */
   public abstract requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
@@ -217,9 +225,6 @@ export abstract class Tile {
     assert(undefined === request || undefined === this.request);
     this._request = request;
   }
-
-  /** @internal */
-  public onActiveRequestCanceled(): void { }
 
   /** @internal */
   public computeLoadPriority(_viewports: Iterable<Viewport>): number {

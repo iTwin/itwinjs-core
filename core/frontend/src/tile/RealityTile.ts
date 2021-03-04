@@ -13,8 +13,9 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
-import { RealityTileTree, Tile, TileContent, TileDrawArgs, TileGraphicType, TileParams, TileRequest, TileTreeLoadStatus, TraversalDetails, TraversalSelectionContext } from "./internal";
-import { TileLoadStatus } from "./Tile";
+import {
+  RealityTileTree, Tile, TileContent, TileDrawArgs, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TraversalDetails, TraversalSelectionContext,
+} from "./internal";
 
 /** @internal */
 export interface RealityTileParams extends TileParams {
@@ -76,6 +77,10 @@ export class RealityTile extends Tile {
 
   public isOccluded(_viewingSpace: ViewingSpace): boolean {
     return false;
+  }
+
+  public get channel(): TileRequestChannel {
+    return this.realityRoot.loader.getRequestChannel(this);
   }
 
   public async requestContent(isCanceled: () => boolean): Promise<TileRequest.Response> {

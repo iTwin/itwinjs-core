@@ -15,7 +15,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
 import {
   B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, I3dmReader, readPointCloudTileContent, RealityTile, Tile, TileContent,
-  TileDrawArgs, TileLoadPriority, TileRequest,
+  TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel,
 } from "./internal";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
@@ -42,6 +42,7 @@ export abstract class RealityTileLoader {
   }
 
   public abstract loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
+  public abstract getRequestChannel(tile: Tile): TileRequestChannel;
   public abstract requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
   public abstract get priority(): TileLoadPriority;
@@ -52,7 +53,6 @@ export abstract class RealityTileLoader {
   public get containsPointClouds(): boolean { return this._containsPointClouds; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
   public forceTileLoad(_tile: Tile): boolean { return false; }
-  public onActiveRequestCanceled(_tile: Tile): void { }
 
   public processSelectedTiles(selected: Tile[], _args: TileDrawArgs): Tile[] { return selected; }
 

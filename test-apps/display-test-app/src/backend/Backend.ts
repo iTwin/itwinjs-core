@@ -198,9 +198,6 @@ const setupStandaloneConfiguration = () => {
   if (undefined !== process.env.SVT_DPI_LOD)
     configuration.dpiAwareLOD = true;
 
-  if (undefined !== process.env.SVT_NO_CANCEL_TILE_REQUESTS)
-    configuration.cancelBackendTileRequests = false;
-
   const aaSamplesVar = process.env.SVT_AASAMPLES;
   if (undefined !== aaSamplesVar && "0" !== aaSamplesVar && "false" !== aaSamplesVar.toLowerCase()) {
     const aaSamples = Number.parseInt(aaSamplesVar, 10);

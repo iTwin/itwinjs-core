@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
-  DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, Tile, TileAdmin, TileLoadStatus,
+  DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, Tile, TileLoadStatus,
   TileTree, TileUsageMarker, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
@@ -25,7 +25,7 @@ describe("Tile unloading", async () => {
   };
 
   before(async () => {
-    await IModelApp.startup({ tileAdmin: TileAdmin.create(tileOpts) });
+    await IModelApp.startup({ tileAdmin: tileOpts });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
   });
 

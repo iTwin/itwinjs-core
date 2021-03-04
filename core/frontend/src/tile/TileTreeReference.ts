@@ -200,7 +200,9 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   public getTerrainHeight(_terrainHeights: Range1d): void { }
 
   /** Return whether the geometry exposed by this tile tree reference should cast shadows on other geometry. */
-  public abstract get castsShadows(): boolean;
+  public get castsShadows(): boolean {
+    return true;
+  }
 
   /** Return whether this reference has global coverage.  Mapping data is global and some non-primary models such as the OSM building layer have global coverage */
   public get isGlobal(): boolean { return false; }

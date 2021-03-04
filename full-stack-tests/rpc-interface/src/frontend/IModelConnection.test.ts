@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { Id64, Id64Set } from "@bentley/bentleyjs-core";
-import { Matrix4d, Point3d, Transform, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelTileRpcInterface, MassPropertiesOperation,
+  EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, MassPropertiesOperation,
   MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps,
 } from "@bentley/imodeljs-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
@@ -57,136 +57,6 @@ describe("IModel Connection", () => {
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
-  });
-});
-
-describe("IModelConnection Tiles", () => {
-  let iModel: IModelConnection;
-  let contextId: string;
-  let accessToken: AccessToken;
-  let testContext: TestContext;
-
-  before(async function () {
-    testContext = await TestContext.instance();
-
-    if (!testContext.settings.runiModelTileRpcTests) {
-      this.skip();
-    }
-
-    const iModelId = testContext.iModelWithChangesets!.iModelId;
-    contextId = testContext.iModelWithChangesets!.contextId;
-    accessToken = testContext.adminUserAccessToken;
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await CheckpointConnection.openRemote(contextId, iModelId);
-  });
-
-  it("IModelTileRpcInterface method getTileCacheContainerUrl should work as expected", async () => {
-    // requesting tiles will automatically call getTileCacheContainerUrl if the chechCache method is defined
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
-    const treeId = modelProps[0].id!.toString();
-    const tile = await iModel.tiles.getTileTreeProps(treeId);
-
-    expect(tile).to.not.be.undefined;
-    expect(tile.rootTile.contentId).to.not.be.undefined;
-
-    const result = await iModel.tiles.getTileContent(treeId, tile.rootTile.contentId, () => false, undefined, undefined);
-    expect(result).to.not.be.undefined;
-
-    // for subsequent test cases to actually requests tiles from the backend instead of azure storage, we need to set the checkCache to return undefined
-    (IModelTileRpcInterface as any).checkCache = () => undefined;
-  });
-
-  it("should be able to request tiles from an IModelConnection", async () => {
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
-    expect(modelProps.length).to.be.at.least(1);
-
-    const treeId = modelProps[0].id!.toString();
-    const tree = await iModel.tiles.getTileTreeProps(treeId);
-
-    expect(tree.id).to.equal(modelProps[0].id);
-    expect(tree.maxTilesToSkip).to.equal(1);
-    expect(tree.rootTile).not.to.be.undefined;
-
-    const tf = Transform.fromJSON(tree.location);
-    expect(tf.matrix.isIdentity).to.be.true;
-    expect(tf.origin).to.not.be.undefined;
-
-    const rootTile = tree.rootTile;
-    expect(rootTile.contentId).to.equal("0/0/0/0/1");
-  });
-
-  it("IModelTileRpcInterface method getTileTreeProps should work as expected", async function () {
-    if (!testContext.settings.runiModelTileRpcTests)
-      this.skip();
-
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
-    const treeId = modelProps[0].id!.toString();
-
-    const result = await iModel.tiles.getTileTreeProps(treeId);
-
-    expect(result).to.not.be.undefined;
-    expect(result.rootTile.contentId).to.not.be.undefined;
-  });
-
-  it("IModelTileRpcInterface method getTileContent should work as expected", async function () {
-    if (!testContext.settings.runiModelTileRpcTests)
-      this.skip();
-
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
-    const treeId = modelProps[0].id!.toString();
-    const tile = await iModel.tiles.getTileTreeProps(treeId);
-
-    expect(tile).to.not.be.undefined;
-    expect(tile.rootTile.contentId).to.not.be.undefined;
-
-    const result = await iModel.tiles.getTileContent(treeId, tile.rootTile.contentId, () => false, undefined, undefined);
-    expect(result).to.not.be.undefined;
-  });
-
-  it("IModelTileRpcInterface method requestTileTreeProps should work as expected", async function () {
-    if (!testContext.settings.runiModelTileRpcTests)
-      this.skip();
-
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
-    const treeId = modelProps[0].id!.toString();
-
-    const result = await iModel.tiles.getTileTreeProps(treeId);
-
-    expect(result).to.not.be.undefined;
-    expect(result.rootTile.contentId).to.not.be.undefined;
-  });
-
-  it("IModelTileRpcInterface method requestTileContent should work as expected", async function () {
-    if (!testContext.settings.runiModelTileRpcTests)
-      this.skip();
-
-    const modelProps = await iModel.models.queryProps({ from: "BisCore.SpatialModel" });
-    const treeId = modelProps[0].id!.toString();
-    const tile = await iModel.tiles.getTileTreeProps(treeId);
-
-    expect(tile).to.not.be.undefined;
-    expect(tile.rootTile.contentId).to.not.be.undefined;
-
-    const result = await iModel.tiles.getTileContent(treeId, tile.rootTile.contentId, () => false, undefined, undefined);
-
-    expect(result).to.not.be.undefined;
-  });
-
-  it("IModelTileRpcInterface method purgeTileTrees should work as expected", async function () {
-    if (!testContext.settings.runiModelTileRpcTests)
-      this.skip();
-
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
-    const treeId = modelProps[0].id!.toString();
-
-    let failed = false;
-    try {
-      await iModel.tiles.purgeTileTrees([treeId]);
-    } catch (ex) {
-      failed = true;
-    }
-
-    expect(failed).to.be.false;
   });
 });
 

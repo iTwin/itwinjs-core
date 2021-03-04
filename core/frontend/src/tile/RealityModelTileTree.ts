@@ -31,8 +31,7 @@ import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, createClassifierTileTreeReference, DisclosedTileTreeSet, getCesiumAccessTokenAndEndpointUrl, getCesiumOSMBuildingsUrl, RealityTile, RealityTileLoader, RealityTileParams,
   RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
-  TileTreeOwner,
-  TileTreeReference, TileTreeSupplier,
+  TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 import { createDefaultViewFlagOverrides } from "./ViewFlagOverrides";
 
@@ -328,6 +327,11 @@ class RealityModelTileLoader extends RealityTileLoader {
       }
     }
     return props;
+  }
+
+  public getRequestChannel(_tile: Tile) {
+    // ###TODO: May want to extract the hostname from the URL.
+    return IModelApp.tileAdmin.channels.getForHttp("itwinjs-reality-model");
   }
 
   public async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {

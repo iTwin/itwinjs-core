@@ -65,7 +65,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   public async createTileTree(id: PrimaryTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     const treeId = id.treeId;
     const idStr = iModelTileTreeIdToString(id.modelId, treeId, IModelApp.tileAdmin);
-    const props = await iModel.tiles.getTileTreeProps(idStr);
+    const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
     const options = {
       edgesRequired: treeId.edgesRequired,

@@ -3920,6 +3920,8 @@ export { IModelStatus }
 
 // @public (undocumented)
 export abstract class IModelTileRpcInterface extends RpcInterface {
+    // @internal
+    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<Uint8Array>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
@@ -3927,12 +3929,14 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
     // @internal
+    isUsingExternalTileCache(): Promise<boolean>;
+    // @internal
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
     queryVersionInfo(): Promise<TileVersionInfo>;
     // @internal
     requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps>;

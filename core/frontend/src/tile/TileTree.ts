@@ -66,10 +66,14 @@ export abstract class TileTree {
   public abstract get is3d(): boolean;
   /** Returns the maximum depth of this tree, if any. */
   public abstract get maxDepth(): number | undefined;
+
   /** The overrides that should be applied to the view's [ViewFlags]($common) when this tile tree is drawn. Can be overridden by individual [[TileTreeReference]]s. */
   public abstract get viewFlagOverrides(): ViewFlagOverrides;
+
   /** True if this tile tree has no bounds - e.g., a tile tree representing a globe is unbounded. */
-  public abstract get isContentUnbounded(): boolean;
+  public get isContentUnbounded(): boolean {
+    return false;
+  }
 
   /** Implement this method to select tiles of appropriate resolution. */
   protected abstract _selectTiles(args: TileDrawArgs): Tile[];

@@ -50,7 +50,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
       return undefined;
 
     const idStr = iModelTileTreeIdToString(id.modelId, id, IModelApp.tileAdmin);
-    const props = await iModel.tiles.getTileTreeProps(idStr);
+    const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
     const options = {
       edgesRequired: false,
