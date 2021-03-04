@@ -84,7 +84,7 @@ For reference, the pessimistic locking rules are as follows:
 | Delete model   | Model             | Exclusive  |
 | "              | Elements in model | Exclusive  |
 
-An app will normally implement the pessimistic policy by using high-level APIs to build lock requests based on the intended operation, as explained [below](#how-to-acquire-locks-and-reserve-codes). These high-level APIs take care of both acquiring locks and reserving Codes.
+An app will normally implement the pessimistic policy by using high-level APIs to build lock requests based on the intended operation, as explained [below](#how-and-when-to-acquire-locks-and-reserve-codes). These high-level APIs take care of both acquiring locks and reserving Codes.
 
 A briefcase must pull before it can lock an element or model if it is affected by a recently pushed ChangeSet.
 
