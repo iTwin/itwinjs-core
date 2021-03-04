@@ -1626,7 +1626,9 @@ export abstract class Viewport implements IDisposable {
       status = view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
     }
 
-    this.setupFromView();
+    if (ViewStatus.Success === status)
+      this.setupFromView();
+
     return status;
   }
 
