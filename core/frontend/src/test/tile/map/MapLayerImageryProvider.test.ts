@@ -23,7 +23,7 @@ chai.use(chaiAsPromised);
 
 const wmsSampleSource = { formatId: "WMS", url: "https://localhost/wms", name: "Test WMS" };
 
-describe.only("WmsMapLayerImageryProvider", () => {
+describe("WmsMapLayerImageryProvider", () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
@@ -135,7 +135,7 @@ describe.only("WmsMapLayerImageryProvider", () => {
 
 //
 // This suite depends on IModelApp
-describe.only("MapLayerImageryProvider with IModelApp", () => {
+describe("MapLayerImageryProvider with IModelApp", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
     await IModelApp.startup();
@@ -196,7 +196,7 @@ describe.only("MapLayerImageryProvider with IModelApp", () => {
 });
 
 const wmtsSampleSource = { formatId: "WMTS", url: "https://localhost/wmts", name: "Test WMTS" };
-describe.only("WmtsMapLayerImageryProvider", () => {
+describe("WmtsMapLayerImageryProvider", () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
