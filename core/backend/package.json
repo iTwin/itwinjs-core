@@ -9,7 +9,7 @@
     "node": ">=10.17.0 <13.0"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "tsc 1>&2",
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-backend/file.json --tsIndexFile=./imodeljs-backend.ts --onlyJson",

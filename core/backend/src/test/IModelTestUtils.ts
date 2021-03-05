@@ -405,7 +405,7 @@ export class IModelTestUtils {
     const config = new IModelHostConfiguration();
     config.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
     config.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-    await IModelHost.startup(config);
+    return IModelHost.startup(config);
   }
 
   public static registerTestBimSchema() {
@@ -417,7 +417,7 @@ export class IModelTestUtils {
   }
 
   public static async shutdownBackend(): Promise<void> {
-    await IModelHost.shutdown();
+    return IModelHost.shutdown();
   }
 
   public static setupLogging() {
@@ -504,6 +504,5 @@ before(async () => {
 });
 
 after(async () => {
-  console.log("Shutting down IModelHost");
   await IModelTestUtils.shutdownBackend();
 })

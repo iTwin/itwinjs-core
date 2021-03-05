@@ -426,7 +426,9 @@ describe("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = HubUtility.generateUniqueName("ConcurrencyControlBulkModeTest");
-    HubUtility.recreateIModel(adminRequestContext, testContextId, iModelName);
+    let deleteIModel = await HubUtility.queryIModelByName(adminRequestContext, testContextId, iModelName);
+    if (undefined !== deleteIModel)
+      await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, deleteIModel.wsgId);
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     const rwIModelId = await BriefcaseManager.create(adminRequestContext, testContextId, iModelName, { rootSubject: { name: "TestSubject" } });
@@ -442,10 +444,8 @@ describe("IModelWriteTest (#integration)", () => {
 
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
 
-    expect(IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, newModelCode, true))
-      .to.throw(IModelError); //.to.eventually.have.property("errorNumber", RepositoryStatus.LockNotHeld);
-    expect(SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, subCategory))
-      .to.throw(IModelError); //.to.eventually.have.property("errorNumber", RepositoryStatus.LockNotHeld);
+    assert.throws(() => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, newModelCode, true), IModelError);  // s/ have errorNumber=RepositoryStatus.LockNotHeld
+    assert.throws(() => SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, subCategory), IModelError);  // s/ have errorNumber=RepositoryStatus.LockNotHeld
 
     // assert.isUndefined(rwIModel.models.tryGetModelProps())
     assert.isUndefined(rwIModel.elements.tryGetElement(newCategoryCode));

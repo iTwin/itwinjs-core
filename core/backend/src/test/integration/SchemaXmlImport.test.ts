@@ -18,12 +18,6 @@ describe("Schema XML Import Tests (#integration)", () => {
   let readWriteTestIModelId: GuidString;
 
   before(async () => {
-    // initialize logging
-    if (true) {
-      Logger.initializeToConsole();
-      Logger.setLevelDefault(LogLevel.Error);
-    }
-
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     testContextId = await HubUtility.getTestContextId(requestContext);
     requestContext.enter();

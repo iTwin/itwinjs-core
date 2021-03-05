@@ -33,13 +33,6 @@ describe("IModelOpen (#integration)", () => {
     (BriefcaseManager as any).deleteFolderAndContents(path);
   };
 
-  it("", async () => {
-    // Open and close the iModel to ensure it works and is closed
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(testChangeSetId).toJSON() });
-    assert.isDefined(iModel);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-  });
-
   it("Unauthorized requests should cause an obvious error", async () => {
     const badToken = new AccessToken("ThisIsABadToken");
     const badRequestContext = new AuthorizedBackendRequestContext(badToken);
