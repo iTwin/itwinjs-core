@@ -97,48 +97,4 @@ export class UnitConvertorContext {
     const fromInverse = fromMap.inverse();
     return fromInverse.compose(toMap);
   }
-
-  // Find common descendants for both units in the graph
-  // public static commonDescendants(
-  //   uGraph: UnitGraph,
-  //   to: Unit,
-  //   from: Unit
-  // ): { fromUnits: Set<string>; toUnits: Set<string> } {
-  //   const toAllUnits = uGraph.bfsReduce(
-  //     to,
-  //     (p, c) => {
-  //       p.add(c.key.fullName);
-  //       return [p, true];
-  //     },
-  //     new Set<string>()
-  //   );
-
-  //   // Stop whenever we reach any unit reachable by to unit
-  //   const fromUnits = uGraph.bfsReduce(
-  //     from,
-  //     (p, c) => {
-  //       if (toAllUnits.has(c.key.fullName)) {
-  //         p.add(c.key.fullName);
-  //         return [p, false];
-  //       }
-
-  //       return [p, true];
-  //     },
-  //     new Set<string>()
-  //   );
-
-  //   // Now units in target that stops at the fromUnits
-  //   const toUnits = uGraph.bfsReduce(
-  //     from,
-  //     (p, c) => {
-  //       if (fromUnits.has(c.key.fullName)) {
-  //         p.add(c.key.fullName);
-  //         return [p, false];
-  //       }
-  //       return [p, true];
-  //     },
-  //     new Set<string>()
-  //   );
-  //   return { fromUnits, toUnits };
-  // }
 }

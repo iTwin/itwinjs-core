@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  Schema,
   SchemaContext,
   SchemaItemKey,
   SchemaKey,
@@ -14,7 +13,6 @@ import * as path from "path";
 import { Float } from "../../src/UnitConversion/Float";
 import { deserializeXml } from "./DeserializeSchema";
 import { UnitConvertorContext } from "../../src/UnitConversion/Convert";
-import { resolve } from "dns";
 
 interface TestData {
   FromSchema: string;
@@ -74,39 +72,39 @@ describe("Testing creating second schema", () => {
     const converter = new UnitConvertorContext(context);
     const schemaKey = new SchemaKey("UnitsA");
 
-    const unitA11 = new SchemaItemKey("unitA11", schemaKey)
-    const meter = new SchemaItemKey("M", schemaKey)
+    const unitA11 = new SchemaItemKey("unitA11", schemaKey);
+    const meter = new SchemaItemKey("M", schemaKey);
     try {
-      await converter.processSchemaItem(unitA11, meter)
+      await converter.processSchemaItem(unitA11, meter);
     } catch (err) {
-      expect(err).to.be.an('error');
+      expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema");
     }
     try {
-      await converter.processSchemaItem(meter, unitA11)
+      await converter.processSchemaItem(meter, unitA11);
     } catch (err) {
-      expect(err).to.be.an('error');
+      expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema");
     }
-  })
+  });
 
   it("should throw when encountering unknown schema or alias names in definitions", async () => {
     const converter = new UnitConvertorContext(context);
     const schemaKey = new SchemaKey("UnitsA");
 
-    const unitA12 = new SchemaItemKey("unitA12", schemaKey)
-    const meter = new SchemaItemKey("M", schemaKey)
+    const unitA12 = new SchemaItemKey("unitA12", schemaKey);
+    const meter = new SchemaItemKey("M", schemaKey);
     try {
-      await converter.processSchemaItem(unitA12, meter)
+      await converter.processSchemaItem(unitA12, meter);
     } catch (err) {
-      expect(err).to.be.an('error');
+      expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema");
     }
     try {
-      await converter.processSchemaItem(meter, unitA12)
+      await converter.processSchemaItem(meter, unitA12);
     } catch (err) {
-      expect(err).to.be.an('error');
+      expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema");
     }
-  })
+  });
 });
