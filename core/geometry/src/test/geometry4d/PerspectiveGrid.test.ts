@@ -129,7 +129,7 @@ function captureXYPlaneGrid(allGeometry: GeometryQuery[], transform: Transform, 
 }
 
 describe("PerspectiveGrid", () => {
-  it.only("HelloFrustum", () => {
+  it("HelloFrustum", () => {
     const allGeometry: GeometryQuery[] = [];
     const ck = new Checker();
     const unitRange = Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1);
