@@ -3,11 +3,16 @@
   "compilerOptions": {
     "target": "es2017",
     "module": "commonjs",
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "jsx": "react",
+    "types": [
+      "sinon-chai",
+      "mocha",
+      "@bentley/react-scripts"
+    ]
   },
   "include": [
-    "./src/**/*.ts",
-    "./src/**/*.tsx"
+    "./src/**/*.ts*"
   ],
   "exclude": [
     "lib",

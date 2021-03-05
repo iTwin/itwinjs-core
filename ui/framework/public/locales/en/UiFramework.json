@@ -146,6 +146,11 @@
     "clearVisibility": "Clear Isolated, Hidden, and Emphasized Elements",
     "sectionTools": "Section Tools",
     "sectionClear": "Clear Sections",
+    "sectionPanelLabel": "Section",
+    "sectionByPlane": "Plane",
+    "sectionByElement": "Element",
+    "sectionByRange": "Range",
+    "sectionByShape": "Shape",
     "measureTools": "Measure Tools",
     "sectionShowHandles": "Section Handles",
     "viewZoomingTools": "Zooming Tools",
@@ -172,6 +177,16 @@
       "keyin": "clear keyin history",
       "description": "Clear keyin palette history",
       "flyover": "Clear keyin palette history"
+    },
+    "BumpToolSetting": {
+      "keyin": "bump toolsetting",
+      "description": "Bump a Tool Settings value",
+      "flyover": "Bump a Tool Setting"
+    },
+    "FocusToolSettings": {
+      "keyin": "focus toolsettings",
+      "description": "Focus into the Tool Settings widget",
+      "flyover": "Focus into Tool Settings"
     }
   },
   "iModelIndex": {
@@ -298,6 +313,8 @@
     "rotateAxes": "Rotate Axes",
     "rotateToElement": "Rotate To Element",
     "defineACSByPoints": "Define ACS By Points",
+    "bumpToolSetting": "Bump Tool Settings",
+    "focusToolSetting": "Focus into Tool Settings",
     "rotateSubMenu": "AccuDraw Rotate",
     "rotationSet": "AccuDraw rotation mode set to {{rotationString}}",
     "rotation": {
