@@ -27,76 +27,6 @@ import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { AnnounceNumberNumber } from "../../curve/CurvePrimitive";
 import { ViewGraphicsOps } from "../../geometry4d/ViewGraphicsOps";
 
-export class LineSegment4d extends LineSegment3d {
-  private _point0H: Point4d;
-  private _point1H: Point4d;
-  public get point0HRef(): Point4d { return this._point0H; }
-  public get point1HRef(): Point4d { return this._point1H; }
-  /** set defining point4d coordinates, and set Point3d images in base class. */
-  public set4d(point0H: Point4d, point1H: Point4d) {
-    this._point0H.setFrom(point0H);
-    this._point0H.setFrom(point1H);
-    super.setRefs(point0H.realPointDefault000(), point1H.realPointDefault000());
-}
-  /**
-   * * CAPTURE point0H, point1H in this LineSegment4d
-   * * If point0, point1 are given, use them as args to super()
-   * * If point0, point1 are not given, use Point4d.normalize
-   * @param point0H
-   * @param point1H
-   * @param point0
-   * @param point1
-   */
-  private constructor(point0H: Point4d, point1H: Point4d, point0?: Point3d, point1?: Point3d) {
-    if (point0 === undefined)
-      point0 = point0H.realPointDefault000();
-    if (point1 === undefined)
-      point1 = point1H.realPointDefault000();
-    super(point0, point1);
-    this._point0H = point0H;
-    this._point1H = point1H;
-    }
-
-  public static create3d(point0: Point3d, point1: Point3d): BSplineCurve3dH  {
-    const point0H = Point4d.create(point0.x, point0.y, point0.z, 1.0);
-    const point1H = Point4d.create(point1.x, point1.y, point1.z, 1.0);
-    return BSplineCurve3dH.create([point0H, point1H], [0, 0, 0, 1, 1, 1], 2)!;
-  }
-  public static create4d(point0H: Point4d, point1H: Point4d): BSplineCurve3dH{
-    return BSplineCurve3dH.create([point0H, point1H], [0, 0, 0, 1, 1, 1], 2)!;
-  }
-
-  /** Create a line defined by
- * * The line is in the plane with homogeneous points `origin + u * vectorU + v * vectorV`
- * * The two free variables u and v are constrained by  `constCoff + u * uCoff + v * vCoff = 0`
- * * The u,v with larger coefficient will be considered dependent, and the other will range from a0 to a1
- */
-  public static createImplicitLineOn4dPlane(origin: Point4d, vectorU: Point4d, vectorV: Point4d,
-    constCoff: number,
-    uCoff: number,
-    vCoff: number,
-    a0: number = -10.0, a1 = 10.0): BSplineCurve3dH | undefined {
-    let u0, u1, v0, v1;
-    if (Math.abs(uCoff) >= Math.abs(vCoff)) {
-      v0 = a0;
-      v1 = a1;
-      u0 = Geometry.conditionalDivideCoordinate(constCoff + v0 * vCoff, -uCoff);
-      u1 = Geometry.conditionalDivideCoordinate(constCoff + v1 * vCoff, -uCoff);
-    } else {
-      u0 = a0;
-      u1 = a1;
-      v0 = Geometry.conditionalDivideCoordinate(constCoff + u0 * uCoff, -vCoff);
-      v1 = Geometry.conditionalDivideCoordinate(constCoff + u1 * uCoff, -vCoff);
-    }
-    if (u0 !== undefined && u1 !== undefined && v0 !== undefined && v1 !== undefined) {
-      return LineSegment4d.create4d(
-        origin.plus2Scaled(vectorU, u0, vectorV, v0),
-        origin.plus2Scaled(vectorU, u1, vectorV, v1));
-    }
-    return undefined;
-  }
-}
-
 function createTransformedUnitBoxMesh(transform: Transform | Matrix4d, z0: number = 0, z1: number = 1): IndexedPolyface {
   const builder = PolyfaceBuilder.create();
   builder.addTransformedRangeMesh(Transform.createIdentity(), Range3d.createXYZXYZ(0, 0, z0, 1, 1, z1),
@@ -289,15 +219,6 @@ describe("PerspectiveGrid", () => {
           }
 
         }
-        /*
-        // Try to output the vanishing line?
-        for (const targetWeight of [0.4, 0.2, 0.1, 0.101]){
-          const vanishingSegment = LineSegment4d.createImplicitLineOn4dPlane(npcOrigin, npcGridX, npcGridY,
-              npcOrigin.w - targetWeight, npcGridX.w, npcGridY.w,
-              -10.0, 10.0);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, vanishingSegment, x0, y0, z0);
-        }
-        */
         // The vanishing line for the grid is all grid s,t points where weight is 0 . . .
         const e = 0.04;
         const npc0Rectangle = Loop.createPolygon(Sample.createRectangleXY(e, e, 1 - e, 1 - e, 0));
