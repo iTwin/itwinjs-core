@@ -21,7 +21,7 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, RotateElementByAngleTool, RotateElementByPointsTool, UndoTool } from "./EditingTools";
+import { EditingSessionTool, PlaceLineStringTool } from "./EditingTools";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -205,33 +205,28 @@ export class DisplayTestApp {
       MarkupTool,
       MaximizeWindowTool,
       ModelClipTool,
-      MoveElementTool,
       OpenIModelTool,
       OutputShadersTool,
       PlaceLineStringTool,
       PurgeTileTreesTool,
       RecordFpsTool,
-      RedoTool,
       RefreshTilesTool,
       ReopenIModelTool,
       ResizeWindowTool,
       RestoreWindowTool,
-      RotateElementByAngleTool,
-      RotateElementByPointsTool,
       SaveImageTool,
       ShutDownTool,
       SVTSelectionTool,
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
-      UndoTool,
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await EditTools.initialize();
+    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true });
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

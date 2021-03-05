@@ -8,3 +8,4 @@
 export * from "./DeleteElementsTool";
 export * from "./EditTool";
 export * from "./TransformElementsTool";
+export * from "./UndoRedoTool";

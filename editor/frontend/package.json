@@ -71,6 +71,7 @@
   "dependencies": {
     "@bentley/geometry-core": "2.14.0-dev.9",
     "@bentley/imodeljs-frontend": "2.14.0-dev.9",
+    "@bentley/ui-abstract": "2.14.0-dev.9",
     "@bentley/imodeljs-editor-common": "2.14.0-dev.9"
   },
   "nyc": {
