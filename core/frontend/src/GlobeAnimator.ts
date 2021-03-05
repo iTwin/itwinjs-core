@@ -14,7 +14,7 @@ import {
 import { ScreenViewport } from "./Viewport";
 import { Animator } from "./ViewAnimation";
 
-/** Object to animate a Frustum transition of a viewport moving across the earth. The [[Viewport]] will show as many frames as necessary. The animation will last a variable length of time depending on the distance traversed.
+/** Object to animate a frustum transition of a viewport moving across the earth. The [[Viewport]] will show as many frames as necessary. The animation will last a variable length of time depending on the distance traversed.
  * This operates on the previous frustum and a destination cartographic coordinate, flying along an earth ellipsoid or flat plane.
  * @internal
  */
