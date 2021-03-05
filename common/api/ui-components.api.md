@@ -3173,8 +3173,6 @@ export interface PropertyCategory {
     label: string;
     // (undocumented)
     name: string;
-    // @alpha (undocumented)
-    parentCategory?: PropertyCategory;
 }
 
 // @public
