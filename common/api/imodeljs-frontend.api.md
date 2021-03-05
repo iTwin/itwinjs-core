@@ -5101,9 +5101,13 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getToolTip(_strings: string[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
+    protected _hasSuccessfullyFetchedTile: boolean;
+    // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
+    // (undocumented)
+    makeTileRequest(url: string): Promise<Response>;
     // (undocumented)
     matchesMissingTile(tileData: Uint8Array): boolean;
     // (undocumented)
@@ -5120,6 +5124,8 @@ export abstract class MapLayerImageryProvider {
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
     // (undocumented)
     protected _requestContext: ClientRequestContext;
+    // (undocumented)
+    setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: MapLayerSettings;
     // (undocumented)
@@ -12172,6 +12178,7 @@ export abstract class Viewport implements IDisposable {
     get timePointValid(): boolean;
     // @internal (undocumented)
     toViewOrientation(from: XYZ, to?: XYZ): void;
+    turnCameraOff(): void;
     turnCameraOn(lensAngle?: Angle): ViewStatus;
     static undoDelay: BeDuration;
     protected updateChangeFlags(newView: ViewState): void;
