@@ -9,8 +9,7 @@
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
   ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
-  Point3d, Range1d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
-} from "@bentley/geometry-core";
+  Point3d, Range1d, Range3d, Ray3d, Transform, Vector2d, Vector3d, ViewGraphicsOps, XAndY} from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
@@ -324,8 +323,74 @@ export class DecorateContext extends RenderContext {
     return (undefined !== thisRay.intersectionWithPlane(dotX > dotY ? planeX : planeY, thisPt)) ? lastPt.distance(thisPt) : 0.0;
   }
 
+  public drawStandardGridNew(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
+    const vp = this.viewport;
+    const eyePoint = vp.worldToViewMap.transform1.columnZ();
+    const eyeDir = Vector3d.createFrom(eyePoint);
+    const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);
+    if (aa !== undefined) {
+      const xyzEye = eyeDir.scale(aa);
+      eyeDir.setFrom(gridOrigin.vectorTo(xyzEye));
+    }
+    const normResult = eyeDir.normalize(eyeDir);
+    if (!normResult)
+      return;
+    const zVec = rMatrix.rowZ();
+    const eyeDot = eyeDir.dotProduct(zVec);
+    if (!vp.isCameraOn && Math.abs(eyeDot) < 0.005)
+      return;
+
+    const plane = Plane3dByOriginAndUnitNormal.create(gridOrigin, zVec);
+    if (undefined === plane)
+      return;
+
+    const loopPt = Point3d.createZero();
+    const shapePoints = this.getClippedGridPlanePoints(vp, plane, loopPt);
+    if (undefined === shapePoints)
+      return;
+
+    const meterPerPixel = vp.getPixelSizeAtPoint(loopPt);
+    const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef;
+    const refSpacing = Vector2d.create(spacing.x, spacing.y).scale(refScale);
+
+    const viewZ = vp.rotation.getRow(2);
+    const gridOffset = Point3d.create(viewZ.x * meterPerPixel, viewZ.y * meterPerPixel, viewZ.z * meterPerPixel); // Avoid z fighting with coincident geometry
+    const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, Transform.createTranslation(gridOffset));
+    const color = vp.getContrastToBackgroundColor();
+    const planeColor = (eyeDot < 0.0 ? ColorDef.red : color).withTransparency(gridConstants.planeTransparency);
+
+    builder.setBlankingFill(planeColor);
+    builder.addShape(shapePoints);
+
+    const refColor = color.withTransparency(gridConstants.refTransparency);
+    const linePat = eyeDot < 0.0 ? LinePixels.Code2 : LinePixels.Solid;
+
+    builder.setSymbology(refColor, planeColor, 1, linePat);
+    const npcRange = Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1);
+    ViewGraphicsOps.announceGridLinesInView(gridOrigin,
+      Vector3d.create(refSpacing.x, 0, 0),
+      Vector3d.create(0, refSpacing.x, 0),
+      vp.worldToNpcMap, npcRange, DecorateContext._minNpcSeparation,
+      (pointA: Point3d, pointB: Point3d) => {
+        builder.addLineString([pointA, pointB]);
+      });
+
+    this.addDecorationFromBuilder(builder);
+  }
+  /** @internal */
+  private static _minNpcSeparation = 0.01;
+  /** @internal */
+  private _gridSelect = 1;
   /** @internal */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
+    if (this._gridSelect === 0)
+      this.drawStandardGridOld (gridOrigin, rMatrix, spacing, gridsPerRef, _isoGrid);
+    else if (this._gridSelect === 1)
+      this.drawStandardGridNew (gridOrigin, rMatrix, spacing, gridsPerRef, _isoGrid);
+  }
+
+  /** @internal */
+  public drawStandardGridOld(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
     const eyePoint = vp.worldToViewMap.transform1.columnZ();
     const eyeDir = Vector3d.createFrom(eyePoint);

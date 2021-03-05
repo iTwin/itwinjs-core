@@ -270,6 +270,7 @@ public;VariantCurveExtendParameter = boolean | CurveExtendMode | CurveExtendMode
 public;Vector2d 
 public;Vector3d 
 public;Vector3dArray
+public;ViewGraphicsOps
 public;WeightStyle
 public;WritableLowAndHighXY
 public;WritableLowAndHighXYZ

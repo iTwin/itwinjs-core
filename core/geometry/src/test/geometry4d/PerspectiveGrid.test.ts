@@ -25,6 +25,7 @@ import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { AnnounceNumberNumber } from "../../curve/CurvePrimitive";
+import { ViewGraphicsOps } from "../../geometry4d/ViewGraphicsOps";
 
 export class LineSegment4d extends LineSegment3d {
   private _point0H: Point4d;
@@ -423,10 +424,10 @@ class LineProximityContext {
 /**
  * ViewGraphicsOps has static members for various viewing-specific computations.
  */
-export class ViewGraphicsOps {
+export class ViewGraphicsOpsTest {
   /**
    * * Emit line segments of a grid that passes through a display volume.
-   * * The chosen segments are culled to have a minimum line-to-line distnace.
+   * * The chosen segments are culled to have a minimum line-to-line distance.
    * * Hence in a perspective view, grid lines that blur together towards the back of the view are not output.
    * * The worldToDisplay map "transform0" matrix is typically one of:
    *    * world to npc -- world space to 0..1 in all directions
@@ -441,7 +442,7 @@ export class ViewGraphicsOps {
    * @param viewRange range of the view after the transformation.
    * @param xyDistanceBetweenLines minimum distance between lines in projected xy space.
    * @param announceLine function to be called to announce each line as it is selected.
-   * @returns false if any data is involid -- e.g. grid vectors parallel.
+   * @returns false if any data is invalid -- e.g. grid vectors parallel.
    */
   public static announceGridLinesInView(
     gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d,
