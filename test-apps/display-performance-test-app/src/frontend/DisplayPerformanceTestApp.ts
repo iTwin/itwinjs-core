@@ -1423,6 +1423,9 @@ async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
   // Restart the IModelApp if needed
   await restartIModelApp(testConfig);
 
+  // Reset the title bar to include the current model and view name
+  document.title = "Display Performance Test App:  ".concat(testConfig.iModelName ?? "", "  [", testConfig.viewName ?? "", "]");
+
   // Open and finish loading model
   const loaded = await loadIModel(testConfig, extViews);
   if (!loaded) {
