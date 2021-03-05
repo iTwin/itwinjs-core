@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Fix shader bug in function unpackFloat which affected iOS unpacking floats precisely.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "47000437+markschlosseratbentley@users.noreply.github.com"
+}

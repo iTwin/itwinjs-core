@@ -16,7 +16,7 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import {
   addRangeGraphic, ImdlReader, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
-  TileTreeLoadStatus, TileVisibility,
+  TileRequestChannel, TileTreeLoadStatus, TileVisibility,
 } from "./internal";
 
 /** Parameters used to construct an [[IModelTile]].
@@ -61,6 +61,10 @@ export interface IModelTileContent extends TileContent {
 export class IModelTile extends Tile {
   private _sizeMultiplier?: number;
   private _emptySubRangeMask?: number;
+  /** True if an attempt to look up this tile's content in the cloud storage tile cache failed.
+   * See CloudStorageCacheChannel.onNoContent and IModelTile.channel
+   */
+  public cacheMiss = false;
 
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     super(params, tree);
@@ -84,17 +88,14 @@ export class IModelTile extends Tile {
     return super.maximumSize * (this.sizeMultiplier ?? 1.0);
   }
 
-  public async requestContent(isCanceled: () => boolean): Promise<TileRequest.Response> {
-    const handleCacheMiss = () => {
-      const cancelMe = isCanceled();
-      if (!cancelMe)
-        IModelApp.tileAdmin.onCacheMiss();
+  public get channel(): TileRequestChannel {
+    const channels = IModelApp.tileAdmin.channels;
+    const cloud = !this.cacheMiss ? channels.cloudStorageCache : undefined;
+    return cloud ?? channels.iModelTileRpc;
+  }
 
-      return cancelMe;
-    };
-
-    const tree = this.iModelTree;
-    return tree.iModel.tiles.getTileContent(tree.id, this.contentId, handleCacheMiss, tree.geometryGuid, tree.contentIdQualifier);
+  public async requestContent(): Promise<TileRequest.Response> {
+    return IModelApp.tileAdmin.generateTileContent(this);
   }
 
   public async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<IModelTileContent> {
@@ -163,10 +164,6 @@ export class IModelTile extends Tile {
     } catch (err) {
       reject(err);
     }
-  }
-
-  public onActiveRequestCanceled(): void {
-    IModelApp.tileAdmin.cancelIModelTileRequest(this);
   }
 
   protected get rangeGraphicColor(): ColorDef {
