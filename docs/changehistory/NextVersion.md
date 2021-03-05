@@ -21,11 +21,11 @@ This version begins the process by redirecting `www.imodeljs.org` to `www.itwinj
 The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
 New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.
 
-The alpha UnitConversionSpec interface now requires a "system" property that can be used during parsing to help determine the unit to parse the value.
+The alpha `UnitConversionSpec` interface now requires a "system" property that can be used during parsing to help determine the unit to parse the value.
 
 ### Frontend package
 
-The alpha class QuantityFormatter now registers its own standard QuantityTypeDefinitions during initialization. CustomQuantityTypeDefinitions must now be registered to support additional QuantityTypes. This replaces the use of FormatterParserSpecsProvider to provide custom quantity types. Removed koq methods that were never implemented.
+The alpha class `QuantityFormatter` now registers its own standard `QuantityTypeDefinitions` during initialization. `CustomQuantityTypeDefinitions` must now be registered to support additional `QuantityTypes`. This replaces the use of `FormatterParserSpecsProvider` to provide custom quantity types. Removed koq methods that were never implemented.
 
 ### IModelHostConfiguration.applicationType
 
@@ -72,7 +72,7 @@ This feature replaces the `@alpha` `TileAdmin.Props.mobileExpirationMemoryThresh
 
 ## IModelHost and IModelApp Initialization Changes
 
-Initialization processing of iTwin.js applications, and in particular the order of individual steps for frontend and backend classes has been complicated and vague, involving several steps that vary depending on application type and platform. This release attempts to clarify and simplify that process, while maintaining backwards compatibility. In general, if your code uses [IModelHost.startup]($backend) and [IModelApp.startup]($frontend) for web visualization, it will continue to work without changes. However, for native (desktop and mobile) apps, some refactoring may be necessary. See [IModelHost documentation]($docs/learning/backend/IModelHost.md) for appropriate backend initialization, and [IModelApp documentation]($docs/learning/frontend/IModelApp.md) for frontend initialization.
+Initialization processing of iTwin.js applications, and in particular the order of individual steps for frontend and backend classes has been complicated and vague, involving several steps that vary depending on application type and platform. This release attempts to clarify and simplify that process, while maintaining backwards compatibility. In general, if your code uses [IModelHost.startup]($backend) and [IModelApp.startup]($frontend) for web visualization, it will continue to work without changes. However, for native (desktop and mobile) apps, some refactoring may be necessary. See [IModelHost documentation](../learning/backend/IModelHost.md) for appropriate backend initialization, and [IModelApp documentation](../learning/frontend/IModelApp.md) for frontend initialization.
 
 The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes `ElectronHost` and `ElectronApp`.
 
@@ -116,7 +116,7 @@ It is frequently necessary to detect the type of JavaScript process currently ex
 
 ## Common table expression support in ECSQL
 
-CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
+CTE are now supported in ECSQL. For more information read [Common Table Expression](../learning/CommonTableExp.md)
 
 ## Planar clip masks
 
