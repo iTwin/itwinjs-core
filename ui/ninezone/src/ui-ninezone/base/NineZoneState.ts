@@ -10,6 +10,7 @@ import { castDraft, Draft, produce } from "immer";
 import { Point, PointProps, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@bentley/bentleyjs-core";
+import { getUniqueId } from "./NineZone";
 
 /** @internal future */
 export interface TabState {
@@ -997,9 +998,27 @@ function getMaxWidgetCount(side: PanelSide) {
   return 2;
 }
 
-type TabLocation =
-  { widgetId: WidgetState["id"], side: PanelSide } |
-  { widgetId: WidgetState["id"], floatingWidgetId: FloatingWidgetState["id"] };
+interface PanelLocation {
+  widgetId: WidgetState["id"];
+  side: PanelSide;
+}
+
+interface FloatingLocation {
+  widgetId: WidgetState["id"];
+  floatingWidgetId: FloatingWidgetState["id"];
+}
+
+type TabLocation = PanelLocation | FloatingLocation;
+
+/** @internal */
+export function isFloatingLocation(location: TabLocation): location is FloatingLocation {
+  return "floatingWidgetId" in location;
+}
+
+/** @internal */
+export function isPanelLocation(location: TabLocation): location is PanelLocation {
+  return "side" in location;
+}
 
 /** @internal */
 export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined {
@@ -1039,6 +1058,87 @@ export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetL
         side,
       };
     }
+  }
+  return undefined;
+}
+
+/**
+ * @internal
+ */
+
+/**
+ * @beta
+ */
+export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps) {
+  const location = findTab(state, widgetTabId);
+  if (location) {
+    if (isFloatingLocation(location))
+      return undefined; // already floating
+
+    const tab = state.tabs[widgetTabId];
+    const preferredSize = size??(tab.preferredFloatingWidgetSize??{height:400, width:400});
+    const preferredPoint = point ?? {x:50, y:100};
+    const preferredBounds = Rectangle.createFromSize(preferredSize).offset(preferredPoint);
+    const nzBounds = Rectangle.createFromSize(state.size);
+    const containedBounds = preferredBounds.containIn(nzBounds);
+
+    if (isPanelLocation(location)) {
+      const floatingWidgetId = getUniqueId();
+      const panel = state.panels[location.side];
+      const widgetIndex = panel.widgets.indexOf(location.widgetId);
+
+      return produce(state, (draft) => {
+        removeWidgetTab(draft, widgetTabId);
+        draft.floatingWidgets.byId[floatingWidgetId] = {
+          bounds: containedBounds.toProps(),
+          id: floatingWidgetId,
+          home: {
+            side: location.side,
+            widgetId: location.widgetId,
+            widgetIndex,
+          },
+        };
+        draft.floatingWidgets.allIds.push(floatingWidgetId);
+        draft.widgets[floatingWidgetId] = {
+          activeTabId: widgetTabId,
+          id: floatingWidgetId,
+          minimized: false,
+          tabs: [widgetTabId],
+        };
+      });
+    }
+  }
+  return undefined;
+}
+
+/**
+ * @beta
+ */
+export function dockWidgetContainer(state: NineZoneState, widgetTabId: string) {
+  const location = findTab(state, widgetTabId);
+  if (location && isFloatingLocation(location)) {
+    const floatingWidgetId = location.widgetId;
+    return produce(state, (draft) => {
+      const floatingWidget = draft.floatingWidgets.byId[floatingWidgetId];
+      const widget = draft.widgets[floatingWidgetId];
+      const home = floatingWidget.home;
+      const panel = draft.panels[home.side];
+      let homeWidget;
+      if (home.widgetId) {
+        homeWidget = draft.widgets[home.widgetId];
+      } else if (panel.widgets.length === panel.maxWidgetCount) {
+        const id = panel.widgets[home.widgetIndex];
+        homeWidget = draft.widgets[id];
+      }
+      if (homeWidget) {
+        homeWidget.tabs.push(...widget.tabs);
+        removeWidget(draft, widget.id);
+      } else {
+        panel.widgets.splice(home.widgetIndex, 0, widget.id);
+        widget.minimized = false;
+        removeFloatingWidget(draft, widget.id);
+      }
+    });
   }
   return undefined;
 }
