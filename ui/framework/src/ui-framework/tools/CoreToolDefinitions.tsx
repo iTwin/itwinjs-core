@@ -322,6 +322,44 @@ export class CoreTools {
     });
   }
 
+  public static get sectionToolGroupWithPanel() {
+    ViewClipByElementTool.register();
+    ViewClipByPlaneTool.register();
+    ViewClipByRangeTool.register();
+    ViewClipByShapeTool.register();
+
+    return new GroupItemDef({
+      groupId: "sectionTools-group-with-panel",
+      labelKey: "UiFramework:tools.sectionTools",
+      panelLabelKey: "UiFramework:tools.sectionPanelLabel",
+      iconSpec: "icon-section-tool",
+      isHidden: new ConditionalBooleanValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        return !!activeContentControl?.viewport?.view.is2d();
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
+      items: [
+        new ToolItemDef({
+          ...this.sectionByPlaneCommandItemDef,
+          labelKey: "UiFramework:tools.sectionByPlane",
+        }),
+        new ToolItemDef({
+          ...this.sectionByElementCommandItemDef,
+          labelKey: "UiFramework:tools.sectionByElement",
+        }),
+        new ToolItemDef({
+          ...this.sectionByRangeCommandItemDef,
+          labelKey: "UiFramework:tools.sectionByRange",
+        }),
+        new ToolItemDef({
+          ...this.sectionByShapeCommandItemDef,
+          labelKey: "UiFramework:tools.sectionByShape",
+        }),
+      ],
+      itemsInColumn: 4,
+    });
+
+  }
+
   // note current MeasureDistanceTool is not automatically registered so the app must call MeasureDistanceTool.register();
   public static get measureDistanceToolItemDef() {
     return new ToolItemDef({
