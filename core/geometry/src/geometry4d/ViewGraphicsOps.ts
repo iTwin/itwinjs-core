@@ -172,6 +172,20 @@ export class ViewGraphicsOps {
     const npcOrigin = toNPC.multiplyXYZW(gridOrigin.x, gridOrigin.y, gridOrigin.z, 1.0);
     const npcGridX = toNPC.multiplyXYZW(gridXStep.x, gridXStep.y, gridXStep.z, 0.0);
     const npcGridY = toNPC.multiplyXYZW(gridYStep.x, gridYStep.y, gridYStep.z, 0.0);
+    /**
+    // vanishing points?
+    //   projective coordinates of 2d lines  . . .
+    const npcA = Vector3d.create(npcOrigin.x, npcOrigin.y, npcOrigin.w);
+    const npcU = Vector3d.create(npcGridX.x, npcGridX.y, npcGridX.w);
+    const npcV = Vector3d.create(npcGridY.x, npcGridY.y, npcGridY.w);
+    const npcB = npcA.plus(npcV);
+    const crossAU = npcA.crossProduct(npcU);
+    const crossBU = npcB.crossProduct(npcU);
+    // const crossAV = npcA.crossProduct(npcV);
+    const crossVU = npcV.crossProduct(npcU);
+    const vanishAU = crossVU.crossProduct(crossAU);
+    const vanishBU = crossBU.crossProduct(crossAU);
+    */
     // scale up so there are decent size weights.  (Same scale factor
     // weights tend to be really small, so we have to trust that things make sense after division . ...
     const maxWeight = Geometry.maxAbsXYZ(npcOrigin.w, npcGridX.w, npcGridY.w);
