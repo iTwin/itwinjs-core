@@ -130,7 +130,7 @@ Only models and elements may be changed optimistically. Locking is required when
 
 ## How and When to Acquire Locks and Reserve Codes
 
-This section describes how an app reserves Codes and/or acquires locks. There are two options for when and how to do this during a local transaction: before making changes (pessimistic) or after making changes (optimistic).
+This section describes how an app reserves Codes and/or acquires Locks. There are two options for when and how to do this during a local transaction: before making changes (pessimistic) or after making changes (optimistic).
 
 As explained above, in optimistic concurrency, models and elements are changed without locks. Codes must still be reserved. However, you get to defer the task of reserving codes until you are ready to call saveChanges.
 
