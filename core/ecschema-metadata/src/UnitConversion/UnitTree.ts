@@ -12,68 +12,12 @@ import {
   SchemaKey,
   Unit,
 } from "../ecschema-metadata";
-import { isConstant, isUnit } from "./Helper";
+import { SchemaItemType } from "../ECObjects";
 import { LinearMap } from "./LinearMap";
-import { Definition, parseDefinition } from "./Parser";
+import { DefinitionFragment, parseDefinition } from "./Parser";
 import { Graph } from "./Graph";
 
 export class GraphUtils {
-  /**
-   * Traverse the _graph breadth first.
-   * @param _graph Graph to be traversed
-   * @param start start label to traverse from
-   * @param keyFrom Get key from label, assuming that key can be constructed from the label itself.
-   * @param op Reducing oepration on each label visited.
-   * @param initial Initial value for the reduction purpose
-   */
-  public static bfsReduce<L, T>(
-    _graph: Graph<L>,
-    start: L,
-    keyFrom: (label: L) => string,
-    op: (previous: T, current: L) => [T, boolean],
-    initial: T
-  ): T {
-    const key = keyFrom(start);
-    // The node does not exist, return theinitial value
-    if (!_graph.hasNode(key)) return initial;
-
-    // Seed the queue with given node as root node
-    const label = _graph.node(key) as L | undefined;
-    if (undefined === label)
-      throw new Error(
-        "The node must have label stored, this should not happen"
-      );
-
-    let q = [label];
-    let nq: L[] = [];
-    let t = initial;
-    while (q.length > 0) {
-      // Visit each item in the queue.
-      // In the process
-      q.forEach((u) => {
-        const [t1, b] = op(t, u);
-        t = t1;
-        if (!b) return;
-        const k = keyFrom(u);
-        const outs = _graph.outEdges(k);
-        if (outs && outs.length > 0) {
-          outs.forEach((kout) => {
-            const l = _graph.node(kout.w);
-            if (undefined === l)
-              throw new Error(
-                "The node must have label stored, this should not happen"
-              );
-            nq.push(l);
-          });
-        }
-      });
-
-      q = nq;
-      nq = [];
-    }
-    return t;
-  }
-
   /**
    * DFS traversal - Post order
    * @param _graph Graph to traverse
@@ -101,10 +45,6 @@ export class GraphUtils {
     return op(t, key);
   }
 }
-
-interface Label {
-  label: string;
-}
 export class UnitGraph {
   private _graph = new Graph<Unit | Constant>();
 
@@ -114,45 +54,6 @@ export class UnitGraph {
 
   public get length(): number {
     return this._graph.nodeCount();
-  }
-
-  public get cloneGraph() {
-    const copy = new Graph<Label>();
-    copy.setGraph(this._graph.graph());
-    this._graph.nodes().forEach((n) => {
-      const label = this._graph.node(n);
-      if (label && (isConstant(label) || isUnit(label))) {
-        const smap = LinearMap.from(label).toString();
-        const slabel = `${label.fullName}\n${smap}`;
-        copy.setNode(n, { label: slabel });
-      }
-    });
-    this._graph.edges().forEach((e) => {
-      const { exponent } = this._graph.edge(e.v, e.w);
-      copy.setEdge(e.v, e.w, { exponent: exponent || 1 });
-    });
-    return copy;
-  }
-
-  public annotatedGraph(
-    mpStore: Map<string, LinearMap>,
-    tmpStore: Map<string, LinearMap>,
-    fromStops: Set<string>,
-    toStops: Set<string>
-  ) {
-    const clone = this.cloneGraph;
-    mpStore.forEach((v, k) => {
-      const { label } = clone.node(k);
-      const fprefix = fromStops.has(k) ? "f" : "";
-      const tprefix = toStops.has(k) ? "t" : "";
-      const prefix = `*${fprefix}${tprefix}`;
-      clone.setNode(k, { label: `${prefix} ${label}\nF${v.toString()}` });
-    });
-    tmpStore.forEach((v, k) => {
-      const { label } = clone.node(k);
-      clone.setNode(k, { label: `${label}\nT${v.toString()}` });
-    });
-    return clone;
   }
 
   public async resolveUnit(
@@ -172,7 +73,10 @@ export class UnitGraph {
         nameArr[0] = refName;
       } else {
         // Didn't match any referenced schema, check if it is current schemaName or alias
-        if (nameArr[0] === defaultSchema.name || nameArr[0] === defaultSchema.alias)
+        if (
+          nameArr[0] === defaultSchema.name ||
+          nameArr[0] === defaultSchema.alias
+        )
           nameArr[0] = defaultSchema.name;
       }
 
@@ -195,7 +99,7 @@ export class UnitGraph {
     }
 
     // Create schema item key with name and schema
-    const itemKey = this.createSchemaItemKey(name, defaultSchema);
+    const itemKey = new SchemaItemKey(name, defaultSchema.schemaKey);
     // Get schema item with schema item key
     const item = await this._context.getSchemaItem(itemKey);
     if (!item)
@@ -206,7 +110,11 @@ export class UnitGraph {
           return { item: name };
         }
       );
-    if (isUnit(item) || isConstant(item)) return item;
+    if (
+      item.schemaItemType === SchemaItemType.Unit ||
+      item.schemaItemType === SchemaItemType.Constant
+    )
+      return item as Unit | Constant;
 
     throw new BentleyError(
       BentleyStatus.ERROR,
@@ -217,14 +125,6 @@ export class UnitGraph {
     );
   }
 
-  private createSchemaItemKey(name: string, defaultSchema: Schema) {
-    if (name.includes(".")) {
-      const [schemaName, unitName] = name.split(".");
-      return new SchemaItemKey(unitName, new SchemaKey(schemaName));
-    }
-    return new SchemaItemKey(name, defaultSchema.schemaKey);
-  }
-
   public async addUnit(unit: Unit | Constant): Promise<void> {
     if (this._graph.hasNode(unit.key.fullName)) return;
 
@@ -233,19 +133,18 @@ export class UnitGraph {
 
     const umap = parseDefinition(unit.definition);
 
-    const promiseArray: Promise<[Unit | Constant, Definition]>[] = [];
+    const promiseArray: Promise<[Unit | Constant, DefinitionFragment]>[] = [];
     for (const [key, value] of umap) {
       promiseArray.push(
         this.resolveUnit(key, unit.schema).then((u) => [u, value])
       );
     }
-    const resolved = await Promise.all<[Unit | Constant, Definition]>(
+    const resolved = await Promise.all<[Unit | Constant, DefinitionFragment]>(
       promiseArray
     );
 
     const children = resolved.map(async ([u, def]) => {
       await this.addUnit(u);
-      // console.log(def);
       this._graph.setEdge(unit.key.fullName, u.key.fullName, {
         exponent: def.exponent,
       });
@@ -259,26 +158,6 @@ export class UnitGraph {
   }
 
   /**
-   * Reduction via breadth first search
-   * @param unit Unit or constant under observation
-   * @param op   Operation that will be performed on each stored unit/constant, should work with previous value
-   * @param initial Initial value.
-   */
-  public bfsReduce<T>(
-    unit: Unit | Constant,
-    op: (previous: T, current: Unit | Constant) => [T, boolean],
-    initial: T
-  ): T {
-    return GraphUtils.bfsReduce(
-      this._graph,
-      unit,
-      (c) => c.key.fullName,
-      op,
-      initial
-    );
-  }
-
-  /**
    * Reduce the tree to produce a single map
    * @param unit Unit to be processed
    * @param stopNodes The tree exploration should stop here
@@ -287,40 +166,46 @@ export class UnitGraph {
     unit: Unit | Constant,
     stopNodes: Set<string>
   ): Map<string, LinearMap> {
-    const key = unit.key.fullName;
-    const mpStore = new Map<string, LinearMap>();
-    const mpStore1 = GraphUtils.dfsReduce(
+    const unitFullName = unit.key.fullName;
+    const innerMapStore = new Map<string, LinearMap>();
+    const outerMapStore = GraphUtils.dfsReduce(
       this._graph,
-      key,
-      (p, c) => {
-        if (stopNodes.has(c)) {
-          p.set(c, LinearMap.identity);
-          return p;
-        }
-        const outEdges = this._graph.outEdges(c);
-        if (outEdges) {
-          const cmap = outEdges.reduce<LinearMap | undefined>((pm, e) => {
-            const { exponent } = this._graph.edge(e.v, e.w);
-            const exp = exponent ? exponent : 1;
-            const stored = p.get(e.w);
-            const map = stored ? stored : LinearMap.identity;
-            const emap = map.raise(exp);
-            return pm ? pm.multiply(emap) : emap;
-          }, undefined);
-          const thisMap = this._graph.node(c)
-            ? LinearMap.from(this._graph.node(c))
-            : LinearMap.identity;
-          const other = cmap || LinearMap.identity;
-          const result = other.compose(thisMap);
-          p.set(c, result);
-        } else {
-          p.set(c, LinearMap.identity);
-        }
-        return p;
-      },
+      unitFullName,
+      (p, c) => this.reducingFunction(stopNodes, p, c),
       (c) => !stopNodes.has(c),
-      mpStore
+      innerMapStore
     );
-    return mpStore1;
+    return outerMapStore;
+  }
+
+  private reducingFunction(
+    stopNodes: Set<string>,
+    innermapStore: Map<string, LinearMap>,
+    unitFullName: string
+  ) {
+    if (stopNodes.has(unitFullName)) {
+      innermapStore.set(unitFullName, LinearMap.identity);
+      return innermapStore;
+    }
+    const outEdges = this._graph.outEdges(unitFullName);
+    if (outEdges) {
+      const cmap = outEdges.reduce<LinearMap | undefined>((pm, e) => {
+        const { exponent } = this._graph.edge(e.v, e.w);
+        const exp = exponent ? exponent : 1;
+        const stored = innermapStore.get(e.w);
+        const map = stored ? stored : LinearMap.identity;
+        const emap = map.raise(exp);
+        return pm ? pm.multiply(emap) : emap;
+      }, undefined);
+      const thisMap = this._graph.node(unitFullName)
+        ? LinearMap.from(this._graph.node(unitFullName))
+        : LinearMap.identity;
+      const other = cmap || LinearMap.identity;
+      const result = other.compose(thisMap);
+      innermapStore.set(unitFullName, result);
+    } else {
+      innermapStore.set(unitFullName, LinearMap.identity);
+    }
+    return innermapStore;
   }
 }

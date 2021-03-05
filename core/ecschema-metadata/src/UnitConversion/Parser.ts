@@ -12,14 +12,16 @@ enum Tokens {
   Exponent = 3,
 }
 
-export interface Definition {
+export interface DefinitionFragment {
   name: string;
   exponent: number;
   constant: boolean;
 }
 
-export function parseDefinition(definition: string): Map<string, Definition> {
-  const unitMap: Map<string, Definition> = new Map();
+export function parseDefinition(
+  definition: string
+): Map<string, DefinitionFragment> {
+  const unitMap: Map<string, DefinitionFragment> = new Map();
 
   if (expressionRgx.test(definition)) {
     for (const unit of definition.split(sp)) {
