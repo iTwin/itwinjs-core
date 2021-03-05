@@ -159,6 +159,9 @@
         "flyover": "Toggle Camera"
       }
     },
+    "OpenSettings": {
+      "keyin": "open settings"
+    },
     "RestoreFrontstageLayout": {
       "keyin": "restore frontstage layout",
       "description": "Restore Frontstage to Default Layout",
@@ -169,6 +172,16 @@
       "keyin": "clear keyin history",
       "description": "Clear keyin palette history",
       "flyover": "Clear keyin palette history"
+    },
+    "BumpToolSetting": {
+      "keyin": "bump toolsetting",
+      "description": "Bump a Tool Settings value",
+      "flyover": "Bump a Tool Setting"
+    },
+    "FocusToolSettings": {
+      "keyin": "focus toolsettings",
+      "description": "Focus into the Tool Settings widget",
+      "flyover": "Focus into Tool Settings"
     }
   },
   "iModelIndex": {
@@ -295,6 +308,8 @@
     "rotateAxes": "Rotate Axes",
     "rotateToElement": "Rotate To Element",
     "defineACSByPoints": "Define ACS By Points",
+    "bumpToolSetting": "Bump Tool Settings",
+    "focusToolSetting": "Focus into Tool Settings",
     "rotateSubMenu": "AccuDraw Rotate",
     "rotationSet": "AccuDraw rotation mode set to {{rotationString}}",
     "rotation": {
@@ -310,5 +325,10 @@
       "polar": "polar",
       "rectangular": "rectangular"
     }
+  },
+  "settings": {
+    "settingsStageLabel": "Settings",
+    "noSettingsProvidersRegistered": "No SettingsProviders have been registered.",
+    "noSettingsAvailable": "No Settings Available"
   }
 }

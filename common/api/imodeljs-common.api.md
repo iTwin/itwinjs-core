@@ -2354,6 +2354,13 @@ export interface ElementProps extends EntityProps {
     userLabel?: string;
 }
 
+// @alpha
+export interface ElementsChanged {
+    deleted?: CompressedId64Set;
+    inserted?: CompressedId64Set;
+    updated?: CompressedId64Set;
+}
+
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
@@ -2916,12 +2923,6 @@ export interface GeometryAppearanceProps {
     subCategory?: Id64String;
     transparency?: number;
     weight?: number;
-}
-
-// @internal
-export interface GeometryChangeNotifications {
-    // (undocumented)
-    notifyGeometryChanged: (models: ModelGeometryChangesProps[]) => void;
 }
 
 // @public
@@ -3793,6 +3794,14 @@ export abstract class IModel implements IModelProps {
     toJSON(): IModelConnectionProps;
 }
 
+// @internal
+export interface IModelChangeNotifications {
+    // (undocumented)
+    notifyElementsChanged: (changes: ElementsChanged) => void;
+    // (undocumented)
+    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
+}
+
 // @alpha (undocumented)
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
@@ -3911,6 +3920,8 @@ export { IModelStatus }
 
 // @public (undocumented)
 export abstract class IModelTileRpcInterface extends RpcInterface {
+    // @internal
+    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<Uint8Array>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
@@ -3918,12 +3929,14 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
     // @internal
+    isUsingExternalTileCache(): Promise<boolean>;
+    // @internal
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
     queryVersionInfo(): Promise<TileVersionInfo>;
     // @internal
     requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps>;
@@ -4071,7 +4084,7 @@ export enum IpcAppChannel {
     // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
-    GeometryChanges = "geometry-changes",
+    IModelChanges = "imodel-changes",
     // (undocumented)
     PushPull = "push-pull"
 }
@@ -4091,6 +4104,7 @@ export interface IpcAppFunctions {
     pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
     // (undocumented)
     pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
+    queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)

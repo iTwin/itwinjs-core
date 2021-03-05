@@ -8,6 +8,7 @@
 
 import { BeEvent, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { RulesetVariable, VariableValue, VariableValueTypes } from "@bentley/presentation-common";
+import { IpcRequestsHandler } from "./IpcRequestsHandler";
 
 /**
  * Presentation ruleset variables' registry.
@@ -90,9 +91,13 @@ export interface RulesetVariablesManager {
 export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
 
   private _clientValues = new Map<string, [VariableValueTypes, VariableValue]>();
+  private _rulesetId: string;
+  private _ipcHandler?: IpcRequestsHandler;
   public onVariableChanged = new BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue) => void>();
 
-  public constructor() {
+  public constructor(rulesetId: string, ipcHandler?: IpcRequestsHandler) {
+    this._rulesetId = rulesetId;
+    this._ipcHandler = ipcHandler;
   }
 
   public async getAllVariables(): Promise<RulesetVariable[]> {
@@ -150,6 +155,10 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
   private async setValue(id: string, type: VariableValueTypes, value: VariableValue): Promise<void> {
     const oldValue = this._clientValues.get(id);
     this._clientValues.set(id, [type, value]);
+    if (this._ipcHandler) {
+      await this._ipcHandler.setRulesetVariable({ rulesetId: this._rulesetId, variable: { id, type, value } });
+    }
+
     this.onVariableChanged.raiseEvent(id, oldValue?.[1], value);
   }
 

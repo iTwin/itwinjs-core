@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-frontend",
+      "comment": "Added frontend 'StateTracker' for ipc apps. It allows to track and store on the backend expanded nodes for faster updates in trees using usePresentationTreeNodeLoader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "24278440+saskliutas@users.noreply.github.com"
+}

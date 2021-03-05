@@ -71,6 +71,7 @@ import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementGeometryChange } from '@bentley/imodeljs-common';
 import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
+import { ElementsChanged } from '@bentley/imodeljs-common';
 import { Ellipsoid } from '@bentley/geometry-core';
 import { EllipsoidPatch } from '@bentley/geometry-core';
 import { EntityProps } from '@bentley/imodeljs-common';
@@ -99,7 +100,6 @@ import { GeometricElement3dProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
 import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
-import { GeometryChangeNotifications } from '@bentley/imodeljs-common';
 import { GeometryClass } from '@bentley/imodeljs-common';
 import { GeometryContainmentRequestProps } from '@bentley/imodeljs-common';
 import { GeometryContainmentResponseProps } from '@bentley/imodeljs-common';
@@ -131,6 +131,7 @@ import { ImageBufferFormat } from '@bentley/imodeljs-common';
 import { ImageSource } from '@bentley/imodeljs-common';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
+import { IModelChangeNotifications } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
@@ -2330,8 +2331,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
     // @internal (undocumented)
-    getAttribution(div: HTMLTableElement, vp: ScreenViewport): void;
-    // @internal (undocumented)
     getBackgroundMapGeometry(): BackgroundMapGeometry | undefined;
     // @internal (undocumented)
     getGlobalGeometryAndHeightRange(): {
@@ -4321,8 +4320,8 @@ export interface IModelAppOptions {
     settings?: SettingsAdmin;
     // @internal (undocumented)
     tentativePoint?: TentativePoint;
-    // @alpha
-    tileAdmin?: TileAdmin;
+    // @beta
+    tileAdmin?: TileAdmin.Props;
     toolAdmin?: ToolAdmin;
     uiAdmin?: UiAdmin;
     viewManager?: ViewManager;
@@ -4487,6 +4486,9 @@ export class IModelTile extends Tile {
     constructor(params: IModelTileParams, tree: IModelTileTree);
     // (undocumented)
     protected addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void;
+    cacheMiss: boolean;
+    // (undocumented)
+    get channel(): TileRequestChannel;
     // (undocumented)
     get emptySubRangeMask(): number;
     // (undocumented)
@@ -4500,15 +4502,13 @@ export class IModelTile extends Tile {
     // (undocumented)
     get maximumSize(): number;
     // (undocumented)
-    onActiveRequestCanceled(): void;
-    // (undocumented)
     pruneChildren(olderThan: BeTimePoint): void;
     // (undocumented)
     protected get rangeGraphicColor(): ColorDef;
     // (undocumented)
     readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<IModelTileContent>;
     // (undocumented)
-    requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
+    requestContent(): Promise<TileRequest.Response>;
     // (undocumented)
     selectTiles(selected: Tile[], args: TileDrawArgs, numSkipped: number): SelectParent;
     // (undocumented)
@@ -4631,7 +4631,7 @@ export interface InstancedGraphicParams {
 }
 
 // @alpha
-export class InteractiveEditingSession extends BriefcaseNotificationHandler implements GeometryChangeNotifications {
+export class InteractiveEditingSession extends BriefcaseNotificationHandler implements IModelChangeNotifications {
     static begin(imodel: EditableConnection): Promise<InteractiveEditingSession>;
     // (undocumented)
     get briefcaseChannelName(): IpcAppChannel;
@@ -4641,9 +4641,12 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined;
     readonly iModel: EditableConnection;
     static isSupported(imodel: EditableConnection): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
+    notifyElementsChanged(changed: ElementsChanged): void;
+    // @internal (undocumented)
     notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
     static readonly onBegin: BeEvent<(session: InteractiveEditingSession) => void>;
+    readonly onElementChanges: BeEvent<(changes: ElementsChanged, iModel: EditableConnection) => void>;
     readonly onEnded: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onEnding: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>;
@@ -4654,6 +4657,8 @@ export abstract class InteractiveTool extends Tool {
     // @beta
     applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): boolean;
     beginDynamics(): void;
+    // @beta
+    bumpToolSetting(_settingIndex?: number): Promise<boolean>;
     changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
     decorate(_context: DecorateContext): void;
     decorateSuspended(_context: DecorateContext): void;
@@ -5096,9 +5101,13 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getToolTip(_strings: string[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
+    protected _hasSuccessfullyFetchedTile: boolean;
+    // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
+    // (undocumented)
+    makeTileRequest(url: string): Promise<Response>;
     // (undocumented)
     matchesMissingTile(tileData: Uint8Array): boolean;
     // (undocumented)
@@ -5115,6 +5124,8 @@ export abstract class MapLayerImageryProvider {
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
     // (undocumented)
     protected _requestContext: ClientRequestContext;
+    // (undocumented)
+    setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: MapLayerSettings;
     // (undocumented)
@@ -5390,6 +5401,8 @@ export class MapTileLoader extends RealityTileLoader {
     // (undocumented)
     getFeatureIndex(layerModelId: Id64String): number;
     // (undocumented)
+    getRequestChannel(_tile: Tile): import("../TileRequestChannel").TileRequestChannel;
+    // (undocumented)
     protected _groundBias: number;
     // (undocumented)
     protected readonly _heightRange: Range1d | undefined;
@@ -5554,7 +5567,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
-    get planarClipMaskPrority(): number;
+    get planarclipMaskPriority(): number;
     // (undocumented)
     setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
     // (undocumented)
@@ -7159,7 +7172,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         protected _planarClipMask?: PlanarClipMaskState;
         // (undocumented)
-        get planarClipMaskPrority(): number;
+        get planarClipMaskPriority(): number;
         // (undocumented)
         unionFitRange(union: Range3d): void;
     }
@@ -7210,6 +7223,8 @@ export class RealityTile extends Tile {
     allChildrenIncluded(tiles: Tile[]): boolean;
     // (undocumented)
     protected get _anyChildNotFound(): boolean;
+    // (undocumented)
+    get channel(): TileRequestChannel;
     // (undocumented)
     computeLoadPriority(viewports: Iterable<Viewport>): number;
     // (undocumented)
@@ -7297,6 +7312,8 @@ export abstract class RealityTileLoader {
     // (undocumented)
     getBatchIdMap(): BatchedTileIdMap | undefined;
     // (undocumented)
+    abstract getRequestChannel(tile: Tile): TileRequestChannel;
+    // (undocumented)
     get isContentUnbounded(): boolean;
     // (undocumented)
     abstract loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
@@ -7308,8 +7325,6 @@ export abstract class RealityTileLoader {
     loadTileContentFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent>;
     // (undocumented)
     abstract get maxDepth(): number;
-    // (undocumented)
-    onActiveRequestCanceled(_tile: Tile): void;
     // (undocumented)
     get parentsAndChildrenExclusive(): boolean;
     // (undocumented)
@@ -7874,6 +7889,8 @@ export abstract class RenderSystem implements IDisposable {
     antialiasSamples?: number;
     // @internal (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
+    // @beta
+    static contextLossHandler(): Promise<any>;
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
@@ -9664,6 +9681,7 @@ export abstract class Tile {
     // @internal
     bytesUsed: number;
     readonly center: Point3d;
+    abstract get channel(): TileRequestChannel;
     get children(): Tile[] | undefined;
     protected _childrenLoadStatus: TileTreeLoadStatus;
     // @internal
@@ -9722,8 +9740,6 @@ export abstract class Tile {
     protected _maximumSize: number;
     // @internal
     next?: LRUTileListNode;
-    // @internal (undocumented)
-    onActiveRequestCanceled(): void;
     readonly parent: Tile | undefined;
     // @internal
     previous?: LRUTileListNode;
@@ -9756,7 +9772,8 @@ export abstract class Tile {
 
 // @beta
 export class TileAdmin {
-    protected constructor(isMobile: boolean, options?: TileAdmin.Props);
+    // @internal
+    constructor(isMobile: boolean, rpcConcurrency: number | undefined, options?: TileAdmin.Props);
     // @internal
     addExternalTilesForViewport(vp: Viewport, statistics: ExternalTileStatistics): void;
     // @internal
@@ -9764,34 +9781,30 @@ export class TileAdmin {
     // @internal
     addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void;
     // @internal (undocumented)
-    get alwaysRequestEdges(): boolean;
+    readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
-    get alwaysSubdivideIncompleteTiles(): boolean;
-    // @internal (undocumented)
-    cancelElementGraphicsRequest(tile: Tile): void;
-    // @internal (undocumented)
-    cancelIModelTileRequest(tile: Tile): void;
+    readonly alwaysSubdivideIncompleteTiles: boolean;
+    // (undocumented)
+    readonly channels: TileRequestChannels;
     // @internal
     clearTilesForViewport(vp: Viewport): void;
     // @internal
     clearUsageForViewport(vp: Viewport): void;
     // @internal (undocumented)
-    get contextPreloadParentDepth(): number;
+    readonly contextPreloadParentDepth: number;
     // @internal (undocumented)
-    get contextPreloadParentSkip(): number;
-    static create(props?: TileAdmin.Props): TileAdmin;
-    // @internal
-    static createForDeviceType(type: "mobile" | "non-mobile", props?: TileAdmin.Props): TileAdmin;
+    readonly contextPreloadParentSkip: number;
+    static create(props?: TileAdmin.Props): Promise<TileAdmin>;
     get defaultTileSizeModifier(): number;
     set defaultTileSizeModifier(modifier: number);
     // @internal (undocumented)
-    get disableMagnification(): boolean;
+    readonly disableMagnification: boolean;
     // @internal (undocumented)
     get emptyViewportSet(): ReadonlyViewportSet;
     // @internal (undocumented)
-    get enableExternalTextures(): boolean;
+    readonly enableExternalTextures: boolean;
     // @internal (undocumented)
-    get enableImprovedElision(): boolean;
+    readonly enableImprovedElision: boolean;
     // @internal (undocumented)
     get enableInstancing(): boolean;
     // @internal (undocumented)
@@ -9800,6 +9813,8 @@ export class TileAdmin {
     forgetViewport(vp: Viewport): void;
     // @internal
     freeMemory(): void;
+    // @internal (undocumented)
+    generateTileContent(tile: IModelTile): Promise<Uint8Array>;
     getMaximumMajorTileFormatVersion(formatVersion?: number): number;
     getNumRequestsForViewport(vp: Viewport): number;
     // @internal
@@ -9811,44 +9826,34 @@ export class TileAdmin {
     get gpuMemoryLimit(): GpuMemoryLimit;
     set gpuMemoryLimit(limit: GpuMemoryLimit);
     // @internal (undocumented)
-    get ignoreAreaPatterns(): boolean;
+    readonly ignoreAreaPatterns: boolean;
     // @internal (undocumented)
     invalidateAllScenes(): void;
     // @internal
     isTileInUse(marker: TileUsageMarker): boolean;
     // @internal
     markTileUsedByViewport(marker: TileUsageMarker, vp: Viewport): void;
-    get maxActiveRequests(): number;
-    set maxActiveRequests(max: number);
     // @internal (undocumented)
-    get maximumLevelsToSkip(): number;
+    readonly maximumLevelsToSkip: number;
     // @internal (undocumented)
-    get maximumMajorTileFormatVersion(): number;
+    readonly maximumMajorTileFormatVersion: number;
     get maxTotalTileContentBytes(): number | undefined;
     // @internal (undocumented)
-    get minimumSpatialTolerance(): number;
+    readonly minimumSpatialTolerance: number;
     // @internal (undocumented)
-    get mobileRealityTileMinToleranceRatio(): number;
-    // @internal (undocumented)
-    onCacheMiss(): void;
+    readonly mobileRealityTileMinToleranceRatio: number;
     // @internal (undocumented)
     onShutDown(): void;
     // @internal
     readonly onTileChildrenLoad: BeEvent<(parentTile: Tile) => void>;
-    // @internal (undocumented)
-    onTileCompleted(tile: Tile): void;
     // @internal
     onTileContentDisposed(tile: Tile): void;
     // @internal
     onTileContentLoaded(tile: Tile): void;
-    // @internal (undocumented)
-    onTileFailed(_tile: Tile): void;
     // @internal
     readonly onTileLoad: BeEvent<(tile: Tile) => void>;
     // @internal (undocumented)
     onTilesElided(numElided: number): void;
-    // @internal (undocumented)
-    onTileTimedOut(_tile: Tile): void;
     // @internal
     readonly onTileTreeLoad: BeEvent<(tileTree: TileTreeOwner) => void>;
     // @internal
@@ -9858,9 +9863,9 @@ export class TileAdmin {
     // @internal
     registerViewport(vp: Viewport): void;
     // @internal (undocumented)
-    requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
+    requestCachedTileContent(tile: IModelTile): Promise<Uint8Array | undefined>;
     // @internal (undocumented)
-    requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
+    requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     // @internal
     requestTiles(vp: Viewport, tiles: Set<Tile>): void;
     // @internal (undocumented)
@@ -9872,14 +9877,14 @@ export class TileAdmin {
     // @internal (undocumented)
     terminateTileTreePropsRequest(request: TileTreePropsRequest): void;
     // @internal (undocumented)
-    get tileExpirationTime(): BeDuration;
+    readonly tileExpirationTime: BeDuration;
     // @internal (undocumented)
-    get tileTreeExpirationTime(): BeDuration;
+    readonly tileTreeExpirationTime: BeDuration;
     get totalTileContentBytes(): number;
     // @alpha
     get unselectedLoadedTiles(): Iterable<Tile>;
     // @internal (undocumented)
-    get useProjectExtents(): boolean;
+    readonly useProjectExtents: boolean;
     }
 
 // @beta (undocumented)
@@ -9888,8 +9893,6 @@ export namespace TileAdmin {
         alwaysRequestEdges?: boolean;
         // @internal
         alwaysSubdivideIncompleteTiles?: boolean;
-        // @internal
-        cancelBackendTileRequests?: boolean;
         // @alpha
         contextPreloadParentDepth?: number;
         // @alpha
@@ -9905,7 +9908,6 @@ export namespace TileAdmin {
         ignoreAreaPatterns?: boolean;
         // @internal
         ignoreMinimumExpirationTimes?: boolean;
-        maxActiveRequests?: number;
         // @alpha
         maxActiveTileTreePropsRequests?: number;
         // @alpha
@@ -10120,6 +10122,7 @@ export class TileRequest {
     constructor(tile: Tile, vp: Viewport);
     addViewport(vp: Viewport): void;
     cancel(): void;
+    readonly channel: TileRequestChannel;
     dispatch(onHttpResponse: () => void): Promise<void>;
     get isCanceled(): boolean;
     // @internal (undocumented)
@@ -10148,17 +10151,106 @@ export namespace TileRequest {
 }
 
 // @beta
+export class TileRequestChannel {
+    constructor(name: string, concurrency: number);
+    // @internal
+    protected readonly _active: Set<TileRequest>;
+    // @internal
+    append(request: TileRequest): void;
+    // @internal
+    protected cancel(request: TileRequest): void;
+    // @internal
+    cancelAndClearAll(): void;
+    get concurrency(): number;
+    set concurrency(max: number);
+    // @internal
+    protected dispatch(request: TileRequest): void;
+    // @internal
+    protected dropActiveRequest(request: TileRequest): void;
+    readonly name: string;
+    get numActive(): number;
+    get numPending(): number;
+    onActiveRequestCanceled(_request: TileRequest): void;
+    onIModelClosed(_iModel: IModelConnection): void;
+    onNoContent(_request: TileRequest): boolean;
+    // @internal
+    process(): void;
+    processCancellations(): void;
+    // @internal
+    recordCompletion(tile: Tile): void;
+    // @internal
+    recordFailure(): void;
+    // @internal
+    recordTimeout(): void;
+    requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
+    resetStatistics(): void;
+    get size(): number;
+    get statistics(): Readonly<TileRequestChannelStatistics>;
+    // (undocumented)
+    protected _statistics: TileRequestChannelStatistics;
+    // @internal
+    swapPending(): void;
+}
+
+// @beta
+export class TileRequestChannels {
+    [Symbol.iterator](): Iterator<TileRequestChannel>;
+    // @internal
+    constructor(rpcConcurrency: number | undefined);
+    add(channel: TileRequestChannel): void;
+    // @internal
+    get cloudStorageCache(): TileRequestChannel | undefined;
+    readonly elementGraphicsRpc: TileRequestChannel;
+    // @internal
+    enableCloudStorageCache(): void;
+    get(name: string): TileRequestChannel | undefined;
+    getForHttp(name: string): TileRequestChannel;
+    static getNameFromUrl(url: URL | string): string;
+    has(channel: TileRequestChannel): boolean;
+    readonly httpConcurrency = 6;
+    // @internal (undocumented)
+    readonly iModelTileRpc: TileRequestChannel;
+    // @internal
+    onIModelClosed(iModel: IModelConnection): void;
+    // @internal
+    onShutDown(): void;
+    // @internal
+    process(): void;
+    resetStatistics(): void;
+    get rpcConcurrency(): number;
+    // @internal
+    setRpcConcurrency(concurrency: number): void;
+    get size(): number;
+    get statistics(): TileRequestChannelStatistics;
+    // @internal
+    swapPending(): void;
+}
+
+// @beta
+export class TileRequestChannelStatistics {
+    // @internal (undocumented)
+    addTo(stats: TileRequestChannelStatistics): void;
+    numActiveRequests: number;
+    numCanceled: number;
+    numPendingRequests: number;
+    totalAbortedRequests: number;
+    totalCacheMisses: number;
+    totalCompletedRequests: number;
+    totalDispatchedRequests: number;
+    totalEmptyTiles: number;
+    totalFailedRequests: number;
+    totalTimedOutRequests: number;
+    totalUndisplayableTiles: number;
+}
+
+// @beta
 export class Tiles {
     constructor(iModel: IModelConnection);
     // @internal (undocumented)
     dispose(): void;
     dropSupplier(supplier: TileTreeSupplier): void;
     forEachTreeOwner(func: (owner: TileTreeOwner) => void): void;
-    // @internal (undocumented)
-    getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
     getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner;
-    // @internal (undocumented)
-    getTileTreeProps(id: string): Promise<IModelTileTreeProps>;
     getTreeOwnersForSupplier(supplier: TileTreeSupplier): Iterable<{
         id: any;
         owner: TileTreeOwner;
@@ -10196,7 +10288,7 @@ export abstract class TileTree {
     readonly iModelTransform: Transform;
     get is2d(): boolean;
     abstract get is3d(): boolean;
-    abstract get isContentUnbounded(): boolean;
+    get isContentUnbounded(): boolean;
     get isDisposed(): boolean;
     // @internal (undocumented)
     get isPointCloud(): boolean;
@@ -10259,8 +10351,9 @@ export interface TileTreeParams {
 export abstract class TileTreeReference {
     // (undocumented)
     accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes): void;
+    addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
-    abstract get castsShadows(): boolean;
+    get castsShadows(): boolean;
     // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     protected computeTransform(tree: TileTree): Transform;
@@ -10283,7 +10376,7 @@ export abstract class TileTreeReference {
     get isLoadingComplete(): boolean;
     // @internal
     protected get _isLoadingComplete(): boolean;
-    get planarClipMaskPrority(): number;
+    get planarclipMaskPriority(): number;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }
@@ -10365,6 +10458,8 @@ export class ToolAdmin {
     assemblyLock: boolean;
     // @internal (undocumented)
     beginDynamics(): void;
+    // @beta
+    bumpToolSetting(settingIndex?: number): Promise<boolean>;
     // @internal (undocumented)
     callOnCleanup(): void;
     convertTouchEndToButtonUp(ev: BeTouchEvent, button?: BeButton): Promise<void>;
@@ -12083,6 +12178,7 @@ export abstract class Viewport implements IDisposable {
     get timePointValid(): boolean;
     // @internal (undocumented)
     toViewOrientation(from: XYZ, to?: XYZ): void;
+    turnCameraOff(): void;
     turnCameraOn(lensAngle?: Angle): ViewStatus;
     static undoDelay: BeDuration;
     protected updateChangeFlags(newView: ViewState): void;

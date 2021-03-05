@@ -1,6 +1,6 @@
 {
   "name": "@bentley/mobile-manager",
-  "version": "2.13.0-dev.20",
+  "version": "2.14.0-dev.9",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
@@ -22,7 +22,8 @@
   },
   "keywords": [
     "Bentley",
-    "BIM",
+    "digital-twin",
+    "iTwin",
     "iModel"
   ],
   "author": {
@@ -30,30 +31,26 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.13.0-dev.20",
-    "@bentley/frontend-authorization-client": "^2.13.0-dev.20",
-    "@bentley/imodeljs-common": "^2.13.0-dev.20",
-    "@bentley/imodeljs-frontend": "^2.13.0-dev.20",
-    "@bentley/imodeljs-backend": "^2.13.0-dev.20",
-    "@bentley/itwin-client": "^2.13.0-dev.20",
-    "@bentley/imodelhub-client": "^2.13.0-dev.20",
+    "@bentley/bentleyjs-core": "^2.14.0-dev.9",
+    "@bentley/frontend-authorization-client": "^2.14.0-dev.9",
+    "@bentley/imodeljs-common": "^2.14.0-dev.9",
+    "@bentley/imodeljs-frontend": "^2.14.0-dev.9",
+    "@bentley/imodeljs-backend": "^2.14.0-dev.9",
+    "@bentley/itwin-client": "^2.14.0-dev.9",
+    "@bentley/imodelhub-client": "^2.14.0-dev.9",
     "ws": "^7.2.0",
     "js-base64": "^2.4.5"
   },
-  "//devDependencies": [
-    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
-    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
-  ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.13.0-dev.20",
-    "@bentley/frontend-authorization-client": "2.13.0-dev.20",
-    "@bentley/build-tools": "2.13.0-dev.20",
-    "@bentley/eslint-plugin": "2.13.0-dev.20",
-    "@bentley/imodeljs-backend": "2.13.0-dev.20",
-    "@bentley/imodeljs-frontend": "2.13.0-dev.20",
-    "@bentley/imodeljs-common": "2.13.0-dev.20",
-    "@bentley/itwin-client": "2.13.0-dev.20",
-    "@bentley/imodelhub-client": "2.13.0-dev.20",
+    "@bentley/bentleyjs-core": "2.14.0-dev.9",
+    "@bentley/frontend-authorization-client": "2.14.0-dev.9",
+    "@bentley/build-tools": "2.14.0-dev.9",
+    "@bentley/eslint-plugin": "2.14.0-dev.9",
+    "@bentley/imodeljs-backend": "2.14.0-dev.9",
+    "@bentley/imodeljs-frontend": "2.14.0-dev.9",
+    "@bentley/imodeljs-common": "2.14.0-dev.9",
+    "@bentley/itwin-client": "2.14.0-dev.9",
+    "@bentley/imodelhub-client": "2.14.0-dev.9",
     "@types/node": "10.14.1",
     "@types/mocha": "^5.2.5",
     "@types/chai": "^4.1.4",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "Basic proxy support for web backends and electron applications (WIP)",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client",
+  "email": "32458710+ramanujam-raman@users.noreply.github.com"
+}

@@ -22,6 +22,8 @@ import { adjustDateToTimezone, DatePicker } from "../datepicker/DatePicker";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { DateTimeTypeConverterBase } from "../converters/DateTimeTypeConverter";
 
+// cSpell:ignore datepicker
+
 /** @internal */
 interface DateTimeEditorState {
   value: Date;
@@ -43,6 +45,7 @@ interface DateTimeEditorProps extends PropertyEditorProps {
 export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, DateTimeEditorState> implements TypeEditor {
   private _isMounted = false;
   private _enterKey = false;
+  private _divElement = React.createRef<HTMLDivElement>();
 
   /** @internal */
   public readonly state: Readonly<DateTimeEditorState> = {
@@ -64,6 +67,18 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
     }
 
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._divElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    let containsFocus = false;
+    // istanbul ignore else
+    if (this._divElement.current)
+      containsFocus = this._divElement.current.contains(document.activeElement);
+    return containsFocus;
   }
 
   public async processDateChange(typeConverter: TypeConverter, newValue: Date): Promise<void> {
@@ -263,7 +278,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
     const className = classnames("components-cell-editor", "components-datetime-editor", this.props.className);
 
     return (
-      <div className={className}>
+      <div className={className} ref={this._divElement}>
         <PopupButton label={this.state.displayValue} onClose={this._handleClose} onEnter={this._handleEnter}
           setFocus={this.props.setFocus}>
           <PopupContent>

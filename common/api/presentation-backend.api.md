@@ -110,6 +110,7 @@ export class Presentation {
 
 // @beta
 export enum PresentationBackendLoggerCategory {
+    Ipc = "presentation-backend.Ipc",
     // (undocumented)
     Package = "presentation-backend",
     PresentationManager = "presentation-backend.PresentationManager",

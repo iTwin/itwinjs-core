@@ -9,7 +9,7 @@
 import { IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
-import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
+import { ElementsChanged, ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
@@ -22,16 +22,17 @@ export interface TileTreeContentIds {
 /** @internal */
 export enum IpcAppChannel {
   Functions = "ipc-app",
-  GeometryChanges = "geometry-changes",
+  IModelChanges = "imodel-changes",
   PushPull = "push-pull",
 }
 
 /**
- * Interface registered by the frontend [NotificationHandler]($common) to be notified of geometry changes
+ * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel
  * @internal
  */
-export interface GeometryChangeNotifications {
-  notifyGeometryChanged: (models: ModelGeometryChangesProps[]) => void;
+export interface IModelChangeNotifications {
+  notifyElementsChanged: (changes: ElementsChanged) => void;
+  notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
 
 /** @internal */
@@ -92,5 +93,8 @@ export interface IpcAppFunctions {
   reverseSingleTxn: (key: string) => Promise<IModelStatus>;
   reverseAllTxn: (key: string) => Promise<IModelStatus>;
   reinstateTxn: (key: string) => Promise<IModelStatus>;
+
+  /** Query the number of concurrent threads supported by the host's IO or CPU thread pool. */
+  queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
 }
 

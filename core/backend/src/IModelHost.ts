@@ -5,13 +5,8 @@
 /** @packageDocumentation
  * @module IModelHost
  */
-
-import * as os from "os";
-import * as path from "path";
-import * as semver from "semver";
 import {
-  AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient,
-  RequestHost,
+  AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager, IntrospectionClient,
 } from "@bentley/backend-itwin-client";
 import {
   assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector,
@@ -21,6 +16,9 @@ import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } fr
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
+import * as os from "os";
+import * as path from "path";
+import * as semver from "semver";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BackendRequestContext } from "./BackendRequestContext";
@@ -202,13 +200,10 @@ export class IModelHostConfiguration {
  */
 export class IModelHost {
   private constructor() { }
-  private static _authorizationClient?: AuthorizationClient;
-  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for backend applications */
-  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
-  public static get authorizationClient(): AuthorizationClient | undefined { return IModelHost._authorizationClient; }
-  public static set authorizationClient(authorizationClient: AuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
+  public static authorizationClient?: AuthorizationClient;
 
   private static _imodelClient?: IModelClient;
+
   private static _clientAuthIntrospectionManager?: ClientAuthIntrospectionManager;
   /** @alpha */
   public static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined { return this._clientAuthIntrospectionManager; }
@@ -216,7 +211,7 @@ export class IModelHost {
   public static get introspectionClient(): IntrospectionClient | undefined { return this._clientAuthIntrospectionManager?.introspectionClient; }
 
   /** @alpha */
-  public static readonly telemetry: TelemetryManager = new TelemetryManager();
+  public static readonly telemetry = new TelemetryManager();
 
   public static backendVersion = "";
   private static _cacheDir = "";
@@ -271,10 +266,13 @@ export class IModelHost {
     const platform = Platform.load();
     this.registerPlatform(platform);
 
-    const iModelClientType = iModelClient && iModelClient instanceof IModelBankClient
-      ? IModelJsNative.IModelClientType.IModelBank
-      : IModelJsNative.IModelClientType.IModelHub;
-    platform.NativeUlasClient.initialize(region, applicationType, iModelClientType);
+    let iModelClientType = IModelJsNative.IModelClientType.IModelHub;
+    let iModelClientUrl: string | undefined;
+    if (iModelClient && iModelClient instanceof IModelBankClient) {
+      iModelClientType = IModelJsNative.IModelClientType.IModelBank;
+      iModelClientUrl = iModelClient.baseUrl;
+    }
+    platform.NativeUlasClient.initialize(region, applicationType, iModelClientType, iModelClientUrl);
   }
 
   private static registerPlatform(platform: typeof IModelJsNative): void {
@@ -362,7 +360,7 @@ export class IModelHost {
     IModelHost.sessionId = Guid.createValue();
     this.logStartup();
 
-    await RequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
+    await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
 
     // Setup a current context for all requests that originate from this backend
     const requestContext = new BackendRequestContext();
@@ -447,8 +445,7 @@ export class IModelHost {
     }
 
     UsageLoggingUtilities.configure({ hostApplicationId: IModelHost.applicationId, hostApplicationVersion: IModelHost.applicationVersion, clientAuthManager: this._clientAuthIntrospectionManager });
-
-    IModelHost.onAfterStartup.raiseEvent();
+    process.once("beforeExit", IModelHost.shutdown);
   }
 
   private static _briefcaseCacheDir: string;
@@ -490,10 +487,12 @@ export class IModelHost {
   public static async shutdown(): Promise<void> {
     if (!this._isValid)
       return;
+
     this._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;
+    process.removeListener("beforeExit", IModelHost.shutdown);
   }
 
   /**
@@ -550,7 +549,9 @@ export class IModelHost {
   /** Whether external tile caching is active.
    * @internal
    */
-  public static get usingExternalTileCache(): boolean { return undefined !== IModelHost.configuration && undefined !== IModelHost.configuration.tileCacheCredentials; }
+  public static get usingExternalTileCache(): boolean {
+    return undefined !== IModelHost.configuration?.tileCacheCredentials;
+  }
 
   /** Whether to restrict tile cache URLs by client IP address.
    * @internal
