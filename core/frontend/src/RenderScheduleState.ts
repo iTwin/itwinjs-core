@@ -21,7 +21,7 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 function interpolate(value0: number, value1: number, fraction: number) {
   return value0 + fraction * (value1 - value0);
 }
-function isNullOrUndefined(value: any) { return value === undefined || value === null; };
+function isNullOrUndefined(value: any) { return value === undefined || value === null; }
 
 /** @internal */
 export namespace RenderScheduleState {

@@ -5,15 +5,15 @@
 
 // Sets up a local backend to be used for testing within the iModel.js repo.
 
-import { Config } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import * as path from "path";
+import { loadEnv } from "@bentley/config-loader";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { Presentation as PresentationBackend } from "@bentley/presentation-backend";
 import { getRpcInterfaces, Settings } from "../common/Settings";
 
-IModelJsConfig.init(true, true, Config.App);
+loadEnv(path.join(__dirname, "..", "..", ".env"));
 const settings = new Settings(process.env);
 Config.App.set("imjs_buddi_resolve_url_using_region", settings.env);
 

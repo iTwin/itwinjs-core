@@ -10,12 +10,11 @@ import * as React from "react";
 import { BadgeUtilities, CommonProps, Icon, SizeProps } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Properties that must be specified for an [[ActionItemButton]] component
  * @public
@@ -70,7 +69,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     }
 
     if (!refreshState && this.props.actionItem.stateSyncIds && this.props.actionItem.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
-      refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase())); // eslint-disable-line deprecation/deprecation
 
     if (refreshState) {
       if (this.props.actionItem.stateFunc) // eslint-disable-line deprecation/deprecation
@@ -123,13 +122,6 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     }
   };
 
-  private _handleKeyDown = (e: React.KeyboardEvent): void => {
-    // istanbul ignore else
-    if (e.key === SpecialKey.Escape) {
-      KeyboardShortcutManager.setFocusToHome();
-    }
-  };
-
   /** @internal */
   public render(): React.ReactNode {
     if (!this.state.isVisible)
@@ -147,7 +139,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
         title={actionItem.label}
         key={actionItem.getKey()}
         onClick={this._execute}
-        onKeyDown={this._handleKeyDown}
+        onKeyDown={onEscapeSetFocusToHome}
         icon={icon}
         onSizeKnown={this.props.onSizeKnown}
         badge={badge}

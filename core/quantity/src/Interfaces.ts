@@ -17,6 +17,8 @@ export interface UnitProps {
   readonly isValid: boolean;
   /** Optionally defined set of unit labels that can be used to represent the unit. This is helpful when parsing quantity value strings */
   readonly alternateLabels?: string[];
+  /** Unique system name. Example "Units.USCUSTOM"," Units.METRIC", "Units.USSURVEY", "Units.IMPERIAL" */
+  readonly system: string;
 }
 
 /** This interface defines the required properties of a Quantity.
@@ -36,6 +38,8 @@ export interface UnitConversionSpec {
   name: string;
   /** The default label that is used to display unit */
   label: string;
+  /** Unit system name, used to when finding preferred parse unit */
+  system: string;
   /** the information necessary to convert the unit to a specific display unit */
   conversion: UnitConversion;
   /** Labels that may be used to represent the unit in a string that is to be parsed. */
@@ -64,7 +68,7 @@ export interface PotentialParseUnit {
  * @alpha
  */
 export interface UnitsProvider {
-  findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
+  findUnit(unitLabel: string, unitFamily?: string, unitSystem?: string): Promise<UnitProps>;
   getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
   findUnitByName(unitName: string): Promise<UnitProps>;
   getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;

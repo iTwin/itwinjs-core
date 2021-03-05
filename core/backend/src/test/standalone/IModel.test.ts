@@ -652,7 +652,7 @@ describe("iModel", () => {
 
     const mapImagery: MapImageryProps = {
       backgroundBase: ColorDef.red.tbgr,
-      backgroundLayers: [{ transparency: 0.5, userName: "blah" }],
+      backgroundLayers: [{ transparency: 0.5 }],
     };
 
     const props: DisplayStyleSettingsProps = {
@@ -710,7 +710,7 @@ describe("iModel", () => {
     const rootSubject = imodel1.elements.getRootSubject();
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
-    assert.isAtLeast(rootSubject.code.getValue().length, 1);
+    assert.isAtLeast(rootSubject.code.value.length, 1);
     assert.isFalse(imodel1.elements.hasSubModel(IModel.rootSubjectId));
 
     try {
@@ -863,7 +863,7 @@ describe("iModel", () => {
         assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
         if (defaultSubCategory instanceof SubCategory) {
           assert.isTrue(defaultSubCategory.parent!.id === categoryId, "defaultSubCategory id should be prescribed value");
-          assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.getValue(), "DefaultSubcategory name should match that of Category");
+          assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.value, "DefaultSubcategory name should match that of Category");
           assert.isTrue(defaultSubCategory.isDefaultSubCategory, "isDefaultSubCategory should return true");
         }
 
@@ -1398,6 +1398,7 @@ describe("iModel", () => {
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
       assert.isFalse(codeSpec.isManagedWithIModel);
+      iModelDb.saveChanges();
       iModelDb.close();
     }
 
@@ -1731,6 +1732,7 @@ describe("iModel", () => {
     const contextId = Guid.createValue();
     const changeSetId = generateChangeSetId();
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
+    snapshot.saveChanges();
     snapshot.close();
 
     // Mock iModelHub
@@ -1947,10 +1949,10 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.pathName, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneDb1.key), "Should be in the list of open StandaloneDbs");
     assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
-    assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
+    assert.equal(standaloneDb1.elements.getRootSubject().code.value, standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
-    assert.isUndefined(standaloneDb1.contextId);
+    assert.equal(standaloneDb1.contextId, Guid.empty);
     assert.isUndefined(standaloneDb1.changeSetId);
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
@@ -1978,9 +1980,6 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb3.isSnapshot);
-    assert.isFalse(snapshotDb1.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb2.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb3.txns.hasPendingTxns);
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");
@@ -2003,10 +2002,10 @@ describe("iModel", () => {
     const iModelGuid3: GuidString = snapshotDb3.getGuid();
     assert.notEqual(iModelGuid1, iModelGuid2, "Expect different iModel GUIDs for each snapshot");
     assert.notEqual(iModelGuid2, iModelGuid3, "Expect different iModel GUIDs for each snapshot");
-    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.getValue();
-    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.getValue();
-    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.getValue();
-    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.getValue();
+    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.value;
+    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.value;
+    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.value;
+    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.value;
     assert.equal(rootSubjectName1, snapshotRootSubjectName);
     assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
     assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
@@ -2283,10 +2282,10 @@ describe("iModel", () => {
     element = imodel4.elements.getElement<InformationRecordElement>(elementId, InformationRecordElement);
     assert.isTrue(Code.isValid(element.code));
     assert.isFalse(Code.isEmpty(element.code));
-    assert.equal(element.code.getValue(), codeValue);
+    assert.equal(element.code.value, codeValue);
   });
 
-  it("should clear UserLabel", () => {
+  it("should update UserLabel", () => {
     // type coercion reminder!
     const s: string = "";
     assert.isTrue(s === "");
@@ -2302,26 +2301,36 @@ describe("iModel", () => {
     let element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.userLabel);
 
-    // update element with a defined UserLabel
+    // update element with a defined userLabel
     element.userLabel = "UserLabel";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.userLabel, "UserLabel");
 
+    // make sure userLabel is not updated when not part of the specified ElementProps
+    imodel1.elements.updateElement({
+      id: element.id,
+      classFullName: element.classFullName,
+      model: element.model,
+      code: element.code,
+    });
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.userLabel, "UserLabel"); // NOTE: userLabel is not modified when userLabel is not part of the input ElementProps
+
     // update UserLabel to undefined
     element.userLabel = undefined;
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.equal(element.userLabel, "UserLabel"); // NOTE: UserLabel is not cleared in this case!
+    assert.equal(element.userLabel, undefined); // NOTE: userLabel is cleared when userLabel is specified as undefined
 
     // update UserLabel to ""
     element.userLabel = "";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.isUndefined(element.userLabel);
+    assert.isUndefined(element.userLabel); // NOTE: userLabel is also cleared when the empty string is specified
   });
 
-  it("should clear FederationGuid", () => {
+  it("should update FederationGuid", () => {
     // insert element with an undefined FederationGuid
     const elementProps: DefinitionElementProps = {
       classFullName: SpatialCategory.classFullName,
@@ -2331,25 +2340,169 @@ describe("iModel", () => {
     const elementId = imodel1.elements.insertElement(elementProps);
     let element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.federationGuid);
+    assert.isFalse(element.isPrivate);
 
     // update element with a defined FederationGuid
     const federationGuid: GuidString = Guid.createValue();
     element.federationGuid = federationGuid;
+    element.isPrivate = true;
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.federationGuid, federationGuid);
+    assert.isTrue(element.isPrivate);
+
+    // make sure FederationGuid is not updated when not part of the specified ElementProps
+    imodel1.elements.updateElement({
+      id: element.id,
+      classFullName: element.classFullName,
+      model: element.model,
+      code: element.code,
+    });
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.federationGuid, federationGuid);
+    assert.isTrue(element.isPrivate);
 
     // update FederationGuid to undefined
     element.federationGuid = undefined;
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.equal(element.federationGuid, federationGuid); // NOTE: FederationGuid is not cleared in this case!
+    assert.isUndefined(element.federationGuid);
 
     // update FederationGuid to ""
     element.federationGuid = "";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.federationGuid);
+  });
+
+  it("should support partial update", () => {
+    // Insert Subject elements - initializing Description and UserLabel to similar values
+    let subject1 = Subject.create(imodel1, IModel.rootSubjectId, "Subject1", "Description1");
+    let subject2 = Subject.create(imodel1, IModel.rootSubjectId, "Subject2", "Description2");
+    let subject3 = Subject.create(imodel1, IModel.rootSubjectId, "Subject3", "");
+    let subject4 = Subject.create(imodel1, IModel.rootSubjectId, "Subject4");
+    subject1.userLabel = "UserLabel1";
+    subject2.userLabel = "UserLabel2";
+    subject3.userLabel = "";
+    subject4.userLabel = undefined;
+    const federationGuid1 = Guid.createValue();
+    const federationGuid2 = Guid.createValue();
+    subject1.federationGuid = federationGuid1;
+    subject2.federationGuid = federationGuid2;
+    subject3.federationGuid = "";
+    subject4.federationGuid = undefined;
+    const subjectId1 = subject1.insert();
+    const subjectId2 = subject2.insert();
+    const subjectId3 = subject3.insert();
+    const subjectId4 = subject4.insert();
+    subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
+    subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
+    subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
+    subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
+
+    // Subject.Description is an auto-handled property
+    assert.equal(subject1.description, "Description1");
+    assert.equal(subject2.description, "Description2");
+    assert.equal(subject3.description, ""); // NOTE: different behavior between auto-handled and custom-handled
+    assert.isUndefined(subject4.description);
+
+    // Element.UserLabel is a custom-handled property
+    assert.equal(subject1.userLabel, "UserLabel1");
+    assert.equal(subject2.userLabel, "UserLabel2");
+    assert.isUndefined(subject3.userLabel); // NOTE: different behavior between auto-handled and custom-handled
+    assert.isUndefined(subject4.userLabel);
+
+    // Element.FederationGuid is a custom-handled property
+    assert.equal(subject1.federationGuid, federationGuid1);
+    assert.equal(subject2.federationGuid, federationGuid2);
+    assert.isUndefined(subject3.federationGuid);
+    assert.isUndefined(subject4.federationGuid);
+
+    // test partial update of Description (auto-handled)
+    imodel1.elements.updateElement({
+      id: subject1.id,
+      classFullName: subject1.classFullName,
+      description: "Description1-Updated",
+    } as unknown as ElementProps);
+    subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
+    assert.equal(subject1.description, "Description1-Updated"); // should have been updated
+    assert.isDefined(subject1.model);
+    assert.isDefined(subject1.parent);
+    assert.equal(subject1.code.value, "Subject1"); // should not have changed
+    assert.equal(subject1.userLabel, "UserLabel1"); // should not have changed
+    assert.equal(subject1.federationGuid, federationGuid1); // should not have changed
+
+    // test partial update of UserLabel (custom-handled)
+    imodel1.elements.updateElement({
+      id: subject2.id,
+      classFullName: subject2.classFullName,
+      userLabel: "UserLabel2-Updated",
+    } as unknown as ElementProps);
+    subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
+    assert.isDefined(subject2.model);
+    assert.isDefined(subject2.parent);
+    assert.equal(subject2.userLabel, "UserLabel2-Updated"); // should have been updated
+    assert.equal(subject2.code.value, "Subject2"); // should not have changed
+    assert.equal(subject2.description, "Description2"); // should not have changed
+    assert.equal(subject2.federationGuid, federationGuid2); // should not have changed
+
+    // Update Subject elements - setting Description and UserLabel to similar values
+    subject1.description = undefined;
+    subject2.description = "";
+    subject3.description = "Description3";
+    subject4.description = "Description4";
+    subject1.userLabel = undefined;
+    subject2.userLabel = "";
+    subject3.userLabel = "UserLabel3";
+    subject4.userLabel = "UserLabel4";
+    subject1.update();
+    subject2.update();
+    subject3.update();
+    subject4.update();
+    subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
+    subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
+    subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
+    subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
+
+    // Subject.Description is an auto-handled property
+    assert.isUndefined(subject1.description);
+    assert.equal(subject2.description, ""); // NOTE: different behavior between auto-handled and custom-handled
+    assert.equal(subject3.description, "Description3");
+    assert.equal(subject4.description, "Description4");
+
+    // Element.UserLabel is a custom-handled property
+    assert.isUndefined(subject1.userLabel);
+    assert.isUndefined(subject2.userLabel); // NOTE: different behavior between auto-handled and custom-handled
+    assert.equal(subject3.userLabel, "UserLabel3");
+    assert.equal(subject4.userLabel, "UserLabel4");
+
+    // test partial update of Description to undefined
+    imodel1.elements.updateElement({
+      id: subject3.id,
+      classFullName: subject3.classFullName,
+      description: undefined,
+    } as unknown as ElementProps);
+    subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
+    assert.isUndefined(subject3.description); // should have been updated
+    assert.isDefined(subject3.model);
+    assert.isDefined(subject3.parent);
+    assert.equal(subject3.code.value, "Subject3"); // should not have changed
+    assert.equal(subject3.userLabel, "UserLabel3"); // should not have changed
+    assert.isUndefined(subject3.federationGuid); // should not have changed
+
+    // test partial update of UserLabel to undefined
+    imodel1.elements.updateElement({
+      id: subject4.id,
+      classFullName: subject4.classFullName,
+      userLabel: undefined,
+    } as unknown as ElementProps);
+    subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
+    assert.isDefined(subject4.model);
+    assert.isDefined(subject4.parent);
+    // assert.isUndefined(subject4.userLabel); // should have been updated  - WIP WIP WIP
+    assert.equal(subject4.code.value, "Subject4"); // should not have changed
+    assert.equal(subject4.description, "Description4"); // should not have changed
+    assert.isUndefined(subject4.federationGuid); // should not have changed
   });
 });
 

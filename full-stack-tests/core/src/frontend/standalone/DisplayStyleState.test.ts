@@ -2,10 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Vector3d } from "@bentley/geometry-core";
-import { BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, FeatureAppearance, SpatialClassificationProps, ThematicDisplayMode } from "@bentley/imodeljs-common";
-import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
+import { CompressedId64Set } from "@bentley/bentleyjs-core";
+import { Vector3d } from "@bentley/geometry-core";
+import {
+  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, FeatureAppearance, PlanarClipMaskMode, PlanarClipMaskSettings,
+  SpatialClassificationProps, ThematicDisplayMode,
+} from "@bentley/imodeljs-common";
+import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -85,6 +89,26 @@ describe("DisplayStyle", () => {
     expect(appearanceOverride).to.deep.equal(style.getModelAppearanceOverride(modelId));
   });
 
+  it("Should override reality model planar clip masks correctly", () => {
+    const style = new DisplayStyle3dState(styleProps, imodel);
+    const compressedModelIds = CompressedId64Set.compressArray([ "0x001", "0x002", "0x003"]);
+    const compressedElementIds =  CompressedId64Set.compressArray([ "0x004", "0x004", "0x006"]);
+    const planarClipMask = PlanarClipMaskSettings.fromJSON({
+      mode: PlanarClipMaskMode.IncludeElements,
+      modelIds: compressedModelIds,
+      subCategoryOrElementIds: compressedElementIds,
+      priority: 0,
+    });
+
+    let index = 0;
+    style.forEachRealityModel((_realityModel) => {
+      style.overrideRealityModelPlanarClipMask(index, planarClipMask);
+
+      expect(planarClipMask).to.deep.equal(style.getRealityModelPlanarClipMask(index));
+      index++;
+    });
+  });
+
   it("should use iModel extents for thematic height range if unspecified", () => {
     const style = new DisplayStyle3dState(styleProps, imodel);
     style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Height, range: [1, 100] } });
@@ -140,6 +164,10 @@ describe("DisplayStyle", () => {
           if (undefined !== a.classifiers && undefined !== e.classifiers)
             expect(a.classifiers.length).to.equal(e.classifiers.length);
 
+          expect(undefined === a.planarClipMask).to.equal(undefined === e.planarClipMask);
+          if (undefined !== a.planarClipMask && undefined !== e.planarClipMask)
+            expect(a.planarClipMask.settings.equals(PlanarClipMaskSettings.fromJSON(e.planarClipMask)));
+
           const foundIndex = style3d.findRealityModelIndex((accept) => { return accept.url === a.url; });
           expect(i === foundIndex);
         }
@@ -165,6 +193,7 @@ describe("DisplayStyle", () => {
         providerData: { mapType: BackgroundMapType.Street },
         applyTerrain: true,
         terrainSettings: { exaggeration: 0.5, heightOriginMode: 1 },
+        planarClipMask: { mode: PlanarClipMaskMode.IncludeSubCategories, modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]), transparency: .5, subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]), priority: 0 },
       },
     });
 
@@ -193,6 +222,7 @@ describe("DisplayStyle", () => {
         tilesetUrl: "google.com",
         name: "google",
         description: "a popular search engine",
+
         classifiers: [{
           modelId: "0x321",
           expand: 1.5,
@@ -253,6 +283,7 @@ describe("DisplayStyle", () => {
         tilesetUrl: "google.com",
         name: "google",
         description: "a popular search engine",
+        planarClipMask: { mode: PlanarClipMaskMode.IncludeSubCategories, modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]), transparency: .5, subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]), priority: 1024 },
         classifiers: [{
           modelId: "0x123",
           expand: 0.5,

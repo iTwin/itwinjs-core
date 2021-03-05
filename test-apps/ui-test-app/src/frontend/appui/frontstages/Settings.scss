@@ -4,20 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@bentley/ui-core/lib/ui-core/base/base";
+
+// cspell:ignore leftpanel rightpanel
 
 $settings-leftpanel-width: 225px;
-$settings-rightpanel-width: 200px;
+$settings-rightpanel-width: 220px;
+
+.components-settings-container {
+  height: calc(100% - 50px);
+  overflow: hidden;
+  }
 
 .uifw-settings {
   background: $buic-background-dialog;
   color: $buic-text-color;
-  width: auto;
-  height: auto;
-  position: absolute;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 30px;
   border-radius: 3px;
   font-size: $uicore-font-size;
   display: flex;
@@ -35,8 +36,8 @@ $settings-rightpanel-width: 200px;
 
   > .left-panel {
     flex-direction: column;
-    width: $settings-leftpanel-width;
-    padding: 30px 50px 30px 30px;
+    min-width: $settings-leftpanel-width;
+    padding: 20px 15px 20px 15px;
 
     > .title {
       font-size: 18px;
@@ -50,9 +51,11 @@ $settings-rightpanel-width: 200px;
   }
 
   > .right-panel {
+    display:flex;
+    justify-content: center;
     align-items: center;
-    width: $settings-rightpanel-width;
-    padding: 30px;
+    min-width: $settings-rightpanel-width;
+    padding: 30px 50px 30px 30px;
 
     .toggle {
       margin-right: 10px;

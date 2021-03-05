@@ -399,7 +399,7 @@ export class ViewFlags {
  * @public
  */
 export enum ViewFlagPresence {
-  RenderMode, // eslint-disable-line no-shadow
+  RenderMode, // eslint-disable-line @typescript-eslint/no-shadow
   Dimensions,
   Patterns,
   Weights,

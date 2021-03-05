@@ -1,0 +1,94 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/style/typography";
+
+.quantity-types-stage {
+  box-sizing: border-box;
+  display: flex;
+  height: 100%;
+  width: 100%;
+
+  *, *:before, *:after {
+    box-sizing: inherit;
+  }
+
+  .quantity-types-container {
+    background: $buic-background-dialog;
+    display: flex;
+    height: 100%;
+    width: auto;
+    box-sizing: border-box;
+
+    > .left-panel {
+      flex-direction: column;
+      min-width: 260px;
+      width: auto;
+      padding: 20px 50px 20px 20px;
+      height: auto;
+
+      ul.core-listbox.quantity-types {
+        height: 100%;
+        li.core-listbox-item {
+          line-height: 2em;
+        }
+      }
+    }
+
+    > .right-panel {
+      display: flex;
+      flex-direction: column;
+      width: auto;
+      height: auto;
+      min-width: 410px;
+      padding: 20px 20px 20px 0;
+
+      .quantity-types-right-top {
+        display: flex;
+        padding-bottom: 10px;
+
+        .quantity-types-right-top-sample {
+          display: grid;
+          grid-template-columns: auto 1fr;
+          row-gap: 0;
+          column-gap: 6px;
+          align-items: center;
+          .components-quantity-persistence-input {
+            width: 6.5em;
+          }
+          span.components-quantity-formatted-sample {
+            margin-left: 10px;
+          }
+          >span.components-inline {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 4px;
+            margin-right: 10px;
+          }
+        }
+      }
+
+      .quantity-types-formats {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid $buic-inputs-border;
+        border-radius: 3px;
+        height: auto;
+        overflow-y: auto;
+        box-sizing: border-box;
+        padding: 6px;
+        flex: 1 1 auto;
+      }
+
+      .components-button-panel {
+        padding-top: 6px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+      }
+    }
+  }
+}

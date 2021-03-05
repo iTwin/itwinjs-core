@@ -77,7 +77,7 @@ export interface IpcSocketFrontend extends IpcSocket {
    * primitive types and `ArrayBuffers` are allowed.
    */
   invoke: (channel: string, ...args: any[]) => Promise<any>;
-};
+}
 
 /**
  * Interface for the backend (Node.js) side of a socket connection. Backends provide the implementation
@@ -92,5 +92,5 @@ export interface IpcSocketBackend extends IpcSocket {
    * @note returns A function to call to remove the handler.
    */
   handle: (channel: string, handler: (...args: any[]) => Promise<any>) => RemoveFunction;
-};
+}
 

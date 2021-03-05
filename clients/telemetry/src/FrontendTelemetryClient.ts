@@ -15,7 +15,7 @@ import { TelemetryClient, TelemetryEvent } from "./TelemetryClient";
  * General telemetry event data augmented with data obtained from an [[AuthorizedClientRequestContext]]
  */
 export class ClientTelemetryEvent extends TelemetryEvent {
-  protected static readonly _iModelJsVersion: string = require("../package.json").version;
+  protected static readonly _iModelJsVersion: string = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
   public get iModelJsVersion(): string { return ClientTelemetryEvent._iModelJsVersion; }
   /** Unique identifier for the current activity. Useful for correlating any actions performed during a specific activity. */
   public readonly activityId?: GuidString;
@@ -72,5 +72,5 @@ export abstract class FrontendTelemetryClient implements TelemetryClient {
     await this._postTelemetry(requestContext, frontendTelemetryEvent);
   }
 
-  protected abstract async _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: ClientTelemetryEvent): Promise<void>;
+  protected abstract _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: ClientTelemetryEvent): Promise<void>;
 }

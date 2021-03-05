@@ -2,6 +2,45 @@
   "name": "@bentley/imodelhub-client-tests",
   "entries": [
     {
+      "version": "2.12.1",
+      "tag": "@bentley/imodelhub-client-tests_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/imodelhub-client-tests_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Test fixes to setup mock with the new PrecedingCheckpointV2 relationship"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.0",
+      "tag": "@bentley/imodelhub-client-tests_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added CheckpointV2 failure info support"
+          },
+          {
+            "comment": "Fixes for iModels test which create too many iModels"
+          },
+          {
+            "comment": "Fixed the tests to not delete random iModels"
+          },
+          {
+            "comment": "Altered iModelHub client tests to re-use iModels where possible"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/imodelhub-client-tests_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

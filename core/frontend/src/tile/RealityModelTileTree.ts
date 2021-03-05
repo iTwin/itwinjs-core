@@ -6,9 +6,14 @@
  * @module Utils
  */
 
-import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
+import {
+  assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Guid, Id64String,
+} from "@bentley/bentleyjs-core";
 import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
-import { Cartographic, GeoCoordStatus, IModelError, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
+import {
+  Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings,
+  ViewFlagOverrides, ViewFlagPresence,
+} from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
@@ -17,14 +22,16 @@ import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../Fro
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { RenderMemory } from "../render/RenderMemory";
 import { SpatialClassifiers } from "../SpatialClassifiers";
 import { SceneContext } from "../ViewContext";
+import { ScreenViewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 import {
-  BatchedTileIdMap, createClassifierTileTreeReference, getCesiumAccessTokenAndEndpointUrl, RealityTile, RealityTileLoader, RealityTileParams,
-  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
-  TileTreeReference, TileTreeSet, TileTreeSupplier,
+  BatchedTileIdMap, createClassifierTileTreeReference, DisclosedTileTreeSet, getCesiumAccessTokenAndEndpointUrl, getCesiumOSMBuildingsUrl, RealityTile, RealityTileLoader, RealityTileParams,
+  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
+  TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 import { createDefaultViewFlagOverrides } from "./ViewFlagOverrides";
 
@@ -36,6 +43,7 @@ interface RealityTreeId {
   url: string;
   transform?: Transform;
   modelId: Id64String;
+  maskModelIds?: string;
 }
 
 function compareOrigins(lhs: XYZ, rhs: XYZ): number {
@@ -67,6 +75,9 @@ class RealityTreeSupplier implements TileTreeSupplier {
   }
 
   public async createTileTree(treeId: RealityTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
+    if (treeId.maskModelIds)
+      await iModel.models.load(CompressedId64Set.decompressSet(treeId.maskModelIds));
+
     return RealityModelTileTree.createRealityModelTileTree(treeId.url, iModel, treeId.modelId, treeId.transform);
   }
 
@@ -75,6 +86,10 @@ class RealityTreeSupplier implements TileTreeSupplier {
     if (0 === cmp)
       cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
 
+    if (0 !== cmp)
+      return cmp;
+
+    cmp = compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds);
     if (0 !== cmp)
       return cmp;
 
@@ -249,7 +264,7 @@ class RealityModelTileProps implements RealityTileParams {
       this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume)?.range;
     else {
       // A node without content should probably be selectable even if not additive refinement - But restrict it to that case here
-      // to avoid potential problems with existing reality models, but still avoid overselection in the OSM world buidling set.
+      // to avoid potential problems with existing reality models, but still avoid overselection in the OSM world building set.
       if (this.additiveRefinement || parent?.additiveRefinement)
         this.noContentButTerminateOnSelection = true;
     }
@@ -312,6 +327,11 @@ class RealityModelTileLoader extends RealityTileLoader {
       }
     }
     return props;
+  }
+
+  public getRequestChannel(_tile: Tile) {
+    // ###TODO: May want to extract the hostname from the URL.
+    return IModelApp.tileAdmin.channels.getForHttp("itwinjs-reality-model");
   }
 
   public async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
@@ -406,11 +426,22 @@ export namespace RealityModelTileTree {
     name?: string;
     classifiers?: SpatialClassifiers;
     requestAuthorization?: string;
+    planarMask?: PlanarClipMaskProps;
   }
 
   export abstract class Reference extends TileTreeReference {
     private _modelId: Id64String;
+    private _isGlobal?: boolean;
+    protected _planarClipMask?: PlanarClipMaskState;
     public get modelId() { return this._modelId; }
+    public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
+    public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
+    public get planarClipMaskPriority(): number {
+      if (this._planarClipMask?.settings.priority !== undefined)
+        return this._planarClipMask.settings.priority;
+
+      return this.isGlobal ? PlanarClipMaskPriority.GlobalRealityModel : PlanarClipMaskPriority.RealityModel;
+    }
 
     public constructor(modelId: Id64String | undefined, iModel: IModelConnection) {
       super();
@@ -423,6 +454,14 @@ export namespace RealityModelTileTree {
       const contentRange = this.computeWorldContentRange();
       if (!contentRange.isNull && contentRange.diagonal().magnitude() < Constant.earthRadiusWGS84.equator)
         union.extendRange(contentRange);
+    }
+    public get isGlobal() {
+      if (undefined === this._isGlobal) {
+        const range = this.computeWorldContentRange();
+        if (!range.isNull)
+          this._isGlobal = range.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
+      }
+      return this._isGlobal === undefined ? false : this._isGlobal;
     }
   }
 
@@ -461,24 +500,29 @@ export namespace RealityModelTileTree {
         realityTileRange = realityToEcef.multiplyRange(realityTileRange);
       }
 
-      // In initial publishing version the iModel ecef Transform was used to locate the reality model.
-      // This would work well only for tilesets published from that iModel but for iModels the ecef transform is calculated
-      // at the center of the project extents and the reality model location may differ greatly, and the curvature of the earth
-      // could introduce significant errors.
-      // The publishing was modified to calculate the ecef transform at the reality model range center and at the same time the "iModelPublishVersion"
-      // member was added to the root object.  In order to continue to locate reality models published from older versions at the
-      // project extents center we look for Tileset version 0.0 and no root.iModelVersion.
-      if (json.asset?.version !== "0.0" || undefined !== json.root?.iModelPublishVersion) {
+      if (iModel.ecefLocation) {
+        // In initial publishing version the iModel ecef Transform was used to locate the reality model.
+        // This would work well only for tilesets published from that iModel but for iModels the ecef transform is calculated
+        // at the center of the project extents and the reality model location may differ greatly, and the curvature of the earth
+        // could introduce significant errors.
+        // The publishing was modified to calculate the ecef transform at the reality model range center and at the same time the "iModelPublishVersion"
+        // member was added to the root object.  In order to continue to locate reality models published from older versions at the
+        // project extents center we look for Tileset version 0.0 and no root.iModelVersion.
         const ecefOrigin = realityTileRange.localXYZToWorld(.5, .5, .5)!;
-        const cartographicOrigin = Cartographic.fromEcef(ecefOrigin);
+        const dbOrigin = rootTransform.multiplyPoint3d(ecefOrigin);
+        const realityOriginToProjectDistance = iModel.projectExtents.distanceToPoint(dbOrigin);
+        const maxProjectDistance = 1E5;     // Only use the project GCS projection if within 100KM of the project.   Don't attempt to use GCS if global reality model or in another locale - Results will be unreliable.
+        if (realityOriginToProjectDistance < maxProjectDistance && json.asset?.version !== "0.0" || undefined !== json.root?.iModelPublishVersion) {
+          const cartographicOrigin = Cartographic.fromEcef(ecefOrigin);
 
-        if (cartographicOrigin !== undefined) {
-          const geoOrigin = Point3d.create(cartographicOrigin.longitudeDegrees, cartographicOrigin.latitudeDegrees, cartographicOrigin.height);
-          const response = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoOrigin]);
-          if (response.iModelCoords[0].s === GeoCoordStatus.Success) {
-            const ecefToDb = await calculateEcefToDbTransformAtLocation(Point3d.fromJSON(response.iModelCoords[0].p), iModel);
-            if (ecefToDb)
-              rootTransform = ecefToDb;
+          if (cartographicOrigin !== undefined) {
+            const geoOrigin = Point3d.create(cartographicOrigin.longitudeDegrees, cartographicOrigin.latitudeDegrees, cartographicOrigin.height);
+            const response = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoOrigin]);
+            if (response.iModelCoords[0].s === GeoCoordStatus.Success) {
+              const ecefToDb = await calculateEcefToDbTransformAtLocation(Point3d.fromJSON(response.iModelCoords[0].p), iModel);
+              if (ecefToDb)
+                rootTransform = ecefToDb;
+            }
           }
         }
       }
@@ -506,6 +550,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
   private _mapDrapeTree?: TileTreeReference;
   private _transform?: Transform;
   private _iModel: IModelConnection;
+  private _maskModelIds?: string;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props.modelId, props.iModel);
@@ -520,12 +565,14 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     this._url = props.url;
     this._transform = transform;
     this._iModel = props.iModel;
+    this._planarClipMask = (props.planarMask && props.planarMask.mode !== PlanarClipMaskMode.None) ? PlanarClipMaskState.create(PlanarClipMaskSettings.fromJSON(props.planarMask)) : undefined;
+    this._maskModelIds = props.planarMask?.modelIds;
 
     if (undefined !== props.classifiers)
       this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
   }
   public get treeOwner(): TileTreeOwner {
-    const treeId = { url: this._url, transform: this._transform, modelId: this.modelId };
+    const treeId = { url: this._url, transform: this._transform, modelId: this.modelId, maskModelIds: this._maskModelIds };
     return realityTreeSupplier.getOwner(treeId, this._iModel);
   }
 
@@ -553,10 +600,14 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     return drawArgs;
   }
 
+  public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
+
   public addToScene(context: SceneContext): void {
     // NB: The classifier must be added first, so we can find it when adding our own tiles.
-    if (undefined !== this._classifier)
+    if (this._classifier && this._classifier.activeClassifier)
       this._classifier.addToScene(context);
+
+    this.addPlanarClassifierOrMaskToScene(context);
 
     const tree = this.treeOwner.tileTree as RealityTileTree;
     if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
@@ -568,7 +619,20 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     super.addToScene(context);
   }
 
-  public discloseTileTrees(trees: TileTreeSet): void {
+  private addPlanarClassifierOrMaskToScene(context: SceneContext) {
+    // A planarClassifier is required if there is a classification tree OR planar masking is required.
+    const classifierTree = this.planarClassifierTreeRef;
+    const planarClipMask = this._planarClipMask ? this._planarClipMask : context.viewport.displayStyle.getRealityModelPlanarClipMask(this.modelId);
+    if (!classifierTree && !planarClipMask)
+      return;
+
+    if (classifierTree && !classifierTree.treeOwner.load())
+      return;
+
+    context.addPlanarClassifier(this.modelId, classifierTree, planarClipMask);
+  }
+
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
 
     if (undefined !== this._classifier)
@@ -576,6 +640,9 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
     if (undefined !== this._mapDrapeTree)
       this._mapDrapeTree.discloseTileTrees(trees);
+
+    if (undefined !== this._planarClipMask)
+      this._planarClipMask.discloseTileTrees(trees);
   }
 
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
@@ -612,6 +679,12 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     const tree = undefined !== this._classifier ? this._classifier.treeOwner.tileTree : undefined;
     if (undefined !== tree)
       tree.collectStatistics(stats);
+  }
+
+  public addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {
+    if (this._url === getCesiumOSMBuildingsUrl()) {
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.i18n.translate("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
+    }
   }
 }
 
@@ -702,7 +775,7 @@ export class RealityModelTileClient {
     return props;
   }
 
-  // This is to set the root url fromt the provided root document path.
+  // This is to set the root url from the provided root document path.
   // If the root document is stored on PW Context Share then the root document property of the Reality Data is provided,
   // otherwise the full path to root document is given.
   // The base URL contains the base URL from which tile relative path are constructed.

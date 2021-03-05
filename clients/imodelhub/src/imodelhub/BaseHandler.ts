@@ -7,7 +7,7 @@
  */
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import {
-  AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, HttpRequestOptions, RequestOptions,
+  AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, HttpRequestOptions, RequestGlobalOptions, RequestOptions,
   RequestQueryOptions, WsgClient, WsgInstance, WsgRequestOptions,
 } from "@bentley/itwin-client";
 import { CustomRequestOptions } from "./CustomRequestOptions";
@@ -65,7 +65,7 @@ export function addCsrfHeader(headerName: string = "X-XSRF-TOKEN", cookieName: s
 
 /**
  * This class acts as the WsgClient for other iModelHub Handlers.
- * @beta
+ * @public
  */
 export class IModelBaseHandler extends WsgClient {
   protected _url?: string;
@@ -84,18 +84,30 @@ export class IModelBaseHandler extends WsgClient {
   public constructor(keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super("sv1.1");
     this._fileHandler = fileHandler;
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    this._agent = require("https").Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
+    const agentOptions = { keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" };
+    if (RequestGlobalOptions.httpsProxy) {
+      this._agent = RequestGlobalOptions.createHttpsProxy(agentOptions);
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      this._agent = require("https").Agent(agentOptions);
+    }
   }
 
+  /**
+   * @internal
+   */
   public formatContextIdForUrl(contextId: string) { return contextId; }
 
+  /**
+   * @internal
+   */
   public getFileHandler(): FileHandler | undefined { return this._fileHandler; }
 
   /**
    * Augment request options with defaults returned by the DefaultIModelHubRequestOptionsProvider. Note that the options passed in by clients override any defaults where necessary.
    * @param options Options the caller wants to augment with the defaults.
    * @returns Promise resolves after the defaults are setup.
+   * @internal
    */
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     if (!this._defaultIModelHubOptionsProvider)
@@ -108,6 +120,7 @@ export class IModelBaseHandler extends WsgClient {
    * Populates HTTP request options with additional data.
    * @param options Options that need to be populated.
    * @returns Options populated with additional data.
+   * @internal
    */
   protected setupHttpOptions(options?: HttpRequestOptions): HttpRequestOptions {
     const httpOptions: HttpRequestOptions = { ...options };
@@ -122,6 +135,7 @@ export class IModelBaseHandler extends WsgClient {
   /**
    * Adds a method that will be called for every request to modify HttpRequestOptions.
    * @param func Method that will be used to modify HttpRequestOptions.
+   * @beta
    */
   public use(func: HttpRequestOptionsTransformer) {
     this._httpRequestOptionsTransformers.push(func);
@@ -130,6 +144,7 @@ export class IModelBaseHandler extends WsgClient {
   /**
    * Get name/key to query the service URLs from the URL Discovery Service ("Buddi")
    * @returns Search key for the URL.
+   * @internal
    */
   protected getUrlSearchKey(): string {
     return IModelBaseHandler.searchKey;
@@ -138,6 +153,7 @@ export class IModelBaseHandler extends WsgClient {
   /**
    * Gets theRelyingPartyUrl for the service.
    * @returns RelyingPartyUrl for the service.
+   * @internal
    */
   protected getRelyingPartyUrl(): string {
     if (Config.App.has(IModelBaseHandler.configRelyingPartyUri))
@@ -154,6 +170,7 @@ export class IModelBaseHandler extends WsgClient {
   /**
    * Get the agent used for imodelhub connection pooling.
    * @returns The agent used for imodelhub connection pooling.
+   * @internal
    */
   public getAgent(): any {
     return this._agent;
@@ -162,6 +179,7 @@ export class IModelBaseHandler extends WsgClient {
   /**
    * Get the URL of the service. This method attempts to discover and cache the URL from the URL Discovery Service. If not found uses the default URL provided by client implementations. Note that for consistency sake, the URL is stripped of any trailing "/"
    * @returns URL for the service
+   * @internal
    */
   public async getUrl(requestContext: ClientRequestContext): Promise<string> {
     return super.getUrl(requestContext);
@@ -272,6 +290,7 @@ export class IModelBaseHandler extends WsgClient {
 
   /**
    * Get an instance of CustomRequestOptions, which can be used to set custom request parameters for all future requests made by this handler.
+   * @internal
    */
   public getCustomRequestOptions(): CustomRequestOptions {
     return this._customRequestOptions;

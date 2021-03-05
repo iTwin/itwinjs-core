@@ -8,6 +8,7 @@
 
 import { immerable } from "immer";
 import _ from "lodash";
+import { assert } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
 import { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../TreeDataProvider";
@@ -248,11 +249,7 @@ export class MutableTreeModel implements TreeModel {
    * Sets children for parent node starting from the specific offset.
    * If offset overlaps with already added nodes, the overlapping nodes are overwritten.
    */
-  public setChildren(
-    parentId: string | undefined,
-    nodeInputs: TreeModelNodeInput[],
-    offset: number,
-  ) {
+  public setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void {
     const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
     if (parentNode === undefined)
       return;
@@ -271,11 +268,7 @@ export class MutableTreeModel implements TreeModel {
    * Inserts child in the specified position.
    * If offset is higher then current length of children array, the length is increased.
    */
-  public insertChild(
-    parentId: string | undefined,
-    childNodeInput: TreeModelNodeInput,
-    offset: number,
-  ) {
+  public insertChild(parentId: string | undefined, childNodeInput: TreeModelNodeInput, offset: number): void {
     const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
     if (parentNode === undefined)
       return;
@@ -287,16 +280,48 @@ export class MutableTreeModel implements TreeModel {
   }
 
   /**
-   * Sets number of how many child nodes the parent will have.
-   * If parent already has some nodes they are removed.
+   * Changes the id of target node.
+   * @returns `true` on success, `false` otherwise.
    */
-  public setNumChildren(parentId: string | undefined, numChildren: number) {
-    const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
-    if (parentNode !== undefined) {
-      (parentNode.numChildren as number) = numChildren;
+  public changeNodeId(currentId: string, newId: string): boolean {
+    const node = this.getNode(currentId);
+    if (node === undefined) {
+      return false;
     }
 
-    this._tree.setNumChildren(parentId, numChildren);
+    if (currentId === newId) {
+      return true;
+    }
+
+    const index = this.getChildOffset(node.parentId, currentId);
+    assert(index !== undefined);
+
+    if (!this._tree.setNodeId(node.parentId, index, newId)) {
+      return false;
+    }
+
+    for (const [childId] of this.getChildren(newId)?.iterateValues() ?? []) {
+      const child = this.getNode(childId);
+      assert(child !== undefined);
+      (child.parentId as string) = newId;
+    }
+
+    return true;
+  }
+
+  /**
+   * Sets the number of child nodes a parent is expected to contain. All child nodes of this parent will be subsequently
+   * removed.
+   */
+  public setNumChildren(parentId: string | undefined, numChildren: number | undefined): void {
+    const parentNode = parentId === undefined ? this._rootNode : this._tree.getNode(parentId);
+    if (parentNode === undefined) {
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    (parentNode.numChildren as number | undefined) = numChildren;
+    this._tree.setNumChildren(parentId, numChildren ?? 0);
   }
 
   /** Removes children specified by id.

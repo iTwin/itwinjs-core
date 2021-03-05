@@ -224,7 +224,9 @@ class Builder implements ParticleCollectionBuilder {
     let graphic = this._viewport.target.renderSystem.createGraphicBranch(branch, toWorld);
 
     // If we have a pickable Id, produce a batch.
-    const featureTable = this._pickableId ? new FeatureTable(1) : undefined;
+    // NB: We pass this._pickableId as the FeatureTable's modelId so that it will be treated like a reality model or a map -
+    // specifically, it can be located and display a tooltip, but can't be selected.
+    const featureTable = this._pickableId ? new FeatureTable(1, this._pickableId) : undefined;
     if (featureTable) {
       this._localToWorldTransform.multiplyRange(range, range);
       featureTable.insert(new Feature(this._pickableId));

@@ -17,6 +17,7 @@ export interface DtaConfiguration {
   disableInstancing?: boolean; // default false
   enableImprovedElision?: boolean; // default true
   ignoreAreaPatterns?: boolean; // default false
+  enableExternalTextures?: boolean; // default true
   disableMagnification?: boolean;
   preserveShaderSourceCode?: boolean;
   useProjectExtents?: boolean; // default ON
@@ -30,7 +31,6 @@ export interface DtaConfiguration {
   dpiAwareViewports?: boolean; // default ON
   devicePixelRatioOverride?: number; // default undefined
   dpiAwareLOD?: boolean; // default OFF
-  cancelBackendTileRequests?: boolean; // default ON
   disableEdges?: boolean; // default OFF
   useWebGL2?: boolean; // default ON
   doIdleWork?: boolean; // default ON

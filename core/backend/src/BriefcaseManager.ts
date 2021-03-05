@@ -317,19 +317,15 @@ export class BriefcaseManager {
     try {
       await IModelHost.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().byId(briefcaseId));
       requestContext.enter();
-    } catch (err) {
+    } catch (error) {
       requestContext.enter();
-      return; // Briefcase does not exist on the hub, or cannot be accessed
+      Logger.logError(loggerCategory, "Could not find briefcase to release", () => ({ iModelId, briefcaseId }));
+      throw error;
     }
 
-    try {
-      await IModelHost.iModelClient.briefcases.delete(requestContext, iModelId, briefcaseId);
-      requestContext.enter();
-      Logger.logTrace(loggerCategory, "released briefcase from the server", () => ({ iModelId, briefcaseId }));
-    } catch (err) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, "Could not release briefcase", () => ({ iModelId, briefcaseId })); // Could be that the current user does not have the appropriate access
-    }
+    await IModelHost.iModelClient.briefcases.delete(requestContext, iModelId, briefcaseId);
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, "Released briefcase from the server", () => ({ iModelId, briefcaseId }));
   }
 
   /**
@@ -877,7 +873,6 @@ export class BriefcaseManager {
     changeSet.id = changeSetToken.id;
     changeSet.parentId = changeSetToken.parentId;
     changeSet.changesType = changeSetToken.changeType === ChangesType.Schema ? ChangesType.Schema : changeType;
-    changeSet.seedFileId = db.iModelId;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;
     if (changeSet.description.length >= 255) {

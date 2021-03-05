@@ -92,7 +92,7 @@ describe("ChangeMerging", () => {
       [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(firstDb, IModelTestUtils.getUniqueModelCode(firstDb, "newPhysicalModel"), true);
       const dictionary: DictionaryModel = firstDb.models.getModel<DictionaryModel>(IModel.dictionaryId);
       const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-      spatialCategoryId = SpatialCategory.insert(dictionary.iModel, dictionary.id, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+      spatialCategoryId = SpatialCategory.insert(dictionary.iModel, dictionary.id, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 }));
       el1 = firstDb.elements.insertElement(IModelTestUtils.createPhysicalObject(firstDb, modelId, spatialCategoryId));
       firstDb.saveChanges();
       csHistory.push(createChangeSet(firstDb));
@@ -139,12 +139,12 @@ describe("ChangeMerging", () => {
       const el1after = secondDb.elements.getElement(el1);
       assert.equal(el1after.userLabel, expectedValueOfEl1UserLabel);
       csHistory.push(createChangeSet(secondDb));
-      secondParent = csHistory.length - 1;
+      secondParent = csHistory.length - 1; // eslint-disable-line @typescript-eslint/no-unused-vars
     }
 
     // Make sure a neutral observer sees secondUser's change.
     if (true) {
-      neutralParent = applyChangeSets(neutralDb, csHistory, neutralParent);
+      neutralParent = applyChangeSets(neutralDb, csHistory, neutralParent); // eslint-disable-line @typescript-eslint/no-unused-vars
       const elobj = neutralDb.elements.getElement(el1);
       assert.equal(elobj.userLabel, expectedValueOfEl1UserLabel);
     }

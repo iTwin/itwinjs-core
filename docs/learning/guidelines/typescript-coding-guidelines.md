@@ -1,6 +1,6 @@
-# iModel.js TypeScript Coding Guidelines
+# iTwin.js TypeScript Coding Guidelines
 
-These are the TypeScript coding guidelines that we expect all iModel.js contributors to follow.
+These are the TypeScript coding guidelines that we expect all iTwin.js contributors to follow.
 Where possible, these guidelines are enforced through our TSLint configuration file (tslint.json).
 
 ## Names
@@ -27,12 +27,12 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 
 ## Do not use `null`
 
-* Use `undefined`. Do not use `null` except where external libraries require it.
+- Use `undefined`. Do not use `null` except where external libraries require it.
 
 ## `===` and `!==` Operators
 
-* Use `===` and `!==` operators whenever possible.
-* The `==` and `!=` operators do type coercion, which is both inefficient and can lead to unexpected behavior.
+- Use `===` and `!==` operators whenever possible.
+- The `==` and `!=` operators do type coercion, which is both inefficient and can lead to unexpected behavior.
 
 ## Strings
 
@@ -57,91 +57,91 @@ On the other hand, vertical whitespace can contribute significantly to code read
 5. Don't put each import in an import statement on a separate line. If you use Visual Studio Code as your editor, use the [TypeScript Import Sorter extension](https://marketplace.visualstudio.com/items?itemName=mike-co.import-sorter) with its default settings to automatically format import statements.
 6. If a function has only a single statement, it should **not** be on one line. Many debuggers refuse to allow breakpoints to be set on single-line functions.
 
-> Note: This recommendation is now the exact opposite of the previous recommendation.
+    > Note: This recommendation is now the exact opposite of the previous recommendation.
 
-```ts
-  // No, cannot set breakpoint !!!
-  public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
-```
+    ```ts
+    // No, cannot set breakpoint !!!
+    public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
+    ```
 
-```ts
-  // Correct, breakpoint may be set on body of function !!!
-  public middle(): number {
-     return this.minimum + ((this.maximum - this.minimum) / 2.0);
-  }
-```
+    ```ts
+    // Correct, breakpoint may be set on body of function !!!
+    public middle(): number {
+        return this.minimum + ((this.maximum - this.minimum) / 2.0);
+    }
+    ```
 
 7. The body of an `if` statement or a loop should be on a separate line, even if the body contains only a single line of code.
 
-```ts
-  // No (body on same line as conditional, cannot set breakpoint) !!!
-  if (meow) return "cat";
-```
+    ```ts
+    // No (body on same line as conditional, cannot set breakpoint) !!!
+    if (meow) return "cat";
+    ```
 
-```ts
-  // Correct (body on separate line from conditional) !!!
-  if (meow)
-    return "cat";
-```
+    ```ts
+    // Correct (body on separate line from conditional) !!!
+    if (meow)
+      return "cat";
+    ```
 
 8. A closing curly brace should be followed by a blank line.
 
-```ts
-  // No (missing blank line after closing brace) !!!
-  if (minimum > maximum) {
-    const temp = minimum;
-    minimum = maximum;
-    maximum = temp;
-  }
-  return maximum - minimum;
-```
+    ```ts
+    // No (missing blank line after closing brace) !!!
+    if (minimum > maximum) {
+      const temp = minimum;
+      minimum = maximum;
+      maximum = temp;
+    }
+    return maximum - minimum;
+    ```
 
-```ts
-  // Correct (blank line after closing brace) !!!
-  if (minimum > maximum) {
-    const temp = minimum;
-    minimum = maximum;
-    maximum = temp;
-  }
+    ```ts
+    // Correct (blank line after closing brace) !!!
+    if (minimum > maximum) {
+      const temp = minimum;
+      minimum = maximum;
+      maximum = temp;
+    }
 
-  return maximum - minimum;
-```
+    return maximum - minimum;
+    ```
 
 9. Omit curly braces from single-line code blocks...
 
-```ts
-  // No (closing brace wastes a line) !!!
-  if (meow) {
-    return "cat";
-  }
-```
+    ```ts
+    // No (closing brace wastes a line) !!!
+    if (meow) {
+      return "cat";
+    }
+    ```
 
-```ts
-  // Correct (no braces) !!!
-  if (meow)
-    return "cat";
-```
+    ```ts
+    // Correct (no braces) !!!
+    if (meow)
+      return "cat";
+    ```
 
 10. ...unless related blocks require braces
 
-```ts
-  // No (unbalanced braces) !!!
-  if (woof) {
-    rollover();
-    animal = "dog";
-  } else if (meow)
-    animal = "cat";
-```
+    ```ts
+    // No (unbalanced braces) !!!
+    if (woof) {
+      rollover();
+      animal = "dog";
+    } else if (meow)
+      animal = "cat";
+    ```
 
-```ts
-  // Correct (balanced braces) !!!
-  if (woof) {
-    rollover();
-    animal = "dog";
-  } else if (meow) {
-    animal = "cat";
-  }
-```
+    ```ts
+    // Correct (balanced braces) !!!
+    if (woof) {
+      rollover();
+      animal = "dog";
+    } else if (meow) {
+      animal = "cat";
+    }
+    ```
 
 ## Style
 
@@ -358,28 +358,29 @@ All comments are parsed as markdown. Additionally, you can link to other classes
 
 The following JavaDoc tags are supported by TypeDoc:
 
-* `@param`
-  * The parameter name and type are automatically propagated into the generated documentation, so `@param` should only be included when more of a description is necessary.
-  * Use plain `@param`. Do not use `@param[in]` or `@param[out]` as this confuses TypeDoc.
-  * The parameter description should start with a capital letter.
-* `@returns`
-  * The return type is automatically propagated into the generated documentation, so `@returns` should only be included when more of a description is necessary.
-  * The `@returns` description (when provided) should start with *Returns* for readability within the generated documentation.
-  * The `@return` JavaDoc tag is also supported, but `@returns` is preferred for readability and consistency with `@throws`.
+- `@param`
+  - The parameter name and type are automatically propagated into the generated documentation, so `@param` should only be included when more of a description is necessary.
+  - Use plain `@param`. Do not use `@param[in]` or `@param[out]` as this confuses TypeDoc.
+  - The parameter description should start with a capital letter.
+- `@returns`
+  - The return type is automatically propagated into the generated documentation, so `@returns` should only be included when more of a description is necessary.
+  - The `@returns` description (when provided) should start with *Returns* for readability within the generated documentation.
+  - The `@return` JavaDoc tag is also supported, but `@returns` is preferred for readability and consistency with `@throws`.
   <!--
   - *TODO:*
     - *Need to decide how to document methods returning `Promise<T>`. Should the description mention a `Promise` or just `T` since the return type will clearly indicate `Promise` and using `await` will cause `T` to be returned.*
   -->
-* `@throws`
-  * If a method can potentially throw an `Error`, it should be documented with `@throws` as there is no automated way that thrown errors make it into the generated documentation.
-  * There can be multiple `@throws` lines (one for each different `Error` class) in a method comment.
-  * A link to the `Error` class should be incorporated into the description.
-* `@internal`
-  * TypeDoc will not document the class, method, or member. This is useful for internal-only utility methods that must be public, but should not be called directly by outside API users.
+
+- `@throws`
+  - If a method can potentially throw an `Error`, it should be documented with `@throws` as there is no automated way that thrown errors make it into the generated documentation.
+  - There can be multiple `@throws` lines (one for each different `Error` class) in a method comment.
+  - A link to the `Error` class should be incorporated into the description.
+- `@internal`
+  - TypeDoc will not document the class, method, or member. This is useful for internal-only utility methods that must be public, but should not be called directly by outside API users.
 
 See below for the recommended format of documentation comments:
 
-``` ts
+```ts
 /** This is a valid single-line comment. */
 public myMethod1(): void { }
 
@@ -394,7 +395,6 @@ public myMethod1(): void { }
 public myMethod2(param1: string): number {
   /* ... */
 }
-
 ```
 
 ## Defining JSON 'Wire Formats'
@@ -403,9 +403,9 @@ A common pattern in JavaScript is to transfer information from one context to an
 
 For example:
 
-* from a *backend* program to a *frontend* program, or vice-versa
-* from C++ to JavaScript, or vice-versa
-* saving object state to/from a persistent store, such as a database
+- from a *backend* program to a *frontend* program, or vice-versa
+- from C++ to JavaScript, or vice-versa
+- saving object state to/from a persistent store, such as a database
 
 Since JSON strings are often sent over an internet connection, these strings are commonly referred to as "wire formats".
 
@@ -432,8 +432,9 @@ From this we can tell that an Angle may be serialized to/from JSON as either:
 
 1. a `number`, in which case it will be a value in degrees
 2. an object that:
-* has a member named `degrees` of type `number`, or
-* has a member named `radians` of type `number`.
+
+- has a member named `degrees` of type `number`, or
+- has a member named `radians` of type `number`.
 
 Likewise, in `@bentley/geometry-core`, we have a class called XYZ. This is a base class for 3d points and vectors. We define the following type:
 
@@ -462,12 +463,11 @@ Every .ts file should have this notice as its **first lines**:
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 ```
 
 ## Source Code Editor
 
-While not an absolute requirement, we recommend and optimize for [Visual Studio Code](https://code.visualstudio.com/). You will be likely be less productive if you attempt to use anything else. We recommend configuring the **TSLint** extension for Visual Studio Code and using our **tslint.json** to get real-time feedback.
+While not an absolute requirement, we recommend and optimize for [Visual Studio Code](https://code.visualstudio.com/). You will be likely be less productive if you attempt to use anything else. We recommend configuring the **ESLint** extension for Visual Studio Code and using our [@bentley/eslint-plugin](https://www.npmjs.com/package/@bentley/eslint-plugin) to get real-time feedback.
 
 ## React Function Components
 

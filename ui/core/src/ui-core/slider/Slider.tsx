@@ -23,12 +23,16 @@ import { Tooltip } from "../tooltip/Tooltip";
  * @public
  */
 export interface SliderProps extends CommonProps {
+  /** Values to set Slider to initially */
+  values: number[];
   /** Minimum value */
   min: number;
   /** Maximum value */
   max: number;
-  /** Values to set Slider to initially */
-  values: number[];
+  /** Format the min display value */
+  formatMin?: (value: number) => string;
+  /** Format the max display value */
+  formatMax?: (value: number) => string;
 
   /** Step value. Default is 0.1. */
   step?: number;
@@ -101,6 +105,7 @@ export interface SliderProps extends CommonProps {
  */
 export function Slider(props: SliderProps) {
   const { className, style, min, max, values, step, mode,
+    formatMin, formatMax,
     onChange, onUpdate, onSlideStart, onSlideEnd,
     showTicks, showTickLabels, formatTick, getTickCount, getTickValues, includeTicksInWidth,
     reversed, disabled,
@@ -139,7 +144,7 @@ export function Slider(props: SliderProps) {
   return (
     <div className={containerClassNames} style={style}>
       {showMinMax &&
-        <MinMax value={min} testId="core-slider-min" image={minImage} />
+        <MinMax value={min} testId="core-slider-min" image={minImage} format={formatMin} />
       }
       <CompoundSlider
         domain={domain}
@@ -219,7 +224,7 @@ export function Slider(props: SliderProps) {
         </Handles>
       </CompoundSlider>
       {showMinMax &&
-        <MinMax value={max} testId="core-slider-max" image={maxImage} />
+        <MinMax value={max} testId="core-slider-max" image={maxImage} format={formatMax} />
       }
     </div>
   );
@@ -230,17 +235,19 @@ interface MinMaxProps {
   value: number;
   testId: string;
   image?: React.ReactNode;
+  format?: (value: number) => string;
 }
 
 /** MinMax component for Slider */
 function MinMax(props: MinMaxProps) {
-  const { value, testId, image } = props;
+  const { value, testId, image, format } = props;
   let element: React.ReactElement<any>;
+  const displayValue = format !== undefined ? format(value) : value;
 
   if (image)
     element = <>{image}</>;
   else
-    element = <BodyText data-testid={testId}>{value}</BodyText>;
+    element = <BodyText data-testid={testId}>{displayValue}</BodyText>;
 
   return element;
 }

@@ -7,19 +7,51 @@
  */
 
 import { assert, compareBooleans, compareNumbers, compareStrings, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, TerrainHeightOriginMode, TerrainProviderName } from "@bentley/imodeljs-common";
+import {
+  Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
+} from "@bentley/geometry-core";
+import {
+  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
+  TerrainProviderName,
+} from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "../../BackgroundMapGeometry";
+import { TerrainDisplayOverrides } from "../../DisplayStyleState";
 import { GeoConverter } from "../../GeoServices";
 import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
+import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
-import { BingElevationProvider, createDefaultViewFlagOverrides, EllipsoidTerrainProvider, getCesiumTerrainProvider, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapTile, MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme } from "../internal";
-import { TileTreeLoadStatus } from "../TileTree";
+import {
+  BingElevationProvider,
+  createDefaultViewFlagOverrides,
+  DisclosedTileTreeSet,
+  EllipsoidTerrainProvider,
+  getCesiumTerrainProvider,
+  ImageryMapLayerTreeReference,
+  ImageryMapTileTree,
+  MapCartoRectangle,
+  MapTile,
+  MapTileLoader,
+  MapTilingScheme,
+  PlanarTilePatch,
+  QuadId,
+  RealityTileDrawArgs,
+  RealityTileTree,
+  RealityTileTreeParams,
+  Tile,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileParams,
+  TileTreeOwner,
+  TileTreeReference,
+  TileTreeSupplier,
+  UpsampledMapTile, WebMercatorTilingScheme,
+} from "../internal";
+import { TileTree, TileTreeLoadStatus } from "../TileTree";
 
 const scratchPoint = Point3d.create();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
@@ -102,7 +134,9 @@ export class MapTileTree extends RealityTileTree {
     this.imageryTrees.length = 0;
     this._layerSettings.clear();
   }
-  public get isTransparent() { return this.mapTransparent || this.baseTransparent; }
+  public get isTransparent() {
+    return this.mapTransparent || this.baseTransparent;
+  }
 
   public get maxDepth() {
     let maxDepth = this.loader.maxDepth;
@@ -335,6 +369,7 @@ interface MapTreeId {
   terrainExaggeration: number;
   mapGroundBias: number;
   wantSkirts: boolean;
+  wantNormals: boolean;
   globeMode: GlobeMode;
   useDepthBuffer: boolean;
   isOverlay: boolean;
@@ -376,32 +411,35 @@ class MapTreeSupplier implements TileTreeSupplier {
       if (0 === cmp && !lhs.isOverlay) {
         cmp = compareBooleans(lhs.wantSkirts, rhs.wantSkirts);
         if (0 === cmp) {
-          cmp = compareNumbers(lhs.globeMode, rhs.globeMode);
+          cmp = compareBooleans(lhs.wantNormals, rhs.wantNormals);
           if (0 === cmp) {
-            cmp = compareNumbers(lhs.baseColor ? lhs.baseColor.tbgr : -1, rhs.baseColor ? rhs.baseColor.tbgr : -1);
+            cmp = compareNumbers(lhs.globeMode, rhs.globeMode);
             if (0 === cmp) {
-              cmp = compareBooleans(lhs.baseTransparent, rhs.baseTransparent);
+              cmp = compareNumbers(lhs.baseColor ? lhs.baseColor.tbgr : -1, rhs.baseColor ? rhs.baseColor.tbgr : -1);
               if (0 === cmp) {
-                cmp = compareBooleans(lhs.mapTransparent, rhs.mapTransparent);
+                cmp = compareBooleans(lhs.baseTransparent, rhs.baseTransparent);
                 if (0 === cmp) {
-                  cmp = compareBooleans(lhs.applyTerrain, rhs.applyTerrain);
+                  cmp = compareBooleans(lhs.mapTransparent, rhs.mapTransparent);
                   if (0 === cmp) {
-                    if (lhs.applyTerrain) {
-                      // Terrain-only settings.
-                      cmp = compareStrings(lhs.terrainProviderName, rhs.terrainProviderName);
-                      if (0 === cmp) {
-                        cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
+                    cmp = compareBooleans(lhs.applyTerrain, rhs.applyTerrain);
+                    if (0 === cmp) {
+                      if (lhs.applyTerrain) {
+                        // Terrain-only settings.
+                        cmp = compareStrings(lhs.terrainProviderName, rhs.terrainProviderName);
                         if (0 === cmp) {
-                          cmp = compareNumbers(lhs.terrainHeightOriginMode, rhs.terrainHeightOriginMode);
-                          if (0 === cmp)
-                            cmp = compareNumbers(lhs.terrainExaggeration, rhs.terrainExaggeration);
+                          cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
+                          if (0 === cmp) {
+                            cmp = compareNumbers(lhs.terrainHeightOriginMode, rhs.terrainHeightOriginMode);
+                            if (0 === cmp)
+                              cmp = compareNumbers(lhs.terrainExaggeration, rhs.terrainExaggeration);
+                          }
                         }
+                      } else {
+                        // Non-Terrain (flat) settings.
+                        cmp = compareNumbers(lhs.mapGroundBias, rhs.mapGroundBias);
+                        if (0 === cmp)
+                          cmp = compareBooleans(lhs.useDepthBuffer, rhs.useDepthBuffer);
                       }
-                    } else {
-                      // Non-Terrain (flat) settings.
-                      cmp = compareNumbers(lhs.mapGroundBias, rhs.mapGroundBias);
-                      if (0 === cmp)
-                        cmp = compareBooleans(lhs.useDepthBuffer, rhs.useDepthBuffer);
                     }
                   }
                 }
@@ -441,7 +479,7 @@ class MapTreeSupplier implements TileTreeSupplier {
 
       bimElevationBias = - await this.computeHeightBias(id.terrainHeightOrigin, id.terrainHeightOriginMode, id.terrainExaggeration, iModel, elevationProvider);
       geodeticOffset = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
-      terrainProvider = await getCesiumTerrainProvider(iModel, modelId, id.wantSkirts, id.terrainExaggeration);
+      terrainProvider = await getCesiumTerrainProvider(iModel, modelId, id.wantSkirts, id.wantNormals, id.terrainExaggeration);
     } else {
       terrainProvider = new EllipsoidTerrainProvider(iModel, modelId, id.wantSkirts);
       bimElevationBias = id.mapGroundBias;
@@ -465,7 +503,7 @@ const mapTreeSupplier = new MapTreeSupplier();
 let mapTreeReferenceId = 0;
 
 /** @internal */
-type CheckSkirtDisplayOverride = () => boolean | undefined;
+type CheckTerrainDisplayOverride = () => TerrainDisplayOverrides | undefined;
 
 /** Specialization of tile tree that represents background map.
  * @internal
@@ -479,8 +517,9 @@ export class MapTileTreeReference extends TileTreeReference {
   private readonly _imageryTrees: ImageryMapLayerTreeReference[] = new Array<ImageryMapLayerTreeReference>();
   private _baseTransparent = false;
   private _symbologyOverrides = new FeatureSymbology.Overrides(); /** Empty overrides so that maps ignore the view overrides (isolate etc.) */
+  private _planarClipMask?: PlanarClipMaskState;
 
-  public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, public isOverlay: boolean, private _isDrape: boolean, private _overrideSkirtDisplay?: CheckSkirtDisplayOverride) {
+  public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, public isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
     super();
     this._uniqueId = mapTreeReferenceId++;
     this._settings = settings;
@@ -502,14 +541,20 @@ export class MapTileTreeReference extends TileTreeReference {
     for (let i = 0; i < this._layerSettings.length; i++)
       if (undefined !== (tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(this._layerSettings[i], i + 1, iModel)))
         this._imageryTrees.push(tree);
+
+    if (this._settings.planarClipMask && this._settings.planarClipMask.isValid)
+      this._planarClipMask = PlanarClipMaskState.create(this._settings.planarClipMask);
   }
+  public get isGlobal() { return true; }
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
+  public get planarclipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
 
   /** Terrain  tiles do not contribute to the range used by "fit view". */
   public unionFitRange(_range: Range3d): void { }
   public get settings(): BackgroundMapSettings { return this._settings; }
   public set settings(settings: BackgroundMapSettings) {
     this._settings = settings;
+    this._planarClipMask = settings.planarClipMask ? PlanarClipMaskState.create(settings.planarClipMask) : undefined;
   }
   public setBaseLayerSettings(baseLayerSettings: BaseLayerSettings) {
     assert(!this.isOverlay);
@@ -582,6 +627,7 @@ export class MapTileTreeReference extends TileTreeReference {
       terrainExaggeration: this.settings.terrainSettings.exaggeration,
       mapGroundBias: this.settings.groundBias,
       wantSkirts: (this.settings.applyTerrain || this.useDepthBuffer) && !this.settings.transparency && !this._baseTransparent,
+      wantNormals: false, // Can set to this.settings.terrainSettings.applyLighting if we want to ever apply lighting to terrain again so that normals are retrieved when lighting is on.
       globeMode: this._isDrape ? GlobeMode.Plane : this.settings.globeMode,
       imageryProviderName: this.settings.providerName,
       imageryMapType: this.settings.mapType,
@@ -592,12 +638,22 @@ export class MapTileTreeReference extends TileTreeReference {
       mapTransparent: this.settings.transparency > 0,
     };
 
-    if (undefined !== this._overrideSkirtDisplay) {
-      id.wantSkirts = this._overrideSkirtDisplay() ?? id.wantSkirts;
+    if (undefined !== this._overrideTerrainDisplay) {
+      const ovr = this._overrideTerrainDisplay();
+      if (undefined !== ovr) {
+        id.wantSkirts = ovr.wantSkirts ?? id.wantSkirts;
+        id.wantNormals = ovr.wantNormals ?? id.wantNormals;
+      }
     }
 
     return this._iModel.tiles.getTileTreeOwner(id, mapTreeSupplier);
   }
+  public getLayerImageryTreeRef(index: number) {
+    const baseLayerIndex = this._baseImageryLayerIncluded ? 1 : 0;
+    const treeIndex = index + baseLayerIndex;
+    return index < 0 || treeIndex >= this._imageryTrees.length ? undefined : this._imageryTrees[treeIndex];
+  }
+
   public initializeImagery(): boolean {
     const tree = this.treeOwner.load() as MapTileTree;
     if (undefined === tree)
@@ -637,6 +693,9 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === tree || !this.initializeImagery())
       return;     // Not loaded yet.
 
+    if (this._planarClipMask && this._planarClipMask.settings.isValid)
+      context.addPlanarClassifier(tree.modelId, undefined, this._planarClipMask);
+
     const args = this.createDrawArgs(context);
     if (undefined !== args)
       tree.draw(args);
@@ -660,9 +719,11 @@ export class MapTileTreeReference extends TileTreeReference {
     return this._symbologyOverrides;
   }
 
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     this._imageryTrees.forEach((imageryTree) => trees.disclose(imageryTree));
+    if (this._planarClipMask)
+      this._planarClipMask.discloseTileTrees(trees);
   }
   public imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference | undefined {
     const tree = this.treeOwner.tileTree as MapTileTree;

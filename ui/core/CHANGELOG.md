@@ -1,6 +1,40 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- Allow target _blank in Message boxes if secure relationships exist on the element
+- AccuDraw bi-directional value updates
+- Wrap the props.valueChanged call in the SearchBox to prevent a state change when the value has not really changed. This generally only happens when a valueChangedDelay is specified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Update components that support providing refs via React.forwardRef to work better with document generation.  
+- Add option to use a 'x-small' webfont icon.
+- Add nested popup support to components that use HOC withOnOutsideClick.
+- Fix bug processing zero value in Select options.
+- Fix calling of onClick and onSelect calls when ContextMenuItem is disabled
+- Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fi
+- updated `ExpandableBlock` component to be able to take in title as JSX.Element and a tooltip, in which title string property can be passed
+- updated `ExpandableBlock` component to be able to take in title as JSX.Element and a tooltip, in which title string property can be passed
+- Add partial checkbox handling to TreeNode
+- Initial implementation of AccuDraw UI
+- Added ui-core learning docs content and added Notification.md, Style.md & Tooltip.md ui-core learning doc files.
+- Added support to ExpandableList for updating the active block programmatically
+- Fix controlled/uncontrolled react warning in Select component.
+- Added disabled support to Select component options
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT

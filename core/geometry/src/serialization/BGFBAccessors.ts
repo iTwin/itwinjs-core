@@ -25,7 +25,7 @@ export namespace BGFBAccessors {
 export enum LoopTypeEnum{
   Parity= 1,
   InteriorToLeft= 2
-};
+}
 
 /**
  * @enum {number}
@@ -53,7 +53,7 @@ export enum VariantGeometryUnion{
       tagAkimaCurve = 19,
       tagCatenaryCurve = 20,
       tagPartialCurve = 21
-};
+}
 
 /**
  * @constructor
@@ -71,28 +71,28 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DPoint3d {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 x(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @returns number
  */
 y(): number {
   return this.bb!.readFloat64(this.bb_pos + 8);
-};
+}
 
 /**
  * @returns number
  */
 z(): number {
   return this.bb!.readFloat64(this.bb_pos + 16);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -107,7 +107,7 @@ static createDPoint3d(builder: flatbuffers.Builder, x: number, y: number, z: num
   builder.writeFloat64(y);
   builder.writeFloat64(x);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -126,49 +126,49 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DRay3d {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 x(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @returns number
  */
 y(): number {
   return this.bb!.readFloat64(this.bb_pos + 8);
-};
+}
 
 /**
  * @returns number
  */
 z(): number {
   return this.bb!.readFloat64(this.bb_pos + 16);
-};
+}
 
 /**
  * @returns number
  */
 ux(): number {
   return this.bb!.readFloat64(this.bb_pos + 24);
-};
+}
 
 /**
  * @returns number
  */
 uy(): number {
   return this.bb!.readFloat64(this.bb_pos + 32);
-};
+}
 
 /**
  * @returns number
  */
 uz(): number {
   return this.bb!.readFloat64(this.bb_pos + 40);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -189,7 +189,7 @@ static createDRay3d(builder: flatbuffers.Builder, x: number, y: number, z: numbe
   builder.writeFloat64(y);
   builder.writeFloat64(x);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -208,21 +208,21 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DPoint2d {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 x(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @returns number
  */
 y(): number {
   return this.bb!.readFloat64(this.bb_pos + 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -235,7 +235,7 @@ static createDPoint2d(builder: flatbuffers.Builder, x: number, y: number): flatb
   builder.writeFloat64(y);
   builder.writeFloat64(x);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -254,28 +254,28 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DVector3d {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 x(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @returns number
  */
 y(): number {
   return this.bb!.readFloat64(this.bb_pos + 8);
-};
+}
 
 /**
  * @returns number
  */
 z(): number {
   return this.bb!.readFloat64(this.bb_pos + 16);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -290,7 +290,7 @@ static createDVector3d(builder: flatbuffers.Builder, x: number, y: number, z: nu
   builder.writeFloat64(y);
   builder.writeFloat64(x);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -309,14 +309,14 @@ __init(i: number, bb: flatbuffers.ByteBuffer): Angle {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 degrees(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -327,7 +327,7 @@ static createAngle(builder: flatbuffers.Builder, degrees: number): flatbuffers.O
   builder.prep(8, 8);
   builder.writeFloat64(degrees);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -346,84 +346,84 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DEllipse3d {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 centerX(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @returns number
  */
 centerY(): number {
   return this.bb!.readFloat64(this.bb_pos + 8);
-};
+}
 
 /**
  * @returns number
  */
 centerZ(): number {
   return this.bb!.readFloat64(this.bb_pos + 16);
-};
+}
 
 /**
  * @returns number
  */
 vector0X(): number {
   return this.bb!.readFloat64(this.bb_pos + 24);
-};
+}
 
 /**
  * @returns number
  */
 vector0Y(): number {
   return this.bb!.readFloat64(this.bb_pos + 32);
-};
+}
 
 /**
  * @returns number
  */
 vector0Z(): number {
   return this.bb!.readFloat64(this.bb_pos + 40);
-};
+}
 
 /**
  * @returns number
  */
 vector90X(): number {
   return this.bb!.readFloat64(this.bb_pos + 48);
-};
+}
 
 /**
  * @returns number
  */
 vector90Y(): number {
   return this.bb!.readFloat64(this.bb_pos + 56);
-};
+}
 
 /**
  * @returns number
  */
 vector90Z(): number {
   return this.bb!.readFloat64(this.bb_pos + 64);
-};
+}
 
 /**
  * @returns number
  */
 startRadians(): number {
   return this.bb!.readFloat64(this.bb_pos + 72);
-};
+}
 
 /**
  * @returns number
  */
 sweepRadians(): number {
   return this.bb!.readFloat64(this.bb_pos + 80);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -454,7 +454,7 @@ static createDEllipse3d(builder: flatbuffers.Builder, centerX: number, centerY: 
   builder.writeFloat64(centerY);
   builder.writeFloat64(centerX);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -473,49 +473,49 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DSegment3d {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 point0X(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @returns number
  */
 point0Y(): number {
   return this.bb!.readFloat64(this.bb_pos + 8);
-};
+}
 
 /**
  * @returns number
  */
 point0Z(): number {
   return this.bb!.readFloat64(this.bb_pos + 16);
-};
+}
 
 /**
  * @returns number
  */
 point1X(): number {
   return this.bb!.readFloat64(this.bb_pos + 24);
-};
+}
 
 /**
  * @returns number
  */
 point1Y(): number {
   return this.bb!.readFloat64(this.bb_pos + 32);
-};
+}
 
 /**
  * @returns number
  */
 point1Z(): number {
   return this.bb!.readFloat64(this.bb_pos + 40);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -536,7 +536,7 @@ static createDSegment3d(builder: flatbuffers.Builder, point0X: number, point0Y: 
   builder.writeFloat64(point0Y);
   builder.writeFloat64(point0X);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -555,91 +555,91 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DTransform3d {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 axx(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @returns number
  */
 axy(): number {
   return this.bb!.readFloat64(this.bb_pos + 8);
-};
+}
 
 /**
  * @returns number
  */
 axz(): number {
   return this.bb!.readFloat64(this.bb_pos + 16);
-};
+}
 
 /**
  * @returns number
  */
 axw(): number {
   return this.bb!.readFloat64(this.bb_pos + 24);
-};
+}
 
 /**
  * @returns number
  */
 ayx(): number {
   return this.bb!.readFloat64(this.bb_pos + 32);
-};
+}
 
 /**
  * @returns number
  */
 ayy(): number {
   return this.bb!.readFloat64(this.bb_pos + 40);
-};
+}
 
 /**
  * @returns number
  */
 ayz(): number {
   return this.bb!.readFloat64(this.bb_pos + 48);
-};
+}
 
 /**
  * @returns number
  */
 ayw(): number {
   return this.bb!.readFloat64(this.bb_pos + 56);
-};
+}
 
 /**
  * @returns number
  */
 azx(): number {
   return this.bb!.readFloat64(this.bb_pos + 64);
-};
+}
 
 /**
  * @returns number
  */
 azy(): number {
   return this.bb!.readFloat64(this.bb_pos + 72);
-};
+}
 
 /**
  * @returns number
  */
 azz(): number {
   return this.bb!.readFloat64(this.bb_pos + 80);
-};
+}
 
 /**
  * @returns number
  */
 azw(): number {
   return this.bb!.readFloat64(this.bb_pos + 88);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -672,7 +672,7 @@ static createDTransform3d(builder: flatbuffers.Builder, axx: number, axy: number
   builder.writeFloat64(axy);
   builder.writeFloat64(axx);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -691,126 +691,126 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnBoxDetail {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 baseOriginX(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @returns number
  */
 baseOriginY(): number {
   return this.bb!.readFloat64(this.bb_pos + 8);
-};
+}
 
 /**
  * @returns number
  */
 baseOriginZ(): number {
   return this.bb!.readFloat64(this.bb_pos + 16);
-};
+}
 
 /**
  * @returns number
  */
 topOriginX(): number {
   return this.bb!.readFloat64(this.bb_pos + 24);
-};
+}
 
 /**
  * @returns number
  */
 topOriginY(): number {
   return this.bb!.readFloat64(this.bb_pos + 32);
-};
+}
 
 /**
  * @returns number
  */
 topOriginZ(): number {
   return this.bb!.readFloat64(this.bb_pos + 40);
-};
+}
 
 /**
  * @returns number
  */
 vectorXX(): number {
   return this.bb!.readFloat64(this.bb_pos + 48);
-};
+}
 
 /**
  * @returns number
  */
 vectorXY(): number {
   return this.bb!.readFloat64(this.bb_pos + 56);
-};
+}
 
 /**
  * @returns number
  */
 vectorXZ(): number {
   return this.bb!.readFloat64(this.bb_pos + 64);
-};
+}
 
 /**
  * @returns number
  */
 vectorYX(): number {
   return this.bb!.readFloat64(this.bb_pos + 72);
-};
+}
 
 /**
  * @returns number
  */
 vectorYY(): number {
   return this.bb!.readFloat64(this.bb_pos + 80);
-};
+}
 
 /**
  * @returns number
  */
 vectorYZ(): number {
   return this.bb!.readFloat64(this.bb_pos + 88);
-};
+}
 
 /**
  * @returns number
  */
 baseX(): number {
   return this.bb!.readFloat64(this.bb_pos + 96);
-};
+}
 
 /**
  * @returns number
  */
 baseY(): number {
   return this.bb!.readFloat64(this.bb_pos + 104);
-};
+}
 
 /**
  * @returns number
  */
 topX(): number {
   return this.bb!.readFloat64(this.bb_pos + 112);
-};
+}
 
 /**
  * @returns number
  */
 topY(): number {
   return this.bb!.readFloat64(this.bb_pos + 120);
-};
+}
 
 /**
  * @returns boolean
  */
 capped(): boolean {
   return !!this.bb!.readInt8(this.bb_pos + 128);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -854,7 +854,7 @@ static createDgnBoxDetail(builder: flatbuffers.Builder, baseOriginX: number, bas
   builder.writeFloat64(baseOriginY);
   builder.writeFloat64(baseOriginX);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -873,7 +873,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnSphereDetail {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param DTransform3d= obj
@@ -881,28 +881,28 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnSphereDetail {
  */
 localToWorld(obj?: DTransform3d): DTransform3d|null {
   return (obj || new DTransform3d()).__init(this.bb_pos, this.bb!);
-};
+}
 
 /**
  * @returns number
  */
 startLatitudeRadians(): number {
   return this.bb!.readFloat64(this.bb_pos + 96);
-};
+}
 
 /**
  * @returns number
  */
 latitudeSweepRadians(): number {
   return this.bb!.readFloat64(this.bb_pos + 104);
-};
+}
 
 /**
  * @returns boolean
  */
 capped(): boolean {
   return !!this.bb!.readInt8(this.bb_pos + 112);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -943,7 +943,7 @@ static createDgnSphereDetail(builder: flatbuffers.Builder, localToWorld_axx: num
   builder.writeFloat64(localToWorld_axy);
   builder.writeFloat64(localToWorld_axx);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -962,112 +962,112 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnConeDetail {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 centerAX(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @returns number
  */
 centerAY(): number {
   return this.bb!.readFloat64(this.bb_pos + 8);
-};
+}
 
 /**
  * @returns number
  */
 centerAZ(): number {
   return this.bb!.readFloat64(this.bb_pos + 16);
-};
+}
 
 /**
  * @returns number
  */
 centerBX(): number {
   return this.bb!.readFloat64(this.bb_pos + 24);
-};
+}
 
 /**
  * @returns number
  */
 centerBY(): number {
   return this.bb!.readFloat64(this.bb_pos + 32);
-};
+}
 
 /**
  * @returns number
  */
 centerBZ(): number {
   return this.bb!.readFloat64(this.bb_pos + 40);
-};
+}
 
 /**
  * @returns number
  */
 vector0X(): number {
   return this.bb!.readFloat64(this.bb_pos + 48);
-};
+}
 
 /**
  * @returns number
  */
 vector0Y(): number {
   return this.bb!.readFloat64(this.bb_pos + 56);
-};
+}
 
 /**
  * @returns number
  */
 vector0Z(): number {
   return this.bb!.readFloat64(this.bb_pos + 64);
-};
+}
 
 /**
  * @returns number
  */
 vector90X(): number {
   return this.bb!.readFloat64(this.bb_pos + 72);
-};
+}
 
 /**
  * @returns number
  */
 vector90Y(): number {
   return this.bb!.readFloat64(this.bb_pos + 80);
-};
+}
 
 /**
  * @returns number
  */
 vector90Z(): number {
   return this.bb!.readFloat64(this.bb_pos + 88);
-};
+}
 
 /**
  * @returns number
  */
 radiusA(): number {
   return this.bb!.readFloat64(this.bb_pos + 96);
-};
+}
 
 /**
  * @returns number
  */
 radiusB(): number {
   return this.bb!.readFloat64(this.bb_pos + 104);
-};
+}
 
 /**
  * @returns boolean
  */
 capped(): boolean {
   return !!this.bb!.readInt8(this.bb_pos + 112);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1107,7 +1107,7 @@ static createDgnConeDetail(builder: flatbuffers.Builder, centerAX: number, cente
   builder.writeFloat64(centerAY);
   builder.writeFloat64(centerAX);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -1126,98 +1126,98 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnTorusPipeDetail {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 centerX(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @returns number
  */
 centerY(): number {
   return this.bb!.readFloat64(this.bb_pos + 8);
-};
+}
 
 /**
  * @returns number
  */
 centerZ(): number {
   return this.bb!.readFloat64(this.bb_pos + 16);
-};
+}
 
 /**
  * @returns number
  */
 vectorXX(): number {
   return this.bb!.readFloat64(this.bb_pos + 24);
-};
+}
 
 /**
  * @returns number
  */
 vectorXY(): number {
   return this.bb!.readFloat64(this.bb_pos + 32);
-};
+}
 
 /**
  * @returns number
  */
 vectorXZ(): number {
   return this.bb!.readFloat64(this.bb_pos + 40);
-};
+}
 
 /**
  * @returns number
  */
 vectorYX(): number {
   return this.bb!.readFloat64(this.bb_pos + 48);
-};
+}
 
 /**
  * @returns number
  */
 vectorYY(): number {
   return this.bb!.readFloat64(this.bb_pos + 56);
-};
+}
 
 /**
  * @returns number
  */
 vectorYZ(): number {
   return this.bb!.readFloat64(this.bb_pos + 64);
-};
+}
 
 /**
  * @returns number
  */
 majorRadius(): number {
   return this.bb!.readFloat64(this.bb_pos + 72);
-};
+}
 
 /**
  * @returns number
  */
 minorRadius(): number {
   return this.bb!.readFloat64(this.bb_pos + 80);
-};
+}
 
 /**
  * @returns number
  */
 sweepRadians(): number {
   return this.bb!.readFloat64(this.bb_pos + 88);
-};
+}
 
 /**
  * @returns boolean
  */
 capped(): boolean {
   return !!this.bb!.readInt8(this.bb_pos + 96);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1253,7 +1253,7 @@ static createDgnTorusPipeDetail(builder: flatbuffers.Builder, centerX: number, c
   builder.writeFloat64(centerY);
   builder.writeFloat64(centerX);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -1272,7 +1272,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): LineSegment {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1281,7 +1281,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): LineSegment {
  */
 static getRootAsLineSegment(bb: flatbuffers.ByteBuffer, obj?: LineSegment): LineSegment {
   return (obj || new LineSegment()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1291,7 +1291,7 @@ static getRootAsLineSegment(bb: flatbuffers.ByteBuffer, obj?: LineSegment): Line
 static getSizePrefixedRootAsLineSegment(bb: flatbuffers.ByteBuffer, obj?: LineSegment): LineSegment {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new LineSegment()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param DSegment3d= obj
@@ -1300,14 +1300,14 @@ static getSizePrefixedRootAsLineSegment(bb: flatbuffers.ByteBuffer, obj?: LineSe
 segment(obj?: DSegment3d): DSegment3d|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new DSegment3d()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startLineSegment(builder: flatbuffers.Builder) {
   builder.startObject(1);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1315,7 +1315,7 @@ static startLineSegment(builder: flatbuffers.Builder) {
  */
 static addSegment(builder: flatbuffers.Builder, segmentOffset: flatbuffers.Offset) {
   builder.addFieldStruct(0, segmentOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1324,7 +1324,7 @@ static addSegment(builder: flatbuffers.Builder, segmentOffset: flatbuffers.Offse
 static endLineSegment(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createLineSegment(builder: flatbuffers.Builder, segmentOffset: flatbuffers.Offset): flatbuffers.Offset {
   LineSegment.startLineSegment(builder);
@@ -1348,7 +1348,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): LineString {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1357,7 +1357,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): LineString {
  */
 static getRootAsLineString(bb: flatbuffers.ByteBuffer, obj?: LineString): LineString {
   return (obj || new LineString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1367,7 +1367,7 @@ static getRootAsLineString(bb: flatbuffers.ByteBuffer, obj?: LineString): LineSt
 static getSizePrefixedRootAsLineString(bb: flatbuffers.ByteBuffer, obj?: LineString): LineString {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new LineString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param number index
@@ -1376,7 +1376,7 @@ static getSizePrefixedRootAsLineString(bb: flatbuffers.ByteBuffer, obj?: LineStr
 points(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -1384,7 +1384,7 @@ points(index: number): number|null {
 pointsLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -1392,14 +1392,14 @@ pointsLength(): number {
 pointsArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startLineString(builder: flatbuffers.Builder) {
   builder.startObject(1);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1407,7 +1407,7 @@ static startLineString(builder: flatbuffers.Builder) {
  */
 static addPoints(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset) {
   builder.addFieldOffset(0, pointsOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1420,7 +1420,7 @@ static createPointsVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1428,7 +1428,7 @@ static createPointsVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
  */
 static startPointsVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1437,7 +1437,7 @@ static startPointsVector(builder: flatbuffers.Builder, numElems: number) {
 static endLineString(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createLineString(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset): flatbuffers.Offset {
   LineString.startLineString(builder);
@@ -1461,7 +1461,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): PointString {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1470,7 +1470,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): PointString {
  */
 static getRootAsPointString(bb: flatbuffers.ByteBuffer, obj?: PointString): PointString {
   return (obj || new PointString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1480,7 +1480,7 @@ static getRootAsPointString(bb: flatbuffers.ByteBuffer, obj?: PointString): Poin
 static getSizePrefixedRootAsPointString(bb: flatbuffers.ByteBuffer, obj?: PointString): PointString {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new PointString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param number index
@@ -1489,7 +1489,7 @@ static getSizePrefixedRootAsPointString(bb: flatbuffers.ByteBuffer, obj?: PointS
 points(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -1497,7 +1497,7 @@ points(index: number): number|null {
 pointsLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -1505,14 +1505,14 @@ pointsLength(): number {
 pointsArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startPointString(builder: flatbuffers.Builder) {
   builder.startObject(1);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1520,7 +1520,7 @@ static startPointString(builder: flatbuffers.Builder) {
  */
 static addPoints(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset) {
   builder.addFieldOffset(0, pointsOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1533,7 +1533,7 @@ static createPointsVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1541,7 +1541,7 @@ static createPointsVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
  */
 static startPointsVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1550,7 +1550,7 @@ static startPointsVector(builder: flatbuffers.Builder, numElems: number) {
 static endPointString(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createPointString(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset): flatbuffers.Offset {
   PointString.startPointString(builder);
@@ -1574,7 +1574,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): EllipticArc {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1583,7 +1583,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): EllipticArc {
  */
 static getRootAsEllipticArc(bb: flatbuffers.ByteBuffer, obj?: EllipticArc): EllipticArc {
   return (obj || new EllipticArc()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1593,7 +1593,7 @@ static getRootAsEllipticArc(bb: flatbuffers.ByteBuffer, obj?: EllipticArc): Elli
 static getSizePrefixedRootAsEllipticArc(bb: flatbuffers.ByteBuffer, obj?: EllipticArc): EllipticArc {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new EllipticArc()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param DEllipse3d= obj
@@ -1602,14 +1602,14 @@ static getSizePrefixedRootAsEllipticArc(bb: flatbuffers.ByteBuffer, obj?: Ellipt
 arc(obj?: DEllipse3d): DEllipse3d|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new DEllipse3d()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startEllipticArc(builder: flatbuffers.Builder) {
   builder.startObject(1);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1617,7 +1617,7 @@ static startEllipticArc(builder: flatbuffers.Builder) {
  */
 static addArc(builder: flatbuffers.Builder, arcOffset: flatbuffers.Offset) {
   builder.addFieldStruct(0, arcOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1626,7 +1626,7 @@ static addArc(builder: flatbuffers.Builder, arcOffset: flatbuffers.Offset) {
 static endEllipticArc(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createEllipticArc(builder: flatbuffers.Builder, arcOffset: flatbuffers.Offset): flatbuffers.Offset {
   EllipticArc.startEllipticArc(builder);
@@ -1650,7 +1650,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): BsplineCurve {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1659,7 +1659,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): BsplineCurve {
  */
 static getRootAsBsplineCurve(bb: flatbuffers.ByteBuffer, obj?: BsplineCurve): BsplineCurve {
   return (obj || new BsplineCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1669,7 +1669,7 @@ static getRootAsBsplineCurve(bb: flatbuffers.ByteBuffer, obj?: BsplineCurve): Bs
 static getSizePrefixedRootAsBsplineCurve(bb: flatbuffers.ByteBuffer, obj?: BsplineCurve): BsplineCurve {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new BsplineCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @returns number
@@ -1677,7 +1677,7 @@ static getSizePrefixedRootAsBsplineCurve(bb: flatbuffers.ByteBuffer, obj?: Bspli
 order(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns boolean
@@ -1685,7 +1685,7 @@ order(): number {
 closed(): boolean {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-};
+}
 
 /**
  * @param number index
@@ -1694,7 +1694,7 @@ closed(): boolean {
 poles(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -1702,7 +1702,7 @@ poles(index: number): number|null {
 polesLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -1710,7 +1710,7 @@ polesLength(): number {
 polesArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -1719,7 +1719,7 @@ polesArray(): Float64Array|null {
 weights(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -1727,7 +1727,7 @@ weights(index: number): number|null {
 weightsLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -1735,7 +1735,7 @@ weightsLength(): number {
 weightsArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -1744,7 +1744,7 @@ weightsArray(): Float64Array|null {
 knots(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -1752,7 +1752,7 @@ knots(index: number): number|null {
 knotsLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -1760,14 +1760,14 @@ knotsLength(): number {
 knotsArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startBsplineCurve(builder: flatbuffers.Builder) {
   builder.startObject(5);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1775,7 +1775,7 @@ static startBsplineCurve(builder: flatbuffers.Builder) {
  */
 static addOrder(builder: flatbuffers.Builder, order: number) {
   builder.addFieldInt32(0, order, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1783,7 +1783,7 @@ static addOrder(builder: flatbuffers.Builder, order: number) {
  */
 static addClosed(builder: flatbuffers.Builder, closed: boolean) {
   builder.addFieldInt8(1, +closed, +false);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1791,7 +1791,7 @@ static addClosed(builder: flatbuffers.Builder, closed: boolean) {
  */
 static addPoles(builder: flatbuffers.Builder, polesOffset: flatbuffers.Offset) {
   builder.addFieldOffset(2, polesOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1804,7 +1804,7 @@ static createPolesVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1812,7 +1812,7 @@ static createPolesVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
  */
 static startPolesVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1820,7 +1820,7 @@ static startPolesVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addWeights(builder: flatbuffers.Builder, weightsOffset: flatbuffers.Offset) {
   builder.addFieldOffset(3, weightsOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1833,7 +1833,7 @@ static createWeightsVector(builder: flatbuffers.Builder, data: number[] | Uint8A
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1841,7 +1841,7 @@ static createWeightsVector(builder: flatbuffers.Builder, data: number[] | Uint8A
  */
 static startWeightsVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1849,7 +1849,7 @@ static startWeightsVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addKnots(builder: flatbuffers.Builder, knotsOffset: flatbuffers.Offset) {
   builder.addFieldOffset(4, knotsOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1862,7 +1862,7 @@ static createKnotsVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1870,7 +1870,7 @@ static createKnotsVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
  */
 static startKnotsVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -1879,7 +1879,7 @@ static startKnotsVector(builder: flatbuffers.Builder, numElems: number) {
 static endBsplineCurve(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createBsplineCurve(builder: flatbuffers.Builder, order: number, closed: boolean, polesOffset: flatbuffers.Offset, weightsOffset: flatbuffers.Offset, knotsOffset: flatbuffers.Offset): flatbuffers.Offset {
   BsplineCurve.startBsplineCurve(builder);
@@ -1907,7 +1907,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): InterpolationCurve {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1916,7 +1916,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): InterpolationCurve {
  */
 static getRootAsInterpolationCurve(bb: flatbuffers.ByteBuffer, obj?: InterpolationCurve): InterpolationCurve {
   return (obj || new InterpolationCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -1926,7 +1926,7 @@ static getRootAsInterpolationCurve(bb: flatbuffers.ByteBuffer, obj?: Interpolati
 static getSizePrefixedRootAsInterpolationCurve(bb: flatbuffers.ByteBuffer, obj?: InterpolationCurve): InterpolationCurve {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new InterpolationCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @returns number
@@ -1934,7 +1934,7 @@ static getSizePrefixedRootAsInterpolationCurve(bb: flatbuffers.ByteBuffer, obj?:
 order(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns boolean
@@ -1942,7 +1942,7 @@ order(): number {
 closed(): boolean {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-};
+}
 
 /**
  * @returns number
@@ -1950,7 +1950,7 @@ closed(): boolean {
 isChordLenKnots(): number {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -1958,7 +1958,7 @@ isChordLenKnots(): number {
 isColinearTangents(): number {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -1966,7 +1966,7 @@ isColinearTangents(): number {
 isChordLenTangents(): number {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -1974,7 +1974,7 @@ isChordLenTangents(): number {
 isNaturalTangents(): number {
   const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @param DPoint3d= obj
@@ -1983,7 +1983,7 @@ isNaturalTangents(): number {
 startTangent(obj?: DPoint3d): DPoint3d|null {
   const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param DVector3d= obj
@@ -1992,7 +1992,7 @@ startTangent(obj?: DPoint3d): DPoint3d|null {
 endTangent(obj?: DVector3d): DVector3d|null {
   const offset = this.bb!.__offset(this.bb_pos, 18);
   return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param number index
@@ -2001,7 +2001,7 @@ endTangent(obj?: DVector3d): DVector3d|null {
 fitPoints(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 20);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -2009,7 +2009,7 @@ fitPoints(index: number): number|null {
 fitPointsLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 20);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -2017,7 +2017,7 @@ fitPointsLength(): number {
 fitPointsArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 20);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -2026,7 +2026,7 @@ fitPointsArray(): Float64Array|null {
 knots(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 22);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -2034,7 +2034,7 @@ knots(index: number): number|null {
 knotsLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 22);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -2042,14 +2042,14 @@ knotsLength(): number {
 knotsArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 22);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startInterpolationCurve(builder: flatbuffers.Builder) {
   builder.startObject(10);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2057,7 +2057,7 @@ static startInterpolationCurve(builder: flatbuffers.Builder) {
  */
 static addOrder(builder: flatbuffers.Builder, order: number) {
   builder.addFieldInt32(0, order, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2065,7 +2065,7 @@ static addOrder(builder: flatbuffers.Builder, order: number) {
  */
 static addClosed(builder: flatbuffers.Builder, closed: boolean) {
   builder.addFieldInt8(1, +closed, +false);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2073,7 +2073,7 @@ static addClosed(builder: flatbuffers.Builder, closed: boolean) {
  */
 static addIsChordLenKnots(builder: flatbuffers.Builder, isChordLenKnots: number) {
   builder.addFieldInt32(2, isChordLenKnots, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2081,7 +2081,7 @@ static addIsChordLenKnots(builder: flatbuffers.Builder, isChordLenKnots: number)
  */
 static addIsColinearTangents(builder: flatbuffers.Builder, isColinearTangents: number) {
   builder.addFieldInt32(3, isColinearTangents, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2089,7 +2089,7 @@ static addIsColinearTangents(builder: flatbuffers.Builder, isColinearTangents: n
  */
 static addIsChordLenTangents(builder: flatbuffers.Builder, isChordLenTangents: number) {
   builder.addFieldInt32(4, isChordLenTangents, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2097,7 +2097,7 @@ static addIsChordLenTangents(builder: flatbuffers.Builder, isChordLenTangents: n
  */
 static addIsNaturalTangents(builder: flatbuffers.Builder, isNaturalTangents: number) {
   builder.addFieldInt32(5, isNaturalTangents, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2105,7 +2105,7 @@ static addIsNaturalTangents(builder: flatbuffers.Builder, isNaturalTangents: num
  */
 static addStartTangent(builder: flatbuffers.Builder, startTangentOffset: flatbuffers.Offset) {
   builder.addFieldStruct(6, startTangentOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2113,7 +2113,7 @@ static addStartTangent(builder: flatbuffers.Builder, startTangentOffset: flatbuf
  */
 static addEndTangent(builder: flatbuffers.Builder, endTangentOffset: flatbuffers.Offset) {
   builder.addFieldStruct(7, endTangentOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2121,7 +2121,7 @@ static addEndTangent(builder: flatbuffers.Builder, endTangentOffset: flatbuffers
  */
 static addFitPoints(builder: flatbuffers.Builder, fitPointsOffset: flatbuffers.Offset) {
   builder.addFieldOffset(8, fitPointsOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2134,7 +2134,7 @@ static createFitPointsVector(builder: flatbuffers.Builder, data: number[] | Uint
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2142,7 +2142,7 @@ static createFitPointsVector(builder: flatbuffers.Builder, data: number[] | Uint
  */
 static startFitPointsVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2150,7 +2150,7 @@ static startFitPointsVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addKnots(builder: flatbuffers.Builder, knotsOffset: flatbuffers.Offset) {
   builder.addFieldOffset(9, knotsOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2163,7 +2163,7 @@ static createKnotsVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2171,7 +2171,7 @@ static createKnotsVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
  */
 static startKnotsVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2180,7 +2180,7 @@ static startKnotsVector(builder: flatbuffers.Builder, numElems: number) {
 static endInterpolationCurve(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createInterpolationCurve(builder: flatbuffers.Builder, order: number, closed: boolean, isChordLenKnots: number, isColinearTangents: number, isChordLenTangents: number, isNaturalTangents: number, startTangentOffset: flatbuffers.Offset, endTangentOffset: flatbuffers.Offset, fitPointsOffset: flatbuffers.Offset, knotsOffset: flatbuffers.Offset): flatbuffers.Offset {
   InterpolationCurve.startInterpolationCurve(builder);
@@ -2213,7 +2213,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): AkimaCurve {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2222,7 +2222,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): AkimaCurve {
  */
 static getRootAsAkimaCurve(bb: flatbuffers.ByteBuffer, obj?: AkimaCurve): AkimaCurve {
   return (obj || new AkimaCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2232,7 +2232,7 @@ static getRootAsAkimaCurve(bb: flatbuffers.ByteBuffer, obj?: AkimaCurve): AkimaC
 static getSizePrefixedRootAsAkimaCurve(bb: flatbuffers.ByteBuffer, obj?: AkimaCurve): AkimaCurve {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new AkimaCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param number index
@@ -2241,7 +2241,7 @@ static getSizePrefixedRootAsAkimaCurve(bb: flatbuffers.ByteBuffer, obj?: AkimaCu
 points(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -2249,7 +2249,7 @@ points(index: number): number|null {
 pointsLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -2257,14 +2257,14 @@ pointsLength(): number {
 pointsArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startAkimaCurve(builder: flatbuffers.Builder) {
   builder.startObject(1);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2272,7 +2272,7 @@ static startAkimaCurve(builder: flatbuffers.Builder) {
  */
 static addPoints(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset) {
   builder.addFieldOffset(0, pointsOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2285,7 +2285,7 @@ static createPointsVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2293,7 +2293,7 @@ static createPointsVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
  */
 static startPointsVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2302,7 +2302,7 @@ static startPointsVector(builder: flatbuffers.Builder, numElems: number) {
 static endAkimaCurve(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createAkimaCurve(builder: flatbuffers.Builder, pointsOffset: flatbuffers.Offset): flatbuffers.Offset {
   AkimaCurve.startAkimaCurve(builder);
@@ -2326,7 +2326,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): CatenaryCurve {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2335,7 +2335,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): CatenaryCurve {
  */
 static getRootAsCatenaryCurve(bb: flatbuffers.ByteBuffer, obj?: CatenaryCurve): CatenaryCurve {
   return (obj || new CatenaryCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2345,7 +2345,7 @@ static getRootAsCatenaryCurve(bb: flatbuffers.ByteBuffer, obj?: CatenaryCurve): 
 static getSizePrefixedRootAsCatenaryCurve(bb: flatbuffers.ByteBuffer, obj?: CatenaryCurve): CatenaryCurve {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new CatenaryCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @returns number
@@ -2353,7 +2353,7 @@ static getSizePrefixedRootAsCatenaryCurve(bb: flatbuffers.ByteBuffer, obj?: Cate
 a(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-};
+}
 
 /**
  * @param DPoint3d= obj
@@ -2362,7 +2362,7 @@ a(): number {
 origin(obj?: DPoint3d): DPoint3d|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param DVector3d= obj
@@ -2371,7 +2371,7 @@ origin(obj?: DPoint3d): DPoint3d|null {
 vectorU(obj?: DVector3d): DVector3d|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param DVector3d= obj
@@ -2380,7 +2380,7 @@ vectorU(obj?: DVector3d): DVector3d|null {
 vectorV(obj?: DVector3d): DVector3d|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @returns number
@@ -2388,7 +2388,7 @@ vectorV(obj?: DVector3d): DVector3d|null {
 x0(): number {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-};
+}
 
 /**
  * @returns number
@@ -2396,14 +2396,14 @@ x0(): number {
 x1(): number {
   const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startCatenaryCurve(builder: flatbuffers.Builder) {
   builder.startObject(6);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2411,7 +2411,7 @@ static startCatenaryCurve(builder: flatbuffers.Builder) {
  */
 static addA(builder: flatbuffers.Builder, a: number) {
   builder.addFieldFloat64(0, a, 0.0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2419,7 +2419,7 @@ static addA(builder: flatbuffers.Builder, a: number) {
  */
 static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
   builder.addFieldStruct(1, originOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2427,7 +2427,7 @@ static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset)
  */
 static addVectorU(builder: flatbuffers.Builder, vectorUOffset: flatbuffers.Offset) {
   builder.addFieldStruct(2, vectorUOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2435,7 +2435,7 @@ static addVectorU(builder: flatbuffers.Builder, vectorUOffset: flatbuffers.Offse
  */
 static addVectorV(builder: flatbuffers.Builder, vectorVOffset: flatbuffers.Offset) {
   builder.addFieldStruct(3, vectorVOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2443,7 +2443,7 @@ static addVectorV(builder: flatbuffers.Builder, vectorVOffset: flatbuffers.Offse
  */
 static addX0(builder: flatbuffers.Builder, x0: number) {
   builder.addFieldFloat64(4, x0, 0.0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2451,7 +2451,7 @@ static addX0(builder: flatbuffers.Builder, x0: number) {
  */
 static addX1(builder: flatbuffers.Builder, x1: number) {
   builder.addFieldFloat64(5, x1, 0.0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2460,7 +2460,7 @@ static addX1(builder: flatbuffers.Builder, x1: number) {
 static endCatenaryCurve(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createCatenaryCurve(builder: flatbuffers.Builder, a: number, originOffset: flatbuffers.Offset, vectorUOffset: flatbuffers.Offset, vectorVOffset: flatbuffers.Offset, x0: number, x1: number): flatbuffers.Offset {
   CatenaryCurve.startCatenaryCurve(builder);
@@ -2489,7 +2489,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): PartialCurve {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2498,7 +2498,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): PartialCurve {
  */
 static getRootAsPartialCurve(bb: flatbuffers.ByteBuffer, obj?: PartialCurve): PartialCurve {
   return (obj || new PartialCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2508,7 +2508,7 @@ static getRootAsPartialCurve(bb: flatbuffers.ByteBuffer, obj?: PartialCurve): Pa
 static getSizePrefixedRootAsPartialCurve(bb: flatbuffers.ByteBuffer, obj?: PartialCurve): PartialCurve {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new PartialCurve()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @returns number
@@ -2516,7 +2516,7 @@ static getSizePrefixedRootAsPartialCurve(bb: flatbuffers.ByteBuffer, obj?: Parti
 fraction0(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-};
+}
 
 /**
  * @returns number
@@ -2524,7 +2524,7 @@ fraction0(): number {
 fraction1(): number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-};
+}
 
 /**
  * @param VariantGeometry= obj
@@ -2533,14 +2533,14 @@ fraction1(): number {
 target(obj?: VariantGeometry): VariantGeometry|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? (obj || new VariantGeometry()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startPartialCurve(builder: flatbuffers.Builder) {
   builder.startObject(3);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2548,7 +2548,7 @@ static startPartialCurve(builder: flatbuffers.Builder) {
  */
 static addFraction0(builder: flatbuffers.Builder, fraction0: number) {
   builder.addFieldFloat64(0, fraction0, 0.0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2556,7 +2556,7 @@ static addFraction0(builder: flatbuffers.Builder, fraction0: number) {
  */
 static addFraction1(builder: flatbuffers.Builder, fraction1: number) {
   builder.addFieldFloat64(1, fraction1, 0.0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2564,7 +2564,7 @@ static addFraction1(builder: flatbuffers.Builder, fraction1: number) {
  */
 static addTarget(builder: flatbuffers.Builder, targetOffset: flatbuffers.Offset) {
   builder.addFieldOffset(2, targetOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2573,7 +2573,7 @@ static addTarget(builder: flatbuffers.Builder, targetOffset: flatbuffers.Offset)
 static endPartialCurve(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createPartialCurve(builder: flatbuffers.Builder, fraction0: number, fraction1: number, targetOffset: flatbuffers.Offset): flatbuffers.Offset {
   PartialCurve.startPartialCurve(builder);
@@ -2599,7 +2599,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): CurvePrimitiveId {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2608,7 +2608,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): CurvePrimitiveId {
  */
 static getRootAsCurvePrimitiveId(bb: flatbuffers.ByteBuffer, obj?: CurvePrimitiveId): CurvePrimitiveId {
   return (obj || new CurvePrimitiveId()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2618,7 +2618,7 @@ static getRootAsCurvePrimitiveId(bb: flatbuffers.ByteBuffer, obj?: CurvePrimitiv
 static getSizePrefixedRootAsCurvePrimitiveId(bb: flatbuffers.ByteBuffer, obj?: CurvePrimitiveId): CurvePrimitiveId {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new CurvePrimitiveId()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @returns number
@@ -2626,7 +2626,7 @@ static getSizePrefixedRootAsCurvePrimitiveId(bb: flatbuffers.ByteBuffer, obj?: C
 type(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -2634,7 +2634,7 @@ type(): number {
 geomIndex(): number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -2642,7 +2642,7 @@ geomIndex(): number {
 partIndex(): number {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @param number index
@@ -2651,7 +2651,7 @@ partIndex(): number {
 bytes(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
-};
+}
 
 /**
  * @returns number
@@ -2659,7 +2659,7 @@ bytes(index: number): number|null {
 bytesLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Uint8Array
@@ -2667,14 +2667,14 @@ bytesLength(): number {
 bytesArray(): Uint8Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? new Uint8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startCurvePrimitiveId(builder: flatbuffers.Builder) {
   builder.startObject(4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2682,7 +2682,7 @@ static startCurvePrimitiveId(builder: flatbuffers.Builder) {
  */
 static addType(builder: flatbuffers.Builder, type: number) {
   builder.addFieldInt16(0, type, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2690,7 +2690,7 @@ static addType(builder: flatbuffers.Builder, type: number) {
  */
 static addGeomIndex(builder: flatbuffers.Builder, geomIndex: number) {
   builder.addFieldInt16(1, geomIndex, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2698,7 +2698,7 @@ static addGeomIndex(builder: flatbuffers.Builder, geomIndex: number) {
  */
 static addPartIndex(builder: flatbuffers.Builder, partIndex: number) {
   builder.addFieldInt16(2, partIndex, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2706,7 +2706,7 @@ static addPartIndex(builder: flatbuffers.Builder, partIndex: number) {
  */
 static addBytes(builder: flatbuffers.Builder, bytesOffset: flatbuffers.Offset) {
   builder.addFieldOffset(3, bytesOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2719,7 +2719,7 @@ static createBytesVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
     builder.addInt8(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2727,7 +2727,7 @@ static createBytesVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
  */
 static startBytesVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(1, numElems, 1);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2736,7 +2736,7 @@ static startBytesVector(builder: flatbuffers.Builder, numElems: number) {
 static endCurvePrimitiveId(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createCurvePrimitiveId(builder: flatbuffers.Builder, type: number, geomIndex: number, partIndex: number, bytesOffset: flatbuffers.Offset): flatbuffers.Offset {
   CurvePrimitiveId.startCurvePrimitiveId(builder);
@@ -2763,7 +2763,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): CurveVector {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2772,7 +2772,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): CurveVector {
  */
 static getRootAsCurveVector(bb: flatbuffers.ByteBuffer, obj?: CurveVector): CurveVector {
   return (obj || new CurveVector()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2782,7 +2782,7 @@ static getRootAsCurveVector(bb: flatbuffers.ByteBuffer, obj?: CurveVector): Curv
 static getSizePrefixedRootAsCurveVector(bb: flatbuffers.ByteBuffer, obj?: CurveVector): CurveVector {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new CurveVector()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @returns number
@@ -2790,7 +2790,7 @@ static getSizePrefixedRootAsCurveVector(bb: flatbuffers.ByteBuffer, obj?: CurveV
 type(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @param number index
@@ -2800,7 +2800,7 @@ type(): number {
 curves(index: number, obj?: VariantGeometry): VariantGeometry|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? (obj || new VariantGeometry()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
-};
+}
 
 /**
  * @returns number
@@ -2808,14 +2808,14 @@ curves(index: number, obj?: VariantGeometry): VariantGeometry|null {
 curvesLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startCurveVector(builder: flatbuffers.Builder) {
   builder.startObject(2);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2823,7 +2823,7 @@ static startCurveVector(builder: flatbuffers.Builder) {
  */
 static addType(builder: flatbuffers.Builder, type: number) {
   builder.addFieldInt32(0, type, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2831,7 +2831,7 @@ static addType(builder: flatbuffers.Builder, type: number) {
  */
 static addCurves(builder: flatbuffers.Builder, curvesOffset: flatbuffers.Offset) {
   builder.addFieldOffset(1, curvesOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2844,7 +2844,7 @@ static createCurvesVector(builder: flatbuffers.Builder, data: flatbuffers.Offset
     builder.addOffset(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2852,7 +2852,7 @@ static createCurvesVector(builder: flatbuffers.Builder, data: flatbuffers.Offset
  */
 static startCurvesVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2861,7 +2861,7 @@ static startCurvesVector(builder: flatbuffers.Builder, numElems: number) {
 static endCurveVector(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createCurveVector(builder: flatbuffers.Builder, type: number, curvesOffset: flatbuffers.Offset): flatbuffers.Offset {
   CurveVector.startCurveVector(builder);
@@ -2886,7 +2886,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): VectorOfVariantGeometry {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2895,7 +2895,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): VectorOfVariantGeometry {
  */
 static getRootAsVectorOfVariantGeometry(bb: flatbuffers.ByteBuffer, obj?: VectorOfVariantGeometry): VectorOfVariantGeometry {
   return (obj || new VectorOfVariantGeometry()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -2905,7 +2905,7 @@ static getRootAsVectorOfVariantGeometry(bb: flatbuffers.ByteBuffer, obj?: Vector
 static getSizePrefixedRootAsVectorOfVariantGeometry(bb: flatbuffers.ByteBuffer, obj?: VectorOfVariantGeometry): VectorOfVariantGeometry {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new VectorOfVariantGeometry()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param number index
@@ -2915,7 +2915,7 @@ static getSizePrefixedRootAsVectorOfVariantGeometry(bb: flatbuffers.ByteBuffer, 
 members(index: number, obj?: VariantGeometry): VariantGeometry|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new VariantGeometry()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
-};
+}
 
 /**
  * @returns number
@@ -2923,14 +2923,14 @@ members(index: number, obj?: VariantGeometry): VariantGeometry|null {
 membersLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startVectorOfVariantGeometry(builder: flatbuffers.Builder) {
   builder.startObject(1);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2938,7 +2938,7 @@ static startVectorOfVariantGeometry(builder: flatbuffers.Builder) {
  */
 static addMembers(builder: flatbuffers.Builder, membersOffset: flatbuffers.Offset) {
   builder.addFieldOffset(0, membersOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2951,7 +2951,7 @@ static createMembersVector(builder: flatbuffers.Builder, data: flatbuffers.Offse
     builder.addOffset(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2959,7 +2959,7 @@ static createMembersVector(builder: flatbuffers.Builder, data: flatbuffers.Offse
  */
 static startMembersVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -2968,7 +2968,7 @@ static startMembersVector(builder: flatbuffers.Builder, numElems: number) {
 static endVectorOfVariantGeometry(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createVectorOfVariantGeometry(builder: flatbuffers.Builder, membersOffset: flatbuffers.Offset): flatbuffers.Offset {
   VectorOfVariantGeometry.startVectorOfVariantGeometry(builder);
@@ -2992,7 +2992,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): BsplineSurface {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3001,7 +3001,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): BsplineSurface {
  */
 static getRootAsBsplineSurface(bb: flatbuffers.ByteBuffer, obj?: BsplineSurface): BsplineSurface {
   return (obj || new BsplineSurface()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3011,7 +3011,7 @@ static getRootAsBsplineSurface(bb: flatbuffers.ByteBuffer, obj?: BsplineSurface)
 static getSizePrefixedRootAsBsplineSurface(bb: flatbuffers.ByteBuffer, obj?: BsplineSurface): BsplineSurface {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new BsplineSurface()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param number index
@@ -3020,7 +3020,7 @@ static getSizePrefixedRootAsBsplineSurface(bb: flatbuffers.ByteBuffer, obj?: Bsp
 poles(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -3028,7 +3028,7 @@ poles(index: number): number|null {
 polesLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -3036,7 +3036,7 @@ polesLength(): number {
 polesArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -3045,7 +3045,7 @@ polesArray(): Float64Array|null {
 weights(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -3053,7 +3053,7 @@ weights(index: number): number|null {
 weightsLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -3061,7 +3061,7 @@ weightsLength(): number {
 weightsArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -3070,7 +3070,7 @@ weightsArray(): Float64Array|null {
 knotsU(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -3078,7 +3078,7 @@ knotsU(index: number): number|null {
 knotsULength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -3086,7 +3086,7 @@ knotsULength(): number {
 knotsUArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -3095,7 +3095,7 @@ knotsUArray(): Float64Array|null {
 knotsV(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -3103,7 +3103,7 @@ knotsV(index: number): number|null {
 knotsVLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -3111,7 +3111,7 @@ knotsVLength(): number {
 knotsVArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @returns number
@@ -3119,7 +3119,7 @@ knotsVArray(): Float64Array|null {
 numPolesU(): number {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -3127,7 +3127,7 @@ numPolesU(): number {
 numPolesV(): number {
   const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -3135,7 +3135,7 @@ numPolesV(): number {
 orderU(): number {
   const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -3143,7 +3143,7 @@ orderU(): number {
 orderV(): number {
   const offset = this.bb!.__offset(this.bb_pos, 18);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -3151,7 +3151,7 @@ orderV(): number {
 numRulesU(): number {
   const offset = this.bb!.__offset(this.bb_pos, 20);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -3159,7 +3159,7 @@ numRulesU(): number {
 numRulesV(): number {
   const offset = this.bb!.__offset(this.bb_pos, 22);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -3167,7 +3167,7 @@ numRulesV(): number {
 holeOrigin(): number {
   const offset = this.bb!.__offset(this.bb_pos, 24);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @param CurveVector= obj
@@ -3176,7 +3176,7 @@ holeOrigin(): number {
 boundaries(obj?: CurveVector): CurveVector|null {
   const offset = this.bb!.__offset(this.bb_pos, 26);
   return offset ? (obj || new CurveVector()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
-};
+}
 
 /**
  * @returns boolean
@@ -3184,7 +3184,7 @@ boundaries(obj?: CurveVector): CurveVector|null {
 closedU(): boolean {
   const offset = this.bb!.__offset(this.bb_pos, 28);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-};
+}
 
 /**
  * @returns boolean
@@ -3192,14 +3192,14 @@ closedU(): boolean {
 closedV(): boolean {
   const offset = this.bb!.__offset(this.bb_pos, 30);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startBsplineSurface(builder: flatbuffers.Builder) {
   builder.startObject(14);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3207,7 +3207,7 @@ static startBsplineSurface(builder: flatbuffers.Builder) {
  */
 static addPoles(builder: flatbuffers.Builder, polesOffset: flatbuffers.Offset) {
   builder.addFieldOffset(0, polesOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3220,7 +3220,7 @@ static createPolesVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3228,7 +3228,7 @@ static createPolesVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
  */
 static startPolesVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3236,7 +3236,7 @@ static startPolesVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addWeights(builder: flatbuffers.Builder, weightsOffset: flatbuffers.Offset) {
   builder.addFieldOffset(1, weightsOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3249,7 +3249,7 @@ static createWeightsVector(builder: flatbuffers.Builder, data: number[] | Uint8A
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3257,7 +3257,7 @@ static createWeightsVector(builder: flatbuffers.Builder, data: number[] | Uint8A
  */
 static startWeightsVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3265,7 +3265,7 @@ static startWeightsVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addKnotsU(builder: flatbuffers.Builder, knotsUOffset: flatbuffers.Offset) {
   builder.addFieldOffset(2, knotsUOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3278,7 +3278,7 @@ static createKnotsUVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3286,7 +3286,7 @@ static createKnotsUVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
  */
 static startKnotsUVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3294,7 +3294,7 @@ static startKnotsUVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addKnotsV(builder: flatbuffers.Builder, knotsVOffset: flatbuffers.Offset) {
   builder.addFieldOffset(3, knotsVOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3307,7 +3307,7 @@ static createKnotsVVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3315,7 +3315,7 @@ static createKnotsVVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
  */
 static startKnotsVVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3323,7 +3323,7 @@ static startKnotsVVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addNumPolesU(builder: flatbuffers.Builder, numPolesU: number) {
   builder.addFieldInt32(4, numPolesU, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3331,7 +3331,7 @@ static addNumPolesU(builder: flatbuffers.Builder, numPolesU: number) {
  */
 static addNumPolesV(builder: flatbuffers.Builder, numPolesV: number) {
   builder.addFieldInt32(5, numPolesV, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3339,7 +3339,7 @@ static addNumPolesV(builder: flatbuffers.Builder, numPolesV: number) {
  */
 static addOrderU(builder: flatbuffers.Builder, orderU: number) {
   builder.addFieldInt32(6, orderU, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3347,7 +3347,7 @@ static addOrderU(builder: flatbuffers.Builder, orderU: number) {
  */
 static addOrderV(builder: flatbuffers.Builder, orderV: number) {
   builder.addFieldInt32(7, orderV, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3355,7 +3355,7 @@ static addOrderV(builder: flatbuffers.Builder, orderV: number) {
  */
 static addNumRulesU(builder: flatbuffers.Builder, numRulesU: number) {
   builder.addFieldInt32(8, numRulesU, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3363,7 +3363,7 @@ static addNumRulesU(builder: flatbuffers.Builder, numRulesU: number) {
  */
 static addNumRulesV(builder: flatbuffers.Builder, numRulesV: number) {
   builder.addFieldInt32(9, numRulesV, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3371,7 +3371,7 @@ static addNumRulesV(builder: flatbuffers.Builder, numRulesV: number) {
  */
 static addHoleOrigin(builder: flatbuffers.Builder, holeOrigin: number) {
   builder.addFieldInt32(10, holeOrigin, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3379,7 +3379,7 @@ static addHoleOrigin(builder: flatbuffers.Builder, holeOrigin: number) {
  */
 static addBoundaries(builder: flatbuffers.Builder, boundariesOffset: flatbuffers.Offset) {
   builder.addFieldOffset(11, boundariesOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3387,7 +3387,7 @@ static addBoundaries(builder: flatbuffers.Builder, boundariesOffset: flatbuffers
  */
 static addClosedU(builder: flatbuffers.Builder, closedU: boolean) {
   builder.addFieldInt8(12, +closedU, +false);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3395,7 +3395,7 @@ static addClosedU(builder: flatbuffers.Builder, closedU: boolean) {
  */
 static addClosedV(builder: flatbuffers.Builder, closedV: boolean) {
   builder.addFieldInt8(13, +closedV, +false);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3404,7 +3404,7 @@ static addClosedV(builder: flatbuffers.Builder, closedV: boolean) {
 static endBsplineSurface(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createBsplineSurface(builder: flatbuffers.Builder, polesOffset: flatbuffers.Offset, weightsOffset: flatbuffers.Offset, knotsUOffset: flatbuffers.Offset, knotsVOffset: flatbuffers.Offset, numPolesU: number, numPolesV: number, orderU: number, orderV: number, numRulesU: number, numRulesV: number, holeOrigin: number, boundariesOffset: flatbuffers.Offset, closedU: boolean, closedV: boolean): flatbuffers.Offset {
   BsplineSurface.startBsplineSurface(builder);
@@ -3441,7 +3441,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnBox {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3450,7 +3450,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnBox {
  */
 static getRootAsDgnBox(bb: flatbuffers.ByteBuffer, obj?: DgnBox): DgnBox {
   return (obj || new DgnBox()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3460,7 +3460,7 @@ static getRootAsDgnBox(bb: flatbuffers.ByteBuffer, obj?: DgnBox): DgnBox {
 static getSizePrefixedRootAsDgnBox(bb: flatbuffers.ByteBuffer, obj?: DgnBox): DgnBox {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new DgnBox()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param DgnBoxDetail= obj
@@ -3469,14 +3469,14 @@ static getSizePrefixedRootAsDgnBox(bb: flatbuffers.ByteBuffer, obj?: DgnBox): Dg
 detail(obj?: DgnBoxDetail): DgnBoxDetail|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new DgnBoxDetail()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startDgnBox(builder: flatbuffers.Builder) {
   builder.startObject(1);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3484,7 +3484,7 @@ static startDgnBox(builder: flatbuffers.Builder) {
  */
 static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset) {
   builder.addFieldStruct(0, detailOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3493,7 +3493,7 @@ static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset)
 static endDgnBox(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createDgnBox(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset): flatbuffers.Offset {
   DgnBox.startDgnBox(builder);
@@ -3517,7 +3517,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnSphere {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3526,7 +3526,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnSphere {
  */
 static getRootAsDgnSphere(bb: flatbuffers.ByteBuffer, obj?: DgnSphere): DgnSphere {
   return (obj || new DgnSphere()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3536,7 +3536,7 @@ static getRootAsDgnSphere(bb: flatbuffers.ByteBuffer, obj?: DgnSphere): DgnSpher
 static getSizePrefixedRootAsDgnSphere(bb: flatbuffers.ByteBuffer, obj?: DgnSphere): DgnSphere {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new DgnSphere()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param DgnSphereDetail= obj
@@ -3545,14 +3545,14 @@ static getSizePrefixedRootAsDgnSphere(bb: flatbuffers.ByteBuffer, obj?: DgnSpher
 detail(obj?: DgnSphereDetail): DgnSphereDetail|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new DgnSphereDetail()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startDgnSphere(builder: flatbuffers.Builder) {
   builder.startObject(1);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3560,7 +3560,7 @@ static startDgnSphere(builder: flatbuffers.Builder) {
  */
 static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset) {
   builder.addFieldStruct(0, detailOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3569,7 +3569,7 @@ static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset)
 static endDgnSphere(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createDgnSphere(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset): flatbuffers.Offset {
   DgnSphere.startDgnSphere(builder);
@@ -3593,7 +3593,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnCone {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3602,7 +3602,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnCone {
  */
 static getRootAsDgnCone(bb: flatbuffers.ByteBuffer, obj?: DgnCone): DgnCone {
   return (obj || new DgnCone()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3612,7 +3612,7 @@ static getRootAsDgnCone(bb: flatbuffers.ByteBuffer, obj?: DgnCone): DgnCone {
 static getSizePrefixedRootAsDgnCone(bb: flatbuffers.ByteBuffer, obj?: DgnCone): DgnCone {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new DgnCone()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param DgnConeDetail= obj
@@ -3621,14 +3621,14 @@ static getSizePrefixedRootAsDgnCone(bb: flatbuffers.ByteBuffer, obj?: DgnCone): 
 detail(obj?: DgnConeDetail): DgnConeDetail|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new DgnConeDetail()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startDgnCone(builder: flatbuffers.Builder) {
   builder.startObject(1);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3636,7 +3636,7 @@ static startDgnCone(builder: flatbuffers.Builder) {
  */
 static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset) {
   builder.addFieldStruct(0, detailOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3645,7 +3645,7 @@ static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset)
 static endDgnCone(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createDgnCone(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset): flatbuffers.Offset {
   DgnCone.startDgnCone(builder);
@@ -3669,7 +3669,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnTorusPipe {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3678,7 +3678,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnTorusPipe {
  */
 static getRootAsDgnTorusPipe(bb: flatbuffers.ByteBuffer, obj?: DgnTorusPipe): DgnTorusPipe {
   return (obj || new DgnTorusPipe()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3688,7 +3688,7 @@ static getRootAsDgnTorusPipe(bb: flatbuffers.ByteBuffer, obj?: DgnTorusPipe): Dg
 static getSizePrefixedRootAsDgnTorusPipe(bb: flatbuffers.ByteBuffer, obj?: DgnTorusPipe): DgnTorusPipe {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new DgnTorusPipe()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param DgnTorusPipeDetail= obj
@@ -3697,14 +3697,14 @@ static getSizePrefixedRootAsDgnTorusPipe(bb: flatbuffers.ByteBuffer, obj?: DgnTo
 detail(obj?: DgnTorusPipeDetail): DgnTorusPipeDetail|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new DgnTorusPipeDetail()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startDgnTorusPipe(builder: flatbuffers.Builder) {
   builder.startObject(1);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3712,7 +3712,7 @@ static startDgnTorusPipe(builder: flatbuffers.Builder) {
  */
 static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset) {
   builder.addFieldStruct(0, detailOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3721,7 +3721,7 @@ static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset)
 static endDgnTorusPipe(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createDgnTorusPipe(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset): flatbuffers.Offset {
   DgnTorusPipe.startDgnTorusPipe(builder);
@@ -3745,7 +3745,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnExtrusion {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3754,7 +3754,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnExtrusion {
  */
 static getRootAsDgnExtrusion(bb: flatbuffers.ByteBuffer, obj?: DgnExtrusion): DgnExtrusion {
   return (obj || new DgnExtrusion()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3764,7 +3764,7 @@ static getRootAsDgnExtrusion(bb: flatbuffers.ByteBuffer, obj?: DgnExtrusion): Dg
 static getSizePrefixedRootAsDgnExtrusion(bb: flatbuffers.ByteBuffer, obj?: DgnExtrusion): DgnExtrusion {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new DgnExtrusion()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param CurveVector= obj
@@ -3773,7 +3773,7 @@ static getSizePrefixedRootAsDgnExtrusion(bb: flatbuffers.ByteBuffer, obj?: DgnEx
 baseCurve(obj?: CurveVector): CurveVector|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new CurveVector()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
-};
+}
 
 /**
  * @param DVector3d= obj
@@ -3782,7 +3782,7 @@ baseCurve(obj?: CurveVector): CurveVector|null {
 extrusionVector(obj?: DVector3d): DVector3d|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @returns boolean
@@ -3790,14 +3790,14 @@ extrusionVector(obj?: DVector3d): DVector3d|null {
 capped(): boolean {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startDgnExtrusion(builder: flatbuffers.Builder) {
   builder.startObject(3);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3805,7 +3805,7 @@ static startDgnExtrusion(builder: flatbuffers.Builder) {
  */
 static addBaseCurve(builder: flatbuffers.Builder, baseCurveOffset: flatbuffers.Offset) {
   builder.addFieldOffset(0, baseCurveOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3813,7 +3813,7 @@ static addBaseCurve(builder: flatbuffers.Builder, baseCurveOffset: flatbuffers.O
  */
 static addExtrusionVector(builder: flatbuffers.Builder, extrusionVectorOffset: flatbuffers.Offset) {
   builder.addFieldStruct(1, extrusionVectorOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3821,7 +3821,7 @@ static addExtrusionVector(builder: flatbuffers.Builder, extrusionVectorOffset: f
  */
 static addCapped(builder: flatbuffers.Builder, capped: boolean) {
   builder.addFieldInt8(2, +capped, +false);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3830,7 +3830,7 @@ static addCapped(builder: flatbuffers.Builder, capped: boolean) {
 static endDgnExtrusion(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createDgnExtrusion(builder: flatbuffers.Builder, baseCurveOffset: flatbuffers.Offset, extrusionVectorOffset: flatbuffers.Offset, capped: boolean): flatbuffers.Offset {
   DgnExtrusion.startDgnExtrusion(builder);
@@ -3856,7 +3856,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnRotationalSweep {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3865,7 +3865,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnRotationalSweep {
  */
 static getRootAsDgnRotationalSweep(bb: flatbuffers.ByteBuffer, obj?: DgnRotationalSweep): DgnRotationalSweep {
   return (obj || new DgnRotationalSweep()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -3875,7 +3875,7 @@ static getRootAsDgnRotationalSweep(bb: flatbuffers.ByteBuffer, obj?: DgnRotation
 static getSizePrefixedRootAsDgnRotationalSweep(bb: flatbuffers.ByteBuffer, obj?: DgnRotationalSweep): DgnRotationalSweep {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new DgnRotationalSweep()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param CurveVector= obj
@@ -3884,7 +3884,7 @@ static getSizePrefixedRootAsDgnRotationalSweep(bb: flatbuffers.ByteBuffer, obj?:
 baseCurve(obj?: CurveVector): CurveVector|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new CurveVector()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
-};
+}
 
 /**
  * @param DRay3d= obj
@@ -3893,7 +3893,7 @@ baseCurve(obj?: CurveVector): CurveVector|null {
 axis(obj?: DRay3d): DRay3d|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? (obj || new DRay3d()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @returns number
@@ -3901,7 +3901,7 @@ axis(obj?: DRay3d): DRay3d|null {
 sweepRadians(): number {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-};
+}
 
 /**
  * @returns number
@@ -3909,7 +3909,7 @@ sweepRadians(): number {
 numVRules(): number {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns boolean
@@ -3917,14 +3917,14 @@ numVRules(): number {
 capped(): boolean {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startDgnRotationalSweep(builder: flatbuffers.Builder) {
   builder.startObject(5);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3932,7 +3932,7 @@ static startDgnRotationalSweep(builder: flatbuffers.Builder) {
  */
 static addBaseCurve(builder: flatbuffers.Builder, baseCurveOffset: flatbuffers.Offset) {
   builder.addFieldOffset(0, baseCurveOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3940,7 +3940,7 @@ static addBaseCurve(builder: flatbuffers.Builder, baseCurveOffset: flatbuffers.O
  */
 static addAxis(builder: flatbuffers.Builder, axisOffset: flatbuffers.Offset) {
   builder.addFieldStruct(1, axisOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3948,7 +3948,7 @@ static addAxis(builder: flatbuffers.Builder, axisOffset: flatbuffers.Offset) {
  */
 static addSweepRadians(builder: flatbuffers.Builder, sweepRadians: number) {
   builder.addFieldFloat64(2, sweepRadians, 0.0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3956,7 +3956,7 @@ static addSweepRadians(builder: flatbuffers.Builder, sweepRadians: number) {
  */
 static addNumVRules(builder: flatbuffers.Builder, numVRules: number) {
   builder.addFieldInt32(3, numVRules, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3964,7 +3964,7 @@ static addNumVRules(builder: flatbuffers.Builder, numVRules: number) {
  */
 static addCapped(builder: flatbuffers.Builder, capped: boolean) {
   builder.addFieldInt8(4, +capped, +false);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -3973,7 +3973,7 @@ static addCapped(builder: flatbuffers.Builder, capped: boolean) {
 static endDgnRotationalSweep(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createDgnRotationalSweep(builder: flatbuffers.Builder, baseCurveOffset: flatbuffers.Offset, axisOffset: flatbuffers.Offset, sweepRadians: number, numVRules: number, capped: boolean): flatbuffers.Offset {
   DgnRotationalSweep.startDgnRotationalSweep(builder);
@@ -4001,7 +4001,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnRuledSweep {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -4010,7 +4010,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DgnRuledSweep {
  */
 static getRootAsDgnRuledSweep(bb: flatbuffers.ByteBuffer, obj?: DgnRuledSweep): DgnRuledSweep {
   return (obj || new DgnRuledSweep()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -4020,7 +4020,7 @@ static getRootAsDgnRuledSweep(bb: flatbuffers.ByteBuffer, obj?: DgnRuledSweep): 
 static getSizePrefixedRootAsDgnRuledSweep(bb: flatbuffers.ByteBuffer, obj?: DgnRuledSweep): DgnRuledSweep {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new DgnRuledSweep()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param number index
@@ -4030,7 +4030,7 @@ static getSizePrefixedRootAsDgnRuledSweep(bb: flatbuffers.ByteBuffer, obj?: DgnR
 curves(index: number, obj?: CurveVector): CurveVector|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new CurveVector()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
-};
+}
 
 /**
  * @returns number
@@ -4038,7 +4038,7 @@ curves(index: number, obj?: CurveVector): CurveVector|null {
 curvesLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns boolean
@@ -4046,14 +4046,14 @@ curvesLength(): number {
 capped(): boolean {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startDgnRuledSweep(builder: flatbuffers.Builder) {
   builder.startObject(2);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4061,7 +4061,7 @@ static startDgnRuledSweep(builder: flatbuffers.Builder) {
  */
 static addCurves(builder: flatbuffers.Builder, curvesOffset: flatbuffers.Offset) {
   builder.addFieldOffset(0, curvesOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4074,7 +4074,7 @@ static createCurvesVector(builder: flatbuffers.Builder, data: flatbuffers.Offset
     builder.addOffset(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4082,7 +4082,7 @@ static createCurvesVector(builder: flatbuffers.Builder, data: flatbuffers.Offset
  */
 static startCurvesVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4090,7 +4090,7 @@ static startCurvesVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addCapped(builder: flatbuffers.Builder, capped: boolean) {
   builder.addFieldInt8(1, +capped, +false);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4099,7 +4099,7 @@ static addCapped(builder: flatbuffers.Builder, capped: boolean) {
 static endDgnRuledSweep(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createDgnRuledSweep(builder: flatbuffers.Builder, curvesOffset: flatbuffers.Offset, capped: boolean): flatbuffers.Offset {
   DgnRuledSweep.startDgnRuledSweep(builder);
@@ -4124,7 +4124,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): PolyfaceAuxChannelData {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -4133,7 +4133,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): PolyfaceAuxChannelData {
  */
 static getRootAsPolyfaceAuxChannelData(bb: flatbuffers.ByteBuffer, obj?: PolyfaceAuxChannelData): PolyfaceAuxChannelData {
   return (obj || new PolyfaceAuxChannelData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -4143,7 +4143,7 @@ static getRootAsPolyfaceAuxChannelData(bb: flatbuffers.ByteBuffer, obj?: Polyfac
 static getSizePrefixedRootAsPolyfaceAuxChannelData(bb: flatbuffers.ByteBuffer, obj?: PolyfaceAuxChannelData): PolyfaceAuxChannelData {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new PolyfaceAuxChannelData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @returns number
@@ -4151,7 +4151,7 @@ static getSizePrefixedRootAsPolyfaceAuxChannelData(bb: flatbuffers.ByteBuffer, o
 input(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-};
+}
 
 /**
  * @param number index
@@ -4160,7 +4160,7 @@ input(): number {
 values(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4168,7 +4168,7 @@ values(index: number): number|null {
 valuesLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -4176,14 +4176,14 @@ valuesLength(): number {
 valuesArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startPolyfaceAuxChannelData(builder: flatbuffers.Builder) {
   builder.startObject(2);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4191,7 +4191,7 @@ static startPolyfaceAuxChannelData(builder: flatbuffers.Builder) {
  */
 static addInput(builder: flatbuffers.Builder, input: number) {
   builder.addFieldFloat64(0, input, 0.0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4199,7 +4199,7 @@ static addInput(builder: flatbuffers.Builder, input: number) {
  */
 static addValues(builder: flatbuffers.Builder, valuesOffset: flatbuffers.Offset) {
   builder.addFieldOffset(1, valuesOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4212,7 +4212,7 @@ static createValuesVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4220,7 +4220,7 @@ static createValuesVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
  */
 static startValuesVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4229,7 +4229,7 @@ static startValuesVector(builder: flatbuffers.Builder, numElems: number) {
 static endPolyfaceAuxChannelData(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createPolyfaceAuxChannelData(builder: flatbuffers.Builder, input: number, valuesOffset: flatbuffers.Offset): flatbuffers.Offset {
   PolyfaceAuxChannelData.startPolyfaceAuxChannelData(builder);
@@ -4254,7 +4254,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): PolyfaceAuxChannel {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -4263,7 +4263,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): PolyfaceAuxChannel {
  */
 static getRootAsPolyfaceAuxChannel(bb: flatbuffers.ByteBuffer, obj?: PolyfaceAuxChannel): PolyfaceAuxChannel {
   return (obj || new PolyfaceAuxChannel()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -4273,7 +4273,7 @@ static getRootAsPolyfaceAuxChannel(bb: flatbuffers.ByteBuffer, obj?: PolyfaceAux
 static getSizePrefixedRootAsPolyfaceAuxChannel(bb: flatbuffers.ByteBuffer, obj?: PolyfaceAuxChannel): PolyfaceAuxChannel {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new PolyfaceAuxChannel()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @returns number
@@ -4281,7 +4281,7 @@ static getSizePrefixedRootAsPolyfaceAuxChannel(bb: flatbuffers.ByteBuffer, obj?:
 dataType(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @param flatbuffers.Encoding= optionalEncoding
@@ -4292,7 +4292,7 @@ name(optionalEncoding: flatbuffers.Encoding): string|Uint8Array|null
 name(optionalEncoding?: any): string|Uint8Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
-};
+}
 
 /**
  * @param flatbuffers.Encoding= optionalEncoding
@@ -4303,7 +4303,7 @@ inputName(optionalEncoding: flatbuffers.Encoding): string|Uint8Array|null
 inputName(optionalEncoding?: any): string|Uint8Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
-};
+}
 
 /**
  * @param number index
@@ -4313,7 +4313,7 @@ inputName(optionalEncoding?: any): string|Uint8Array|null {
 data(index: number, obj?: PolyfaceAuxChannelData): PolyfaceAuxChannelData|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? (obj || new PolyfaceAuxChannelData()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
-};
+}
 
 /**
  * @returns number
@@ -4321,14 +4321,14 @@ data(index: number, obj?: PolyfaceAuxChannelData): PolyfaceAuxChannelData|null {
 dataLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startPolyfaceAuxChannel(builder: flatbuffers.Builder) {
   builder.startObject(4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4336,7 +4336,7 @@ static startPolyfaceAuxChannel(builder: flatbuffers.Builder) {
  */
 static addDataType(builder: flatbuffers.Builder, dataType: number) {
   builder.addFieldInt32(0, dataType, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4344,7 +4344,7 @@ static addDataType(builder: flatbuffers.Builder, dataType: number) {
  */
 static addName(builder: flatbuffers.Builder, nameOffset: flatbuffers.Offset) {
   builder.addFieldOffset(1, nameOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4352,7 +4352,7 @@ static addName(builder: flatbuffers.Builder, nameOffset: flatbuffers.Offset) {
  */
 static addInputName(builder: flatbuffers.Builder, inputNameOffset: flatbuffers.Offset) {
   builder.addFieldOffset(2, inputNameOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4360,7 +4360,7 @@ static addInputName(builder: flatbuffers.Builder, inputNameOffset: flatbuffers.O
  */
 static addData(builder: flatbuffers.Builder, dataOffset: flatbuffers.Offset) {
   builder.addFieldOffset(3, dataOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4373,7 +4373,7 @@ static createDataVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]
     builder.addOffset(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4381,7 +4381,7 @@ static createDataVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]
  */
 static startDataVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4390,7 +4390,7 @@ static startDataVector(builder: flatbuffers.Builder, numElems: number) {
 static endPolyfaceAuxChannel(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createPolyfaceAuxChannel(builder: flatbuffers.Builder, dataType: number, nameOffset: flatbuffers.Offset, inputNameOffset: flatbuffers.Offset, dataOffset: flatbuffers.Offset): flatbuffers.Offset {
   PolyfaceAuxChannel.startPolyfaceAuxChannel(builder);
@@ -4417,7 +4417,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): PolyfaceAuxData {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -4426,7 +4426,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): PolyfaceAuxData {
  */
 static getRootAsPolyfaceAuxData(bb: flatbuffers.ByteBuffer, obj?: PolyfaceAuxData): PolyfaceAuxData {
   return (obj || new PolyfaceAuxData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -4436,7 +4436,7 @@ static getRootAsPolyfaceAuxData(bb: flatbuffers.ByteBuffer, obj?: PolyfaceAuxDat
 static getSizePrefixedRootAsPolyfaceAuxData(bb: flatbuffers.ByteBuffer, obj?: PolyfaceAuxData): PolyfaceAuxData {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new PolyfaceAuxData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param number index
@@ -4445,7 +4445,7 @@ static getSizePrefixedRootAsPolyfaceAuxData(bb: flatbuffers.ByteBuffer, obj?: Po
 indices(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4453,7 +4453,7 @@ indices(index: number): number|null {
 indicesLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Int32Array
@@ -4461,7 +4461,7 @@ indicesLength(): number {
 indicesArray(): Int32Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -4471,7 +4471,7 @@ indicesArray(): Int32Array|null {
 channels(index: number, obj?: PolyfaceAuxChannel): PolyfaceAuxChannel|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? (obj || new PolyfaceAuxChannel()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
-};
+}
 
 /**
  * @returns number
@@ -4479,14 +4479,14 @@ channels(index: number, obj?: PolyfaceAuxChannel): PolyfaceAuxChannel|null {
 channelsLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startPolyfaceAuxData(builder: flatbuffers.Builder) {
   builder.startObject(2);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4494,7 +4494,7 @@ static startPolyfaceAuxData(builder: flatbuffers.Builder) {
  */
 static addIndices(builder: flatbuffers.Builder, indicesOffset: flatbuffers.Offset) {
   builder.addFieldOffset(0, indicesOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4507,7 +4507,7 @@ static createIndicesVector(builder: flatbuffers.Builder, data: number[] | Uint8A
     builder.addInt32(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4515,7 +4515,7 @@ static createIndicesVector(builder: flatbuffers.Builder, data: number[] | Uint8A
  */
 static startIndicesVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4523,7 +4523,7 @@ static startIndicesVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addChannels(builder: flatbuffers.Builder, channelsOffset: flatbuffers.Offset) {
   builder.addFieldOffset(1, channelsOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4536,7 +4536,7 @@ static createChannelsVector(builder: flatbuffers.Builder, data: flatbuffers.Offs
     builder.addOffset(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4544,7 +4544,7 @@ static createChannelsVector(builder: flatbuffers.Builder, data: flatbuffers.Offs
  */
 static startChannelsVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4553,7 +4553,7 @@ static startChannelsVector(builder: flatbuffers.Builder, numElems: number) {
 static endPolyfaceAuxData(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createPolyfaceAuxData(builder: flatbuffers.Builder, indicesOffset: flatbuffers.Offset, channelsOffset: flatbuffers.Offset): flatbuffers.Offset {
   PolyfaceAuxData.startPolyfaceAuxData(builder);
@@ -4578,7 +4578,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): Polyface {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -4587,7 +4587,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): Polyface {
  */
 static getRootAsPolyface(bb: flatbuffers.ByteBuffer, obj?: Polyface): Polyface {
   return (obj || new Polyface()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -4597,7 +4597,7 @@ static getRootAsPolyface(bb: flatbuffers.ByteBuffer, obj?: Polyface): Polyface {
 static getSizePrefixedRootAsPolyface(bb: flatbuffers.ByteBuffer, obj?: Polyface): Polyface {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new Polyface()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param number index
@@ -4606,7 +4606,7 @@ static getSizePrefixedRootAsPolyface(bb: flatbuffers.ByteBuffer, obj?: Polyface)
 point(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4614,7 +4614,7 @@ point(index: number): number|null {
 pointLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -4622,7 +4622,7 @@ pointLength(): number {
 pointArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -4631,7 +4631,7 @@ pointArray(): Float64Array|null {
 param(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4639,7 +4639,7 @@ param(index: number): number|null {
 paramLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -4647,7 +4647,7 @@ paramLength(): number {
 paramArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -4656,7 +4656,7 @@ paramArray(): Float64Array|null {
 normal(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4664,7 +4664,7 @@ normal(index: number): number|null {
 normalLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -4672,7 +4672,7 @@ normalLength(): number {
 normalArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -4681,7 +4681,7 @@ normalArray(): Float64Array|null {
 doubleColor(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4689,7 +4689,7 @@ doubleColor(index: number): number|null {
 doubleColorLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -4697,7 +4697,7 @@ doubleColorLength(): number {
 doubleColorArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -4706,7 +4706,7 @@ doubleColorArray(): Float64Array|null {
 intColor(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4714,7 +4714,7 @@ intColor(index: number): number|null {
 intColorLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Int32Array
@@ -4722,7 +4722,7 @@ intColorLength(): number {
 intColorArray(): Int32Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -4731,7 +4731,7 @@ intColorArray(): Int32Array|null {
 pointIndex(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4739,7 +4739,7 @@ pointIndex(index: number): number|null {
 pointIndexLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Int32Array
@@ -4747,7 +4747,7 @@ pointIndexLength(): number {
 pointIndexArray(): Int32Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -4756,7 +4756,7 @@ pointIndexArray(): Int32Array|null {
 paramIndex(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4764,7 +4764,7 @@ paramIndex(index: number): number|null {
 paramIndexLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Int32Array
@@ -4772,7 +4772,7 @@ paramIndexLength(): number {
 paramIndexArray(): Int32Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -4781,7 +4781,7 @@ paramIndexArray(): Int32Array|null {
 normalIndex(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 18);
   return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4789,7 +4789,7 @@ normalIndex(index: number): number|null {
 normalIndexLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 18);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Int32Array
@@ -4797,7 +4797,7 @@ normalIndexLength(): number {
 normalIndexArray(): Int32Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 18);
   return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -4806,7 +4806,7 @@ normalIndexArray(): Int32Array|null {
 colorIndex(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 20);
   return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4814,7 +4814,7 @@ colorIndex(index: number): number|null {
 colorIndexLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 20);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Int32Array
@@ -4822,7 +4822,7 @@ colorIndexLength(): number {
 colorIndexArray(): Int32Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 20);
   return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -4831,7 +4831,7 @@ colorIndexArray(): Int32Array|null {
 colorTable(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 22);
   return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4839,7 +4839,7 @@ colorTable(index: number): number|null {
 colorTableLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 22);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Int32Array
@@ -4847,7 +4847,7 @@ colorTableLength(): number {
 colorTableArray(): Int32Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 22);
   return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @returns number
@@ -4855,7 +4855,7 @@ colorTableArray(): Int32Array|null {
 numPerFace(): number {
   const offset = this.bb!.__offset(this.bb_pos, 24);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4863,7 +4863,7 @@ numPerFace(): number {
 numPerRow(): number {
   const offset = this.bb!.__offset(this.bb_pos, 26);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4871,7 +4871,7 @@ numPerRow(): number {
 meshStyle(): number {
   const offset = this.bb!.__offset(this.bb_pos, 28);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns boolean
@@ -4879,7 +4879,7 @@ meshStyle(): number {
 twoSided(): boolean {
   const offset = this.bb!.__offset(this.bb_pos, 30);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-};
+}
 
 /**
  * @param number index
@@ -4888,7 +4888,7 @@ twoSided(): boolean {
 faceIndex(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 32);
   return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4896,7 +4896,7 @@ faceIndex(index: number): number|null {
 faceIndexLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 32);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Int32Array
@@ -4904,7 +4904,7 @@ faceIndexLength(): number {
 faceIndexArray(): Int32Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 32);
   return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param number index
@@ -4913,7 +4913,7 @@ faceIndexArray(): Int32Array|null {
 faceData(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 34);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -4921,7 +4921,7 @@ faceData(index: number): number|null {
 faceDataLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 34);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -4929,7 +4929,7 @@ faceDataLength(): number {
 faceDataArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 34);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param PolyfaceAuxData= obj
@@ -4938,14 +4938,22 @@ faceDataArray(): Float64Array|null {
 auxData(obj?: PolyfaceAuxData): PolyfaceAuxData|null {
   const offset = this.bb!.__offset(this.bb_pos, 36);
   return offset ? (obj || new PolyfaceAuxData()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
-};
+}
+
+/**
+ * @returns number
+ */
+expectedClosure(): number {
+  const offset = this.bb!.__offset(this.bb_pos, 38);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startPolyface(builder: flatbuffers.Builder) {
-  builder.startObject(17);
-};
+  builder.startObject(18);
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4953,7 +4961,7 @@ static startPolyface(builder: flatbuffers.Builder) {
  */
 static addPoint(builder: flatbuffers.Builder, pointOffset: flatbuffers.Offset) {
   builder.addFieldOffset(0, pointOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4966,7 +4974,7 @@ static createPointVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4974,7 +4982,7 @@ static createPointVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
  */
 static startPointVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4982,7 +4990,7 @@ static startPointVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addParam(builder: flatbuffers.Builder, paramOffset: flatbuffers.Offset) {
   builder.addFieldOffset(1, paramOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -4995,7 +5003,7 @@ static createParamVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5003,7 +5011,7 @@ static createParamVector(builder: flatbuffers.Builder, data: number[] | Uint8Arr
  */
 static startParamVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5011,7 +5019,7 @@ static startParamVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addNormal(builder: flatbuffers.Builder, normalOffset: flatbuffers.Offset) {
   builder.addFieldOffset(2, normalOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5024,7 +5032,7 @@ static createNormalVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5032,7 +5040,7 @@ static createNormalVector(builder: flatbuffers.Builder, data: number[] | Uint8Ar
  */
 static startNormalVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5040,7 +5048,7 @@ static startNormalVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addDoubleColor(builder: flatbuffers.Builder, doubleColorOffset: flatbuffers.Offset) {
   builder.addFieldOffset(3, doubleColorOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5053,7 +5061,7 @@ static createDoubleColorVector(builder: flatbuffers.Builder, data: number[] | Ui
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5061,7 +5069,7 @@ static createDoubleColorVector(builder: flatbuffers.Builder, data: number[] | Ui
  */
 static startDoubleColorVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5069,7 +5077,7 @@ static startDoubleColorVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addIntColor(builder: flatbuffers.Builder, intColorOffset: flatbuffers.Offset) {
   builder.addFieldOffset(4, intColorOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5082,7 +5090,7 @@ static createIntColorVector(builder: flatbuffers.Builder, data: number[] | Uint8
     builder.addInt32(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5090,7 +5098,7 @@ static createIntColorVector(builder: flatbuffers.Builder, data: number[] | Uint8
  */
 static startIntColorVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5098,7 +5106,7 @@ static startIntColorVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addPointIndex(builder: flatbuffers.Builder, pointIndexOffset: flatbuffers.Offset) {
   builder.addFieldOffset(5, pointIndexOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5111,7 +5119,7 @@ static createPointIndexVector(builder: flatbuffers.Builder, data: number[] | Uin
     builder.addInt32(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5119,7 +5127,7 @@ static createPointIndexVector(builder: flatbuffers.Builder, data: number[] | Uin
  */
 static startPointIndexVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5127,7 +5135,7 @@ static startPointIndexVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addParamIndex(builder: flatbuffers.Builder, paramIndexOffset: flatbuffers.Offset) {
   builder.addFieldOffset(6, paramIndexOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5140,7 +5148,7 @@ static createParamIndexVector(builder: flatbuffers.Builder, data: number[] | Uin
     builder.addInt32(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5148,7 +5156,7 @@ static createParamIndexVector(builder: flatbuffers.Builder, data: number[] | Uin
  */
 static startParamIndexVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5156,7 +5164,7 @@ static startParamIndexVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addNormalIndex(builder: flatbuffers.Builder, normalIndexOffset: flatbuffers.Offset) {
   builder.addFieldOffset(7, normalIndexOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5169,7 +5177,7 @@ static createNormalIndexVector(builder: flatbuffers.Builder, data: number[] | Ui
     builder.addInt32(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5177,7 +5185,7 @@ static createNormalIndexVector(builder: flatbuffers.Builder, data: number[] | Ui
  */
 static startNormalIndexVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5185,7 +5193,7 @@ static startNormalIndexVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addColorIndex(builder: flatbuffers.Builder, colorIndexOffset: flatbuffers.Offset) {
   builder.addFieldOffset(8, colorIndexOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5198,7 +5206,7 @@ static createColorIndexVector(builder: flatbuffers.Builder, data: number[] | Uin
     builder.addInt32(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5206,7 +5214,7 @@ static createColorIndexVector(builder: flatbuffers.Builder, data: number[] | Uin
  */
 static startColorIndexVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5214,7 +5222,7 @@ static startColorIndexVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addColorTable(builder: flatbuffers.Builder, colorTableOffset: flatbuffers.Offset) {
   builder.addFieldOffset(9, colorTableOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5227,7 +5235,7 @@ static createColorTableVector(builder: flatbuffers.Builder, data: number[] | Uin
     builder.addInt32(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5235,7 +5243,7 @@ static createColorTableVector(builder: flatbuffers.Builder, data: number[] | Uin
  */
 static startColorTableVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5243,7 +5251,7 @@ static startColorTableVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addNumPerFace(builder: flatbuffers.Builder, numPerFace: number) {
   builder.addFieldInt32(10, numPerFace, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5251,7 +5259,7 @@ static addNumPerFace(builder: flatbuffers.Builder, numPerFace: number) {
  */
 static addNumPerRow(builder: flatbuffers.Builder, numPerRow: number) {
   builder.addFieldInt32(11, numPerRow, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5259,7 +5267,7 @@ static addNumPerRow(builder: flatbuffers.Builder, numPerRow: number) {
  */
 static addMeshStyle(builder: flatbuffers.Builder, meshStyle: number) {
   builder.addFieldInt32(12, meshStyle, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5267,7 +5275,7 @@ static addMeshStyle(builder: flatbuffers.Builder, meshStyle: number) {
  */
 static addTwoSided(builder: flatbuffers.Builder, twoSided: boolean) {
   builder.addFieldInt8(13, +twoSided, +false);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5275,7 +5283,7 @@ static addTwoSided(builder: flatbuffers.Builder, twoSided: boolean) {
  */
 static addFaceIndex(builder: flatbuffers.Builder, faceIndexOffset: flatbuffers.Offset) {
   builder.addFieldOffset(14, faceIndexOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5288,7 +5296,7 @@ static createFaceIndexVector(builder: flatbuffers.Builder, data: number[] | Uint
     builder.addInt32(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5296,7 +5304,7 @@ static createFaceIndexVector(builder: flatbuffers.Builder, data: number[] | Uint
  */
 static startFaceIndexVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(4, numElems, 4);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5304,7 +5312,7 @@ static startFaceIndexVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addFaceData(builder: flatbuffers.Builder, faceDataOffset: flatbuffers.Offset) {
   builder.addFieldOffset(15, faceDataOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5317,7 +5325,7 @@ static createFaceDataVector(builder: flatbuffers.Builder, data: number[] | Uint8
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5325,7 +5333,7 @@ static createFaceDataVector(builder: flatbuffers.Builder, data: number[] | Uint8
  */
 static startFaceDataVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5333,7 +5341,15 @@ static startFaceDataVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addAuxData(builder: flatbuffers.Builder, auxDataOffset: flatbuffers.Offset) {
   builder.addFieldOffset(16, auxDataOffset, 0);
-};
+}
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number expectedClosure
+ */
+static addExpectedClosure(builder: flatbuffers.Builder, expectedClosure: number) {
+  builder.addFieldInt32(17, expectedClosure, 0);
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5342,9 +5358,9 @@ static addAuxData(builder: flatbuffers.Builder, auxDataOffset: flatbuffers.Offse
 static endPolyface(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
-static createPolyface(builder: flatbuffers.Builder, pointOffset: flatbuffers.Offset, paramOffset: flatbuffers.Offset, normalOffset: flatbuffers.Offset, doubleColorOffset: flatbuffers.Offset, intColorOffset: flatbuffers.Offset, pointIndexOffset: flatbuffers.Offset, paramIndexOffset: flatbuffers.Offset, normalIndexOffset: flatbuffers.Offset, colorIndexOffset: flatbuffers.Offset, colorTableOffset: flatbuffers.Offset, numPerFace: number, numPerRow: number, meshStyle: number, twoSided: boolean, faceIndexOffset: flatbuffers.Offset, faceDataOffset: flatbuffers.Offset, auxDataOffset: flatbuffers.Offset): flatbuffers.Offset {
+static createPolyface(builder: flatbuffers.Builder, pointOffset: flatbuffers.Offset, paramOffset: flatbuffers.Offset, normalOffset: flatbuffers.Offset, doubleColorOffset: flatbuffers.Offset, intColorOffset: flatbuffers.Offset, pointIndexOffset: flatbuffers.Offset, paramIndexOffset: flatbuffers.Offset, normalIndexOffset: flatbuffers.Offset, colorIndexOffset: flatbuffers.Offset, colorTableOffset: flatbuffers.Offset, numPerFace: number, numPerRow: number, meshStyle: number, twoSided: boolean, faceIndexOffset: flatbuffers.Offset, faceDataOffset: flatbuffers.Offset, auxDataOffset: flatbuffers.Offset, expectedClosure: number): flatbuffers.Offset {
   Polyface.startPolyface(builder);
   Polyface.addPoint(builder, pointOffset);
   Polyface.addParam(builder, paramOffset);
@@ -5363,6 +5379,7 @@ static createPolyface(builder: flatbuffers.Builder, pointOffset: flatbuffers.Off
   Polyface.addFaceIndex(builder, faceIndexOffset);
   Polyface.addFaceData(builder, faceDataOffset);
   Polyface.addAuxData(builder, auxDataOffset);
+  Polyface.addExpectedClosure(builder, expectedClosure);
   return Polyface.endPolyface(builder);
 }
 }
@@ -5382,7 +5399,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): TransitionSpiralDetail {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param DTransform3d= obj
@@ -5390,63 +5407,63 @@ __init(i: number, bb: flatbuffers.ByteBuffer): TransitionSpiralDetail {
  */
 transform(obj?: DTransform3d): DTransform3d|null {
   return (obj || new DTransform3d()).__init(this.bb_pos, this.bb!);
-};
+}
 
 /**
  * @returns number
  */
 fractionA(): number {
   return this.bb!.readFloat64(this.bb_pos + 96);
-};
+}
 
 /**
  * @returns number
  */
 fractionB(): number {
   return this.bb!.readFloat64(this.bb_pos + 104);
-};
+}
 
 /**
  * @returns number
  */
 bearing0Radians(): number {
   return this.bb!.readFloat64(this.bb_pos + 112);
-};
+}
 
 /**
  * @returns number
  */
 bearing1Radians(): number {
   return this.bb!.readFloat64(this.bb_pos + 120);
-};
+}
 
 /**
  * @returns number
  */
 curvature0(): number {
   return this.bb!.readFloat64(this.bb_pos + 128);
-};
+}
 
 /**
  * @returns number
  */
 curvature1(): number {
   return this.bb!.readFloat64(this.bb_pos + 136);
-};
+}
 
 /**
  * @returns number
  */
 spiralType(): number {
   return this.bb!.readInt32(this.bb_pos + 144);
-};
+}
 
 /**
  * @returns number
  */
 constructionHint(): number {
   return this.bb!.readInt32(this.bb_pos + 148);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5496,7 +5513,7 @@ static createTransitionSpiralDetail(builder: flatbuffers.Builder, transform_axx:
   builder.writeFloat64(transform_axy);
   builder.writeFloat64(transform_axx);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -5515,49 +5532,49 @@ __init(i: number, bb: flatbuffers.ByteBuffer): DirectSpiralDetail {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @returns number
  */
 nominalLength(): number {
   return this.bb!.readFloat64(this.bb_pos);
-};
+}
 
 /**
  * @returns number
  */
 trueLength(): number {
   return this.bb!.readFloat64(this.bb_pos + 8);
-};
+}
 
 /**
  * @returns number
  */
 doubleTag0(): number {
   return this.bb!.readFloat64(this.bb_pos + 16);
-};
+}
 
 /**
  * @returns number
  */
 doubleTag1(): number {
   return this.bb!.readFloat64(this.bb_pos + 24);
-};
+}
 
 /**
  * @returns number
  */
 intTag0(): number {
   return this.bb!.readFloat64(this.bb_pos + 32);
-};
+}
 
 /**
  * @returns number
  */
 intTag1(): number {
   return this.bb!.readFloat64(this.bb_pos + 40);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5578,7 +5595,7 @@ static createDirectSpiralDetail(builder: flatbuffers.Builder, nominalLength: num
   builder.writeFloat64(trueLength);
   builder.writeFloat64(nominalLength);
   return builder.offset();
-};
+}
 
 }
 /**
@@ -5597,7 +5614,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): TransitionSpiral {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -5606,7 +5623,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): TransitionSpiral {
  */
 static getRootAsTransitionSpiral(bb: flatbuffers.ByteBuffer, obj?: TransitionSpiral): TransitionSpiral {
   return (obj || new TransitionSpiral()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -5616,7 +5633,7 @@ static getRootAsTransitionSpiral(bb: flatbuffers.ByteBuffer, obj?: TransitionSpi
 static getSizePrefixedRootAsTransitionSpiral(bb: flatbuffers.ByteBuffer, obj?: TransitionSpiral): TransitionSpiral {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new TransitionSpiral()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param TransitionSpiralDetail= obj
@@ -5625,7 +5642,7 @@ static getSizePrefixedRootAsTransitionSpiral(bb: flatbuffers.ByteBuffer, obj?: T
 detail(obj?: TransitionSpiralDetail): TransitionSpiralDetail|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new TransitionSpiralDetail()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param number index
@@ -5634,7 +5651,7 @@ detail(obj?: TransitionSpiralDetail): TransitionSpiralDetail|null {
 extraData(index: number): number|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-};
+}
 
 /**
  * @returns number
@@ -5642,7 +5659,7 @@ extraData(index: number): number|null {
 extraDataLength(): number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
+}
 
 /**
  * @returns Float64Array
@@ -5650,7 +5667,7 @@ extraDataLength(): number {
 extraDataArray(): Float64Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-};
+}
 
 /**
  * @param DirectSpiralDetail= obj
@@ -5659,14 +5676,14 @@ extraDataArray(): Float64Array|null {
 directDetail(obj?: DirectSpiralDetail): DirectSpiralDetail|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? (obj || new DirectSpiralDetail()).__init(this.bb_pos + offset, this.bb!) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startTransitionSpiral(builder: flatbuffers.Builder) {
   builder.startObject(3);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5674,7 +5691,7 @@ static startTransitionSpiral(builder: flatbuffers.Builder) {
  */
 static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset) {
   builder.addFieldStruct(0, detailOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5682,7 +5699,7 @@ static addDetail(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset)
  */
 static addExtraData(builder: flatbuffers.Builder, extraDataOffset: flatbuffers.Offset) {
   builder.addFieldOffset(1, extraDataOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5695,7 +5712,7 @@ static createExtraDataVector(builder: flatbuffers.Builder, data: number[] | Uint
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5703,7 +5720,7 @@ static createExtraDataVector(builder: flatbuffers.Builder, data: number[] | Uint
  */
 static startExtraDataVector(builder: flatbuffers.Builder, numElems: number) {
   builder.startVector(8, numElems, 8);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5711,7 +5728,7 @@ static startExtraDataVector(builder: flatbuffers.Builder, numElems: number) {
  */
 static addDirectDetail(builder: flatbuffers.Builder, directDetailOffset: flatbuffers.Offset) {
   builder.addFieldStruct(2, directDetailOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5720,7 +5737,7 @@ static addDirectDetail(builder: flatbuffers.Builder, directDetailOffset: flatbuf
 static endTransitionSpiral(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createTransitionSpiral(builder: flatbuffers.Builder, detailOffset: flatbuffers.Offset, extraDataOffset: flatbuffers.Offset, directDetailOffset: flatbuffers.Offset): flatbuffers.Offset {
   TransitionSpiral.startTransitionSpiral(builder);
@@ -5746,7 +5763,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): VariantGeometry {
   this.bb_pos = i;
   this.bb = bb;
   return this;
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -5755,7 +5772,7 @@ __init(i: number, bb: flatbuffers.ByteBuffer): VariantGeometry {
  */
 static getRootAsVariantGeometry(bb: flatbuffers.ByteBuffer, obj?: VariantGeometry): VariantGeometry {
   return (obj || new VariantGeometry()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @param flatbuffers.ByteBuffer bb
@@ -5765,7 +5782,7 @@ static getRootAsVariantGeometry(bb: flatbuffers.ByteBuffer, obj?: VariantGeometr
 static getSizePrefixedRootAsVariantGeometry(bb: flatbuffers.ByteBuffer, obj?: VariantGeometry): VariantGeometry {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
   return (obj || new VariantGeometry()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
+}
 
 /**
  * @returns VariantGeometryUnion
@@ -5773,7 +5790,7 @@ static getSizePrefixedRootAsVariantGeometry(bb: flatbuffers.ByteBuffer, obj?: Va
 geometryType(): VariantGeometryUnion {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? /**  */ (this.bb!.readUint8(this.bb_pos + offset)) : VariantGeometryUnion.tagNONE;
-};
+}
 
 /**
  * @param flatbuffers.Table obj
@@ -5782,7 +5799,7 @@ geometryType(): VariantGeometryUnion {
 geometry<T extends flatbuffers.Table>(obj: T): T|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.__union(obj, this.bb_pos + offset) : null;
-};
+}
 
 /**
  * @param CurvePrimitiveId= obj
@@ -5791,14 +5808,14 @@ geometry<T extends flatbuffers.Table>(obj: T): T|null {
 tag(obj?: CurvePrimitiveId): CurvePrimitiveId|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? (obj || new CurvePrimitiveId()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
  */
 static startVariantGeometry(builder: flatbuffers.Builder) {
   builder.startObject(3);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5806,7 +5823,7 @@ static startVariantGeometry(builder: flatbuffers.Builder) {
  */
 static addGeometryType(builder: flatbuffers.Builder, geometryType: VariantGeometryUnion) {
   builder.addFieldInt8(0, geometryType, VariantGeometryUnion.tagNONE);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5814,7 +5831,7 @@ static addGeometryType(builder: flatbuffers.Builder, geometryType: VariantGeomet
  */
 static addGeometry(builder: flatbuffers.Builder, geometryOffset: flatbuffers.Offset) {
   builder.addFieldOffset(1, geometryOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5822,7 +5839,7 @@ static addGeometry(builder: flatbuffers.Builder, geometryOffset: flatbuffers.Off
  */
 static addTag(builder: flatbuffers.Builder, tagOffset: flatbuffers.Offset) {
   builder.addFieldOffset(2, tagOffset, 0);
-};
+}
 
 /**
  * @param flatbuffers.Builder builder
@@ -5831,7 +5848,7 @@ static addTag(builder: flatbuffers.Builder, tagOffset: flatbuffers.Offset) {
 static endVariantGeometry(builder: flatbuffers.Builder): flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-};
+}
 
 static createVariantGeometry(builder: flatbuffers.Builder, geometryType: VariantGeometryUnion, geometryOffset: flatbuffers.Offset, tagOffset: flatbuffers.Offset): flatbuffers.Offset {
   VariantGeometry.startVariantGeometry(builder);

@@ -70,4 +70,4 @@ The `stepNum` prop circulates through 16 pre-defined background colors that are 
 
 ## API Reference
 
-* [Tiles]($ui-core:Tiles)
+- [Tiles]($ui-core:Tiles)

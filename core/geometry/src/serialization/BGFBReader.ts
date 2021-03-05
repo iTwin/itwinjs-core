@@ -154,7 +154,7 @@ export class BGFBReader {
       const numCoordinates = offsetToLineString.pointsLength();
       const result = LineString3d.create();
       for (let i = 0; i + 2 < numCoordinates; i += 3) {
-        result.packedPoints.pushXYZ(offsetToLineString.points(i)!, offsetToLineString?.points(i + 1)!, offsetToLineString?.points(i + 2)!);
+        result.packedPoints.pushXYZ(offsetToLineString.points(i)!, offsetToLineString.points(i + 1)!, offsetToLineString.points(i + 2)!);
       }
       return result;
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagBsplineCurve) {
@@ -255,6 +255,7 @@ export class BGFBReader {
       const polyfaceHeader = variant.geometry(new BGFBAccessors.Polyface());
       if (polyfaceHeader) {
         const twoSided = polyfaceHeader.twoSided();
+        const expectedClosure = polyfaceHeader.expectedClosure();
         const meshStyle = polyfaceHeader.meshStyle();
 
         const pointF64 = nullToUndefined<Float64Array>(polyfaceHeader.pointArray());
@@ -269,6 +270,7 @@ export class BGFBReader {
         // const colorIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.colorIndexArray());
         if (meshStyle === 1 && pointF64 && pointIndexI32) {
           const polyface = IndexedPolyface.create(normalF64 !== undefined, paramF64 !== undefined, intColorU32 !== undefined, twoSided);
+          polyface.expectedClosure = expectedClosure;
           for (let i = 0; i + 2 < pointF64?.length; i += 3)
             polyface.data.point.pushXYZ(pointF64[i], pointF64[i + 1], pointF64[i + 2]);
           if (paramF64) {
@@ -580,4 +582,4 @@ export class DgnSpiralTypeQueries {
   public static isDirectSpiralType(typeCode: number): boolean {
     return typeCode >= 50;
   }
-};
+}

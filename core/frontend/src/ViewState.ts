@@ -31,7 +31,7 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { TileTreeReference, TileTreeSet } from "./tile/internal";
+import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -270,7 +270,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Get the name of the [[ViewDefinition]] from which this ViewState originated. */
-  public get name(): string { return this.code.getValue(); }
+  public get name(): string { return this.code.value; }
 
   /** Get this view's background color. */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
@@ -380,7 +380,7 @@ export abstract class ViewState extends ElementState {
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     this.forEachTileTreeRef((ref) => trees.disclose(ref));
   }
 
@@ -388,9 +388,9 @@ export abstract class ViewState extends ElementState {
    * @internal
    */
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    const trees = new TileTreeSet();
+    const trees = new DisclosedTileTreeSet();
     this.discloseTileTrees(trees);
-    for (const tree of trees.trees)
+    for (const tree of trees)
       tree.collectStatistics(stats);
 
     this.collectNonTileTreeStatistics(stats);
@@ -1079,6 +1079,14 @@ export abstract class ViewState extends ElementState {
     // In attachToViewport, we register event listeners on the category selector. We remove them in detachFromViewport.
     // So a non-empty list of event listener removal functions indicates we are currently attached to a viewport.
     return this._unregisterCategorySelectorListeners.length > 0;
+  }
+
+  /** Returns an iterator over additional Viewports used to construct this view's scene. e.g., those used for ViewAttachments and section drawings.
+   * This exists chiefly for display-performance-test-app to determine when all tiles required for the view have been loaded.
+   * @internal
+   */
+  public get secondaryViewports(): Iterable<Viewport> {
+    return [];
   }
 }
 

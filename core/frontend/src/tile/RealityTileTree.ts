@@ -142,10 +142,6 @@ export class RealityTileTree extends TileTree {
     this.rootTile.purgeContents(olderThan);
   }
 
-  public forcePrune(): void {
-    this.rootTile.purgeContents(BeTimePoint.now());
-  }
-
   public draw(args: TileDrawArgs): void {
     const displayedTileDescendants = new Array<RealityTile[]>();
     const debugControl = args.context.target.debugControl;
@@ -156,6 +152,10 @@ export class RealityTileTree extends TileTree {
     const selectedTiles = this.selectRealityTiles(args, displayedTileDescendants, preloadDebugBuilder);
     if (!this.loader.parentsAndChildrenExclusive)
       selectedTiles.sort((a, b) => a.depth - b.depth);                    // If parent and child are not exclusive then display parents (low resolution) first.
+
+    const classifier = args.context.planarClassifiers.get(this.modelId);
+    if (classifier)
+      classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
 
     assert(selectedTiles.length === displayedTileDescendants.length);
     for (let i = 0; i < selectedTiles.length; i++) {

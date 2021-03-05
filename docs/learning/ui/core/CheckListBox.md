@@ -33,4 +33,4 @@ The CheckListBoxSeparator component is used for a separator item.
 
 ## API Reference
 
-* [CheckListBox]($ui-core:CheckListBox)
+- [CheckListBox]($ui-core:CheckListBox)

@@ -7,14 +7,15 @@ import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
 import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import {
-  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, RenderMemory, RenderPlanarClassifier,
-  RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap, TileTreeReference,
+  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
+  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
+  TileTreeReference,
 } from "@bentley/imodeljs-frontend";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
+import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
-import { testViewports } from "../../TestViewport";
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
@@ -271,7 +272,8 @@ describe("Disposal of WebGL Resources", () => {
   class Classifier extends RenderPlanarClassifier {
     public disposed = false;
     public constructor() { super(); }
-    public collectGraphics(_context: SceneContext, _classified: TileTreeReference, _classifier: TileTreeReference): void { }
+    public collectGraphics(_context: SceneContext, _target: PlanarClassifierTarget): void { }
+    public setSource(_classifierTreeRef?: TileTreeReference, _planarClipMask?: PlanarClipMaskState): void { }
     public dispose(): void {
       expect(this.disposed).to.be.false;
       this.disposed = true;

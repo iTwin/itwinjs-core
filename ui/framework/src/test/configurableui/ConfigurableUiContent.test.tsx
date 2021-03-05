@@ -4,11 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { shallow } from "enzyme";
+import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
-import { ConfigurableUiContent } from "../../ui-framework";
+import { SpecialKey } from "@bentley/ui-abstract";
 import TestUtils, { mount } from "../TestUtils";
+import { ConfigurableUiContent } from "../../ui-framework/configurableui/ConfigurableUiContent";
+import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
+import { FrameworkToolAdmin } from "../../ui-framework/tools/FrameworkToolAdmin";
 
 describe("ConfigurableUiContent", () => {
   before(async () => {
@@ -33,10 +37,15 @@ describe("ConfigurableUiContent", () => {
     render(<Provider store={TestUtils.store} >
       <ConfigurableUiContent />
     </Provider>);
+    expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
 
-    const divContainer = document.getElementById("uifw-configurableui-wrapper")!;
-    divContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "a" }));
-    divContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
+    const toolAdmin = new FrameworkToolAdmin();
+    let keyEvent = new KeyboardEvent("keydown", { key: "a" });
+    expect(toolAdmin.processShortcutKey(keyEvent, true)).to.be.true;
+    keyEvent = new KeyboardEvent("keyup", { key: "a" });
+    expect(toolAdmin.processShortcutKey(keyEvent, false)).to.be.false;
+    keyEvent = new KeyboardEvent("keydown", { key: SpecialKey.Escape });
+    expect(toolAdmin.processShortcutKey(keyEvent, true)).to.be.false;
   });
 
   it("mouse moves should be handled", () => {

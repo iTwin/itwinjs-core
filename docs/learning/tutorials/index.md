@@ -1,5 +1,5 @@
 ---
-browserTabTitle: iModel.js Tutorials
+browserTabTitle: iTwin.js Tutorials
 ---
 
 ### Creating a test iModel
@@ -13,18 +13,21 @@ Test iModels can be used for local development. There are a few different ways t
 [!bwc tile heading="Offline snapshot from local files" linkTo="create-test-imodel-offline" contents="Create a local snapshot file from files on your local computer" icon="document.svg" step="13" width="28%"]
 
 ### Exploring iModels
+
 [!bwc tile heading="ECSQL tutorial" linkTo="index path=learning/ecsqltutorial/index subPath=/ecsqltutorial" contents="Familiarize yourself with the basics of ECSQL" icon="database.svg" step="13" width="28%"]
 [!bwc tile heading="View in iModelHub" linkTo="use-existing-imodel" contents="How to view your iModel in iModelHub" icon="visibility.svg" step="13" width="28%"]
 [!bwc tile heading="Explore iModel content" linkTo="explore-imodel-console" contents="How to query the data in your iModel" icon="developer.svg" step="13" width="28%"]
 [!bwc tile heading="Explore schemas in the iModel" linkTo="explore-schema-browser" contents="How to browse the schemas in your iModel" icon="ec-schema.svg" step="13" width="28%"]
 
 ### Building Applications
+
 [!bwc tile heading="Web viewer" linkTo="develop-web-viewer" contents="Create a web based viewer" icon="network.svg" step="13" width="28%" ]
 [!bwc tile heading="Desktop viewer" linkTo="develop-desktop-viewer" contents="Create a desktop viewer" icon="computer.svg" step="13" width="28%"]
 [!bwc tile heading="Agent application" linkTo="develop-agent" contents="Create an agent application" icon="notification.svg" step="13" width="28%"]
-[!bwc tile heading="Extension" linkTo="gettingstarted subPath=/frontend/extensions" contents="Create an iModel.js Extension" icon="puzzle.svg" step="13" width="28%"]
+[!bwc tile heading="Extension" linkTo="gettingstarted subPath=/frontend/extensions" contents="Create an iTwin.js Extension" icon="puzzle.svg" step="13" width="28%"]
 
 ### Registering Applications
+
 [!bwc tile heading="Register application" linkTo="registering-applications" contents="Register an application for deployment" icon="applications.svg" step="13" width="28%"]
 
 ### Support

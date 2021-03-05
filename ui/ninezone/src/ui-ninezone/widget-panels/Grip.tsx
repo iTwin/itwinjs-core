@@ -10,7 +10,7 @@ import "./Grip.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, Rectangle, Timer } from "@bentley/ui-core";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { useDragPanelGrip, UseDragPanelGripArgs } from "../base/DragManager";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { isHorizontalPanelSide, PanelStateContext, WidgetPanelContext } from "./Panel";
@@ -22,7 +22,7 @@ import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 export const WidgetPanelGrip = React.memo(function WidgetPanelGrip(props: CommonProps) {
   const panelState = React.useContext(PanelStateContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
-  assert(panelState);
+  assert(!!panelState);
   const { side } = panelState;
   const [ref, resizing, active] = useResizeGrip<HTMLDivElement>();
   const className = classnames(
@@ -63,8 +63,8 @@ export const useResizeGrip = <T extends HTMLElement>(): [(instance: T | null) =>
   const widgetPanel = React.useContext(WidgetPanelContext);
   const panelState = React.useContext(PanelStateContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
-  assert(widgetPanel);
-  assert(panelState);
+  assert(!!widgetPanel);
+  assert(!!panelState);
   const [resizing, setResizing] = React.useState(false);
   const [active, setActive] = React.useState(false);
   const initialPointerPosition = React.useRef<Point>();
@@ -189,7 +189,7 @@ export const useResizeGrip = <T extends HTMLElement>(): [(instance: T | null) =>
   const handleRef = React.useCallback((instance: T | null) => {
     ref.current = instance;
     handlePointerCaptorRef(instance);
-  }, [handlePointerCaptorRef]);
+  }, [handlePointerCaptorRef]); // eslint-disable-line react-hooks/exhaustive-deps
   return [handleRef, resizing, active];
 };
 

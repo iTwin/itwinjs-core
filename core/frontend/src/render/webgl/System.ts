@@ -16,7 +16,6 @@ import { SkyBox } from "../../DisplayStyleState";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
-import { ToolAdmin } from "../../tools/ToolAdmin";
 import { Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
@@ -236,12 +235,21 @@ export class IdMap implements WebGLDisposable {
     return this.createTexture(params, TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ));
   }
 
+  private createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+    return this.createTexture(params, TextureHandle.createForElement(id, imodel, params.type, format));
+  }
+
   public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textures.get(key) : undefined; }
 
   /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
   public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
     const tex = this.findTexture(params.key);
     return undefined !== tex ? tex : this.createTextureFromImageBuffer(img, params);
+  }
+
+  public getTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+    const tex = this.findTexture(params.key);
+    return undefined !== tex ? tex : this.createTextureFromElement(id, imodel, params, format);
   }
 
   public getTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
@@ -646,6 +654,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.getIdMap(imodel).getTextureFromImage(image, hasAlpha, params);
   }
 
+  public createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+    return this.getIdMap(imodel).getTextureFromElement(id, imodel, params, format);
+  }
+
   /** Attempt to create a texture from a cube of HTML images. */
   public createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
@@ -691,12 +703,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     // Make this System a subscriber to the the IModelConnection onClose event
     this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
 
-    canvas.addEventListener("webglcontextlost", async () => this.handleContextLoss(), false);
-  }
-
-  protected async handleContextLoss(): Promise<void> {
-    const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
-    return ToolAdmin.exceptionHandler(msg);
+    canvas.addEventListener("webglcontextlost", async () => RenderSystem.contextLossHandler(), false);
   }
 
   /** Exposed strictly for tests. */

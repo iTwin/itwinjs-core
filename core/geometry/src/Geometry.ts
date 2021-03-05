@@ -20,7 +20,7 @@ import { Point4d } from "./geometry4d/Point4d";
  */
 export enum AxisOrder {
   /** Right handed system, X then Y then Z */
-  XYZ = 0, // eslint-disable-line no-shadow
+  XYZ = 0, // eslint-disable-line @typescript-eslint/no-shadow
   /** Right handed system, Y then Z then X */
   YZX = 1,
   /** Right handed system, Z then X then Y */

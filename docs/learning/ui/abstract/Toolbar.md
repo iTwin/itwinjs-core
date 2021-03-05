@@ -18,7 +18,6 @@ const simpleAction2Spec = ToolbarItemUtilities.createActionButton("simple-action
   (): void => {
     console.log("Got Here!");
   });
-
 ```
 
 Example of creating a group button definition and will allow access to multiple action buttons. In this example we place the two buttons defined above into a single group button. The last object passed in below contain any override values for any available property of a [GroupButton]($ui-abstract).
@@ -33,4 +32,4 @@ See additional information under [ToolbarHelper]($ui-framework) to see functions
 
 ## API Reference
 
-* [Toolbar]($ui-abstract:Toolbar)
+- [Toolbar]($ui-abstract:Toolbar)

@@ -116,10 +116,9 @@ class ScreenSpaceEffect {
   }
 
   public shouldApply(target: Target): boolean {
-    if (target.isReadPixelsInProgress) {
-      // Effects only apply during readPixels() if they move pixels around (we need to move pixels in the pick buffers correspondingly).
-      return this._shiftsPixels;
-    }
+    // Effects only apply during readPixels() if they move pixels around (we need to move pixels in the pick buffers correspondingly).
+    if (target.isReadPixelsInProgress && !this._shiftsPixels)
+      return false;
 
     return undefined === this._shouldApply || this._shouldApply(target.screenSpaceEffectContext);
   }

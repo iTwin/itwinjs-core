@@ -58,6 +58,7 @@ export interface TileOptions {
   readonly enableInstancing: boolean;
   readonly enableImprovedElision: boolean;
   readonly ignoreAreaPatterns: boolean;
+  readonly enableExternalTextures: boolean;
   readonly useProjectExtents: boolean;
   readonly disableMagnification: boolean;
   readonly alwaysSubdivideIncompleteTiles: boolean;
@@ -69,6 +70,7 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   enableInstancing: true,
   enableImprovedElision: true,
   ignoreAreaPatterns: false,
+  enableExternalTextures: false,
   useProjectExtents: true,
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
@@ -221,6 +223,7 @@ export enum ContentFlags {
   AllowInstancing = 1 << 0,
   ImprovedElision = 1 << 1,
   IgnoreAreaPatterns = 1 << 2,
+  ExternalTextures = 1 << 3,
 }
 
 /** Describes the components of a tile's content Id.
@@ -360,6 +363,9 @@ class ContentIdV4Provider extends ContentIdProvider {
 
     if (options.ignoreAreaPatterns)
       flags = flags | ContentFlags.IgnoreAreaPatterns;
+
+    if (options.enableExternalTextures)
+      flags = flags | ContentFlags.ExternalTextures;
 
     super(majorVersion, flags);
     this._prefix = this._separator + flags.toString(16) + this._separator;

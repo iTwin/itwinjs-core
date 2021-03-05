@@ -31,9 +31,8 @@ import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  createClassifierTileTreeReference,
-  RealityModelTileTree, SpatialClassifierTileTreeReference, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
-  TileTree, TileTreeOwner, TileTreeParams, TileTreeReference, TileTreeSet, TileTreeSupplier,
+  createClassifierTileTreeReference, DisclosedTileTreeSet, RealityModelTileTree, SpatialClassifierTileTreeReference, Tile, TileContent,
+  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 import { TileUsageMarker } from "./TileUsageMarker";
 
@@ -127,7 +126,9 @@ class OrbitGtTileTreeParams implements TileTreeParams {
 class OrbitGtRootTile extends Tile {
   protected _loadChildren(_resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void { }
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> { return undefined; }
+  public get channel() { return IModelApp.tileAdmin.channels.getForHttp("itwinjs-orbitgit"); }
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> { return {}; }
+  public freeMemory(): void { }
 
   constructor(params: TileParams, tree: TileTree) { super(params, tree); }
 }
@@ -254,11 +255,6 @@ export class OrbitGtTileTree extends TileTree {
   public prune() {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
     this._doPrune(olderThan);
-  }
-
-  public forcePrune() {
-    const rightNow = BeTimePoint.now();
-    this._doPrune(rightNow);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -423,7 +419,7 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
     super.addToScene(context);
   }
 
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
 
     if (undefined !== this._classifier)

@@ -7,6 +7,7 @@ import * as React from "react";
 import { VariableSizeList } from "react-window";
 import sinon from "sinon";
 import * as moq from "typemoq";
+import { PrimitiveValue, SpecialKey } from "@bentley/ui-abstract";
 import { fireEvent, render } from "@testing-library/react";
 import { TreeNodeRendererProps } from "../../../../ui-components/tree/controlled/component/TreeNodeRenderer";
 import { TreeRenderer } from "../../../../ui-components/tree/controlled/component/TreeRenderer";
@@ -19,7 +20,6 @@ import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeN
 import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
 import TestUtils from "../../../TestUtils";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
-import { SpecialKey } from "@bentley/ui-abstract";
 
 describe("TreeRenderer", () => {
 
@@ -190,6 +190,44 @@ describe("TreeRenderer", () => {
     getByText(newLabel);
   });
 
+  it("rerenders when node height changes", () => {
+    const node1 = createRandomMutableTreeModelNode(undefined, undefined, "test_node_1");
+    const node2 = createRandomMutableTreeModelNode(undefined, undefined, "test_node_2");
+    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 2);
+    visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node1);
+    visibleNodesMock.setup((x) => x.getAtIndex(1)).returns(() => node2);
+
+    const NodeRenderer: React.FC<TreeNodeRendererProps> = (props) => {
+      return <>{(props.node.label.value as PrimitiveValue).value}</>;
+    };
+
+    const { rerender, getByText } = render(
+      <TreeRenderer
+        nodeLoader={nodeLoaderMock.object}
+        treeActions={treeActionsMock.object}
+        visibleNodes={visibleNodesMock.object}
+        nodeHeight={() => 50}
+        nodeRenderer={NodeRenderer}
+      />);
+
+    const nodeBefore = getByText("test_node_2");
+    expect(nodeBefore.style.height).to.be.equal("50px");
+    expect(nodeBefore.style.top).to.be.equal("50px");
+
+    rerender(
+      <TreeRenderer
+        nodeLoader={nodeLoaderMock.object}
+        treeActions={treeActionsMock.object}
+        visibleNodes={visibleNodesMock.object}
+        nodeHeight={() => 20}
+        nodeRenderer={NodeRenderer}
+      />);
+
+    const nodeAfter = getByText("test_node_2");
+    expect(nodeAfter.style.height).to.be.equal("20px");
+    expect(nodeAfter.style.top).to.be.equal("20px");
+  });
+
   it("scrolls to highlighted node", () => {
     const node2label = "Node 2";
     const node1 = createRandomMutableTreeModelNode();
@@ -321,15 +359,19 @@ describe("TreeRenderer", () => {
   });
 
   describe("scrollToNode", () => {
-    it("scrolls to the specified node", () => {
+    let scrollToItemFake: sinon.SinonSpy;
+
+    beforeEach(() => {
       visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 20);
       visibleNodesMock.setup((x) => x.getAtIndex(moq.It.isAnyNumber()))
         .returns((index) => createRandomMutableTreeModelNode(undefined, false, `Node ${index}`));
       visibleNodesMock.setup((x) => x.getIndexOfNode("test_id")).returns(() => 15);
 
-      const scrollToItemFake = sinon.fake();
+      scrollToItemFake = sinon.fake();
       sinon.replace(VariableSizeList.prototype, "scrollToItem", scrollToItemFake);
+    });
 
+    it("scrolls to the specified node", () => {
       const treeRendererRef: React.RefObject<TreeRenderer> = { current: null };
       render(React.createElement(() => {
         return (
@@ -344,6 +386,28 @@ describe("TreeRenderer", () => {
       }));
 
       treeRendererRef.current!.scrollToNode("test_id", "smart");
+      expect(scrollToItemFake).to.have.been.calledOnceWithExactly(15, "smart");
+    });
+
+    it("does not throw if called early", () => {
+      render(React.createElement(() => {
+        const treeRendererRef = React.useRef<TreeRenderer>(null);
+
+        React.useEffect(() => {
+          treeRendererRef.current?.scrollToNode("test_id", "smart");
+        }, []);
+
+        return (
+          <TreeRenderer
+            ref={treeRendererRef}
+            nodeLoader={nodeLoaderMock.object}
+            treeActions={treeActionsMock.object}
+            visibleNodes={visibleNodesMock.object}
+            nodeHeight={() => 50}
+          />
+        );
+      }));
+
       expect(scrollToItemFake).to.have.been.calledOnceWithExactly(15, "smart");
     });
   });

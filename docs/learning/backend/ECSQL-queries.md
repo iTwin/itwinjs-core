@@ -4,25 +4,25 @@ The following ECSQL select statements are examples of useful queries that an app
 
 ## Select Elements in a particular Model
 
-``` ts
+```ts
 [[include:ECSQL-backend-queries.select-elements-in-model]]
 ```
 
 ## Select Top-Level Elements in a particular Model
 
-``` ts
+```ts
 [[include:ECSQL-backend-queries.select-top-level-elements-in-model]]
 ```
 
 ## Select Child Elements
 
-``` ts
+```ts
 [[include:ECSQL-backend-queries.select-child-elements]]
 ```
 
 ## Look up element by code value
 
-``` ts
+```ts
 [[include:ECSQL-backend-queries.select-element-by-code-value]]
 ```
 

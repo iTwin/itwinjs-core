@@ -10,7 +10,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
 import { RenderTexture } from "@bentley/imodeljs-common";
 import {
-  BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
+  DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
 } from "@bentley/imodeljs-frontend";
 import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random";
 
@@ -182,10 +182,6 @@ class ParticleSystem {
 
   public async getDecorationToolTip(_hit: HitDetail): Promise<HTMLElement | string> {
     return "Explosion effect";
-  }
-
-  public async onDecorationButtonEvent(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> {
-    return EventHandled.Yes;
   }
 
   public static async addDecorator(iModel: IModelConnection): Promise<void> {

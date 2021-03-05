@@ -19,7 +19,7 @@ The tutorial makes reference to the **iModelConsole** application.  Use the app 
 
 ### Sample iModel
 
-The ECSQL examples in the tutorial work with the "House Sample" iModel. You can explore the imodels [here](https://imodeljs.org/sample-showcase/).
+The ECSQL examples in the tutorial work with the "House Sample" iModel. You can explore the imodels [here](https://itwinjs.org/sample-showcase/).
 
 ### BIS
 
@@ -39,7 +39,7 @@ This also enables you to experiment more with ECSQL by modifying the tutorial's 
 
 If you want to follow along with your own iModel:
 
-1. Launch the console at https://imodelconsole.bentley.com
+1. Launch the console at <https://imodelconsole.bentley.com>
 2. Authenticate with your iTwin credentials.
 3. Open your iModel by clicking on the iModels in the table
 
@@ -56,25 +56,26 @@ Or simply use the provided sample below:
 > **Try it yourself**
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT * FROM bis.Element
 > ```
 
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT * FROM bis.Element"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT * FROM bis.Element"></iframe>
 
 ## Tutorial Overview
 
-* [Lesson 1: Key to ECSQL](./KeyToECSQL.md)
-* [Lesson 2: The first examples](./FirstExamples.md)
-* [Lesson 3: ECSQL Data Types](./ECSQLDataTypes.md)
-* [Lesson 4: Relationships and Joins](./Joins.md)
-* [Lesson 5: Class Polymorphism](./PolymorphicQueries.md)
-* [Lesson 6: Spatial Queries](./SpatialQueries.md)
-* [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries.md)
-* [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries.md)
-* [Lesson 9: Type Filter](./TypeFilter.md)
-* [Lesson 10: Conditional Expressions](./ConditionalExpr.md)
-* [Lesson 11: Built-In functions](./BuiltInFunctions.md)
+- [Lesson 1: Key to ECSQL](./KeyToECSQL.md)
+- [Lesson 2: The first examples](./FirstExamples.md)
+- [Lesson 3: ECSQL Data Types](./ECSQLDataTypes.md)
+- [Lesson 4: Relationships and Joins](./Joins.md)
+- [Lesson 5: Class Polymorphism](./PolymorphicQueries.md)
+- [Lesson 6: Spatial Queries](./SpatialQueries.md)
+- [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries.md)
+- [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries.md)
+- [Lesson 9: Type Filter](./TypeFilter.md)
+- [Lesson 10: Conditional Expressions](./ConditionalExpr.md)
+- [Lesson 11: Built-In functions](./BuiltInFunctions.md)
 
 ---
 

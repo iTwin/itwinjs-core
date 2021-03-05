@@ -6,8 +6,8 @@ import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelJson as GeomJson, LineSegment3d, LineString3d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, GeometricElement3dProps, GeometryStreamProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d, EventHandled, GraphicType, HitDetail,
-  IModelApp, PrimitiveTool, SnapStatus, Viewport,
+  AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d, EventHandled, GraphicType, HitDetail, IModelApp,
+  PrimitiveTool, RemoteBriefcaseConnection, SnapStatus, Viewport,
 } from "@bentley/imodeljs-frontend";
 
 const loggingCategory = "TestPrimitiveTools";
@@ -55,7 +55,7 @@ export abstract class PrimitiveToolEx extends PrimitiveTool {
   }
 
   public async lockTargetModel(): Promise<void> {
-    if (this.targetModelId === undefined)
+    if (this.targetModelId === undefined || !(this.iModel instanceof RemoteBriefcaseConnection)) // eslint-disable-line deprecation/deprecation
       throw new IModelError(IModelStatus.BadModel, "", Logger.logError, loggingCategory, () => this.targetModelId);
 
     return this.iModel.editing.concurrencyControl.lockModel(this.targetModelId);
@@ -185,12 +185,6 @@ export class PlacementTestTool extends PrimitiveToolEx {
     else
       this.setupAndPromptForNextAction();
     return true;
-  }
-
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 
   public onRestartTool(): void {

@@ -6,6 +6,7 @@
  * @module Entities
  */
 
+import { Id64String } from "@bentley/bentleyjs-core";
 import { DefinitionElementProps } from "./ElementProps";
 import { ImageSourceFormat } from "./Image";
 
@@ -30,4 +31,12 @@ export interface TextureProps extends DefinitionElementProps {
   flags: TextureFlags;
   /** An optional description of the texture. */
   description?: string;
+}
+
+/** Properties that specify what texture should be loaded and how it should be loaded.
+ * @alpha
+ */
+export interface TextureLoadProps {
+  /** A valid Id64 string identifying the texture */
+  name: Id64String;
 }

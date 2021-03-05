@@ -1,6 +1,30 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:12 GMT
+
+### Updates
+
+- Smoother frustum transition
+- Improve error handling for rectangle construction and matrix normalization
+- IndexedPolyface paramIndex to flatbuffer correction.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Async version of asyncSweepLinestringToFacetsXYReturnChains
+- Fix bug in sweep contour triangulation with holes
+- Point2d and Vector2d clone methods accept an optional output parameter.
+- Add type-safe JSON representations of clipping types.
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT

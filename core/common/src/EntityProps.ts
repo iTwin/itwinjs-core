@@ -65,8 +65,8 @@ export enum PrimitiveTypeCode {
   Double = 0x401,
   Integer = 0x501,
   Long = 0x601,
-  Point2d = 0x701, // eslint-disable-line no-shadow
-  Point3d = 0x801, // eslint-disable-line no-shadow
+  Point2d = 0x701, // eslint-disable-line @typescript-eslint/no-shadow
+  Point3d = 0x801, // eslint-disable-line @typescript-eslint/no-shadow
   String = 0x901,
 }
 

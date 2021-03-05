@@ -7,9 +7,9 @@
 Change Summaries are generated per changeset. Every generated Change Summary is therefore uniquely associated
 to the Changeset it was generated from.
 
-iModel.js persists the generated Change Summaries in a local ECDb file called **Change Cache file** next to the briefcase it belongs to.
+iTwin.js persists the generated Change Summaries in a local ECDb file called **Change Cache file** next to the briefcase it belongs to.
 
-> Change Summaries can only be generated from the iModel.js backend. See the [ChangeSummaryManager]($backend) API for how to do it.
+> Change Summaries can only be generated from the iTwin.js backend. See the [ChangeSummaryManager]($backend) API for how to do it.
 
 ## Working with Change Summaries
 

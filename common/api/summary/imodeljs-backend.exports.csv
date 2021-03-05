@@ -3,7 +3,6 @@ Release Tag;API Item
 beta;AliCloudStorageService 
 public;AnnotationElement2d 
 beta;AppActivityMonitor
-alpha;ApplicationType
 public;AuthorizedBackendRequestContext 
 beta;AutoPush
 beta;AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void
@@ -120,7 +119,6 @@ public;ElevationCallout
 public;EmbeddedFileLink 
 public;Entity 
 public;EntityClassType
-internal;EventSink 
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
@@ -204,6 +202,9 @@ public;InformationRecordModel
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
 beta;InstanceChange
+beta;class IpcHandler
+beta;IpcHost
+beta;IpcHostOptions
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -211,11 +212,11 @@ public;LineStyleDefinition
 public;class LinkElement 
 public;LinkModel 
 public;LinkPartition 
+internal;LocalhostIpcHost
 internal;MetaDataRegistry
-alpha;MobileAuthorizationClient 
 public;Model 
 public;ModelSelector 
-internal;NativeAppBackend
+beta;NativeHost
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -288,6 +289,7 @@ public;TextAnnotation3d
 public;Texture 
 public;TitleText 
 public;TxnAction
+beta;TxnElementsChanged
 public;TxnIdString = string
 beta;TxnManager
 public;class TypeDefinitionElement 

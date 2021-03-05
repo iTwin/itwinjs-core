@@ -1,6 +1,6 @@
 # Content Views, Controls, Groups and Layouts
 
-A **Content View** is a representation of an iModel's data. It is the main graphics or data view in an iModel.js application.
+A **Content View** is a representation of an iModel's data. It is the main graphics or data view in an iTwin.js application.
 There may be multiple Content Views displayed at the same time.
 When more than one Content View is displayed, they are usually separated by splitters, allowing the user to resize the views.
 There are three constructs used to manage and lay out Content Views:
@@ -202,4 +202,4 @@ const fourQuadrants: ContentLayoutProps = {
 
 ## API Reference
 
-* [Content Views]($ui-framework:ContentView)
+- [Content Views]($ui-framework:ContentView)

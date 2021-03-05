@@ -10,19 +10,19 @@ import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { XAndY } from "@bentley/geometry-core";
 import {
-  AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue, PropertyDescription,
-  PropertyRecord, PropertyValueFormat, RelativePosition,
+  AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue,
+  PropertyDescription, PropertyRecord, PropertyValueFormat, RelativePosition,
 } from "@bentley/ui-abstract";
 import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
 import { offsetAndContainInContainer } from "@bentley/ui-ninezone";
+import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 import { UiFramework } from "../UiFramework";
+import { CardPopup } from "./CardPopup";
 import { HTMLElementPopup } from "./HTMLElementPopup";
 import { InputEditorCommitHandler, InputEditorPopup } from "./InputEditorPopup";
-import { ToolbarPopup } from "./ToolbarPopup";
-import { CardPopup } from "./CardPopup";
-import { ToolSettingsPopup } from "./ToolSettingsPopup";
 import { KeyinPalettePopup } from "./KeyinPalettePopup";
-import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
+import { ToolbarPopup } from "./ToolbarPopup";
+import { ToolSettingsPopup } from "./ToolSettingsPopup";
 
 // cSpell:ignore uiadmin
 

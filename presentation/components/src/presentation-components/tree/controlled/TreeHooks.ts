@@ -8,15 +8,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  HierarchyUpdateInfo, PartialHierarchyModification, RegisteredRuleset, Ruleset, UPDATE_FULL, VariableValue,
+  PartialHierarchyModification, RegisteredRuleset, Ruleset, UPDATE_FULL, VariableValue,
 } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { IModelHierarchyChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import {
-  isTreeModelNode, PagedTreeNodeLoader, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, useTreeModelSource,
+  PagedTreeNodeLoader, TreeModelSource, usePagedTreeNodeLoader, useTreeModelSource,
 } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import { getExpandedNodeItems, useExpandedNodesTracking } from "./UseExpandedNodesTracking";
 
 /**
  * Properties for [[usePresentationTreeNodeLoader]] hook.
@@ -86,8 +87,9 @@ interface ModelSourceUpdateProps {
 
 function useModelSourceUpdateOnIModelHierarchyUpdate(props: ModelSourceUpdateProps) {
   const { modelSource, dataProvider, reset } = props;
-  const onIModelHierarchyChanged = useCallback(async (args: { ruleset: Ruleset, updateInfo: HierarchyUpdateInfo }) => {
-    if (args.ruleset.id === dataProvider.rulesetId) {
+  useExpandedNodesTracking({ modelSource, dataProvider, enableAutoUpdate: props.enable ?? false });
+  const onIModelHierarchyChanged = useCallback(async (args: IModelHierarchyChangeEventArgs) => {
+    if (args.rulesetId === dataProvider.rulesetId && args.imodelKey === dataProvider.imodel.key) {
       if (args.updateInfo === UPDATE_FULL)
         reset();
       else
@@ -145,12 +147,7 @@ function updateModelSource(_modelSource: TreeModelSource, _hierarchyModification
 }
 
 function getExpandedNodeKeys(modelSource: TreeModelSource, dataProvider: IPresentationTreeDataProvider) {
-  const expandedItems = new Array<TreeNodeItem>();
-  for (const node of modelSource.getVisibleNodes()) {
-    if (isTreeModelNode(node) && node.isExpanded)
-      expandedItems.push(node.item);
-  }
-  return expandedItems.map((item) => dataProvider.getNodeKey(item));
+  return getExpandedNodeItems(modelSource).map((item) => dataProvider.getNodeKey(item));
 }
 
 function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentationTreeDataProvider {
