@@ -7,12 +7,13 @@
  */
 
 import * as fs from "fs";
-import * as http from "http";
+import got from "got";
 import * as https from "https";
 import * as os from "os";
 import * as path from "path";
-import { PassThrough, Transform, TransformCallback } from "stream";
+import { PassThrough, pipeline as pipeline_callback, Transform, TransformCallback } from "stream";
 import * as urllib from "url";
+import { promisify } from "util";
 import { BriefcaseStatus, Config, Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
@@ -21,6 +22,8 @@ import {
 } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "../util/AzCopy";
+
+const pipeline = promisify(pipeline_callback);
 
 import WriteStreamAtomic = require("fs-write-stream-atomic");
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
@@ -187,95 +190,58 @@ export class AzureFileHandler implements FileHandler {
   }
 
   private async downloadFileUsingHttps(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+    let retryCount = 0;
 
-    let bufferedStream: Transform;
-    if (this.useBufferedDownload(downloadToPathname)) {
-      bufferedStream = new BufferedStream(this._threshold);
-    } else {
-      bufferedStream = new PassThrough();
-    }
+    let closePromise: Promise<void>;
 
-    const fileStream = new WriteStreamAtomic(downloadToPathname, { encoding: "binary" });
-    let bytesWritten: number = 0;
-    let cancelled: boolean = false;
+    while (retryCount > -1) {
+      const fileStream = new WriteStreamAtomic(downloadToPathname, { encoding: "binary" });
+      closePromise = new Promise((resolve) => fileStream.once("close", resolve));
 
-    if (progressCallback) {
-      fileStream.on("drain", () => {
-        if (!cancelled)
-          progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
-      });
-      fileStream.on("finish", () => {
-        if (!cancelled)
-          progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
-      });
-    }
+      const bufferedStream = (this.useBufferedDownload(downloadToPathname)) ? new BufferedStream(this._threshold) : new PassThrough();
 
-    const promise = new Promise<void>((resolve, reject) => {
-      const downloadCallback = ((res: http.IncomingMessage) => {
-        if (res.statusCode && (res.statusCode <= 0 || res.statusCode >= 400)) {
-          reject(new DownloadFailed(res.statusCode, res.statusMessage ? res.statusMessage : "Download failed"));
-          return;
-        }
-        res.pipe(bufferedStream)
-          .on("data", (chunk: any) => {
-            bytesWritten += chunk.length;
-          })
-          .pipe(fileStream)
-          .on("error", (error: any) => {
-            if (cancelRequest !== undefined)
-              cancelRequest.cancel = () => false;
-            if (error instanceof UserCancelledError) {
-              reject(error);
-              return;
-            }
-            const parsedError = ResponseError.parse(error);
-            reject(parsedError);
-          })
-          .on("finish", () => {
-            if (cancelRequest !== undefined)
-              cancelRequest.cancel = () => false;
-            resolve();
-          });
+      const downloadStream = got.stream(downloadUrl);
+      downloadStream.retryCount = retryCount;
+      downloadStream.once("retry", (count) => retryCount = count);  // NB: This listener is required to use got's default retry behavior!
+      retryCount = -1;
 
-        if (cancelRequest !== undefined) {
-          cancelRequest.cancel = () => {
-            cancelled = true;
-            res.destroy(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
-            return true;
-          };
-        }
-      });
-
-      const isHttps = /^https:/i.test(downloadUrl);
-      let clientRequest;
-      if (isHttps) {
-        const url = new URL(downloadUrl);
-        const searchStr = url.searchParams.toString();
-        const options: https.RequestOptions = {
-          hostname: url.hostname,
-          path: searchStr ? `${url.pathname}?${searchStr}` : url.pathname,
-          port: url.port,
-          agent: this.agent,
-        };
-        clientRequest = https.get(options, downloadCallback);
-      } else {
-        clientRequest = http.get(downloadUrl, downloadCallback);
+      if (progressCallback) {
+        downloadStream.on("downloadProgress", ({ transferred }) => {
+          progressCallback({ loaded: transferred, total: fileSize, percent: fileSize ? 100 * transferred / fileSize : 0 });
+        });
       }
 
-      clientRequest.on("error", (error: any) => {
+      if (cancelRequest !== undefined) {
+        cancelRequest.cancel = () => {
+          downloadStream.destroy(new got.CancelError());
+          return true;
+        };
+      }
+
+      try {
+        await pipeline(
+          downloadStream,
+          bufferedStream,
+          fileStream,
+        );
+      } catch (error) {
+        if (error instanceof got.CancelError)
+          throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
+
+        if (error instanceof got.HTTPError)
+          throw new DownloadFailed(error.response.statusCode, error.response.statusMessage ?? "Download failed");
+
+        // Ignore ERR_STREAM_PREMATURE_CLOSE - that comes from `got` aborting the request on retries.
+        if (error.code !== "ERR_STREAM_PREMATURE_CLOSE")
+          throw ResponseError.parse(error);
+      } finally {
         if (cancelRequest !== undefined)
           cancelRequest.cancel = () => false;
-        if (error instanceof UserCancelledError) {
-          reject(error);
-          return;
-        }
-        const parsedError = ResponseError.parse(error);
-        reject(parsedError);
-      });
 
-    });
-
-    return promise;
+        // Ensure that `fileStream` has fully written/cleaned up before continuing
+        await closePromise!;
+      }
+    }
   }
 
   /**
