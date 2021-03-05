@@ -44,7 +44,7 @@
     "@bentley/imodeljs-quantity": "2.14.0-dev.9",
     "@bentley/itwin-client": "2.14.0-dev.9",
     "@bentley/presentation-common": "2.14.0-dev.9",
-    "@bentley/react-scripts": "3.4.7",
+    "@bentley/react-scripts": "3.4.9",
     "@bentley/ui-abstract": "2.14.0-dev.9",
     "@bentley/ui-components": "2.14.0-dev.9",
     "@bentley/ui-core": "2.14.0-dev.9",
