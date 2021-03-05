@@ -1,6 +1,13 @@
 sep=;
 Release Tag;API Item
 alpha;DeleteElementsTool 
+alpha;EditorOptions
 alpha;EditTools
 alpha;MoveElementsTool 
+alpha;RedoTool 
+alpha;RotateAbout
+alpha;RotateElementsTool 
+alpha;RotateMethod
 alpha;class TransformElementsTool 
+alpha;UndoAllTool 
+alpha;UndoTool 
