@@ -1557,6 +1557,17 @@ export class BingElevationProvider {
     }
 
 // @internal (undocumented)
+export class BingLocationProvider {
+    constructor();
+    // (undocumented)
+    doLocalSearchByRadius(_center: Cartographic, _radius: number): Promise<{} | undefined>;
+    // (undocumented)
+    getLocation(query: string): Promise<GlobalLocation | undefined>;
+    // (undocumented)
+    protected _requestContext: ClientRequestContext;
+}
+
+// @internal (undocumented)
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     constructor(settings: MapLayerSettings);
     // (undocumented)
