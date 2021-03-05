@@ -256,10 +256,10 @@ export class IModelHost {
   /** Get the active authorization/access token for use with various services
    * @throws [[BentleyError]] if the access token cannot be obtained
    */
-  public static async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
+  public static async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
     if (!this.authorizationClient)
-      throw new BentleyError(AuthStatus.Error, "No AuthorizationClient has been supplied to IModelHost", Logger.logError, loggerCategory);
-    return this.authorizationClient.getAccessToken();
+      throw new BentleyError(AuthStatus.Error, "No AuthorizationClient", Logger.logError, loggerCategory);
+    return this.authorizationClient.getAccessToken(requestContext);
   }
 
   private static get _isNativePlatformLoaded(): boolean {

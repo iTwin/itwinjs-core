@@ -15,8 +15,8 @@ import {
 import { AccessToken, AccessTokenProps, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
-import { IModelHost, IModelHostConfiguration } from "./IModelHost";
-import { IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
+import { IModelHost } from "./IModelHost";
+import { IpcHandler, IpcHost, IpcHostOpts } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
 /**
@@ -135,6 +135,8 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 }
 
+export type NativeHostOpts = IpcHostOpts;
+
 /**
  * Used by desktop/mobile native applications
  * @beta
@@ -167,15 +169,14 @@ export class NativeHost {
    * @param configuration
    * @note this method calls [[IModelHost.startup]] internally.
    */
-  public static async startup(opt?: { ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
+  public static async startup(opt?: NativeHostOpts): Promise<void> {
     if (!this.isValid) {
       this._isValid = true;
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
     }
     await IpcHost.startup(opt);
-    if (IpcHost.isValid) { // for tests, we use NativeHost but don't have a frontend
+    if (IpcHost.isValid)  // for tests, we use NativeHost but don't have a frontend
       NativeAppHandler.register();
-    }
   }
 
   /**

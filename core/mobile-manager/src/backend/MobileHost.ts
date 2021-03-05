@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { IModelHost, IModelHostConfiguration, IpcHandler, IpcHost, IpcHostOptions, NativeHost } from "@bentley/imodeljs-backend";
+import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
 import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
@@ -18,9 +18,7 @@ export type MobileProgressCallback = (bytesWritten: number, totalBytesWritten: n
 /** @beta */
 export type MobileCancelCallback = () => boolean;
 
-/**
- * @beta
- */
+/** @beta */
 export interface DownloadTask {
   url: string;
   downloadPath: string;
@@ -35,9 +33,7 @@ export interface DownloadTask {
   toForeground: () => boolean;
 }
 
-/**
- * @beta
- */
+/** @beta */
 export abstract class MobileDevice {
   public emit(eventName: DeviceEvents, ...args: any[]) {
     switch (eventName) {
@@ -75,6 +71,13 @@ class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
   public async reconnect(connection: number) {
     MobileHost.reconnect(connection);
   }
+}
+
+/** @beta */
+export interface MobileHostOpts extends NativeHostOpts {
+  mobileHost?: {
+    device?: MobileDevice;
+  };
 }
 
 /**
@@ -132,10 +135,8 @@ export class MobileHost {
 
   public static get isValid() { return undefined !== this._device; }
 
-  /**
-   * Start the backend of a mobile app.
-   */
-  public static async startup(opt?: { mobileHost?: { device?: MobileDevice }, ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
+  /** Start the backend of a mobile app. */
+  public static async startup(opt?: MobileHostOpts): Promise<void> {
     if (!this.isValid) {
       setupMobileRpc();
       this._device = opt?.mobileHost?.device ?? new (MobileDevice as any)();

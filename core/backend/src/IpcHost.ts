@@ -60,13 +60,16 @@ export abstract class AuthorizationBackend extends ImsAuthorizationClient {
   * Options for [[IpcHost.startup]]
   * @beta
   */
-export interface IpcHostOptions {
-  /** The Ipc socket to use for communications with frontend. Allows undefined only for headless tests. */
-  socket?: IpcSocketBackend;
+export interface IpcHostOpts {
+  iModelHost?: IModelHostConfiguration;
+  ipcHost?: {
+    /** The Ipc socket to use for communications with frontend. Allows undefined only for headless tests. */
+    socket?: IpcSocketBackend;
 
-  /** don't send stack information on exceptions */
-  exceptions?: {
-    noStack?: boolean;
+    /** don't send stack information on exceptions */
+    exceptions?: {
+      noStack?: boolean;
+    };
   };
 }
 
@@ -145,7 +148,7 @@ export class IpcHost {
     this.notify(IpcAppChannel.PushPull, briefcase, methodName, ...args);
   }
 
-  public static async startup(opt?: { ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
+  public static async startup(opt?: IpcHostOpts): Promise<void> {
     this._ipc = opt?.ipcHost?.socket;
     if (opt?.ipcHost?.exceptions?.noStack)
       this.noStack = true;
