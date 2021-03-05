@@ -7,17 +7,50 @@
  */
 
 import * as path from "path";
-import { BeEvent, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
-  AuthorizationConfiguration, BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
+  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AccessToken, AccessTokenProps, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
 import { IpcHandler, IpcHost, IpcHostOpts } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
+
+/** @internal */
+export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
+  protected _accessToken?: AccessToken;
+  protected _expireSafety = 60 * 10; // seconds to expire before real expiration time
+  protected _config?: NativeAppAuthorizationConfiguration;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  public get config(): NativeAppAuthorizationConfiguration { return this._config!; }
+  public abstract signIn(): Promise<void>;
+  public abstract signOut(): Promise<void>;
+  protected abstract refreshToken(): Promise<AccessToken>;
+  public get isAuthorized(): boolean {
+    return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety * 1000);
+  }
+  public setAccessToken(token?: AccessToken) {
+    this._accessToken = token;
+    NativeHost.onUserStateChanged.raiseEvent(this._accessToken);
+  }
+  public async getAccessToken(): Promise<AccessToken> {
+    if (!this.isAuthorized)
+      this.setAccessToken(await this.refreshToken());
+    return this._accessToken!;
+  }
+  public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
+  public async initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
+    this._config = config;
+    if (config.expiryBuffer)
+      this._expireSafety = config.expiryBuffer;
+    IModelHost.session.applicationId = props.applicationId;
+    IModelHost.applicationVersion = props.applicationVersion;
+    IModelHost.sessionId = props.sessionId;
+  }
+}
 
 /**
  * Implementation of NativeAppFunctions
@@ -25,23 +58,20 @@ import { NativeAppStorage } from "./NativeAppStorage";
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
 
-  private async getAuthContext() {
-    return IpcHost.authorization.getAuthorizedContext();
-  }
   public async silentLogin(token: AccessTokenProps) {
-    IpcHost.authorization.setAccessToken(AccessToken.fromJson(token));
+    NativeHost.authorization.setAccessToken(AccessToken.fromJson(token));
   }
-  public async initializeAuth(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {
-    return IpcHost.authorization.initialize(props, config);
+  public async initializeAuth(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
+    return NativeHost.authorization.initialize(props, config);
   }
   public async signIn(): Promise<void> {
-    return IpcHost.authorization.signIn();
+    return NativeHost.authorization.signIn();
   }
   public async signOut(): Promise<void> {
-    return IpcHost.authorization.signOut();
+    return NativeHost.authorization.signOut();
   }
   public async getAccessTokenProps(): Promise<AccessTokenProps> {
-    return (await IpcHost.authorization.getAccessToken()).toJSON();
+    return (await NativeHost.authorization.getAccessToken()).toJSON();
   }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();
@@ -53,7 +83,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     return Config.App.getContainer();
   }
   public async acquireNewBriefcaseId(iModelId: GuidString): Promise<number> {
-    return BriefcaseManager.acquireNewBriefcaseId(await this.getAuthContext(), iModelId);
+    return BriefcaseManager.acquireNewBriefcaseId(await IModelHost.getAuthorizedContext(), iModelId);
   }
   public async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
     return BriefcaseManager.getFileName(props);
@@ -77,7 +107,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
       };
     }
 
-    const downloadPromise = BriefcaseManager.downloadBriefcase(await this.getAuthContext(), args);
+    const downloadPromise = BriefcaseManager.downloadBriefcase(await IModelHost.getAuthorizedContext(), args);
     const checkAbort = () => {
       const job = Downloads.isInProgress(args.fileName!);
       return (job && (job.request as any).abort === 1) ? 1 : 0;
@@ -93,7 +123,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 
   public async deleteBriefcaseFiles(fileName: string): Promise<void> {
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, await this.getAuthContext());
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, await IModelHost.getAuthorizedContext());
   }
 
   public async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
@@ -135,6 +165,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 }
 
+/** @beta */
 export type NativeHostOpts = IpcHostOpts;
 
 /**
@@ -144,6 +175,12 @@ export type NativeHostOpts = IpcHostOpts;
 export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
   private constructor() { }
+
+  /** @internal */
+  public static get authorization() { return IModelHost.authorizationClient as NativeAppAuthorizationBackend; }
+
+  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or because the token was refreshed */
+  public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
   public static onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
 
@@ -175,6 +212,7 @@ export class NativeHost {
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
     }
     await IpcHost.startup(opt);
+    this.onUserStateChanged.addListener((token?: AccessToken) => NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
     if (IpcHost.isValid)  // for tests, we use NativeHost but don't have a frontend
       NativeAppHandler.register();
   }

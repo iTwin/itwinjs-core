@@ -5,7 +5,7 @@
 
 import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
-import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileAuthorizationBackend } from "../MobileBackend";
@@ -62,7 +62,7 @@ export abstract class MobileDevice {
   public abstract authSignIn(ctx: ClientRequestContext, callback: (err?: string) => void): void;
   public abstract authSignOut(ctx: ClientRequestContext, callback: (err?: string) => void): void;
   public abstract authGetAccessToken(ctx: ClientRequestContext, callback: (accessToken?: string, err?: string) => void): void;
-  public abstract authInit(ctx: ClientRequestContext, settings: AuthorizationConfiguration, callback: (err?: string) => void): void;
+  public abstract authInit(ctx: ClientRequestContext, config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
   public abstract authStateChanged(accessToken?: string, err?: string): void;
 }
 

@@ -10,7 +10,6 @@ import { AnalysisStyle } from '@bentley/imodeljs-common';
 import { Angle } from '@bentley/geometry-core';
 import { AngleSweep } from '@bentley/geometry-core';
 import { Arc3d } from '@bentley/geometry-core';
-import { AuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
@@ -177,6 +176,7 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
+import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { NativeAppFunctions } from '@bentley/imodeljs-common';
 import { ObservableSet } from '@bentley/bentleyjs-core';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
@@ -6314,7 +6314,7 @@ export class NativeApp {
 
 // @alpha
 export class NativeAppAuthorization {
-    constructor(config: AuthorizationConfiguration);
+    constructor(config: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _expireSafety: number;
     getAccessToken(): Promise<AccessToken>;
@@ -6349,7 +6349,7 @@ export class NativeAppLogger {
 export interface NativeAppOpts extends IpcAppOptions {
     // (undocumented)
     nativeApp?: {
-        authConfig?: AuthorizationConfiguration;
+        authConfig?: NativeAppAuthorizationConfiguration;
     };
 }
 

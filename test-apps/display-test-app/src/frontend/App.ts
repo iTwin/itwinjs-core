@@ -147,7 +147,7 @@ export class DisplayTestApp {
     const redirectUri = ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
     const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
-    return ProcessDetector.isElectronAppFrontend || ProcessDetector.isMobileAppFrontend
+    return ProcessDetector.isNativeAppFrontend
       ? {
         clientId: "imodeljs-electron-test",
         redirectUri,

@@ -76,4 +76,7 @@ export class ProcessDetector {
 
   /**  Is this process a mobile app backend? */
   public static get isMobileAppBackend() { return this.isIOSAppBackend || this.isAndroidAppBackend; }
+
+  /** Is this process the frontend of an native (Electron or Mobile) app? */
+  public static get isNativeAppFrontend() { return this.isElectronAppFrontend || this.isMobileAppFrontend; }
 }

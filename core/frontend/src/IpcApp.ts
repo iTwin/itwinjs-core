@@ -174,7 +174,4 @@ export abstract class NotificationHandler {
 /** IpcApp notifications from backend */
 class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotifications {
   public get channelName() { return IpcAppChannel.AppNotify; }
-  public notifyUserStateChanged(props?: AccessTokenProps) {
-    IModelApp.authorizationClient?.onUserStateChanged.raiseEvent(props ? AccessToken.fromJson(props) : undefined);
-  }
 }

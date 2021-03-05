@@ -7,7 +7,6 @@
 import { AccessToken } from '@bentley/itwin-client';
 import { Angle } from '@bentley/geometry-core';
 import { AuthorizationClient } from '@bentley/itwin-client';
-import { AuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
@@ -123,6 +122,7 @@ import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
 import { ModelLoadProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
+import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { NativeAppNotifications } from '@bentley/imodeljs-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
@@ -230,36 +230,6 @@ export class AnnotationElement2d extends GraphicalElement2d {
 // @beta
 export interface AppActivityMonitor {
     isIdle: boolean;
-}
-
-// @internal (undocumented)
-export abstract class AuthorizationBackend extends ImsAuthorizationClient {
-    // (undocumented)
-    protected _accessToken?: AccessToken;
-    // (undocumented)
-    get config(): AuthorizationConfiguration;
-    // (undocumented)
-    protected _config?: AuthorizationConfiguration;
-    // (undocumented)
-    protected _expireSafety: number;
-    // (undocumented)
-    getAccessToken(): Promise<AccessToken>;
-    // (undocumented)
-    getAuthorizedContext(): Promise<AuthorizedClientRequestContext>;
-    // (undocumented)
-    getClientRequestContext(): ClientRequestContext;
-    // (undocumented)
-    initialize(props: SessionProps, config: AuthorizationConfiguration): Promise<void>;
-    // (undocumented)
-    get isAuthorized(): boolean;
-    // (undocumented)
-    abstract refreshToken(): Promise<AccessToken>;
-    // (undocumented)
-    setAccessToken(token?: AccessToken): void;
-    // (undocumented)
-    abstract signIn(): Promise<void>;
-    // (undocumented)
-    abstract signOut(): Promise<void>;
 }
 
 // @public
@@ -2714,7 +2684,9 @@ export class IModelHost {
     static configuration?: IModelHostConfiguration;
     // @internal
     static elementEditors: Map<string, IElementEditor>;
-    static getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken>;
+    static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    // @internal (undocumented)
+    static getAuthorizedContext(): Promise<AuthorizedClientRequestContext>;
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // (undocumented)
@@ -3035,8 +3007,6 @@ export abstract class IpcHandler {
 // @beta
 export class IpcHost {
     static addListener(channel: string, listener: IpcListener): RemoveFunction;
-    // @internal (undocumented)
-    static get authorization(): AuthorizationBackend;
     static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static get isValid(): boolean;
     // (undocumented)
@@ -3047,24 +3017,25 @@ export class IpcHost {
     static notifyIpcFrontend<T extends keyof IpcAppNotifications>(methodName: T, ...args: Parameters<IpcAppNotifications[T]>): void;
     // @internal (undocumented)
     static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>): void;
-    static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
     // (undocumented)
     static shutdown(): Promise<void>;
     // (undocumented)
-    static startup(opt?: {
-        ipcHost?: IpcHostOptions;
-        iModelHost?: IModelHostConfiguration;
-    }): Promise<void>;
+    static startup(opt?: IpcHostOpts): Promise<void>;
 }
 
 // @beta
-export interface IpcHostOptions {
-    exceptions?: {
-        noStack?: boolean;
+export interface IpcHostOpts {
+    // (undocumented)
+    iModelHost?: IModelHostConfiguration;
+    // (undocumented)
+    ipcHost?: {
+        socket?: IpcSocketBackend;
+        exceptions?: {
+            noStack?: boolean;
+        };
     };
-    socket?: IpcSocketBackend;
 }
 
 // @public
@@ -3349,9 +3320,39 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     toJSON(): ModelSelectorProps;
 }
 
+// @internal (undocumented)
+export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
+    // (undocumented)
+    protected _accessToken?: AccessToken;
+    // (undocumented)
+    get config(): NativeAppAuthorizationConfiguration;
+    // (undocumented)
+    protected _config?: NativeAppAuthorizationConfiguration;
+    // (undocumented)
+    protected _expireSafety: number;
+    // (undocumented)
+    getAccessToken(): Promise<AccessToken>;
+    // (undocumented)
+    getClientRequestContext(): ClientRequestContext;
+    // (undocumented)
+    initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void>;
+    // (undocumented)
+    get isAuthorized(): boolean;
+    // (undocumented)
+    protected abstract refreshToken(): Promise<AccessToken>;
+    // (undocumented)
+    setAccessToken(token?: AccessToken): void;
+    // (undocumented)
+    abstract signIn(): Promise<void>;
+    // (undocumented)
+    abstract signOut(): Promise<void>;
+}
+
 // @beta
 export class NativeHost {
     static get appSettingsCacheDir(): string;
+    // @internal (undocumented)
+    static get authorization(): NativeAppAuthorizationBackend;
     static checkInternetConnectivity(): InternetConnectivityStatus;
     // (undocumented)
     static get isValid(): boolean;
@@ -3359,13 +3360,14 @@ export class NativeHost {
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
+    static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
     static shutdown(): Promise<void>;
-    static startup(opt?: {
-        ipcHost?: IpcHostOptions;
-        iModelHost?: IModelHostConfiguration;
-    }): Promise<void>;
+    static startup(opt?: NativeHostOpts): Promise<void>;
 }
+
+// @beta (undocumented)
+export type NativeHostOpts = IpcHostOpts;
 
 export { NativeLoggerCategory }
 

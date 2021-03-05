@@ -2,23 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as os from "os";
+import * as path from "path";
+import * as semver from "semver";
 /** @packageDocumentation
  * @module IModelHost
  */
 import {
-  AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager, IntrospectionClient,
+  AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager,
+  IntrospectionClient,
 } from "@bentley/backend-itwin-client";
 import {
-  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector, SessionProps,
+  assert, BeEvent, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector, SessionProps,
 } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
-import * as os from "os";
-import * as path from "path";
-import * as semver from "semver";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BackendRequestContext } from "./BackendRequestContext";
@@ -254,12 +255,14 @@ export class IModelHost {
   public static snapshotFileNameResolver?: FileNameResolver;
 
   /** Get the active authorization/access token for use with various services
-   * @throws [[BentleyError]] if the access token cannot be obtained
+   * @throws if authorizationClient has not been set up
    */
   public static async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
-    if (!this.authorizationClient)
-      throw new BentleyError(AuthStatus.Error, "No AuthorizationClient", Logger.logError, loggerCategory);
-    return this.authorizationClient.getAccessToken(requestContext);
+    return this.authorizationClient!.getAccessToken(requestContext);
+  }
+  /** @internal */
+  public static async getAuthorizedContext() {
+    return new AuthorizedClientRequestContext(await this.getAccessToken(), undefined, this.applicationId, this.applicationVersion, this.sessionId);
   }
 
   private static get _isNativePlatformLoaded(): boolean {

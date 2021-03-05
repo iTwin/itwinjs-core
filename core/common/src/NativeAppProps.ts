@@ -9,7 +9,6 @@
 import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
 import { AccessTokenProps } from "@bentley/itwin-client";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
-import { AuthorizationConfiguration } from "./IpcAppProps";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";
@@ -44,6 +43,35 @@ export enum OverriddenBy {
  */
 export interface NativeAppNotifications {
   notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
+  notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
+}
+
+/**
+ * Client configuration to generate OIDC/OAuth tokens for native applications
+ * @alpha
+ */
+export interface NativeAppAuthorizationConfiguration {
+  issuerUrl?: string;
+
+  /**
+   * Upon signing in, the client application receives a response from the Bentley IMS OIDC/OAuth2 provider at this URI
+   * For mobile/desktop applications, must be `http://localhost:${redirectPort}` or `https://localhost:${redirectPort}`
+   */
+  readonly redirectUri: string;
+
+  /** Client application's identifier as registered with the OIDC/OAuth2 provider. */
+  readonly clientId: string;
+
+  /** List of space separated scopes to request access to various resources. */
+  readonly scope: string;
+
+  /**
+   * Time in seconds that's used as a buffer to check the token for validity/expiry.
+   * The checks for authorization, and refreshing access tokens all use this buffer - i.e., the token is considered expired if the current time is within the specified
+   * time of the actual expiry.
+   * @note If unspecified this defaults to 10 minutes.
+   */
+  readonly expiryBuffer?: number;
 }
 
 /**
@@ -53,7 +81,7 @@ export interface NativeAppNotifications {
 export interface NativeAppFunctions {
   silentLogin: (token: AccessTokenProps) => Promise<void>;
 
-  initializeAuth: (props: ClientRequestContextProps, config: AuthorizationConfiguration) => Promise<void>;
+  initializeAuth: (props: ClientRequestContextProps, config: NativeAppAuthorizationConfiguration) => Promise<void>;
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
   signIn: () => Promise<void>;

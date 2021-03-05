@@ -5,7 +5,7 @@
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
 import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, NativeApp, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -58,32 +58,19 @@ async function openIModel(filename: string, writable: boolean): Promise<IModelCo
 }
 
 // Wraps the signIn process
-// In the case of use in web applications:
-// - called the first time to start the signIn process - resolves to false
-// - called the second time to catch the incoming auth redirect and save the token - resolves to false
-// - called the third time to restart the app and complete the signin - resolves to true
-// In the case of use in electron applications:
-// - promise wraps around a registered call back and resolves to true when the sign in is complete
-// @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
+// @return Promise that resolves to true after signIn is complete
 async function signIn(): Promise<boolean> {
-  if (!ProcessDetector.isMobileAppFrontend && !ProcessDetector.isElectronAppFrontend)
+  if (!NativeApp.isValid) // for browser, frontend handles redirect. For native apps, backend handles it
     await BrowserAuthorizationCallbackHandler.handleSigninCallback(DisplayTestApp.getAuthConfig().redirectUri);
 
   const auth = IModelApp.authorizationClient!;
   if (auth.isAuthorized)
     return true;
 
-  const retPromise = new Promise<boolean>((resolve, reject) => {
-    auth.onUserStateChanged.addListener((token: AccessToken | undefined) => {
-      resolve(token !== undefined);
-    });
-
-    auth.signIn().catch((err) => {
-      reject(err);
-    });
+  return new Promise<boolean>((resolve, reject) => {
+    auth.onUserStateChanged.addOnce((token?: AccessToken) => resolve(token !== undefined));
+    auth.signIn().catch((err) => reject(err));
   });
-
-  return retPromise;
 }
 
 class FakeTileCache extends CloudStorageTileCache {
@@ -168,7 +155,7 @@ const dtaFrontendMain = async () => {
   // while the browser is loading stuff, start work on logging in and downloading the imodel, etc.
   try {
     if (!configuration.standalone || configuration.signInForStandalone) {
-      const signedIn: boolean = await signIn();
+      const signedIn = await signIn();
       if (!signedIn)
         return;
     }

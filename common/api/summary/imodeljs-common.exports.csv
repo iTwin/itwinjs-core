@@ -8,7 +8,6 @@ alpha;AnalysisStyleProps
 internal;AntiAliasPref
 public;AreaFillProps
 public;AreaPattern
-alpha;AuthorizationConfiguration
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
 public;AuxCoordSystemProps 
@@ -329,6 +328,7 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
+alpha;NativeAppAuthorizationConfiguration
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications

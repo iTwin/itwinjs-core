@@ -9,8 +9,8 @@
  */
 
 import { AuthStatus, BentleyError, ClientRequestContext, Logger, SessionProps } from "@bentley/bentleyjs-core";
-import { AuthorizationBackend, IModelHost } from "@bentley/imodeljs-backend";
-import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { IModelHost, NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
+import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
@@ -30,7 +30,7 @@ const loggerCategory = "electron-auth";
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
  * @internal
  */
-export class DesktopAuthorizationBackend extends AuthorizationBackend {
+export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend {
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
 
@@ -41,7 +41,7 @@ export class DesktopAuthorizationBackend extends AuthorizationBackend {
    * Used to initialize the client - must be awaited before any other methods are called.
    * The call attempts a silent sign-if possible.
    */
-  public async initialize(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {
+  public async initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
     await super.initialize(props, config);
     this._tokenStore = new ElectronTokenStore(config.clientId);
 

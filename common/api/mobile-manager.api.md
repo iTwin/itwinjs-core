@@ -5,14 +5,13 @@
 ```ts
 
 import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
-import { AuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CancelRequest } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { IModelAppOptions } from '@bentley/imodeljs-frontend';
-import { IModelHostConfiguration } from '@bentley/imodeljs-backend';
-import { IpcHostOptions } from '@bentley/imodeljs-backend';
+import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { NativeAppOpts } from '@bentley/imodeljs-frontend';
+import { NativeHostOpts } from '@bentley/imodeljs-backend';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { PromiseReturnType } from '@bentley/imodeljs-frontend';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
@@ -82,13 +81,7 @@ export class IOSApp {
 
 // @beta (undocumented)
 export class IOSHost extends MobileHost {
-    static startup(opt?: {
-        mobileHost?: {
-            device: MobileDevice;
-        };
-        ipcHost?: IpcHostOptions;
-        iModelHost?: IModelHostConfiguration;
-    }): Promise<void>;
+    static startup(opt?: MobileHostOpts): Promise<void>;
 }
 
 // @beta (undocumented)
@@ -122,7 +115,7 @@ export abstract class MobileDevice {
     // (undocumented)
     abstract authGetAccessToken(ctx: ClientRequestContext, callback: (accessToken?: string, err?: string) => void): void;
     // (undocumented)
-    abstract authInit(ctx: ClientRequestContext, settings: AuthorizationConfiguration, callback: (err?: string) => void): void;
+    abstract authInit(ctx: ClientRequestContext, config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
     // (undocumented)
     abstract authSignIn(ctx: ClientRequestContext, callback: (err?: string) => void): void;
     // (undocumented)
@@ -171,13 +164,15 @@ export class MobileHost {
     static readonly onWillTerminate: BeEvent<import("@bentley/bentleyjs-core").Listener>;
     // @internal (undocumented)
     static reconnect(connection: number): void;
-    static startup(opt?: {
-        mobileHost?: {
-            device?: MobileDevice;
-        };
-        ipcHost?: IpcHostOptions;
-        iModelHost?: IModelHostConfiguration;
-    }): Promise<void>;
+    static startup(opt?: MobileHostOpts): Promise<void>;
+}
+
+// @beta (undocumented)
+export interface MobileHostOpts extends NativeHostOpts {
+    // (undocumented)
+    mobileHost?: {
+        device?: MobileDevice;
+    };
 }
 
 // @beta (undocumented)

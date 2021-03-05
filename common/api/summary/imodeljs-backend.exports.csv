@@ -3,7 +3,6 @@ Release Tag;API Item
 beta;AliCloudStorageService 
 public;AnnotationElement2d 
 beta;AppActivityMonitor
-internal;class AuthorizationBackend 
 public;AuthorizedBackendRequestContext 
 beta;AutoPush
 beta;AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void
@@ -204,7 +203,7 @@ public;class InformationReferenceElement
 beta;InstanceChange
 beta;class IpcHandler
 beta;IpcHost
-beta;IpcHostOptions
+beta;IpcHostOpts
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -216,7 +215,9 @@ internal;LocalhostIpcHost
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+internal;class NativeAppAuthorizationBackend 
 beta;NativeHost
+beta;NativeHostOpts = IpcHostOpts
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 

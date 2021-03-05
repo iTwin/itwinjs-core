@@ -4,4 +4,4 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./backend/ElectronHost";
-export * from "./backend/DesktopAuthorizationBackend";
+export * from "./backend/ElectronAuthorizationBackend";

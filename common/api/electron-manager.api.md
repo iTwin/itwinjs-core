@@ -7,9 +7,9 @@
 import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
-import { IModelHostConfiguration } from '@bentley/imodeljs-backend';
 import { IpcHandler } from '@bentley/imodeljs-backend';
 import { NativeAppOpts } from '@bentley/imodeljs-frontend';
+import { NativeHostOpts } from '@bentley/imodeljs-backend';
 import { PromiseReturnType } from '@bentley/imodeljs-frontend';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
 import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
@@ -47,10 +47,7 @@ export class ElectronHost {
     static openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
     // (undocumented)
     static rpcConfig: RpcConfiguration;
-    static startup(opts?: {
-        electronHost?: ElectronHostOptions;
-        iModelHost?: IModelHostConfiguration;
-    }): Promise<void>;
+    static startup(opts?: ElectronHostOpts): Promise<void>;
     // (undocumented)
     static webResourcesPath: string;
 }
@@ -64,6 +61,12 @@ export interface ElectronHostOptions {
     ipcHandlers?: (typeof IpcHandler)[];
     rpcInterfaces?: RpcInterfaceDefinition[];
     webResourcesPath?: string;
+}
+
+// @beta (undocumented)
+export interface ElectronHostOpts extends NativeHostOpts {
+    // (undocumented)
+    electronHost?: ElectronHostOptions;
 }
 
 

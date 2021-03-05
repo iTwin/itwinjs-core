@@ -6,55 +6,17 @@
  * @module NativeApp
  */
 
-import { BeEvent, ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode, SessionProps } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import {
-  AuthorizationConfiguration, BriefcasePushAndPullNotifications, IModelChangeNotifications, IModelConnectionProps, IModelError, IModelRpcProps,
-  IModelVersion, IModelVersionProps, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
+  BriefcasePushAndPullNotifications, IModelChangeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion, IModelVersionProps,
+  IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
   RemoveFunction, StandaloneOpenOptions, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AccessToken, AuthorizedClientRequestContext, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
-
-/** @internal */
-export abstract class AuthorizationBackend extends ImsAuthorizationClient {
-  protected _accessToken?: AccessToken;
-  protected _expireSafety = 60 * 10; // seconds to expire before real expiration time
-  protected _config?: AuthorizationConfiguration;
-  public get config(): AuthorizationConfiguration { return this._config!; }
-  public abstract signIn(): Promise<void>;
-  public abstract signOut(): Promise<void>;
-  public abstract refreshToken(): Promise<AccessToken>;
-
-  public get isAuthorized(): boolean {
-    return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety * 1000);
-  }
-
-  public setAccessToken(token?: AccessToken) {
-    this._accessToken = token;
-    IpcHost.onUserStateChanged.raiseEvent(this._accessToken);
-  }
-  public async getAccessToken(): Promise<AccessToken> {
-    if (!this.isAuthorized)
-      this.setAccessToken(await this.refreshToken());
-    return this._accessToken!;
-  }
-
-  public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
-  public async getAuthorizedContext() {
-    return new AuthorizedClientRequestContext(await this.getAccessToken(), undefined, IModelHost.applicationId, IModelHost.applicationVersion, IModelHost.sessionId);
-  }
-  public async initialize(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {
-    this._config = config;
-    if (config.expiryBuffer)
-      this._expireSafety = config.expiryBuffer;
-    IModelHost.session.applicationId = props.applicationId;
-    IModelHost.applicationVersion = props.applicationVersion;
-    IModelHost.sessionId = props.sessionId;
-  }
-}
 
 /**
   * Options for [[IpcHost.startup]]
@@ -85,12 +47,6 @@ export class IpcHost {
   private static get ipc(): IpcSocketBackend { return this._ipc!; }
   /** Determine whether Ipc is available for this backend. This will only be true if [[startup]] has been called on this class. */
   public static get isValid(): boolean { return undefined !== this._ipc; }
-
-  /** @internal */
-  public static get authorization(): AuthorizationBackend { return IModelHost.authorizationClient as AuthorizationBackend; }
-
-  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
-  public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
   /**
    * Send a message to the frontend over an Ipc channel.
@@ -155,7 +111,6 @@ export class IpcHost {
 
     if (this.isValid) { // for tests, we use IpcHost but don't have a frontend
       IpcAppHandler.register();
-      this.onUserStateChanged.addListener((token?: AccessToken) => IpcHost.notifyIpcFrontend("notifyUserStateChanged", token?.toJSON()));
     }
 
     await IModelHost.startup(opt?.iModelHost);
@@ -224,8 +179,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(requestIds);
   }
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
-    const auth = IpcHost.authorization;
-    const requestContext = args.readonly === true ? auth.getClientRequestContext() : await auth.getAuthorizedContext();
+    const requestContext = args.readonly === true ? new ClientRequestContext() : await IModelHost.getAuthorizedContext();
     const db = await BriefcaseDb.open(requestContext, args);
     return db.toJSON();
   }
@@ -243,12 +197,12 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
   public async pullAndMergeChanges(key: string, version?: IModelVersionProps): Promise<void> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = await IpcHost.authorization.getAuthorizedContext();
+    const requestContext = await IModelHost.getAuthorizedContext();
     await iModelDb.pullAndMergeChanges(requestContext, version ? IModelVersion.fromJSON(version) : undefined);
   }
   public async pushChanges(key: string, description: string): Promise<string> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = await IpcHost.authorization.getAuthorizedContext();
+    const requestContext = await IModelHost.getAuthorizedContext();
     await iModelDb.pushChanges(requestContext, description);
     return iModelDb.changeSetId;
   }

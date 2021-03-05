@@ -8,10 +8,11 @@
 
 import { BeEvent, Config, GuidString, Logger, SessionProps } from "@bentley/bentleyjs-core";
 import {
-  AuthorizationConfiguration, BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
-  nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
+  NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
+  RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
-import { AccessToken, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./imodeljs-frontend";
 import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
@@ -37,6 +38,9 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
   }
+  public notifyUserStateChanged(props?: AccessTokenProps) {
+    IModelApp.authorizationClient?.onUserStateChanged.raiseEvent(props ? AccessToken.fromJson(props) : undefined);
+  }
 }
 
 /**
@@ -48,14 +52,14 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
  * @alpha
  */
 export class NativeAppAuthorization {
-  private _config: AuthorizationConfiguration;
+  private _config: NativeAppAuthorizationConfiguration;
   private _cachedToken?: AccessToken;
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
   public get hasSignedIn() { return this._cachedToken !== undefined; }
   public get isAuthorized(): boolean { return this.hasSignedIn && !this._cachedToken!.isExpired(this._expireSafety * 1000); }
 
-  public constructor(config: AuthorizationConfiguration) {
+  public constructor(config: NativeAppAuthorizationConfiguration) {
     this._config = config;
     if (config.expiryBuffer)
       this._expireSafety = config.expiryBuffer;
@@ -102,7 +106,7 @@ export class NativeAppAuthorization {
 export interface NativeAppOpts extends IpcAppOptions {
   nativeApp?: {
     /** if present, [[IModelApp.authorizationClient]] will be set to an instance of NativeAppAuthorization and will be initialized. */
-    authConfig?: AuthorizationConfiguration;
+    authConfig?: NativeAppAuthorizationConfiguration;
   };
 }
 

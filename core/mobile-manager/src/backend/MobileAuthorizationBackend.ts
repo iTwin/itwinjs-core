@@ -7,18 +7,18 @@
  */
 
 import { ClientRequestContext, SessionProps } from "@bentley/bentleyjs-core";
-import { AuthorizationBackend } from "@bentley/imodeljs-backend";
-import { AuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
+import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
  * @internal
  */
-export class MobileAuthorizationBackend extends AuthorizationBackend {
+export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
 
   /** Used to initialize the client - must be awaited before any other methods are called */
-  public async initialize(props: SessionProps, config: AuthorizationConfiguration): Promise<void> {
+  public async initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
     await super.initialize(props, config);
 
     const requestContext = ClientRequestContext.fromJSON(props);

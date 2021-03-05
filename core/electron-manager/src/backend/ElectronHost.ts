@@ -15,7 +15,7 @@ import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-co
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { DesktopAuthorizationBackend } from "../ElectronBackend";
+import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
 // cSpell:ignore signin devserver webcontents copyfile
 
@@ -215,7 +215,7 @@ export class ElectronHost {
       ElectronAppHandler.register();
       opts.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
-    IModelHost.authorizationClient = new DesktopAuthorizationBackend();
+    IModelHost.authorizationClient = new ElectronAuthorizationBackend();
   }
 }
 

@@ -11,22 +11,21 @@ import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
-  AuthorizationConfiguration, BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DisplayStyleProps, FeatureAppearance,
-  FeatureAppearanceProps, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RpcConfiguration, SnapshotIModelRpcInterface,
-  ViewDefinitionProps,
+  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DisplayStyleProps, FeatureAppearance, FeatureAppearanceProps, Hilite,
+  IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RpcConfiguration, SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider, FeatureSymbology,
-  FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, NativeAppAuthorization, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport,
-  SnapshotConnection, Target, TileAdmin, Viewport, ViewRect, ViewState,
+  FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, NativeAppAuthorization, PerformanceMetrics, Pixel,
+  RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
+import { AccessToken } from "@bentley/itwin-client";
 import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "@bentley/projectshare-client";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
-import { AccessToken } from "@bentley/itwin-client";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
@@ -1002,7 +1001,7 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<N
   if (ProcessDetector.isElectronAppFrontend) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: AuthorizationConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
+    const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
     const desktopClient = new NativeAppAuthorization(oidcConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;

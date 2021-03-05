@@ -279,16 +279,6 @@ export namespace AreaPattern {
     }
 }
 
-// @alpha
-export interface AuthorizationConfiguration {
-    readonly clientId: string;
-    readonly expiryBuffer?: number;
-    // (undocumented)
-    issuerUrl?: string;
-    readonly redirectUri: string;
-    readonly scope: string;
-}
-
 export { AuthStatus }
 
 // @public
@@ -4096,8 +4086,6 @@ export interface IpcAppFunctions {
 
 // @internal
 export interface IpcAppNotifications {
-    // (undocumented)
-    notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
 }
 
 // @internal
@@ -4704,6 +4692,16 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
+// @alpha
+export interface NativeAppAuthorizationConfiguration {
+    readonly clientId: string;
+    readonly expiryBuffer?: number;
+    // (undocumented)
+    issuerUrl?: string;
+    readonly redirectUri: string;
+    readonly scope: string;
+}
+
 // @internal (undocumented)
 export const nativeAppChannel = "nativeApp";
 
@@ -4719,7 +4717,7 @@ export interface NativeAppFunctions {
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
     getConfig: () => Promise<any>;
     // (undocumented)
-    initializeAuth: (props: ClientRequestContextProps, config: AuthorizationConfiguration) => Promise<void>;
+    initializeAuth: (props: ClientRequestContextProps, config: NativeAppAuthorizationConfiguration) => Promise<void>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
     signIn: () => Promise<void>;
@@ -4740,6 +4738,8 @@ export interface NativeAppFunctions {
 export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
+    // (undocumented)
+    notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
 }
 
 // @internal (undocumented)

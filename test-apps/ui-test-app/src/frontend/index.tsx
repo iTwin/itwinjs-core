@@ -20,7 +20,7 @@ import {
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizationConfiguration, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcParams, IModelVersion, NativeAppAuthorizationConfiguration, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection, NativeApp,
   NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOpts,
@@ -662,7 +662,7 @@ window.addEventListener("beforeunload", async () => { // eslint-disable-line @ty
   await SampleAppIModelApp.closeCurrentIModel();
 });
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | AuthorizationConfiguration {
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | NativeAppAuthorizationConfiguration {
   let redirectUri = "http://localhost:3000/signin-callback";
   if (ProcessDetector.isMobileAppFrontend) {
     redirectUri = "imodeljs://app/signin-callback";

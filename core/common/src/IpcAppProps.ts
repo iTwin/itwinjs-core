@@ -7,39 +7,10 @@
  */
 
 import { IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { AccessTokenProps } from "@bentley/itwin-client";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
 import { ElementsChanged, ModelGeometryChangesProps } from "./ModelGeometryChanges";
-
-/**
- * Client configuration to generate OIDC/OAuth tokens for native applications
- * @alpha
- */
-export interface AuthorizationConfiguration {
-  issuerUrl?: string;
-
-  /**
-   * Upon signing in, the client application receives a response from the Bentley IMS OIDC/OAuth2 provider at this URI
-   * For mobile/desktop applications, must be `http://localhost:${redirectPort}` or `https://localhost:${redirectPort}`
-   */
-  readonly redirectUri: string;
-
-  /** Client application's identifier as registered with the OIDC/OAuth2 provider. */
-  readonly clientId: string;
-
-  /** List of space separated scopes to request access to various resources. */
-  readonly scope: string;
-
-  /**
-   * Time in seconds that's used as a buffer to check the token for validity/expiry.
-   * The checks for authorization, and refreshing access tokens all use this buffer - i.e., the token is considered expired if the current time is within the specified
-   * time of the actual expiry.
-   * @note If unspecified this defaults to 10 minutes.
-   */
-  readonly expiryBuffer?: number;
-}
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
@@ -58,11 +29,10 @@ export enum IpcAppChannel {
 }
 
 /**
- * Interface implemented by the frontend [NotificationHandler]($common) to be notified of events from NativeApp backend.
+ * Interface implemented by the frontend [NotificationHandler]($common) to be notified of events from IpcApp backend.
  * @internal
  */
 export interface IpcAppNotifications {
-  notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
 }
 
 /**

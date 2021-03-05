@@ -1271,6 +1271,7 @@ export class ProcessDetector {
     static get isMobileAppBackend(): boolean;
     static get isMobileAppFrontend(): boolean;
     static get isMobileBrowser(): boolean;
+    static get isNativeAppFrontend(): boolean;
     static get isNodeProcess(): boolean;
 }
 
