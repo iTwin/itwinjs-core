@@ -182,7 +182,7 @@ export class NativeHost {
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or because the token was refreshed */
   public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
-  public static onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
+  public static readonly onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
 
   private static _appSettingsCacheDir?: string;
 
@@ -210,9 +210,9 @@ export class NativeHost {
     if (!this.isValid) {
       this._isValid = true;
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
+      this.onUserStateChanged.addListener((token?: AccessToken) => NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
     }
     await IpcHost.startup(opt);
-    this.onUserStateChanged.addListener((token?: AccessToken) => NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
     if (IpcHost.isValid)  // for tests, we use NativeHost but don't have a frontend
       NativeAppHandler.register();
   }

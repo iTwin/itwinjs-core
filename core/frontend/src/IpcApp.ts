@@ -7,10 +7,9 @@
  */
 
 import {
-  BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
-  RemoveFunction,
+  BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
+  iTwinChannel, RemoveFunction,
 } from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps } from "@bentley/itwin-client";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
 /**
@@ -174,4 +173,5 @@ export abstract class NotificationHandler {
 /** IpcApp notifications from backend */
 class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotifications {
   public get channelName() { return IpcAppChannel.AppNotify; }
+  public notifyApp() { }
 }

@@ -33,6 +33,7 @@ export enum IpcAppChannel {
  * @internal
  */
 export interface IpcAppNotifications {
+  notifyApp: () => void;
 }
 
 /**
