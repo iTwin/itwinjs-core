@@ -62,7 +62,6 @@
     "testFrontstage5": "Test 5 Frontstage",
     "viewIModel": "View iModel",
     "editIModel": "Edit iModel",
-    "testFrontstage6": "Settings",
     "quantityFormat": "Quantity Formats",
     "iModelStage": "Review iModel",
     "editStage": "Edit and Modify iModel",
@@ -192,7 +191,8 @@
     "sampleModalDialog": "Sample Modal Dialog",
     "misc": "Miscellaneous",
     "accuDrawDialogVertical": "AccuDraw Dialog - Vertical",
-    "accuDrawDialogHorizontal": "AccuDraw Dialog - Horizontal"
+    "accuDrawDialogHorizontal": "AccuDraw Dialog - Horizontal",
+    "bumpToolSettingToggle": "Bump Tool Setting Toggle"
   },
   "tools": {
     "ToolWithSettings": {
