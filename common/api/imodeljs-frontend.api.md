@@ -12215,6 +12215,7 @@ export abstract class Viewport implements IDisposable {
     set wantViewAttachments(want: boolean);
     worldToNpc(pt: XYAndZ, out?: Point3d): Point3d;
     worldToNpcArray(pts: Point3d[]): void;
+    get worldToNpcMap(): Map4d;
     worldToView(input: XYAndZ, out?: Point3d): Point3d;
     worldToView4d(input: XYAndZ, out?: Point4d): Point4d;
     worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void;

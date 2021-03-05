@@ -324,7 +324,7 @@ export class DecorateContext extends RenderContext {
     return (undefined !== thisRay.intersectionWithPlane(dotX > dotY ? planeX : planeY, thisPt)) ? lastPt.distance(thisPt) : 0.0;
   }
 
-  public drawStandardGridNew(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
+  private drawStandardGridNew(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
     const eyePoint = vp.worldToViewMap.transform1.columnZ();
     const eyeDir = Vector3d.createFrom(eyePoint);
@@ -391,7 +391,7 @@ export class DecorateContext extends RenderContext {
   }
 
   /** @internal */
-  public drawStandardGridOld(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
+  private drawStandardGridOld(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
     const eyePoint = vp.worldToViewMap.transform1.columnZ();
     const eyeDir = Vector3d.createFrom(eyePoint);
