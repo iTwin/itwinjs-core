@@ -81,7 +81,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
 
     // Validate that the IModelDb is readonly
-    assert(iModel.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
+    assert(iModel.isReadonly, "iModel not set to Readonly mode");
 
     const expectedChangeSetId = await IModelVersion.first().evaluateChangeSet(requestContext, readOnlyTestIModelId, IModelHost.iModelClient);
     assert.strictEqual<string>(iModel.changeSetId!, expectedChangeSetId);
@@ -362,8 +362,8 @@ describe("BriefcaseManager (#integration)", () => {
     let revIndex: number;
     for (revIndex = readOnlyTestVersions.length - 1; revIndex >= 0; revIndex--) {
       // Stop at a schema change
-      const changeSetId = await IModelVersion.named(readOnlyTestVersions[revIndex]).evaluateChangeSet(requestContext, readOnlyTestIModel.id, IModelHost.iModelClient);
-      const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, readOnlyTestIModel.id, new ChangeSetQuery().byId(changeSetId));
+      const changeSetId = await IModelVersion.named(readOnlyTestVersions[revIndex]).evaluateChangeSet(requestContext, readOnlyTestIModelId, IModelHost.iModelClient);
+      const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, readOnlyTestIModelId, new ChangeSetQuery().byId(changeSetId));
       assert.equal(changeSets.length, 1);
       if (changeSets[0].changesType === ChangesType.Schema)
         break;

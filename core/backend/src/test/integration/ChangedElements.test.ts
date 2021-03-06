@@ -11,13 +11,7 @@ import { AuthorizedBackendRequestContext, BriefcaseManager, ChangedElementsDb, I
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
-function setupTest(iModelId: string): void {
-  const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModelId);
-  if (IModelJsFs.existsSync(cacheFilePath))
-    IModelJsFs.removeSync(cacheFilePath);
-}
-
-describe("ChangedElements (#integration)", () => {
+describe.skip("ChangedElements (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testContextId: GuidString;
   let testIModelId: GuidString;
@@ -36,7 +30,9 @@ describe("ChangedElements (#integration)", () => {
   });
 
   it("Create ChangedElements Cache and process changesets", async () => {
-    setupTest(testIModelId);
+    const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(testIModelId);
+    if (IModelJsFs.existsSync(cacheFilePath))
+      IModelJsFs.removeSync(cacheFilePath);
 
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
     const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, testIModelId);
