@@ -1073,13 +1073,7 @@ export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetL
   return undefined;
 }
 
-/**
- * @internal
- */
-
-/**
- * @beta
- */
+/** @internal */
 export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps) {
   const location = findTab(state, widgetTabId);
   if (location) {
@@ -1125,9 +1119,7 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
   return undefined;
 }
 
-/**
- * @beta
- */
+/** @internal */
 export function dockWidgetContainer(state: NineZoneState, widgetTabId: string) {
   const location = findTab(state, widgetTabId);
   if (location && isFloatingLocation(location)) {
