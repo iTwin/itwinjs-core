@@ -535,14 +535,15 @@ export class FrontstageDef {
   }
 
   public isFloatingWidget(widgetId: string) {
-    if (!this.nineZoneState)
-      return false;
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const location = findTab(this.nineZoneState, widgetId);
+      // istanbul ignore else
+      if (location)
+        return isFloatingLocation(location);
+    }
 
-    const location = findTab(this.nineZoneState, widgetId);
-    if (!location)
-      return false;
-
-    return isFloatingLocation(location);
+    return false;
   }
 
   /** Create a new floating panel that contains the widget specified by its Id. Supported only when in
@@ -556,7 +557,7 @@ export class FrontstageDef {
   public floatWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
     if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
       return;
-
+    // istanbul ignore else
     if (this.nineZoneState) {
       const state = floatWidget(this.nineZoneState, widgetId, point, size);
       if (state)
@@ -573,7 +574,7 @@ export class FrontstageDef {
   public dockWidgetContainer(widgetId: string) {
     if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
       return;
-
+    // istanbul ignore else
     if (this.nineZoneState) {
       const state = dockWidgetContainer(this.nineZoneState, widgetId);
       if (state)
