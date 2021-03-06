@@ -5,6 +5,7 @@
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
+export * from "./BingLocation";
 export * from "./BriefcaseConnection";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
