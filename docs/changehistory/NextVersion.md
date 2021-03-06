@@ -94,15 +94,20 @@ If you store `channel` from the above snippet in a global variable, you can impl
 
 For desktop and mobile applications, all authentication happens on the backend. The frontend process merely initiates the login process and waits for notification that it succeeds. Previously the steps required to set up the process was somewhat complicated.
 
-Now, to configure your electron application for authorization, pass the `authConfig` option to [ElectronApp.startup]($electron-manager), to specify your
+Now, to configure your electron or mobile application for authorization, pass the `authConfig` option to `ElectronApp.startup` or `IOSApp.startup` to specify your authorization configuration.
 
+Then, if you want a method that can be awaited for the user to sign in, use something like:
+
+```ts
+// returns `true` after successful login.
 async function signIn(): Promise<boolean> {
   const auth = IModelApp.authorizationClient!;
   if (auth.isAuthorized)
-    return true;
+    return true; // make sure not already signed in
 
   return new Promise<boolean>((resolve, reject) => {
-    auth.onUserStateChanged.addOnce((token?: AccessToken) => resolve(token !== undefined));
-    auth.signIn().catch((err) => reject(err));
+    auth.onUserStateChanged.addOnce((token?: AccessToken) => resolve(token !== undefined)); // resolve Promise with `onUserStateChanged` event
+    auth.signIn().catch((err) => reject(err)); // initiate the sign in process (forwarded to the backend)
   });
 }
+```

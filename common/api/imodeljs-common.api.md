@@ -4086,6 +4086,8 @@ export interface IpcAppFunctions {
 
 // @internal
 export interface IpcAppNotifications {
+    // (undocumented)
+    notifyApp: () => void;
 }
 
 // @internal

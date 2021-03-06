@@ -123,7 +123,7 @@ class ShutDownTool extends Tool {
 
   public run(_args: any[]): boolean {
     DisplayTestApp.surface.closeAllViewers();
-    if (ProcessDetector.isElectronAppFrontend)
+    if (ElectronApp.isValid)
       ElectronApp.shutdown();// eslint-disable-line @typescript-eslint/no-floating-promises
     else
       IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
