@@ -244,6 +244,7 @@ import { SheetProps } from '@bentley/imodeljs-common';
 import { SilhouetteEdgeArgs } from '@bentley/imodeljs-common';
 import { SkyBoxProps } from '@bentley/imodeljs-common';
 import { SkyCubeProps } from '@bentley/imodeljs-common';
+import { SmoothTransformBetweenFrusta } from '@bentley/geometry-core';
 import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
 import { SolarShadowSettings } from '@bentley/imodeljs-common';
@@ -272,6 +273,7 @@ import { TileReadStatus } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
+import { Tweens } from '@bentley/imodeljs-common';
 import { UiAdmin } from '@bentley/ui-abstract';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
@@ -1558,6 +1560,17 @@ export class BingElevationProvider {
     // (undocumented)
     protected _requestContext: ClientRequestContext;
     }
+
+// @internal (undocumented)
+export class BingLocationProvider {
+    constructor();
+    // (undocumented)
+    doLocalSearchByRadius(_center: Cartographic, _radius: number): Promise<{} | undefined>;
+    // (undocumented)
+    getLocation(query: string): Promise<GlobalLocation | undefined>;
+    // (undocumented)
+    protected _requestContext: ClientRequestContext;
+}
 
 // @internal (undocumented)
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
@@ -3537,13 +3550,50 @@ export interface GlobalLocationArea {
 
 // @internal
 export class GlobeAnimator implements Animator {
+    protected constructor(viewport: ScreenViewport, destination: GlobalLocation, afterLanding: Frustum);
+    // (undocumented)
+    protected _afterLanding: Frustum;
     // (undocumented)
     animate(): boolean;
     // (undocumented)
+    protected _columbusLine: Point3d[];
+    // (undocumented)
     static create(viewport: ScreenViewport, destination: GlobalLocation): Promise<GlobeAnimator | undefined>;
     // (undocumented)
+    protected _ellipsoidArc?: Arc3d;
+    // (undocumented)
+    protected _endHeight?: number;
+    // (undocumented)
+    protected _endLocation: GlobalLocation;
+    // (undocumented)
+    protected readonly _fixLandingFraction: number;
+    // (undocumented)
+    protected _fixLandingInterpolator?: SmoothTransformBetweenFrusta;
+    // (undocumented)
+    protected _fixTakeoffFraction?: number;
+    // (undocumented)
+    protected _fixTakeoffInterpolator?: SmoothTransformBetweenFrusta;
+    // (undocumented)
+    protected _flightLength: number;
+    // (undocumented)
+    protected _flightTweens: Tweens;
+    // (undocumented)
     interrupt(): void;
-    }
+    // (undocumented)
+    protected _midHeight?: number;
+    // (undocumented)
+    protected _moveFixToFraction(fract: number, interpolator: SmoothTransformBetweenFrusta): boolean;
+    // (undocumented)
+    protected _moveFlightToFraction(fraction: number): boolean;
+    // (undocumented)
+    protected readonly _scratchFrustum: Frustum;
+    // (undocumented)
+    protected _startCartographic?: Cartographic;
+    // (undocumented)
+    protected _startHeight?: number;
+    // (undocumented)
+    protected _viewport: ScreenViewport;
+}
 
 // @internal
 export abstract class GltfReader {
