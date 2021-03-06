@@ -14,29 +14,29 @@ import {
 import { ScreenViewport } from "./Viewport";
 import { Animator } from "./ViewAnimation";
 
-/** Object to animate a Frustum transition of a viewport moving across the earth. The [[Viewport]] will show as many frames as necessary. The animation will last a variable length of time depending on the distance traversed.
+/** Object to animate a frustum transition of a viewport moving across the earth. The [[Viewport]] will show as many frames as necessary. The animation will last a variable length of time depending on the distance traversed.
  * This operates on the previous frustum and a destination cartographic coordinate, flying along an earth ellipsoid or flat plane.
  * @internal
  */
 export class GlobeAnimator implements Animator {
-  private _flightTweens = new Tweens();
-  private _viewport: ScreenViewport;
-  private _startCartographic?: Cartographic;
-  private _ellipsoidArc?: Arc3d;
-  private _columbusLine: Point3d[] = [];
-  private _flightLength = 0;
-  private _endLocation: GlobalLocation;
-  private _endHeight?: number;
-  private _midHeight?: number;
-  private _startHeight?: number;
-  private _fixTakeoffInterpolator?: SmoothTransformBetweenFrusta;
-  private _fixTakeoffFraction?: number;
-  private _fixLandingInterpolator?: SmoothTransformBetweenFrusta;
-  private _afterLanding: Frustum;
-  private readonly _fixLandingFraction: number = 0.9;
-  private readonly _scratchFrustum = new Frustum();
+  protected _flightTweens = new Tweens();
+  protected _viewport: ScreenViewport;
+  protected _startCartographic?: Cartographic;
+  protected _ellipsoidArc?: Arc3d;
+  protected _columbusLine: Point3d[] = [];
+  protected _flightLength = 0;
+  protected _endLocation: GlobalLocation;
+  protected _endHeight?: number;
+  protected _midHeight?: number;
+  protected _startHeight?: number;
+  protected _fixTakeoffInterpolator?: SmoothTransformBetweenFrusta;
+  protected _fixTakeoffFraction?: number;
+  protected _fixLandingInterpolator?: SmoothTransformBetweenFrusta;
+  protected _afterLanding: Frustum;
+  protected readonly _fixLandingFraction: number = 0.9;
+  protected readonly _scratchFrustum = new Frustum();
 
-  private _moveFlightToFraction(fraction: number): boolean {
+  protected _moveFlightToFraction(fraction: number): boolean {
     const vp = this._viewport;
     const view = vp.view;
 
@@ -80,7 +80,7 @@ export class GlobeAnimator implements Animator {
   }
 
   // Apply a SmoothTransformBetweenFrusta interpolator to the view based on a fraction.
-  private _moveFixToFraction(fract: number, interpolator: SmoothTransformBetweenFrusta): boolean {
+  protected _moveFixToFraction(fract: number, interpolator: SmoothTransformBetweenFrusta): boolean {
     let done = false;
 
     if (fract >= 1.0) {
@@ -110,7 +110,7 @@ export class GlobeAnimator implements Animator {
     return new GlobeAnimator(viewport, destination, afterLanding);
   }
 
-  private constructor(viewport: ScreenViewport, destination: GlobalLocation, afterLanding: Frustum) {
+  protected constructor(viewport: ScreenViewport, destination: GlobalLocation, afterLanding: Frustum) {
     this._viewport = viewport;
     this._endLocation = destination;
     this._afterLanding = afterLanding;
