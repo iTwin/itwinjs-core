@@ -23,7 +23,6 @@ import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingSessionTool, PlaceLineStringTool } from "./EditingTools";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
