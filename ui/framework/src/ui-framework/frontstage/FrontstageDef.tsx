@@ -565,9 +565,10 @@ export class FrontstageDef {
   }
 
   /** Finds the container with the specified widget and re-docks all widgets
-   * back to the panel zone location that was used to generate the floating container. Supported only
-   * when in UI 2.0 or higher.
+   * back to the panel zone location that was used when the floating container
+   * was generated. Supported only when in UI 2.0 or higher.
    * @param widgetId  case sensitive Wigdet Id.
+   * @beta
    */
   public dockWidgetContainer(widgetId: string) {
     if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")

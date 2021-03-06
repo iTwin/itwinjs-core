@@ -496,9 +496,20 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         homeWidget.tabs.push(...widget.tabs);
         removeWidget(state, widget.id);
       } else {
-        panel.widgets.splice(home.widgetIndex, 0, widget.id);
+        const destinationWidgetContainerName = home.widgetId ?? widget.id;
+        // if widget container was remove because it was empty insert it
+        state.widgets[destinationWidgetContainerName] = {
+          activeTabId: widget.tabs[0],
+          id: destinationWidgetContainerName,
+          minimized: false,
+          tabs: [...widget.tabs],
+        };
+        panel.widgets.splice(home.widgetIndex, 0, destinationWidgetContainerName);
         widget.minimized = false;
-        removeFloatingWidget(state, widget.id);
+        if (home.widgetId)
+          removeWidget(state, widget.id);
+        else
+          removeFloatingWidget(state, widget.id);
       }
       return;
     }
@@ -1082,12 +1093,15 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
     const nzBounds = Rectangle.createFromSize(state.size);
     const containedBounds = preferredBounds.containIn(nzBounds);
 
+    // istanbul ignore else - no else/using as type guard to cast
     if (isPanelLocation(location)) {
       const floatingWidgetId = getUniqueId();
       const panel = state.panels[location.side];
       const widgetIndex = panel.widgets.indexOf(location.widgetId);
 
       return produce(state, (draft) => {
+        const floatedTab = draft.tabs[widgetTabId];
+        initSizeProps(floatedTab, "preferredFloatingWidgetSize", preferredSize);
         removeWidgetTab(draft, widgetTabId);
         draft.floatingWidgets.byId[floatingWidgetId] = {
           bounds: containedBounds.toProps(),
@@ -1118,27 +1132,11 @@ export function dockWidgetContainer(state: NineZoneState, widgetTabId: string) {
   const location = findTab(state, widgetTabId);
   if (location && isFloatingLocation(location)) {
     const floatingWidgetId = location.widgetId;
-    return produce(state, (draft) => {
-      const floatingWidget = draft.floatingWidgets.byId[floatingWidgetId];
-      const widget = draft.widgets[floatingWidgetId];
-      const home = floatingWidget.home;
-      const panel = draft.panels[home.side];
-      let homeWidget;
-      if (home.widgetId) {
-        homeWidget = draft.widgets[home.widgetId];
-      } else if (panel.widgets.length === panel.maxWidgetCount) {
-        const id = panel.widgets[home.widgetIndex];
-        homeWidget = draft.widgets[id];
-      }
-      if (homeWidget) {
-        homeWidget.tabs.push(...widget.tabs);
-        removeWidget(draft, widget.id);
-      } else {
-        panel.widgets.splice(home.widgetIndex, 0, widget.id);
-        widget.minimized = false;
-        removeFloatingWidget(draft, widget.id);
-      }
+    return NineZoneStateReducer(state, {
+      type: "FLOATING_WIDGET_SEND_BACK",
+      id: floatingWidgetId,
     });
+  } else {
+    return undefined;
   }
-  return undefined;
 }
