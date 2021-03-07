@@ -194,6 +194,8 @@ function WidgetInfo({
   const [isFloating, setIsFloating] = React.useState (frontstageDef ? frontstageDef.isFloatingWidget(id):false);
 
   React.useEffect(() => {
+    setIsFloating(frontstageDef ? frontstageDef.isFloatingWidget(id):false);
+
     return FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener((e) => {
       if (e.frontstageDef === frontstageDef)
         setIsFloating(frontstageDef ? frontstageDef.isFloatingWidget(id):false);
