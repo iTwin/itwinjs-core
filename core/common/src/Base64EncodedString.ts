@@ -6,7 +6,8 @@
  * @module Entities
  */
 
-/** Represents an array of bytes encoded in base-64 with a prefix indicating the encoding, as persisted in an [ECDb]($backend) for properties of `binary` type.
+/** Represents an array of bytes encoded in base-64 with a prefix indicating the encoding, as required when converting EC properties of `binary` type to and from JSON.
+ * @see [[TextureProps.data]] and [[BRepEntity.DataProps.data]] for examples of properties of this type.
  * @public
  */
 export type Base64EncodedString = string;
