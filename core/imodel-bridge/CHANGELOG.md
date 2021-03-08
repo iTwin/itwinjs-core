@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodel-bridge
 
-This log was last generated on Wed, 03 Mar 2021 18:48:52 GMT and should not be manually modified.
+This log was last generated on Mon, 08 Mar 2021 15:32:00 GMT and should not be manually modified.
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
 
 ## 2.12.2
 Wed, 03 Mar 2021 18:48:52 GMT
