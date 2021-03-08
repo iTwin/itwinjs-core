@@ -55,7 +55,7 @@ async function getTileProps(iModel: IModelDb, requestContext: AuthorizedBackendR
   return undefined;
 }
 
-describe.only("TileUpload (#integration)", () => {
+describe("TileUpload (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
   let testContextId: GuidString;
