@@ -1328,7 +1328,7 @@ export interface LinkElementsInfo {
         start: number;
         end: number;
     }>;
-    onClick?: (record: PropertyRecord, text: string) => void;
+    onClick: (text: string) => void;
 }
 
 // @internal
@@ -1478,22 +1478,23 @@ export interface PropertyDescription {
     typename: string;
 }
 
-// @alpha
+// @beta
 export class PropertyDescriptionHelper {
-    // (undocumented)
+    // @alpha
     static buildCheckboxDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildEnumPicklistEditorDescription(name: string, label: string, choices: Promise<EnumerationChoice[]> | EnumerationChoice[], additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildTextEditorDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildToggleDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // (undocumented)
+    // @alpha
     static buildWeightPickerDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    static bumpEnumProperty(description: PropertyDescription, value: string | number): Promise<string | number>;
 }
 
 // @beta
@@ -1794,7 +1795,9 @@ export enum StandardTypeNames {
     // (undocumented)
     Struct = "struct",
     // (undocumented)
-    Text = "text"
+    Text = "text",
+    // (undocumented)
+    URL = "url"
 }
 
 // @internal (undocumented)

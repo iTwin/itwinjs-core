@@ -1574,9 +1574,20 @@ export abstract class Viewport implements IDisposable {
     return retVal;
   }
 
+  /** Turn the camera off it is currently on.
+   * @see [[turnCameraOn]] to turn the camera on.
+   */
+  public turnCameraOff(): void {
+    if (this.view.is3d() && this.view.isCameraOn) {
+      this.view.turnCameraOff();
+      this.setupFromView();
+    }
+  }
+
   /** Turn the camera on if it is currently off. If the camera is already on, adjust it to use the supplied lens angle.
    * @param lensAngle The lens angle for the camera. If undefined, use view.camera.lens.
    * @note This method will fail if the ViewState is not 3d.
+   * @see [[turnCameraOff]] to turn the camera off.
    */
   public turnCameraOn(lensAngle?: Angle): ViewStatus {
     const view = this.view;
@@ -1588,30 +1599,37 @@ export abstract class Viewport implements IDisposable {
 
     Camera.validateLensAngle(lensAngle);
 
-    if (view.isCameraOn)
-      return view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle);
+    let status;
+    if (view.isCameraOn) {
+      status = view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle);
+    } else {
+      // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
+      // We use the depth of the center of the view for that.
+      let depthRange = this.determineVisibleDepthRange();
+      if (undefined === depthRange || Geometry.isAlmostEqualNumber(depthRange.minimum, depthRange.maximum))
+        depthRange = { minimum: 0, maximum: 1 };
 
-    // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
-    // We use the depth of the center of the view for that.
-    let depthRange = this.determineVisibleDepthRange();
-    if (undefined === depthRange || Geometry.isAlmostEqualNumber(depthRange.minimum, depthRange.maximum))
-      depthRange = { minimum: 0, maximum: 1 };
+      const middle = depthRange.minimum + ((depthRange.maximum - depthRange.minimum) / 2.0);
+      const corners = [
+        new Point3d(0.0, 0.0, middle), // lower left, at target depth
+        new Point3d(1.0, 1.0, middle), // upper right at target depth
+        new Point3d(0.0, 0.0, depthRange.maximum), // lower left, at closest npc
+        new Point3d(1.0, 1.0, depthRange.maximum), // upper right at closest
+      ];
 
-    const middle = depthRange.minimum + ((depthRange.maximum - depthRange.minimum) / 2.0);
-    const corners = [
-      new Point3d(0.0, 0.0, middle), // lower left, at target depth
-      new Point3d(1.0, 1.0, middle), // upper right at target depth
-      new Point3d(0.0, 0.0, depthRange.maximum), // lower left, at closest npc
-      new Point3d(1.0, 1.0, depthRange.maximum), // upper right at closest
-    ];
+      this.npcToWorldArray(corners);
 
-    this.npcToWorldArray(corners);
+      const eye = corners[2].interpolate(0.5, corners[3]); // middle of closest plane
+      const target = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
+      const backDist = eye.distance(target) * 2.0;
+      const frontDist = view.minimumFrontDistance();
+      status = view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
+    }
 
-    const eye = corners[2].interpolate(0.5, corners[3]); // middle of closest plane
-    const target = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
-    const backDist = eye.distance(target) * 2.0;
-    const frontDist = view.minimumFrontDistance();
-    return view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
+    if (ViewStatus.Success === status)
+      this.setupFromView();
+
+    return status;
   }
 
   /** Orient this viewport to one of the [[StandardView]] rotations. */
@@ -2658,7 +2676,7 @@ export class ScreenViewport extends Viewport {
       if (undefined !== IModelApp.applicationLogoCard)
         logos.appendChild(IModelApp.applicationLogoCard());
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
-      this.displayStyle.getAttribution(logos, this);
+      this.forEachTileTreeRef((ref) => ref.addLogoCards(logos, this));
       ev.stopPropagation();
     };
     logo.onclick = showLogos;

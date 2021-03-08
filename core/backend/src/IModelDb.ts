@@ -142,6 +142,14 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
+    IModelHost.onBeforeShutdown.addListener(() => {
+      if (this.isOpen) {
+        try {
+          this.abandonChanges();
+          this.close();
+        } catch { }
+      }
+    });
   }
 
   /** Close this IModel, if it is currently open. */
@@ -2081,7 +2089,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    private pollTileContent(resolve: (arg0: Uint8Array) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
+    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
       requestContext.enter();
 
       let ret;
@@ -2111,7 +2119,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           Logger.logWarning(loggerCategory, "Tile load time (in seconds) greater than specified threshold", () => ({ loadTime, loadTimeThreshold, treeId, tileId, iModelId }));
         }
 
-        resolve(res.content);
+        resolve(res);
       } else { // if the type is a number, it's the TileContentState enum
         // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
         setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId, requestContext), 10);
@@ -2119,10 +2127,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** @internal */
-    public async requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array> {
+    public async requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<IModelJsNative.TileContent> {
       requestContext.enter();
 
-      return new Promise<Uint8Array>((resolve, reject) => {
+      return new Promise<IModelJsNative.TileContent>((resolve, reject) => {
         this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
       });
     }
@@ -2525,7 +2533,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.saveChanges();
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-
+    nativeDb.saveChanges();
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue()); // WIP: clean up copied file on error?
     if (options?.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
@@ -2599,6 +2607,8 @@ export class SnapshotDb extends IModelDb {
     if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views", Logger.logError, loggerCategory);
+      } else {
+        this.saveChanges();
       }
     }
   }
