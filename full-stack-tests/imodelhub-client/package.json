@@ -49,7 +49,7 @@
     "fs-extra": "^8.1.0",
     "js-base64": "^2.4.5",
     "mocha": "^5.2.0",
-    "nock": "^9.2.3"
+    "nock": "^12.0.3"
   },
   "devDependencies": {
     "@bentley/build-tools": "2.14.0-dev.12",
@@ -61,7 +61,7 @@
     "@types/fs-extra": "^4.0.7",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
-    "@types/nock": "^9.1.2",
+    "@types/nock": "^11.1.0",
     "cpx": "^1.5.0",
     "eslint": "^6.8.0",
     "internal-tools": "0.0.0",
