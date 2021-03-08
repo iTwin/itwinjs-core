@@ -6,7 +6,7 @@
 // Note: only import types! Does not create a `require("electron")` in JavaScript after transpiling. That's important so this file can
 // be imported by apps that sometimes use Electron and sometimes not. Call to `ElectronBackend.initialize`
 // will do the necessary `require("electron")`
-import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
+import { BrowserWindow, BrowserWindowConstructorOptions, clipboard, session } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, isElectronMain } from "@bentley/bentleyjs-core";
@@ -15,6 +15,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "./ElectronRpcManager";
+import { Permission } from "../../../clients/imodelhub/node_modules/@bentley/rbac-client/lib/RbacClient";
 
 // cSpell:ignore signin devserver webcontents copyfile
 
@@ -120,6 +121,27 @@ export class ElectronBackend implements IpcSocketBackend {
   /** The "main" BrowserWindow for this application. */
   public get mainWindow() { return this._mainWindow; }
 
+  public setSessionPermissionsRequest(perms: string[]) {
+
+    session.fromPartition("").setPermissionRequestHandler((webContents, permission, callback) => {
+      console.log("my request handler hit");
+      if (webContents === this._mainWindow?.webContents && perms.includes(permission)) {
+        return callback(false);
+      }
+      callback(false);
+    })
+
+  }
+
+  public setSessionPermissionsCheck(perms: string[]) {
+    session.fromPartition("").setPermissionCheckHandler((webContents, permission) => {
+      console.log("my check handler hit");
+      if (webContents === this._mainWindow?.webContents && perms.includes(permission))
+        return false;
+      return false;
+    })
+  }
+
   private constructor(opts?: ElectronBackendOptions) {
     this._electron = require("electron");
     this._developmentServer = opts?.developmentServer ?? false;
@@ -216,6 +238,8 @@ export class ElectronBackend implements IpcSocketBackend {
     app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
     if (!app.isReady())
       this.instance.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+    // this.instance.setSessionPermissionsCheck([]);
+    // this.instance.setSessionPermissionsRequest([]);
 
     return this._instance;
   }
