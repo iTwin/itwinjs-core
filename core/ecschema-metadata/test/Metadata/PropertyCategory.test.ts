@@ -5,6 +5,7 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../src/Context";
+import { SchemaItemType } from "../../src/ECObjects";
 import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
 import { Schema } from "../../src/Metadata/Schema";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
@@ -32,7 +33,7 @@ describe("PropertyCategory", () => {
 
       const item = await ecSchema.getItem<PropertyCategory>("TestPropertyCategory");
       assert.isDefined(item);
-      assert.isTrue(item instanceof PropertyCategory);
+      assert.isTrue(item?.schemaItemType === SchemaItemType.PropertyCategory);
 
       const propCat = item as PropertyCategory;
       assert.isDefined(propCat);
@@ -67,7 +68,7 @@ describe("PropertyCategory", () => {
 
       const item = await ecSchema.getItem("TestPropertyCategory");
       assert.isDefined(item);
-      assert.isTrue(item instanceof PropertyCategory);
+      assert.isTrue(item?.schemaItemType === SchemaItemType.PropertyCategory);
 
       const propCat = item as PropertyCategory;
       assert.isDefined(propCat);
@@ -94,7 +95,7 @@ describe("PropertyCategory", () => {
 
       const item = await ecSchema.getItem("TestPropertyCategory");
       assert.isDefined(item);
-      assert.isTrue(item instanceof PropertyCategory);
+      assert.isTrue(item?.schemaItemType === SchemaItemType.PropertyCategory);
 
       const propCat = item as PropertyCategory;
       assert.isDefined(propCat);

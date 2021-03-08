@@ -100,4 +100,10 @@ export class OverrideFormat {
         fullName += `[${unit.fullName}|${unitLabel}]`;
     return fullName;
   }
+
+  public static isOverrideFormat(object: any): object is OverrideFormat {
+    const overrideFormat = object as OverrideFormat;
+
+    return overrideFormat !== undefined && overrideFormat.parent !== undefined && overrideFormat.name !== undefined;
+  }
 }

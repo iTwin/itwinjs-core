@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { SchemaContext } from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import { ECObjectsError } from "../../src/Exception";
-import { ECClass, MutableClass } from "../../src/Metadata/Class";
+import { ECClass, MutableClass, StructClass } from "../../src/Metadata/Class";
 import { CustomAttributeSet } from "../../src/Metadata/CustomAttribute";
 import { EntityClass } from "../../src/Metadata/EntityClass";
 import { Mixin } from "../../src/Metadata/Mixin";
@@ -1647,6 +1647,57 @@ describe("ECClass", () => {
       const testClassA = new Mixin(schemaA, "MixinA");
       const testClassB = new Mixin(schemaA, "MixinA");
       expect(SchemaItem.equalByKey(testClassA, testClassB)).to.be.true;
+    });
+  });
+
+  describe("isECClass tests", async () => {
+    const testSchema = createSchemaJsonWithItems({
+      TestMixin: {
+        schemaItemType: "Mixin",
+        baseClass: "TestSchema.BaseMixin",
+        appliesTo: "TestSchema.TestEntity",
+      },
+      BaseMixin: {
+        schemaItemType: "Mixin",
+        appliesTo: "TestSchema.TestEntity",
+      },
+      TestEntity: {
+        schemaItemType: "EntityClass",
+        properties: [
+          {
+            type: "StructProperty",
+            name: "testStructProp",
+            typeName: "TestSchema.TestStruct",
+          },
+        ]
+      },
+      TestStruct: {
+        schemaItemType: "StructClass",
+      }
+    });
+
+    it("should return false if class is undefined", () => {
+      expect(ECClass.isECClass(undefined)).to.be.false;
+    });
+
+    it("should return true if object is of ECClass type", async () => {
+      const schema = await Schema.fromJson(testSchema, new SchemaContext());
+      expect(testSchema).to.exist;
+      const testMixin = await schema.getItem<Mixin>("TestMixin");
+      expect(ECClass.isECClass(testMixin)).to.be.true;
+      const testEntity = await schema.getItem<EntityClass>("TestEntity");
+      expect(ECClass.isECClass(testEntity)).to.be.true;
+      const testStruct = await schema.getItem<StructClass>("TestStruct");
+      expect(ECClass.isECClass(testStruct)).to.be.true;
+    });
+
+    it("should return false if object is not of ECClass type", async () => {
+      const schema = await Schema.fromJson(testSchema, new SchemaContext());
+      const testEntity = await schema.getItem<EntityClass>("TestEntity");
+      const testStructProp = await testEntity!.getProperty("testStructProp");
+      assert.isDefined(testStructProp);
+      expect(ECClass.isECClass(testSchema)).to.be.false;
+      expect(ECClass.isECClass(testStructProp)).to.be.false;
     });
   });
 });

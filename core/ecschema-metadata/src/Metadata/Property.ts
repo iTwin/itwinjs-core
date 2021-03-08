@@ -240,6 +240,13 @@ export abstract class Property implements CustomAttributeContainerProps {
 
     return customAttributes;
   }
+
+  public static isProperty(object: any): object is Property {
+    const property = object as Property;
+
+    return property !== undefined && property.class !== undefined && property.name !== undefined
+           && property.propertyType !== undefined;
+  }
 }
 
 /** @beta */

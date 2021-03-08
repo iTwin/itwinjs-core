@@ -1357,4 +1357,42 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
       expect(serialized.getAttribute("direction")).to.eql("Forward");
     });
   });
+
+  describe("isProperty", async () => {
+    it("should return false if property is undefined", () => {
+      const undefinedProperty = undefined;
+      expect(Property.isProperty(undefinedProperty)).to.be.false;
+    });
+
+    it("should return true if object is of Property type", async () => {
+      const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
+      const mutable = testSchema as MutableSchema;
+      const testClass = await mutable.createEntityClass("TestClass");
+      const testEnum = new Enumeration(testSchema, "TestEnumeration", PrimitiveType.Integer);
+      const testStruct = await mutable.createStructClass("TestStruct");
+      const testRelationship = await mutable.createRelationshipClass("TestRelationship");
+  
+      const primitiveProperty = new PrimitiveProperty(testClass, "A");
+      expect(Property.isProperty(primitiveProperty)).to.be.true;
+      const enumProperty = new EnumerationProperty(testClass, "B", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
+      expect(Property.isProperty(enumProperty)).to.be.true;
+      const structProperty = new StructProperty(testClass, "C", testStruct);
+      expect(Property.isProperty(structProperty)).to.be.true;
+      const navProperty = new NavigationProperty(testClass, "D", new DelayedPromiseWithProps(testRelationship.key, async () => testRelationship));
+      expect(Property.isProperty(navProperty)).to.be.true;
+      const primitiveArrayProperty = new PrimitiveArrayProperty(testClass, "E");
+      expect(Property.isProperty(primitiveArrayProperty)).to.be.true;
+      const enumArrayProperty = new EnumerationArrayProperty(testClass, "F", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
+      expect(Property.isProperty(enumArrayProperty)).to.be.true;
+      const structArrayProperty = new StructArrayProperty(testClass, "G", testStruct);
+      expect(Property.isProperty(structArrayProperty)).to.be.true;
+    });
+
+    it("should return false if object is not of Property type", () => {
+      const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
+      const testClass = new EntityClass(testSchema, "ExampleEntity");
+      expect(Property.isProperty(testClass)).to.be.false;
+      expect(Property.isProperty(testSchema)).to.be.false;
+    });
+  });
 });
