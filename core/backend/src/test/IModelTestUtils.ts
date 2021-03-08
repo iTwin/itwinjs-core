@@ -116,13 +116,15 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
 }
 
 export class IModelTestUtils {
-  /** Helper to open a briefcase db */
+  /** Helper to open a briefcase db directly with the BriefcaseManager API */
   public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext }): Promise<BriefcaseDb> {
     const props = await BriefcaseManager.downloadBriefcase(args.requestContext, args);
     return BriefcaseDb.open(args.requestContext, { fileName: props.fileName });
   }
 
+  /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
   public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<BriefcaseDb> {
+    args.requestContext.enter();
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
@@ -147,6 +149,7 @@ export class IModelTestUtils {
     }
   }
 
+  /** Downloads and opens a v1 checkpoint */
   public static async downloadAndOpenCheckpoint(args: { requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
@@ -161,6 +164,7 @@ export class IModelTestUtils {
     return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
   }
 
+  /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
   public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
     args.requestContext.enter();
     if (undefined === args.asOf)
@@ -258,7 +262,7 @@ export class IModelTestUtils {
     }
   }
 
-  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+  /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
   public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
     const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
@@ -273,7 +277,7 @@ export class IModelTestUtils {
     return testDb.elements.insertElement(modeledElement);
   }
 
-  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+  /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
   public static async createAndInsertPhysicalPartitionAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
     const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
@@ -292,7 +296,7 @@ export class IModelTestUtils {
     return testDb.elements.insertElement(modeledElement);
   }
 
-  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+  /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
   public static createAndInsertPhysicalModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
     const newModelId = testDb.models.insertModel(newModel);
@@ -302,7 +306,7 @@ export class IModelTestUtils {
     return newModelId;
   }
 
-  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+  /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
   public static async createAndInsertPhysicalModelAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
     if (testDb.isBriefcaseDb()) {
@@ -316,10 +320,10 @@ export class IModelTestUtils {
     return newModelId;
   }
 
-  //
-  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  // @return [modeledElementId, modelId]
-  //
+  /**
+   * Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+   * @return [modeledElementId, modelId]
+   */
   public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
     const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode, parent);
     const modeledElementRef = new RelatedElement({ id: eid });
@@ -399,11 +403,18 @@ export class IModelTestUtils {
     return testImodel.elements.createElement(elementProps);
   }
 
-  public static async startBackend(): Promise<void> {
+  /** Handles the startup of IModelHost.
+   * The provided config is used and will override any of the default values used in this method.
+   *
+   * The default includes:
+   * - concurrentQuery.current === 4
+   * - cacheDir === path.join(__dirname, ".cache")
+   */
+  public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
     loadEnv(path.join(__dirname, "..", "..", ".env"));
-    const config = new IModelHostConfiguration();
-    config.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
-    config.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
+    let cfg = config ? config : new IModelHostConfiguration();
+    cfg.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
+    cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
     return IModelHost.startup(config);
   }
 
