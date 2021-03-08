@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-backend",
+      "comment": "Show `UserLabel` and `CodeValue` properties for `PhysicalType` and `SpatialLocationType` elements",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

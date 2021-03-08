@@ -65,6 +65,7 @@ public;BeTouchEventProps
 public;BeWheelEvent 
 public;BeWheelEventProps 
 internal;BingElevationProvider
+internal;BingLocationProvider
 internal;BingMapsImageryLayerProvider 
 public;BlankConnection 
 public;BlankConnectionProps
@@ -517,6 +518,9 @@ internal;TilePatch = PlanarTilePatch | EllipsoidPatch
 beta;TileRequest
 beta;TileRequest
 internal;State
+beta;TileRequestChannel
+beta;TileRequestChannels
+beta;TileRequestChannelStatistics
 beta;Tiles
 beta;class TileTree
 beta;TileTreeDiscloser
