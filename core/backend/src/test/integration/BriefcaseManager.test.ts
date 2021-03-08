@@ -686,42 +686,4 @@ describe("BriefcaseManager (#integration)", () => {
     requestContext.enter();
   });
 
-  // it.skip("testing", async () => {
-  //   Config.App.set("imjs_buddi_resolve_url_using_region", "103");
-  //   let ctx: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext({});
-
-  //   // let testIModelName = "seedFileTest";
-  //   // let contextId = "71551fa5-abf4-424a-9a88-c745232d2ac3";
-  //   // let testIModelId = await HubUtility.queryIModelIdByName(ctx, "71551fa5-abf4-424a-9a88-c745232d2ac3", testIModelName);
-  //   // ctx.enter();
-  //   // let changesetId = (await BriefcaseManager.evaluateVersion(ctx, IModelVersion.asOfChangeSet("77721a87e0e40820abd94398c913736e0dcc93ff"), testIModelId)).changeSetId
-  //   // let db = await IModelTestUtils.openCheckpointUsingRpc({ requestContext: ctx, contextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet("77721a87e0e40820abd94398c913736e0dcc93ff").toJSON() });
-
-  //   // assert.equal(db.getGuid(), testIModelId);
-  //   // assert.equal(db.nativeDb.getParentChangeSetId(), changesetId);
-
-  //   let testIModelName = "seedFileTest";
-  //   let contextId = await HubUtility.queryProjectIdByName(ctx, "general-purpose-test");
-  //   let testIModelId = await HubUtility.queryIModelIdByName(ctx, contextId, testIModelName);
-  //   ctx.enter();
-  //   let changesetId = (await BriefcaseManager.evaluateVersion(ctx, IModelVersion.asOfChangeSet("77721a87e0e40820abd94398c913736e0dcc93ff"), testIModelId)).changeSetId
-  //   let db = await IModelTestUtils.openCheckpointUsingRpc({ requestContext: ctx, contextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet("77721a87e0e40820abd94398c913736e0dcc93ff").toJSON() });
-
-  //   assert.equal(db.getGuid(), testIModelId);
-  //   assert.equal(db.nativeDb.getParentChangeSetId(), changesetId);
-
-  //   Config.App.set("imjs_buddi_resolve_url_using_region", "102");
-  //   ctx = await TestUtility.getAuthorizedClientRequestContext({});
-
-  //   // testIModelName = "seedFileTest";
-  //   // contextId = "71551fa5-abf4-424a-9a88-c745232d2ac3";
-  //   // testIModelId = await HubUtility.queryIModelIdByName(ctx, "71551fa5-abf4-424a-9a88-c745232d2ac3", testIModelName);
-  //   // ctx.enter();
-  //   // changesetId = (await BriefcaseManager.evaluateVersion(ctx, IModelVersion.asOfChangeSet("77721a87e0e40820abd94398c913736e0dcc93ff"), testIModelId)).changeSetId
-  //   // db = await IModelTestUtils.openCheckpointUsingRpc({ requestContext: ctx, contextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet("77721a87e0e40820abd94398c913736e0dcc93ff").toJSON() });
-
-  //   // assert.equal(db.getGuid(), testIModelId);
-  //   // assert.equal(db.nativeDb.getParentChangeSetId(), changesetId);
-  // });
-
 });
