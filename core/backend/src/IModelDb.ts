@@ -1632,7 +1632,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const iModel = this._iModel;
       const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(elProps, iModel);
-      const val = iModel.nativeDb.insertElement(elProps);
+
+      const json = elProps instanceof Element ? elProps.toJSON() : elProps;
+      const val = iModel.nativeDb.insertElement(json);
       if (val.error)
         throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: elProps.classFullName }));
 
@@ -1653,7 +1655,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(elProps, iModel);
 
-      const stat = iModel.nativeDb.updateElement(elProps);
+      const json = elProps instanceof Element ? elProps.toJSON() : elProps;
+      const stat = iModel.nativeDb.updateElement(json);
       if (stat !== IModelStatus.Success)
         throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: elProps.id }));
 
