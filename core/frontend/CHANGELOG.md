@@ -35,6 +35,11 @@ Tue, 09 Mar 2021 20:28:13 GMT
 - Fix failure to call screen-space effects `shouldApply` function when reading pixels.
 - fix for running display-performance-test-app with a saved view which has volume classification using overrides
 
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
 ## 2.12.2
 Wed, 03 Mar 2021 18:48:52 GMT
 

@@ -13,6 +13,11 @@ Tue, 09 Mar 2021 20:28:13 GMT
 - begin rename project from iModel.js to iTwin.js
 - Allow the same label to be used in two different units within the same family but in different systems.
 
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
 ## 2.12.2
 Wed, 03 Mar 2021 18:48:52 GMT
 

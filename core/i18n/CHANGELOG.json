@@ -17,6 +17,12 @@
       }
     },
     {
+      "version": "2.12.3",
+      "tag": "@bentley/imodeljs-i18n_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.12.2",
       "tag": "@bentley/imodeljs-i18n_v2.12.2",
       "date": "Wed, 03 Mar 2021 18:48:52 GMT",
