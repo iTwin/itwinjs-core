@@ -19,6 +19,8 @@ const scratchPoint = Point3d.createZero();
 const scratchQPoint2d = new QPoint2d();
 const scratchEllipsoid = Ellipsoid.create(Transform.createIdentity());
 const scratchZeroRange = Range1d.createXX(0, 0);
+let scratch8Points: Array<Point3d>;
+let scratch8Params: Array<Point2d>;
 
 /** Terrain provider that produces geometry that represents a smooth ellipsoid without any height perturbations.
  * The area within the project extents are represented as planar tiles and other tiles are facetted approximations
@@ -42,7 +44,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
   private getPlanarMesh(tile: MapTile): TerrainMeshPrimitive {
     const projection = tile.getProjection();
     let mesh: TerrainMeshPrimitive;
-    const skirtProps = { wantSkirts: false, northCount: 0, southCount: 0, eastCount: 0, westCount: 0};  // Skirts are explicitly created, no need to preallocate.
+    const skirtProps = { wantSkirts: false, northCount: 0, southCount: 0, eastCount: 0, westCount: 0};  // Skirts are explicitly created, no need to preallocate
 
     if (!this._wantSkirts) {
       mesh = TerrainMeshPrimitive.create({...skirtProps, pointQParams: QParams3d.fromRange(projection.localRange), pointCount: 4, indexCount: 6 });
@@ -53,19 +55,27 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
         }
       mesh.addQuad(0, 1, 2, 3);
     } else {
-      const points = new Array<Point3d>();
-      const params = new Array<Point2d>();
+      if (!scratch8Points || !scratch8Params) {
+        scratch8Points = new Array<Point3d>();
+        scratch8Params = new Array<Point2d>();
+        for (let i = 0; i < 8; i++) {
+          scratch8Points.push(Point3d.createZero());
+          scratch8Params.push(Point2d.createZero());
+        }
+      }
+
       const skirtHeight = tile.range.xLength() / 20.0;
-      for (let v = 0; v < 2; v++)
+      for (let v = 0, i = 0; v < 2; v++)
         for (let u = 0; u < 2; u++)
           for (let h = 0; h < 2; h++) {
-            params.push(Point2d.create(u, 1 - v), scratchPoint2d);
-            points.push(projection.getPoint(u, v, h * skirtHeight));
+            scratch8Params[i].set(u, 1 - v);
+            projection.getPoint(u, v, h * skirtHeight, scratch8Points[i]);
+            i++;
           }
-      mesh = TerrainMeshPrimitive.create({...skirtProps, pointQParams: QParams3d.fromRange(Range3d.createArray(points)), pointCount: 8, indexCount: 10 });
+      mesh = TerrainMeshPrimitive.create({...skirtProps, pointQParams: QParams3d.fromRange(Range3d.createArray(scratch8Points)), pointCount: 8, indexCount: 30 });
       for (let i = 0 ; i < 8; i++) {
-        scratchQPoint2d.init(params[i], mesh.uvQParams);
-        mesh.addVertex(points[i], scratchQPoint2d);
+        scratchQPoint2d.init(scratch8Params[i], mesh.uvQParams);
+        mesh.addVertex(scratch8Points[i], scratchQPoint2d);
       }
 
       mesh.addQuad(0, 2, 4, 6);
@@ -100,9 +110,13 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     const scaleFactor = Math.max(.99, 1 - Math.sin(ellipsoidPatch.longitudeSweep.sweepRadians * delta));
     skirtPatch.ellipsoid.transformRef.matrix.scaleColumnsInPlace(scaleFactor, scaleFactor, scaleFactor);
     const pointCount = globeMeshDimension * globeMeshDimension;
-    const indexCount = 6 * (globeMeshDimension - 1) * (globeMeshDimension -1);
+    const rowMin = (bordersNorthPole || this._wantSkirts) ? 0 : 1;
+    const rowMax = (bordersSouthPole || this._wantSkirts) ? dimensionM1 : dimensionM2;
+    const colMin = this._wantSkirts ? 0 : 1;
+    const colMax = this._wantSkirts ? dimensionM1 : dimensionM2;
+    const indexCount = 6 * (rowMax - rowMin) * (colMax - colMin);
 
-    const mesh = TerrainMeshPrimitive.create({ pointQParams: QParams3d.fromRange(range), pointCount, indexCount, wantSkirts: this._wantSkirts, northCount: globeMeshDimension, southCount: globeMeshDimension, eastCount: globeMeshDimension, westCount: globeMeshDimension });
+    const mesh = TerrainMeshPrimitive.create({ pointQParams: QParams3d.fromRange(range), pointCount, indexCount, wantSkirts: false, northCount: globeMeshDimension, southCount: globeMeshDimension, eastCount: globeMeshDimension, westCount: globeMeshDimension });
 
     for (let iRow = 0, index = 0; iRow < globeMeshDimension; iRow++) {
       for (let iColumn = 0; iColumn < globeMeshDimension; iColumn++, index++) {
@@ -128,10 +142,6 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
       }
     }
 
-    const rowMin = (bordersNorthPole || this._wantSkirts) ? 0 : 1;
-    const rowMax = (bordersSouthPole || this._wantSkirts) ? dimensionM1 : dimensionM2;
-    const colMin = this._wantSkirts ? 0 : 1;
-    const colMax = this._wantSkirts ? dimensionM1 : dimensionM2;
     for (let iRow = rowMin; iRow < rowMax; iRow++) {
       for (let iColumn = colMin; iColumn < colMax; iColumn++) {
         const base = iRow * globeMeshDimension + iColumn;
