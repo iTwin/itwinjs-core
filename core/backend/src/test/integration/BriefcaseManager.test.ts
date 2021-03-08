@@ -5,7 +5,7 @@
 
 import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeSetQuery, ChangesType } from "@bentley/imodelhub-client";
-import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
@@ -14,7 +14,7 @@ import * as path from "path";
 import * as readline from "readline";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseIdValue, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration,
   IModelJsFs, KnownLocations,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
