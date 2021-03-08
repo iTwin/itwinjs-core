@@ -190,7 +190,13 @@ export namespace ExternalSourceAspect { // eslint-disable-line no-redeclare
    * @public
    */
   export enum Kind {
+    /** Indicates that the [[ExternalSourceAspect]] is storing [[Element]] provenance */
     Element = "Element",
+    /** Indicates that the [[ExternalSourceAspect]] is storing [[Relationship]] provenance */
     Relationship = "Relationship",
+    /** Indicates that the [[ExternalSourceAspect]] is storing *scope* provenance
+     * @see [[ExternalSourceAspect.scope]]
+     */
+    Scope = "Scope",
   }
 }
