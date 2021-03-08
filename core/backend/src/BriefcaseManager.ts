@@ -192,7 +192,6 @@ export class BriefcaseManager {
    * @note this does check whether the id was actually acquired by the caller.
    */
   public static isValidBriefcaseId(id: BriefcaseId) {
-    // eslint-disable-next-line deprecation/deprecation
     return id >= BriefcaseIdValue.FirstValid && id <= BriefcaseIdValue.LastValid;
   }
 
