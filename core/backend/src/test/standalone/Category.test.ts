@@ -39,21 +39,17 @@ describe("Category", () => {
       specularColor: [0.2, 0.2, 0.2],
     };
 
-    const fieldWeldId = RenderMaterialElement.insert(imodel, IModelDb.dictionaryId, "FieldWeldMaterial", params);
-    const codeValue = RenderMaterialElement.createCode(imodel, IModelDb.dictionaryId, "FieldWeldMaterial");
-
-    const materialId = imodel.elements.queryElementIdByCode(RenderMaterialElement.createCode(imodel, IModelDb.dictionaryId, "FieldWeldMaterial"))!;
-    expect(materialId).not.to.be.undefined;
+    const materialId = RenderMaterialElement.insert(imodel, IModelDb.dictionaryId, "FieldWeldMaterial", params);
     expect(Id64.isValidId64(materialId)).to.be.true;
 
     const appearance = new SubCategoryAppearance({material: materialId, priority: 100, transp: 0.75});
-    let priCategoryId = SpatialCategory.insert(imodel, IModelDb.dictionaryId, "FieldWeld", appearance);
+    const priCategoryId = SpatialCategory.insert(imodel, IModelDb.dictionaryId, "FieldWeld", appearance);
     expect(Id64.isValidId64(priCategoryId)).to.be.true;
 
     const subCatId = imodel.elements.queryElementIdByCode(SubCategory.createCode(imodel, priCategoryId, "FieldWeld"))!;
     expect(subCatId).not.to.be.undefined;
     expect(Id64.isValidId64(subCatId)).to.be.true;
-    const subCat = imodel.elements.getElement(subCatId) as SubCategory;
+    const subCat = imodel.elements.getElement<SubCategory>(subCatId)!;
     expect(subCat).not.to.be.undefined;
     expect(subCat).instanceof(SubCategory);
     expect(subCat.isDefaultSubCategory).to.be.true;
