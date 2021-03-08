@@ -367,6 +367,9 @@ export interface DockedToolSettingsState {
 }
 
 // @internal (undocumented)
+export function dockWidgetContainer(state: NineZoneState, widgetTabId: string): NineZoneState | undefined;
+
+// @internal (undocumented)
 export const DraggedPanelSideContext: React.Context<"left" | "right" | "top" | "bottom" | undefined>;
 
 // @internal (undocumented)
@@ -622,6 +625,9 @@ export interface FloatingWidgetState {
     // (undocumented)
     readonly id: WidgetState["id"];
 }
+
+// @internal (undocumented)
+export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState | undefined;
 
 // @beta
 export class Footer extends React.PureComponent<FooterProps> {
@@ -948,10 +954,16 @@ export interface HorizontalPanelState extends PanelState {
 }
 
 // @internal (undocumented)
+export function isFloatingLocation(location: TabLocation): location is FloatingLocation;
+
+// @internal (undocumented)
 export const isHorizontalPanelSide: (side: PanelSide) => side is HorizontalPanelSide;
 
 // @internal (undocumented)
 export function isHorizontalPanelState(state: PanelState): state is HorizontalPanelState;
+
+// @internal (undocumented)
+export function isPanelLocation(location: TabLocation): location is PanelLocation;
 
 // @internal (undocumented)
 export function isTabTarget(target: DragTarget): target is TabTarget;
