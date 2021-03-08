@@ -2,13 +2,13 @@
 tableRowAnchors: true
 ---
 
-# Glossary of terms in iModel.js
+# Glossary of terms in iTwin.js
 
 |Term | Definition
 |------------|------------|
 |**AABB**|[Axis Aligned Bounding Box](https://en.wikipedia.org/wiki/Minimum_bounding_box#Axis-aligned_minimum_bounding_box).
 |**ACS**|Auxiliary Coordinate System. Views may choose to use an Auxiliary Coordinate System to show coordinate information with a different orientation and units.
-|**Backend**|The part of an iModel.js app that is concerned with accessing data in a briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [learning about backend code](./backend/index.md).
+|**Backend**|The part of an iTwin.js app that is concerned with accessing data in a briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [learning about backend code](./backend/index.md).
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS is relevant outside of iModels, but all information stored in an iModel conforms to BIS.
 |**BisCore**|The *base* BIS Domain for iModels. All ECClasses stored in an iModel must derive from a BisCore class.
 |**Briefcase**|A file holding a *copy of* an iModel. It contains data from [ChangeSets](#changeset) as well as local changes. See [BriefcaseDb](./backend/IModelDb.md).
@@ -54,7 +54,7 @@ tableRowAnchors: true
 |**iModel**|A distributed relational database holding information about an infrastructure asset defined in BIS. Many copies of an iModel may be extant simultaneously, each held in a Briefcase and synchronized via ChangeSets from iModelHub.
 |**IModelApp**|The *administrator* class for frontend applications. By subclassing IModelApp, applications can control the behavior of the frontend services.
 |**IModelConnection**|A TypeScript class in the frontend that represents the connection to the iModel on the backend.
-|**iModelHub**|A cloud service that coordinates access to iModels. It grants permission to approved iModel.js applications to access Briefcases of iModels on behalf of a authorized user. It also accepts and distributes ChangeSets to form the immutable and authoritative *timeline of changes* for an iModel.
+|**iModelHub**|A cloud service that coordinates access to iModels. It grants permission to approved iTwin.js applications to access Briefcases of iModels on behalf of a authorized user. It also accepts and distributes ChangeSets to form the immutable and authoritative *timeline of changes* for an iModel.
 |**Lock**|The right to modify a specific type of data (e.g. [Elements](#element), [Models](#model)). See [pessimistic concurrency control]($docs/learning/backend/ConcurrencyControl.md#pessimistic-concurrency-control).
 |**L10N**|An abbreviation for [Localization](https://en.wikipedia.org/wiki/Internationalization_and_localization).
 |**LineStyle**|A named pattern that is repeated along a path when it is displayed to represent the meaning of the path.
@@ -69,7 +69,7 @@ tableRowAnchors: true
 |**ParentModel**|A derived property of Model that is equal to the Model of its ModeledElement.
 |**PhysicalModel**|A subclass of SpatialModel that holds PhysicalElements.
 |**Project Extents**|The *volume of interest* for an iModel's Spatial Coordinate System. All spatial elements in an iModel must be completely inside its Project Extents.
-|**Props**|iModel.js uses the convention that the members and types of a *JSON wire format* are expressed in TypeScript by an [interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) or [type alias](http://www.typescriptlang.org/docs/handbook/advanced-types.html) with the suffix **Props** (for *prop*erties). E.g. `ElementProps`, `ViewDefinitionProps`, etc.
+|**Props**|iTwin.js uses the convention that the members and types of a *JSON wire format* are expressed in TypeScript by an [interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) or [type alias](http://www.typescriptlang.org/docs/handbook/advanced-types.html) with the suffix **Props** (for *prop*erties). E.g. `ElementProps`, `ViewDefinitionProps`, etc.
 |**Pull**|Process of downloading [ChangeSets](#changeset) for a [Briefcase](#briefcase) that are newer than the last ChangeSet [*merged*](#merge) into that Briefcase.
 |**Push**|Process of uploading local changes from a [Briefcase](#briefcase) to [iModelHub](#imodelhub) in a form of a [ChangeSet](#changeset) file. It is required that user [pulls](#pull) and [merges](#merge) before attempting a push.
 |**RootSubject**|An Element in the iModel that describes (in text) the asset modeled by an iModel. There is always one and only one RootSubject. All information in an iModel will have some relationship to the RootSubject, making it the root of a *table of contents*.
@@ -97,4 +97,4 @@ tableRowAnchors: true
 |**ViewState**|A TypeScript class in the frontend that holds a copy of the *state* of a [ViewDefinition]($backend). A [ViewState]($frontend) is modified by viewing operations (e.g. pan, zoom, rotate, etc.). There are a parallel set of subclasses of ViewState for the subclasses of ViewDefinition.
 |**WebGL**|A [JavaScript API](https://www.khronos.org/webgl/) for rendering into an HTML document via OpenGL.
 |**Webpack**|A tool for [bundling JavaScript applications](https://webpack.js.org/)
-|**Wire format**|The JSON representation of objects that must be used when transferring data in iModel.js. See Props.
+|**Wire format**|The JSON representation of objects that must be used when transferring data in iTwin.js. See Props.

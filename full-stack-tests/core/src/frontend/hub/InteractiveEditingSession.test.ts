@@ -3,22 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-const expect = chai.expect;
 import * as chaiAsPromised from "chai-as-promised";
-chai.use(chaiAsPromised);
-import { BeDuration, compareStrings, DbOpcode, Id64String, isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, compareStrings, DbOpcode, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BatchType, Code, ElementGeometryChange } from "@bentley/imodeljs-common";
+import { BatchType, Code, ElementGeometryChange, ElementsChanged } from "@bentley/imodeljs-common";
 import {
-  ElementEditor3d, GeometricModel3dState, IModelApp, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection, TileLoadPriority,
+  ElementEditor3d, GeometricModel3dState, IModelApp, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection,
+  TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
+const expect = chai.expect;
+chai.use(chaiAsPromised);
 let codeSuffix = 1;
 
-// The Web RPC protocol currently does not support the push notifications required for interactive editing.
-if (isElectronRenderer) {
+/* eslint-disable deprecation/deprecation */
+
+// The Web RPC protocol does not support Ipc required for interactive editing.
+if (ProcessDetector.isElectronAppFrontend) {
   describe("InteractiveEditingSession (#integration)", () => {
     let briefcase: RemoteBriefcaseConnection | undefined;
     let imodelId: string;
@@ -33,6 +36,7 @@ if (isElectronRenderer) {
 
     before(async () => {
       const projectName = "iModelJsIntegrationTest";
+      await IModelApp.shutdown(); // we call ElectronApp.startup in _Setup.test.ts. Shutdown IModelApp so we can use new IModelAppOptions in call to startup below
       await IModelApp.startup({
         authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
         imodelClient: TestUtility.imodelCloudEnv.imodelClient,
@@ -99,14 +103,15 @@ if (isElectronRenderer) {
       // Begin an editing session.
       const session = await InteractiveEditingSession.begin(imodel);
 
+      let changedElements: ElementsChanged;
+      session.onElementChanges.addListener((ch) => changedElements = ch);
+
       async function expectChanges(expected: ElementGeometryChange[], compareRange = false): Promise<void> {
-        // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
-        const waitTime = 150;
-        await BeDuration.wait(waitTime);
 
         const changes = session.getGeometryChangesForModel(modelId);
         expect(undefined === changes).to.equal(expected.length === 0);
         if (changes) {
+
           const actual = Array.from(changes).sort((x, y) => compareStrings(x.id, y.id));
           if (compareRange) {
             expect(actual).to.deep.equal(expected);
@@ -128,6 +133,9 @@ if (isElectronRenderer) {
       await imodel.saveChanges();
       const insertElem1 = makeInsert(elem1);
       await expectChanges([insertElem1]);
+      expect(changedElements!.deleted).to.be.undefined;
+      expect(changedElements!.updated).to.be.undefined;
+      expect(changedElements!.inserted).to.not.be.undefined;
 
       // Modify the line element.
       await editor.startModifyingElements([elem1]);

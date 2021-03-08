@@ -35,6 +35,7 @@ interface IconEditorState {
 export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEditorState> implements TypeEditor {
   private _control: any | null = null;
   private _isMounted = false;
+  private _divElement = React.createRef<HTMLDivElement>();
 
   constructor(props: PropertyEditorProps) {
     super(props);
@@ -76,6 +77,17 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
     }
 
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._divElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    let containsFocus = false;
+    if (this._divElement.current)
+      containsFocus = this._divElement.current.contains(document.activeElement);
+    return containsFocus;
   }
 
   private setFocus(): void {
@@ -148,7 +160,7 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
   public render() {
     const { icon, icons, numColumns } = this.state;
     return (
-      <div className={classnames("components-icon-editor", this.props.className)} style={this.props.style}>
+      <div className={classnames("components-icon-editor", this.props.className)} style={this.props.style} ref={this._divElement}>
         <IconPickerButton ref={(control) => this._control = control}
           icon={icon}
           icons={icons}

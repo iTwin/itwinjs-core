@@ -1,6 +1,6 @@
 # Write An Interactive App
 
-An [interactive iModel.js app](../learning/App.md#interactive-apps) has two components or layers:
+An [interactive iTwin.js app](../learning/App.md#interactive-apps) has two components or layers:
 
 - [frontend](./Glossary.md#frontend) = user interface and display
 - [backend](./Glossary.md#backend) = iModel access

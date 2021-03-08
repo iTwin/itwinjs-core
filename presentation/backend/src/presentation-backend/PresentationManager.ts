@@ -9,13 +9,15 @@
 import * as hash from "object-hash";
 import * as path from "path";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, EventSink, IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
+import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
-  ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node,
-  NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationStatus,
-  PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
+  ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition,
+  LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions,
+  PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope,
+  SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
@@ -25,6 +27,7 @@ import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetV
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
 import { UpdatesTracker } from "./UpdatesTracker";
 import { BackendDiagnosticsOptions, getElementKey, WithClientRequestContext } from "./Utils";
+import { PresentationIpcHandler } from "./PresentationIpcHandler";
 
 /**
  * Presentation manager working mode.
@@ -110,6 +113,16 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
    * Configuration for disk cache used to persist hierarchy.
    */
   disk?: DiskHierarchyCacheConfig;
+}
+
+/**
+ * A data structure that associates some unit systems with a format. The associations are used for
+ * assigning default unit formats for specific phenomenons (see [[PresentationManagerProps.defaultFormats]])
+ * @alpha
+ */
+export interface UnitSystemFormat {
+  unitSystems: PresentationUnitSystem[];
+  format: FormatProps;
 }
 
 /**
@@ -247,6 +260,24 @@ export interface PresentationManagerProps {
   contentCacheSize?: number;
 
   /**
+   * A map of default unit formats to use for formatting properties that don't have a presentation format
+   * in requested unit system.
+   *  @alpha */
+  defaultFormats?: {
+    [phenomenon: string]: UnitSystemFormat;
+  };
+
+  /**
+   * Use [SQLite's Memory-Mapped I/O](https://sqlite.org/mmap.html) for worker connections. This mode improves performance of handling
+   * requests with high I/O intensity, e.g. filtering large tables on non-indexed columns. No downsides have been noticed.
+   *
+   * Set to a falsy value to turn off. `true` for memory-mapping the whole iModel. Number value for memory-mapping the specified amount of bytes.
+   *
+   * @alpha
+   */
+  useMmap?: boolean | number;
+
+  /**
    * An identifier which helps separate multiple presentation managers. It's
    * mostly useful in tests where multiple presentation managers can co-exist
    * and try to share the same resources, which we don't want. With this identifier
@@ -258,9 +289,6 @@ export interface PresentationManagerProps {
 
   /** @internal */
   addon?: NativePlatformDefinition;
-
-  /** @internal */
-  eventSink?: EventSink;
 }
 
 /**
@@ -277,6 +305,7 @@ export class PresentationManager {
   private _isOneFrontendPerBackend: boolean;
   private _isDisposed: boolean;
   private _disposeIModelOpenedListener?: () => void;
+  private _disposeIpcHandler?: () => void;
   private _updatesTracker?: UpdatesTracker;
 
   /** Get / set active locale used for localizing presentation data */
@@ -307,6 +336,8 @@ export class PresentationManager {
         isChangeTrackingEnabled,
         cacheConfig: createCacheConfig(this._props.cacheConfig),
         contentCacheSize: this._props.contentCacheSize,
+        defaultFormats: this._props.defaultFormats,
+        useMmap: this._props.useMmap,
       });
       this._nativePlatform = new nativePlatformImpl();
     }
@@ -322,15 +353,19 @@ export class PresentationManager {
     if (this._props.enableSchemasPreload)
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
 
-    this._isOneFrontendPerBackend = IModelHost.isNativeAppBackend;
+    this._isOneFrontendPerBackend = IpcHost.isValid;
+
+    // TODO: updates tracker should only be created for native app backends, but that's a breaking
+    // change - make it when moving to 3.0
     if (isChangeTrackingEnabled) {
-      // if change tracking is enabled, assume we're in native app mode even if `IModelHost.isNativeAppBackend` tells we're not
-      this._isOneFrontendPerBackend = true;
       this._updatesTracker = UpdatesTracker.create({
         nativePlatformGetter: this.getNativePlatform,
-        eventSink: (props && props.eventSink) ? props.eventSink /* istanbul ignore next */ : EventSink.global,
         pollInterval: props!.updatesPollInterval!, // set if `isChangeTrackingEnabled == true`
       });
+    }
+
+    if (IpcHost.isValid) {
+      this._disposeIpcHandler = PresentationIpcHandler.register();
     }
   }
 
@@ -350,6 +385,9 @@ export class PresentationManager {
       this._updatesTracker.dispose();
       this._updatesTracker = undefined;
     }
+
+    if (this._disposeIpcHandler)
+      this._disposeIpcHandler();
 
     this._isDisposed = true;
   }
@@ -854,14 +892,14 @@ export class PresentationManager {
    * TODO: Return results in pages
    * @beta
    */
-  public async compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>): Promise<PartialHierarchyModification[]>;
-  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]> {
+  public async compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>): Promise<HierarchyCompareInfo>;
+  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo | PartialHierarchyModification[]> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
-      return this.compareHierarchies({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions });
+      return (await this.compareHierarchies({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions })).changes;
     }
 
     if (!requestContextOrOptions.prev.rulesetOrId && !requestContextOrOptions.prev.rulesetVariables)
-      return [];
+      return { changes: [] };
 
     const { strippedOptions: { prev, rulesetVariables, ...options } } = this.registerRuleset(requestContextOrOptions);
 
@@ -882,7 +920,7 @@ export class PresentationManager {
       currRulesetVariables: JSON.stringify(currRulesetVariables),
       expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
     };
-    return this.request(params, (key: string, value: any) => ((key === "") ? value.map(PartialHierarchyModification.fromJSON) : value));
+    return this.request(params, (key: string, value: any) => ((key === "") ? HierarchyCompareInfo.fromJSON(value) : value));
   }
 }
 

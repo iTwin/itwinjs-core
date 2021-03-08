@@ -102,7 +102,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory",
         label: "Child",
         expand: true,
-        parentCategory,
       };
       parentCategory.childCategories = [childCategory];
       dataProvider = {
@@ -124,80 +123,20 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       expect(categoryBlocks.length, "Wrong amount of categories").to.be.equal(2);
     });
 
-    it("if property record has links property set and onClick is not set, sets onClick property, otherwise not", async () => {
-      const testMatcher = (_displayValue: string) => [];
-      const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-      testRecord.links = {
-        matcher: testMatcher,
-      };
-      dataProvider.getData = async (): Promise<PropertyData> => ({
-        label: PropertyRecord.fromString(faker.random.word()),
-        description: faker.random.words(),
-        categories: [...categories],
-        records: {
-          Group_1: [testRecord],
-          Group_2: [records[0]],
-        },
-      });
-
-      render(<VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
-
-      await TestUtils.flushAsyncOperations();
-
-      expect(testRecord.links.matcher).to.be.equal(testMatcher);
-      expect(testRecord.links.onClick).to.be.not.undefined;
-      expect(records[0].links).to.be.undefined;
-    });
-
-    it("sets default onPropertyLinkClick event handler to records with link property if not passed with props", async () => {
-      const testMatcher = (_displayValue: string) => [];
-      const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-      const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-      const testStructRecord = TestUtils.createStructProperty("testStructRecord", { testProperty: testNestedRecord2 });
-      const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
-      testNestedRecord1.links = {
-        matcher: testMatcher,
-      };
-      testNestedRecord2.links = {
-        matcher: testMatcher,
-      };
-      testArrayRecord.links = {
-        matcher: testMatcher,
-      };
-
-      dataProvider.getData = async (): Promise<PropertyData> => ({
-        label: PropertyRecord.fromString(faker.random.word()),
-        description: faker.random.words(),
-        categories: [...categories],
-        records: {
-          Group_1: [testArrayRecord],
-          Group_2: [records[0]],
-        },
-      });
-
-      render(<VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
-
-      await TestUtils.flushAsyncOperations();
-
-      expect(testArrayRecord.links.onClick).to.be.not.undefined;
-      expect(testNestedRecord1.links.onClick).to.be.not.undefined;
-      expect(testNestedRecord2.links.onClick).to.be.not.undefined;
-    });
-
     it("sets passed onPropertyLinkClick event handler to records with link property", async () => {
-      const testMatcher = (_displayValue: string) => [];
+      const testOnClick = (_text: string) => [];
       const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
       const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
       const testStructRecord = TestUtils.createStructProperty("testStructRecord", { testProperty: testNestedRecord2 });
       const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
       testNestedRecord1.links = {
-        matcher: testMatcher,
+        onClick: testOnClick,
       };
       testNestedRecord2.links = {
-        matcher: testMatcher,
+        onClick: testOnClick,
       };
       testStructRecord.links = {
-        matcher: testMatcher,
+        onClick: testOnClick,
       };
 
       dataProvider.getData = async (): Promise<PropertyData> => ({
@@ -209,120 +148,16 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           Group_2: [records[0]],
         },
       });
-      const propertyLinkClickFn = () => { };
-      render(<VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} onPropertyLinkClick={propertyLinkClickFn} />);
+      const propertyLinkClickFnSpy = sinon.spy();
+      render(<VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} onPropertyLinkClick={propertyLinkClickFnSpy} />);
 
       await TestUtils.flushAsyncOperations();
 
-      expect(testNestedRecord1.links.onClick).to.be.equal(propertyLinkClickFn);
-      expect(testStructRecord.links.onClick).to.be.equal(propertyLinkClickFn);
-      expect(testNestedRecord2.links.onClick).to.be.equal(propertyLinkClickFn);
-    });
+      testNestedRecord1.links.onClick("test");
+      testStructRecord.links.onClick("test");
+      testNestedRecord2.links.onClick("test");
 
-    describe("default onPropertyLinkClick behavior", () => {
-      const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
-      let testRecord: PropertyRecord;
-      let spy: sinon.SinonStub<[(string | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
-
-      before(() => {
-        location = locationMockRef.object;
-      });
-
-      after(() => {
-        locationMockRef.reset();
-      });
-
-      beforeEach(() => {
-        const testMatcher = (_displayValue: string) => [];
-        testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-        testRecord.links = {
-          matcher: testMatcher,
-        };
-        dataProvider.getData = async (): Promise<PropertyData> => ({
-          label: PropertyRecord.fromString(faker.random.word()),
-          description: faker.random.words(),
-          categories: [...categories],
-          records: {
-            Group_1: [testRecord],
-            Group_2: [records[0]],
-          },
-        });
-
-        render(<VirtualizedPropertyGridWithDataProvider
-          orientation={Orientation.Horizontal}
-          dataProvider={dataProvider} />);
-      });
-
-      afterEach(() => {
-        spy.restore();
-      });
-
-      it("opens new window if the link text was found in record with no schema specified", async () => {
-        await TestUtils.flushAsyncOperations();
-        spy = sinon.stub(window, "open");
-        spy.returns(moq.Mock.ofType<Window>().object);
-
-        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
-          "CADID1", "0000 0005 00E0 02D8",
-          "test display label with link www.testLink.com"), "www.testLink.com");
-        expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
-      });
-
-      it("opens new window if the link text was found in record with http schema", async () => {
-        await TestUtils.flushAsyncOperations();
-        spy = sinon.stub(window, "open");
-        spy.returns(moq.Mock.ofType<Window>().object);
-
-        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
-          "CADID1", "0000 0005 00E0 02D8",
-          "test display label with link http://www.testLink.com"), "http://www.testLink.com");
-        expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
-      });
-
-      it("opens new window if the link text was found in record with https schema", async () => {
-        await TestUtils.flushAsyncOperations();
-        spy = sinon.stub(window, "open");
-        spy.returns(moq.Mock.ofType<Window>().object);
-
-        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
-          "CADID1", "0000 0005 00E0 02D8",
-          "test display label with link https://www.testLink.com"), "https://www.testLink.com");
-        expect(spy).to.be.calledOnceWith("https://www.testLink.com", "_blank");
-      });
-
-      it("does not open new window if there were no url links", async () => {
-        await TestUtils.flushAsyncOperations();
-        spy = sinon.stub(window, "open");
-        spy.returns(moq.Mock.ofType<Window>().object);
-
-        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
-          "CADID1", "0000 0005 00E0 02D8",
-          "test display label with someLink@mail.com otherLink@mail.com"), "not an url link");
-        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
-          "CADID1", "0000 0005 00E0 02D8",
-          "test display label with someLink@mail.com otherLink@mail.com"), "testEmail@mail.com");
-        sinon.assert.notCalled(spy);
-      });
-
-      it("sets location href value to value got in the text if it is an email link", async () => {
-        await TestUtils.flushAsyncOperations();
-
-        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
-          "CADID1", "0000 0005 00E0 02D8",
-          "test display label with testLink.com someLink@mail.com otherLink@mail.com"), "someOtherLink@mail.com");
-        expect(locationMockRef.object.href).to.be.equal("mailto:someOtherLink@mail.com");
-      });
-
-      it("sets location href value to value got in the text if it is an ProjectWise Explorer link", async () => {
-        await TestUtils.flushAsyncOperations();
-
-        // cSpell:disable
-        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
-          "CADID1", "0000 0005 00E0 02D8",
-          "pw://server.bentley.com:datasource-01/Documents/ProjectName"), "pw://server.bentley.com:datasource-01/Documents/ProjectName");
-        expect(locationMockRef.object.href).to.be.equal("pw://server.bentley.com:datasource-01/Documents/ProjectName");
-        // cSpell:enable
-      });
+      expect(propertyLinkClickFnSpy.calledThrice).to.be.true;
     });
 
     it("renders PropertyCategoryBlock as collapsed when it gets clicked", async () => {
@@ -353,7 +188,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory1",
         label: "Child",
         expand: true,
-        parentCategory: rootCategory1,
       };
       rootCategory1.childCategories = [childCategory1];
       const rootCategory2: PropertyCategory = {
@@ -365,7 +199,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory2",
         label: "Child",
         expand: true,
-        parentCategory: rootCategory2,
       };
       rootCategory2.childCategories = [childCategory2];
       dataProvider = {
@@ -423,7 +256,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory1",
         label: "Child1",
         expand: false,
-        parentCategory: rootCategory1,
       };
       rootCategory1.childCategories = [childCategory1];
       const rootCategory2: PropertyCategory = {
@@ -435,7 +267,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory2",
         label: "Child2",
         expand: true,
-        parentCategory: rootCategory2,
       };
       rootCategory2.childCategories = [childCategory2];
       dataProvider = {
@@ -477,7 +308,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       expect(queryByText("childCategory2Property")).to.be.null;
     });
 
-    it("rerenders if data in the provider changes", async () => {
+    it("rerenders if data if the provider changes", async () => {
       const { container } = render(<VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
       dataProvider.getData = async (): Promise<PropertyData> => ({
@@ -554,6 +385,25 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
       expect(container.querySelector(".components-property-record--vertical")).to.be.not.null;
     });
+
+    it("doesn't change orientation when props change if not necessary", async () => {
+      const { container, rerender } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider}
+          isOrientationFixed={true}
+        />);
+      await TestUtils.flushAsyncOperations();
+      expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
+
+      rerender(<VirtualizedPropertyGridWithDataProvider
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider}
+        isOrientationFixed={false}
+      />);
+      expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
+    });
+
   });
 
   describe("dynamic node heights", () => {
@@ -912,13 +762,11 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         name: "ChildCategory1",
         label: "Child",
         expand: true,
-        parentCategory,
       };
       const childCategory2: PropertyCategory = {
         name: "ChildCategory2",
         label: "Child",
         expand: true,
-        parentCategory,
       };
       parentCategory.childCategories = [childCategory1, childCategory2];
       dataProvider = {
@@ -1104,6 +952,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
       expect(scrollToItemFake).to.have.been.calledOnceWithExactly(3);
     });
+
     it("scrolls to highlighted category when highlight is updated", async () => {
       const providerMock = moq.Mock.ofType<IPropertyDataProvider>();
       providerMock.setup(async (x) => x.getData()).returns(async () => ({
@@ -1196,9 +1045,16 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       rerender(<VirtualizedPropertyGridWithDataProvider
         orientation={Orientation.Horizontal}
         dataProvider={providerMock.object}
+        highlight={{ highlightedText: "test" }}
       />);
       await waitForElement(() => getByTitle(container, "test9"), { container });
+      expect(scrollToItemFake).to.not.have.been.called;
 
+      rerender(<VirtualizedPropertyGridWithDataProvider
+        orientation={Orientation.Horizontal}
+        dataProvider={providerMock.object}
+      />);
+      await waitForElement(() => getByTitle(container, "test9"), { container });
       expect(scrollToItemFake).to.not.have.been.called;
     });
 
@@ -1232,7 +1088,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
     it("doesn't scroll to item if there is no matching item in the grid", async () => {
       const highlight3 = {
         highlightedText: "test",
-        activeMatch: {
+        activeHighlight: {
           highlightedItemIdentifier: "falseTest2",
           highlightIndex: 0,
         },
@@ -1267,7 +1123,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         highlight={highlight3}
       />);
       await waitForElement(() => getByTitle(container, "test9"), { container });
-
       expect(scrollToItemFake).to.not.have.been.called;
     });
   });

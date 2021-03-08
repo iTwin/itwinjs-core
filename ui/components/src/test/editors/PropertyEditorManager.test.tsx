@@ -77,6 +77,7 @@ describe("PropertyEditorManager", () => {
       expect(propertyEditor).to.be.instanceof(MinePropertyEditor);
       expect(propertyEditor.customDataController).to.be.instanceof(MineDataController);
     }
+    PropertyEditorManager.deregisterDataController("myData");
   });
 
   it("createEditor should throw an Error when unregistered dataController passed", () => {

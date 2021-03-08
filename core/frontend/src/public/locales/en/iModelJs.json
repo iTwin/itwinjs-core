@@ -37,7 +37,8 @@
   },
   "BackgroundMap": {
     "MapBoxCopyright": "© Mapbox, © OpenStreetMap contributors",
-    "CesiumWorldTerrainAttribution": "Cesium World Terrain: Data available from the U.S. Geological Survey, © CGIAR-CSI, Produced using Copernicus data and information funded by the European Union - EU-DEM layers, Data available from Land Information New Zealand, Data available from data.gov.uk, Data courtesy Geoscience Australia"
+    "CesiumWorldTerrainAttribution": "Cesium World Terrain: Data available from the U.S. Geological Survey, © CGIAR-CSI, Produced using Copernicus data and information funded by the European Union - EU-DEM layers, Data available from Land Information New Zealand, Data available from data.gov.uk, Data courtesy Geoscience Australia",
+    "OpenStreetMapContributors": "contributors"
   },
   "ExtensionErrors": {
     "Success": "Extension '{{extensionName}}' loaded",
@@ -98,7 +99,7 @@
     "IllegalValue": "Illegal value",
     "Details": "In case you're interested in the details:",
     "ReloadPage": "😞 Oops, something went wrong - please reload the page.",
-    "WebGLContextLost": "The WebGL rendering context was lost. See <a target=\"_blank\" href=\"https://connect-imodeljscompatibility.bentley.com/\">the WebGL compatibility checker</a> for more information.\nClosing other browser tabs before reloading the page may help."
+    "WebGLContextLost": "The WebGL rendering context was lost, most likely as a result of running out of graphics memory.\nSee <a target=\"_blank\" href=\"https://connect-imodeljscompatibility.bentley.com/\">the WebGL compatibility checker</a> for more information.\nClosing other browser tabs before reloading the page may help."
   },
   "Properties": {
     "Angle": "Angle",
@@ -114,5 +115,49 @@
   },
   "RealityModelNames": {
     "OSMBuildings": "OpenStreetMap Buildings"
+  },
+  "QuantityType": {
+    "Length": {
+      "label": "Architectural Length",
+      "description": "Architectural Lengths"
+    },
+    "LengthEngineering": {
+      "label": "Engineering Length",
+      "description": "Engineering Lengths"
+    },
+    "Coordinate": {
+      "label": "Coordinate Value",
+      "description": "Coordinate Values"
+    },
+    "Stationing": {
+      "label": "Stationing",
+      "description": "Stationing Values"
+    },
+    "LengthSurvey": {
+      "label": "Survey Length",
+      "description": "Survey Length Values"
+    },
+    "Angle": {
+      "label": "Angle",
+      "description": "Angle Values"
+    },
+    "LatLong": {
+      "label": "Lat/Long",
+      "description": "Latitude/Longitude Values"
+    },
+    "Area": {
+      "label": "Area",
+      "description": "Area Values"
+    },
+    "Volume": {
+      "label": "Volume",
+      "description": "Volume Values"
+    }
+  },
+  "MapLayers": {
+    "Messages": {
+      "LoadTileTokenError": "An authentication error occurred while loading tiles for layer '{{layerName}}'",
+      "FetchTooltipTokenError": "An authentication error occurred while fetching tooltip for layer '{{layerName}}'"
+    }
   }
 }

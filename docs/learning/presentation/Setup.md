@@ -1,4 +1,4 @@
-# Setting Up iModel.js Presentation Library
+# Setting Up iTwin.js Presentation Library
 
 In addition to setting up *imodeljs-core* there are some steps that API
 consumers must do before the library can be used.
@@ -49,5 +49,9 @@ consumers must do before the library can be used.
   ```
 
   ``` ts
-  [[include:Presentation.Frontend.RpcInterface]]
+  [[include:Presentation.Frontend.RpcInterface_1]]
+  ```
+
+  ``` ts
+  [[include:Presentation.Frontend.RpcInterface_2]]
   ```

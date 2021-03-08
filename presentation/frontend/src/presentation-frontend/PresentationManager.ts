@@ -7,21 +7,23 @@
  */
 
 import { BeEvent, IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { EventSource, IModelConnection, NativeApp } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
   HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
   isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition,
   LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
-  PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationStatus, PresentationUnitSystem,
-  RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
+  PresentationDataCompareOptions, PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RequestPriority,
+  RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { LocalizationHelper } from "./LocalizationHelper";
+import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
+import { StateTracker } from "./StateTracker";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -82,7 +84,10 @@ export interface PresentationManagerProps {
   rpcRequestsHandler?: RpcRequestsHandler;
 
   /** @internal */
-  eventSource?: EventSource;
+  ipcRequestsHandler?: IpcRequestsHandler;
+
+  /** @internal */
+  stateTracker?: StateTracker;
 }
 
 /**
@@ -98,6 +103,8 @@ export class PresentationManager implements IDisposable {
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
+  private _ipcRequestsHandler?: IpcRequestsHandler;
+  private _stateTracker?: StateTracker;
 
   /**
    * An event raised when hierarchies created using specific ruleset change
@@ -129,11 +136,11 @@ export class PresentationManager implements IDisposable {
     this._localizationHelper = new LocalizationHelper();
     this._connections = new Map<IModelConnection, Promise<void>>();
 
-    if (NativeApp.isValid) {
-      // EventSource only works in native apps, so the `onUpdate` callback will only be called there. Adding
-      // under the condition just to avoid an error message being logged.
-      const eventSource = props?.eventSource ?? EventSource.global;
-      this._clearEventListener = eventSource.on(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
+    if (IpcApp.isValid) {
+      // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
+      this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
+      this._ipcRequestsHandler = props?.ipcRequestsHandler ?? new IpcRequestsHandler(this._requestsHandler.clientId);
+      this._stateTracker = props?.stateTracker ?? new StateTracker(this._ipcRequestsHandler);
     }
   }
 
@@ -159,7 +166,7 @@ export class PresentationManager implements IDisposable {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onUpdate = (report: UpdateInfoJSON) => {
+  private onUpdate = (_evt: Event, report: UpdateInfoJSON) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.handleUpdateAsync(UpdateInfo.fromJSON(report));
   };
@@ -192,10 +199,22 @@ export class PresentationManager implements IDisposable {
       return [];
 
     const options = await this.addRulesetAndVariablesToOptions(props);
-    let modifications: PartialHierarchyModification[];
+    let modifications: PartialHierarchyModification[] = [];
+
     try {
-      modifications = (await this.rpcRequestsHandler.compareHierarchies(this.toRpcTokenOptions(options)))
-        .map(PartialHierarchyModification.fromJSON);
+      while (true) {
+        const result = (await this.rpcRequestsHandler.compareHierarchiesPaged(this.toRpcTokenOptions(options)));
+        modifications.push(...result.changes.map(PartialHierarchyModification.fromJSON));
+        if (!result.continuationToken)
+          break;
+
+        if (result.changes.length === 0) {
+          Logger.logError(PresentationFrontendLoggerCategory.Package, "Hierarchy compare returned no changes but has continuation token.");
+          return [];
+        }
+
+        options.continuationToken = result.continuationToken;
+      }
     } catch (e) {
       if (e instanceof PresentationError && e.errorNumber === PresentationStatus.Canceled) {
         modifications = [];
@@ -223,6 +242,12 @@ export class PresentationManager implements IDisposable {
   /** @internal */
   public get rpcRequestsHandler() { return this._requestsHandler; }
 
+  /** @internal */
+  public get ipcRequestsHandler() { return this._ipcRequestsHandler; }
+
+  /** @internal */
+  public get stateTracker() { return this._stateTracker; }
+
   /**
    * Get rulesets manager
    */
@@ -234,7 +259,7 @@ export class PresentationManager implements IDisposable {
    */
   public vars(rulesetId: string) {
     if (!this._rulesetVars.has(rulesetId)) {
-      const varsManager = new RulesetVariablesManagerImpl();
+      const varsManager = new RulesetVariablesManagerImpl(rulesetId, this._ipcRequestsHandler);
       this._rulesetVars.set(rulesetId, varsManager);
     }
     return this._rulesetVars.get(rulesetId)!;
@@ -266,8 +291,13 @@ export class PresentationManager implements IDisposable {
       foundRulesetOrId = foundRuleset ? foundRuleset.toJSON() : rulesetOrId;
     }
     const rulesetId = (typeof foundRulesetOrId === "object") ? foundRulesetOrId.id : foundRulesetOrId;
-    const variablesManager = this.vars(rulesetId);
-    const variables = [...(rulesetVariables || []), ...await variablesManager.getAllVariables()];
+    const variables = [...(rulesetVariables || [])];
+    if (!this._ipcRequestsHandler) {
+      // only need to add variables from variables manager if there's no IPC
+      // handler - if there is one, the variables are already known by the backend
+      variables.push(...(await this.vars(rulesetId).getAllVariables()));
+    }
+
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 

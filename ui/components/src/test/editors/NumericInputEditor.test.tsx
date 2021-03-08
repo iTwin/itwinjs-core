@@ -8,10 +8,13 @@ import { mount, shallow } from "enzyme";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
-import { BasePropertyEditorParams, InputEditorSizeParams, PropertyEditorParamTypes, RangeEditorParams, StandardEditorNames } from "@bentley/ui-abstract";
+import { BasePropertyEditorParams, InputEditorSizeParams, PropertyEditorParamTypes,
+  PropertyRecord, PropertyValue, RangeEditorParams, SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
 import { NumericInputEditor } from "../../ui-components/editors/NumericInputEditor";
 import TestUtils from "../TestUtils";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 describe("<NumericInputEditor />", () => {
   before(async () => {
@@ -144,9 +147,39 @@ describe("<NumericInputEditor />", () => {
     const inputNode = wrapper.container.querySelector("input");
     expect(inputNode).not.to.be.null;
 
-    fireEvent.keyDown(inputNode as HTMLElement, { key: "Enter" });
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter });
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
+  });
+
+  class MineDataController extends DataControllerBase {
+    public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+    }
+  }
+
+  it("should not commit if DataController fails to validate", async () => {
+    PropertyEditorManager.registerDataController("myData", MineDataController);
+    const record = TestUtils.createNumericProperty("Test", 123, StandardEditorNames.NumericInput);
+    record.property.dataController = "myData";
+
+    const spyOnCommit = sinon.spy();
+    const spyOnCancel = sinon.spy();
+    const renderedComponent = render(<EditorContainer propertyRecord={record} title="abc" onCommit={spyOnCommit} onCancel={spyOnCancel} />);
+    expect(renderedComponent).not.to.be.undefined;
+
+    const inputNode = renderedComponent.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
+
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Enter });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCommit.called).to.be.false;
+
+    fireEvent.keyDown(inputNode as HTMLElement, { key: SpecialKey.Escape });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCancel.calledOnce).to.be.true;
+
+    PropertyEditorManager.deregisterDataController("myData");
   });
 
 });

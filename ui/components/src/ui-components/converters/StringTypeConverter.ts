@@ -129,3 +129,4 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
 
 TypeConverterManager.registerConverter(StandardTypeNames.Text, StringTypeConverter);
 TypeConverterManager.registerConverter(StandardTypeNames.String, StringTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.URL, StringTypeConverter);

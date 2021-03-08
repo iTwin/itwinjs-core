@@ -14,7 +14,7 @@ Visualization of scalar vertex data is achieved by using the values to map into 
 
 Display Styles and Analysis Style.
 
-In iModel.js [DisplayStyleSettings]($common) contains a group of display settings.  A single [DisplayStyleSettings]($common) can be shared by on or more views.  The [AnalysisStyle]($common) member of [DisplayStyleSettings]($common) contains settings that control the display of [PolyfaceAuxData]($geometry).  An [AnalysisStyle]($common) may include:
+In iTwin.js [DisplayStyleSettings]($common) contains a group of display settings.  A single [DisplayStyleSettings]($common) can be shared by on or more views.  The [AnalysisStyle]($common) member of [DisplayStyleSettings]($common) contains settings that control the display of [PolyfaceAuxData]($geometry).  An [AnalysisStyle]($common) may include:
 
 - A single displacement channel. A displacementScale may be included to exaggerate or attenuate the displacement.
 - A single scalar channel, the scalar channel range and the thematic gradient to display the scalar data (`ThematicGradientSettings`).  In the images below the same mesh is displayed with two different [AnalysisStyle]($common)s.
