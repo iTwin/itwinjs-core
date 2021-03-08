@@ -16,12 +16,11 @@ import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
 import {
-  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory,
+  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory,
   PresentationProps as PresentationBackendProps,
 } from "@bentley/presentation-backend";
 import { RequestPriority } from "@bentley/presentation-common";
-import { PresentationComponentsLoggerCategory } from "@bentley/presentation-components";
-import { PresentationFrontendLoggerCategory, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
+import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
 
 chai.use(sinonChai);
