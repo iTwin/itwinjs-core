@@ -92,7 +92,7 @@ If you store `channel` from the above snippet in a global variable, you can impl
 
 ### Authentication changes for Electron and Mobile apps
 
-For desktop and mobile applications, all authentication happens on the backend. The frontend process merely initiates the login process and waits for notification that it succeeds. Previously the steps required to set up the process was somewhat complicated.
+For desktop and mobile applications, all authentication happens on the backend. The frontend process merely initiates the login process and waits for notification that it succeeds. Previously the steps required to set up the process were somewhat complicated.
 
 Now, to configure your electron or mobile application for authorization, pass the `authConfig` option to `ElectronApp.startup` or `IOSApp.startup` to specify your authorization configuration.
 

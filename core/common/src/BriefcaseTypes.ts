@@ -29,8 +29,9 @@ export enum DownloadBriefcaseStatus {
  * @public
  */
 export enum SyncMode {
+  /** Use a fixed version (i.e. a checkpoint). See [CheckpointManager]($backend) for preferred approach to using checkpoint files. */
   FixedVersion = 1,
-  /** create a briefcase that can be edited. A unique briefcaseId is assigned by iModelHub */
+  /** A briefcase that can be edited. A unique briefcaseId must be assigned by iModelHub. */
   PullAndPush = 2,
   /** use [BriefcaseIdValue.Standalone](%backend). This makes a briefcase that can accept changesets from iModelHub but can never create changesets. */
   PullOnly = 3,

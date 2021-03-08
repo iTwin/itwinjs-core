@@ -66,33 +66,21 @@ export interface IpcAppFunctions {
    */
   log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
 
-  /**
-   * Open a briefcase file from the local disk.
-   */
+  /** see BriefcaseConnection.openFile */
   openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
-
-  /** Open a standalone iModel from a file name. */
+  /** see BriefcaseConnection.openStandalone */
   openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-
-  /** Close a previously opened iModel. */
+  /** see BriefcaseConnection.close */
   closeIModel: (key: string) => Promise<void>;
-
-  /** Save any local changes. */
+  /** see BriefcaseConnection.saveChanges */
   saveChanges: (key: string, description?: string) => Promise<void>;
-
-  /** Determine whether there are outstanding txns . */
+  /** see BriefcaseConnection.hasPendingTxns */
   hasPendingTxns: (key: string) => Promise<boolean>;
-
-  /** pull (and potentially merge local) changesets up to the specified version into this Briefcase. */
+  /** see BriefcaseConnection.pullAndMergeChanges */
   pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
-
+  /** see BriefcaseConnection.pushChanges */
   pushChanges: (key: string, description: string) => Promise<string>;
-
-  /** Cancels currently pending or active generation of tile content.
-     * @param _iModelToken Identifies the iModel
-     * @param _contentIds A list of content requests to be canceled, grouped by tile tree Id.
-     * @internal
-     */
+  /** Cancels currently pending or active generation of tile content.  */
   cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
 
   /** Cancel element graphics requests.
