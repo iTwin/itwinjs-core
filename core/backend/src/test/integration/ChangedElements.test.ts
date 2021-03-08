@@ -17,7 +17,7 @@ function setupTest(iModelId: string): void {
     IModelJsFs.removeSync(cacheFilePath);
 }
 
-describe("ChangedElements (#integration)", () => {
+describe.skip("ChangedElements (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testProjectId: string;
 
