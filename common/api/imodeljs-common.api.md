@@ -4070,7 +4070,6 @@ export interface IpcAppFunctions {
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
     pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
-    // (undocumented)
     pushChanges: (key: string, description: string) => Promise<string>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
@@ -7045,7 +7044,6 @@ export type SubLayerId = string | number;
 
 // @public
 export enum SyncMode {
-    // (undocumented)
     FixedVersion = 1,
     PullAndPush = 2,
     PullOnly = 3
