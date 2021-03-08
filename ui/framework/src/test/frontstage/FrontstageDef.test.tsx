@@ -6,9 +6,10 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MockRender } from "@bentley/imodeljs-frontend";
-import { ContentLayoutDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, WidgetDef, WidgetState } from "../../ui-framework";
+import { ContentLayoutDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef, WidgetState } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
+import { addFloatingWidget, addPanelWidget, addTab, createNineZoneState } from "@bentley/ui-ninezone";
 
 describe("FrontstageDef", () => {
   before(async () => {
@@ -168,3 +169,98 @@ describe("FrontstageDef", () => {
     });
   });
 });
+
+describe("float and dock widget", () => {
+
+  it("should float", () => {
+    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+    state = addTab(state, "t3");
+
+    const frontstageDef = new FrontstageDef();
+    const nineZoneStateSetter = sinon.spy();
+
+    sinon.stub(UiFramework, "uiVersion").get(() => "2");
+    sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
+    sinon.stub(frontstageDef, "nineZoneState").get(() => state);
+    frontstageDef.floatWidget("t1", {x:55, y:105});
+    nineZoneStateSetter.calledOnce.should.true;
+
+    frontstageDef.floatWidget("ta");
+    nineZoneStateSetter.calledOnce.should.true;
+  });
+
+  it("should not float if v1", () => {
+    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+    state = addTab(state, "t3");
+
+    const frontstageDef = new FrontstageDef();
+    const nineZoneStateSetter = sinon.spy();
+
+    sinon.stub(UiFramework, "uiVersion").get(() => "1");
+    sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
+    frontstageDef.floatWidget("t1", {x:55, y:105});
+    nineZoneStateSetter.calledOnce.should.not.be.true;
+
+    sinon.stub(UiFramework, "uiVersion").get(() => "");
+    frontstageDef.floatWidget("t1");
+    nineZoneStateSetter.calledOnce.should.not.be.true;
+  });
+
+  it("should dock", () => {
+    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    state = addFloatingWidget(state, "fw1", ["t1"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+    state = addTab(state, "t3");
+
+    const frontstageDef = new FrontstageDef();
+    const nineZoneStateSetter = sinon.spy();
+
+    sinon.stub(UiFramework, "uiVersion").get(() => "2");
+    sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
+
+    expect(frontstageDef.isFloatingWidget("t1")).to.be.true;
+    expect(frontstageDef.isFloatingWidget("bad")).to.be.false;
+    frontstageDef.dockWidgetContainer("t1");
+    nineZoneStateSetter.calledOnce.should.true;
+
+    frontstageDef.dockWidgetContainer("ta");
+    nineZoneStateSetter.calledOnce.should.true;
+  });
+
+  it("should not dock if V1", () => {
+    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    state = addFloatingWidget(state, "fw1", ["t1"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+    state = addTab(state, "t3");
+
+    const frontstageDef = new FrontstageDef();
+    const nineZoneStateSetter = sinon.spy();
+
+    sinon.stub(UiFramework, "uiVersion").get(() => "1");
+    sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
+    frontstageDef.dockWidgetContainer("t1");
+    nineZoneStateSetter.calledOnce.should.not.be.true;
+
+    sinon.stub(UiFramework, "uiVersion").get(() => "");
+    frontstageDef.dockWidgetContainer("t1");
+    nineZoneStateSetter.calledOnce.should.not.be.true;
+  });
+
+});
+
