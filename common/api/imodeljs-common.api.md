@@ -639,6 +639,17 @@ export interface BriefcaseDownloader {
     requestCancel: () => Promise<boolean>;
 }
 
+// @public
+export enum BriefcaseIdValue {
+    // @internal @deprecated (undocumented)
+    DeprecatedStandalone = 1,
+    FirstValid = 2,
+    Illegal = 4294967295,
+    LastValid = 16777205,
+    Max = 16777216,
+    Standalone = 0
+}
+
 // @beta
 export interface BriefcaseProps {
     briefcaseId: number;

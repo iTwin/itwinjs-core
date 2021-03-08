@@ -5,12 +5,12 @@
 import { assert, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { IModelError } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseIdValue, ChangeSetToken, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
+import { ChangeSetToken, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 
 /** Utility to work with iModelHub */
 export class HubUtility {
