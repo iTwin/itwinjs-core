@@ -12,11 +12,18 @@ import { WebViewerApp, WebViewerAppOpts } from "./WebViewerApp";
 
 class LocalTransport extends IpcWebSocketTransport {
   private _client: WebSocket;
+  private _pending?: IpcWebSocketMessage[] = [];
 
   public constructor(port: number) {
     super();
 
     this._client = new WebSocket(`ws://localhost:${port}/`);
+
+    this._client.addEventListener("open", () => {
+      const pending = this._pending!;
+      this._pending = undefined;
+      pending.forEach((m) => this.send(m));
+    });
 
     this._client.addEventListener("message", async (event) => {
       for (const listener of IpcWebSocket.receivers)
@@ -25,7 +32,7 @@ class LocalTransport extends IpcWebSocketTransport {
   }
 
   public send(message: IpcWebSocketMessage): void {
-    this._client.send(JSON.stringify(message));
+    this._pending?.push(message) || this._client.send(JSON.stringify(message));
   }
 }
 
