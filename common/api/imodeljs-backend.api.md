@@ -445,7 +445,7 @@ export class BriefcaseDb extends IModelDb {
 // @public
 export type BriefcaseId = number;
 
-// @public @deprecated
+// @public @deprecated (undocumented)
 export enum BriefcaseIdValue {
     // @internal @deprecated (undocumented)
     DeprecatedStandalone = 1,
