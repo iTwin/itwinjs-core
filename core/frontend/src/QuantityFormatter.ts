@@ -185,9 +185,10 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
   }
 
   public getDefaultFormatPropsBySystem(requestedSystem: UnitSystemKey): FormatProps {
+    // Fallback same as Format "DefaultRealU" in Formats ecschema
     const fallbackProps: FormatProps = {
-      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
-      precision: 4,
+      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      precision: 6,
       type: "Decimal",
       uomSeparator: " ",
       decimalSeparator: ".",

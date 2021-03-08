@@ -328,7 +328,7 @@ export class Format {
       if (unitObj.toLowerCase() === name.toLowerCase()) // duplicate names are not allowed
         throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
     }
-    const newUnit: UnitProps = await unitsProvider.findUnit(name);
+    const newUnit: UnitProps = await unitsProvider.findUnitByName(name);
     if (!newUnit || !newUnit.isValid)
       throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
     this.units!.push([newUnit, label]);

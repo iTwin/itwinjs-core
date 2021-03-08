@@ -142,11 +142,11 @@ const UNIT_DATA: UnitDefinition[] = [
   { name: "Units.YR", unitFamily: "Units.TIME", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 31536000.0, offset: 0.0 }, displayLabel: "years", altDisplayLabels: ["year"] },
   // conversion => specified unit to base unit of m
   { name: "Units.M", unitFamily: "Units.LENGTH", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m", altDisplayLabels: ["meter"] },
-  { name: "Units.MM", unitFamily: "Units.LENGTH", system: "Units.INTERNATIONAL", conversion: { numerator: 1000.0, denominator: 1.0, offset: 0.0 }, displayLabel: "mm", altDisplayLabels: ["MM"] },
-  { name: "Units.CM", unitFamily: "Units.LENGTH", system: "Units.INTERNATIONAL", conversion: { numerator: 100.0, denominator: 1.0, offset: 0.0 }, displayLabel: "cm", altDisplayLabels: ["CM"] },
-  { name: "Units.DM", unitFamily: "Units.LENGTH", system: "Units.INTERNATIONAL", conversion: { numerator: 10.0, denominator: 1.0, offset: 0.0 }, displayLabel: "dm", altDisplayLabels: ["DM"] },
-  { name: "Units.KM", unitFamily: "Units.LENGTH", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1000.0, offset: 0.0 }, displayLabel: "km", altDisplayLabels: ["KM"] },
-  { name: "Units.UM", unitFamily: "Units.LENGTH", system: "Units.INTERNATIONAL", conversion: { numerator: 1000000.0, denominator: 1.0, offset: 0.0 }, displayLabel: "µm", altDisplayLabels: [] },
+  { name: "Units.MM", unitFamily: "Units.LENGTH", system: "Units.METRIC", conversion: { numerator: 1000.0, denominator: 1.0, offset: 0.0 }, displayLabel: "mm", altDisplayLabels: ["MM"] },
+  { name: "Units.CM", unitFamily: "Units.LENGTH", system: "Units.METRIC", conversion: { numerator: 100.0, denominator: 1.0, offset: 0.0 }, displayLabel: "cm", altDisplayLabels: ["CM"] },
+  { name: "Units.DM", unitFamily: "Units.LENGTH", system: "Units.METRIC", conversion: { numerator: 10.0, denominator: 1.0, offset: 0.0 }, displayLabel: "dm", altDisplayLabels: ["DM"] },
+  { name: "Units.KM", unitFamily: "Units.LENGTH", system: "Units.METRIC", conversion: { numerator: 1.0, denominator: 1000.0, offset: 0.0 }, displayLabel: "km", altDisplayLabels: ["KM"] },
+  { name: "Units.UM", unitFamily: "Units.LENGTH", system: "Units.METRIC", conversion: { numerator: 1000000.0, denominator: 1.0, offset: 0.0 }, displayLabel: "µm", altDisplayLabels: [] },
   { name: "Units.MILLIINCH", unitFamily: "Units.LENGTH", system: "Units.USCUSTOM", conversion: { numerator: 1000.0, denominator: 0.0254, offset: 0.0 }, displayLabel: "mil", altDisplayLabels: [] },
   { name: "Units.MICROINCH", unitFamily: "Units.LENGTH", system: "Units.USCUSTOM", conversion: { numerator: 1000000.0, denominator: 0.0254, offset: 0.0 }, displayLabel: "µin", altDisplayLabels: [] },
   { name: "Units.MILLIFOOT", unitFamily: "Units.LENGTH", system: "Units.USCUSTOM", conversion: { numerator: 1000.0, denominator: 0.3048, offset: 0.0 }, displayLabel: "mft", altDisplayLabels: [] },
@@ -167,6 +167,6 @@ const UNIT_DATA: UnitDefinition[] = [
   // conversion => specified unit to base unit m³
   { name: "Units.CUB_FT", unitFamily: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.028316847, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_US_SURVEY_FT", unitFamily: "Units.VOLUME", system: "Units.USSURVEY", conversion: { numerator: 1, denominator: 0.0283170164937591, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
-  { name: "Units.CUB_YD", unitFamily: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.76455486, offset: 0.0 }, displayLabel: "yd³", altDisplayLabels: ["cy"] },
+  { name: "Units.CUB_YRD", unitFamily: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.76455486, offset: 0.0 }, displayLabel: "yd³", altDisplayLabels: ["cy"] },
   { name: "Units.CUB_M", unitFamily: "Units.VOLUME", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m³", altDisplayLabels: ["cm"] },
 ];
