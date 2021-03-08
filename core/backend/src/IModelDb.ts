@@ -16,7 +16,7 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
   CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,
@@ -374,26 +374,7 @@ export abstract class IModelDb extends IModel {
     if (!limit) limit = {};
     if (!quota) quota = {};
     if (!priority) priority = QueryPriority.Normal;
-    const base64Header = "encoding=base64;";
-    // handle binary type
-    const reviver = (_name: string, value: any) => {
-      if (typeof value === "string") {
-        if (value.length >= base64Header.length && value.startsWith(base64Header)) {
-          const out = value.substr(base64Header.length);
-          const buffer = Buffer.from(out, "base64");
-          return new Uint8Array(buffer);
-        }
-      }
-      return value;
-    };
-    // handle binary type
-    const replacer = (_name: string, value: any) => {
-      if (value && value.constructor === Uint8Array) {
-        const buffer = Buffer.from(value);
-        return base64Header + buffer.toString("base64");
-      }
-      return value;
-    };
+
     return new Promise<QueryResponse>((resolve) => {
       if (!this.isOpen) {
         resolve({ status: QueryResponseStatus.Done, rows: [] });
@@ -402,7 +383,7 @@ export abstract class IModelDb extends IModel {
         if (sessionRestartToken !== "")
           sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
 
-        const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
+        const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, Base64EncodedString.replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
         if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
           resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
@@ -412,10 +393,10 @@ export abstract class IModelDb extends IModel {
           } else {
             const pollResult = this.nativeDb.pollConcurrentQuery(postResult.taskId);
             if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Done) {
-              resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollResult.result, reviver) });
+              resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollResult.result, Base64EncodedString.reviver) });
             } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Partial) {
               const returnBeforeStep = pollResult.result.length === 0;
-              resolve({ status: QueryResponseStatus.Partial, rows: returnBeforeStep ? [] : JSON.parse(pollResult.result, reviver) });
+              resolve({ status: QueryResponseStatus.Partial, rows: returnBeforeStep ? [] : JSON.parse(pollResult.result, Base64EncodedString.reviver) });
             } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Timeout)
               resolve({ status: QueryResponseStatus.Timeout, rows: [] });
             else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Pending)
@@ -1629,16 +1610,18 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the element.
      */
     public insertElement(elProps: ElementProps): Id64String {
+      const json = elProps instanceof Element ? elProps.toJSON() : elProps;
       const iModel = this._iModel;
-      const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onInsert(elProps, iModel);
-      const val = iModel.nativeDb.insertElement(elProps);
-      if (val.error)
-        throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: elProps.classFullName }));
+      const jsClass = iModel.getJsClass<typeof Element>(json.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onInsert(json, iModel);
 
-      elProps.id = Id64.fromJSON(val.result!.id);
-      jsClass.onInserted(elProps, iModel);
-      return elProps.id;
+      const val = iModel.nativeDb.insertElement(json);
+      if (val.error)
+        throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: json.classFullName }));
+
+      elProps.id = json.id = Id64.fromJSON(val.result!.id);
+      jsClass.onInserted(json, iModel);
+      return json.id;
     }
 
     /** Update some properties of an existing element.
@@ -1649,15 +1632,16 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
+      const json = elProps instanceof Element ? elProps.toJSON() : elProps;
       const iModel = this._iModel;
-      const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onUpdate(elProps, iModel);
+      const jsClass = iModel.getJsClass<typeof Element>(json.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onUpdate(json, iModel);
 
-      const stat = iModel.nativeDb.updateElement(elProps);
+      const stat = iModel.nativeDb.updateElement(json);
       if (stat !== IModelStatus.Success)
-        throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: elProps.id }));
+        throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: json.id }));
 
-      jsClass.onUpdated(elProps, iModel);
+      jsClass.onUpdated(json, iModel);
     }
 
     /** Delete one or more elements from this iModel.
@@ -1671,6 +1655,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         const props = this.tryGetElementProps(id);
         if (props === undefined) // this may be a child element which was deleted earlier as a consequence of deleting its parent.
           return;
+
         const jsClass = iModel.getJsClass<typeof Element>(props.classFullName) as any; // "as any" so we can call the protected methods
         jsClass.onDelete(props, iModel);
 
