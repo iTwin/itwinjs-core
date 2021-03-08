@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as Azure from "@azure/storage-blob";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
+import { BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
-import { AuthorizedBackendRequestContext, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
+import { IModelDb } from "../../IModelDb";
+import { AuthorizedBackendRequestContext, GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -17,17 +18,49 @@ interface TileContentRequestProps {
   guid: string;
 }
 
-describe("TileUpload (#integration)", () => {
+// Goes through models in imodel until it finds a root tile for a non empty model, returns tile content request props for that tile
+async function getTileProps(iModel: IModelDb, requestContext: AuthorizedBackendRequestContext): Promise<TileContentRequestProps | undefined> {
+  const queryParams = { from: GeometricModel3d.classFullName, limit: IModelDb.maxLimit };
+  for (const modelId of iModel.queryEntityIds(queryParams)) {
+    let model;
+    try {
+      model = iModel.models.getModel<GeometricModel3d>(modelId);
+    } catch (err) {
+      continue;
+    }
+
+    if (model.isNotSpatiallyLocated || model.isTemplate)
+      continue;
+
+    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
+    const treeProps = await iModel.tiles.requestTileTreeProps(requestContext, treeId);
+    // Ignore empty tile trees.
+    if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true)
+    continue;
+
+    let guid = model.geometryGuid || iModel.changeSetId || "first";
+    if (treeProps.contentIdQualifier)
+      guid = `${guid}_${treeProps.contentIdQualifier}`;
+
+    const idProvider = ContentIdProvider.create(true, defaultTileOptions);
+    const contentId = idProvider.rootContentId;
+
+    return {
+      treeId,
+      contentId,
+      guid
+    }
+  }
+
+  return undefined;
+}
+
+describe.only("TileUpload (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
-  const testTileProps: TileContentRequestProps = {
-    treeId: "17_1-E:0_0x20000000024",
-    contentId: "-3-0-0-0-0-1",
-    guid: "912c1c83ef5529214b66a4bd6fca9c5e28d250ac_82f852eccdc338a6",
-  };
   let testIModelId: GuidString;
   let testContextId: GuidString;
   let tileRpcInterface: IModelTileRpcInterface;
-  let blockBlobUrl: Azure.BlockBlobURL;
+  let serviceUrl: Azure.ServiceURL;
 
   before(async () => {
     // Shutdown IModelHost to allow this test to use it.
@@ -57,10 +90,7 @@ describe("TileUpload (#integration)", () => {
     // Get URL for cached tile
     const credentials = new Azure.SharedKeyCredential(config.tileCacheCredentials.account, config.tileCacheCredentials.accessKey);
     const pipeline = Azure.StorageURL.newPipeline(credentials);
-    const serviceUrl = new Azure.ServiceURL(`http://127.0.0.1:10000/${credentials.accountName}`, pipeline);
-    const containerUrl = Azure.ContainerURL.fromServiceURL(serviceUrl, testIModelId);
-    const blobUrl = Azure.BlobURL.fromContainerURL(containerUrl, `tiles/${testTileProps.treeId}/${testTileProps.guid}/${testTileProps.contentId}`);
-    blockBlobUrl = Azure.BlockBlobURL.fromBlobURL(blobUrl);
+    serviceUrl = new Azure.ServiceURL(`http://127.0.0.1:10000/${credentials.accountName}`, pipeline);
 
     // Point tileCacheService towards azurite URL
     (IModelHost.tileCacheService as any)._service = serviceUrl;
@@ -72,8 +102,6 @@ describe("TileUpload (#integration)", () => {
   });
 
   after(async () => {
-    await blockBlobUrl.delete(Azure.Aborter.none, { deleteSnapshots: "include" });
-
     // Re-start backend with default config
     await IModelTestUtils.shutdownBackend();
     await IModelTestUtils.startBackend();
@@ -85,12 +113,17 @@ describe("TileUpload (#integration)", () => {
 
     // Generate tile
     // eslint-disable-next-line deprecation/deprecation
-    const tile = await tileRpcInterface.requestTileContent(iModel.getRpcProps(), testTileProps.treeId, testTileProps.contentId, undefined, testTileProps.guid);
+    const tileProps = await getTileProps(iModel, requestContext);
+    assert.isDefined(tileProps);
+    const tile = await tileRpcInterface.requestTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid);
 
     // Uploads to the cloud storage tile cache happen asynchronously. Don't resolve until they have all finished.
     await Promise.all(IModelHost.tileUploader.activeUploads);
 
     // Query tile from tile cache
+    const containerUrl = Azure.ContainerURL.fromServiceURL(serviceUrl, testIModelId);
+    const blobUrl = Azure.BlobURL.fromContainerURL(containerUrl, `tiles/${tileProps!.treeId}/${tileProps!.guid}/${tileProps!.contentId}`);
+    const blockBlobUrl = Azure.BlockBlobURL.fromBlobURL(blobUrl);
     const blobProperties = await blockBlobUrl.getProperties(Azure.Aborter.none);
 
     // Verify metadata in blob properties
@@ -99,6 +132,7 @@ describe("TileUpload (#integration)", () => {
     assert.equal(blobProperties.metadata!.backendname, IModelHost.applicationId);
     assert.equal(blobProperties.metadata!.tilesize, tile.byteLength.toString());
 
+    await blockBlobUrl.delete(Azure.Aborter.none);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
   });
 });
