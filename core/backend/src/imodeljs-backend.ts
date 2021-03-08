@@ -9,6 +9,7 @@ export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CodeSpecs";
 export * from "./ConcurrencyControl";
+export * from "./Deprecated";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
@@ -149,3 +150,4 @@ export * from "./IModelDb"; // must be last
  * @docs-group-description Authentication
  * Classes for working with Authentication.
  */
+
