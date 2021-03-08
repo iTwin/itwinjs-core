@@ -16,7 +16,7 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BRepGeometryCreate, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
   CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,
@@ -374,26 +374,7 @@ export abstract class IModelDb extends IModel {
     if (!limit) limit = {};
     if (!quota) quota = {};
     if (!priority) priority = QueryPriority.Normal;
-    const base64Header = "encoding=base64;";
-    // handle binary type
-    const reviver = (_name: string, value: any) => {
-      if (typeof value === "string") {
-        if (value.length >= base64Header.length && value.startsWith(base64Header)) {
-          const out = value.substr(base64Header.length);
-          const buffer = Buffer.from(out, "base64");
-          return new Uint8Array(buffer);
-        }
-      }
-      return value;
-    };
-    // handle binary type
-    const replacer = (_name: string, value: any) => {
-      if (value && value.constructor === Uint8Array) {
-        const buffer = Buffer.from(value);
-        return base64Header + buffer.toString("base64");
-      }
-      return value;
-    };
+
     return new Promise<QueryResponse>((resolve) => {
       if (!this.isOpen) {
         resolve({ status: QueryResponseStatus.Done, rows: [] });
@@ -402,7 +383,7 @@ export abstract class IModelDb extends IModel {
         if (sessionRestartToken !== "")
           sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
 
-        const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
+        const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, Base64EncodedString.replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
         if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
           resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
@@ -412,10 +393,10 @@ export abstract class IModelDb extends IModel {
           } else {
             const pollResult = this.nativeDb.pollConcurrentQuery(postResult.taskId);
             if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Done) {
-              resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollResult.result, reviver) });
+              resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollResult.result, Base64EncodedString.reviver) });
             } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Partial) {
               const returnBeforeStep = pollResult.result.length === 0;
-              resolve({ status: QueryResponseStatus.Partial, rows: returnBeforeStep ? [] : JSON.parse(pollResult.result, reviver) });
+              resolve({ status: QueryResponseStatus.Partial, rows: returnBeforeStep ? [] : JSON.parse(pollResult.result, Base64EncodedString.reviver) });
             } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Timeout)
               resolve({ status: QueryResponseStatus.Timeout, rows: [] });
             else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Pending)
