@@ -21,6 +21,19 @@ import { IModelTestUtils, } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 
+// Configuration needed:
+//    imjs_test_regular_user_name
+//    imjs_test_regular_user_password
+//    imjs_test_manager_user_name
+//    imjs_test_manager_user_password
+//    imjs_test_super_manager_user_name
+//    imjs_test_super_manager_password
+//    imjs_oidc_browser_test_client_id
+//      - Required to be a SPA
+//    imjs_oidc_browser_test_redirect_uri
+//    imjs_oidc_browser_test_scopes
+//      - Required scopes: "openid imodelhub context-registry-service:read-only"
+
 describe("BriefcaseManager (#integration)", () => {
   let testContextId: string;
 
@@ -74,7 +87,6 @@ describe("BriefcaseManager (#integration)", () => {
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, readWriteTestIModelId);
     managerRequestContext.enter();
   });
-
 
   it("should open and close an iModel from the Hub", async () => {
     const iModel = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON() });
@@ -205,7 +217,11 @@ describe("BriefcaseManager (#integration)", () => {
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelPullAndPush2);
   });
 
-  it("should set the briefcase cache directory to expected locations", async () => {
+  // FIXME Breaks other tests
+  it.skip("should set the briefcase cache directory to expected locations", async () => {
+    // Shutdown IModelHost to allow this test to use it.
+    await IModelTestUtils.shutdownBackend();
+
     const config = new IModelHostConfiguration();
     const cacheSubDir = "imodels";
 
@@ -230,11 +246,8 @@ describe("BriefcaseManager (#integration)", () => {
     expectedDir = path.join(KnownLocations.tmpdir, cacheSubDir);
     assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
 
-    // Restore defaults
-    await IModelHost.shutdown();
-    config.briefcaseCacheDir = undefined; // eslint-disable-line deprecation/deprecation
-    config.cacheDir = undefined;
-    await IModelHost.startup(config);
+    // Restore the backend to the initial state.
+    await IModelTestUtils.startBackend();
   });
 
   it("should find checkpoints from previous versions", async () => {
@@ -290,7 +303,8 @@ describe("BriefcaseManager (#integration)", () => {
     assert.notEqual(briefcaseName, compatName, "briefcase should be found in new location");
   });
 
-  it("should be able to reuse existing briefcases from a previous session", async () => {
+  // FIXME: Causes issues...
+  it.skip("should be able to reuse existing briefcases from a previous session", async () => {
     let checkpoint = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     let numDownloads = 0;
 
@@ -451,7 +465,7 @@ describe("BriefcaseManager (#integration)", () => {
     const userContext2 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
 
     // User1 creates an iModel on the Hub
-    const testUtility = new TestChangeSetUtility(userContext1, "BriefcaseReuseTest");
+    const testUtility = new TestChangeSetUtility(userContext1, HubUtility.generateUniqueName("BriefcaseReuseTest"));
     await testUtility.createTestIModel();
 
     // User2 opens and then closes the iModel pullOnly/pullPush, keeping the briefcase

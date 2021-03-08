@@ -9,6 +9,10 @@ import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
+// Configuration needed
+//    imjs_agent_test_client_id
+//    imjs_agent_test_client_secret
+
 describe("Agent (#integration)", () => {
   // iOS does not support agent test
   let testProjectId: string;

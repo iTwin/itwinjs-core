@@ -10,7 +10,6 @@ import { assert } from "chai";
 import * as os from "os";
 import { AuthorizedBackendRequestContext, IModelJsNative } from "../../imodeljs-backend";
 import { UsageLoggingUtilities } from "../../usage-logging/UsageLoggingUtilities";
-import { IModelTestUtils } from "../IModelTestUtils";
 
 // Configuration needed
 //    imjs_test_regular_user_name
@@ -34,10 +33,6 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
     };
     const accessToken = await getTestAccessToken(oidcConfig, TestUsers.regular);
     requestContext = new AuthorizedBackendRequestContext(accessToken);
-  });
-
-  after(async () => {
-    IModelTestUtils.resetDebugLogLevels();
   });
 
   it("Check Entitlements (#integration)", async () => {

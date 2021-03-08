@@ -17,7 +17,7 @@ interface TileContentRequestProps {
   guid: string;
 }
 
-describe("TileUpload (#integration)", () => {
+describe.skip("TileUpload (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   const testTileProps: TileContentRequestProps = {
     treeId: "17_1-E:0_0x20000000024",
