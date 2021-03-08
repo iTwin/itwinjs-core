@@ -12,6 +12,7 @@ import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
+import { Base64EncodedString } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BRepGeometryCreate } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
@@ -4051,12 +4052,10 @@ export class TextAnnotation3d extends GraphicalElement3d {
 // @public
 export class Texture extends DefinitionElement {
     // @internal
-    constructor(props: TextureProps & {
-        data: Uint8Array | string;
-    }, iModel: IModelDb);
+    constructor(props: TextureCreateProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: string, width: number, height: number, description: string, flags: TextureFlags): Texture;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Texture;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
     // (undocumented)
     data: Uint8Array;
@@ -4068,11 +4067,17 @@ export class Texture extends DefinitionElement {
     format: ImageSourceFormat;
     // (undocumented)
     height: number;
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: string, width: number, height: number, description: string, flags: TextureFlags): Id64String;
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Id64String;
     // @internal (undocumented)
     toJSON(): TextureProps;
     // (undocumented)
     width: number;
+}
+
+// @internal
+export interface TextureCreateProps extends Omit<TextureProps, "data"> {
+    // (undocumented)
+    data: Base64EncodedString | Uint8Array;
 }
 
 // @public
