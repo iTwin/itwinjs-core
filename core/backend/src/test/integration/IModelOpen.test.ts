@@ -24,7 +24,7 @@ describe("IModelOpen (#integration)", () => {
     testContextId = await HubUtility.getTestContextId(requestContext);
     requestContext.enter();
 
-    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.stadium);
+    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
     testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
   });
 

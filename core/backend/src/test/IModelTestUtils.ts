@@ -505,4 +505,4 @@ before(async () => {
 
 after(async () => {
   await IModelTestUtils.shutdownBackend();
-})
+});

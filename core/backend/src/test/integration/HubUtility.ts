@@ -16,12 +16,12 @@ import { BriefcaseIdValue, ChangeSetToken, IModelDb, IModelHost, IModelJsFs } fr
 export class HubUtility {
   public static logCategory = "HubUtility";
 
-  public static TestContextName = "iModelJsIntegrationTest";
-  public static TestIModelNames = {
+  public static testContextName = "iModelJsIntegrationTest";
+  public static testIModelNames = {
     noVersions: "NoVersionsTest",
     stadium: "Stadium Dataset 1",
     readOnly: "ReadOnlyTest",
-    readWrite: "ReadWriteTest"
+    readWrite: "ReadWriteTest",
   };
 
   private static contextId: GuidString | undefined = undefined;
@@ -30,7 +30,7 @@ export class HubUtility {
     requestContext.enter();
     if (undefined !== HubUtility.contextId)
       return HubUtility.contextId;
-    return await HubUtility.queryProjectIdByName(requestContext, HubUtility.TestContextName);
+    return HubUtility.queryProjectIdByName(requestContext, HubUtility.testContextName);
   }
 
   private static imodelCache = new Map<string, GuidString>();
@@ -611,7 +611,7 @@ export class HubUtility {
    * @returns the iModelId of the newly created iModel.
   */
   public static async recreateIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
-    let deleteIModel = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
+    const deleteIModel = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
     if (undefined !== deleteIModel)
       await IModelHost.iModelClient.iModels.delete(requestContext, contextId, deleteIModel.wsgId);
 

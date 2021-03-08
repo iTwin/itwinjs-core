@@ -44,17 +44,17 @@ describe("ApplyChangeSets (#integration)", () => {
   it("should test all change set operations after downloading iModel from the hub (#integration)", async () => {
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 
-    let projectId = await HubUtility.getTestContextId(requestContext);
-    let iModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.readOnly);
+    const projectId = await HubUtility.getTestContextId(requestContext);
+    let iModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
     await testAllOperations(requestContext, projectId, iModelId);
     requestContext.enter();
 
-    iModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.readWrite);
+    iModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readWrite);
     requestContext.enter();
     await testAllOperations(requestContext, projectId, iModelId);
     requestContext.enter();
 
-    iModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.noVersions);
+    iModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.noVersions);
     requestContext.enter();
     await testAllOperations(requestContext, projectId, iModelId);
   });
