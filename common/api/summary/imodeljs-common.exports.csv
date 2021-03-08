@@ -42,6 +42,7 @@ public;BRepPrimitive
 alpha;BRepRoundProps
 alpha;BRepThickenProps
 beta;BriefcaseDownloader
+public;BriefcaseIdValue
 beta;BriefcaseProps
 internal;BriefcasePushAndPullNotifications
 beta;calculateSolarAngles(date: Date, location: Cartographic):
