@@ -2014,10 +2014,9 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
 // @public (undocumented)
 export namespace ExternalSourceAspect {
     export enum Kind {
-        // (undocumented)
         Element = "Element",
-        // (undocumented)
-        Relationship = "Relationship"
+        Relationship = "Relationship",
+        Scope = "Scope"
     }
 }
 
@@ -2905,6 +2904,7 @@ export class IModelTransformer extends IModelExportHandler {
     processRelationships(baseRelClassFullName: string): Promise<void>;
     processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
     processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
+    get provenanceDb(): IModelDb;
     protected shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     protected shouldExportElement(_sourceElement: Element): boolean;
     protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
