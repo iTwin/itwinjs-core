@@ -7,25 +7,21 @@
  */
 
 import * as fs from "fs";
-import got from "got";
 import * as https from "https";
 import * as os from "os";
 import * as path from "path";
-import { PassThrough, pipeline as pipeline_callback, Transform, TransformCallback } from "stream";
+import { Transform, TransformCallback } from "stream";
 import * as urllib from "url";
-import { promisify } from "util";
-import { BriefcaseStatus, Config, Logger } from "@bentley/bentleyjs-core";
+import { Config, Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
-  AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, ResponseError,
-  SasUrlExpired, UserCancelledError,
+  AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
+  UserCancelledError,
 } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
+import { downloadFileAtomic } from "../downloadFileAtomic";
 import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "../util/AzCopy";
 
-const pipeline = promisify(pipeline_callback);
-
-import WriteStreamAtomic = require("fs-write-stream-atomic");
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
 /**
@@ -189,59 +185,9 @@ export class AzureFileHandler implements FileHandler {
     }
   }
 
-  private async downloadFileUsingHttps(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
-    let retryCount = 0;
-
-    let closePromise: Promise<void>;
-
-    while (retryCount > -1) {
-      const fileStream = new WriteStreamAtomic(downloadToPathname, { encoding: "binary" });
-      closePromise = new Promise((resolve) => fileStream.once("close", resolve));
-
-      const bufferedStream = (this.useBufferedDownload(downloadToPathname)) ? new BufferedStream(this._threshold) : new PassThrough();
-
-      const downloadStream = got.stream(downloadUrl);
-      downloadStream.retryCount = retryCount;
-      downloadStream.once("retry", (count) => retryCount = count);  // NB: This listener is required to use got's default retry behavior!
-      retryCount = -1;
-
-      if (progressCallback) {
-        downloadStream.on("downloadProgress", ({ transferred }) => {
-          progressCallback({ loaded: transferred, total: fileSize, percent: fileSize ? 100 * transferred / fileSize : 0 });
-        });
-      }
-
-      if (cancelRequest !== undefined) {
-        cancelRequest.cancel = () => {
-          downloadStream.destroy(new got.CancelError());
-          return true;
-        };
-      }
-
-      try {
-        await pipeline(
-          downloadStream,
-          bufferedStream,
-          fileStream,
-        );
-      } catch (error) {
-        if (error instanceof got.CancelError)
-          throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
-
-        if (error instanceof got.HTTPError)
-          throw new DownloadFailed(error.response.statusCode, error.response.statusMessage ?? "Download failed");
-
-        // Ignore ERR_STREAM_PREMATURE_CLOSE - that comes from `got` aborting the request on retries.
-        if (error.code !== "ERR_STREAM_PREMATURE_CLOSE")
-          throw ResponseError.parse(error);
-      } finally {
-        if (cancelRequest !== undefined)
-          cancelRequest.cancel = () => false;
-
-        // Ensure that `fileStream` has fully written/cleaned up before continuing
-        await closePromise!;
-      }
-    }
+  private async downloadFileUsingHttps(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+    const bufferThreshold = (this.useBufferedDownload(downloadToPathname)) ? this._threshold : undefined;
+    return downloadFileAtomic(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest, bufferThreshold);
   }
 
   /**
