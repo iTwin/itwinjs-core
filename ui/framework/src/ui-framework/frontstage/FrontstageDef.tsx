@@ -9,7 +9,7 @@
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
-import { NineZoneManagerProps, NineZoneState } from "@bentley/ui-ninezone";
+import { dockWidgetContainer, findTab, floatWidget, isFloatingLocation, NineZoneManagerProps, NineZoneState } from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";
@@ -26,6 +26,7 @@ import { Frontstage, FrontstageProps } from "./Frontstage";
 import { FrontstageManager } from "./FrontstageManager";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
+import { PointProps, SizeProps } from "@bentley/ui-core";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -531,5 +532,53 @@ export class FrontstageDef {
       }
     }
     FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
+  }
+
+  public isFloatingWidget(widgetId: string) {
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const location = findTab(this.nineZoneState, widgetId);
+      // istanbul ignore else
+      if (location)
+        return isFloatingLocation(location);
+    }
+
+    return false;
+  }
+
+  /** Create a new floating panel that contains the widget specified by its Id. Supported only when in
+   *  UI 2.0 or higher.
+   * @param widgetId case sensitive Wigdet Id
+   * @param point Position of top left corner of floating panel in pixels. If undefined {x:50, y:100} is used.
+   * @param size defines the width and height of the floating panel. If undefined and widget has been floated before
+   * the previous size is used, else {height:400, width:400} is used.
+   * @beta
+   */
+  public floatWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
+    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
+      return;
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const state = floatWidget(this.nineZoneState, widgetId, point, size);
+      if (state)
+        this.nineZoneState = state;
+    }
+  }
+
+  /** Finds the container with the specified widget and re-docks all widgets
+   * back to the panel zone location that was used when the floating container
+   * was generated. Supported only when in UI 2.0 or higher.
+   * @param widgetId  case sensitive Wigdet Id.
+   * @beta
+   */
+  public dockWidgetContainer(widgetId: string) {
+    if (0 === UiFramework.uiVersion.length || UiFramework.uiVersion === "1")
+      return;
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const state = dockWidgetContainer(this.nineZoneState, widgetId);
+      if (state)
+        this.nineZoneState = state;
+    }
   }
 }
