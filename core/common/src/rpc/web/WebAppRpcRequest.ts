@@ -170,6 +170,8 @@ export class WebAppRpcRequest extends RpcRequest {
   protected computeRetryAfter(attempts: number): number {
     const retryAfter = this._response && this._response.headers.get("Retry-After");
     if (retryAfter) {
+      this.resetTransientFaultCount();
+
       const r = Number(retryAfter);
       if (Number.isFinite(r)) {
         return r * 1000;
@@ -179,6 +181,8 @@ export class WebAppRpcRequest extends RpcRequest {
       if (!Number.isNaN(d)) {
         return d - Date.now();
       }
+    } else {
+      this.recordTransientFault();
     }
 
     return super.computeRetryAfter(attempts);

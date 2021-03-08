@@ -6023,6 +6023,7 @@ export abstract class RpcConfiguration {
     // @internal (undocumented)
     static supply(definition: RpcInterface): RpcConfiguration;
     static throwOnTokenMismatch: boolean;
+    transientFaultLimit: number;
 }
 
 // @public (undocumented)
@@ -6462,7 +6463,11 @@ export abstract class RpcRequest<TResponse = any> {
     protected _rawPromise: Promise<Response | undefined>;
     get rawResponse(): Promise<Response | undefined>;
     // (undocumented)
+    protected recordTransientFault(): void;
+    // (undocumented)
     protected reject(reason: any): void;
+    // (undocumented)
+    protected resetTransientFaultCount(): void;
     // (undocumented)
     protected _resolveRaw: (value?: Response | PromiseLike<Response> | undefined) => void;
     readonly response: Promise<TResponse | undefined>;
@@ -6478,7 +6483,7 @@ export abstract class RpcRequest<TResponse = any> {
     get status(): RpcRequestStatus;
     // (undocumented)
     submit(): Promise<void>;
-}
+    }
 
 // @public
 export type RpcRequestCallback_T = (request: RpcRequest) => void;

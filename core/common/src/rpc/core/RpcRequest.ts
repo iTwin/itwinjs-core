@@ -121,6 +121,7 @@ export abstract class RpcRequest<TResponse = any> {
   private _sending?: Cancellable<number>;
   private _attempts = 0;
   private _retryAfter: number | null = null;
+  private _transientFaults = 0;
   protected _response: Response | undefined = undefined;
   protected _rawPromise: Promise<Response | undefined>;
 
@@ -273,6 +274,14 @@ export abstract class RpcRequest<TResponse = any> {
 
   protected computeRetryAfter(attempts: number) {
     return (((Math.pow(2, attempts) - 1) / 2) * 500) + 500;
+  }
+
+  protected recordTransientFault() {
+    ++this._transientFaults;
+  }
+
+  protected resetTransientFaultCount() {
+    this._transientFaults = 0;
   }
 
   /* @internal */
@@ -505,8 +514,13 @@ export abstract class RpcRequest<TResponse = any> {
 
     this.setLastUpdatedTime();
     this._retryAfter = this.computeRetryAfter(this._attempts - 1);
-    this.setStatus(status);
-    RpcRequest.events.raiseEvent(RpcRequestEvent.TransientErrorReceived, this);
+
+    if (this._transientFaults > this.protocol.configuration.transientFaultLimit) {
+      this.reject(new IModelError(BentleyStatus.ERROR, `Exceeded transient fault limit.`));
+    } else {
+      this.setStatus(status);
+      RpcRequest.events.raiseEvent(RpcRequestEvent.TransientErrorReceived, this);
+    }
   }
 
   protected async setHeaders(): Promise<void> {
