@@ -242,8 +242,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
     if (target.nonLocatableTerrain && !target.drawNonLocatable)
       return RenderPass.None;
 
-    if (target.terrainTransparency > 0.0 || this._baseIsTransparent || target.currentPlanarClassifier?.anyTranslucent  ||
-      (target.wantThematicDisplay && target.uniforms.thematic.wantIsoLines))
+    if (target.terrainTransparency > 0.0 || this._baseIsTransparent || (target.wantThematicDisplay && target.uniforms.thematic.wantIsoLines))
       return RenderPass.Translucent;
 
     return RenderPass.OpaqueGeneral;
