@@ -8,6 +8,8 @@ import { ElectronBackend, ElectronBackendOptions } from "@bentley/electron-manag
 import { IpcHandler } from "@bentley/imodeljs-common";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
+import { debug } from "console";
+import { session } from "electron";
 
 const getWindowSize = () => {
   let width = 1280;
@@ -54,12 +56,23 @@ const dtaElectronMain = async () => {
 
   await initializeDtaBackend();
 
+  manager.setSessionPermissionsRequest([]);
+  manager.setSessionPermissionsCheck([]);
+
   const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
   const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
   // after backend is initialized, start display-test-app frontend process and open the window
   await manager.openMainWindow({ ...getWindowSize(), show: !maximizeWindow, title: "Display Test App" });
   assert(manager.mainWindow !== undefined);
+
+
+  // session.fromPartition("").setPermissionCheckHandler(() => { return false });
+  // manager.mainWindow.setFullScreen(true);
+  manager.electron.clipboard.writeText("Check Permission clipboard was read!");
+  const checkText = manager.electron.clipboard.readText();
+  console.log(checkText);
+  console.log(manager.mainWindow.webContents.session);
 
   if (maximizeWindow) {
     manager.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
