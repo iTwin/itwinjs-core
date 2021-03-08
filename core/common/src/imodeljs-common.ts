@@ -5,6 +5,7 @@
 export * from "./AmbientOcclusion";
 export * from "./AnalysisStyle";
 export * from "./BackgroundMapSettings";
+export * from "./Base64EncodedString";
 export * from "./BriefcaseTypes";
 export * from "./Camera";
 export * from "./ChangedElements";
