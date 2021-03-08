@@ -20,6 +20,8 @@ public;BackgroundMapProps
 public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
 public;BackgroundMapSettings
 public;BackgroundMapType
+public;Base64EncodedString = string
+public;Base64EncodedString
 alpha;BaseLayerProps = MapLayerProps | ColorDefProps
 alpha;BaseLayerSettings = MapLayerSettings | ColorDef
 public;BatchType
