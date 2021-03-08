@@ -1629,18 +1629,18 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the element.
      */
     public insertElement(elProps: ElementProps): Id64String {
-      const iModel = this._iModel;
-      const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onInsert(elProps, iModel);
-
       const json = elProps instanceof Element ? elProps.toJSON() : elProps;
+      const iModel = this._iModel;
+      const jsClass = iModel.getJsClass<typeof Element>(json.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onInsert(json, iModel);
+
       const val = iModel.nativeDb.insertElement(json);
       if (val.error)
-        throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: elProps.classFullName }));
+        throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: json.classFullName }));
 
-      elProps.id = Id64.fromJSON(val.result!.id);
-      jsClass.onInserted(elProps, iModel);
-      return elProps.id;
+      elProps.id = json.id = Id64.fromJSON(val.result!.id);
+      jsClass.onInserted(json, iModel);
+      return json.id;
     }
 
     /** Update some properties of an existing element.
@@ -1651,16 +1651,16 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
-      const iModel = this._iModel;
-      const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onUpdate(elProps, iModel);
-
       const json = elProps instanceof Element ? elProps.toJSON() : elProps;
+      const iModel = this._iModel;
+      const jsClass = iModel.getJsClass<typeof Element>(json.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onUpdate(json, iModel);
+
       const stat = iModel.nativeDb.updateElement(json);
       if (stat !== IModelStatus.Success)
-        throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: elProps.id }));
+        throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: json.id }));
 
-      jsClass.onUpdated(elProps, iModel);
+      jsClass.onUpdated(json, iModel);
     }
 
     /** Delete one or more elements from this iModel.
@@ -1674,6 +1674,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         const props = this.tryGetElementProps(id);
         if (props === undefined) // this may be a child element which was deleted earlier as a consequence of deleting its parent.
           return;
+
         const jsClass = iModel.getJsClass<typeof Element>(props.classFullName) as any; // "as any" so we can call the protected methods
         jsClass.onDelete(props, iModel);
 

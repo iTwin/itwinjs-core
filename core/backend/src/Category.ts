@@ -151,7 +151,7 @@ export class DrawingCategory extends Category {
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 
   /** Tell monitors about the automatic insertion of my default sub-category */
-  protected static onInserted(props: ElementProps, iModel: IModelDb): void {
+  protected static onInserted(props: Readonly<ElementProps>, iModel: IModelDb): void {
     super.onInserted(props, iModel);
     if (iModel.isBriefcaseDb()) {
       iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
