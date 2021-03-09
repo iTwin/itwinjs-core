@@ -9,6 +9,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { DefinitionElementProps } from "./ElementProps";
 import { ImageSourceFormat } from "./Image";
+import { Base64EncodedString } from "./Base64EncodedString";
 
 /** @beta */
 export enum TextureFlags { None }
@@ -19,8 +20,11 @@ export enum TextureFlags { None }
 export interface TextureProps extends DefinitionElementProps {
   /** Format of the image data. */
   format: ImageSourceFormat;
-  /** The image data stored in a Base64-encoded string according to the specified format. */
-  data: string;
+  /** The image data stored in a Base64-encoded string according to the specified format.
+   * @see [[Base64EncodedString.fromUint8Array]] to produce a well-formed base-64-encoded string.
+   * @see [[Base64EncodedString.toUint8Array]] to decode the bytes.
+   */
+  data: Base64EncodedString;
   /** The width of the image. */
   width: number;
   /** The height of the image. */

@@ -16,6 +16,7 @@ import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, HubCode, IModelHubError,
 } from "@bentley/imodelhub-client";
 import {
+  BriefcaseIdValue,
   BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -36,35 +37,6 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
  * @public
  */
 export type BriefcaseId = number;
-
-/** The reserved BriefcaseId values used to identify special kinds of IModelDbs.
- * @see [[BriefcaseId]]
- * @public
- */
-export enum BriefcaseIdValue {
-  /** Indicates an invalid/illegal BriefcaseId */
-  Illegal = 0xffffffff,
-
-  /** BriefcaseIds must be less than this value */
-  Max = 1 << 24,
-
-  /** All valid iModelHub issued BriefcaseIds will be equal or higher than this */
-  FirstValid = 2,
-
-  /** All valid iModelHub issued BriefcaseIds will be equal or lower than this */
-  LastValid = BriefcaseIdValue.Max - 11,
-
-  /** A Standalone copy of an iModel. Standalone files may accept changesets, but can never create new changesets.
-   * Checkpoints are Standalone files that may not accept any new changesets after they are created.
-   */
-  Standalone = 0,
-
-  /**
-   * @internal
-   * @deprecated use Standalone
-   */
-  DeprecatedStandalone = 1,
-}
 
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @beta
@@ -317,19 +289,15 @@ export class BriefcaseManager {
     try {
       await IModelHost.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().byId(briefcaseId));
       requestContext.enter();
-    } catch (err) {
+    } catch (error) {
       requestContext.enter();
-      return; // Briefcase does not exist on the hub, or cannot be accessed
+      Logger.logError(loggerCategory, "Could not find briefcase to release", () => ({ iModelId, briefcaseId }));
+      throw error;
     }
 
-    try {
-      await IModelHost.iModelClient.briefcases.delete(requestContext, iModelId, briefcaseId);
-      requestContext.enter();
-      Logger.logTrace(loggerCategory, "released briefcase from the server", () => ({ iModelId, briefcaseId }));
-    } catch (err) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, "Could not release briefcase", () => ({ iModelId, briefcaseId })); // Could be that the current user does not have the appropriate access
-    }
+    await IModelHost.iModelClient.briefcases.delete(requestContext, iModelId, briefcaseId);
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, "Released briefcase from the server", () => ({ iModelId, briefcaseId }));
   }
 
   /**
