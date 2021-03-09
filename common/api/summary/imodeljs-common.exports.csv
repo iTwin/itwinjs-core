@@ -103,12 +103,9 @@ beta;CustomAttribute
 beta;CutStyle
 beta;CutStyleProps
 beta;DecorationGeometryProps
-alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 alpha;DeletedElementGeometryChange
-alpha;DesktopAuthorizationClientConfiguration
-internal;DesktopAuthorizationClientMessages
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
@@ -279,6 +276,7 @@ beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
 internal;IpcAppChannel
 internal;IpcAppFunctions
+internal;IpcAppNotifications
 internal;IpcInvokeReturn =
 beta;IpcListener = (evt: Event, ...args: any[]) => void
 beta;IpcSocket
@@ -333,6 +331,7 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
+alpha;NativeAppAuthorizationConfiguration
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications

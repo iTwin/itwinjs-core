@@ -41,6 +41,7 @@
     "@bentley/imodelhub-client": "2.14.0-dev.14",
     "@bentley/imodeljs-backend": "2.14.0-dev.14",
     "@bentley/imodeljs-common": "2.14.0-dev.14",
+    "@bentley/electron-manager": "2.14.0-dev.14",
     "@bentley/itwin-client": "2.14.0-dev.14",
     "@bentley/rbac-client": "2.14.0-dev.14",
     "@bentley/telemetry-client": "2.14.0-dev.14",

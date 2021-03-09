@@ -43,7 +43,7 @@ export interface BrowserAuthorizationClientConfiguration {
  * @beta
  */
 export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
   protected _accessToken?: AccessToken;
 
@@ -124,8 +124,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Alias for signInRedirect needed to satisfy [[FrontendAuthorizationClient]]
    * @param requestContext
    */
-  public async signIn(requestContext: ClientRequestContext): Promise<void> {
-    return this.signInRedirect(requestContext);
+  public async signIn(requestContext?: ClientRequestContext): Promise<void> {
+    return this.signInRedirect(requestContext ?? new ClientRequestContext());
   }
 
   /**
@@ -243,8 +243,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Alias for signOutRedirect
    * @param requestContext
    */
-  public async signOut(requestContext: ClientRequestContext): Promise<void> {
-    await this.signOutRedirect(requestContext);
+  public async signOut(requestContext?: ClientRequestContext): Promise<void> {
+    await this.signOutRedirect(requestContext ?? new ClientRequestContext());
   }
 
   public async signOutRedirect(requestContext: ClientRequestContext): Promise<void> {
