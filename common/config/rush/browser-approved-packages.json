@@ -759,10 +759,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "react-axe",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "react-beautiful-dnd",
       "allowedCategories": [ "extensions", "internal" ]
     },

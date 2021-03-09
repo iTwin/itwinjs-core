@@ -1616,7 +1616,7 @@ Object {
         "property": Object {
           "displayLabel": "payment Cotton Handmade",
           "name": "extend",
-          "typename": "Optimization",
+          "typename": "optimization",
         },
         "value": Object {
           "members": Object {
@@ -3131,7 +3131,7 @@ Object {
         "property": Object {
           "displayLabel": "Data Developer",
           "name": "override",
-          "typename": "Frozen",
+          "typename": "frozen",
         },
         "value": Object {
           "items": Array [
@@ -3256,7 +3256,7 @@ Object {
         "property": Object {
           "displayLabel": "Unbranded Metal Keyboard turquoise",
           "name": "Inverse",
-          "typename": "Soft",
+          "typename": "soft",
         },
         "value": Object {
           "members": Object {
