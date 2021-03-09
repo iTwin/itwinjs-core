@@ -50,8 +50,10 @@ class LineProximityContext {
   public npc1B: Point3d;
 
   public worldToNPC: Matrix4d;
+  public accumulatedDistanceFromLineA: number;
   public constructor(matrix: Matrix4d) {
     this.ux = this.uy = 0;
+    this.accumulatedDistanceFromLineA = 0;
     this.divMagU = undefined;
     this.npc0A = Point3d.create();
     this.npc1A = Point3d.create();
@@ -64,6 +66,7 @@ class LineProximityContext {
     this.ux = this.npc1A.x - this.npc0A.x;
     this.uy = this.npc1A.y - this.npc0A.y;
     this.divMagU = Geometry.conditionalDivideCoordinate(1.0, Math.sqrt(this.ux * this.ux + this.uy * this.uy));
+    this.accumulatedDistanceFromLineA = 0;
   }
 
 /** Capture start and end point of "previous" line. */
@@ -122,10 +125,13 @@ class LineProximityContext {
    * @param point1B
    * @param fractions pre-allocated receiver for fractional interval
    * @param perspectiveZStartEnd pre-allocated receiver for depths at (fractional!) start and end
+   * @param distanceRange pre-allocated receiver for min and max absolute distance at ends
    */
   public intervalOfSeparation(minimumDistance: number, point0B: Point3d, point1B: Point3d,
     fractions: Range1d,
-    perspectiveZStartEnd: Segment1d): boolean {
+    perspectiveZStartEnd: Segment1d,
+    distanceRange: Range1d
+  ): boolean {
     if (this.divMagU === undefined)
       return false;
 
@@ -133,6 +139,7 @@ class LineProximityContext {
     this.worldToNPC.multiplyPoint3dQuietNormalize(point1B, this.npc1B);
     const d0 = this.signedDistanceToNPCPoint(this.npc0B);
     const d1 = this.signedDistanceToNPCPoint(this.npc1B);
+    distanceRange.setXXUnordered(d0, d1);
     if (d0 < -minimumDistance) {
       if (d1 < -minimumDistance) {
         return this.setRanges(fractions, 0, 1, perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
@@ -252,6 +259,7 @@ export class ViewGraphicsOps {
     const xLow = stRange.low.x;
     const xHigh = stRange.high.x;
     const fractionRange = Range1d.createNull();
+    const distanceRange = Range1d.createNull();
     const perspectiveZStartEnd = Segment1d.create();
     let rejected = false;
     let numAnnounced = 0;
@@ -267,8 +275,10 @@ export class ViewGraphicsOps {
         announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
         numAnnounced++;
       } else {
-        if (!lineContext.intervalOfSeparation(xyDistanceBetweenLines, clippedPointWorld0, clippedPointWorld1, fractionRange, perspectiveZStartEnd)) {
-          rejected = true;
+        if (!lineContext.intervalOfSeparation(xyDistanceBetweenLines, clippedPointWorld0, clippedPointWorld1,
+          fractionRange, perspectiveZStartEnd, distanceRange)) {
+          // record the distance accumulation and LEAVE LINE A WHERE IT IS
+          lineContext.accumulatedDistanceFromLineA += distanceRange.high;
         } else {
           if (fractionRange.isExact01)
             announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
@@ -279,7 +289,6 @@ export class ViewGraphicsOps {
         }
           lineContext.moveLineBToLineA();
           numAnnounced++;
-
         }
       }
     };
