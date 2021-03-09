@@ -116,13 +116,13 @@ internal;DefineACSByPointsTool
 alpha;DepthPointOptions
 alpha;DepthPointSource
 public;DepthRangeNpc
-alpha;DesktopAuthorizationClient 
 internal;DevTools
 beta;DisclosedTileTreeSet 
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
-alpha;DownloadBriefcaseOptions
+beta;DownloadBriefcaseId =
+beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -282,6 +282,7 @@ beta;LengthDescription
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
 internal;LocalhostIpcApp
+internal;LocalHostIpcAppOpts 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -340,7 +341,9 @@ public;ModelSelectorState
 public;ModelState 
 alpha;ModifyElementSource
 alpha;NativeApp
+alpha;NativeAppAuthorization
 internal;NativeAppLogger
+alpha;NativeAppOpts 
 internal;NoRenderApp
 beta;class NotificationHandler
 public;NotificationManager
@@ -616,7 +619,7 @@ public;WalkViewTool
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
 beta;WebViewerApp
-beta;WebViewerAppOptions
+beta;WebViewerAppOpts
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities
