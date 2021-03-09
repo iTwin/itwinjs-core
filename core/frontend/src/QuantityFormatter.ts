@@ -253,6 +253,16 @@ export interface QuantityFormatsChangedArgs {
   readonly quantityType: string;
 }
 
+/** Arguments sent to QuantityFormatOverridesChanged event listeners.
+ * @alpha
+ */
+export interface QuantityFormatOverridesChangedArgs {
+  // string that represents the QuantityType that has been overriden or the overrides cleared.
+  readonly unitSystem: UnitSystemKey;
+  readonly quantityType: QuantityTypeKey;
+  readonly formatProps?: FormatProps; // if formatProps is undefined then clearing existing overrides
+}
+
 /** Class that supports formatting quantity values into strings and parsing strings into quantity values. This class also maintains
  * the "active" unit system and caches FormatterSpecs and ParserSpecs for the "active" unit system to allow synchronous access to
  * parsing and formatting values. The support unit systems are defined by [[UnitSystemKey]] and is kept in synch with the unit systems
@@ -291,6 +301,9 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Fired when the active UnitsProvider is updated. This will allow cached Formatter and Parser specs to be updated if necessary. */
   public readonly onUnitsProviderChanged = new BeUiEvent<void>();
+
+  /** Fired when a format override is set. This will allow app to save overrides so they can be reloaded when necessary, typically when a new imodel is loaded. */
+  public readonly onQuantityFormatOverridesChanged = new BeUiEvent<QuantityFormatOverridesChangedArgs>();
 
   /**
    * constructor
@@ -422,10 +435,12 @@ export class QuantityFormatter implements UnitsProvider {
       if (props) {
         if (this._overrideFormatPropsByUnitSystem.has(unitSystemKey)) {
           this._overrideFormatPropsByUnitSystem.get(unitSystemKey)!.set(typeKey, props);
+          this.onQuantityFormatOverridesChanged.emit({unitSystem: unitSystemKey, quantityType: typeKey, formatProps:props});
         } else {
           const newMap = new Map<string, FormatProps>();
           newMap.set(typeKey, props);
           this._overrideFormatPropsByUnitSystem.set(unitSystemKey, newMap);
+          this.onQuantityFormatOverridesChanged.emit({unitSystem: unitSystemKey, quantityType: typeKey, formatProps:props});
         }
       }
     });
@@ -448,6 +463,7 @@ export class QuantityFormatter implements UnitsProvider {
       const overrideMap = this._overrideFormatPropsByUnitSystem.get(unitSystem);
       if (overrideMap && overrideMap.has(type)) {
         overrideMap.delete(type);
+        this.onQuantityFormatOverridesChanged.emit({unitSystem, quantityType: type});
 
         await this.loadDefaultFormatAndParserSpecForQuantity(type);
         // trigger a message to let callers know the format has changed.
@@ -554,7 +570,10 @@ export class QuantityFormatter implements UnitsProvider {
       const overrides = this._overrideFormatPropsByUnitSystem.get(this.activeUnitSystem);
       const typesRemoved: string[] = [];
       if (overrides && overrides.size) {
-        overrides.forEach((_props, typeKey) => typesRemoved.push(typeKey));
+        overrides.forEach((_props, typeKey) => {
+          typesRemoved.push(typeKey);
+          this.onQuantityFormatOverridesChanged.emit({unitSystem:this.activeUnitSystem, quantityType: typeKey});
+        });
       }
 
       if (typesRemoved.length) {

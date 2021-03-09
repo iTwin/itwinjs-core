@@ -69,6 +69,7 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
 import { AppSettingsProvider } from "./appui/uiproviders/AppSettingsProvider";
+import { AppQuantityOverridesManager } from "./AppQuantityOverridesManager";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -182,6 +183,7 @@ export class SampleAppIModelApp {
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
   private static _appUiSettings = new AppUiSettings();
+  private static _appQuantityOverridesManager = new AppQuantityOverridesManager();
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);

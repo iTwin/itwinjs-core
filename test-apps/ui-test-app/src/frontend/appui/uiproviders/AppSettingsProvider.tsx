@@ -14,7 +14,7 @@ export class AppSettingsProvider implements SettingsProvider {
 
   public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
     return [
-      getQuantityFormatsSettingsManagerEntry(10),
+      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
       {
         itemPriority: 20, tabId: "ui-test-app:UI", label: "UI",
         page: <ConnectedUiSettingsPage />,

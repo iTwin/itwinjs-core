@@ -38,7 +38,7 @@ function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
     {
       itemPriority: 10, tabId: "Quantity", pageWillHandleCloseRequest: true, label: "Quantity", tooltip: "Quantity Format Settings", icon: "icon-measure",
-      page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} availableUnitSystems={new Set(["metric","imperial","usSurvey"])} />,
+      page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} availableUnitSystems={new Set(["metric","imperial","usCustomary","usSurvey"])} />,
     },
     {
       itemPriority: 20, tabId: "UI", label: "UI", subLabel: "UI and Accudraw", tooltip: "UI Settings", icon: "icon-paintbrush",
