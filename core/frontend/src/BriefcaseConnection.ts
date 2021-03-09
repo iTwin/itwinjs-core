@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { assert, Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnectionProps, IModelError, OpenBriefcaseProps, StandaloneOpenOptions } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
@@ -66,7 +66,6 @@ export class BriefcaseConnection extends IModelConnection {
     if (this.isClosed)
       return;
 
-    assert(undefined === this.editingSession, "End the InteractiveEditingSession before closing the iModel");
     if (this._editingSession) {
       await this._editingSession.end();
       this._editingSession = undefined;
@@ -134,6 +133,7 @@ export class BriefcaseConnection extends IModelConnection {
       throw new Error("Cannot create an editing session for an iModel that already has one");
 
     this._editingSession = await InteractiveEditingSession.begin(this);
+    this._editingSession.onEnded.addOnce(() => this._editingSession = undefined);
     return this._editingSession;
   }
 }

@@ -37,8 +37,8 @@ async function createLineElement(editor: ElementEditor3d, model: Id64String, cat
 
   return props[0].id!;
 }
-
 async function deleteElements(imodel: BriefcaseConnection, ids: string[]) {
+  // eslint-disable-next-line deprecation/deprecation
   return IModelWriteRpcInterface.getClientForRouting(imodel.routingContext.token).deleteElements(imodel.getRpcProps(), ids);
 }
 
@@ -164,6 +164,7 @@ describe("InteractiveEditingSession", () => {
     it("accumulates geometry changes", async () => {
       imodel = await openWritable();
       const editor = await ElementEditor3d.start(imodel);
+      // eslint-disable-next-line deprecation/deprecation
       const editing = new EditingFunctions(imodel);
       const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
       const dictModelId = await imodel.models.getDictionaryModel();
@@ -245,10 +246,11 @@ describe("InteractiveEditingSession", () => {
     });
 
     it("updates state of tile trees", async () => {
-      const imodel = await openWritable();
+      imodel = await openWritable();
 
       // Initial geometric model contains one line element.
       const editor = await ElementEditor3d.start(imodel);
+      // eslint-disable-next-line deprecation/deprecation
       const editing = new EditingFunctions(imodel);
       const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
       const dictModelId = await imodel.models.getDictionaryModel();
@@ -271,7 +273,7 @@ describe("InteractiveEditingSession", () => {
         const params: IModelTileTreeParams = {
           id: "",
           modelId,
-          iModel: imodel,
+          iModel: imodel!,
           location,
           priority: TileLoadPriority.Primary,
           formatVersion: 14,
