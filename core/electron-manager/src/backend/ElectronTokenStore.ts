@@ -10,7 +10,7 @@
 
 import * as OperatingSystemUserName from "username";
 import { TokenResponse, TokenResponseJson } from "@openid/appauth";
-import { IModelHost } from "../IModelHost";
+import { IModelHost } from "@bentley/imodeljs-backend";
 
 /**
  * Utility to store OIDC AppAuth in secure storage

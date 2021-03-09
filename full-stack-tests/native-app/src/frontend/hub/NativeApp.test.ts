@@ -6,9 +6,9 @@ import { assert } from "chai";
 import { Config, GuidString } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { BriefcaseDownloader, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, IModelApp, NativeApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection, IModelApp, NativeApp, NativeAppAuthorization, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
 import { usingOfflineScope } from "./HttpRequestHook";
 import { TestUtility } from "./TestUtility";
@@ -29,8 +29,8 @@ describe("NativeApp (#integration)", () => {
       },
     });
 
-    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(requestContext.accessToken);
+    await NativeApp.callNativeHost("silentLogin", (await getAccessTokenFromBackend(TestUsers.regular)).toJSON());
+    IModelApp.authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
 
     testProjectName = Config.App.get("imjs_test_project_name");
     testIModelName = Config.App.get("imjs_test_imodel_name");
@@ -99,6 +99,7 @@ describe("NativeApp (#integration)", () => {
 
     let events = 0;
     let loaded = 0;
+    let total = 0;
     const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
       (progress: ProgressInfo) => {
         assert.isNumber(progress.loaded);
@@ -106,9 +107,11 @@ describe("NativeApp (#integration)", () => {
         assert.isTrue(progress.loaded >= loaded);
         assert.isTrue(progress.total! >= progress.loaded);
         loaded = progress.loaded;
+        total = progress.total!;
         events++;
       });
 
+    assert(loaded >= total);
     await downloader.downloadPromise;
     assert.notEqual(events, 0);
 
