@@ -10,7 +10,7 @@ import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager } from "@bentley/imodeljs-common";
 
 /** RPC interface configuration for an Electron-based application.
- * @beta
+ * @internal
  */
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
 

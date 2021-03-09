@@ -150,35 +150,35 @@ export class ElectronRpcManager extends RpcManager {
     static initializeFrontend(ipcFrontend: IpcSocketFrontend, interfaces?: RpcInterfaceDefinition[]): ElectronRpcConfiguration;
     }
 
-// @beta
+// @internal
 export class ElectronRpcProtocol extends RpcProtocol {
     constructor(configuration: ElectronRpcConfiguration, ipcSocket: IpcSocket);
     // (undocumented)
     static instances: Map<string, ElectronRpcProtocol>;
     // (undocumented)
     ipcSocket: IpcSocket;
-    // @internal (undocumented)
+    // (undocumented)
     onRpcClientInitialized(definition: RpcInterfaceDefinition, _client: RpcInterface): void;
-    // @internal (undocumented)
+    // (undocumented)
     onRpcClientTerminated(definition: RpcInterfaceDefinition, _client: RpcInterface): void;
-    // @internal (undocumented)
+    // (undocumented)
     onRpcImplInitialized(definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
-    // @internal (undocumented)
+    // (undocumented)
     onRpcImplTerminated(definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
-    // @internal (undocumented)
+    // (undocumented)
     requests: Map<string, ElectronRpcRequest>;
     readonly requestType: typeof ElectronRpcRequest;
     transferChunkThreshold: number;
-    // @internal (undocumented)
+    // (undocumented)
     readonly transport: ElectronIpcTransport<IpcTransportMessage, IpcTransportMessage>;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class ElectronRpcRequest extends RpcRequest {
-    // @internal (undocumented)
+    // (undocumented)
     dispose(): void;
     protected load(): Promise<import("@bentley/imodeljs-common").RpcSerializedValue>;
-    // @internal (undocumented)
+    // (undocumented)
     notifyResponse(fulfillment: RpcRequestFulfillment): void;
     readonly protocol: ElectronRpcProtocol;
     protected send(): Promise<number>;
