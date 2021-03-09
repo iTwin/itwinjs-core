@@ -1,6 +1,19 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Initial setup for adding "basic manipulation" tools and commands to editor package.
+- Fixed broken double angle bracket link syntax
+- Add isIPhoneBrowser to ProcessDetector and make isIOSBrowser work for both iPads and iPhones. Clarify documentation.
+- Add ProcessDetector
+- Adjusted error messages and error when reversing or reinstating schema changesets
+- Updated to use TypeScript 4.1
+- begin rename project from iModel.js to iTwin.js
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT

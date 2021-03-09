@@ -1,6 +1,13 @@
 # Change Log - @bentley/backend-webpack-tools
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- begin rename project from iModel.js to iTwin.js
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT

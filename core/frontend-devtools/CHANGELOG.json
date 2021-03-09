@@ -2,6 +2,30 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@bentley/frontend-devtools_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added new MapBaseVisibilityTool and key in."
+          },
+          {
+            "comment": "Add keyins to support planar masks"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          },
+          {
+            "comment": "Add an example vignetting screen-space effect.\""
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/frontend-devtools_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",

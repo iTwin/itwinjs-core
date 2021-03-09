@@ -2,6 +2,24 @@
   "name": "@bentley/config-loader",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@bentley/config-loader_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          },
+          {
+            "comment": "Deprecate IModelJsConfig class in favor of `.env` loading. Add a simple `loadEnv()` function to use dotenv and dotenv-expand to load .env file."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/config-loader_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",

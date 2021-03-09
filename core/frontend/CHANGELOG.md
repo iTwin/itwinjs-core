@@ -1,6 +1,40 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Update parsing of string input in Accudraw to use quantity parsing.
+- Initial setup for adding "basic manipulation" tools and commands to editor package.
+- Added ElementSetTool base class.
+- ElementSetTool class documentation.
+- Fixed broken double angle bracket link syntax
+- Fix iOS problem where a viewport would not redraw until resizing after closing multiple viewports.
+- Fix incorrect GPU memory limits.
+- Fix incorrect cached transform for plan projection models after the model's range changes.
+- Fix Viewport.requestRedraw failing to request next animation frame.
+- Imagery providers were incorrectly created for WMTS and AzureMaps. Improved testing.
+- Split imagery providers in their own file.
+- refactor IModelApp startup
+- Improve grid line fade for vertical lines by drawing from center out.
+- Allow applications to react to WebGL context loss by overriding RenderSystem.contextLossHandler.
+- IPC shim (WIP) for local webviewer apps.
+- Added MoveElementsTool
+- implemented nonlocatable for planar classifiers
+- Update how custom QuantityType definitions are defined and registered.
+- Add planar clip mask support.
+- Fix transparent depthless map failing to blend with background color or skybox.
+- add notifications for changed elements on SaveChanges
+- Updated to use TypeScript 4.1
+- Undo/Redo shortcuts
+- begin rename project from iModel.js to iTwin.js
+- Allow the same label to be used in two different units within the same family but in different systems.
+- Fix failure to call screen-space effects `shouldApply` function when reading pixels.
+- fix for running display-performance-test-app with a saved view which has volume classification using overrides
+- Add workaround for bogus transform in tile tree for empty model.
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT

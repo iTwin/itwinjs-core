@@ -1,6 +1,25 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Add functions to clear the Hide/Isolate for Models and Categories
+- Upgrade react-resize-detector to avoid lodash security vulnerability
+-  Fix solar timeline component so that sunTime is properly set for project location.
+- Document uiSettings in ToolAssistanceField
+- Fix stateFunction for clear hide/isolate/emphasize tool that is used in UI 1.0.
+- Updated to use TypeScript 4.1
+- AccuDraw show Z field only for 3d views
+- AccuDraw default keyboard shortcuts
+- Added AccuDraw notifications for rotation & compass mode
+- Added AccuDraw widget
+- Support for conditionally disabling/hiding keyboard shortcuts
+- Fixed local file support in Electron ui-test-app
+- begin rename project from iModel.js to iTwin.js
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT

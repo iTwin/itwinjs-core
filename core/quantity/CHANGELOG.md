@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-quantity
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Replace ParseResult with QuantityParserResult
+- Fix station formatting and provide helper functions for working with FormatProps. Add support for custom props.
+- Updated to use TypeScript 4.1
+- begin rename project from iModel.js to iTwin.js
+- Allow the same label to be used in two different units within the same family but in different systems.
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT

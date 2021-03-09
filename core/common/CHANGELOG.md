@@ -1,6 +1,21 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Clarify and expand FeatureOverrides documentation.
+- The `Code` constructor now trims leading and trailing whitespace characters from the `value` property
+- The Code.getValue method has been deprecated in favor of the Code.value property
+- Fixed broken double angle bracket link syntax
+- refactor IModelApp/IModelHost startup
+- Add planar clip mask support.
+- Updated to use TypeScript 4.1
+- Undo/Redo shortcuts
+- begin rename project from iModel.js to iTwin.js
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT

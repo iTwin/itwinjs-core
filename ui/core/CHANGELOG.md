@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Keep hideIconContainer prop from bleeding into div.
+- Add right mouse click on TreeNode
+- Updated to use TypeScript 4.1
+- Floating widget opacity for UI 2.0. Slider formatMin, formatMax props.
+- Support for conditionally disabling/hiding keyboard shortcuts
+- Add margin and padding top labeled-themed-select.
+- begin rename project from iModel.js to iTwin.js
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT

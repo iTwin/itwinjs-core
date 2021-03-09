@@ -2,6 +2,54 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@bentley/imodeljs-backend_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Ensure elements passed to native code are in proper JSON format."
+          },
+          {
+            "comment": "refactor Ipc layers to use IpcHost/IpcApp"
+          },
+          {
+            "comment": "The export methods of IModelExporter and the process methods of IModelTransformer are now async."
+          },
+          {
+            "comment": "IPC shim (WIP) for local webviewer apps."
+          },
+          {
+            "comment": "Add docs and test for CTE support"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.13.1"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.13.3"
+          },
+          {
+            "comment": "Support Node 14"
+          },
+          {
+            "comment": "add notifications for changed elements on SaveChanges"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Undo/Redo shortcuts"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/imodeljs-backend_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
