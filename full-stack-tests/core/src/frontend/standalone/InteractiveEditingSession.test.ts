@@ -5,14 +5,49 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import { OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, InteractiveEditingSession } from "@bentley/imodeljs-frontend";
+import { compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Code, ElementGeometryChange, ElementsChanged, IModelError, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import {
+  BriefcaseConnection, EditingFunctions, ElementEditor3d, InteractiveEditingSession,
+} from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
-describe.only("InteractiveEditingSession", () => {
+
+function makeLine(p1?: Point3d, p2?: Point3d): LineSegment3d {
+  return LineSegment3d.create(p1 || new Point3d(0, 0, 0), p2 || new Point3d(0, 0, 0));
+}
+
+async function createLineElement(editor: ElementEditor3d, model: Id64String, category: Id64String, line: LineSegment3d): Promise<Id64String> {
+  const geomprops = IModelJson.Writer.toIModelJson(line);
+  const origin = line.point0Ref;
+  const angles = new YawPitchRollAngles();
+  const code = Code.createEmpty();
+  code.value = Guid.createValue();
+
+  const props3d = { classFullName: "Generic:PhysicalObject", model, category, code };
+  await editor.createElement(props3d, origin, angles, geomprops);
+
+  const props = await editor.writeReturningProps();
+  expect(Array.isArray(props)).to.be.true;
+  expect(props.length).to.equal(1);
+  expect(props[0].id).not.to.be.undefined;
+
+  return props[0].id!;
+}
+
+async function deleteElements(imodel: BriefcaseConnection, ids: string[]) {
+  return IModelWriteRpcInterface.getClientForRouting(imodel.routingContext.token).deleteElements(imodel.getRpcProps(), ids);
+}
+
+const dummyRange = new Range3d();
+function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange { return { id, type: DbOpcode.Insert, range: (range ?? dummyRange) }; }
+function makeUpdate(id: Id64String, range?: Range3d): ElementGeometryChange { return { id, type: DbOpcode.Update, range: (range ?? dummyRange) }; }
+function makeDelete(id: Id64String): ElementGeometryChange { return { id, type: DbOpcode.Delete }; }
+
+describe("InteractiveEditingSession", () => {
   if (ProcessDetector.isElectronAppFrontend) {
     let imodel: BriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
@@ -119,6 +154,91 @@ describe.only("InteractiveEditingSession", () => {
       removeBeginListener();
       removeEndListener();
       removeEndingListener();
+    });
+
+    it("accumulates geometry changes", async () => {
+      imodel = await openWritable();
+      const editor = await ElementEditor3d.start(imodel);
+      const editing = new EditingFunctions(imodel);
+      const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
+      const dictModelId = await imodel.models.getDictionaryModel();
+      const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, Guid.createValue(), { color: 0 });
+      await imodel.saveChanges();
+      // await imodel.pushChanges("line 1"); // release locks
+
+      // Begin an editing session.
+      const session = await InteractiveEditingSession.begin(imodel);
+
+      let changedElements: ElementsChanged;
+      session.onElementChanges.addListener((ch) => changedElements = ch);
+
+      async function expectChanges(expected: ElementGeometryChange[], compareRange = false): Promise<void> {
+        const changes = session.getGeometryChangesForModel(modelId);
+        expect(undefined === changes).to.equal(expected.length === 0);
+        if (changes) {
+
+          const actual = Array.from(changes).sort((x, y) => compareStrings(x.id, y.id));
+          if (compareRange) {
+            expect(actual).to.deep.equal(expected);
+          } else {
+            expect(actual.length).to.equal(expected.length);
+            for (let i = 0; i < actual.length; i++) {
+              expect(actual[i].id).to.equal(expected[i].id);
+              expect(actual[i].type).to.equal(expected[i].type);
+            }
+          }
+        }
+      }
+
+      // Insert a line element.
+      expect(session.getGeometryChangesForModel(modelId)).to.be.undefined;
+      const elem1 = await createLineElement(editor, modelId, category, makeLine());
+      // Events not dispatched until changes saved.
+      await expectChanges([]);
+      await imodel.saveChanges();
+      const insertElem1 = makeInsert(elem1);
+      await expectChanges([insertElem1]);
+      expect(changedElements!.deleted).to.be.undefined;
+      expect(changedElements!.updated).to.be.undefined;
+      expect(changedElements!.inserted).to.not.be.undefined;
+
+      // Modify the line element.
+      await editor.startModifyingElements([elem1]);
+      await editor.applyTransform(Transform.createTranslationXYZ(1, 0, 0).toJSON());
+      await editor.write();
+      const updateElem1 = makeUpdate(elem1);
+      await expectChanges([insertElem1]);
+      await imodel.saveChanges();
+      await expectChanges([updateElem1]);
+
+      // Modify the line element twice.
+      await editor.startModifyingElements([elem1]);
+      await editor.applyTransform(Transform.createTranslationXYZ(0, 1, 0).toJSON());
+      await editor.write();
+      await editor.startModifyingElements([elem1]);
+      await editor.applyTransform(Transform.createTranslationXYZ(-1, 0, 0).toJSON());
+      await editor.write();
+      await expectChanges([updateElem1]);
+      await imodel.saveChanges();
+      await expectChanges([updateElem1]);
+
+      // Insert a new line element, modify both elements, then delete the old line element.
+      const elem2 = await createLineElement(editor, modelId, category, makeLine());
+      await editor.startModifyingElements([elem1, elem2]);
+      await editor.applyTransform(Transform.createTranslationXYZ(0, 0, 1).toJSON());
+      await editor.write();
+      await deleteElements(imodel, [elem1]);
+      const deleteElem1 = makeDelete(elem1);
+      const insertElem2 = makeInsert(elem2);
+      await expectChanges([updateElem1]);
+      await imodel.saveChanges();
+      await expectChanges([deleteElem1, insertElem2]);
+
+      // ###TODO: No frontend API for testing undo/redo...
+
+      // await imodel.pushChanges(""); // release locks
+      await session.end();
+      await editor.end();
     });
   }
 });

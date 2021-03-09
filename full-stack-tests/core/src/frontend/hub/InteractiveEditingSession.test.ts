@@ -21,7 +21,7 @@ let codeSuffix = 1;
 /* eslint-disable deprecation/deprecation */
 
 // The Web RPC protocol does not support Ipc required for interactive editing.
-describe.only("InteractiveEditingSession (#integration)", () => {
+describe("InteractiveEditingSession (#integration)", () => {
   if (ProcessDetector.isElectronAppFrontend) {
     let briefcase: RemoteBriefcaseConnection | undefined;
     let imodelId: string;
