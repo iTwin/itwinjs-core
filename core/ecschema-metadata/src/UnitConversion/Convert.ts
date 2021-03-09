@@ -9,7 +9,7 @@ import {
   SchemaItemType,
   Unit,
 } from "../ecschema-metadata";
-import { LinearMap } from "./LinearMap";
+import { UnitConversion } from "./UnitConversion";
 import { UnitGraph } from "./UnitTree";
 
 /**
@@ -42,21 +42,27 @@ export class UnitConvertorContext {
   public async processSchemaItem(
     from: SchemaItemKey,
     to: SchemaItemKey
-  ): Promise<LinearMap> {
+  ): Promise<UnitConversion> {
     const fromItem = await this._context.getSchemaItem(from);
-    if (fromItem?.schemaItemType !== SchemaItemType.Unit)
+    if (
+      fromItem?.schemaItemType !== SchemaItemType.Unit &&
+      fromItem?.schemaItemType !== SchemaItemType.Constant
+    )
       throw new BentleyError(
         BentleyStatus.ERROR,
-        "Schema item is not a unit",
+        "Schema item is not a unit or a constant",
         () => {
           return { schemaItem: from };
         }
       );
     const toItem = await this._context.getSchemaItem(to);
-    if (toItem?.schemaItemType !== SchemaItemType.Unit)
+    if (
+      toItem?.schemaItemType !== SchemaItemType.Unit &&
+      toItem?.schemaItemType !== SchemaItemType.Constant
+    )
       throw new BentleyError(
         BentleyStatus.ERROR,
-        "Schema item is not a unit",
+        "Schema item is not a unit or a constant",
         () => {
           return { schemaItem: to };
         }
@@ -65,8 +71,8 @@ export class UnitConvertorContext {
     return this.processUnits(fromItem as Unit, toItem as Unit);
   }
 
-  public async processUnits(from: Unit, to: Unit): Promise<LinearMap> {
-    if (from.key.matches(to.key)) return LinearMap.identity;
+  public async processUnits(from: Unit, to: Unit): Promise<UnitConversion> {
+    if (from.key.matches(to.key)) return UnitConversion.identity;
 
     const fromPhenomenon = await from.phenomenon;
     const toPhenomenon = await to.phenomenon;
@@ -74,7 +80,7 @@ export class UnitConvertorContext {
     if (
       !fromPhenomenon ||
       !toPhenomenon ||
-      !fromPhenomenon.key.matches(toPhenomenon.key)
+      fromPhenomenon.key.name !== toPhenomenon.key.name
     )
       throw new BentleyError(
         BentleyStatus.ERROR,
@@ -86,14 +92,13 @@ export class UnitConvertorContext {
 
     await this._uGraph.addUnit(from);
     await this._uGraph.addUnit(to);
-    // Collect all the units reachable from to unit
-    // const { fromUnits, toUnits } = ConvertorContext.commonDescendants(this._uGraph, to, from);
 
     const fromMapStore = this._uGraph.reduce(from, new Set<string>());
     const toMapStore = this._uGraph.reduce(to, new Set<string>());
 
-    const fromMap = fromMapStore.get(from.key.fullName) || LinearMap.identity;
-    const toMap = toMapStore.get(to.key.fullName) || LinearMap.identity;
+    const fromMap =
+      fromMapStore.get(from.key.fullName) || UnitConversion.identity;
+    const toMap = toMapStore.get(to.key.fullName) || UnitConversion.identity;
     const fromInverse = fromMap.inverse();
     return fromInverse.compose(toMap);
   }

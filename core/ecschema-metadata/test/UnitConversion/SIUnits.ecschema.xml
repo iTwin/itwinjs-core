@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECSchema schemaName="SIUnits" alias="SIU" version="01.00.05" description="Standard Set of Unit definitions for the system" displayLabel="Units" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <UnitSystem typeName="SI" />
+    <UnitSystem typeName="INTERNATIONAL" />
+
+    <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
+    <Phenomenon typeName="AREA" definition="LENGTH(2)" displayLabel="Area" />
+    <Phenomenon typeName="SLOPE" definition="LENGTH*LENGTH(-1)" displayLabel="Slope" />
+    <Phenomenon typeName="LENGTH_RATIO" definition="LENGTH*LENGTH(-1)" />
+    <Phenomenon typeName="TEMPERATURE" definition="TEMPERATURE" displayLabel="Temperature" />
+    <Phenomenon typeName="NUMBER" definition="NUMBER" displayLabel="Number" />
+
+    <Constant typeName="PI" phenomenon="LENGTH_RATIO" definition="ONE" numerator="3.1415926535897932384626433832795" displayLabel="Pi"/>
+    <Constant typeName="QUARTER_PI" phenomenon="LENGTH_RATIO" definition="SIUnits:PI" numerator="1.0" denominator="4.0" displayLabel="Pi/4"/>
+    <Constant typeName="HALF_PI" phenomenon="LENGTH_RATIO" definition="PI" numerator="1.0" denominator="2.0" displayLabel="Pi/2"/>
+    <Constant typeName="TWO_PI" phenomenon="LENGTH_RATIO" definition="SIU:PI" numerator="2" displayLabel="2Pi"/>
+
+    <Unit typeName="M" phenomenon="LENGTH" unitSystem="SI" definition="M" displayLabel="m" />
+    <Unit typeName="SQ_M" phenomenon="AREA" unitSystem="SI" definition="M(2)" displayLabel="m²" />
+    <Unit typeName="M_PER_M" phenomenon="SLOPE" unitSystem="SI" definition="M*M(-1)" displayLabel="m/m" />
+    <Unit typeName="K" phenomenon="TEMPERATURE" unitSystem="SI" definition="K" />
+
+    <Unit typeName="ONE" phenomenon="NUMBER" unitSystem="INTERNATIONAL" definition="ONE" displayLabel="one" />
+</ECSchema>

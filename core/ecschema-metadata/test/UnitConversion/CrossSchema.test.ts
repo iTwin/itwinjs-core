@@ -34,17 +34,17 @@ describe("Testing creating second schema", () => {
   );
 
   before(() => {
-    const schemaFileC = path.join(__dirname, "TestUnitsC.ecschema.xml");
-    const schemaXmlC = fs.readFileSync(schemaFileC, "utf-8");
-    deserializeXml(context, schemaXmlC);
+    const siSchemaFile = path.join(__dirname, "SIUnits.ecschema.xml");
+    const siSchemaXml = fs.readFileSync(siSchemaFile, "utf-8");
+    deserializeXml(context, siSchemaXml);
 
-    const schemaFileB = path.join(__dirname, "TestUnitsB.ecschema.xml");
-    const schemaXmlB = fs.readFileSync(schemaFileB, "utf-8");
-    deserializeXml(context, schemaXmlB);
+    const metricSchemaFile = path.join(__dirname, "MetricUnits.ecschema.xml");
+    const metricSchemaXml = fs.readFileSync(metricSchemaFile, "utf-8");
+    deserializeXml(context, metricSchemaXml);
 
-    const schemaFileA = path.join(__dirname, "TestUnitsA.ecschema.xml");
-    const schemaXmlA = fs.readFileSync(schemaFileA, "utf-8");
-    deserializeXml(context, schemaXmlA);
+    const usSchemaFile = path.join(__dirname, "USUnits.ecschema.xml");
+    const usSchemaXml = fs.readFileSync(usSchemaFile, "utf-8");
+    deserializeXml(context, usSchemaXml);
   });
 
   testData.forEach((test: TestData) => {
@@ -68,43 +68,43 @@ describe("Testing creating second schema", () => {
     });
   });
 
-  it("should throw when encountering unknown schema or alias names in definitions", async () => {
+  it("should throw when schema name is not in context", async () => {
     const converter = new UnitConvertorContext(context);
-    const schemaKey = new SchemaKey("UnitsA");
+    const schemaKey = new SchemaKey("MockSchema");
 
-    const unitA11 = new SchemaItemKey("unitA11", schemaKey);
+    const mockUnit = new SchemaItemKey("MockUnit", schemaKey);
+    const meter = new SchemaItemKey("M", schemaKey);
+    try {
+      await converter.processSchemaItem(mockUnit, meter);
+    } catch (err) {
+      expect(err).to.be.an("error");
+      expect(err.message).to.equal("Schema item is not a unit or a constant");
+    }
+    try {
+      await converter.processSchemaItem(meter, mockUnit);
+    } catch (err) {
+      expect(err).to.be.an("error");
+      expect(err.message).to.equal("Schema item is not a unit or a constant");
+    }
+  });
+
+  it("should throw when schema item is not in schema ", async () => {
+    const converter = new UnitConvertorContext(context);
+    const schemaKey = new SchemaKey("SIUnits");
+
+    const unitA11 = new SchemaItemKey("NonexistentUnit", schemaKey);
     const meter = new SchemaItemKey("M", schemaKey);
     try {
       await converter.processSchemaItem(unitA11, meter);
     } catch (err) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find schema");
+      expect(err.message).to.equal("Schema item is not a unit or a constant");
     }
     try {
       await converter.processSchemaItem(meter, unitA11);
     } catch (err) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find schema");
-    }
-  });
-
-  it("should throw when encountering unknown schema or alias names in definitions", async () => {
-    const converter = new UnitConvertorContext(context);
-    const schemaKey = new SchemaKey("UnitsA");
-
-    const unitA12 = new SchemaItemKey("unitA12", schemaKey);
-    const meter = new SchemaItemKey("M", schemaKey);
-    try {
-      await converter.processSchemaItem(unitA12, meter);
-    } catch (err) {
-      expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find schema");
-    }
-    try {
-      await converter.processSchemaItem(meter, unitA12);
-    } catch (err) {
-      expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find schema");
+      expect(err.message).to.equal("Schema item is not a unit or a constant");
     }
   });
 });

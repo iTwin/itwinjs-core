@@ -13,7 +13,7 @@ import {
   Unit,
 } from "../ecschema-metadata";
 import { SchemaItemType } from "../ECObjects";
-import { LinearMap } from "./LinearMap";
+import { UnitConversion } from "./UnitConversion";
 import { DefinitionFragment, parseDefinition } from "./Parser";
 import { Graph } from "./Graph";
 
@@ -165,9 +165,9 @@ export class UnitGraph {
   public reduce(
     unit: Unit | Constant,
     stopNodes: Set<string>
-  ): Map<string, LinearMap> {
+  ): Map<string, UnitConversion> {
     const unitFullName = unit.key.fullName;
-    const innerMapStore = new Map<string, LinearMap>();
+    const innerMapStore = new Map<string, UnitConversion>();
     const outerMapStore = GraphUtils.dfsReduce(
       this._graph,
       unitFullName,
@@ -180,31 +180,30 @@ export class UnitGraph {
 
   private reducingFunction(
     stopNodes: Set<string>,
-    innermapStore: Map<string, LinearMap>,
+    innermapStore: Map<string, UnitConversion>,
     unitFullName: string
   ) {
     if (stopNodes.has(unitFullName)) {
-      innermapStore.set(unitFullName, LinearMap.identity);
+      innermapStore.set(unitFullName, UnitConversion.identity);
       return innermapStore;
     }
     const outEdges = this._graph.outEdges(unitFullName);
     if (outEdges) {
-      const cmap = outEdges.reduce<LinearMap | undefined>((pm, e) => {
+      const cmap = outEdges.reduce<UnitConversion | undefined>((pm, e) => {
         const { exponent } = this._graph.edge(e.v, e.w);
-        const exp = exponent ? exponent : 1;
         const stored = innermapStore.get(e.w);
-        const map = stored ? stored : LinearMap.identity;
-        const emap = map.raise(exp);
+        const map = stored ? stored : UnitConversion.identity;
+        const emap = map.raise(exponent);
         return pm ? pm.multiply(emap) : emap;
       }, undefined);
       const thisMap = this._graph.node(unitFullName)
-        ? LinearMap.from(this._graph.node(unitFullName))
-        : LinearMap.identity;
-      const other = cmap || LinearMap.identity;
+        ? UnitConversion.from(this._graph.node(unitFullName))
+        : UnitConversion.identity;
+      const other = cmap || UnitConversion.identity;
       const result = other.compose(thisMap);
       innermapStore.set(unitFullName, result);
     } else {
-      innermapStore.set(unitFullName, LinearMap.identity);
+      innermapStore.set(unitFullName, UnitConversion.identity);
     }
     return innermapStore;
   }
