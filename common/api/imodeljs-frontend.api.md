@@ -1610,8 +1610,12 @@ export interface BlankConnectionProps {
 
 // @public
 export class BriefcaseConnection extends IModelConnection {
+    // @beta
+    beginEditingSession(): Promise<InteractiveEditingSession>;
     close(): Promise<void>;
     get contextId(): GuidString;
+    // @beta
+    get editingSession(): InteractiveEditingSession | undefined;
     // @beta (undocumented)
     hasPendingTxns(): Promise<boolean>;
     get iModelId(): GuidString;
@@ -1629,6 +1633,8 @@ export class BriefcaseConnection extends IModelConnection {
     pushChanges(description: string): Promise<string>;
     // @beta (undocumented)
     saveChanges(description?: string): Promise<void>;
+    // @beta
+    supportsInteractiveEditing(): Promise<boolean>;
 }
 
 // @beta
@@ -2515,9 +2521,6 @@ export class DynamicsContext extends RenderContext {
     // @internal (undocumented)
     changeDynamics(): void;
     }
-
-// @alpha (undocumented)
-export type EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection;
 
 // @alpha @deprecated
 export class EditingFunctions {
@@ -4678,23 +4681,24 @@ export interface InstancedGraphicParams {
     readonly transforms: Float32Array;
 }
 
-// @alpha
+// @beta
 export class InteractiveEditingSession extends BriefcaseNotificationHandler implements IModelChangeNotifications {
-    static begin(imodel: EditableConnection): Promise<InteractiveEditingSession>;
+    // @internal
+    static begin(imodel: BriefcaseConnection): Promise<InteractiveEditingSession>;
     // (undocumented)
     get briefcaseChannelName(): IpcAppChannel;
     end(): Promise<void>;
-    static get(imodel: IModelConnection): InteractiveEditingSession | undefined;
     getGeometryChanges(): Iterable<ModelGeometryChanges>;
     getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined;
-    readonly iModel: EditableConnection;
-    static isSupported(imodel: EditableConnection): Promise<boolean>;
+    readonly iModel: BriefcaseConnection;
+    // @internal (undocumented)
+    get isDisposed(): boolean;
     // @internal (undocumented)
     notifyElementsChanged(changed: ElementsChanged): void;
     // @internal (undocumented)
     notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
     static readonly onBegin: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onElementChanges: BeEvent<(changes: ElementsChanged, iModel: EditableConnection) => void>;
+    readonly onElementChanges: BeEvent<(changes: ElementsChanged, iModel: BriefcaseConnection) => void>;
     readonly onEnded: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onEnding: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>;
@@ -6998,7 +7002,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     exitTool(): void;
     getPrompt(): string;
     // @internal
-    get iModel(): EditableConnection;
+    get iModel(): BriefcaseConnection;
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     onRedoPreviousStep(): Promise<boolean>;
