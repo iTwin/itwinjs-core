@@ -1,146 +1,322 @@
 [
   {
-    "FromSchema": "UnitsA",
-    "From": "unitA1",
-    "ToSchema": "UnitsA",
+    "FromSchema": "USUnits",
+    "From": "YRD",
+    "ToSchema": "USUnits",
+    "To": "FT",
+    "Input": 42.42,
+    "Expect": 127.26
+  },
+  {
+    "FromSchema": "USUnits",
+    "From": "FT",
+    "ToSchema": "USUnits",
+    "To": "YRD",
+    "Input": 42.42,
+    "Expect": 14.14
+  },
+  {
+    "FromSchema": "MetricUnits",
+    "From": "KM",
+    "ToSchema": "MetricUnits",
+    "To": "CM",
+    "Input": 42.42,
+    "Expect": 4242000
+  },
+  {
+    "FromSchema": "MetricUnits",
+    "From": "CM",
+    "ToSchema": "MetricUnits",
+    "To": "KM",
+    "Input": 42.42,
+    "Expect": 0.0004242
+  },
+  {
+    "FromSchema": "USUnits",
+    "From": "MILE",
+    "ToSchema": "MetricUnits",
+    "To": "DM",
+    "Input": 42.42,
+    "Expect": 682683.7248000001
+  },
+  {
+    "FromSchema": "MetricUnits",
+    "From": "DM",
+    "ToSchema": "USUnits",
+    "To": "MILE",
+    "Input": 42.42,
+    "Expect": 0.0026358565974707706
+  },
+  {
+    "FromSchema": "USUnits",
+    "From": "US_SURVEY_MILE",
+    "ToSchema": "SIUnits",
     "To": "M",
-    "Input": 42,
-    "Expect": 0.42,
-    "Comment": "Like converting CM to M, divide by factor of 100",
-    "Comment2": "unitA1 -> UnitsB:unitB1*UnitsC:unitC1 | UnitsB:unitB1 -> UnitsC:unitC2 -> CM | UnitsC:unitC1 -> M"
+    "Input": 42.42,
+    "Expect": 68268.50901701803
   },
   {
-    "FromSchema": "UnitsA",
+    "FromSchema": "SIUnits",
     "From": "M",
-    "ToSchema": "UnitsA",
-    "To": "unitA1",
-    "Input": 42,
-    "Expect": 4200
+    "ToSchema": "USUnits",
+    "To": "US_SURVEY_MILE",
+    "Input": 42.42,
+    "Expect": 0.026358513257575752
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "unitA2",
-    "ToSchema": "UnitsA",
-    "To": "M",
-    "Input": 10,
-    "Expect": 0.5,
-    "Comment": "All self-schema references in definitions formatted in 'schemaName:schemaItem'; Divide by factor 100, then divide by factor of 2. Also multiply by factor of 10. Overall, divide by factor of 20",
-    "Comment2": "unitA2 -> UnitsA:unitA3*UnitsB:unitB2 | UnitsA:unitA3 -> M | UnitsB:unitB2 -> UnitsB:unitB3 -> UnitsB:unitB4 -> UnitsC:unitC3 -> UnitsC:unitC2 -> CM"
+    "FromSchema": "USUnits",
+    "From": "SQ_MILE",
+    "ToSchema": "USUnits",
+    "To": "SQ_FT",
+    "Input": 42.42,
+    "Expect": 1182601728.0000005
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "M",
-    "ToSchema": "UnitsA",
-    "To": "unitA2",
-    "Input": 10,
-    "Expect": 200
+    "FromSchema": "USUnits",
+    "From": "SQ_FT",
+    "ToSchema": "USUnits",
+    "To": "SQ_MILE",
+    "Input": 42.42,
+    "Expect": 0.0000015216081267217627
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "unitA4",
-    "ToSchema": "UnitsA",
-    "To": "M",
-    "Input": 10,
-    "Expect": 0.00025,
-    "Comment": "All self-schema references in definitions formatted in 'schemaItem' with no schemaName in front; Divide by factor of 200, then by another factor of 200",
-    "Comment2": "unitA4 -> unitA5*UnitsB:unitB5 | unitA5 -> UnitsB:unitB5 | UnitsB:unitB5 -> unitB6 -> unitB7 -> UnitsC:unitC4 -> unitC5 -> unitC2 -> CM"
+    "FromSchema": "MetricUnits",
+    "From": "SQ_UM",
+    "ToSchema": "MetricUnits",
+    "To": "SQ_MM",
+    "Input": 42.42,
+    "Expect": 4.242e-5
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "M",
-    "ToSchema": "UnitsA",
-    "To": "unitA4",
-    "Input": 10,
-    "Expect": 400000
+    "FromSchema": "MetricUnits",
+    "From": "SQ_MM",
+    "ToSchema": "MetricUnits",
+    "To": "SQ_UM",
+    "Input": 42.42,
+    "Expect": 42420000
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "unitA6",
-    "ToSchema": "UnitsA",
-    "To": "M",
-    "Input": 10,
-    "Expect": 0.05,
-    "Comment": "Testing with some exponenets; Exponent should cancel out so that it is just multiply divide by factor 200",
-    "Comment2": "unitA6 -> unitA5(-1)*UnitsB:unitB5(2) | unitA5 -> UnitsB:unitB5 | UnitsB:unitB5 -> unitB6 -> unitB7 -> UnitsC:unitC4 -> unitC5 -> unitC2 -> CM"
+    "FromSchema": "USUnits",
+    "From": "SQ_US_SURVEY_YRD",
+    "ToSchema": "SIUnits",
+    "To": "SQ_M",
+    "Input": 42.42,
+    "Expect": 35.46866448571609
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "M",
-    "ToSchema": "UnitsA",
-    "To": "UnitA6",
-    "Input": 10,
-    "Expect": 2000
+    "FromSchema": "SIUnits",
+    "From": "SQ_M",
+    "ToSchema": "USUnits",
+    "To": "SQ_US_SURVEY_YRD",
+    "Input": 42.42,
+    "Expect": 50.733694828703676
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "unitA7",
-    "ToSchema": "UnitsA",
-    "To": "M",
-    "Input": 42,
-    "Expect": 0.42,
-    "Comment": "Similar to first test; using alias name instead of schema name",
-    "Comment2": "unitA7 -> uB:unitB8*uC:unitC1 | uB:unitB8 -> uC:unitC5 -> unitC2 -> CM | uC:unitC1 -> M"
-    },
-  {
-    "FromSchema": "UnitsA",
-    "From": "M",
-    "ToSchema": "UnitsA",
-    "To": "unitA7",
-    "Input": 42,
-    "Expect": 4200
+    "FromSchema": "USUnits",
+    "From": "SQ_MILE",
+    "ToSchema": "MetricUnits",
+    "To": "SQ_KM",
+    "Input": 42.42,
+    "Expect": 109.86729564045314
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "unitA8",
-    "ToSchema": "UnitsA",
-    "To": "M",
-    "Input": 10,
-    "Expect": 0.5,
-    "Comment": "Similar to unitA2 to M test; using alias name instead of schema name",
-    "Comment2": "unitA8 -> UnitsA:unitA3*UnitsB:unitB2 | UnitsA:unitA3 -> M | UnitsB:unitB2 -> UnitsB:unitB3 -> UnitsB:unitB4 -> UnitsC:unitC3 -> UnitsC:unitC2 -> CM"
+    "FromSchema": "MetricUnits",
+    "From": "SQ_KM",
+    "ToSchema": "USUnits",
+    "To": "SQ_MILE",
+    "Input": 42.42,
+    "Expect": 16.378453565370553
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "M",
-    "ToSchema": "UnitsA",
-    "To": "unitA8",
-    "Input": 10,
-    "Expect": 200
+    "FromSchema": "USUnits",
+    "From": "FT_PER_THOUSAND_FOOT",
+    "ToSchema": "USUnits",
+    "To": "FT_PER_FT",
+    "Input": 42.42,
+    "Expect": 0.04242
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "unitA8",
-    "ToSchema": "UnitsA",
-    "To": "M",
-    "Input": 10,
-    "Expect": 0.5,
-    "Comment": "Similar to unitA2 to M test; using alias name instead of schema name",
-    "Comment2": "unitA8 -> uA:unitA3*uB:unitB9 | uA:unitA3 -> M | uB:unitB9 -> unitB10 -> unitB11 -> uC:unitC4 -> unitC5 -> unitC2 -> CM"
+    "FromSchema": "USUnits",
+    "From": "FT_PER_FT",
+    "ToSchema": "USUnits",
+    "To": "FT_PER_THOUSAND_FOOT",
+    "Input": 42.42,
+    "Expect": 42420
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "M",
-    "ToSchema": "UnitsA",
-    "To": "unitA8",
-    "Input": 10,
-    "Expect": 200
+    "FromSchema": "USUnits",
+    "From": "FT_PER_FT",
+    "ToSchema": "USUnits",
+    "To": "IN_PER_FT",
+    "Input": 42.42,
+    "Expect": 509.04
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "unitA10",
-    "ToSchema": "UnitsA",
-    "To": "M",
-    "Input": 10,
-    "Expect": 0.05,
-    "Comment": "unitA10 -> uA:unitA9(-1)*uB:unitB9(2) | uA:unitA9 -> uB:unitB9 | uB:unitB9 -> unitB10 -> unitB11 -> uC:unitC4 -> unitC5 -> unitC2 -> CM",
-    "Comment2": "Similar to test converting unitA6 to M; using alias name instead of schema name"
+    "FromSchema": "USUnits",
+    "From": "IN_PER_FT",
+    "ToSchema": "USUnits",
+    "To": "FT_PER_FT",
+    "Input": 42.42,
+    "Expect": 3.535
   },
   {
-    "FromSchema": "UnitsA",
-    "From": "M",
-    "ToSchema": "UnitsA",
-    "To": "UnitA10",
-    "Input": 10,
-    "Expect": 2000
+    "FromSchema": "USUnits",
+    "From": "FT_PER_MILE",
+    "ToSchema": "USUnits",
+    "To": "IN_PER_FT",
+    "Input": 42.42,
+    "Expect": 0.09640909090909093
+  },
+  {
+    "FromSchema": "USUnits",
+    "From": "IN_PER_FT",
+    "ToSchema": "USUnits",
+    "To": "FT_PER_MILE",
+    "Input": 42.42,
+    "Expect": 18664.8
+  },
+  {
+    "FromSchema": "MetricUnits",
+    "From": "CM_PER_M",
+    "ToSchema": "MetricUnits",
+    "To": "M_PER_KM",
+    "Input": 42.42,
+    "Expect": 424.2
+  },
+  {
+    "FromSchema": "MetricUnits",
+    "From": "M_PER_KM",
+    "ToSchema": "MetricUnits",
+    "To": "CM_PER_M",
+    "Input": 42.42,
+    "Expect": 4.242
+  },
+  {
+    "FromSchema": "USUnits",
+    "From": "FT_PER_IN",
+    "ToSchema": "MetricUnits",
+    "To": "M_PER_KM",
+    "Input": 42.42,
+    "Expect": 509040
+  },
+  {
+    "FromSchema": "MetricUnits",
+    "From": "M_PER_KM",
+    "ToSchema": "USUnits",
+    "To": "FT_PER_IN",
+    "Input": 42.42,
+    "Expect": 0.003535
+  },
+  {
+    "FromSchema": "USUnits",
+    "From": "FT_PER_IN",
+    "ToSchema": "SIUnits",
+    "To": "M_PER_M",
+    "Input": 42.42,
+    "Expect": 509.04
+  },
+  {
+    "FromSchema": "SIUnits",
+    "From": "M_PER_M",
+    "ToSchema": "USUnits",
+    "To": "FT_PER_IN",
+    "Input": 42.42,
+    "Expect": 3.535
+  },
+  {
+    "FromSchema": "MetricUnits",
+    "From": "MM_PER_M",
+    "ToSchema": "SIUnits",
+    "To": "M_PER_M",
+    "Input": 42.42,
+    "Expect": 0.04242
+  },
+  {
+    "FromSchema": "SIUnits",
+    "From": "M_PER_M",
+    "ToSchema": "MetricUnits",
+    "To": "MM_PER_M",
+    "Input": 42.42,
+    "Expect": 42420
+  },
+  {
+    "FromSchema": "USUnits",
+    "From": "FAHRENHEIT",
+    "ToSchema": "USUnits",
+    "To": "RANKINE",
+    "Input": 42.42,
+    "Expect": 502.09
+  },
+  {
+    "FromSchema": "USUnits",
+    "From": "RANKINE",
+    "ToSchema": "USUnits",
+    "To": "FAHRENHEIT",
+    "Input": 42.42,
+    "Expect": -417.24999999999994
+  },
+  {
+    "FromSchema": "USUnits",
+    "From": "FAHRENHEIT",
+    "ToSchema": "MetricUnits",
+    "To": "CELSIUS",
+    "Input": 42.42,
+    "Expect": 5.7888888888888985
+  },
+  {
+    "FromSchema": "MetricUnits",
+    "From": "CELSIUS",
+    "ToSchema": "USUnits",
+    "To": "FAHRENHEIT",
+    "Input": 42.42,
+    "Expect": 108.35600000000001
+  },
+  {
+    "FromSchema": "USUnits",
+    "From": "FAHRENHEIT",
+    "ToSchema": "SIUnits",
+    "To": "K",
+    "Input": 42.42,
+    "Expect": 278.93888888888887
+  },
+  {
+    "FromSchema": "SIUnits",
+    "From": "K",
+    "ToSchema": "USUnits",
+    "To": "FAHRENHEIT",
+    "Input": 42.42,
+    "Expect": -383.31399999999996
+  },
+  {
+    "FromSchema": "SIUnits",
+    "From": "TWO_PI",
+    "ToSchema": "SIUnits",
+    "To": "QUARTER_PI",
+    "Input": 42.42,
+    "Expect": 339.36
+  },
+  {
+    "FromSchema": "SIUnits",
+    "From": "QUARTER_PI",
+    "ToSchema": "SIUnits",
+    "To": "TWO_PI",
+    "Input": 42.42,
+    "Expect": 5.3025
+  },
+  {
+    "FromSchema": "SIUnits",
+    "From": "HALF_PI",
+    "ToSchema": "SIUnits",
+    "To": "PI",
+    "Input": 42.42,
+    "Expect": 21.21
+  },
+  {
+    "FromSchema": "SIUnits",
+    "From": "PI",
+    "ToSchema": "SIUnits",
+    "To": "HALF_PI",
+    "Input": 42.42,
+    "Expect": 84.84
   }
 ]

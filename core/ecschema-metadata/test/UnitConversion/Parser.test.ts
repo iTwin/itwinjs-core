@@ -3,7 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { parseDefinition, Definition } from "../../src/UnitConversion/Parser";
+import {
+  parseDefinition,
+  DefinitionFragment,
+} from "../../src/UnitConversion/Parser";
 
 describe("DefinitionParser tests", () => {
   const definitionsToTest: string[] = [
@@ -33,7 +36,7 @@ describe("DefinitionParser tests", () => {
     "alias:BTU(-1)*[alias:PI](2)*alias:HR*[alias:ONE]*alias:TEMPERATURE_CHANGE(1)",
   ];
 
-  type KeyValuePair = [string, Definition];
+  type KeyValuePair = [string, DefinitionFragment];
 
   const expectedData: { [key: string]: KeyValuePair[] } = {
     NUMBER: [

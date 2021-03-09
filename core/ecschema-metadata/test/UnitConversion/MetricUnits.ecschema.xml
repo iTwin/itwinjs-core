@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ECSchema schemaName="MetricUnits" alias="MU" version="01.00.05" description="Standard Set of Unit definitions for the system" displayLabel="Units" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-    <UnitSystem typeName="SI" />
-    <UnitSystem typeName="CGS" />
-    <UnitSystem typeName="METRIC" />
-    <UnitSystem typeName="IMPERIAL" />
-    <UnitSystem typeName="MARITIME" />
-    <UnitSystem typeName="USSURVEY" />
-    <UnitSystem typeName="INDUSTRIAL" />
-    <UnitSystem typeName="INTERNATIONAL" />
-    <UnitSystem typeName="USCUSTOM" />
-    <UnitSystem typeName="STATISTICS" />
-    <UnitSystem typeName="FINANCE" />
-    <UnitSystem typeName="CONSTANT" />
+    <ECSchemaReference name="SIUnits" version="01.00.05" alias="SIU"/>
 
-    <Phenomenon typeName="AREA" definition="LENGTH(2)" displayLabel="Area" />
+    <UnitSystem typeName="METRIC" />
+    <UnitSystem typeName="INTERNATIONAL" />
+
     <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
+    <Phenomenon typeName="AREA" definition="LENGTH(2)" displayLabel="Area" />
+    <Phenomenon typeName="SLOPE" definition="LENGTH*LENGTH(-1)" displayLabel="Slope" />
+    <Phenomenon typeName="TEMPERATURE" definition="TEMPERATURE" displayLabel="Temperature" />
     <Phenomenon typeName="NUMBER" definition="NUMBER" displayLabel="Number" />
 
     <Constant typeName="DECI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-1" displayLabel="deci"/>
@@ -38,11 +32,24 @@
     <Constant typeName="ZETTA" phenomenon="NUMBER" definition="ONE" numerator="1.0e21" displayLabel="zetta"/>
     <Constant typeName="YOTTA" phenomenon="NUMBER" definition="ONE" numerator="1.0e24" displayLabel="yotta"/>
 
-    <Unit typeName="MM" phenomenon="LENGTH" unitSystem="METRIC" definition="[MILLI]*M" displayLabel="mm" />
-    <Unit typeName="CM" phenomenon="LENGTH" unitSystem="METRIC" definition="[CENTI]*M" displayLabel="cm" />
-    <Unit typeName="DM" phenomenon="LENGTH" unitSystem="METRIC" definition="[DECI]*M" displayLabel="dm" />
-    <Unit typeName="KM" phenomenon="LENGTH" unitSystem="METRIC" definition="[KILO]*M" displayLabel="km" />
-    <Unit typeName="UM" phenomenon="LENGTH" unitSystem="METRIC" definition="[MICRO]*M" displayLabel="µm" />
+    <Unit typeName="MM" phenomenon="LENGTH" unitSystem="METRIC" definition="[MILLI]*SIUnits:M" displayLabel="mm" />
+    <Unit typeName="CM" phenomenon="LENGTH" unitSystem="METRIC" definition="[CENTI]*SIUnits:M" displayLabel="cm" />
+    <Unit typeName="DM" phenomenon="LENGTH" unitSystem="METRIC" definition="[DECI]*SIUnits:M" displayLabel="dm" />
+    <Unit typeName="KM" phenomenon="LENGTH" unitSystem="METRIC" definition="[KILO]*SIUnits:M" displayLabel="km" />
+    <Unit typeName="UM" phenomenon="LENGTH" unitSystem="METRIC" definition="[MICRO]*SIUnits:M" displayLabel="µm" />
 
-    <Unit typeName="M" phenomenon="LENGTH" unitSystem="SI" definition="M" displayLabel="m" />
+    <Unit typeName="SQ_UM" phenomenon="AREA" unitSystem="METRIC" definition="MetricUnits:UM(2)" displayLabel="um²" />
+    <Unit typeName="SQ_MM" phenomenon="AREA" unitSystem="METRIC" definition="MU:MM(2)" displayLabel="mm²" />
+    <Unit typeName="SQ_CM" phenomenon="AREA" unitSystem="METRIC" definition="CM(2)" displayLabel="cm²" />
+    <Unit typeName="SQ_DM" phenomenon="AREA" unitSystem="METRIC" definition="DM(2)" displayLabel="dm²" />
+    <Unit typeName="SQ_KM" phenomenon="AREA" unitSystem="METRIC" definition="KM(2)" displayLabel="km²" />
+    <Unit typeName="ARE" phenomenon="AREA" unitSystem="METRIC" definition="[HECTO]*SIUnits:M(2)" displayLabel="are" />
+
+    <Unit typeName="CM_PER_M" phenomenon="SLOPE" unitSystem="METRIC" definition="MetricUnits:CM*SIU:M(-1)" displayLabel="cm/m" />
+    <Unit typeName="MM_PER_M" phenomenon="SLOPE" unitSystem="METRIC" definition="MU:MM*SIU:M(-1)" displayLabel="mm/m" />
+    <Unit typeName="M_PER_KM" phenomenon="SLOPE" unitSystem="METRIC" definition="SIU:M*KM(-1)" displayLabel="m/km" />
+
+    <Unit typeName="CELSIUS" phenomenon="TEMPERATURE" unitSystem="METRIC" definition="SIU:K" offset="273.15" displayLabel="°C" />
+
+    <Unit typeName="ONE" phenomenon="NUMBER" unitSystem="INTERNATIONAL" definition="ONE" displayLabel="one" />
 </ECSchema>

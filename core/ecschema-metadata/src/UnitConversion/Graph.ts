@@ -95,7 +95,8 @@ export class Graph<T> {
   public setEdge = (v: string, w: string, value: { exponent: number }) => {
     const edgeId = v + this._edgeKeyDelim + w + this._edgeKeyDelim;
     if (edgeId in this._edgeLabels) {
-      this._edgeLabels[edgeId] = value;
+      // this._edgeLabels[edgeId] = value;
+      this._edgeLabels[edgeId].exponent += value.exponent; // Update exponent, specific to this graph's use case
       return;
     }
 
