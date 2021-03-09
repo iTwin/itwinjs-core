@@ -288,6 +288,7 @@ internal;TemplateViewDefinition3d
 public;TextAnnotation2d 
 public;TextAnnotation3d 
 public;Texture 
+internal;TextureCreateProps 
 public;TitleText 
 public;TxnAction
 beta;TxnElementsChanged

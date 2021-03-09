@@ -12,6 +12,7 @@ import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
+import { Base64EncodedString } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BRepGeometryCreate } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
@@ -446,7 +447,7 @@ export class BriefcaseDb extends IModelDb {
 // @public
 export type BriefcaseId = number;
 
-// @public
+// @public @deprecated (undocumented)
 export enum BriefcaseIdValue {
     // @internal @deprecated (undocumented)
     DeprecatedStandalone = 1,
@@ -1368,7 +1369,7 @@ export class DrawingCategory extends Category {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static getCodeSpecName(): string;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
-    protected static onInserted(props: ElementProps, iModel: IModelDb): void;
+    protected static onInserted(props: Readonly<ElementProps>, iModel: IModelDb): void;
     static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined;
 }
 
@@ -1663,17 +1664,17 @@ export class Element extends Entity implements ElementProps {
     // @alpha
     protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void;
     // @beta
-    protected static onDelete(props: ElementProps, iModel: IModelDb): void;
+    protected static onDelete(props: Readonly<ElementProps>, iModel: IModelDb): void;
     // @beta
-    protected static onDeleted(_props: ElementProps, _iModel: IModelDb): void;
+    protected static onDeleted(_props: Readonly<ElementProps>, _iModel: IModelDb): void;
     // @beta
-    protected static onInsert(props: ElementProps, iModel: IModelDb): void;
+    protected static onInsert(props: Readonly<ElementProps>, iModel: IModelDb): void;
     // @beta
-    protected static onInserted(props: ElementProps, iModel: IModelDb): void;
+    protected static onInserted(props: Readonly<ElementProps>, iModel: IModelDb): void;
     // @beta
-    protected static onUpdate(props: ElementProps, iModel: IModelDb): void;
+    protected static onUpdate(props: Readonly<ElementProps>, iModel: IModelDb): void;
     // @beta
-    protected static onUpdated(props: ElementProps, iModel: IModelDb): void;
+    protected static onUpdated(props: Readonly<ElementProps>, iModel: IModelDb): void;
     parent?: RelatedElement;
     // @beta
     static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined): void;
@@ -1698,17 +1699,17 @@ export class ElementAspect extends Entity implements ElementAspectProps {
     // (undocumented)
     element: RelatedElement;
     // @beta
-    protected static onDelete(_props: ElementAspectProps, _iModel: IModelDb): void;
+    protected static onDelete(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
     // @beta
-    protected static onDeleted(_props: ElementAspectProps, _iModel: IModelDb): void;
+    protected static onDeleted(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
     // @beta
-    protected static onInsert(_props: ElementAspectProps, _iModel: IModelDb): void;
+    protected static onInsert(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
     // @beta
-    protected static onInserted(_props: ElementAspectProps, _iModel: IModelDb): void;
+    protected static onInserted(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
     // @beta
-    protected static onUpdate(_props: ElementAspectProps, _iModel: IModelDb): void;
+    protected static onUpdate(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
     // @beta
-    protected static onUpdated(_props: ElementAspectProps, _iModel: IModelDb): void;
+    protected static onUpdated(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void;
     // @internal (undocumented)
     toJSON(): ElementAspectProps;
 }
@@ -2002,10 +2003,9 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
 // @public (undocumented)
 export namespace ExternalSourceAspect {
     export enum Kind {
-        // (undocumented)
         Element = "Element",
-        // (undocumented)
-        Relationship = "Relationship"
+        Relationship = "Relationship",
+        Scope = "Scope"
     }
 }
 
@@ -2900,6 +2900,7 @@ export class IModelTransformer extends IModelExportHandler {
     processRelationships(baseRelClassFullName: string): Promise<void>;
     processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
     processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
+    get provenanceDb(): IModelDb;
     protected shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     protected shouldExportElement(_sourceElement: Element): boolean;
     protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
@@ -3278,17 +3279,17 @@ export class Model extends Entity implements ModelProps {
     // (undocumented)
     readonly name: string;
     // @beta
-    protected static onDelete(props: ModelProps, iModel: IModelDb): void;
+    protected static onDelete(props: Readonly<ModelProps>, iModel: IModelDb): void;
     // @beta
-    protected static onDeleted(_props: ModelProps, _iModel: IModelDb): void;
+    protected static onDeleted(_props: Readonly<ModelProps>, _iModel: IModelDb): void;
     // @beta
-    protected static onInsert(props: ModelProps, iModel: IModelDb): void;
+    protected static onInsert(props: Readonly<ModelProps>, iModel: IModelDb): void;
     // @beta
     protected static onInserted(id: string, iModel: IModelDb): void;
     // @beta
-    protected static onUpdate(props: ModelProps, iModel: IModelDb): void;
+    protected static onUpdate(props: Readonly<ModelProps>, iModel: IModelDb): void;
     // @beta
-    protected static onUpdated(props: ModelProps, iModel: IModelDb): void;
+    protected static onUpdated(props: Readonly<ModelProps>, iModel: IModelDb): void;
     // (undocumented)
     readonly parentModel: Id64String;
     // @beta
@@ -4086,12 +4087,10 @@ export class TextAnnotation3d extends GraphicalElement3d {
 // @public
 export class Texture extends DefinitionElement {
     // @internal
-    constructor(props: TextureProps & {
-        data: Uint8Array | string;
-    }, iModel: IModelDb);
+    constructor(props: TextureCreateProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: string, width: number, height: number, description: string, flags: TextureFlags): Texture;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Texture;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
     // (undocumented)
     data: Uint8Array;
@@ -4103,11 +4102,17 @@ export class Texture extends DefinitionElement {
     format: ImageSourceFormat;
     // (undocumented)
     height: number;
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: string, width: number, height: number, description: string, flags: TextureFlags): Id64String;
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Id64String;
     // @internal (undocumented)
     toJSON(): TextureProps;
     // (undocumented)
     width: number;
+}
+
+// @internal
+export interface TextureCreateProps extends Omit<TextureProps, "data"> {
+    // (undocumented)
+    data: Base64EncodedString | Uint8Array;
 }
 
 // @public
