@@ -107,7 +107,7 @@ export class GltfMeshData {
   public uvQParams?: QParams2d;
   public uvs?: Uint16Array;
   public uvRange?: Range2d;
-  public indices?: Uint16Array;
+  public indices?: Uint16Array | Uint32Array;
 
   public constructor(props: Mesh) {
     this.primitive = props;
@@ -703,8 +703,8 @@ export abstract class GltfReader {
   }
 
   protected readMeshIndices(mesh: GltfMeshData, json: any): boolean {
-    const data = this.readBufferData16(json, "indices");
-    if (undefined === data || !(data.buffer instanceof(Uint16Array)))
+    const data = this.readBufferData16(json, "indices") || this.readBufferData32(json, "indices");
+    if (undefined === data || (!(data.buffer instanceof(Uint16Array)) && ! (data.buffer instanceof(Uint32Array))))
       return false;
 
     mesh.indices = data.buffer;

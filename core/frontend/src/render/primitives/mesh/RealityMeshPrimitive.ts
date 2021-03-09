@@ -44,7 +44,7 @@ export class RealityMeshPrimitive implements RenderMemory.Consumer {
   }
 
   public static createFromGltfMesh(mesh: GltfMeshData): RealityMeshPrimitive | undefined {
-    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.primitive.displayParams.textureMapping || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices)
+    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.primitive.displayParams.textureMapping || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices || !(mesh.indices instanceof Uint16Array))
       return undefined;     // Simple meshes have only triangles without edges and are textured.
 
     return new RealityMeshPrimitive({ indices: mesh.indices, pointQParams: mesh.pointQParams, points: mesh.points, uvQParams: mesh.uvQParams, uvs: mesh.uvs, normals: mesh.normals, featureID: 0, texture: mesh.primitive.displayParams.textureMapping.texture });
