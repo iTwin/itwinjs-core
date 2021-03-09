@@ -671,7 +671,7 @@ export class RealityDataClient extends WsgClient {
 
   /**
    * Gets the list of all data locations supported by PW Context Share.
-   * @param requestContext  The client request context.
+   * @param requestContext The client request context.
    * @returns The requested data locations list.
    */
   public async getDataLocation(requestContext: AuthorizedClientRequestContext): Promise<DataLocation[]> {
