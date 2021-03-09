@@ -393,6 +393,23 @@ export enum BackgroundMapType {
     Street = 1
 }
 
+// @public
+export type Base64EncodedString = string;
+
+// @public
+export namespace Base64EncodedString {
+    const prefix = "encoding=base64;";
+    export function ensurePrefix(base64: string): Base64EncodedString;
+    export function fromUint8Array(bytes: Uint8Array): Base64EncodedString;
+    export function hasPrefix(str: string): boolean;
+    export function stripPrefix(base64: Base64EncodedString): string;
+    export function toUint8Array(base64: Base64EncodedString): Uint8Array;
+    const // @beta
+    reviver: (_name: string, value: any) => any;
+    const // @beta
+    replacer: (_name: string, value: any) => any;
+}
+
 // @alpha
 export type BaseLayerProps = MapLayerProps | ColorDefProps;
 
@@ -541,7 +558,7 @@ export interface BRepCutProps {
 // @beta (undocumented)
 export namespace BRepEntity {
     export interface DataProps {
-        data?: string;
+        data?: Base64EncodedString;
         faceSymbology?: FaceSymbologyProps[];
         transform?: TransformProps;
         type?: Type;
@@ -7249,7 +7266,7 @@ export enum TextureMapUnits {
 
 // @beta
 export interface TextureProps extends DefinitionElementProps {
-    data: string;
+    data: Base64EncodedString;
     description?: string;
     flags: TextureFlags;
     format: ImageSourceFormat;
