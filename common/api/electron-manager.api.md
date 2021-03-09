@@ -11,9 +11,32 @@ import { DesktopAuthorizationClient } from '@bentley/imodeljs-backend';
 import { IModelAppOptions } from '@bentley/imodeljs-frontend';
 import { IModelHostConfiguration } from '@bentley/imodeljs-backend';
 import { IpcHandler } from '@bentley/imodeljs-backend';
+import { IpcSocket } from '@bentley/imodeljs-common';
+import { IpcSocketBackend } from '@bentley/imodeljs-common';
+import { IpcSocketFrontend } from '@bentley/imodeljs-common';
 import { PromiseReturnType } from '@bentley/imodeljs-frontend';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
+import { RpcInterface } from '@bentley/imodeljs-common';
 import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
+import { RpcManager } from '@bentley/imodeljs-common';
+import { RpcProtocol } from '@bentley/imodeljs-common';
+import { RpcPushChannel } from '@bentley/imodeljs-common';
+import { RpcPushConnection } from '@bentley/imodeljs-common';
+import { RpcPushTransport } from '@bentley/imodeljs-common';
+import { RpcRequest } from '@bentley/imodeljs-common';
+import { RpcRequestFulfillment } from '@bentley/imodeljs-common';
+import { RpcSerializedValue } from '@bentley/imodeljs-common';
+import { SerializedRpcRequest } from '@bentley/imodeljs-common';
+
+// @internal (undocumented)
+export class BackendIpcTransport extends ElectronIpcTransport<SerializedRpcRequest, RpcRequestFulfillment> {
+    // (undocumented)
+    protected handleComplete(id: string, evt: any): Promise<void>;
+    // (undocumented)
+    protected performSend(channel: string, message: any, evt: any): void;
+    // (undocumented)
+    protected setupPush(): void;
+}
 
 // @internal
 export class DesktopAuthorizationClientIpc {
@@ -70,6 +93,117 @@ export interface ElectronHostOptions {
     ipcHandlers?: (typeof IpcHandler)[];
     rpcInterfaces?: RpcInterfaceDefinition[];
     webResourcesPath?: string;
+}
+
+// @internal (undocumented)
+export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = IpcTransportMessage, TOut extends IpcTransportMessage = IpcTransportMessage> {
+    constructor(protocol: ElectronRpcProtocol);
+    // (undocumented)
+    protected abstract handleComplete(id: string, evt: any): void;
+    // (undocumented)
+    protected loadMessage(id: string): TIn;
+    // (undocumented)
+    protected performSend(channel: string, message: any, evt: any): void;
+    // (undocumented)
+    get protocol(): ElectronRpcProtocol;
+    // (undocumented)
+    protected _protocol: ElectronRpcProtocol;
+    // (undocumented)
+    sendRequest(request: SerializedRpcRequest): void;
+    // (undocumented)
+    sendResponse(message: TOut, evt: any): void;
+    // (undocumented)
+    protected setupPush(): void;
+}
+
+// @public
+export enum ElectronManagerLoggerCategory {
+    Authorization = "electron-manager.Authorization"
+}
+
+// @internal (undocumented)
+export class ElectronPushConnection<T> extends RpcPushConnection<T> {
+    constructor(channel: RpcPushChannel<T>, client: unknown, ipc: BackendIpcTransport);
+    // (undocumented)
+    send(messageData: any): Promise<void>;
+}
+
+// @internal (undocumented)
+export class ElectronPushTransport extends RpcPushTransport {
+    constructor(ipc: FrontendIpcTransport);
+    // (undocumented)
+    consume(response: RpcRequestFulfillment): boolean;
+    // (undocumented)
+    get last(): number;
+    }
+
+// @internal
+export abstract class ElectronRpcConfiguration extends RpcConfiguration {
+    abstract protocol: ElectronRpcProtocol;
+    // (undocumented)
+    static targetWindowId?: number;
+}
+
+// @internal
+export class ElectronRpcManager extends RpcManager {
+    static initializeBackend(ipcBackend: IpcSocketBackend, interfaces?: RpcInterfaceDefinition[]): ElectronRpcConfiguration;
+    static initializeFrontend(ipcFrontend: IpcSocketFrontend, interfaces?: RpcInterfaceDefinition[]): ElectronRpcConfiguration;
+    }
+
+// @beta
+export class ElectronRpcProtocol extends RpcProtocol {
+    constructor(configuration: ElectronRpcConfiguration, ipcSocket: IpcSocket);
+    // (undocumented)
+    static instances: Map<string, ElectronRpcProtocol>;
+    // (undocumented)
+    ipcSocket: IpcSocket;
+    // @internal (undocumented)
+    onRpcClientInitialized(definition: RpcInterfaceDefinition, _client: RpcInterface): void;
+    // @internal (undocumented)
+    onRpcClientTerminated(definition: RpcInterfaceDefinition, _client: RpcInterface): void;
+    // @internal (undocumented)
+    onRpcImplInitialized(definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
+    // @internal (undocumented)
+    onRpcImplTerminated(definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
+    // @internal (undocumented)
+    requests: Map<string, ElectronRpcRequest>;
+    readonly requestType: typeof ElectronRpcRequest;
+    transferChunkThreshold: number;
+    // @internal (undocumented)
+    readonly transport: ElectronIpcTransport<IpcTransportMessage, IpcTransportMessage>;
+}
+
+// @beta (undocumented)
+export class ElectronRpcRequest extends RpcRequest {
+    // @internal (undocumented)
+    dispose(): void;
+    protected load(): Promise<import("@bentley/imodeljs-common").RpcSerializedValue>;
+    // @internal (undocumented)
+    notifyResponse(fulfillment: RpcRequestFulfillment): void;
+    readonly protocol: ElectronRpcProtocol;
+    protected send(): Promise<number>;
+    protected setHeader(_name: string, _value: string): void;
+}
+
+// @internal (undocumented)
+export class FrontendIpcTransport extends ElectronIpcTransport<RpcRequestFulfillment> {
+    // (undocumented)
+    protected handleComplete(id: string): Promise<void>;
+    // (undocumented)
+    protected setupPush(): void;
+}
+
+// @internal (undocumented)
+export function initializeIpc(protocol: ElectronRpcProtocol): ElectronIpcTransport<IpcTransportMessage, IpcTransportMessage>;
+
+// @internal (undocumented)
+export interface IpcTransportMessage {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    parameters?: RpcSerializedValue;
+    // (undocumented)
+    result?: RpcSerializedValue;
 }
 
 

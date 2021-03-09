@@ -9,4 +9,10 @@
 
 export * from "./backend/DesktopAuthorizationClientIpc";
 export * from "./backend/ElectronHost";
+export * from "./common/ElectronIpcTransport";
+export * from "./common/ElectronManagerLoggerCategory";
+export * from "./common/ElectronPush";
+export * from "./common/ElectronRpcManager";
+export * from "./common/ElectronRpcProtocol";
+export * from "./common/ElectronRpcRequest";
 export * from "./frontend/ElectronApp";
