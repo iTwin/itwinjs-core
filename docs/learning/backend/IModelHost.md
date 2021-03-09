@@ -13,8 +13,8 @@ To support the various use cases and platforms for iTwin.js backends, there are 
   - **[IpcHost]($backend):** may be used when a backend is *dedicated* to and paired with a single frontend [IpcApp]($frontend) so they may use Ipc. If either end terminates, the other must also. [IpcHost.startup]($backend) calls [IModelHost.startup]($backend). `IpcHost` is abstract, and you should not use it directly.
     - **`WebEditHost`**: for the backend of a `WebEditApp` for editing iModels over the web. `WebEditHost.startup` creates a web socket and calls [IpcHost.Startup]($backend).
     - **[NativeHost]($backend)**: may be used when the frontend and backend are separate processes on the same computer. [NativeHost.startup]($backend) calls [IpcHost.startup]($backend). `NativeHost` also provides access to local file system
-      - **[ElectronHost]($electron-manager)**: for desktop apps on Windows, Mac, and Linux. [ElectronHost.startup]($electron-manager) calls [NativeHost.startup]($backend),
-      - **[MobileHost]($mobile-manager)**: for mobile apps. [MobileHost.startup]($mobile-manager) calls [NativeHost.startup]($backend) and performs Mobile application startup procedures. `MobileHost` is abstract and should not be used directly.
+      - **`ElectronHost`**: for desktop apps on Windows, Mac, and Linux. `ElectronHost.startup` calls [NativeHost.startup]($backend),
+      - **`MobileHost`**: for mobile apps. `MobileHost.startup` calls [NativeHost.startup]($backend) and performs Mobile application startup procedures. `MobileHost` is abstract and should not be used directly.
         - **`IOSHost`**: for iOS backends. `IOSHost.startup` calls `MobileHost.startup` and performs iOS-specific startup procedures.
         - **`AndroidHost`**: for Android backends. `AndroidHost.startup` calls `MobileHost.startup` and performs Android-specific startup procedures.
 
