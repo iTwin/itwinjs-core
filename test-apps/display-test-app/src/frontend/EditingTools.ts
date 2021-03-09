@@ -11,7 +11,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d,
-  EventHandled, GraphicType, HitDetail, IModelApp, InteractiveEditingSession, PrimitiveTool, Tool,
+  EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, Tool,
 } from "@bentley/imodeljs-frontend";
 import { setTitle } from "./Title";
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelConnection, InteractiveEditingSession } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 export function setTitle(imodel: IModelConnection) {
   let prefix = "";

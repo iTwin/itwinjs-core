@@ -6,7 +6,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@bentley/geometry-core";
 import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
 import {
-  imageBufferToPngDataUrl, IModelApp, IModelConnection, InteractiveEditingSession, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
+  imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
   Tool, Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp, MarkupData } from "@bentley/imodeljs-markup";
