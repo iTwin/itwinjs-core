@@ -5562,9 +5562,20 @@ export class Vector3dArray {
     static isAlmostEqual(dataA: undefined | Vector3d[], dataB: undefined | Vector3d[]): boolean;
 }
 
-// @public
+// @internal
 export class ViewGraphicsOps {
-    static announceGridLinesInView(gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d, worldToDisplay: Map4d, viewRange: Range3d, xyDistanceBetweenLines: number, announceLine: (pointA: Point3d, pointB: Point3d, perspectiveZA: number | undefined, perspectiveZB: number | undefined) => void): boolean;
+    static announceGridLinesInView(gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d, worldToDisplay: Map4d, viewRange: Range3d, xyDistanceBetweenLines: number, announceLine: (
+    pointA: Point3d,
+    pointB: Point3d,
+    perspectiveZA: number | undefined,
+    perspectiveZB: number | undefined,
+    gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => void): boolean;
+}
+
+// @internal
+export interface ViewportGraphicsGridLineIdentifier {
+    direction: 0 | 1;
+    index: number;
 }
 
 // @public

@@ -16,7 +16,22 @@ import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Map4d } from "./Map4d";
 import { Matrix4d } from "./Matrix4d";
-
+/**
+ * carrier struct to identify direction and index of a grid line.
+ * @internal
+ */
+export interface ViewportGraphicsGridLineIdentifier {
+  /**
+   * Identifies a grid line.
+   * * Direction 0 is constant x, varying y.
+   * * Direction 1 is constant y, varying x.
+   */
+  direction: 0 | 1;
+  /**
+   * Grid lines through the grid origin are at index 0.
+   */
+  index: number;
+}
 /** helper class for managing step-by-step review of a lines.
  * "A" is a previous line.
  * "B" is a new line.
@@ -148,7 +163,7 @@ class LineProximityContext {
 }
 /**
  * ViewGraphicsOps has static members for various viewing-specific computations.
- * @public
+ * @internal
  */
 export class ViewGraphicsOps {
   /**
@@ -175,9 +190,20 @@ export class ViewGraphicsOps {
     worldToDisplay: Map4d,
     viewRange: Range3d,
     xyDistanceBetweenLines: number,
-    announceLine: (pointA: Point3d, pointB: Point3d,
+    announceLine: (
+      /** world coordinates start point of the line */
+      pointA: Point3d,
+      /** world coordinates end point of the line */
+      pointB: Point3d,
+      /** depth in view -- the z/w part of the display side of the worldToDisplay transform of pointB.  0 is back, 1 is front */
       perspectiveZA: number | undefined,
-      perspectiveZB: number | undefined) => void
+      /** depth in view -- the z/w part of the display side of the worldToDisplay transform of pointB.  0 is back, 1 is front */
+      perspectiveZB: number | undefined,
+      /** identifies if this is an x or y line, and it's index
+       * * NOTE The same instance is updated and passed to each call.
+       */
+      gridLineIdentifier: ViewportGraphicsGridLineIdentifier
+    ) => void
   ): boolean {
 
     const gridZ = gridXStep.unitCrossProduct(gridYStep)!;
@@ -187,13 +213,6 @@ export class ViewGraphicsOps {
     const npcOrigin = toNPC.multiplyXYZW(gridOrigin.x, gridOrigin.y, gridOrigin.z, 1.0);
     const npcGridX = toNPC.multiplyXYZW(gridXStep.x, gridXStep.y, gridXStep.z, 0.0);
     const npcGridY = toNPC.multiplyXYZW(gridYStep.x, gridYStep.y, gridYStep.z, 0.0);
-    /*   This block draws the horizon of the grid . . .
-    const npcVanishGridX = Point3d.create(npcGridX.x / npcGridX.w, npcGridX.y / npcGridX.w, 0.5);
-    const npcVanishGridY = Point3d.create(npcGridY.x / npcGridY.w, npcGridY.y / npcGridY.w, 0.5);
-    const worldVanishX = worldToDisplay.transform1.multiplyPoint3dQuietNormalize(npcVanishGridX);
-    const worldVanishY = worldToDisplay.transform1.multiplyPoint3dQuietNormalize(npcVanishGridY);
-    announceLine(worldVanishX, worldVanishY);
-    */
     // scale up so there are decent size weights.  (Same scale factor
     // weights tend to be really small, so we have to trust that things make sense after division . ...
     const maxWeight = Geometry.maxAbsXYZ(npcOrigin.w, npcGridX.w, npcGridY.w);
@@ -236,6 +255,7 @@ export class ViewGraphicsOps {
     const perspectiveZStartEnd = Segment1d.create();
     let rejected = false;
     let numAnnounced = 0;
+    const gridLineIdentifier: ViewportGraphicsGridLineIdentifier = { direction: 0, index: 0 };
     const announceInterval: AnnounceNumberNumber = (f0: number, f1: number) => {
       gridPoint0.interpolate(f0, gridPoint1, clippedGridPoint0);
       gridPoint0.interpolate(f1, gridPoint1, clippedGridPoint1);  // those are in grid line counter space !!!
@@ -244,18 +264,18 @@ export class ViewGraphicsOps {
 
       if (!lineContext.hasValidLine) {
         lineContext.announceLineAWorld(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd);
-        announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1);
+        announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
         numAnnounced++;
       } else {
         if (!lineContext.intervalOfSeparation(xyDistanceBetweenLines, clippedPointWorld0, clippedPointWorld1, fractionRange, perspectiveZStartEnd)) {
           rejected = true;
         } else {
           if (fractionRange.isExact01)
-            announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1);
+            announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
           else {
             announceLine(clippedPointWorld0.interpolate(fractionRange.low, clippedPointWorld1),
               clippedPointWorld0.interpolate(fractionRange.high, clippedPointWorld1),
-              perspectiveZStartEnd.x0, perspectiveZStartEnd.x1);
+              perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
         }
           lineContext.moveLineBToLineA();
           numAnnounced++;
@@ -269,7 +289,9 @@ export class ViewGraphicsOps {
     rejected = false;
     let iy;
     let iyB = iy0;    // will be updated as stopping point for downward sweep
+    gridLineIdentifier.direction = 1;
     for (iy = iy0; iy <= iy1; iy++){
+      gridLineIdentifier.index = iy;
       gridPoint0.set(xLow, iy);
       gridPoint1.set(xHigh, iy);
       stClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
@@ -284,6 +306,7 @@ export class ViewGraphicsOps {
     for (iy = iy1; iy >=  iyB; iy--){
       gridPoint0.set(xLow, iy);
       gridPoint1.set(xHigh, iy);
+      gridLineIdentifier.index = iy;
       stClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
       if (rejected)
         break;
@@ -297,10 +320,12 @@ export class ViewGraphicsOps {
     let ix;
     let ixB = ix0;    // will be updated as stopping point for downward sweep
     lineContext.invalidateLine();
+    gridLineIdentifier.direction = 0;
     rejected = false;
     for (ix = ix0; ix <= ix1; ix++){
       gridPoint0.set(ix, yLow);
       gridPoint1.set(ix, yHigh);
+      gridLineIdentifier.index = ix;
       stClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
       if (rejected) {
         ixB = ix;
