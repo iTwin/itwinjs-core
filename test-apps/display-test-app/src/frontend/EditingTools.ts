@@ -34,11 +34,11 @@ export class EditingSessionTool extends Tool {
     if (!imodel || !imodel.isBriefcaseConnection())
       return;
 
-    const session = InteractiveEditingSession.get(imodel);
+    const session = imodel.editingSession;
     if (session)
       await session.end();
     else
-      await InteractiveEditingSession.begin(imodel);
+      await imodel.beginEditingSession();
 
     setTitle(imodel);
   }

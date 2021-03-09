@@ -451,7 +451,7 @@ export class Viewer extends Window {
   }
 
   private async closeIModel(): Promise<void> {
-    const session = this._imodel.isBriefcaseConnection() && InteractiveEditingSession.get(this._imodel);
+    const session = this._imodel.isBriefcaseConnection() && this._imodel.editingSession;
     if (session)
       await session.end();
 
