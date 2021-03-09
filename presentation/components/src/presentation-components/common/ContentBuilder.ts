@@ -255,7 +255,7 @@ export class ContentBuilder {
     const descr: PropertyDescription = {
       name: applyOptionalPrefix(field.name, props ? props.namePrefix : undefined),
       displayLabel: field.label,
-      typename: field.type.typeName,
+      typename: field.type.typeName.toLowerCase(),
     };
 
     if (field.renderer) {
