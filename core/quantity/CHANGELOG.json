@@ -2,6 +2,30 @@
   "name": "@bentley/imodeljs-quantity",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@bentley/imodeljs-quantity_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Replace ParseResult with QuantityParserResult"
+          },
+          {
+            "comment": "Fix station formatting and provide helper functions for working with FormatProps. Add support for custom props."
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          },
+          {
+            "comment": "Allow the same label to be used in two different units within the same family but in different systems."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/imodeljs-quantity_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",

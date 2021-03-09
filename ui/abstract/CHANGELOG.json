@@ -2,6 +2,24 @@
   "name": "@bentley/ui-abstract",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@bentley/ui-abstract_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/ui-abstract_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",

@@ -2,6 +2,36 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@bentley/bentleyjs-core_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial setup for adding \"basic manipulation\" tools and commands to editor package."
+          },
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Add isIPhoneBrowser to ProcessDetector and make isIOSBrowser work for both iPads and iPhones. Clarify documentation."
+          },
+          {
+            "comment": "Add ProcessDetector"
+          },
+          {
+            "comment": "Adjusted error messages and error when reversing or reinstating schema changesets"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/bentleyjs-core_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",

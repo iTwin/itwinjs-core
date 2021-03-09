@@ -1,6 +1,15 @@
 # Change Log - @bentley/config-loader
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Updated to use TypeScript 4.1
+- begin rename project from iModel.js to iTwin.js
+- Deprecate IModelJsConfig class in favor of `.env` loading. Add a simple `loadEnv()` function to use dotenv and dotenv-expand to load .env file.
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
