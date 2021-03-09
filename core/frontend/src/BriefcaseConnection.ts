@@ -120,7 +120,7 @@ export class BriefcaseConnection extends IModelConnection {
     return IpcApp.callIpcHost("isInteractiveEditingSupported", this.key);
   }
 
-  /** Begin a new editing session. This briefcase's [[editingSession]] property will be set the the new session until the session is ended.
+  /** Begin a new editing session. This briefcase's [[editingSession]] property will be set to the new session until the session is ended.
    * @note The session should be ended before the briefcase is closed.
    * @throws Error if a session is already in progress or a session could not be started.
    * @see [[InteractiveEditingSession.end]] to end the session.
