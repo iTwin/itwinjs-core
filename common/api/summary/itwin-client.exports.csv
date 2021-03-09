@@ -1,10 +1,13 @@
 sep=;
 Release Tag;API Item
 beta;AccessToken
+beta;AccessTokenProps
 beta;AuthenticationError 
 beta;AuthorizationClient
 public;AuthorizedClientRequestContext 
-public;AuthorizedClientRequestContextProps 
+beta;AuthorizedClientRequestContextProps 
+beta;AuthorizedSession 
+beta;AuthorizedSessionProps 
 beta;CancelRequest
 beta;ChangeState = "new" | "modified" | "deleted" | "existing"
 beta;ChunkedQueryContext
@@ -46,6 +49,7 @@ internal;UploadError
 internal;UrlDiscoveryClient 
 internal;UserCancelledError 
 beta;UserInfo
+beta;UserInfoProps
 beta;class WsgClient 
 beta;WsgError 
 beta;class WsgInstance 

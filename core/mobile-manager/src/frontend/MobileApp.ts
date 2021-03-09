@@ -5,7 +5,7 @@
 
 import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketFrontend } from "@bentley/imodeljs-common";
-import { AsyncMethodsOf, IModelAppOptions, IpcApp, NativeApp, NotificationHandler, PromiseReturnType } from "@bentley/imodeljs-frontend";
+import { AsyncMethodsOf, IpcApp, NativeApp, NativeAppOpts, NotificationHandler, PromiseReturnType } from "@bentley/imodeljs-frontend";
 import { mobileAppChannel, MobileAppFunctions, mobileAppNotify, MobileNotifications } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 
@@ -43,14 +43,14 @@ export class MobileApp {
    * This is called by either ElectronApp.startup or MobileApp.startup - it should not be called directly
    * @internal
    */
-  public static async startup(opts?: { iModelApp?: IModelAppOptions }) {
+  public static async startup(opts?: NativeAppOpts) {
     if (!this._isValid) {
       const rpcInterfaces = opts?.iModelApp?.rpcInterfaces ?? [IModelReadRpcInterface, IModelTileRpcInterface];
       MobileRpcManager.initializeClient(rpcInterfaces);
       this._isValid = true;
     }
     const socket = new IpcWebSocketFrontend(); // needs work
-    await NativeApp.startup({ ipcApp: { ipc: socket }, iModelApp: opts?.iModelApp });
+    await NativeApp.startup(socket, opts);
 
     MobileAppNotifyHandler.register(); // receives notifications from backend
   }

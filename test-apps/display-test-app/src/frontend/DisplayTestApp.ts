@@ -2,18 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
-import {
-  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
-} from "@bentley/frontend-authorization-client";
-import {
-  CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, RpcConfiguration, TileContentIdentifier,
-} from "@bentley/imodeljs-common";
-import {
-  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem,
-} from "@bentley/imodeljs-frontend";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
+import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, NativeApp, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
-import { MobileAuthorizationClient, MobileAuthorizationClientConfiguration } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DisplayTestApp } from "./App";
@@ -64,74 +57,21 @@ async function openIModel(filename: string, writable: boolean): Promise<IModelCo
   return iModelConnection;
 }
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
-  const redirectUri = ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
-  const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
-
-  return ProcessDetector.isElectronAppFrontend || ProcessDetector.isMobileAppFrontend
-    ? {
-      clientId: "imodeljs-electron-test",
-      redirectUri,
-      scope: `${baseOidcScope} offline_access`,
-    }
-    : {
-      clientId: "imodeljs-spa-test",
-      redirectUri,
-      scope: `${baseOidcScope} imodeljs-router`,
-      responseType: "code",
-    };
-}
-
-async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientConfiguration): Promise<void> {
-  if (!ProcessDetector.isElectronAppFrontend) {
-    await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
-  }
-}
-
-async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<DesktopAuthorizationClient | BrowserAuthorizationClient | MobileAuthorizationClient> {
-  if (ProcessDetector.isElectronAppFrontend) {
-    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
-    await desktopClient.initialize(requestContext);
-    return desktopClient;
-  } else if (ProcessDetector.isMobileAppFrontend) {
-    const mobileClient = new MobileAuthorizationClient(oidcConfiguration as MobileAuthorizationClientConfiguration);
-    await mobileClient.initialize(requestContext);
-    return mobileClient;
-  } else {
-    const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
-    return browserClient;
-  }
-}
-
 // Wraps the signIn process
-// In the case of use in web applications:
-// - called the first time to start the signIn process - resolves to false
-// - called the second time to catch the incoming auth redirect and save the token - resolves to false
-// - called the third time to restart the app and complete the signin - resolves to true
-// In the case of use in electron applications:
-// - promise wraps around a registered call back and resolves to true when the sign in is complete
-// @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
+// @return Promise that resolves to true after signIn is complete
 async function signIn(): Promise<boolean> {
-  const requestContext = new FrontendRequestContext();
-  const oidcConfig = getOidcConfiguration();
-  await handleOidcCallback(oidcConfig);
-  const oidcClient = await createOidcClient(requestContext, oidcConfig);
+  if (!NativeApp.isValid) // for browser, frontend handles redirect. For native apps, backend handles it
+    await BrowserAuthorizationCallbackHandler.handleSigninCallback(DisplayTestApp.getAuthConfig().redirectUri);
 
-  IModelApp.authorizationClient = oidcClient;
-  if (oidcClient.isAuthorized)
+  const auth = IModelApp.authorizationClient!;
+  if (auth.isAuthorized)
     return true;
 
-  const retPromise = new Promise<boolean>((resolve, _reject) => {
-    oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
-      resolve(token !== undefined);
-    });
-
-    oidcClient.signIn(requestContext).catch((err) => {
-      _reject(err);
-    });
+  return new Promise<boolean>((resolve, reject) => {
+    auth.onUserStateChanged.addOnce((token?: AccessToken) =>
+      resolve(token !== undefined));
+    auth.signIn().catch((err) => reject(err));
   });
-
-  return retPromise;
 }
 
 class FakeTileCache extends CloudStorageTileCache {
@@ -213,12 +153,11 @@ const dtaFrontendMain = async () => {
 
   const uiReady = displayUi(); // Get the browser started loading our html page and the svgs that it references but DON'T WAIT
 
-  // while the browser is loading stuff, start work on logging in and downloading the imodel, etc.
   try {
     if (!configuration.standalone || configuration.signInForStandalone) {
-      const signedIn: boolean = await signIn();
-      if (!signedIn)
-        return;
+      while (!await signIn()) {
+        alert("please sign in");
+      }
     }
 
     let iModel: IModelConnection | undefined;

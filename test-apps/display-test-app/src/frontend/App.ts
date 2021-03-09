@@ -10,9 +10,10 @@ import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
   Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
+import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode,
-  TileAdmin, Tool, ToolAdmin,
+  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem,
+  SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -22,7 +23,6 @@ import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingSessionTool, PlaceLineStringTool } from "./EditingTools";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
@@ -123,7 +123,7 @@ class ShutDownTool extends Tool {
 
   public run(_args: any[]): boolean {
     DisplayTestApp.surface.closeAllViewers();
-    if (ProcessDetector.isElectronAppFrontend)
+    if (ElectronApp.isValid)
       ElectronApp.shutdown();// eslint-disable-line @typescript-eslint/no-floating-promises
     else
       IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -141,8 +141,26 @@ export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
+  public static getAuthConfig() {
+    const redirectUri = ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
+    const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
+
+    return ProcessDetector.isNativeAppFrontend
+      ? {
+        clientId: "imodeljs-electron-test",
+        redirectUri,
+        scope: `${baseOidcScope} offline_access`,
+      }
+      : {
+        clientId: "imodeljs-spa-test",
+        redirectUri,
+        scope: `${baseOidcScope} imodeljs-router`,
+        responseType: "code",
+      };
+  }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
+    const authConfig = this.getAuthConfig();
     const opts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
@@ -165,9 +183,13 @@ export class DisplayTestApp {
           uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001",
           info: { title: "DisplayTestApp", version: "v1.0" },
         },
+        authConfig,
       },
       localhostIpcApp: {
         socketPort: 3002,
+      },
+      nativeApp: {
+        authConfig,
       },
     };
 
