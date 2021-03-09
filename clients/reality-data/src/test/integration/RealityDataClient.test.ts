@@ -163,6 +163,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
     realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -185,6 +187,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.version === realityData.version);
     chai.assert(realityDataAdded1.dataAcquirer === realityData.dataAcquirer);
     chai.assert(realityDataAdded1.dataAcquisitionDate === realityData.dataAcquisitionDate);
+    chai.assert(realityDataAdded1.dataAcquisitionStartDate === realityData.dataAcquisitionStartDate);
+    chai.assert(realityDataAdded1.dataAcquisitionEndDate === realityData.dataAcquisitionEndDate);
     chai.assert(realityDataAdded1.referenceElevation === realityData.referenceElevation);
 
     chai.assert(realityDataAdded1.ultimateId && realityDataAdded1.ultimateId.length === 36);
@@ -234,6 +238,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
     realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -257,6 +263,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.version === realityData.version);
     chai.assert(realityDataAdded1.dataAcquirer === realityData.dataAcquirer);
     chai.assert(realityDataAdded1.dataAcquisitionDate === realityData.dataAcquisitionDate);
+    chai.assert(realityDataAdded1.dataAcquisitionStartDate === realityData.dataAcquisitionStartDate);
+    chai.assert(realityDataAdded1.dataAcquisitionEndDate === realityData.dataAcquisitionEndDate);
     chai.assert(realityDataAdded1.referenceElevation === realityData.referenceElevation);
 
     chai.assert(realityDataAdded1.ultimateId && realityDataAdded1.ultimateId.length === 36);
@@ -306,6 +314,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
     realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -329,6 +339,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.version === realityData.version);
     chai.assert(realityDataAdded1.dataAcquirer === realityData.dataAcquirer);
     chai.assert(realityDataAdded1.dataAcquisitionDate === realityData.dataAcquisitionDate);
+    chai.assert(realityDataAdded1.dataAcquisitionStartDate === realityData.dataAcquisitionStartDate);
+    chai.assert(realityDataAdded1.dataAcquisitionEndDate === realityData.dataAcquisitionEndDate);
     chai.assert(realityDataAdded1.referenceElevation === realityData.referenceElevation);
 
     chai.assert(realityDataAdded1.ultimateId && realityDataAdded1.ultimateId.length === 36);
@@ -384,6 +396,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded2.version === realityDataAdded1.version);
     chai.assert(realityDataAdded2.dataAcquirer === realityDataAdded1.dataAcquirer);
     chai.assert(realityDataAdded2.dataAcquisitionDate === realityDataAdded1.dataAcquisitionDate);
+    chai.assert(realityDataAdded2.dataAcquisitionStartDate === realityDataAdded1.dataAcquisitionStartDate);
+    chai.assert(realityDataAdded2.dataAcquisitionEndDate === realityDataAdded1.dataAcquisitionEndDate);
     chai.assert(realityDataAdded2.referenceElevation === realityDataAdded1.referenceElevation);
 
     chai.assert(realityDataAdded2.ultimateId && realityDataAdded2.ultimateId.length === 36);
@@ -438,6 +452,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
     realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
@@ -461,6 +477,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded1.version === realityData.version);
     chai.assert(realityDataAdded1.dataAcquirer === realityData.dataAcquirer);
     chai.assert(realityDataAdded1.dataAcquisitionDate === realityData.dataAcquisitionDate);
+    chai.assert(realityDataAdded1.dataAcquisitionStartDate === realityData.dataAcquisitionStartDate);
+    chai.assert(realityDataAdded1.dataAcquisitionEndDate === realityData.dataAcquisitionEndDate);
     chai.assert(realityDataAdded1.referenceElevation === realityData.referenceElevation);
 
     chai.assert(realityDataAdded1.ultimateId && realityDataAdded1.ultimateId.length === 36);
@@ -494,6 +512,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityDataAdded1.version = "Named Version 1";
     realityDataAdded1.dataAcquirer = "PIPO";
     realityDataAdded1.dataAcquisitionDate = "2019-05-10T09:46:17.0000000Z";
+    realityDataAdded1.dataAcquisitionStartDate = "2019-05-10T09:46:17.0000000Z";
+    realityDataAdded1.dataAcquisitionEndDate = "2019-05-10T09:46:17.0000000Z";
     realityDataAdded1.referenceElevation = 42.0;
 
     realityDataAdded1.organizationId = undefined;
@@ -522,6 +542,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityDataAdded2.version === realityDataAdded1.version);
     chai.assert(realityDataAdded2.dataAcquirer === realityDataAdded1.dataAcquirer);
     chai.assert(realityDataAdded2.dataAcquisitionDate === realityDataAdded1.dataAcquisitionDate);
+    chai.assert(realityDataAdded2.dataAcquisitionStartDate === realityDataAdded1.dataAcquisitionStartDate);
+    chai.assert(realityDataAdded2.dataAcquisitionEndDate === realityDataAdded1.dataAcquisitionEndDate);
     chai.assert(realityDataAdded2.referenceElevation === realityDataAdded1.referenceElevation);
 
     chai.assert(realityDataAdded2.ultimateId === realityDataAdded1.ultimateId);
@@ -619,6 +641,8 @@ describe("RealityServicesClient Admin (#integration)", () => {
     realityData.version = "1.1.1.1";
     realityData.dataAcquirer = "John Doe Surveying using Leico model 123A Point Cloud Scanner";
     realityData.dataAcquisitionDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionStartDate = "2019-05-10T09:46:16.0000000Z";
+    realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16.0000000Z";
     realityData.referenceElevation = 234.3;
 
     const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, undefined, realityData);
@@ -641,6 +665,8 @@ describe("RealityServicesClient Admin (#integration)", () => {
     chai.assert(realityDataAdded1.version === realityData.version);
     chai.assert(realityDataAdded1.dataAcquirer === realityData.dataAcquirer);
     chai.assert(realityDataAdded1.dataAcquisitionDate === realityData.dataAcquisitionDate);
+    chai.assert(realityDataAdded1.dataAcquisitionStartDate === realityData.dataAcquisitionStartDate);
+    chai.assert(realityDataAdded1.dataAcquisitionEndDate === realityData.dataAcquisitionEndDate);
     chai.assert(realityDataAdded1.referenceElevation === realityData.referenceElevation);
 
     chai.assert(realityDataAdded1.ultimateId && realityDataAdded1.ultimateId.length === 36);
