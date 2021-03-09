@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import faker from "faker";
+import sinon from "sinon";
 import { DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { CodeSpecs, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, Model, Subject } from "@bentley/imodeljs-backend";
-import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, IModelError } from "@bentley/imodeljs-common";
+import { BisCoreSchema, CodeSpecs, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject } from "@bentley/imodeljs-backend";
+import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps } from "@bentley/imodeljs-common";
 import { Ruleset } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
@@ -42,6 +43,10 @@ describe("RulesetEmbedder", () => {
   let informationPartitionCodeSpec: CodeSpec;
 
   beforeEach(async () => {
+    sinon.stub(KnownLocations, "nativeAssetsDir").get(() => "");
+
+    BisCoreSchema.registerSchema();
+
     initializeMocks();
     generateRandomIds();
     initializeCodeSpecs();
@@ -66,6 +71,7 @@ describe("RulesetEmbedder", () => {
   });
 
   afterEach(async () => {
+    sinon.restore();
   });
 
   function initializeMocks() {
@@ -94,7 +100,9 @@ describe("RulesetEmbedder", () => {
     rulesetCodeSpec = CodeSpec.create(imodelMock.object, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model);
     rulesetCodeSpec.id = rulesetCodeSpecId;
     subjectCodeSpec = CodeSpec.create(imodelMock.object, BisCodeSpec.subject, CodeScopeSpec.Type.ParentElement);
+    subjectCodeSpec.id = faker.random.uuid();
     informationPartitionCodeSpec = CodeSpec.create(imodelMock.object, BisCodeSpec.informationPartitionElement, CodeScopeSpec.Type.ParentElement);
+    informationPartitionCodeSpec.id = faker.random.uuid();
   }
 
   function setupRootSubjectMock() {
@@ -131,7 +139,7 @@ describe("RulesetEmbedder", () => {
   }
 
   function setupMocksForQueryingRulesets() {
-    elementsMock.setup((x) => x.tryGetElement({ id: rulesetId })).returns(() => rulesetElementMock.object);
+    elementsMock.setup((x) => x.getElement({ id: rulesetId })).returns(() => rulesetElementMock.object);
     imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAny(), moq.It.isAny())).callback((_ecsql, callbackFun) => {
       callbackFun(statementMock.object);
     }).returns(() => ({}));
@@ -185,9 +193,9 @@ describe("RulesetEmbedder", () => {
       classFullName: DefinitionPartition.classFullName,
     };
 
-    elementsMock.setup((x) => x.tryGetElement(new Code({ spec: subjectCodeSpec.id, scope: rootSubjectMock.object.id, value: "PresentationRules" }))).throws(new IModelError(-1, ""));
-    elementsMock.setup((x) => x.tryGetElement(subjectId)).returns(() => subjectMock.object);
-    elementsMock.setup((x) => x.tryGetElement(definitionPartitionId)).returns(() => definitionPartitionMock.object);
+    elementsMock.setup((x) => x.tryGetElement(new Code({ spec: subjectCodeSpec.id, scope: rootSubjectMock.object.id, value: "PresentationRules" }))).returns(() => undefined);
+    elementsMock.setup((x) => x.getElement(subjectId)).returns(() => subjectMock.object);
+    elementsMock.setup((x) => x.getElement(definitionPartitionId)).returns(() => definitionPartitionMock.object);
     elementsMock.setup((x) => x.insertElement(subjectProps)).returns(() => subjectId);
     elementsMock.setup((x) => x.insertElement(definitionPartitionProps)).returns(() => definitionPartitionId);
 
@@ -298,7 +306,7 @@ describe("RulesetEmbedder", () => {
 
       elementsMock.setup((x) => x.insertElement(rulesetProperties)).returns(() => rulesetId);
       elementsMock.setup((x) => x.queryElementIdByCode(RulesetElements.Ruleset.createRulesetCode(modelId, ruleset2.id, imodelMock.object))).returns(() => rulesetId);
-      elementsMock.setup((x) => x.tryGetElement(rulesetId)).throws(new IModelError(-1, ""));
+      elementsMock.setup((x) => x.tryGetElement(rulesetId)).returns(() => undefined);
       imodelMock.setup((x) => x.containsClass(RulesetElements.Ruleset.classFullName)).returns(() => true);
 
       // Act
