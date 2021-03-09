@@ -6,6 +6,7 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
+import { CustomAttributeClass, RelationshipClass } from "../../src/ecschema-metadata";
 import { ECObjectsError } from "../../src/Exception";
 import { ECClass, MutableClass, StructClass } from "../../src/Metadata/Class";
 import { CustomAttributeSet } from "../../src/Metadata/CustomAttribute";
@@ -1673,6 +1674,28 @@ describe("ECClass", () => {
       },
       TestStruct: {
         schemaItemType: "StructClass",
+      },
+      TestCustomAttribute: {
+        schemaItemType: "CustomAttributeClass",
+        appliesTo: "AnyClass",
+      },
+      TestRelationship: {
+        schemaItemType: "RelationshipClass",
+        strength: "Embedding",
+        strengthDirection: "Forward",
+        modifier: "Sealed",
+        source: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Source RoleLabel",
+          constraintClasses: ["TestSchema.TestEntity"],
+        },
+        target: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Target RoleLabel",
+          constraintClasses: ["TestSchema.TestEntity"],
+        }
       }
     });
 
@@ -1689,6 +1712,10 @@ describe("ECClass", () => {
       expect(ECClass.isECClass(testEntity)).to.be.true;
       const testStruct = await schema.getItem<StructClass>("TestStruct");
       expect(ECClass.isECClass(testStruct)).to.be.true;
+      const testCustomAttribute = await schema.getItem<CustomAttributeClass>("TestCustomAttribute");
+      expect(ECClass.isECClass(testCustomAttribute)).to.be.true;
+      const testRelationship = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(ECClass.isECClass(testRelationship)).to.be.true;
     });
 
     it("should return false if object is not of ECClass type", async () => {

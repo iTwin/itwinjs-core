@@ -7,6 +7,7 @@
  */
 
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { SchemaItemType } from "../ECObjects";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "../utils/FormatEnums";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
@@ -104,6 +105,7 @@ export class OverrideFormat {
   public static isOverrideFormat(object: any): object is OverrideFormat {
     const overrideFormat = object as OverrideFormat;
 
-    return overrideFormat !== undefined && overrideFormat.parent !== undefined && overrideFormat.name !== undefined;
+    return overrideFormat !== undefined && overrideFormat.name !== undefined && overrideFormat.parent !== undefined &&
+             overrideFormat.parent.schemaItemType === SchemaItemType.Format;
   }
 }

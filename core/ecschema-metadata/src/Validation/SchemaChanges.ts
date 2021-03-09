@@ -1256,7 +1256,7 @@ export class PresentationUnitChange extends BaseSchemaChange {
     if (!this.diagnostic.messageArgs)
       return false;
 
-    return OverrideFormat.isOverrideFormat(this.diagnostic.messageArgs[0].schemaItemType);
+    return OverrideFormat.isOverrideFormat(this.diagnostic.messageArgs[0]);
   }
 }
 
