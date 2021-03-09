@@ -140,10 +140,10 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags, _feature
 
   const computeBaseColor = `
   if (!u_texturesPresent)
-    return u_terrainColor;
+    return u_baseColor;
 
   bool doDiscard = true;
-  vec4 col = u_terrainColor;
+  vec4 col = u_baseColor;
   ${applyTextureStrings.join("\n  ")}
   if (doDiscard)
       discard;
@@ -155,8 +155,8 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags, _feature
   frag.addFunction(applyTexture);
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   frag.addFunction(addUInt32s);
-  builder.frag.addUniform("u_terrainColor", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_terrainColor", (uniform, params) => {
+  builder.frag.addUniform("u_baseColor", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_baseColor", (uniform, params) => {
       const realityMesh = params.geometry.asRealityMesh!;
       const baseColor = (realityMesh.baseColor ? realityMesh.baseColor : ColorDef.create(0xff000000)).colors;
       uniform.setUniform4fv([baseColor.r / 255, baseColor.g / 255, baseColor.b / 255, 1 - baseColor.t / 255]);
