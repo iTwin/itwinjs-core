@@ -265,12 +265,8 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const northCount = streamBuffer.nextUint32;
     const northIndices = getIndexArray(pointCount, streamBuffer, northCount);
 
-    const mesh = TerrainMeshPrimitive.create({ pointQParams, pointCount, indexCount, wantSkirts: this._wantSkirts, westCount, eastCount, southCount, northCount   });
-    for (let i = 0; i < indexCount;)
-      this.addTriangle(mesh, indices[i++], indices[i++], indices[i++]);
     // Extensions...
     let encodedNormalsBuffer;
-    let waterMaskBuffer;
     while (streamBuffer.curPos < streamBuffer.length) {
       const extensionId = streamBuffer.nextUint8;
       const extensionLength = streamBuffer.nextUint32;
@@ -278,11 +274,6 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
         case QuantizedMeshExtensionIds.OctEncodedNormals:
           assert(pointCount * 2 === extensionLength);
           encodedNormalsBuffer = new Uint8Array(streamBuffer.arrayBuffer, streamBuffer.curPos, extensionLength);
-          streamBuffer.advance(extensionLength);
-          break;
-
-        case QuantizedMeshExtensionIds.WaterMask:
-          waterMaskBuffer = new Uint8Array(streamBuffer.arrayBuffer, streamBuffer.curPos, extensionLength);
           streamBuffer.advance(extensionLength);
           break;
 
@@ -313,11 +304,10 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       }
 
     }
-    if (undefined !== encodedNormalsBuffer) {
-    }
 
-    if (undefined !== waterMaskBuffer) {
-    }
+    const mesh = TerrainMeshPrimitive.create({ pointQParams, pointCount, indexCount, wantSkirts: this._wantSkirts, westCount, eastCount, southCount, northCount, wantNormals: undefined !== encodedNormalsBuffer   });
+    for (let i = 0; i < indexCount;)
+      this.addTriangle(mesh, indices[i++], indices[i++], indices[i++]);
 
     const worldToEcef = tile.iModel.getEcefTransform().matrix;
     for (let i = 0; i < pointCount; i++) {
@@ -329,7 +319,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
         const normalIndex = i * 2;
         OctEncodedNormal.decodeValue(encodedNormalsBuffer[normalIndex + 1] << 8 | encodedNormalsBuffer[normalIndex], CesiumTerrainProvider._scratchNormal);
         worldToEcef.multiplyTransposeVector(CesiumTerrainProvider._scratchNormal, CesiumTerrainProvider._scratchNormal);
-        mesh.addVertex(CesiumTerrainProvider._scratchPoint, CesiumTerrainProvider._scratchQPoint2d, OctEncodedNormal.fromVector(CesiumTerrainProvider._scratchNormal));
+        mesh.addVertex(CesiumTerrainProvider._scratchPoint, CesiumTerrainProvider._scratchQPoint2d, OctEncodedNormal.encode(CesiumTerrainProvider._scratchNormal));
       } else {
         mesh.addVertex(CesiumTerrainProvider._scratchPoint, CesiumTerrainProvider._scratchQPoint2d);
       }
@@ -361,9 +351,8 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       const height = minHeight + heightBuffer[index] * heightScale;
       CesiumTerrainProvider._scratchQPoint2d.setFromScalars(mesh.uvs[paramIndex], mesh.uvs[paramIndex+1]);
       const uv = mesh.uvQParams.unquantize(CesiumTerrainProvider._scratchQPoint2d.x, CesiumTerrainProvider._scratchQPoint2d.y, CesiumTerrainProvider._scratchPoint2d);
-      if (wantNormals) {
-        const normVal = mesh.normals[index].value;
-        mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), CesiumTerrainProvider._scratchQPoint2d, new OctEncodedNormal(normVal));
+      if (wantNormals && mesh.normals) {
+        mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), CesiumTerrainProvider._scratchQPoint2d, mesh.normals[index]);
       } else {
         mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), CesiumTerrainProvider._scratchQPoint2d);
       }

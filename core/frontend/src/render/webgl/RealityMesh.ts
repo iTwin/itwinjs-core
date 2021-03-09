@@ -9,7 +9,7 @@
 
 import { assert, dispose, IDisposable } from "@bentley/bentleyjs-core";
 import { Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, OctEncodedNormal, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
+import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
 import { AttributeMap, BufferHandle, BufferParameters, IndexedGeometry, IndexedGeometryParams, Matrix4, QBufferHandle2d, QBufferHandle3d } from "../../webgl";
 import { GraphicBranch } from "../GraphicBranch";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
@@ -96,19 +96,10 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
     this.featureID = featureID;
   }
 
-  private static createFromBuffers(posBuf: QBufferHandle3d, uvParamBuf: QBufferHandle2d, indices: Uint16Array, normals: OctEncodedNormal[], featureID: number) {
+  private static createFromBuffers(posBuf: QBufferHandle3d, uvParamBuf: QBufferHandle2d, indices: Uint16Array, normBuf: BufferHandle | undefined, featureID: number) {
     const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
 
-    let normBuf: BufferHandle | undefined;
-    if (normals.length > 0) {
-      const normalBytes = new Uint8Array(normals.length * 2);
-      const normalShorts = new Uint16Array(normalBytes.buffer);
-      for (let i = 0; i < normals.length; i++)
-        normalShorts[i] = normals[i].value;
-      normBuf = BufferHandle.createArrayBuffer(normalBytes);
-    }
-
-    if (undefined === indBuf || (normals.length > 0 && undefined === normBuf))
+    if (undefined === indBuf)
       return undefined;
 
     return new RealityMeshGeometryParams(posBuf, normBuf, uvParamBuf, indBuf, indices.length, featureID);
@@ -118,7 +109,8 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
   public static createFromRealityMesh(mesh: RealityMeshPrimitive) {
     const posBuf = QBufferHandle3d.create(mesh.pointQParams, mesh.points);
     const uvParamBuf = QBufferHandle2d.create(mesh.uvQParams, mesh.uvs);
-    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, mesh.indices, mesh.normals, mesh.featureID);
+    const normalBuf = mesh.normals ? BufferHandle.createArrayBuffer(mesh.normals) : undefined;
+    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, mesh.indices, normalBuf, mesh.featureID);
   }
 
   public get isDisposed(): boolean {

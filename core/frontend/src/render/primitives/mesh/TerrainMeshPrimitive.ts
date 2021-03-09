@@ -55,24 +55,20 @@ export class TerrainMeshPrimitive  extends RealityMeshPrimitive {
       totalPoints += (props.northCount + props.southCount + props.eastCount + props.westCount);
     }
     const realityMeshProps = { indices: new Uint16Array(totalIndices),  pointQParams: props.pointQParams, points: new Uint16Array(3 * totalPoints),
-      uvQParams: QParams2d.fromZeroToOne(), uvs: new Uint16Array(2 * totalPoints), normals: new Array<OctEncodedNormal>(), featureID: 0 };
+      uvQParams: QParams2d.fromZeroToOne(), uvs: new Uint16Array(2 * totalPoints), normals: props.wantNormals ? new Uint16Array(totalPoints) : undefined, featureID: 0 };
     return new TerrainMeshPrimitive(realityMeshProps, totalPoints, totalIndices);
-  }
-
-  public get bytesUsed() {
-    return 2 * this.indices.length + 2 * this.points.length  + 2 * this.uvs.length + 16 * this.normals.length;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     stats.addTerrain(this.bytesUsed);
   }
 
-  public addVertex(point: Point3d, uvParam: QPoint2d, normal?: OctEncodedNormal) {
+  public addVertex(point: Point3d, uvParam: QPoint2d, normal?: number) {
     scratchQPoint3d.init(point, this.pointQParams);
     this.addQuantizedVertex(scratchQPoint3d, uvParam, normal);
   }
 
-  public addQuantizedVertex(point: QPoint3d, uv: QPoint2d, normal?: OctEncodedNormal) {
+  public addQuantizedVertex(point: QPoint3d, uv: QPoint2d, normal?: number) {
     if (this._currPointCount >= this._pointCapacity) {
       assert(false, "terrain point capacity exceeded");
       return;
@@ -86,8 +82,8 @@ export class TerrainMeshPrimitive  extends RealityMeshPrimitive {
     this.uvs[paramIndex++] = uv.x;
     this.uvs[paramIndex++] = uv.y;
 
-    if (normal)
-      this.normals.push(normal);
+    if (normal && this.normals)
+      this.normals[this._currPointCount] = normal;
 
     this._currPointCount++;
   }
@@ -120,7 +116,7 @@ export class TerrainMeshPrimitive  extends RealityMeshPrimitive {
     const uvHigh = QPoint2d.create(uvSampleRange.high, TerrainMeshPrimitive._scratchUVQParams);
     const uvRange = Range2d.createXYXY(uvLow.x, uvLow.y, uvHigh.x, uvHigh.y, TerrainMeshPrimitive._scratchUVRange);
     const clipAxes = new Array<ClipAxis>();
-    const addedPoints = new Array<QPoint3d>(), addedParams = new Array<QPoint2d>(), addedNormals = new Array<OctEncodedNormal>();
+    const addedPoints = new Array<QPoint3d>(), addedParams = new Array<QPoint2d>(), addedNormals = new Array<number>();
     if (uvLow.x > 0)
       clipAxes.push(new ClipAxis(true, false, uvLow.x));
     if (uvHigh.x < Quantization.rangeScale16)
@@ -155,25 +151,27 @@ export class TerrainMeshPrimitive  extends RealityMeshPrimitive {
 
     const zRange = Range1d.createNull(TerrainMeshPrimitive._scratchZRange);
 
-    const mesh = TerrainMeshPrimitive.create({ pointQParams: this.pointQParams, pointCount: indexMap.size, indexCount: indexMap.indices.length, wantSkirts: false, northCount: 0, southCount: 0, eastCount: 0, westCount: 0 });
+    const mesh = TerrainMeshPrimitive.create({ pointQParams: this.pointQParams, pointCount: indexMap.size, indexCount: indexMap.indices.length, wantSkirts: false, northCount: 0, southCount: 0, eastCount: 0, westCount: 0, wantNormals: this.normals !== undefined });
     for (const mapEntry of indexMap.entries()) {
       const parentIndex = mapEntry[0];
 
+      let normal: number | undefined;
       if (parentIndex < parentPointCount) {
         const pointIndex = 3 * parentIndex;
         scratchQPoint3d.setFromScalars(parentPoints[pointIndex], parentPoints[pointIndex+1], parentPoints[pointIndex+2]);
         const paramIndex = 2 * parentIndex;
         scratchQPoint2d.setFromScalars(parentParams[paramIndex], parentParams[paramIndex + 1]);
+        if (parentNormals)
+          normal = parentNormals[parentIndex];
       } else {
         const addedIndex = parentIndex - parentPointCount;
         addedPoints[addedIndex].clone(scratchQPoint3d);
         addedParams[addedIndex].clone(scratchQPoint2d);
+        if (addedNormals.length)
+          normal =  addedNormals[addedIndex];
       }
-      mesh.addQuantizedVertex(scratchQPoint3d, scratchQPoint2d);
+      mesh.addQuantizedVertex(scratchQPoint3d, scratchQPoint2d, normal);
       zRange.extendX(scratchQPoint3d.z);
-
-      if (parentNormals.length > 0)
-        mesh.normals.push(parentNormals[parentIndex]);
     }
     mesh.addIndices(indexMap.indices);
 
@@ -182,7 +180,7 @@ export class TerrainMeshPrimitive  extends RealityMeshPrimitive {
     const heightRange = Range1d.createXX(Quantization.unquantize(zRange.low, qParams.origin.z, qParams.scale.z), Quantization.unquantize(zRange.high, qParams.origin.z, qParams.scale.z));
     return { heightRange, mesh };
   }
-  private addClipped(triangleIndices: number[], indexMap: UpsampleIndexMap, clipAxes: ClipAxis[], clipIndex: number, addedPoints: QPoint3d[], addedParams: QPoint2d[], addedNormals: OctEncodedNormal[]) {
+  private addClipped(triangleIndices: number[], indexMap: UpsampleIndexMap, clipAxes: ClipAxis[], clipIndex: number, addedPoints: QPoint3d[], addedParams: QPoint2d[], addedNormals: number[]) {
     if (clipIndex === clipAxes.length) {
       indexMap.addTriangle(triangleIndices);
       return;
@@ -215,8 +213,8 @@ export class TerrainMeshPrimitive  extends RealityMeshPrimitive {
       }
       return result;
     };
-    const getNormal = (index: number): OctEncodedNormal | undefined => {
-      if (0 === parentNormals.length)
+    const getNormal = (index: number): number | undefined => {
+      if (!parentNormals)
         return undefined;
 
       return (index < parentPointCount) ? parentNormals[index] : addedNormals[index - parentPointCount];
@@ -242,7 +240,7 @@ export class TerrainMeshPrimitive  extends RealityMeshPrimitive {
         clipOutput.push(parentPointCount + addedPoints.length);
         addedPoints.push(interpolateQPoint3d(getPoint(index, scratchQPoint3d),  getPoint(nextIndex, scratchQPoint3d1), fraction));
         addedParams.push(interpolateQPoint2d(getParam(index, scratchQPoint2d), getParam(nextIndex, scratchQPoint2d1), fraction));
-        if (parentNormals.length > 0)
+        if (parentNormals)
           addedNormals.push(interpolateOctEncodedNormal(getNormal(index)!, getNormal(nextIndex)!, fraction));
 
       }
@@ -266,20 +264,21 @@ function interpolateQPoint2d(qPoint: QPoint2d, qNext: QPoint2d, fraction: number
   return QPoint2d.fromScalars(interpolateInt(qPoint.x, qNext.x, fraction), interpolateInt(qPoint.y, qNext.y, fraction));
 }
 
-function interpolateOctEncodedNormal(normal0: OctEncodedNormal, normal1: OctEncodedNormal, fraction: number): OctEncodedNormal {
-  const n0 = normal0.decode();
-  const n1 = normal1.decode();
+function interpolateOctEncodedNormal(normal0: number, normal1: number, fraction: number): number {
+  const n0 = OctEncodedNormal.decodeValue(normal0);
+  const n1 = OctEncodedNormal.decodeValue(normal1);
   if (undefined !== n0 && undefined !== n1) {
     const n = Vector3d.create(interpolate(n0.x, n1.x, fraction), interpolate(n0.y, n1.y, fraction), interpolate(n0.z, n1.z, fraction));
     n.normalizeInPlace();
-    return OctEncodedNormal.fromVector(n);
+    return OctEncodedNormal.encode(n);
   } else {
-    return OctEncodedNormal.fromVector(Vector3d.create(0, 0, 1));
+    return OctEncodedNormal.encode(Vector3d.create(0, 0, 1));
   }
 }
 
 export namespace TerrainMesh {
   export interface Props {
+    readonly wantNormals: boolean;
     readonly pointQParams: QParams3d;
     readonly pointCount: number;
     readonly indexCount: number;

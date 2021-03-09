@@ -47,7 +47,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     const skirtProps = { wantSkirts: false, northCount: 0, southCount: 0, eastCount: 0, westCount: 0};  // Skirts are explicitly created, no need to preallocate
 
     if (!this._wantSkirts) {
-      mesh = TerrainMeshPrimitive.create({...skirtProps, pointQParams: QParams3d.fromRange(projection.localRange), pointCount: 4, indexCount: 6 });
+      mesh = TerrainMeshPrimitive.create({...skirtProps, pointQParams: QParams3d.fromRange(projection.localRange), pointCount: 4, indexCount: 6, wantNormals: false });
       for (let v = 0; v < 2; v++)
         for (let u = 0; u < 2; u++) {
           scratchQPoint2d.init(Point2d.create(u, 1 - v, scratchPoint2d), mesh.uvQParams);
@@ -72,7 +72,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
             projection.getPoint(u, v, h * skirtHeight, scratch8Points[i]);
             i++;
           }
-      mesh = TerrainMeshPrimitive.create({...skirtProps, pointQParams: QParams3d.fromRange(Range3d.createArray(scratch8Points)), pointCount: 8, indexCount: 30 });
+      mesh = TerrainMeshPrimitive.create({...skirtProps, pointQParams: QParams3d.fromRange(Range3d.createArray(scratch8Points)), pointCount: 8, indexCount: 30, wantNormals: false });
       for (let i = 0 ; i < 8; i++) {
         scratchQPoint2d.init(scratch8Params[i], mesh.uvQParams);
         mesh.addVertex(scratch8Points[i], scratchQPoint2d);
@@ -116,7 +116,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     const colMax = this._wantSkirts ? dimensionM1 : dimensionM2;
     const indexCount = 6 * (rowMax - rowMin) * (colMax - colMin);
 
-    const mesh = TerrainMeshPrimitive.create({ pointQParams: QParams3d.fromRange(range), pointCount, indexCount, wantSkirts: false, northCount: globeMeshDimension, southCount: globeMeshDimension, eastCount: globeMeshDimension, westCount: globeMeshDimension });
+    const mesh = TerrainMeshPrimitive.create({ pointQParams: QParams3d.fromRange(range), pointCount, indexCount, wantSkirts: false, northCount: globeMeshDimension, southCount: globeMeshDimension, eastCount: globeMeshDimension, westCount: globeMeshDimension, wantNormals: false });
 
     for (let iRow = 0, index = 0; iRow < globeMeshDimension; iRow++) {
       for (let iColumn = 0; iColumn < globeMeshDimension; iColumn++, index++) {

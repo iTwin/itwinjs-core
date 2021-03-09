@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { OctEncodedNormal, QParams2d, QParams3d, RenderTexture } from "@bentley/imodeljs-common";
+import { QParams2d, QParams3d, RenderTexture } from "@bentley/imodeljs-common";
 import { GltfMeshData } from "../../../tile/internal";
 import { RenderMemory } from "../../RenderMemory";
 import { Mesh } from "./MeshPrimitives";
@@ -15,7 +15,7 @@ export interface RealityMeshProps {
   readonly indices: Uint16Array;
   readonly pointQParams: QParams3d;
   readonly points: Uint16Array;
-  readonly normals: OctEncodedNormal[];
+  readonly normals?: Uint16Array;
   readonly uvQParams: QParams2d;
   readonly uvs: Uint16Array;
   readonly featureID: number;
@@ -27,7 +27,7 @@ export class RealityMeshPrimitive implements RenderMemory.Consumer {
   public readonly indices: Uint16Array;
   public readonly pointQParams: QParams3d;
   public readonly points: Uint16Array;
-  public readonly normals: OctEncodedNormal[];
+  public readonly normals?: Uint16Array;
   public readonly uvQParams: QParams2d;
   public readonly uvs: Uint16Array;
   public readonly featureID: number = 0;
@@ -54,6 +54,6 @@ export class RealityMeshPrimitive implements RenderMemory.Consumer {
     stats.addTerrain(this.bytesUsed);
   }
   public get bytesUsed() {
-    return 8 * (this.indices.length + this.points.length * 3 + this.uvs.length * 2) + 2 * this.normals.length;
+    return 2 * (this.indices.length + this.points.length  + this.uvs.length + (this.normals ? this.normals.length : 0));
   }
 }

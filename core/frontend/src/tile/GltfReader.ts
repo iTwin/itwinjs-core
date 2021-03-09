@@ -103,7 +103,7 @@ export class GltfMeshData {
   public pointQParams?: QParams3d;
   public points?: Uint16Array;
   public pointRange?: Range3d;
-  public readonly normals: OctEncodedNormal[] = [];
+  public normals?: Uint16Array;
   public uvQParams?: QParams2d;
   public uvs?: Uint16Array;
   public uvRange?: Range2d;
@@ -263,7 +263,7 @@ export abstract class GltfReader {
     }
     if (gltfMesh.normals)
       for (const normal of gltfMesh.normals)
-        mesh.normals.push(normal);
+        mesh.normals.push(new OctEncodedNormal(normal));
 
     return mesh.getGraphics(meshGraphicArgs, this._system, instances);
   }
@@ -577,7 +577,7 @@ export abstract class GltfReader {
         if (!this.readMeshIndices(mesh, primitive))
           return undefined;
 
-        if (!displayParams.ignoreLighting && !this.readNormals(mesh.normals, primitive.attributes, "NORMAL"))
+        if (!displayParams.ignoreLighting && !this.readNormals(mesh, primitive.attributes, "NORMAL"))
           return undefined;
 
         if (!mesh.uvs)
@@ -712,7 +712,7 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readNormals(normals: OctEncodedNormal[], json: any, accessorName: string): boolean {
+  protected readNormals(mesh: GltfMeshData, json: any, accessorName: string): boolean {
     const view = this.getBufferView(json, accessorName);
     if (undefined === view)
       return false;
@@ -723,11 +723,12 @@ export abstract class GltfReader {
         if (undefined === data)
           return false;
 
+        mesh.normals = new Uint16Array(data.count);
         const scratchNormal = new Vector3d();
         const strideSkip = view.stride - 3;
         for (let i = 0, j = 0; i < data.count; i++, j += strideSkip) {
           scratchNormal.set(data.buffer[j++], data.buffer[j++], data.buffer[j++]);
-          normals.push(OctEncodedNormal.fromVector(scratchNormal));
+          mesh.normals[i] = OctEncodedNormal.encode(scratchNormal);
         }
         return true;
       }
@@ -738,11 +739,12 @@ export abstract class GltfReader {
           return false;
 
         // ###TODO: we shouldn't have to allocate OctEncodedNormal objects...just use uint16s / numbers...
+        mesh.normals = new Uint16Array(data.count);
         for (let i = 0; i < data.count; i++) {
           // ###TODO? not clear why ray writes these as pairs of uint8...
           const index = i * view.stride;
           const normal = data.buffer[index] | (data.buffer[index + 1] << 8);
-          normals.push(new OctEncodedNormal(normal));
+          mesh.normals[i] = normal;
         }
         return true;
       }
