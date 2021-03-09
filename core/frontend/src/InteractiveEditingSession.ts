@@ -12,12 +12,7 @@ import {
   ElementGeometryChange, ElementsChanged, IModelChangeNotifications, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseConnection";
-import { RemoteBriefcaseConnection } from "./CheckpointConnection";
-import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
-
-let initialized = false;
-const sessions: InteractiveEditingSession[] = [];
 
 class ModelChanges extends SortedArray<ElementGeometryChange> {
   public geometryGuid: GuidString;
@@ -30,9 +25,6 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
   }
 }
 
-/** @alpha */
-export type EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection; // eslint-disable-line deprecation/deprecation
-
 /**
  * Represents an active session for performing [interactive editing]($docs/learning/InteractiveEditing.md) of a [[BriefcaseConnection]].
  * An important aspect of interactive editing is keeping the contents of views in sync with the changes to [GeometricElement]($backend)s.
@@ -42,7 +34,7 @@ export type EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection
  * The session also provides notifications of the list of changed elements for every Txn.
  * @note You **must** end the session before closing the iModel.
  * @note iModels with versions of the BisCore ECSchema prior to version 0.1.11 do not support interactive editing.
- * @alpha
+ * @beta
  */
 export class InteractiveEditingSession extends BriefcaseNotificationHandler implements IModelChangeNotifications {
   public get briefcaseChannelName() { return IpcAppChannel.IModelChanges; }
@@ -53,7 +45,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
   private _cleanup?: RemoveFunction;
 
   /** The connection to the iModel being edited. */
-  public readonly iModel: EditableConnection;
+  public readonly iModel: BriefcaseConnection;
 
   /** Event raised when a new session begins.
    * @see [[onEnding]] and [[onEnd]] for complementary events.
@@ -75,37 +67,20 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
   /** Event raised after Txn validation or changeset apply to indicate the set of changed elements.
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onElementChanges = new BeEvent<(changes: ElementsChanged, iModel: EditableConnection) => void>();
+  public readonly onElementChanges = new BeEvent<(changes: ElementsChanged, iModel: BriefcaseConnection) => void>();
 
   /** Event raised after geometric changes are written to the iModel. */
   public readonly onGeometryChanges = new BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>();
 
-  /** Return whether interactive editing is supported for the specified iModel. It is not supported if the iModel is read-only, or the iModel contains a version of
-   * the BisCore ECSchema older than v0.1.11.
+  /** Don't call this directly - use BriefcaseConnection.beginEditingSession.
+   * @internal
    */
-  public static async isSupported(imodel: EditableConnection): Promise<boolean> {
-    return IpcApp.callIpcHost("isInteractiveEditingSupported", imodel.key);
-  }
-
-  /** Get the active editing session for the specified iModel, if any.
-   * @note Only one editing session can be active for a given iModel at any given time.
-   */
-  public static get(imodel: IModelConnection): InteractiveEditingSession | undefined {
-    return sessions.find((x) => x.iModel === imodel);
-  }
-
-  /** Begin a new editing session.
-   * @note You **must** call [[end]] before closing the iModel.
-   * @throws Error if a new session could not be started.
-   * @see [[isSupported]] to determine whether this method should be expected to succeed.
-   */
-  public static async begin(imodel: EditableConnection): Promise<InteractiveEditingSession> {
-    if (InteractiveEditingSession.get(imodel))
+  public static async begin(imodel: BriefcaseConnection): Promise<InteractiveEditingSession> {
+    if (imodel.editingSession)
       throw new Error("Cannot create an editing session for an iModel that already has one");
 
     // Register the session synchronously, in case begin() is called again for same iModel while awaiting asynchronous initialization.
     const session = new InteractiveEditingSession(imodel);
-    sessions.push(session);
     try {
       const sessionStarted = await IpcApp.callIpcHost("toggleInteractiveEditingSession", imodel.key, true);
       assert(sessionStarted); // If it didn't, the backend threw an error.
@@ -114,25 +89,17 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
       throw e;
     }
 
-    if (!initialized) {
-      initialized = true;
-      IModelConnection.onClose.addListener((iModel) => {
-        if (undefined !== this.get(iModel as EditableConnection))
-          throw new Error("InteractiveEditingSession must be ended before closing the associated iModel");
-      });
-    }
-
     this.onBegin.raiseEvent(session);
 
     return session;
   }
 
-  /** Ends this editing session.
+  /** Ends this editing session. The associated [[BriefcaseConnection]]'s `editingSession` will be reset to `undefined`.
    * @throws Error if the session could not be ended, e.g., if it has already been ended.
-   * @see [[begin]] to start an editing session.
+   * @see [[BriefcaseConnection.beginEditingSession]] to start an editing session.
    */
   public async end(): Promise<void> {
-    if (this._disposed || sessions.find((x) => x.iModel === this.iModel) !== this)
+    if (this._disposed || this.iModel.editingSession !== this)
       throw new Error("Cannot end editing session after it is disconnected from the iModel");
 
     this._disposed = true;
@@ -159,6 +126,11 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     return { [Symbol.iterator]: () => this.geometryChangeIterator() };
   }
 
+  /** @internal */
+  public get isDisposed() {
+    return this._disposed;
+  }
+
   private * geometryChangeIterator(): Iterator<ModelGeometryChanges> {
     for (const [key, value] of this._geometryChanges) {
       yield {
@@ -170,7 +142,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     }
   }
 
-  private constructor(iModel: EditableConnection) {
+  private constructor(iModel: BriefcaseConnection) {
     super(iModel.key);
     this.iModel = iModel;
     this._cleanup = this.registerImpl();
@@ -189,10 +161,6 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
       this._cleanup();
       this._cleanup = undefined;
     }
-
-    const index = sessions.indexOf(this);
-    if (-1 !== index)
-      sessions.splice(index);
   }
 
   /** @internal */
