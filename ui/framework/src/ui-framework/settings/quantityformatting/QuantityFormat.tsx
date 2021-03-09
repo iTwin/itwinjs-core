@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "./QuantityFormatStage.scss";
+import "./QuantityFormat.scss";
 import * as React from "react";
 import { DeepCompare } from "@bentley/geometry-core";
 import {
-  getQuantityTypeKey, IModelApp, QuantityFormatsChangedArgs, QuantityType, QuantityTypeArg, QuantityTypeKey,
+  getQuantityTypeKey, IModelApp, QuantityFormatsChangedArgs, QuantityType, QuantityTypeArg, QuantityTypeKey, UnitSystemKey,
 } from "@bentley/imodeljs-frontend";
 import { FormatProps, FormatterSpec } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
@@ -15,11 +15,21 @@ import {
   Button, ButtonType, Dialog, Listbox, ListboxItem, SettingsTabEntry,
   useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer,
 } from "@bentley/ui-core";
-import { ModalDialogManager, UiFramework } from "@bentley/ui-framework";
+import { ModalDialogManager } from "../../dialog/ModalDialogManager";
+import { UiFramework } from "../../UiFramework";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
+import { UnitSystemSelector } from "./UnitSystemSelector";
+import { Presentation } from "@bentley/presentation-frontend";
 
 function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
   const compare = new DeepCompare();
   return compare.compare(obj1, obj2);
+}
+
+/** alpha */
+export interface QuantityFormatterSettingsOptions {
+  initialQuantityType: QuantityTypeArg;
+  availableUnitSystems: Set<UnitSystemKey>;
 }
 
 /**
@@ -27,39 +37,48 @@ function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
  * @param itemPriority - Used to define the order of the entry in the Settings Stage
  * @alpha
  */
-export function getQuantityFormatsSettingsManagerEntry(itemPriority: number): SettingsTabEntry {
+export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial<QuantityFormatterSettingsOptions>): SettingsTabEntry {
+  const {availableUnitSystems, initialQuantityType} = {...opts};
   return {
-    itemPriority, tabId: "ui-test-app:Quantity", label: "Quantity",
-    page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} />,
+    itemPriority, tabId: "ui-test-app:Quantity",
+    label: UiFramework.translate("settings.quantity-formatting.label"),
+    page: <QuantityFormatSettingsPanel initialQuantityType={initialQuantityType??QuantityType.Length}
+      availableUnitSystems={availableUnitSystems??new Set(["metric","imperial","usCustomary","usSurvey"])} />,
     isDisabled: false,
     icon: "icon-measure",
-    tooltip: "Quantity Formats",
+    tooltip: UiFramework.translate("settings.quantity-formatting.tooltip"),
     pageWillHandleCloseRequest: true,
   };
 }
 
-export function QuantityFormatSettingsPanel({ initialQuantityType }: { initialQuantityType: QuantityTypeArg }) {
-  const [activeQuantityType, setActiveQuantityType] = React.useState(getQuantityTypeKey(initialQuantityType));
+/**
+ * @alpha
+ */
+export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitSystems}: QuantityFormatterSettingsOptions) {
+  const [activeUnitSystemKey, setActiveUnitSystemKey] = React.useState(IModelApp.quantityFormatter.activeUnitSystem);
+  const [activeQuantityType, setActiveQuantityType] = React.useState(getQuantityTypeKey(initialQuantityType??QuantityType.Length));
   const [activeFormatterSpec, setActiveFormatterSpec] =
-    React.useState<FormatterSpec | undefined>(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(getQuantityTypeKey(initialQuantityType)));
+    React.useState<FormatterSpec | undefined>(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(getQuantityTypeKey(activeQuantityType)));
   const [saveEnabled, setSaveEnabled] = React.useState(false);
   const [clearEnabled, setClearEnabled] = React.useState(IModelApp.quantityFormatter.hasActiveOverride(initialQuantityType, true));
   const newQuantityTypeRef = React.useRef<QuantityTypeKey>();
+  const formatSectionLabel = React.useRef(UiFramework.translate("settings.quantity-formatting.formatSectionLabel"));
 
-  /* Not yet needed as no way to change system from modal stage
   React.useEffect(() => {
     const handleUnitSystemChanged = ((): void => {
-      setActiveFormatterSpec(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType));
-      setSaveEnabled(false);
-      setClearEnabled(IModelApp.quantityFormatter.hasActiveOverride(activeQuantityType, true));
+      if (activeUnitSystemKey !== IModelApp.quantityFormatter.activeUnitSystem) {
+        setActiveUnitSystemKey (IModelApp.quantityFormatter.activeUnitSystem);
+        setActiveFormatterSpec(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType));
+        setSaveEnabled(false);
+        setClearEnabled(IModelApp.quantityFormatter.hasActiveOverride(activeQuantityType, true));
+      }
     });
 
     IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(handleUnitSystemChanged);
     return () => {
       IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.removeListener(handleUnitSystemChanged);
     };
-  }, [activeQuantityType]);
-  */
+  }, [activeQuantityType, activeUnitSystemKey]);
 
   React.useEffect(() => {
     const handleFormatChanged = ((args: QuantityFormatsChangedArgs): void => {
@@ -138,8 +157,42 @@ export function QuantityFormatSettingsPanel({ initialQuantityType }: { initialQu
     setClearEnabled(false);
   }, [activeQuantityType]);
 
+  const processNewUnitSystem = React.useCallback(async (unitSystem: UnitSystemKey ) => {
+    if (unitSystem === activeUnitSystemKey)
+      return;
+
+    switch (unitSystem) {
+      case "imperial":
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
+        break;
+      case "metric":
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
+        break;
+      case "usSurvey":
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsSurvey;
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
+        break;
+      case "usCustomary":
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsCustomary;
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
+        break;
+      default:
+        break;
+    }
+  },[activeUnitSystemKey]);
+
+  const handleUnitSystemSelected = React.useCallback(async (unitSystem: UnitSystemKey ) => {
+    if (unitSystem === activeUnitSystemKey)
+      return;
+    saveChanges (processNewUnitSystem, unitSystem);
+  },[activeUnitSystemKey, processNewUnitSystem, saveChanges]);
+
   return (
-    <div className="quantity-types-stage">
+    <div className="quantity-formatting-container">
+      <UnitSystemSelector selectedUnitSystemKey={activeUnitSystemKey} availableUnitSystems={availableUnitSystems} onUnitSystemSelected={handleUnitSystemSelected} />
+      <span className="uifw-quantity-format-section-label">{formatSectionLabel.current}</span>
       <div className="quantity-types-container">
         <div className="left-panel">
           <Listbox id="quantity-types-list" className="quantity-types"

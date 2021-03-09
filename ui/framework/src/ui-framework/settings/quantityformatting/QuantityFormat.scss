@@ -5,28 +5,49 @@
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/style/typography";
 
-.quantity-types-stage {
+.quantity-formatting-container {
   box-sizing: border-box;
   display: flex;
+  flex-direction: column;
   height: 100%;
   width: 100%;
+  background: $buic-background-dialog;
 
   *, *:before, *:after {
     box-sizing: inherit;
   }
 
+  .quantity-unit-system-selector-container {
+    padding: 20px 20px;
+    display: flex;
+    flex-direction: column;
+
+    >span.uicore-label {
+      font-size: 18px;
+     }
+     >select.uicore-inputs-select {
+       width: fit-content;
+       min-width: 185px;
+       margin-top: 10px;
+       height: 2em;
+     }
+  }
+
+  .uifw-quantity-format-section-label {
+    font-size: 18px;
+    margin-left: 20px;
+  }
+
   .quantity-types-container {
-    background: $buic-background-dialog;
     display: flex;
     height: 100%;
     width: auto;
-    box-sizing: border-box;
 
     > .left-panel {
       flex-direction: column;
       min-width: 260px;
       width: auto;
-      padding: 20px 50px 20px 20px;
+      padding: 10px 50px 20px 20px;
       height: auto;
 
       ul.core-listbox.quantity-types {
@@ -43,7 +64,7 @@
       width: auto;
       height: auto;
       min-width: 410px;
-      padding: 20px 20px 20px 0;
+      padding: 10px 20px 20px 0;
 
       .quantity-types-right-top {
         display: flex;

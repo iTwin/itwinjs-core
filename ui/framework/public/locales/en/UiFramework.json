@@ -132,6 +132,16 @@
   "commands": {
     "backToPreviousFrontstage": "Back to previous Frontstage"
   },
+  "settings": {
+    "settingsStageLabel": "Settings",
+    "noSettingsProvidersRegistered": "No SettingsProviders have been registered.",
+    "noSettingsAvailable": "No Settings Available",
+    "quantity-formatting": {
+      "label": "Units/Formatting",
+      "tooltip": "Define Active Units and Quantity Formats",
+      "formatSectionLabel": "Quantity Formats"
+    }
+  },
   "tools": {
     "clearSelection": "Clear Selection",
     "hideSelected": "Hide Elements",
@@ -331,9 +341,11 @@
       "rectangular": "rectangular"
     }
   },
-  "settings": {
-    "settingsStageLabel": "Settings",
-    "noSettingsProvidersRegistered": "No SettingsProviders have been registered.",
-    "noSettingsAvailable": "No Settings Available"
+  "presentationUnitSystem": {
+    "selector-label": "Active Unit System",
+    "Metric": "Metric",
+    "BritishImperial": "Imperial",
+    "USCustomary": "US Customary",
+    "USSurvey": "US Survey"
   }
 }
