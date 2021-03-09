@@ -25,6 +25,35 @@ export enum DownloadBriefcaseStatus {
   Error,
 }
 
+/** The reserved BriefcaseId values used to identify special kinds of IModelDbs.
+ * @see [[BriefcaseId]]
+ * @public
+ */
+export enum BriefcaseIdValue {
+  /** Indicates an invalid/illegal BriefcaseId */
+  Illegal = 0xffffffff,
+
+  /** BriefcaseIds must be less than this value */
+  Max = 1 << 24,
+
+  /** All valid iModelHub issued BriefcaseIds will be equal or higher than this */
+  FirstValid = 2,
+
+  /** All valid iModelHub issued BriefcaseIds will be equal or lower than this */
+  LastValid = BriefcaseIdValue.Max - 11,
+
+  /** A Standalone copy of an iModel. Standalone files may accept changesets, but can never create new changesets.
+   * Checkpoints are Standalone files that may not accept any new changesets after they are created.
+   */
+  Standalone = 0,
+
+  /**
+   * @internal
+   * @deprecated use Standalone
+   */
+  DeprecatedStandalone = 1,
+}
+
 /** Operations allowed when synchronizing changes between the Briefcase and iModelHub
  * @public
  */
