@@ -81,7 +81,7 @@ export class TileDrawArgs {
   /** Tiles that we want to draw and that are ready to draw. May not actually be selected, e.g. if sibling tiles are not yet ready. */
   public readonly readyTiles = new Set<Tile>();
   /** For perspective views, the view-Z of the near plane. */
-  private readonly _nearViewZ?: number;
+  private readonly _nearFrontCenter?: Point3d;
   /** View Flag overrides */
   public get viewFlagOverrides(): ViewFlagOverrides { return this.graphics.viewFlagOverrides; }
   /**  Symbology overrides */
@@ -146,17 +146,22 @@ export class TileDrawArgs {
     if (this.context.viewport.view.isCameraEnabled()) {
       // Find point on sphere closest to eye.
       const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
-      if (toEye) {
+      const viewCenter = this.worldToViewMap.transform0.multiplyPoint3d(center, 1);
+
+      if (toEye && viewCenter.w > 0) {  // Only if tile is not already behind the eye.
         toEye.scaleInPlace(radius);
         center.addInPlace(toEye);
       }
     }
 
-    const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
-    if (undefined !== this._nearViewZ && viewPt.z > this._nearViewZ) {
+    const viewPt4d = this.worldToViewMap.transform0.multiplyPoint3d(center, 1);
+    let viewPt: Point3d;
+    if (this._nearFrontCenter && (viewPt4d.w <= 0 || viewPt4d.z / viewPt4d.w > this._nearFrontCenter.z)) {
       // Limit closest point on sphere to the near plane.
-      viewPt.z = this._nearViewZ;
-    }
+      viewPt = this._nearFrontCenter;
+    } else {
+      viewPt = viewPt4d.realPoint()!;
+      }
 
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
@@ -218,7 +223,7 @@ export class TileDrawArgs {
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
     if (context.viewport.view.isCameraEnabled())
-      this._nearViewZ = context.viewport.getFrustum(CoordSystem.View).frontCenter.z;
+      this._nearFrontCenter = context.viewport.getFrustum(CoordSystem.View).frontCenter;
   }
 
   /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.
