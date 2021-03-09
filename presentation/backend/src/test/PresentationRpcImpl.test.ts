@@ -1637,7 +1637,7 @@ describe("PresentationRpcImpl", () => {
         const result: HierarchyCompareInfo = {
           changes: [{
             type: "Delete",
-            node: createRandomECInstancesNode(),
+            target: createRandomECInstancesNode().key,
           }],
         };
         const rpcOptions: PresentationDataCompareRpcOptions = {
@@ -1665,7 +1665,7 @@ describe("PresentationRpcImpl", () => {
         const result: HierarchyCompareInfo = {
           changes: [{
             type: "Delete",
-            node: createRandomECInstancesNode(),
+            target: createRandomECInstancesNode().key,
           }],
         };
         const rpcOptions: PresentationDataCompareRpcOptions = {
@@ -1699,7 +1699,7 @@ describe("PresentationRpcImpl", () => {
         const result: HierarchyCompareInfo = {
           changes: [{
             type: "Delete",
-            node: createRandomECInstancesNode(),
+            target: createRandomECInstancesNode().key,
           }],
         };
         const rpcOptions: PresentationDataCompareRpcOptions = {
@@ -1729,7 +1729,7 @@ describe("PresentationRpcImpl", () => {
         const result: HierarchyCompareInfo = {
           changes: [{
             type: "Delete",
-            node: createRandomECInstancesNode(),
+            target: createRandomECInstancesNode().key,
           }],
         };
         const rpcOptions: PresentationDataCompareRpcOptions = {
@@ -1761,7 +1761,7 @@ describe("PresentationRpcImpl", () => {
         const result: HierarchyCompareInfo = {
           changes: [{
             type: "Delete",
-            node: createRandomECInstancesNode(),
+            target: createRandomECInstancesNode().key,
           }],
         };
         const rpcOptions: PresentationDataCompareRpcOptions = {
