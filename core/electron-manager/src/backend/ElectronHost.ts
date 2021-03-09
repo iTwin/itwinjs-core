@@ -7,16 +7,15 @@
 // be imported by apps that sometimes use Electron and sometimes not. Call to `ElectronBackend.initialize`
 // will do the necessary `require("electron")`
 // IMPORTANT: Do not call or construct any of these imports. Otherwise, a require("electron") call will be emitted at top level.
-// Instead, access using `ElectronHost.electron.<type>` at point of use in the code.
+// Instead, use `ElectronHost.electron.<type>`
 import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
-
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
+import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { IModelHostConfiguration, IpcHandler, IpcHost, NativeHost } from "@bentley/imodeljs-backend";
+import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
 // cSpell:ignore signin devserver webcontents copyfile
 
@@ -58,6 +57,11 @@ export interface ElectronHostOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** list of [IpcHandler]($common) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
+}
+
+/** @beta */
+export interface ElectronHostOpts extends NativeHostOpts {
+  electronHost?: ElectronHostOptions;
 }
 
 /**
@@ -129,8 +133,6 @@ export class ElectronHost {
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
 
-    // Setup handlers for IPC calls to support Authorization
-    DesktopAuthorizationClientIpc.initializeIpc();
   }
 
   /** The "main" BrowserWindow for this application. */
@@ -186,7 +188,7 @@ export class ElectronHost {
    * @param opts Options that control aspects of your backend.
    * @note This method must only be called from the backend of an Electron app (i.e. when [ProcessDetector.isElectronAppBackend]($bentley) is `true`).
    */
-  public static async startup(opts?: { electronHost?: ElectronHostOptions, iModelHost?: IModelHostConfiguration }) {
+  public static async startup(opts?: ElectronHostOpts) {
     if (!ProcessDetector.isElectronAppBackend)
       throw new Error("Not running under Electron");
 
@@ -205,11 +207,15 @@ export class ElectronHost {
       this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
       this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
     }
-    await NativeHost.startup({ ipcHost: { socket: this._ipc }, iModelHost: opts?.iModelHost });
+    opts = opts ?? {};
+    opts.ipcHost = opts.ipcHost ?? {};
+    opts.ipcHost.socket = this._ipc;
+    await NativeHost.startup(opts);
     if (IpcHost.isValid) {
       ElectronAppHandler.register();
-      opts?.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
+      opts.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
+    IModelHost.authorizationClient = new ElectronAuthorizationBackend();
   }
 }
 

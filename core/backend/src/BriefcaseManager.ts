@@ -229,8 +229,7 @@ export class BriefcaseManager {
    * a filename, the local briefcase cache is used by creating a file with the briefcaseId as its name in the `briefcases` folder below the folder named
    * for the IModelId.
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
-   * @note The special briefcaseId [[BriefcaseIdValue.Standalone]] is used for backwards compatibility for the SyncMode.PullOnly. It creates local
-   * file that can accept changesets but may not be used for editing. It is really incorrect to refer to this file as a "briefcase."
+   * @note The special briefcaseId [[BriefcaseIdValue.Standalone]] (0) can be used for a local briefcase that can accept changesets but may not be changed locally.
    * @see CheckpointManager.downloadCheckpoint
    */
   public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
@@ -468,7 +467,7 @@ export class BriefcaseManager {
   public static async processChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex?: number): Promise<void> {
     requestContext.enter();
 
-    if (!db.isOpen || db.isReadonly)
+    if (!db.isOpen || db.nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets", Logger.logError, loggerCategory, () => db.getRpcProps());
 
     if (undefined === targetChangeSetIndex)

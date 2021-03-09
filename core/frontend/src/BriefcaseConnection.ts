@@ -7,7 +7,7 @@
  */
 
 import { Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelConnectionProps, IModelError, OpenBriefcaseProps, StandaloneOpenOptions } from "@bentley/imodeljs-common";
+import { IModelError, IModelVersionProps, OpenBriefcaseProps, StandaloneOpenOptions } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
 import { InteractiveEditingSession } from "./InteractiveEditingSession";
@@ -76,7 +76,7 @@ export class BriefcaseConnection extends IModelConnection {
     await IpcApp.callIpcHost("closeIModel", this._fileKey);
   }
 
-  private requireContext() {
+  private requireTimeline() {
     if (this.contextId === Guid.empty)
       throw new IModelError(IModelStatus.WrongIModel, "iModel has no timeline");
   }
@@ -91,15 +91,20 @@ export class BriefcaseConnection extends IModelConnection {
     await IpcApp.callIpcHost("saveChanges", this.key, description);
   }
 
-  /** @beta */
-  public async pullAndMergeChanges(): Promise<IModelConnectionProps> {
-    this.requireContext();
-    return IpcApp.callIpcHost("pullAndMergeChanges", this.key);
+  /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
+   * @param version The version to pull changes to. If` undefined`, pull all changes.
+   * @beta */
+  public async pullAndMergeChanges(version?: IModelVersionProps): Promise<void> {
+    this.requireTimeline();
+    return IpcApp.callIpcHost("pullAndMergeChanges", this.key, version);
   }
 
-  /** @beta */
-  public async pushChanges(description: string): Promise<IModelConnectionProps> {
-    this.requireContext();
+  /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.
+   * @param description The description for the changeset
+   * @returns the changesetId of the pushed changes
+   * @beta */
+  public async pushChanges(description: string): Promise<string> {
+    this.requireTimeline();
     return IpcApp.callIpcHost("pushChanges", this.key, description);
   }
 
