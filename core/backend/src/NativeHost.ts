@@ -22,7 +22,7 @@ import { NativeAppStorage } from "./NativeAppStorage";
 /** @internal */
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
   protected _accessToken?: AccessToken;
-  protected _expireSafety = 60 * 10; // seconds to expire before real expiration time
+  protected _expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
   protected _config?: NativeAppAuthorizationConfiguration;
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   public get config(): NativeAppAuthorizationConfiguration { return this._config!; }
@@ -30,7 +30,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
   public abstract signOut(): Promise<void>;
   protected abstract refreshToken(): Promise<AccessToken>;
   public get isAuthorized(): boolean {
-    return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety * 1000);
+    return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety);
   }
   public setAccessToken(token?: AccessToken) {
     this._accessToken = token;

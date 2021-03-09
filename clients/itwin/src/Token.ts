@@ -95,12 +95,10 @@ export class AccessToken {
   }
 
   /** returns true if this token has expired
-   * @param buffer amount of time in milliseconds to return true before the real expiration time.
+   * @param buffer amount of time in seconds to return true before the real expiration time.
    */
   public isExpired(buffer: number) {
-    if (undefined === this._expiresAt)
-      return false;
-    return this._expiresAt.getTime() - Date.now() <= buffer;
+    return (undefined !== this._expiresAt) && (this._expiresAt.getTime() - (buffer * 1000)) < Date.now();
   }
 
   /**
