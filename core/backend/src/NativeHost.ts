@@ -209,33 +209,31 @@ export class NativeHost {
   public static async startup(opt?: NativeHostOpts): Promise<void> {
     if (!this.isValid) {
       this._isValid = true;
-      this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
-      this.onUserStateChanged.addListener((token?: AccessToken) => NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
+      this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) =>
+        NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
+      this.onUserStateChanged.addListener((token?: AccessToken) =>
+        NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
     }
     await IpcHost.startup(opt);
     if (IpcHost.isValid)  // for tests, we use NativeHost but don't have a frontend
       NativeAppHandler.register();
   }
 
-  /**
-   * Shutdown native app backend. Also calls IpcAppHost.shutdown()
-   */
+  /** Shutdown native app backend. Also calls IpcHost.shutdown() */
   public static async shutdown(): Promise<void> {
     this._isValid = false;
     this.onInternetConnectivityChanged.clear();
+    this.onUserStateChanged.clear();
     await IpcHost.shutdown();
   }
 
-  /**
-   * Checks internet connectivity
-   * @returns return current value of internet connectivity from backend.
-   */
+  /** get current value of internet connectivity */
   public static checkInternetConnectivity(): InternetConnectivityStatus {
     return this._reachability ?? InternetConnectivityStatus.Online;
   }
 
   /**
-   * Overrides internet connectivity value at backend.
+   * Override internet connectivity state
    * @param _overridenBy who overrode the value.
    */
   public static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void {

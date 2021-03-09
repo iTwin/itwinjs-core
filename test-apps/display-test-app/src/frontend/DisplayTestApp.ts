@@ -68,7 +68,8 @@ async function signIn(): Promise<boolean> {
     return true;
 
   return new Promise<boolean>((resolve, reject) => {
-    auth.onUserStateChanged.addOnce((token?: AccessToken) => resolve(token !== undefined));
+    auth.onUserStateChanged.addOnce((token?: AccessToken) =>
+      resolve(token !== undefined));
     auth.signIn().catch((err) => reject(err));
   });
 }
@@ -152,12 +153,11 @@ const dtaFrontendMain = async () => {
 
   const uiReady = displayUi(); // Get the browser started loading our html page and the svgs that it references but DON'T WAIT
 
-  // while the browser is loading stuff, start work on logging in and downloading the imodel, etc.
   try {
     if (!configuration.standalone || configuration.signInForStandalone) {
-      const signedIn = await signIn();
-      if (!signedIn)
-        return;
+      while (await signIn()) {
+        alert("please sign in");
+      }
     }
 
     let iModel: IModelConnection | undefined;

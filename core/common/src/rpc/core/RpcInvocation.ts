@@ -163,7 +163,7 @@ export class RpcInvocation {
     return a.key === b.key &&
       a.contextId === b.contextId &&
       a.iModelId === b.iModelId &&
-      a.changeSetId === b.changeSetId &&
+      (undefined === a.changeSetId || (a.changeSetId === b.changeSetId)) &&
       a.openMode === b.openMode;
   }
 
