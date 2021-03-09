@@ -6,8 +6,9 @@
  * @module Tools
  */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { IModelApp } from "../IModelApp";
-import { EditableConnection } from "../InteractiveEditingSession";
+import { BriefcaseConnection } from "../BriefcaseConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { Viewport } from "../Viewport";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
@@ -27,7 +28,11 @@ export abstract class PrimitiveTool extends InteractiveTool {
   /** Get the iModel for this tool.
    * @internal
    */
-  public get iModel(): EditableConnection { return this.targetView!.view.iModel as EditableConnection; }
+  public get iModel(): BriefcaseConnection {
+    assert(undefined !== this.targetView);
+    assert(this.targetView.view.iModel instanceof BriefcaseConnection);
+    return this.targetView.view.iModel;
+  }
 
   /**
    * Establish this tool as the active PrimitiveTool.
