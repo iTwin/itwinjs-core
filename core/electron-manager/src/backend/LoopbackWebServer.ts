@@ -10,7 +10,7 @@
 
 import * as Http from "http";
 import * as Url from "url";
-import { DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
+import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizationErrorJson, AuthorizationResponseJson } from "@openid/appauth";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 
@@ -43,12 +43,12 @@ class AuthorizationState {
  * @internal
  */
 export class LoopbackWebServer {
-  private static _clientConfiguration: DesktopAuthorizationClientConfiguration;
+  private static _clientConfiguration: NativeAppAuthorizationConfiguration;
   private static _httpServer?: Http.Server;
   private static _authState: AuthorizationState = new AuthorizationState();
 
   /** Start a web server to listen to the browser requests */
-  public static start(clientConfiguration: DesktopAuthorizationClientConfiguration) {
+  public static start(clientConfiguration: NativeAppAuthorizationConfiguration) {
     if (LoopbackWebServer._httpServer)
       return;
 
