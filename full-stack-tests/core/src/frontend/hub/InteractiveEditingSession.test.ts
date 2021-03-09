@@ -8,7 +8,7 @@ import { BeDuration, compareStrings, DbOpcode, Id64String, OpenMode, ProcessDete
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { BatchType, Code, ElementGeometryChange, ElementsChanged } from "@bentley/imodeljs-common";
 import {
-  ElementEditor3d, GeometricModel3dState, IModelApp, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection,
+  EditingFunctions, ElementEditor3d, GeometricModel3dState, IModelApp, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection,
   TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
@@ -21,8 +21,8 @@ let codeSuffix = 1;
 /* eslint-disable deprecation/deprecation */
 
 // The Web RPC protocol does not support Ipc required for interactive editing.
-if (ProcessDetector.isElectronAppFrontend) {
-  describe("InteractiveEditingSession (#integration)", () => {
+describe.only("InteractiveEditingSession (#integration)", () => {
+  if (ProcessDetector.isElectronAppFrontend) {
     let briefcase: RemoteBriefcaseConnection | undefined;
     let imodelId: string;
     let projectId: string;
@@ -94,9 +94,10 @@ if (ProcessDetector.isElectronAppFrontend) {
       const imodel = briefcase!;
 
       const editor = await ElementEditor3d.start(imodel);
-      const modelId = await imodel.editing.models.createAndInsertPhysicalModel(await imodel.editing.codes.makeModelCode(imodel.models.repositoryModelId, "GeomChanges"));
+      const editing = new EditingFunctions(imodel);
+      const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, "GeomChanges"));
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "GeomChanges", { color: 0 });
+      const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, "GeomChanges", { color: 0 });
       await imodel.saveChanges();
       await imodel.pushChanges("line 1"); // release locks
 
@@ -182,9 +183,10 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       // Initial geometric model contains one line element.
       const editor = await ElementEditor3d.start(imodel);
-      const modelId = await imodel.editing.models.createAndInsertPhysicalModel(await imodel.editing.codes.makeModelCode(imodel.models.repositoryModelId, "TreeState"));
+      const editing = new EditingFunctions(imodel);
+      const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, "TreeState"));
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "TreeState", { color: 0 });
+      const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, "TreeState", { color: 0 });
       const elem1 = await createLineElement(editor, modelId, category, makeLine(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
       await imodel.saveChanges();
 
@@ -282,14 +284,14 @@ if (ProcessDetector.isElectronAppFrontend) {
       await expectTreeState(trees, "dynamic", 1, range3);
 
       // Delete the same element.
-      await imodel.editing.deleteElements([elem1]);
+      await editing.deleteElements([elem1]);
       await imodel.saveChanges();
       trees.push(createTileTree());
       await expectTreeState(tree0, "disposed", 0, modelRange);
       await expectTreeState(trees, "dynamic", 1, range2);
 
       // Delete the other element.
-      await imodel.editing.deleteElements([elem2]);
+      await editing.deleteElements([elem2]);
       await imodel.saveChanges();
       trees.push(createTileTree());
       await expectTreeState(tree0, "disposed", 0, modelRange);
@@ -321,5 +323,5 @@ if (ProcessDetector.isElectronAppFrontend) {
       await imodel.pushChanges(""); // release locks
       await editor.end();
     });
-  });
-}
+  }
+});

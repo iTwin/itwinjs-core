@@ -12,8 +12,8 @@ import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
-if (ProcessDetector.isElectronAppFrontend) {
-  describe("InteractiveEditingSession", () => {
+describe.only("InteractiveEditingSession", () => {
+  if (ProcessDetector.isElectronAppFrontend) {
     let imodel: BriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
     const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
@@ -120,5 +120,5 @@ if (ProcessDetector.isElectronAppFrontend) {
       removeEndListener();
       removeEndingListener();
     });
-  });
-}
+  }
+});
