@@ -50,10 +50,8 @@ class LineProximityContext {
   public npc1B: Point3d;
 
   public worldToNPC: Matrix4d;
-  public accumulatedDistanceFromLineA: number;
   public constructor(matrix: Matrix4d) {
     this.ux = this.uy = 0;
-    this.accumulatedDistanceFromLineA = 0;
     this.divMagU = undefined;
     this.npc0A = Point3d.create();
     this.npc1A = Point3d.create();
@@ -66,7 +64,6 @@ class LineProximityContext {
     this.ux = this.npc1A.x - this.npc0A.x;
     this.uy = this.npc1A.y - this.npc0A.y;
     this.divMagU = Geometry.conditionalDivideCoordinate(1.0, Math.sqrt(this.ux * this.ux + this.uy * this.uy));
-    this.accumulatedDistanceFromLineA = 0;
   }
 
 /** Capture start and end point of "previous" line. */
@@ -261,7 +258,6 @@ export class ViewGraphicsOps {
     const fractionRange = Range1d.createNull();
     const distanceRange = Range1d.createNull();
     const perspectiveZStartEnd = Segment1d.create();
-    let rejected = false;
     let numAnnounced = 0;
     const gridLineIdentifier: ViewportGraphicsGridLineIdentifier = { direction: 0, index: 0 };
     const announceInterval: AnnounceNumberNumber = (f0: number, f1: number) => {
@@ -277,8 +273,7 @@ export class ViewGraphicsOps {
       } else {
         if (!lineContext.intervalOfSeparation(xyDistanceBetweenLines, clippedPointWorld0, clippedPointWorld1,
           fractionRange, perspectiveZStartEnd, distanceRange)) {
-          // record the distance accumulation and LEAVE LINE A WHERE IT IS
-          lineContext.accumulatedDistanceFromLineA += distanceRange.high;
+          // LEAVE LINE A WHERE IT IS.   Subsequent candidate lines will move away
         } else {
           if (fractionRange.isExact01)
             announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
@@ -295,31 +290,14 @@ export class ViewGraphicsOps {
     const iy0 = Math.ceil(stRange.low.y);
     const iy1 = Math.floor(stRange.high.y);
     // sweep bottom up ...
-    rejected = false;
     let iy;
-    let iyB = iy0;    // will be updated as stopping point for downward sweep
     gridLineIdentifier.direction = 1;
     for (iy = iy0; iy <= iy1; iy++){
       gridLineIdentifier.index = iy;
       gridPoint0.set(xLow, iy);
       gridPoint1.set(xHigh, iy);
       stClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
-      if (rejected) {
-        iyB = iy;
-        break;
       }
-    }
-
-    rejected = false;
-    lineContext.invalidateLine();
-    for (iy = iy1; iy >=  iyB; iy--){
-      gridPoint0.set(xLow, iy);
-      gridPoint1.set(xHigh, iy);
-      gridLineIdentifier.index = iy;
-      stClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
-      if (rejected)
-        break;
-    }
 
     // sweep left to right
     const ix0 = Math.ceil(stRange.low.x);
@@ -327,31 +305,15 @@ export class ViewGraphicsOps {
     const yLow = stRange.low.y;
     const yHigh = stRange.high.y;
     let ix;
-    let ixB = ix0;    // will be updated as stopping point for downward sweep
     lineContext.invalidateLine();
     gridLineIdentifier.direction = 0;
-    rejected = false;
     for (ix = ix0; ix <= ix1; ix++){
       gridPoint0.set(ix, yLow);
       gridPoint1.set(ix, yHigh);
       gridLineIdentifier.index = ix;
       stClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
-      if (rejected) {
-        ixB = ix;
-        break;
-      }
     }
 
-    // sweep right to left
-    rejected = false;
-    lineContext.invalidateLine();
-    for (ix = ix1; ix >=  ixB; ix--){
-      gridPoint0.set(ix, yLow);
-      gridPoint1.set(ix, yHigh);
-      stClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
-      if (rejected)
-        break;
-    }
     return numAnnounced > 0;
   }
 }
