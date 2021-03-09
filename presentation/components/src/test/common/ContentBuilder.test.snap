@@ -634,7 +634,7 @@ PropertyRecord {
   "property": Object {
     "displayLabel": "infrastructures Hong Kong Dollar Integration",
     "name": "Down-sized",
-    "typename": "Dong",
+    "typename": "dong",
   },
   "value": Object {
     "displayValue": "merged",
@@ -681,7 +681,7 @@ PropertyRecord {
   "property": Object {
     "displayLabel": "Credit Card Account",
     "name": "Savings Account",
-    "typename": "Lari",
+    "typename": "lari",
   },
   "value": Object {
     "displayValue": "",
