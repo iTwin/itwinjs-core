@@ -641,6 +641,8 @@ export class BoxTopology {
     static readonly faceId: number[][];
     static readonly partnerFace: number[][];
     static readonly points: Point3d[];
+    // (undocumented)
+    static pointsClone(): Point3d[];
     static readonly primaryCapId = -1;
 }
 
@@ -5562,7 +5564,7 @@ export class Vector3dArray {
 
 // @public
 export class ViewGraphicsOps {
-    static announceGridLinesInView(gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d, worldToDisplay: Map4d, viewRange: Range3d, xyDistanceBetweenLines: number, announceLine: (pointA: Point3d, pointB: Point3d) => void): boolean;
+    static announceGridLinesInView(gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d, worldToDisplay: Map4d, viewRange: Range3d, xyDistanceBetweenLines: number, announceLine: (pointA: Point3d, pointB: Point3d, perspectiveZA: number | undefined, perspectiveZB: number | undefined) => void): boolean;
 }
 
 // @public

@@ -372,7 +372,7 @@ export class DecorateContext extends RenderContext {
       Vector3d.create(refSpacing.x, 0, 0),
       Vector3d.create(0, refSpacing.x, 0),
       vp.worldToNpcMap, npcRange, DecorateContext._minNpcSeparation,
-      (pointA: Point3d, pointB: Point3d) => {
+      (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number| undefined) => {
         builder.addLineString([pointA, pointB]);
       });
 

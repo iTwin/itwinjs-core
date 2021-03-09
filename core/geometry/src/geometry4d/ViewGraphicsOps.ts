@@ -12,6 +12,7 @@ import { Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d, Range3d } from "../geometry3d/Range";
+import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Map4d } from "./Map4d";
 import { Matrix4d } from "./Matrix4d";
@@ -51,9 +52,10 @@ class LineProximityContext {
   }
 
 /** Capture start and end point of "previous" line. */
-  public announceLineAWorld(point0A: Point3d, point1A: Point3d) {
+  public announceLineAWorld(point0A: Point3d, point1A: Point3d, perspectiveZStartEnd: Segment1d) {
     this.worldToNPC.multiplyPoint3dQuietNormalize(point0A, this.npc0A);
     this.worldToNPC.multiplyPoint3dQuietNormalize(point1A, this.npc1A);
+    perspectiveZStartEnd.set(this.npc0A.z, this.npc0B.z);
     this.setupDerivedData();
   }
 
@@ -85,10 +87,17 @@ class LineProximityContext {
     );
   }
   // install values in the range and return true.
-  private setRange1d(range: Range1d, x0: number, x1: number): boolean {
-    range.setXXUnordered(x0, x1);
+  // x0,x1 are directly installed.
+  // interpolated values of (zA, zB) at fraction0 and fraction1 are installed in the zDepths
+  private setRanges(range: Range1d, fraction0: number, fraction1: number,
+    zDepths: Segment1d, zA: number, zB: number): boolean {
+
+    range.setXXUnordered(fraction0, fraction1);
+    zDepths.set(Geometry.interpolate(zA, fraction0, zB), Geometry.interpolate(zA, fraction1, zB));
     return true;
   }
+
+  private static _horizonTrimFraction = 0.90;
   /**
   * * return the fractional interval on line B, such that points in the interval are at a distance minimumDistance or larger
   * * If line B jumps complete between "far negative" and "far positive", only the first fractional part is returned.
@@ -96,32 +105,36 @@ class LineProximityContext {
    * @param minimumDistance
    * @param point0B
    * @param point1B
-   * @param fractions
+   * @param fractions pre-allocated receiver for fractional interval
+   * @param perspectiveZStartEnd pre-allocated receiver for depths at (fractional!) start and end
    */
-  public intervalOfSeparation(minimumDistance: number, point0B: Point3d, point1B: Point3d, fractions: Range1d): boolean {
+  public intervalOfSeparation(minimumDistance: number, point0B: Point3d, point1B: Point3d,
+    fractions: Range1d,
+    perspectiveZStartEnd: Segment1d): boolean {
     if (this.divMagU === undefined)
       return false;
+
     this.worldToNPC.multiplyPoint3dQuietNormalize(point0B, this.npc0B);
     this.worldToNPC.multiplyPoint3dQuietNormalize(point1B, this.npc1B);
     const d0 = this.signedDistanceToNPCPoint(this.npc0B);
     const d1 = this.signedDistanceToNPCPoint(this.npc1B);
     if (d0 < -minimumDistance) {
       if (d1 < -minimumDistance) {
-        return this.setRange1d(fractions, 0, 1);
+        return this.setRanges(fractions, 0, 1, perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       } else {
-        return this.setRange1d(fractions, 0, Geometry.safeDivideFraction(-minimumDistance - d0, d1 - d0, 0.0));
+        return this.setRanges(fractions, 0, Geometry.safeDivideFraction(-minimumDistance - d0, d1 - d0, 0.0), perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       }
     } else if (d0 > minimumDistance) {
       if (d1 > minimumDistance) {
-        return this.setRange1d(fractions, 0, 1);
+        return this.setRanges(fractions, 0, 1, perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       } else {
-        return this.setRange1d(fractions, 0.0, Geometry.safeDivideFraction(minimumDistance - d0, d1 - d0, 0.0));
+        return this.setRanges(fractions, 0.0, Geometry.safeDivideFraction(minimumDistance - d0, d1 - d0, 0.0), perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       }
     } else { // d0 starts inside -- may move outside
       if (d1 > minimumDistance) {
-        return this.setRange1d(fractions, Geometry.safeDivideFraction(minimumDistance - d0, d1 - d0, 0.0), 1.0);
+        return this.setRanges(fractions, Geometry.safeDivideFraction(minimumDistance - d0, d1 - d0, 0.0), 1.0, perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       } else if (d1 < -minimumDistance) {
-        return this.setRange1d(fractions, Geometry.safeDivideFraction(-minimumDistance - d0, d1 - d0, 0.0), 1.0);
+        return this.setRanges(fractions, Geometry.safeDivideFraction(-minimumDistance - d0, d1 - d0, 0.0), 1.0, perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       }
       return false;
     }
@@ -162,7 +175,9 @@ export class ViewGraphicsOps {
     worldToDisplay: Map4d,
     viewRange: Range3d,
     xyDistanceBetweenLines: number,
-    announceLine: (pointA: Point3d, pointB: Point3d) => void
+    announceLine: (pointA: Point3d, pointB: Point3d,
+      perspectiveZA: number | undefined,
+      perspectiveZB: number | undefined) => void
   ): boolean {
 
     const gridZ = gridXStep.unitCrossProduct(gridYStep)!;
@@ -218,6 +233,7 @@ export class ViewGraphicsOps {
     const xLow = stRange.low.x;
     const xHigh = stRange.high.x;
     const fractionRange = Range1d.createNull();
+    const perspectiveZStartEnd = Segment1d.create();
     let rejected = false;
     let numAnnounced = 0;
     const announceInterval: AnnounceNumberNumber = (f0: number, f1: number) => {
@@ -227,18 +243,19 @@ export class ViewGraphicsOps {
       const clippedPointWorld1 = gridTransform.multiplyPoint3d(clippedGridPoint1);
 
       if (!lineContext.hasValidLine) {
-        announceLine(clippedPointWorld0, clippedPointWorld1);
-        lineContext.announceLineAWorld(clippedPointWorld0, clippedPointWorld1);
+        lineContext.announceLineAWorld(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd);
+        announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1);
         numAnnounced++;
       } else {
-        if (!lineContext.intervalOfSeparation(xyDistanceBetweenLines, clippedPointWorld0, clippedPointWorld1, fractionRange)) {
+        if (!lineContext.intervalOfSeparation(xyDistanceBetweenLines, clippedPointWorld0, clippedPointWorld1, fractionRange, perspectiveZStartEnd)) {
           rejected = true;
         } else {
           if (fractionRange.isExact01)
-            announceLine(clippedPointWorld0, clippedPointWorld1);
+            announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1);
           else {
             announceLine(clippedPointWorld0.interpolate(fractionRange.low, clippedPointWorld1),
-              clippedPointWorld0.interpolate(fractionRange.high, clippedPointWorld1));
+              clippedPointWorld0.interpolate(fractionRange.high, clippedPointWorld1),
+              perspectiveZStartEnd.x0, perspectiveZStartEnd.x1);
         }
           lineContext.moveLineBToLineA();
           numAnnounced++;
