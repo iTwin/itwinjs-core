@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-components",
-      "comment": "Added handling for windows which doesn't open.",
+      "comment": "Added handling for windows which don't open.",
       "type": "none"
     }
   ],
