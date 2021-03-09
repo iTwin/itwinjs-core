@@ -155,7 +155,7 @@ const dtaFrontendMain = async () => {
 
   try {
     if (!configuration.standalone || configuration.signInForStandalone) {
-      while (await signIn()) {
+      while (!await signIn()) {
         alert("please sign in");
       }
     }
