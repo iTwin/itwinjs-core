@@ -77,12 +77,9 @@ export class RulesetEmbedder {
     if (DuplicateRulesetHandlingStrategy.Skip === duplicateHandlingStrategy)
       return rulesetId;
 
-    let rulesetElement;
-    try {
-      rulesetElement = this._imodel.elements.getElement<DefinitionElement>(rulesetId);
-    } catch (err) {
+    const rulesetElement = this._imodel.elements.tryGetElement<DefinitionElement>(rulesetId);
+    if (!rulesetElement)
       return Id64.invalid;
-    }
 
     rulesetElement.jsonProperties.jsonProperties = ruleset;
     rulesetElement.update();
@@ -142,7 +139,7 @@ export class RulesetEmbedder {
     if (undefined === subject)
       return undefined;
 
-    return this._imodel.elements.getElement(DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName));
+    return this._imodel.elements.tryGetElement<DefinitionPartition>(DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName));
   }
 
   private querySubject(): DefinitionPartition | undefined {
@@ -154,11 +151,7 @@ export class RulesetEmbedder {
       value: this._rulesetSubjectName,
     });
 
-    try {
-      return this._imodel.elements.getElement(code);
-    } catch {
-      return undefined;
-    }
+    return this._imodel.elements.tryGetElement<DefinitionPartition>(code);
   }
 
   private insertDefinitionModel(definitionPartition: DefinitionPartition): DefinitionModel {
