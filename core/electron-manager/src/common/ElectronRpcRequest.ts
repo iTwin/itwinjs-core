@@ -6,7 +6,7 @@
 import { RpcProtocolEvent, RpcRequest, RpcRequestFulfillment } from "@bentley/imodeljs-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
-/** @beta */
+/** @internal */
 export class ElectronRpcRequest extends RpcRequest {
   private _res: (value: number) => void = () => undefined;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;
