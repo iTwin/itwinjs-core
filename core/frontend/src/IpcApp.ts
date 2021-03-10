@@ -7,8 +7,8 @@
  */
 
 import {
-  BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
-  RemoveFunction,
+  BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
+  iTwinChannel, RemoveFunction,
 } from "@bentley/imodeljs-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
@@ -33,8 +33,7 @@ export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any
  * @beta
  */
 export interface IpcAppOptions {
-  /** The platform-specific implementation of the [IpcSocketFrontend]($common) interface */
-  ipc: IpcSocketFrontend;
+  iModelApp?: IModelAppOptions;
 }
 
 /**
@@ -109,8 +108,11 @@ export class IpcApp {
    */
   public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
-    if (undefined !== retVal.error)
-      throw new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
+    if (undefined !== retVal.error) {
+      const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
+      err.stack = retVal.error.stack;
+      throw err;
+    }
     return retVal.result;
   }
 
@@ -118,8 +120,9 @@ export class IpcApp {
     return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
-  public static async startup(opts?: { ipcApp?: IpcAppOptions, iModelApp?: IModelAppOptions }) {
-    this._ipc = opts?.ipcApp?.ipc;
+  public static async startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions) {
+    this._ipc = ipc;
+    IpcAppNotifyHandler.register(); // receives notifications from backend
     await IModelApp.startup(opts?.iModelApp);
   }
 
@@ -165,4 +168,10 @@ export abstract class NotificationHandler {
   public static register(): RemoveFunction {
     return (new (this as any)() as NotificationHandler).registerImpl(); // create an instance of subclass. "as any" is necessary because base class is abstract
   }
+}
+
+/** IpcApp notifications from backend */
+class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotifications {
+  public get channelName() { return IpcAppChannel.AppNotify; }
+  public notifyApp() { }
 }

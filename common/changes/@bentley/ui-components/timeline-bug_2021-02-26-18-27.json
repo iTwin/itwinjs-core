@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Fix bug in TimelineComponent's componentDidUpdate method that caused and infinite loop.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}

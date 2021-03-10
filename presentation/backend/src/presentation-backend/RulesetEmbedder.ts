@@ -139,7 +139,7 @@ export class RulesetEmbedder {
     if (undefined === subject)
       return undefined;
 
-    return this._imodel.elements.getElement(DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName));
+    return this._imodel.elements.tryGetElement<DefinitionPartition>(DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName));
   }
 
   private querySubject(): DefinitionPartition | undefined {
@@ -151,7 +151,7 @@ export class RulesetEmbedder {
       value: this._rulesetSubjectName,
     });
 
-    return this._imodel.elements.tryGetElement<DefinitionElement>(code);
+    return this._imodel.elements.tryGetElement<DefinitionPartition>(code);
   }
 
   private insertDefinitionModel(definitionPartition: DefinitionPartition): DefinitionModel {

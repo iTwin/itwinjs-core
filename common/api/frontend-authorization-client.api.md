@@ -54,15 +54,15 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     protected _onUserLoaded: (user: User) => void;
     protected _onUserSignedOut: () => void;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     // (undocumented)
     protected _onUserStateChanged: (user: User | undefined) => void;
     protected _onUserUnloaded: () => void;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signIn(requestContext?: ClientRequestContext): Promise<void>;
     signInPopup(requestContext: ClientRequestContext): Promise<void>;
     signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
     signInSilent(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext?: ClientRequestContext): Promise<void>;
     // (undocumented)
     signOutPopup(requestContext: ClientRequestContext): Promise<void>;
     // (undocumented)
@@ -81,10 +81,10 @@ export interface BrowserAuthorizationClientConfiguration {
 
 // @beta (undocumented)
 export interface FrontendAuthorizationClient extends AuthorizationClient {
-    hasSignedIn: boolean;
+    readonly hasSignedIn: boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
+    signIn(requestContext?: ClientRequestContext): Promise<void>;
+    signOut(requestContext?: ClientRequestContext): Promise<void>;
 }
 
 // @beta

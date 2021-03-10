@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelConnection, InteractiveEditingSession } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 export function setTitle(imodel: IModelConnection) {
   let prefix = "";
   if (OpenMode.ReadWrite === imodel.openMode && imodel.isBriefcaseConnection())
-    prefix = undefined !== InteractiveEditingSession.get(imodel) ? "[ EDIT ] " : "[ R/W ] ";
+    prefix = imodel.editingSession ? "[ EDIT ] " : "[ R/W ] ";
 
   document.title = `${prefix}${imodel.key} - Display Test App`;
 }

@@ -66,6 +66,7 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
     return this._divElement.current;
   }
 
+  // istanbul ignore next
   public get hasFocus(): boolean {
     let containsFocus = false;
     // istanbul ignore else

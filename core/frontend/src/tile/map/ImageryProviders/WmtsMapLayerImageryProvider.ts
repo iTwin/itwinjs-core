@@ -9,6 +9,7 @@ import { IModelStatus } from "@bentley/bentleyjs-core";
 import { MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
 import {
   MapLayerImageryProvider,
+  MapLayerImageryProviderStatus,
   WmsUtilities, WmtsCapabilities, WmtsCapability,
 } from "../../internal";
 
@@ -36,8 +37,15 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       if (this._preferredLayerTileMatrixSet.size === 0 || this._preferredLayerStyle.size === 0)
         throw new ServerError(IModelStatus.ValidationFailed, "");
 
-    } catch (_error) {
-      throw new ServerError(IModelStatus.ValidationFailed, "");
+    } catch (error) {
+      // Don't throw error if unauthorized status:
+      // We want the tile tree to be created, so that end-user can get feedback on which layer is missing credentials.
+      // When credentials will be provided, a new provider will be created, and initialization should be fine.
+      if (error?.status === 401) {
+        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
+      } else {
+        throw new ServerError(IModelStatus.ValidationFailed, "");
+      }
     }
 
   }
