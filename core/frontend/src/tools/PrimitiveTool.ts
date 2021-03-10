@@ -194,9 +194,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
   /** If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool name as the undo string. */
   public async saveChanges(): Promise<void> {
-    const iModel = this.iModel;
-    // eslint-disable-next-line deprecation/deprecation
-    if (iModel.isBriefcaseConnection())
-      return iModel.saveChanges(this.toolId);
+    if (this.iModel.isBriefcaseConnection())
+      return this.iModel.saveChanges(this.toolId);
   }
 }
