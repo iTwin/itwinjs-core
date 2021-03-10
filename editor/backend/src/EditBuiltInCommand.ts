@@ -7,7 +7,7 @@
  */
 
 import { CompressedId64Set, IModelStatus } from "@bentley/bentleyjs-core";
-import { Matrix3dProps, Transform, TransformProps } from "@bentley/geometry-core";
+import { Matrix3d, Matrix3dProps, Point3d, Transform, TransformProps } from "@bentley/geometry-core";
 import { GeometricElement, IModelDb } from "@bentley/imodeljs-backend";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 import { EditCommand } from "./EditCommand";
@@ -41,7 +41,22 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     return IModelStatus.Success;
   }
 
-  public async rotatePlacement(_ids: CompressedId64Set, _matrix: Matrix3dProps, _aboutCenter: boolean): Promise<IModelStatus> {
-    return IModelStatus.NotEnabled;
+  public async rotatePlacement(ids: CompressedId64Set, matrixProps: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus> {
+    const matrix = Matrix3d.fromJSON(matrixProps);
+
+    for (const id of CompressedId64Set.iterable(ids)) {
+      const element = this.iModel.elements.getElement<GeometricElement>(id);
+
+      if (!element.placement.isValid)
+        continue; // Ignore assembly parents w/o geometry, etc...
+
+      const fixedPoint = aboutCenter ? element.placement.calculateRange().center : Point3d.createFrom(element.placement.origin);
+      const transform = Transform.createFixedPointAndMatrix(fixedPoint, matrix);
+
+      element.placement.multiplyTransform(transform);
+      this.iModel.elements.updateElement(element);
+    }
+
+    return IModelStatus.Success;
   }
 }

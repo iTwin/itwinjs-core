@@ -28,6 +28,7 @@ import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
+import { BrowserAuthorizationClientConfiguration } from '@bentley/frontend-authorization-client';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
 import { Capabilities } from '@bentley/webgl-compatibility';
@@ -51,7 +52,6 @@ import { ContentIdProvider } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { CurvePrimitive } from '@bentley/geometry-core';
-import { DesktopAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { DevToolsStatsOptions } from '@bentley/imodeljs-common';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogItemValue } from '@bentley/ui-abstract';
@@ -138,6 +138,7 @@ import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
+import { IModelVersionProps } from '@bentley/imodeljs-common';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
@@ -175,6 +176,7 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
+import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { NativeAppFunctions } from '@bentley/imodeljs-common';
 import { ObservableSet } from '@bentley/bentleyjs-core';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
@@ -236,6 +238,7 @@ import { RgbColor } from '@bentley/imodeljs-common';
 import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
 import { SectionDrawingViewProps } from '@bentley/imodeljs-common';
+import { SessionProps } from '@bentley/bentleyjs-core';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SilhouetteEdgeArgs } from '@bentley/imodeljs-common';
@@ -1607,8 +1610,12 @@ export interface BlankConnectionProps {
 
 // @public
 export class BriefcaseConnection extends IModelConnection {
+    // @beta
+    beginEditingSession(): Promise<InteractiveEditingSession>;
     close(): Promise<void>;
     get contextId(): GuidString;
+    // @beta
+    get editingSession(): InteractiveEditingSession | undefined;
     // @beta (undocumented)
     hasPendingTxns(): Promise<boolean>;
     get iModelId(): GuidString;
@@ -1620,12 +1627,14 @@ export class BriefcaseConnection extends IModelConnection {
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
     // @internal
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
-    // @beta (undocumented)
-    pullAndMergeChanges(): Promise<IModelConnectionProps>;
-    // @beta (undocumented)
-    pushChanges(description: string): Promise<IModelConnectionProps>;
+    // @beta
+    pullAndMergeChanges(version?: IModelVersionProps): Promise<void>;
+    // @beta
+    pushChanges(description: string): Promise<string>;
     // @beta (undocumented)
     saveChanges(description?: string): Promise<void>;
+    // @beta
+    supportsInteractiveEditing(): Promise<boolean>;
 }
 
 // @beta
@@ -2202,19 +2211,6 @@ export interface DepthRangeNpc {
     minimum: number;
 }
 
-// @alpha
-export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: DesktopAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-}
-
 // @internal
 export class DevTools {
     static connectToBackendInstance(tokenProps: IModelRpcProps): DevTools;
@@ -2425,12 +2421,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get wantShadows(): boolean;
 }
 
-// @alpha
-export interface DownloadBriefcaseOptions {
-    // (undocumented)
+// @beta
+export type DownloadBriefcaseId = {
+    syncMode?: SyncMode;
+    briefcaseId?: never;
+} | {
+    briefcaseId: number;
+    syncMode?: never;
+};
+
+// @beta
+export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
     fileName?: string;
-    syncMode: SyncMode;
-}
+    progressInterval?: number;
+};
 
 // @alpha
 export interface DrawClipOptions {
@@ -2517,9 +2521,6 @@ export class DynamicsContext extends RenderContext {
     // @internal (undocumented)
     changeDynamics(): void;
     }
-
-// @alpha (undocumented)
-export type EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection;
 
 // @alpha @deprecated
 export class EditingFunctions {
@@ -4680,23 +4681,24 @@ export interface InstancedGraphicParams {
     readonly transforms: Float32Array;
 }
 
-// @alpha
+// @beta
 export class InteractiveEditingSession extends BriefcaseNotificationHandler implements IModelChangeNotifications {
-    static begin(imodel: EditableConnection): Promise<InteractiveEditingSession>;
+    // @internal
+    static begin(imodel: BriefcaseConnection): Promise<InteractiveEditingSession>;
     // (undocumented)
     get briefcaseChannelName(): IpcAppChannel;
     end(): Promise<void>;
-    static get(imodel: IModelConnection): InteractiveEditingSession | undefined;
     getGeometryChanges(): Iterable<ModelGeometryChanges>;
     getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined;
-    readonly iModel: EditableConnection;
-    static isSupported(imodel: EditableConnection): Promise<boolean>;
+    readonly iModel: BriefcaseConnection;
+    // @internal (undocumented)
+    get isDisposed(): boolean;
     // @internal (undocumented)
     notifyElementsChanged(changed: ElementsChanged): void;
     // @internal (undocumented)
     notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
     static readonly onBegin: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onElementChanges: BeEvent<(changes: ElementsChanged, iModel: EditableConnection) => void>;
+    readonly onElementChanges: BeEvent<(changes: ElementsChanged, iModel: BriefcaseConnection) => void>;
     readonly onEnded: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onEnding: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>;
@@ -4790,15 +4792,13 @@ export class IpcApp {
     // (undocumented)
     static shutdown(): Promise<void>;
     // (undocumented)
-    static startup(opts?: {
-        ipcApp?: IpcAppOptions;
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    static startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions): Promise<void>;
 }
 
 // @beta
 export interface IpcAppOptions {
-    ipc: IpcSocketFrontend;
+    // (undocumented)
+    iModelApp?: IModelAppOptions;
 }
 
 // @alpha
@@ -4868,13 +4868,15 @@ export interface LoadedExtensionProps {
 // @internal
 export class LocalhostIpcApp {
     // (undocumented)
-    static startup(opts: {
-        localhostIpcApp?: {
-            socketPort?: number;
-        };
-        webViewerApp: WebViewerAppOptions;
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    static startup(opts: LocalHostIpcAppOpts): Promise<void>;
+}
+
+// @internal (undocumented)
+export interface LocalHostIpcAppOpts extends WebViewerAppOpts {
+    // (undocumented)
+    localhostIpcApp?: {
+        socketPort?: number;
+    };
 }
 
 // @public
@@ -6353,11 +6355,6 @@ export class NativeApp {
     static get isValid(): boolean;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
-    // (undocumented)
-    static onUserStateChanged: BeEvent<(_arg: {
-        accessToken: any;
-        err?: string;
-    }) => void>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
@@ -6366,11 +6363,25 @@ export class NativeApp {
     // (undocumented)
     static shutdown(): Promise<void>;
     // @internal
-    static startup(opts: {
-        ipcApp?: IpcAppOptions;
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    static startup(ipc: IpcSocketFrontend, opts?: NativeAppOpts): Promise<void>;
     }
+
+// @alpha
+export class NativeAppAuthorization {
+    constructor(config: NativeAppAuthorizationConfiguration);
+    // (undocumented)
+    protected _expireSafety: number;
+    getAccessToken(): Promise<AccessToken>;
+    // (undocumented)
+    get hasSignedIn(): boolean;
+    initialize(props: SessionProps): Promise<void>;
+    // (undocumented)
+    get isAuthorized(): boolean;
+    // (undocumented)
+    readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
+    signIn(): Promise<void>;
+    signOut(): Promise<void>;
+}
 
 // @internal
 export class NativeAppLogger {
@@ -6387,6 +6398,14 @@ export class NativeAppLogger {
     // (undocumented)
     static logWarning(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
     }
+
+// @alpha
+export interface NativeAppOpts extends IpcAppOptions {
+    // (undocumented)
+    nativeApp?: {
+        authConfig?: NativeAppAuthorizationConfiguration;
+    };
+}
 
 // @internal
 export class NoRenderApp {
@@ -6572,9 +6591,9 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
     initialize(requestContext: FrontendRequestContext): Promise<void>;
     get isAuthorized(): boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
+    signIn(requestContext?: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
     protected signInSilent(requestContext: ClientRequestContext): Promise<User>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext?: ClientRequestContext): Promise<void>;
     }
 
 // @internal
@@ -6983,7 +7002,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     exitTool(): void;
     getPrompt(): string;
     // @internal
-    get iModel(): EditableConnection;
+    get iModel(): BriefcaseConnection;
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     onRedoPreviousStep(): Promise<boolean>;
@@ -12886,18 +12905,19 @@ export class WebViewerApp {
     // (undocumented)
     static shutdown(): Promise<void>;
     // (undocumented)
-    static startup(opts: {
-        webViewerApp: WebViewerAppOptions;
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    static startup(opts: WebViewerAppOpts): Promise<void>;
 }
 
 // @beta
-export interface WebViewerAppOptions {
+export interface WebViewerAppOpts {
     // (undocumented)
-    routing?: RpcRoutingToken;
+    iModelApp?: IModelAppOptions;
     // (undocumented)
-    rpcParams: BentleyCloudRpcParams;
+    webViewerApp: {
+        rpcParams: BentleyCloudRpcParams;
+        routing?: RpcRoutingToken;
+        authConfig?: BrowserAuthorizationClientConfiguration;
+    };
 }
 
 // @internal

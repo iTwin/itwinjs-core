@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/electron-manager",
+      "comment": "rework Authentication to use IpcHost",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/electron-manager",
+  "email": "33296803+kabentley@users.noreply.github.com"
+}

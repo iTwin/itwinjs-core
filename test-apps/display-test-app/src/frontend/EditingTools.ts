@@ -11,7 +11,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d,
-  EventHandled, GraphicType, HitDetail, IModelApp, InteractiveEditingSession, PrimitiveTool, Tool,
+  EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, Tool,
 } from "@bentley/imodeljs-frontend";
 import { setTitle } from "./Title";
 
@@ -34,11 +34,11 @@ export class EditingSessionTool extends Tool {
     if (!imodel || !imodel.isBriefcaseConnection())
       return;
 
-    const session = InteractiveEditingSession.get(imodel);
+    const session = imodel.editingSession;
     if (session)
       await session.end();
     else
-      await InteractiveEditingSession.begin(imodel);
+      await imodel.beginEditingSession();
 
     setTitle(imodel);
   }
