@@ -2,12 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  Schema,
-  SchemaContext,
-  SchemaItemKey,
-  SchemaKey,
-} from "../../src/ecschema-metadata";
+import { SchemaContext } from "../../src/ecschema-metadata";
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
@@ -46,10 +41,12 @@ describe("A unit tree creator", () => {
   testData.forEach((test: TestData) => {
     it(`should convert ${test.From} to ${test.To}`, async () => {
       const converter = new UnitConvertorContext(context);
-      const schemaKey = new SchemaKey("Units");
-      const from = new SchemaItemKey(test.From, schemaKey);
-      const to = new SchemaItemKey(test.To, schemaKey);
-      const map = await converter.processSchemaItem(from, to);
+      const map = await converter.findConversion(
+        test.From,
+        test.To,
+        "Units",
+        "Units"
+      );
       const actual = map.evaluate(test.Input);
       const ulp = Float.ulp(Math.max(test.Input, test.Expect));
       expect(

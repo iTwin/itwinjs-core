@@ -32,6 +32,7 @@ interface OutEdgesMap {
   };
 }
 
+/** @internal */
 export class Graph<T> {
   private _edgeKeyDelim = "\x01";
   private _label = "";

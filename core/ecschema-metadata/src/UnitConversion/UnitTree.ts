@@ -25,6 +25,7 @@ export class GraphUtils {
    * @param keyFrom Get key from label
    * @param op Reducing function
    * @param initial Initial label
+   * @internal
    */
   public static dfsReduce<T>(
     _graph: Graph<Unit | Constant>,
@@ -48,40 +49,45 @@ export class GraphUtils {
 export class UnitGraph {
   private _graph = new Graph<Unit | Constant>();
 
+  /** @internal */
   constructor(private _context: SchemaContext) {
     this._graph.setGraph("Unit tree processor");
   }
 
-  public get length(): number {
-    return this._graph.nodeCount();
-  }
-
+  /**
+   * Tries to find the unit/constant given by name in currentSchema
+   * @param name schemaItem name/parsed definition to find unit of; could be {schemaName}:{schemaItemName} or {alias}:{schemaItemName} or {schemaItemName}
+   * @param currentSchema schema to find name in; name could also be in a referenced schema of current schema
+   * @internal
+   */
   public async resolveUnit(
     name: string,
-    defaultSchema: Schema
+    currentSchema: Schema
   ): Promise<Unit | Constant> {
-    const nameArr = SchemaItem.parseFullName(name);
-    if (nameArr[0] !== "") {
-      // Check if it is alias or schemaName
-      const ref = defaultSchema.getReferenceSync(nameArr[0]);
-      const refName = defaultSchema.getReferenceNameByAlias(nameArr[0]);
+    let [schemaName] = SchemaItem.parseFullName(name);
+    const [, schemaItemName] = SchemaItem.parseFullName(name);
+
+    if (schemaName !== "") {
+      // Check if schemaName is schemaName or alias
+      const ref = currentSchema.getReferenceSync(schemaName);
+      const refName = currentSchema.getReferenceNameByAlias(schemaName);
       if (ref) {
         // Got schema by schemaName
-        nameArr[0] = ref.name;
+        schemaName = ref.name;
       } else if (refName) {
         // Got schema by alias
-        nameArr[0] = refName;
+        schemaName = refName;
       } else {
         // Didn't match any referenced schema, check if it is current schemaName or alias
         if (
-          nameArr[0] === defaultSchema.name ||
-          nameArr[0] === defaultSchema.alias
+          schemaName === currentSchema.name ||
+          schemaName === currentSchema.alias
         )
-          nameArr[0] = defaultSchema.name;
+          schemaName = currentSchema.name;
       }
 
       // Create schema key with schema name
-      const schemaKey = new SchemaKey(nameArr[0]);
+      const schemaKey = new SchemaKey(schemaName);
       // Get schema with schema key
       const schema = await this._context.getSchema(schemaKey);
       if (!schema) {
@@ -89,17 +95,19 @@ export class UnitGraph {
           BentleyStatus.ERROR,
           "Cannot find schema",
           () => {
-            return { schema: nameArr[0] };
+            return { schema: schemaName };
           }
         );
       } else {
-        defaultSchema = schema;
+        // Set currentSchema to look up schemaItem to be whatever is prefixed in name
+        currentSchema = schema;
       }
-      name = nameArr[1];
+      // Update name to not have prefix
+      name = schemaItemName;
     }
 
     // Create schema item key with name and schema
-    const itemKey = new SchemaItemKey(name, defaultSchema.schemaKey);
+    const itemKey = new SchemaItemKey(name, currentSchema.schemaKey);
     // Get schema item with schema item key
     const item = await this._context.getSchemaItem(itemKey);
     if (!item)
@@ -125,6 +133,11 @@ export class UnitGraph {
     );
   }
 
+  /**
+   * Adds unit and corresponding children to graph as well as edges between units
+   * @param unit current unit to be added to graph
+   * @internal
+   */
   public async addUnit(unit: Unit | Constant): Promise<void> {
     if (this._graph.hasNode(unit.key.fullName)) return;
 
@@ -145,6 +158,7 @@ export class UnitGraph {
 
     const children = resolved.map(async ([u, def]) => {
       await this.addUnit(u);
+      // console.log(unit.key.fullName, u.key.fullName, def.exponent);
       this._graph.setEdge(unit.key.fullName, u.key.fullName, {
         exponent: def.exponent,
       });
@@ -153,6 +167,7 @@ export class UnitGraph {
     await Promise.all(children);
   }
 
+  /** @internal */
   private isIdentity(unit: Unit | Constant) {
     return unit.definition === unit.name;
   }
@@ -175,9 +190,11 @@ export class UnitGraph {
       (c) => !stopNodes.has(c),
       innerMapStore
     );
+    // console.log(unitFullName, innerMapStore);
     return outerMapStore;
   }
 
+  /** @internal */
   private reducingFunction(
     stopNodes: Set<string>,
     innermapStore: Map<string, UnitConversion>,
