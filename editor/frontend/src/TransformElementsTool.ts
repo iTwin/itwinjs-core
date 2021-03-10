@@ -115,7 +115,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
     try {
       this._startedCmd = await this.startCommand();
       if (IModelStatus.Success === await TransformElementsTool.callCommand("transformPlacement", this.agenda.compressIds(), transform.toJSON()))
-        await this.iModel.saveChanges();
+        await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
