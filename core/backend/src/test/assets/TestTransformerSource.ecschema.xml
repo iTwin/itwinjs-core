@@ -9,6 +9,8 @@
         <ECProperty propertyName="SourceString" typeName="string" description="A string property that only exists in the source schema but should be remapped"/>
         <ECProperty propertyName="CommonDouble" typeName="double" description="A double property that exists in both schemas"/>
         <ECProperty propertyName="SourceDouble" typeName="double" description="A double property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="CommonBinary" typeName="binary" description="A binary property that exists in both schemas"/>
+        <ECProperty propertyName="SourceBinary" typeName="binary" description="A binary property that only exists in the source schema but should be remapped"/>
         <ECNavigationProperty propertyName="SourceNavigation" relationshipName="SourcePhysicalElementUsesSourceDefinition" direction="Forward" description="A NavigationProperty that only exists in the source schema but should be remapped"/>
         <ECNavigationProperty propertyName="CommonNavigation" relationshipName="SourcePhysicalElementUsesCommonDefinition" direction="Forward" description="A NavigationProperty that exists in both schemas"/>
         <ECProperty propertyName="ExtraString" typeName="string" description="A string property that only exists in the source schema and should be dropped"/>
@@ -32,7 +34,7 @@
         </Target>
     </ECRelationshipClass>
 
-    <ECRelationshipClass typeName="SourceRelToExclude" strength="referencing" modifier="None" description="For testing relationship exclusion by class." >
+    <ECRelationshipClass typeName="SourceRelToExclude" strength="referencing" modifier="None" description="For testing relationship exclusion by class.">
         <BaseClass>bis:ElementRefersToElements</BaseClass>
         <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
             <Class class="bis:Element"/>
@@ -42,7 +44,7 @@
         </Target>
     </ECRelationshipClass>
 
-    <ECRelationshipClass typeName="SourceRelWithProps" strength="referencing" modifier="None" description="For testing relationship property remapping." >
+    <ECRelationshipClass typeName="SourceRelWithProps" strength="referencing" modifier="None" description="For testing relationship property remapping.">
         <BaseClass>bis:ElementRefersToElements</BaseClass>
         <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
             <Class class="bis:Element"/>
