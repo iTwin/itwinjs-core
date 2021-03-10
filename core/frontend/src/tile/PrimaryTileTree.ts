@@ -227,7 +227,7 @@ class PrimaryTreeReference extends TileTreeReference {
 
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this.view, this._id.modelId, this._id.treeId.animationTransformNodeId);
-    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || this._forceNoInstancing !== this._id.forceNoInstancing) {
       console.log(`PrimaryTreeReference treeOwner   this._forceNoInstancing ${this._forceNoInstancing}`);
       this._id = {
         modelId: this._id.modelId,
