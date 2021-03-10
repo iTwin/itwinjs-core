@@ -9,8 +9,6 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { BriefcaseConnection } from "../BriefcaseConnection";
-import { RemoteBriefcaseConnection } from "../CheckpointConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { Viewport } from "../Viewport";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
@@ -198,7 +196,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public async saveChanges(): Promise<void> {
     const iModel = this.iModel;
     // eslint-disable-next-line deprecation/deprecation
-    if (iModel instanceof BriefcaseConnection || iModel instanceof RemoteBriefcaseConnection)
+    if (iModel.isBriefcaseConnection())
       return iModel.saveChanges(this.toolId);
   }
 }
