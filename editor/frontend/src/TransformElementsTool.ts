@@ -339,7 +339,7 @@ export class RotateElementsTool extends TransformElementsTool {
     try {
       this._startedCmd = await this.startCommand();
       if (IModelStatus.Success === await TransformElementsTool.callCommand("rotatePlacement", this.agenda.compressIds(), transform.matrix.toJSON(), RotateAbout.Center === this.rotateAbout))
-        await this.iModel.saveChanges();
+        await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
