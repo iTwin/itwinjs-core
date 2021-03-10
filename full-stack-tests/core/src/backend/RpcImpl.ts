@@ -2,9 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AzCopyFileHandler } from "@bentley/backend-itwin-client";
 import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
-import { IModelBankClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
 import {
   BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs,
 } from "@bentley/imodeljs-backend";
