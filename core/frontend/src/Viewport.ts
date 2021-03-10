@@ -309,6 +309,7 @@ export abstract class Viewport implements IDisposable {
   }
   /** @internal */
   public invalidateScene(): void {
+    console.log(`invalidating Scene...`);
     this._sceneValid = false;
     this._timePointValid = false;
     this.invalidateDecorations();
@@ -316,6 +317,7 @@ export abstract class Viewport implements IDisposable {
   }
   /** @internal */
   public invalidateRenderPlan(): void {
+    console.log(`invalidating RenderPlan...`);
     this._renderPlanValid = false;
     this.invalidateScene();
   }
@@ -2398,8 +2400,10 @@ export abstract class Viewport implements IDisposable {
 
       // If this is a plan projection model, invert the elevation applied to its display transform.
       const modelId = pixels.getPixel(x, y).featureTable?.modelId;
-      if (undefined !== modelId)
+      if (undefined !== modelId) {
         npc.z -= this.view.getModelElevation(modelId);
+        this.transformByModelDisplayTransform(modelId, npc, true);
+      }
     }
 
     return npc;
@@ -2469,6 +2473,28 @@ export abstract class Viewport implements IDisposable {
    */
   public setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void {
     this.view.modelDisplayTransformProvider = provider;
+  }
+
+  /** @internal */
+  public transformByModelDisplayTransform(modelId: string | undefined, pnt: Point3d, inverse: boolean): void {
+    if (undefined !== modelId && undefined !== this.view.modelDisplayTransformProvider) {
+      const transform = this.view.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
+      const newPnt = inverse ? transform.multiplyInversePoint3d(pnt) : transform.multiplyPoint3d(pnt);
+      if (undefined !== newPnt)
+        pnt.set(newPnt.x, newPnt.y, newPnt.z);
+    }
+  }
+
+  /** @internal */
+  public transformNormalByModelDisplayTransform(modelId: string | undefined, normal: Vector3d): void {
+    if (undefined !== modelId && undefined !== this.view.modelDisplayTransformProvider) {
+      const transform = this.view.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
+      const newVec = transform.matrix.multiplyInverse(normal);
+      if (undefined !== newVec) {
+        newVec.normalizeInPlace();
+        normal.set(newVec.x, newVec.y, newVec.z);
+      }
+    }
   }
 
   /** An ordered list of names of screen-space post-processing effects to be applied to the image rendered by the Viewport.
@@ -2769,6 +2795,9 @@ export class ScreenViewport extends Viewport {
     return result;
   }
 
+  /** @internal */
+  public picker = new ElementPicker();
+
   /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
    * If no geometry is selected, return the point projected to the most appropriate reference plane.
    * @param pickPoint Point to search about, in world coordinates
@@ -2785,14 +2814,14 @@ export class ScreenViewport extends Viewport {
     if (undefined === radius)
       radius = this.pixelsFromInches(ToolSettings.viewToolPickRadiusInches);
 
-    const picker = new ElementPicker();
+    this.picker.empty();
     const locateOpts = new LocateOptions();
     locateOpts.allowNonLocatable = (undefined === options || !options.excludeNonLocatable);
     locateOpts.allowDecorations = (undefined === options || !options.excludeDecorations);
     locateOpts.allowExternalIModels = (undefined === options || !options.excludeExternalIModels);
 
-    if (0 !== picker.doPick(this, pickPoint, radius, locateOpts)) {
-      const hitDetail = picker.getHit(0)!;
+    if (0 !== this.picker.doPick(this, pickPoint, radius, locateOpts)) {
+      const hitDetail = this.picker.getHit(0)!;
       const hitPoint = hitDetail.getPoint();
       if (hitDetail.isModelHit)
         return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!, source: DepthPointSource.Model, sourceId: hitDetail.sourceId };
