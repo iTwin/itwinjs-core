@@ -4,12 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 // Following https://github.com/dagrejs/graphlib/blob/master/lib/graph.js
 
-// Using generics - T represents Unit | Constant in our use case
+/**
+ * Using generics for nodes - T represents Unit | Constant in our use case
+ * @internal
+ */
 interface NodesMap<T> {
   [node: string]: T;
 }
 
-// Describe an edge based on its node endpoints (v, w)
+/**
+ * Describe edges based on its node endpoints (v, w)
+ * @internal
+ */
 interface EdgeObjsMap {
   [edge: string]: {
     v: string;
@@ -17,12 +23,18 @@ interface EdgeObjsMap {
   };
 }
 
-// Describe an edge based on the exponent it carries
+/**
+ * Describe edges based on the exponent they carry
+ * @internal
+ */
 interface EdgeLabelsMap {
   [edge: string]: { exponent: number };
 }
 
-// Describe the outedges of outer map of nodes; each has an inner map of outedges
+/**
+ * List each node with outgoing edges in outer map; describe each node's outgoing edges in inner map
+ * @internal
+ */
 interface OutEdgesMap {
   [node: string]: {
     [edges: string]: {
@@ -97,7 +109,8 @@ export class Graph<T> {
     const edgeId = v + this._edgeKeyDelim + w + this._edgeKeyDelim;
     if (edgeId in this._edgeLabels) {
       // this._edgeLabels[edgeId] = value;
-      this._edgeLabels[edgeId].exponent += value.exponent; // Update exponent, specific to this graph's use case
+      // Update exponent, specific to this graph's use case
+      this._edgeLabels[edgeId].exponent += value.exponent;
       return;
     }
 

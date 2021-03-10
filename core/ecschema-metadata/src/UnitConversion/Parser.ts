@@ -12,6 +12,7 @@ enum Tokens {
   Exponent = 3,
 }
 
+/** @internal */
 export interface DefinitionFragment {
   name: string;
   exponent: number;
@@ -19,18 +20,14 @@ export interface DefinitionFragment {
 }
 
 /** @internal */
-export function parseDefinition(
-  definition: string
-): Map<string, DefinitionFragment> {
+export function parseDefinition(definition: string): Map<string, DefinitionFragment> {
   const unitMap: Map<string, DefinitionFragment> = new Map();
 
   if (expressionRgx.test(definition)) {
     for (const unit of definition.split(sp)) {
       const tokens = unit.split(tokenRgx);
       const name = tokens[Tokens.Word];
-      const exponent = tokens[Tokens.Exponent]
-        ? Number(tokens[Tokens.Exponent])
-        : 1;
+      const exponent = tokens[Tokens.Exponent] ? Number(tokens[Tokens.Exponent]) : 1;
       const constant = tokens[Tokens.Bracket] !== undefined;
       if (unitMap.has(name)) {
         const currentDefinition = unitMap.get(name)!;

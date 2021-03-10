@@ -6,31 +6,23 @@ import { Constant, Unit } from "../ecschema-metadata";
 import { SchemaItemType } from "../ECObjects";
 import { Float } from "./Float";
 
+/** @alpha */
 export class UnitConversion {
   /** @internal */
-  constructor(
-    public readonly factor: number = 1.0,
-    public readonly offset: number = 0.0
-  ) {}
+  constructor(public readonly factor: number = 1.0, public readonly offset: number = 0.0) {}
 
-  /** @alpha */
   public evaluate(x: number): number {
     return this.factor * x + this.offset;
   }
 
   /** @internal */
   public inverse(): UnitConversion {
-    // y = mx + c
-    // => x = (y-c)/m
     const inverseSlope = 1.0 / this.factor;
     return new UnitConversion(inverseSlope, -this.offset * inverseSlope);
   }
 
   /** @internal */
   public compose(map: UnitConversion): UnitConversion {
-    // map  === z = py + q
-    // this === y = mx + c
-    // result === z = p(mx + c) + q === z = pm x + (pc + q)
     return new UnitConversion(
       this.factor * map.factor,
       map.factor * this.offset + map.offset
@@ -72,12 +64,9 @@ export class UnitConversion {
 
   /** @internal */
   public static from(unit: Unit | Constant): UnitConversion {
-    if (unit.schemaItemType === SchemaItemType.Unit) {
-      return new UnitConversion(
-        unit.denominator / unit.numerator,
-        -unit.offset
-      );
-    }
+    if (unit.schemaItemType === SchemaItemType.Unit)
+      return new UnitConversion(unit.denominator / unit.numerator, -unit.offset);
+
     return new UnitConversion(unit.denominator / unit.numerator, 0.0);
   }
 }

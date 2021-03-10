@@ -5,38 +5,15 @@
 
     <UnitSystem typeName="USSURVEY" />
     <UnitSystem typeName="USCUSTOM" />
-    <UnitSystem typeName="INTERNATIONAL" />
 
     <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
     <Phenomenon typeName="AREA" definition="LENGTH(2)" displayLabel="Area" />
     <Phenomenon typeName="SLOPE" definition="LENGTH*LENGTH(-1)" displayLabel="Slope" />
     <Phenomenon typeName="TEMPERATURE" definition="TEMPERATURE" displayLabel="Temperature" />
-    <Phenomenon typeName="NUMBER" definition="NUMBER" displayLabel="Number" />
 
-    <Constant typeName="DECI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-1" displayLabel="deci"/>
-    <Constant typeName="CENTI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-2" displayLabel="centi"/>
-    <Constant typeName="MILLI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-3" displayLabel="milli"/>
-    <Constant typeName="MICRO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-6" displayLabel="micro"/>
-    <Constant typeName="NANO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-9" displayLabel="nano"/>
-    <Constant typeName="PICO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-12" displayLabel="pico"/>
-    <Constant typeName="FEMTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-15" displayLabel="femto"/>
-    <Constant typeName="ATTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-18" displayLabel="atto"/>
-    <Constant typeName="ZEPTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-21" displayLabel="zepto"/>
-    <Constant typeName="YOCTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-24" displayLabel="yocto"/>
-    <Constant typeName="DECA" phenomenon="NUMBER" definition="ONE" numerator="1.0e1"/>
-    <Constant typeName="HECTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e2" displayLabel="hecto"/>
-    <Constant typeName="KILO" phenomenon="NUMBER" definition="ONE" numerator="1.0e3" displayLabel="kilo"/>
-    <Constant typeName="MEGA" phenomenon="NUMBER" definition="ONE" numerator="1.0e6" displayLabel="mega"/>
-    <Constant typeName="GIGA" phenomenon="NUMBER" definition="ONE" numerator="1.0e9" displayLabel="giga"/>
-    <Constant typeName="TERA" phenomenon="NUMBER" definition="ONE" numerator="1.0e12" displayLabel="tera"/>
-    <Constant typeName="PETA" phenomenon="NUMBER" definition="ONE" numerator="1.0e15" displayLabel="peta"/>
-    <Constant typeName="EXA" phenomenon="NUMBER" definition="ONE" numerator="1.0e18" displayLabel="exa"/>
-    <Constant typeName="ZETTA" phenomenon="NUMBER" definition="ONE" numerator="1.0e21" displayLabel="zetta"/>
-    <Constant typeName="YOTTA" phenomenon="NUMBER" definition="ONE" numerator="1.0e24" displayLabel="yotta"/>
-
-    <Unit typeName="MILLIINCH" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="[MILLI]*IN" displayLabel="mil" />
-    <Unit typeName="MICROINCH" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="[MICRO]*IN" displayLabel="µin" />
-    <Unit typeName="MILLIFOOT" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="[MILLI]*FT" displayLabel="mft" />
+    <Unit typeName="MILLIINCH" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="[SIUnits:MILLI]*IN" displayLabel="mil" />
+    <Unit typeName="MICROINCH" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="[SIUnits:MICRO]*IN" displayLabel="µin" />
+    <Unit typeName="MILLIFOOT" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="[SIUnits:MILLI]*FT" displayLabel="mft" />
     <Unit typeName="IN" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="MetricUnits:MM" numerator="25.4" displayLabel="in" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix B. Section 3.1, Page B-10" />
     <Unit typeName="FT" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="IN" numerator="12.0" displayLabel="ft" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
     <Unit typeName="YRD" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="FT" numerator="3.0" displayLabel="yd" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
@@ -50,7 +27,7 @@
 
     <Unit typeName="SQ_IN" phenomenon="AREA" unitSystem="USCUSTOM" definition="USUnits:IN(2)" displayLabel="in²" />
     <Unit typeName="SQ_FT" phenomenon="AREA" unitSystem="USCUSTOM" definition="USUnits:FT(2)" displayLabel="ft²" />
-    <Unit typeName="THOUSAND_SQ_FT" phenomenon="AREA" unitSystem="USCUSTOM" definition="[KILO]*USUnits:FT(2)" displayLabel="thousand ft²" />
+    <Unit typeName="THOUSAND_SQ_FT" phenomenon="AREA" unitSystem="USCUSTOM" definition="[SIU:KILO]*USUnits:FT(2)" displayLabel="thousand ft²" />
     <Unit typeName="SQ_YRD" phenomenon="AREA" unitSystem="USCUSTOM" definition="USU:YRD(2)" displayLabel="yd²" />
     <Unit typeName="SQ_MILE" phenomenon="AREA" unitSystem="USCUSTOM" definition="USU:MILE(2)" displayLabel="mi²" />
     <Unit typeName="SQ_CHAIN" phenomenon="AREA" unitSystem="USCUSTOM" definition="USU:CHAIN(2)" displayLabel="chain²" />
@@ -62,7 +39,7 @@
     <Unit typeName="SQ_US_SURVEY_CHAIN" phenomenon="AREA" unitSystem="USSURVEY" definition="US_SURVEY_CHAIN(2)" displayLabel="chain² (US Survey)" />
     <Unit typeName="US_SURVEY_ACRE" phenomenon="AREA" unitSystem="USSURVEY" definition="US_SURVEY_CHAIN(2)" numerator="10.0" displayLabel="acre (US Survey)" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-9" />
 
-    <Unit typeName="FT_PER_THOUSAND_FOOT" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="USUnits:FT*[KILO](-1)*FT(-1)" displayLabel="ft/1000ft" />
+    <Unit typeName="FT_PER_THOUSAND_FOOT" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="USUnits:FT*[SIU:KILO](-1)*FT(-1)" displayLabel="ft/1000ft" />
     <Unit typeName="FT_PER_FT" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="USUnits:FT*FT(-1)" displayLabel="ft/ft" />
     <Unit typeName="IN_PER_FT" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="USU:IN*FT(-1)" displayLabel="in/ft" />
     <Unit typeName="FT_PER_IN" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="USU:FT*IN(-1)" displayLabel="ft/in" />
@@ -70,6 +47,4 @@
 
     <Unit typeName="FAHRENHEIT" phenomenon="TEMPERATURE" unitSystem="USCUSTOM" definition="MU:CELSIUS" numerator="5.0" denominator="9.0" offset="-32" displayLabel="°F" description="Factor is 5/9" />
     <Unit typeName="RANKINE" phenomenon="TEMPERATURE" unitSystem="USCUSTOM" definition="SIU:K" numerator="5.0" denominator="9.0" displayLabel="°R" description="Factor is 5/9" />
-
-    <Unit typeName="ONE" phenomenon="NUMBER" unitSystem="INTERNATIONAL" definition="ONE" displayLabel="one" />
 </ECSchema>

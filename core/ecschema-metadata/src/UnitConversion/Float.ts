@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { nextDown, nextUp } from "ulp";
 
+/** @internal */
 export class Float {
   public static ulp(l: number): number {
     const lup = nextUp(l);
@@ -11,11 +12,7 @@ export class Float {
     return lup - ldown;
   }
 
-  public static equals(
-    l: number,
-    m: number,
-    ulp: number | undefined = undefined
-  ): boolean {
+  public static equals(l: number, m: number, ulp: number | undefined = undefined): boolean {
     const ulpToUse = ulp ? ulp : Float.ulp(Math.max(l, m));
     return Math.abs(l - m) <= ulpToUse;
   }
