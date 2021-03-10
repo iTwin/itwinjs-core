@@ -158,7 +158,6 @@ export class UnitGraph {
 
     const children = resolved.map(async ([u, def]) => {
       await this.addUnit(u);
-      // console.log(unit.key.fullName, u.key.fullName, def.exponent);
       this._graph.setEdge(unit.key.fullName, u.key.fullName, {
         exponent: def.exponent,
       });
@@ -190,7 +189,6 @@ export class UnitGraph {
       (c) => !stopNodes.has(c),
       innerMapStore
     );
-    // console.log(unitFullName, innerMapStore);
     return outerMapStore;
   }
 
