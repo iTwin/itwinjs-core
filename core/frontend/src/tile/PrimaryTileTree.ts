@@ -31,6 +31,7 @@ interface PrimaryTreeId {
   readonly modelId: Id64String;
   readonly is3d: boolean;
   readonly isPlanProjection: boolean;
+  readonly forceNoInstancing: boolean;
 }
 
 class PlanProjectionTileTree extends IModelTileTree {
