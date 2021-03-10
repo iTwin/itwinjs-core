@@ -11,18 +11,9 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
 import { OptionType, Slider, ThemedSelect, ThemedSelectProps, Toggle } from "@bentley/ui-core";
-import { ColorTheme, FrameworkAccuDraw, ModalFrontstageInfo, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
+import { ColorTheme, FrameworkAccuDraw, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
 import { RootState, SampleAppActions, SampleAppIModelApp, SampleAppUiActionId } from "../..";
-
-/** Modal frontstage displaying the active settings.
- * @alpha
- */
-export class SettingsModalFrontstage implements ModalFrontstageInfo {
-  public title: string = UiFramework.i18n.translate("SampleApp:settingsStage.settings");
-  public get content(): React.ReactNode { return (<SettingsPage />); }
-}
-
-interface SettingsPageProps {
+interface UiSettingsPageProps {
   dragInteraction: boolean;
   onToggleDragInteraction: () => void;
   frameworkVersion: string;
@@ -35,8 +26,8 @@ function isOptionType(value: OptionType | ReadonlyArray<OptionType>): value is O
   return true;
 }
 
-/** SettingsPage displaying the active settings. */
-class SettingsPageComponent extends React.Component<SettingsPageProps> {
+/** UiSettingsPage displaying the active settings. */
+class UiSettingsPageComponent extends React.Component<UiSettingsPageProps> {
   private _themeTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.themeTitle");
   private _themeDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.themeDescription");
   private _autoHideTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.autoHideTitle");
@@ -52,8 +43,6 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
   private _darkLabel = UiFramework.i18n.translate("SampleApp:settingsStage.dark");
   private _lightLabel = UiFramework.i18n.translate("SampleApp:settingsStage.light");
   private _systemPreferredLabel = UiFramework.i18n.translate("SampleApp:settingsStage.systemPreferred");
-  private _escapeToHomeTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.escapeToHomeTitle");
-  private _escapeToHomeDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.escapeToHomeDescription");
   private _accuDrawNotificationsTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsTitle");
   private _accuDrawNotificationsDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsDescription");
   private _widgetOpacityTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.widgetOpacityTitle");
@@ -104,12 +93,6 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
     await SampleAppIModelApp.appUiSettings.snapWidgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
   };
 
-  private _onEscapeToHomeChange = async () => {
-    UiFramework.escapeToHome = !UiFramework.escapeToHome;
-
-    await SampleAppIModelApp.appUiSettings.escapeToHome.saveSetting(SampleAppIModelApp.uiSettings);
-  };
-
   private _onAccuDrawNotificationsChange = async () => {
     FrameworkAccuDraw.displayNotifications = !FrameworkAccuDraw.displayNotifications;
 
@@ -153,9 +136,6 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
         <SettingsItem title={this._snapWidgetOpacityTitle} description={this._snapWidgetOpacityDescription}
           settingUi={ <Toggle isOn={UiShowHideManager.snapWidgetOpacity} showCheckmark={false} onChange={this._onSnapWidgetOpacityChange} /> }
         />
-        <SettingsItem title={this._escapeToHomeTitle} description={this._escapeToHomeDescription}
-          settingUi={ <Toggle isOn={UiFramework.escapeToHome} showCheckmark={false} onChange={this._onEscapeToHomeChange} /> }
-        />
         <SettingsItem title={this._accuDrawNotificationsTitle} description={this._accuDrawNotificationsDescription}
           settingUi={ <Toggle isOn={FrameworkAccuDraw.displayNotifications} showCheckmark={false} onChange={this._onAccuDrawNotificationsChange} /> }
         />
@@ -191,7 +171,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const SettingsPage = connect(mapStateToProps, mapDispatchToProps)(SettingsPageComponent);
+export const ConnectedUiSettingsPage = connect(mapStateToProps, mapDispatchToProps)(UiSettingsPageComponent);
 
 interface SettingsItemProps {
   title: string;

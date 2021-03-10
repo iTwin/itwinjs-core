@@ -39,6 +39,7 @@ class HeaderWrapper extends React.Component<HeaderWrapperProps> {
 
     let mode = 0;
     if (item && item.clientOffset && item.initialClientOffset) {
+      // istanbul ignore next
       if (item.clientOffset.x > item.initialClientOffset.x)
         mode = 1;
       else
@@ -48,8 +49,8 @@ class HeaderWrapper extends React.Component<HeaderWrapperProps> {
     const classes = classnames(
       "components-table-header-drag-drop",
       {
-        left: canDrop && !isDragging && isOver && mode === -1,
-        right: canDrop && !isDragging && isOver && mode === 1,
+        left: canDrop && !isDragging && isOver && /* istanbul ignore next */ mode === -1,
+        right: canDrop && !isDragging && isOver && /* istanbul ignore next */ mode === 1,
         dragging: isDragging,
       },
       this.props.className,
@@ -70,6 +71,7 @@ export const DragDropHeaderWrapper = withDragSource(withDropTarget(HeaderWrapper
 export class DragDropHeaderCell extends React.Component<DragDropHeaderCellProps> {
   public render(): React.ReactNode {
     const { column } = this.props;
+    /* istanbul ignore next */
     const dropTargetProps = {
       onDropTargetDrop: (args: DropTargetArguments): DropTargetArguments => { // eslint-disable-line deprecation/deprecation
         const sourceKey = args.dataObject.key || "";
@@ -84,8 +86,8 @@ export class DragDropHeaderCell extends React.Component<DragDropHeaderCellProps>
     const dragSourceProps = {
       onDragSourceBegin: (args: DragSourceArguments) => { // eslint-disable-line deprecation/deprecation
         args.dataObject = {
-          key: (column && column.key) || "",
-          xpos: (column && column.left) || "",
+          key: (column && column.key) || /* istanbul ignore next */ "",
+          xpos: (column && column.left) || /* istanbul ignore next */ "",
           column,
         };
         return args;

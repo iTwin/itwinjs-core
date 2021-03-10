@@ -4,6 +4,7 @@
 
 ```ts
 
+import { AccessTokenProps } from '@bentley/itwin-client';
 import { Angle } from '@bentley/geometry-core';
 import { AngleProps } from '@bentley/geometry-core';
 import { AnyGeometryQuery } from '@bentley/geometry-core';
@@ -16,6 +17,7 @@ import { BriefcaseStatus } from '@bentley/bentleyjs-core';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ClientRequestContextProps } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
@@ -393,6 +395,23 @@ export enum BackgroundMapType {
     Street = 1
 }
 
+// @public
+export type Base64EncodedString = string;
+
+// @public
+export namespace Base64EncodedString {
+    const prefix = "encoding=base64;";
+    export function ensurePrefix(base64: string): Base64EncodedString;
+    export function fromUint8Array(bytes: Uint8Array): Base64EncodedString;
+    export function hasPrefix(str: string): boolean;
+    export function stripPrefix(base64: Base64EncodedString): string;
+    export function toUint8Array(base64: Base64EncodedString): Uint8Array;
+    const // @beta
+    reviver: (_name: string, value: any) => any;
+    const // @beta
+    replacer: (_name: string, value: any) => any;
+}
+
 // @alpha
 export type BaseLayerProps = MapLayerProps | ColorDefProps;
 
@@ -541,7 +560,7 @@ export interface BRepCutProps {
 // @beta (undocumented)
 export namespace BRepEntity {
     export interface DataProps {
-        data?: string;
+        data?: Base64EncodedString;
         faceSymbology?: FaceSymbologyProps[];
         transform?: TransformProps;
         type?: Type;
@@ -620,6 +639,17 @@ export interface BriefcaseDownloader {
     downloadPromise: Promise<void>;
     fileName: string;
     requestCancel: () => Promise<boolean>;
+}
+
+// @public
+export enum BriefcaseIdValue {
+    // @internal @deprecated (undocumented)
+    DeprecatedStandalone = 1,
+    FirstValid = 2,
+    Illegal = 4294967295,
+    LastValid = 16777205,
+    Max = 16777216,
+    Standalone = 0
 }
 
 // @beta
@@ -1606,9 +1636,6 @@ export interface DecorationGeometryProps {
     readonly id: Id64String;
 }
 
-// @alpha
-export const defaultDesktopAuthorizationClientExpiryBuffer: number;
-
 // @internal (undocumented)
 export const defaultTileOptions: TileOptions;
 
@@ -1622,38 +1649,6 @@ export interface DefinitionElementProps extends ElementProps {
 export interface DeletedElementGeometryChange {
     readonly id: Id64String;
     readonly type: DbOpcode.Delete;
-}
-
-// @alpha
-export interface DesktopAuthorizationClientConfiguration {
-    clientId: string;
-    expiryBuffer?: number;
-    redirectUri: string;
-    scope: string;
-}
-
-// @internal
-export class DesktopAuthorizationClientMessages {
-    // (undocumented)
-    static readonly getAccessToken: string;
-    // (undocumented)
-    static readonly getAccessTokenComplete: string;
-    // (undocumented)
-    static readonly initialize: string;
-    // (undocumented)
-    static readonly initializeComplete: string;
-    // (undocumented)
-    static readonly onUserStateChanged: string;
-    // (undocumented)
-    static readonly onUserStateChangedComplete: string;
-    // (undocumented)
-    static readonly signIn: string;
-    // (undocumented)
-    static readonly signInComplete: string;
-    // (undocumented)
-    static readonly signOut: string;
-    // (undocumented)
-    static readonly signOutComplete: string;
 }
 
 // @internal
@@ -1694,6 +1689,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     // @beta
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
+    clearSunTime(): void;
     // @internal (undocumented)
     get environment(): EnvironmentProps;
     set environment(environment: EnvironmentProps);
@@ -1710,8 +1706,10 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined;
     // @beta
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
+    setSunTime(timePoint: number, location: IModel | Cartographic): void;
     get solarShadows(): SolarShadowSettings;
     set solarShadows(solarShadows: SolarShadowSettings);
+    get sunTime(): number | undefined;
     // @beta
     get thematic(): ThematicDisplay;
     set thematic(thematic: ThematicDisplay);
@@ -2351,6 +2349,13 @@ export interface ElementProps extends EntityProps {
     userLabel?: string;
 }
 
+// @alpha
+export interface ElementsChanged {
+    deleted?: CompressedId64Set;
+    inserted?: CompressedId64Set;
+    updated?: CompressedId64Set;
+}
+
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
@@ -2913,12 +2918,6 @@ export interface GeometryAppearanceProps {
     subCategory?: Id64String;
     transparency?: number;
     weight?: number;
-}
-
-// @internal
-export interface GeometryChangeNotifications {
-    // (undocumented)
-    notifyGeometryChanged: (models: ModelGeometryChangesProps[]) => void;
 }
 
 // @public
@@ -3790,6 +3789,14 @@ export abstract class IModel implements IModelProps {
     toJSON(): IModelConnectionProps;
 }
 
+// @internal
+export interface IModelChangeNotifications {
+    // (undocumented)
+    notifyElementsChanged: (changes: ElementsChanged) => void;
+    // (undocumented)
+    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
+}
+
 // @alpha (undocumented)
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
@@ -3908,6 +3915,8 @@ export { IModelStatus }
 
 // @public (undocumented)
 export abstract class IModelTileRpcInterface extends RpcInterface {
+    // @internal
+    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<Uint8Array>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
@@ -3915,12 +3924,14 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
     // @internal
+    isUsingExternalTileCache(): Promise<boolean>;
+    // @internal
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
     queryVersionInfo(): Promise<TileVersionInfo>;
     // @internal
     requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps>;
@@ -4066,9 +4077,11 @@ export type InterpolationFunction = (v: any, k: number) => number;
 // @internal (undocumented)
 export enum IpcAppChannel {
     // (undocumented)
+    AppNotify = "ipcApp-notify",
+    // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
-    GeometryChanges = "geometry-changes",
+    IModelChanges = "imodel-changes",
     // (undocumented)
     PushPull = "push-pull"
 }
@@ -4084,10 +4097,9 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-    // (undocumented)
-    pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
-    // (undocumented)
-    pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
+    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
+    pushChanges: (key: string, description: string) => Promise<string>;
+    queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
@@ -4100,6 +4112,12 @@ export interface IpcAppFunctions {
 }
 
 // @internal
+export interface IpcAppNotifications {
+    // (undocumented)
+    notifyApp: () => void;
+}
+
+// @internal
 export type IpcInvokeReturn = {
     result: any;
     error?: never;
@@ -4109,6 +4127,7 @@ export type IpcInvokeReturn = {
         name: string;
         message: string;
         errorNumber: number;
+        stack?: string;
     };
 };
 
@@ -4702,6 +4721,16 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
+// @alpha
+export interface NativeAppAuthorizationConfiguration {
+    readonly clientId: string;
+    readonly expiryBuffer?: number;
+    // (undocumented)
+    issuerUrl?: string;
+    readonly redirectUri: string;
+    readonly scope: string;
+}
+
 // @internal (undocumented)
 export const nativeAppChannel = "nativeApp";
 
@@ -4710,12 +4739,20 @@ export interface NativeAppFunctions {
     acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
     checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
     deleteBriefcaseFiles: (_fileName: string) => Promise<void>;
-    downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean) => Promise<LocalBriefcaseProps>;
+    downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number) => Promise<LocalBriefcaseProps>;
+    // (undocumented)
+    getAccessTokenProps: () => Promise<AccessTokenProps>;
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
     getConfig: () => Promise<any>;
+    // (undocumented)
+    initializeAuth: (props: ClientRequestContextProps, config: NativeAppAuthorizationConfiguration) => Promise<void>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
+    signIn: () => Promise<void>;
+    signOut: () => Promise<void>;
+    // (undocumented)
+    silentLogin: (token: AccessTokenProps) => Promise<void>;
     storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
     storageKeys: (_storageId: string) => Promise<string[]>;
     storageMgrClose: (_storageId: string, _deleteOnClose: boolean) => Promise<void>;
@@ -4731,10 +4768,7 @@ export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
     // (undocumented)
-    notifyUserStateChanged: (arg: {
-        accessToken: any;
-        err?: string;
-    }) => void;
+    notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
 }
 
 // @internal (undocumented)
@@ -5177,15 +5211,10 @@ export enum PlanarClipMaskMode {
 
 // @beta
 export enum PlanarClipMaskPriority {
-    // (undocumented)
     BackgroundMap = -2048,
-    // (undocumented)
     BIM = 2048,
-    // (undocumented)
     GlobalRealityModel = -1024,
-    // (undocumented)
     Maximum = 4096,
-    // (undocumented)
     RealityModel = 0
 }
 
@@ -5207,7 +5236,6 @@ export class PlanarClipMaskSettings {
     // (undocumented)
     equals(other: PlanarClipMaskSettings): boolean;
     static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings;
-    // (undocumented)
     get isValid(): boolean;
     readonly mode: PlanarClipMaskMode;
     readonly modelIds?: CompressedId64Set;
@@ -6848,15 +6876,13 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
 // @public
 export class SolarLight {
     constructor(json?: SolarLightProps);
-    // (undocumented)
     readonly alwaysEnabled: boolean;
     clone(changedProps?: SolarLightProps): SolarLight;
-    // (undocumented)
     readonly direction: Readonly<Vector3d>;
     // (undocumented)
     equals(rhs: SolarLight): boolean;
-    // (undocumented)
     readonly intensity: number;
+    readonly timePoint?: number;
     // (undocumented)
     toJSON(): SolarLightProps | undefined;
 }
@@ -6866,6 +6892,7 @@ export interface SolarLightProps {
     alwaysEnabled?: boolean;
     direction?: XYZProps;
     intensity?: number;
+    timePoint?: number;
 }
 
 // @public
@@ -7045,11 +7072,8 @@ export type SubLayerId = string | number;
 
 // @public
 export enum SyncMode {
-    // (undocumented)
     FixedVersion = 1,
-    // (undocumented)
     PullAndPush = 2,
-    // (undocumented)
     PullOnly = 3
 }
 
@@ -7244,7 +7268,7 @@ export enum TextureMapUnits {
 
 // @beta
 export interface TextureProps extends DefinitionElementProps {
-    data: string;
+    data: Base64EncodedString;
     description?: string;
     flags: TextureFlags;
     format: ImageSourceFormat;

@@ -6,9 +6,9 @@
  * @module Views
  */
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
+import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps,
+  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps,
   DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode,
   GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, PlanarClipMaskMode, PlanarClipMaskSettings, RenderTexture, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
@@ -250,7 +250,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const tilesetUrl = getCesiumOSMBuildingsUrl();
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
       currentIndex = this._contextRealityModels.length;
-      this.attachRealityModel({ tilesetUrl, name, planarClipMask: { mode: PlanarClipMaskMode.None } });
+      this.attachRealityModel({ tilesetUrl, name, planarClipMask: { mode: PlanarClipMaskMode.None }});
     }
 
     if (options.appearanceOverrides)
@@ -326,7 +326,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.settings.dropModelAppearanceOverride(modelId);
   }
 
-  /** Returns true if model appearance overridess are defined by this style.
+  /** Returns true if model appearance overrides are defined by this style.
    * @beta
    */
 
@@ -837,14 +837,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 
   /** @internal */
-  public getAttribution(div: HTMLTableElement, vp: ScreenViewport): void {
-    if (this.viewFlags.backgroundMap) {
-      this._backgroundMap.addLogoCards(div, vp);
-      this._overlayMap.addLogoCards(div, vp);
-    }
-  }
-
-  /** @internal */
   public get wantShadows(): boolean {
     return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
   }
@@ -1307,18 +1299,11 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   /** Set the solar light direction based on time value
    * @param time The time in unix time milliseconds.
+   * @see [DisplayStyle3dSettings.sunTime]($common) to obtain the current sun time.
+   * @see [DisplayStyle3dSettings.setSunTime]($common).
    */
   public setSunTime(time: number) {
-    let cartoCenter;
-    if (this.iModel.isGeoLocated) {
-      const projectExtents = this.iModel.projectExtents;
-      const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
-      cartoCenter = this.iModel.spatialToCartographicFromEcef(projectCenter);
-    } else {
-      cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
-    }
-
-    this.settings.lights = this.settings.lights.clone({ solar: { direction: calculateSolarDirection(new Date(time), cartoCenter) } });
+    this.settings.setSunTime(time, this.iModel);
   }
 
   /** Settings controlling shadow display. */

@@ -60,6 +60,7 @@ internal;DockedToolSettingsOverflow: React.MemoExoticComponent
 internal;DockedToolSettingsOverflowProps 
 internal;DockedToolSettingsProps 
 internal;DockedToolSettingsState
+internal;dockWidgetContainer(state: NineZoneState, widgetTabId: string): NineZoneState | undefined
 internal;DraggedPanelSideContext: React.Context
 internal;DraggedResizeHandleContext: React.Context
 internal;DraggedTabContext: React.Context
@@ -103,6 +104,7 @@ internal;FloatingWidgetSendBackAction
 internal;FloatingWidgetsState
 internal;FloatingWidgetsStateContext: React.Context
 internal;FloatingWidgetState
+internal;floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState | undefined
 beta;Footer 
 beta;FooterIndicator(props: FooterIndicatorProps): JSX.Element
 beta;FooterIndicatorProps 
@@ -160,8 +162,10 @@ beta;HorizontalAnchor
 internal;HorizontalAnchorHelpers
 internal;HorizontalPanelSide = TopPanelSide | BottomPanelSide
 internal;HorizontalPanelState 
+internal;isFloatingLocation(location: TabLocation): location is FloatingLocation
 internal;isHorizontalPanelSide: (side: PanelSide) => side is HorizontalPanelSide
 internal;isHorizontalPanelState(state: PanelState): state is HorizontalPanelState
+internal;isPanelLocation(location: TabLocation): location is PanelLocation
 internal;isTabTarget(target: DragTarget): target is TabTarget
 beta;Item 
 beta;ItemProps 

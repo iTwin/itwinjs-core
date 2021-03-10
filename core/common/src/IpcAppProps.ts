@@ -9,7 +9,8 @@
 import { IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
-import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
+import { IModelVersionProps } from "./IModelVersion";
+import { ElementsChanged, ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
@@ -22,16 +23,26 @@ export interface TileTreeContentIds {
 /** @internal */
 export enum IpcAppChannel {
   Functions = "ipc-app",
-  GeometryChanges = "geometry-changes",
+  AppNotify = "ipcApp-notify",
+  IModelChanges = "imodel-changes",
   PushPull = "push-pull",
 }
 
 /**
- * Interface registered by the frontend [NotificationHandler]($common) to be notified of geometry changes
+ * Interface implemented by the frontend [NotificationHandler]($common) to be notified of events from IpcApp backend.
  * @internal
  */
-export interface GeometryChangeNotifications {
-  notifyGeometryChanged: (models: ModelGeometryChangesProps[]) => void;
+export interface IpcAppNotifications {
+  notifyApp: () => void;
+}
+
+/**
+ * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel
+ * @internal
+ */
+export interface IModelChangeNotifications {
+  notifyElementsChanged: (changes: ElementsChanged) => void;
+  notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
 
 /** @internal */
@@ -42,7 +53,7 @@ export interface BriefcasePushAndPullNotifications {
 }
 
 /**
- * The methods that may be invoked via Ipc from the frontend of a Native App and are implemented on its backend.
+ * The methods that may be invoked via Ipc from the frontend of an IpcApp and are implemented on its backend.
  * @internal
  */
 export interface IpcAppFunctions {
@@ -55,31 +66,21 @@ export interface IpcAppFunctions {
    */
   log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
 
-  /**
-   * Open a briefcase file from the local disk.
-   */
+  /** see BriefcaseConnection.openFile */
   openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
-
-  /** Open a standalone iModel from a file name. */
+  /** see BriefcaseConnection.openStandalone */
   openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-
-  /** Close a previously opened iModel. */
+  /** see BriefcaseConnection.close */
   closeIModel: (key: string) => Promise<void>;
-
-  /** Save any local changes. */
+  /** see BriefcaseConnection.saveChanges */
   saveChanges: (key: string, description?: string) => Promise<void>;
-
-  /** Determine whether there are outstanding txns . */
+  /** see BriefcaseConnection.hasPendingTxns */
   hasPendingTxns: (key: string) => Promise<boolean>;
-
-  pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
-  pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
-
-  /** Cancels currently pending or active generation of tile content.
-     * @param _iModelToken Identifies the iModel
-     * @param _contentIds A list of content requests to be canceled, grouped by tile tree Id.
-     * @internal
-     */
+  /** see BriefcaseConnection.pullAndMergeChanges */
+  pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
+  /** see BriefcaseConnection.pushChanges */
+  pushChanges: (key: string, description: string) => Promise<string>;
+  /** Cancels currently pending or active generation of tile content.  */
   cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
 
   /** Cancel element graphics requests.
@@ -92,5 +93,8 @@ export interface IpcAppFunctions {
   reverseSingleTxn: (key: string) => Promise<IModelStatus>;
   reverseAllTxn: (key: string) => Promise<IModelStatus>;
   reinstateTxn: (key: string) => Promise<IModelStatus>;
+
+  /** Query the number of concurrent threads supported by the host's IO or CPU thread pool. */
+  queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
 }
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@bentley/ui-components";
+import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@bentley/ui-components";
 import {
   ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
   NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetState, WidgetStateChangedEventArgs, Zone, ZoneLocation,
@@ -49,6 +49,13 @@ function SampleTimelineComponent() {
   const duration = 20 * 1000;
   const startDate = new Date(2014, 6, 6);
   const endDate = new Date(2016, 8, 12);
+  const [loop, setLoop] = React.useState <boolean> (false);
+
+  const handleOnSettingsChange = (settings: PlaybackSettings) => {
+    if (settings.loop !== undefined) {
+      setLoop(settings.loop);
+    }
+  };
 
   return (
     <div>
@@ -59,6 +66,8 @@ function SampleTimelineComponent() {
         totalDuration={duration}
         minimized={true}
         showDuration={true}
+        repeat={loop}
+        onSettingsChange={handleOnSettingsChange}
         alwaysMinimized={true}
         componentId={"sampleApp-sampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
       />

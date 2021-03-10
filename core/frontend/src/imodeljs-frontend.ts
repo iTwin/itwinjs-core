@@ -5,11 +5,13 @@
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
+export * from "./BingLocation";
 export * from "./BriefcaseConnection";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
 export * from "./ContextRealityModelState";
 export * from "./CoordSystem";
+export * from "./DecorationsCache";
 export * from "./DevTools";
 export * from "./DisplayStyleState";
 export * from "./DrawingViewState";
@@ -70,7 +72,6 @@ export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
 export * from "./WebViewerApp";
-export * from "./oidc/DesktopAuthorizationClient";
 export * from "./oidc/OidcBrowserClient";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";
@@ -118,6 +119,7 @@ export * from "./tools/ViewTool";
 export * from "./BackgroundMapGeometry";
 export * from "./ViewCreator2d";
 export * from "./ViewCreator3d";
+export * from "./LocalhostIpcApp";
 
 /** @docs-package-description
  * The imodeljs-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).

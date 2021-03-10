@@ -78,6 +78,7 @@ export * from "./ui-framework/frontstage/FrontstageManager";
 export * from "./ui-framework/frontstage/FrontstageProvider";
 export * from "./ui-framework/frontstage/NestedFrontstage";
 export * from "./ui-framework/frontstage/ModalFrontstage";
+export * from "./ui-framework/frontstage/ModalSettingsStage";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
 export * from "./ui-framework/hooks/useActiveViewport";
@@ -214,6 +215,7 @@ export * from "./ui-framework/tools/CoreToolDefinitions";
 export * from "./ui-framework/tools/FrameworkToolAdmin";
 export * from "./ui-framework/tools/MarkupToolDefinitions";
 export * from "./ui-framework/tools/RestoreLayoutTool";
+export * from "./ui-framework/tools/ToolSettingsTools";
 
 export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 

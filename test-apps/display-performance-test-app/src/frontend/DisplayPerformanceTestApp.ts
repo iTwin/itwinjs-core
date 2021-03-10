@@ -3,22 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { ClientRequestContext, Dictionary, Id64, Id64Arg, Id64String, OpenMode, ProcessDetector, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
+import {
+  ClientRequestContext, Dictionary, Id64, Id64Arg, Id64String, OpenMode, ProcessDetector, SortedArray, StopWatch,
+} from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import {
-  BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
-} from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
-  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DesktopAuthorizationClientConfiguration, DisplayStyleProps,
-  FeatureAppearance, FeatureAppearanceProps, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RpcConfiguration,
-  SnapshotIModelRpcInterface, ViewDefinitionProps,
+  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DisplayStyleProps, FeatureAppearance, FeatureAppearanceProps, Hilite,
+  IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RpcConfiguration, SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
-  AuthorizedFrontendRequestContext, DesktopAuthorizationClient, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider,
-  FeatureSymbology, FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, PerformanceMetrics, Pixel, RenderSystem,
-  ScreenViewport, SnapshotConnection, Target, TileAdmin, Viewport, ViewRect, ViewState,
+  AuthorizedFrontendRequestContext, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider, FeatureSymbology,
+  FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, NativeAppAuthorization, PerformanceMetrics, Pixel,
+  RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -402,21 +401,26 @@ function getViewFlagsString(): string {
  * Sorted by tree Id and then by tile Id so that the output is consistent from run to run unless the set of selected tiles changed between runs.
  */
 let formattedSelectedTileIds = "Selected tiles:\n";
-function formatSelectedTileIds(viewport: Viewport): void {
+function formatSelectedTileIds(vp: Viewport): void {
   formattedSelectedTileIds = "Selected tiles:\n";
   const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
-  const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
-  if (!selected)
-    return;
+  for (const viewport of [vp, ...vp.view.secondaryViewports]) {
+    const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
+    if (!selected)
+      continue;
 
-  for (const tile of selected) {
-    const treeId = tile.tree.id;
-    let tileIds = dict.get(treeId);
-    if (!tileIds)
-      dict.set(treeId, tileIds = new SortedArray<string>((lhs, rhs) => lhs.localeCompare(rhs)));
+    for (const tile of selected) {
+      const treeId = tile.tree.id;
+      let tileIds = dict.get(treeId);
+      if (!tileIds)
+        dict.set(treeId, tileIds = new SortedArray<string>((lhs, rhs) => lhs.localeCompare(rhs)));
 
-    tileIds.insert(tile.contentId);
+      tileIds.insert(tile.contentId);
+    }
   }
+
+  if (dict.size === 0)
+    return;
 
   for (const kvp of dict) {
     const contentIds = kvp.value.extractArray().join(",");
@@ -446,6 +450,22 @@ async function waitForTilesToLoad(modelLocation?: string) {
     activeViewState.viewState!.createScene(sceneContext);
     sceneContext.requestMissingTiles();
     haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles || 0 < sceneContext.missingTiles.size;
+
+    if (!haveNewTiles) {
+      // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports. Check those too.
+      for (const secondaryVp of activeViewState.viewState!.secondaryViewports) {
+        if (secondaryVp.numRequestedTiles > 0) {
+          haveNewTiles = true;
+          break;
+        }
+
+        const secondaryTiles = IModelApp.tileAdmin.getTilesForViewport(secondaryVp);
+        if (secondaryTiles && secondaryTiles.external.requested > 0) {
+          haveNewTiles = true;
+          break;
+        }
+      }
+    }
 
     // NB: The viewport is NOT added to the ViewManager's render loop, therefore we must manually pump the tile request scheduler...
     if (haveNewTiles)
@@ -975,14 +995,14 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext): Promise<FrontendAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
 
   if (ProcessDetector.isElectronAppFrontend) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: DesktopAuthorizationClientConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
-    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration);
+    const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
+    const desktopClient = new NativeAppAuthorization(oidcConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {
@@ -1004,7 +1024,7 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<F
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
   const requestContext = new FrontendRequestContext();
-  const oidcClient: FrontendAuthorizationClient = await createOidcClient(requestContext);
+  const oidcClient = await createOidcClient(requestContext);
 
   IModelApp.authorizationClient = oidcClient;
   if (oidcClient.isAuthorized)
@@ -1247,7 +1267,7 @@ async function restartIModelApp(testConfig: DefaultConfigs): Promise<void> {
   if (!IModelApp.initialized) {
     await DisplayPerfTestApp.startup({
       renderSys: testConfig.renderOptions,
-      tileAdmin: TileAdmin.create(curTileProps),
+      tileAdmin: curTileProps,
     });
   }
 }
@@ -1401,6 +1421,9 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
 async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
   // Restart the IModelApp if needed
   await restartIModelApp(testConfig);
+
+  // Reset the title bar to include the current model and view name
+  document.title = "Display Performance Test App:  ".concat(testConfig.iModelName ?? "", "  [", testConfig.viewName ?? "", "]");
 
   // Open and finish loading model
   const loaded = await loadIModel(testConfig, extViews);

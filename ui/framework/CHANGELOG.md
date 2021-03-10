@@ -1,6 +1,26 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+
+## 2.12.1
+Tue, 23 Feb 2021 20:54:45 GMT
+
+_Version update only_
+
+## 2.12.0
+Thu, 18 Feb 2021 22:10:13 GMT
+
+### Updates
+
+- Changed ModelsTree visibility handler behavior to fully change visibility of node if it matches applied filter
+- Updated ModelsTree rulesets to better handle updates.
+- AccuDraw bi-directional value updates
+- Correctly add and remove widgets provided by UiItemsProviders."
+- ModelsTree: Fix getting display status of element nodes
+- WidgetDef show and expand will correctly activate the tab.
+- Preventing cursor prompt lag
+- Provide dynamic widgets for every section type.
+- Update remaining syncEventId checks to be case insensitive.
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT

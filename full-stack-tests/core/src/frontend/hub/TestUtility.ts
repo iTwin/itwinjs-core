@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContext, Guid, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Guid, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
@@ -30,11 +30,15 @@ export class TestUtility {
       this.imodelCloudEnv = new IModelHubCloudEnv();
     }
 
-    const requestContext = new ClientRequestContext();
-    const authorizationClient = this.imodelCloudEnv.getAuthorizationClient(undefined, user);
-    await authorizationClient.signIn(requestContext);
+    let authorizationClient: FrontendAuthorizationClient;
+    if (NativeApp.isValid) {
+      authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
+      await NativeApp.callNativeHost("silentLogin", (await getAccessTokenFromBackend(user)).toJSON());
+    } else {
+      authorizationClient = this.imodelCloudEnv.getAuthorizationClient(undefined, user);
+      await authorizationClient.signIn();
+    }
     const accessToken = await authorizationClient.getAccessToken();
-
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {
       await this.imodelCloudEnv.bootstrapIModelBankProject(new AuthorizedClientRequestContext(accessToken), testProjectName);
     }

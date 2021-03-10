@@ -39,32 +39,32 @@ export class ElementAspect extends Entity implements ElementAspectProps {
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onInsert(_props: ElementAspectProps, _iModel: IModelDb): void { }
+  protected static onInsert(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
   /** Called before an ElementAspect is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onUpdate(_props: ElementAspectProps, _iModel: IModelDb): void { }
+  protected static onUpdate(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
   /** Called before an ElementAspect is deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onDelete(_props: ElementAspectProps, _iModel: IModelDb): void { }
+  protected static onDelete(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
   /** Called after a new ElementAspect was inserted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onInserted(_props: ElementAspectProps, _iModel: IModelDb): void { }
+  protected static onInserted(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
   /** Called after an ElementAspect was updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onUpdated(_props: ElementAspectProps, _iModel: IModelDb): void { }
+  protected static onUpdated(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
   /** Called after an ElementAspect was deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onDeleted(_props: ElementAspectProps, _iModel: IModelDb): void { }
+  protected static onDeleted(_props: Readonly<ElementAspectProps>, _iModel: IModelDb): void { }
 }
 
 /** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element.
@@ -190,7 +190,13 @@ export namespace ExternalSourceAspect { // eslint-disable-line no-redeclare
    * @public
    */
   export enum Kind {
+    /** Indicates that the [[ExternalSourceAspect]] is storing [[Element]] provenance */
     Element = "Element",
+    /** Indicates that the [[ExternalSourceAspect]] is storing [[Relationship]] provenance */
     Relationship = "Relationship",
+    /** Indicates that the [[ExternalSourceAspect]] is storing *scope* provenance
+     * @see [[ExternalSourceAspect.scope]]
+     */
+    Scope = "Scope",
   }
 }

@@ -15,6 +15,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
 import "./MapUrlDialog.scss";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 export const MAP_TYPES = {
   wms: "WMS",
@@ -40,6 +41,7 @@ interface MapUrlDialogProps {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapUrlDialog(props: MapUrlDialogProps) {
   const { isOverlay, onOkResult, mapTypesOptions } = props;
+  const supportWmsAuthentication = (mapTypesOptions?.supportWmsAuthentication ? true : false);
 
   const [dialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate(props.layerToEdit ? "mapLayers:CustomAttach.EditCustomLayer" : "mapLayers:CustomAttach.AttachCustomLayer"));
   const [typeLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Type"));
@@ -72,18 +74,20 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   });
 
   const isSettingsStorageAvailable = React.useCallback(() => {
-    return !props.askForCredentialsOnly
-      && !!IModelApp.viewManager?.selectedView?.iModel?.contextId
-      && !!IModelApp.viewManager?.selectedView?.iModel?.iModelId;
+    return !props.askForCredentialsOnly;
   }, [props.askForCredentialsOnly]);
 
-  // Even though the settings storage is available, we might want to disable it in the UI
-  // ArcGIS support only for now, to revisit later.
-  const [settingsStorageDisabled, setSettingsStorageDisabled] = React.useState(isSettingsStorageAvailable() && (mapType === MAP_TYPES.arcGis || (!userName && !password)));
+  // Even though the settings storage is available,
+  // we don't always want to enable it in the UI.
+  const [settingsStorageDisabled] = React.useState(
+    !isSettingsStorageAvailable()
+    || !props?.activeViewport?.iModel?.contextId
+    || !props?.activeViewport?.iModel?.iModelId);
 
-  const [authSupported] = React.useState(() =>
-    (mapType === MAP_TYPES.wms && (mapTypesOptions?.supportWmsAuthentication ? true : false))
-    || mapType === MAP_TYPES.arcGis);
+  const isAuthSupported = React.useCallback(() => {
+    return ((mapType === MAP_TYPES.wms || mapType === MAP_TYPES.wms) && supportWmsAuthentication)
+      || mapType === MAP_TYPES.arcGis;
+  }, [mapType, supportWmsAuthentication]);
 
   const [layerIdxToEdit] = React.useState((): number | undefined => {
     if (props.layerToEdit === undefined || !props.layerToEdit.name || !props.layerToEdit.url) {
@@ -137,18 +141,10 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       setInvalidCredentialsProvided(false);
   }, [setPassword, invalidCredentialsProvided, setInvalidCredentialsProvided]);
 
-  React.useEffect(() => {
-    if (isSettingsStorageAvailable()) {
-      setSettingsStorageDisabled(mapType !== MAP_TYPES.arcGis && (userName.length > 0 || password.length > 0));
-    }
-  }, [mapType, userName, password, setSettingsStorageDisabled, isSettingsStorageAvailable]);
-
   const doAttach = React.useCallback(async (source: MapLayerSource): Promise<boolean> => {
-
     // Returns a promise, When true, the dialog should closed
     return new Promise<boolean>((resolve, _reject) => {
-
-      const vp = IModelApp.viewManager.selectedView;
+      const vp = props?.activeViewport;
       if (vp === undefined || source === undefined) {
         resolve(true);
         return;
@@ -223,7 +219,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         resolve(true);
       });
     });
-  }, [isOverlay, onOkResult, settingsStorage, invalidCredentialsProvided, layerIdxToEdit, serverRequireCredentials, props.askForCredentialsOnly, settingsStorageDisabled]);
+  }, [props.activeViewport, props.askForCredentialsOnly, settingsStorage, serverRequireCredentials, invalidCredentialsProvided, onOkResult, layerIdxToEdit, isOverlay, settingsStorageDisabled]);
 
   const onNameChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setMapName(event.target.value);
@@ -282,10 +278,17 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     { type: DialogButtonType.Cancel, onClick: handleCancel },
   ], [readyToSave, handleCancel, handleOk]);
 
+  const handleOnKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === SpecialKey.Enter) {
+      if (readyToSave())
+        handleOk();
+    }
+  }, [handleOk, readyToSave]);
+
   return (
     <div ref={dialogContainer}>
       <Dialog
-        style={{ zIndex: 21000 }}
+        className="map-layer-url-dialog"
         title={dialogTitle}
         opened={true}
         resizable={true}
@@ -305,8 +308,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             <span className="map-layer-source-label">{nameLabel}</span>
             <Input placeholder="Enter Map Name" onChange={onNameChange} value={props.layerToEdit?.name || layerToEdit?.name} disabled={props.askForCredentialsOnly} />
             <span className="map-layer-source-label">{urlLabel}</span>
-            <Input placeholder="Enter Map Source URL" onChange={onUrlChange} value={props.layerToEdit?.url || layerToEdit?.url} disabled={props.askForCredentialsOnly} />
-            {authSupported &&
+            <Input placeholder="Enter Map Source URL" onKeyPress={handleOnKeyDown} onChange={onUrlChange} value={props.layerToEdit?.url || layerToEdit?.url} disabled={props.askForCredentialsOnly} />
+            {isAuthSupported() &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>
                 <LabeledInput placeholder={serverRequireCredentials ? "Username required" : userNameLabel}
@@ -316,7 +319,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
                 <span className="map-layer-source-label">{passwordLabel}</span>
                 <LabeledInput type="password" placeholder={serverRequireCredentials ? "Password required" : passwordLabel}
                   status={!password && serverRequireCredentials ? InputStatus.Warning : undefined}
-                  onChange={onPasswordChange} />
+                  onChange={onPasswordChange}
+                  onKeyPress={handleOnKeyDown} />
               </>
             }
 

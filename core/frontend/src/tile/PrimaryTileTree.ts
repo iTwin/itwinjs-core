@@ -65,7 +65,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   public async createTileTree(id: PrimaryTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     const treeId = id.treeId;
     const idStr = iModelTileTreeIdToString(id.modelId, treeId, IModelApp.tileAdmin);
-    const props = await iModel.tiles.getTileTreeProps(idStr);
+    const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
     const options = {
       edgesRequired: treeId.edgesRequired,
@@ -256,7 +256,7 @@ export class AnimatedTreeReference extends PrimaryTreeReference {
 
 class PlanProjectionTreeReference extends PrimaryTreeReference {
   private get _view3d() { return this.view as ViewState3d; }
-  private _curTransform?: { transform: Transform, elevation: number };
+  private readonly _baseTransform = Transform.createIdentity();
 
   public constructor(view: ViewState3d, model: GeometricModelState, sectionCut?: StringifiedClipVector) {
     super(view, model, true, undefined, sectionCut);
@@ -281,8 +281,18 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
           const asOverlay = undefined !== settings && settings.overlay;
           const transparency = settings?.transparency || 0;
 
-          assert(undefined !== this._curTransform);
-          context.outputGraphic(context.target.renderSystem.createGraphicLayerContainer(graphics, asOverlay, transparency, this._curTransform.elevation));
+          let elevation = settings?.elevation;
+          if (undefined === elevation) {
+            const tree = this.treeOwner.tileTree;
+            if (tree) {
+              assert(tree instanceof PlanProjectionTileTree);
+              elevation = tree.baseElevation;
+            } else {
+              elevation = 0;
+            }
+          }
+
+          context.outputGraphic(context.target.renderSystem.createGraphicLayerContainer(graphics, asOverlay, transparency, elevation));
         }
       };
     }
@@ -292,23 +302,13 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
   protected computeBaseTransform(tree: TileTree): Transform {
     assert(tree instanceof PlanProjectionTileTree);
-    const baseElevation = tree.baseElevation;
-    if (undefined === this._curTransform)
-      this._curTransform = { transform: tree.iModelTransform.clone(), elevation: baseElevation };
+    const transform = tree.iModelTransform.clone(this._baseTransform);
 
-    const settings = this.getSettings();
-    const elevation = settings?.elevation ?? baseElevation;
+    const elevation = this.getSettings()?.elevation;
+    if (undefined !== elevation)
+      transform.origin.z = elevation;
 
-    if (this._curTransform.elevation !== elevation) {
-      const transform = tree.iModelTransform.clone();
-      if (undefined !== settings?.elevation)
-        transform.origin.z = elevation;
-
-      this._curTransform.transform = transform;
-      this._curTransform.elevation = elevation;
-    }
-
-    return this._curTransform.transform;
+    return transform;
   }
 
   public draw(args: TileDrawArgs): void {
