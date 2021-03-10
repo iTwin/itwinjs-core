@@ -18,6 +18,7 @@ export interface DefinitionFragment {
   constant: boolean;
 }
 
+/** @internal */
 export function parseDefinition(
   definition: string
 ): Map<string, DefinitionFragment> {

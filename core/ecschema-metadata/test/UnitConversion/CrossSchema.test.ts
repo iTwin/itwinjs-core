@@ -2,11 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  SchemaContext,
-  SchemaItemKey,
-  SchemaKey,
-} from "../../src/ecschema-metadata";
+import { SchemaContext } from "../../src/ecschema-metadata";
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
@@ -50,11 +46,12 @@ describe("Testing creating second schema", () => {
   testData.forEach((test: TestData) => {
     it(`should convert ${test.FromSchema}:${test.From} to ${test.ToSchema}:${test.To}`, async () => {
       const converter = new UnitConvertorContext(context);
-      const fromSchemaKey = new SchemaKey(test.FromSchema);
-      const toSchemaKey = new SchemaKey(test.ToSchema);
-      const from = new SchemaItemKey(test.From, fromSchemaKey);
-      const to = new SchemaItemKey(test.To, toSchemaKey);
-      const map = await converter.processSchemaItem(from, to);
+      const map = await converter.findConversion(
+        test.From,
+        test.To,
+        test.FromSchema,
+        test.ToSchema
+      );
       const actual = map.evaluate(test.Input);
       const ulp = Float.ulp(Math.max(test.Input, test.Expect));
       expect(
@@ -70,41 +67,45 @@ describe("Testing creating second schema", () => {
 
   it("should throw when schema name is not in context", async () => {
     const converter = new UnitConvertorContext(context);
-    const schemaKey = new SchemaKey("MockSchema");
 
-    const mockUnit = new SchemaItemKey("MockUnit", schemaKey);
-    const meter = new SchemaItemKey("M", schemaKey);
     try {
-      await converter.processSchemaItem(mockUnit, meter);
+      await converter.findConversion("CM", "M", "MockSchema", "SIUnits");
     } catch (err) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Schema item is not a unit or a constant");
+      expect(err.message).to.equal("Cannot find from's and/or to's schema");
     }
     try {
-      await converter.processSchemaItem(meter, mockUnit);
+      await converter.findConversion("M", "CM", "SIUnits", "MockSchema");
     } catch (err) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Schema item is not a unit or a constant");
+      expect(err.message).to.equal("Cannot find from's and/or to's schema");
     }
   });
 
   it("should throw when schema item is not in schema ", async () => {
     const converter = new UnitConvertorContext(context);
-    const schemaKey = new SchemaKey("SIUnits");
 
-    const unitA11 = new SchemaItemKey("NonexistentUnit", schemaKey);
-    const meter = new SchemaItemKey("M", schemaKey);
     try {
-      await converter.processSchemaItem(unitA11, meter);
+      await converter.findConversion(
+        "MockUnit",
+        "CM",
+        "SIUnits",
+        "MetricUnits"
+      );
     } catch (err) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Schema item is not a unit or a constant");
+      expect(err.message).to.equal("Cannot find schema item");
     }
     try {
-      await converter.processSchemaItem(meter, unitA11);
+      await converter.findConversion(
+        "CM",
+        "MockUnit",
+        "MetricUnits",
+        "SIUnits"
+      );
     } catch (err) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Schema item is not a unit or a constant");
+      expect(err.message).to.equal("Cannot find schema item");
     }
   });
 });
