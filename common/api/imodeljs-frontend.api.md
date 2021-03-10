@@ -7002,7 +7002,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     exitTool(): void;
     getPrompt(): string;
     // @internal
-    get iModel(): BriefcaseConnection;
+    get iModel(): IModelConnection;
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     onRedoPreviousStep(): Promise<boolean>;
