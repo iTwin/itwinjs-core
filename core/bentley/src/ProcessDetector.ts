@@ -60,7 +60,7 @@ export class ProcessDetector {
    * @note this indicates that this is a browser process started by an iTwin mobile application.
    * It will return `false` when running user-launched web browsers on a mobile device.
    */
-  public static get isMobileAppFrontend() { return this.isBrowserProcess && window.location.origin === "imodeljs://app"; }
+  public static get isMobileAppFrontend() { return this.isBrowserProcess && window.location.hash.indexOf("platform=") !== -1; }
 
   /** Is this process the frontend of an iOS mobile application? */
   public static get isIOSAppFrontend() { return this.isMobileAppFrontend && window.location.hash.indexOf("platform=ios") !== -1; }
