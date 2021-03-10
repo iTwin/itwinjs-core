@@ -726,7 +726,7 @@ describe("PropertyGrid Commons", () => {
 
     it("opens new window if the link text was found without http schema", async () => {
       spy = sinon.stub(window, "open");
-      spy.returns(moq.Mock.ofType<Window>().object);
+      spy.returns(null);
 
       PropertyGridCommons.handleLinkClick("www.testLink.com");
       expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
@@ -734,7 +734,7 @@ describe("PropertyGrid Commons", () => {
 
     it("opens new window if the link text was found in record with http schema", async () => {
       spy = sinon.stub(window, "open");
-      spy.returns(moq.Mock.ofType<Window>().object);
+      spy.returns(null);
 
       PropertyGridCommons.handleLinkClick("http://www.testLink.com");
       expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
@@ -742,7 +742,7 @@ describe("PropertyGrid Commons", () => {
 
     it("does not open new window if there were no url links", async () => {
       spy = sinon.stub(window, "open");
-      spy.returns(moq.Mock.ofType<Window>().object);
+      spy.returns(null);
 
       PropertyGridCommons.handleLinkClick("not an url link");
       PropertyGridCommons.handleLinkClick("testEmail@mail.com");
@@ -757,6 +757,19 @@ describe("PropertyGrid Commons", () => {
     it("sets location href value to value got in the text if it is an ProjectWise Explorer link", async () => {
       PropertyGridCommons.handleLinkClick("pw://server.bentley.com:datasource-01/Documents/ProjectName");
       expect(locationMockRef.object.href).to.be.equal("pw://server.bentley.com:datasource-01/Documents/ProjectName");
+    });
+
+    it("calls window.open.focus if window.open returns not null", () => {
+      const windowMock = moq.Mock.ofType<Window>();
+      windowMock.setup((x) => x.focus());
+
+      spy = sinon.stub(window, "open");
+      spy.returns(windowMock.object);
+
+      PropertyGridCommons.handleLinkClick("www.testLink.com");
+
+      expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
+      windowMock.verify((x) => x.focus(), moq.Times.once());
     });
   });
 
