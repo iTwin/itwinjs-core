@@ -6,17 +6,10 @@
  * @module Tiles
  */
 
-import { assert, compareStrings, Id64String } from "@bentley/bentleyjs-core";
+import { assert, compareBooleans, compareStrings, Id64String } from "@bentley/bentleyjs-core";
 import { Geometry, Range3d, StringifiedClipVector, Transform } from "@bentley/geometry-core";
 import {
-  BatchType,
-  compareIModelTileTreeIds,
-  FeatureAppearance,
-  FeatureAppearanceProvider,
-  HiddenLine,
-  iModelTileTreeIdToString,
-  PrimaryTileTreeId,
-  ViewFlagOverrides,
+  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, PrimaryTileTreeId, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -38,7 +31,6 @@ interface PrimaryTreeId {
   readonly modelId: Id64String;
   readonly is3d: boolean;
   readonly isPlanProjection: boolean;
-  readonly forceNoInstancing: boolean;
 }
 
 class PlanProjectionTileTree extends IModelTileTree {
@@ -65,6 +57,8 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     let cmp = compareStrings(lhs.modelId, rhs.modelId);
     if (0 === cmp) {
       cmp = compareIModelTileTreeIds(lhs.treeId, rhs.treeId);
+      if (0 === cmp)
+        cmp = compareBooleans(lhs.forceNoInstancing, rhs.forceNoInstancing);
     }
 
     return cmp;
