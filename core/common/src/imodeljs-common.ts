@@ -94,7 +94,6 @@ export * from "./Tween";
 export * from "./ViewDetails";
 export * from "./ViewFlags";
 export * from "./ViewProps";
-export * from "./oidc/DesktopAuthorizationClientConfiguration";
 export * from "./rpc/DevToolsRpcInterface";
 export * from "./rpc/EditorRpcInterface";
 export * from "./rpc/IModelReadRpcInterface";

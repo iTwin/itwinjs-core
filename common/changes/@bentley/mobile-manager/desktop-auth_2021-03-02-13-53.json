@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/mobile-manager",
+      "comment": "rework Authentication to use IpcHost",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/mobile-manager",
+  "email": "33296803+kabentley@users.noreply.github.com"
+}

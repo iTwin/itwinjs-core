@@ -43,8 +43,11 @@ export class UrlPropertyValueRenderer implements IPropertyValueRenderer {
 function urlOnClick(text: string) {
   if (text.startsWith("mailto:") || text.startsWith("pw:"))
     location.href = text;
-  else
-    window.open(text, "_blank")!.focus();
+  else {
+    const windowOpen = window.open(text, "_blank");
+    if (windowOpen)
+      windowOpen.focus();
+  }
 }
 
 const URI_PROPERTY_LINK_HANDLER: LinkElementsInfo = {
