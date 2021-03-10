@@ -8,7 +8,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Float } from "../../src/UnitConversion/Float";
 import { deserializeXml } from "./DeserializeSchema";
-import { UnitConvertorContext } from "../../src/UnitConversion/Convert";
+import { UnitConverterContext } from "../../src/UnitConversion/Convert";
 
 interface TestData {
   From: string;
@@ -21,41 +21,25 @@ describe("A unit tree creator", () => {
   const context = new SchemaContext();
 
   const testData: TestData[] = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "./unit-test-data.json"), "utf-8")
+    fs.readFileSync(path.join(__dirname, "assets", "./unit-test-data.json"), "utf-8")
   );
 
   before(() => {
-    const schemaFile = path.join(
-      __dirname,
-      "..",
-      "..",
-      "node_modules",
-      "@bentley",
-      "units-schema",
-      "Units.ecschema.xml"
-    );
+    const schemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     deserializeXml(context, schemaXml as string);
   });
 
   testData.forEach((test: TestData) => {
     it(`should convert ${test.From} to ${test.To}`, async () => {
-      const converter = new UnitConvertorContext(context);
-      const map = await converter.findConversion(
-        test.From,
-        test.To,
-        "Units",
-        "Units"
-      );
+      const converter = new UnitConverterContext(context);
+      const map = await converter.findConversion(test.From, test.To, "Units", "Units");
       const actual = map.evaluate(test.Input);
       const ulp = Float.ulp(Math.max(test.Input, test.Expect));
       expect(
         Float.equals(test.Expect, actual, 3 * ulp),
-        `${test.Input} ${test.From} in ${test.To} should be ${
-          test.Expect
-        } and not ${actual} error = ${Math.abs(test.Expect - actual)} > ${
-          3 * ulp
-        }`
+        `${test.Input} ${test.From} in ${test.To} should be ${test.Expect}
+         and not ${actual} error = ${Math.abs(test.Expect - actual)} > ${3 * ulp}`
       ).to.be.true;
     });
   });

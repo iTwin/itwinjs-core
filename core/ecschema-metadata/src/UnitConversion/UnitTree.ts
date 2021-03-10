@@ -3,20 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import {
-  Constant,
-  Schema,
-  SchemaContext,
-  SchemaItem,
-  SchemaItemKey,
-  SchemaKey,
-  Unit,
-} from "../ecschema-metadata";
+import { Constant, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, Unit } from "../ecschema-metadata";
 import { SchemaItemType } from "../ECObjects";
 import { UnitConversion } from "./UnitConversion";
 import { DefinitionFragment, parseDefinition } from "./Parser";
 import { Graph } from "./Graph";
 
+/** @internal */
 export class GraphUtils {
   /**
    * DFS traversal - Post order
@@ -25,15 +18,8 @@ export class GraphUtils {
    * @param keyFrom Get key from label
    * @param op Reducing function
    * @param initial Initial label
-   * @internal
    */
-  public static dfsReduce<T>(
-    _graph: Graph<Unit | Constant>,
-    key: string,
-    op: (previous: T, current: string) => T,
-    visitChildren: (key: string) => boolean,
-    initial: T
-  ): T {
+  public static dfsReduce<T>(_graph: Graph<Unit | Constant>, key: string, op: (previous: T, current: string) => T, visitChildren: (key: string) => boolean, initial: T): T {
     const outEdges = _graph.outEdges(key);
     let t = initial;
     if (outEdges && visitChildren(key)) {
@@ -46,10 +32,11 @@ export class GraphUtils {
     return op(t, key);
   }
 }
+
+/** @internal */
 export class UnitGraph {
   private _graph = new Graph<Unit | Constant>();
 
-  /** @internal */
   constructor(private _context: SchemaContext) {
     this._graph.setGraph("Unit tree processor");
   }
@@ -58,12 +45,8 @@ export class UnitGraph {
    * Tries to find the unit/constant given by name in currentSchema
    * @param name schemaItem name/parsed definition to find unit of; could be {schemaName}:{schemaItemName} or {alias}:{schemaItemName} or {schemaItemName}
    * @param currentSchema schema to find name in; name could also be in a referenced schema of current schema
-   * @internal
    */
-  public async resolveUnit(
-    name: string,
-    currentSchema: Schema
-  ): Promise<Unit | Constant> {
+  public async resolveUnit(name: string, currentSchema: Schema): Promise<Unit | Constant> {
     let [schemaName] = SchemaItem.parseFullName(name);
     const [, schemaItemName] = SchemaItem.parseFullName(name);
 
@@ -79,10 +62,7 @@ export class UnitGraph {
         schemaName = refName;
       } else {
         // Didn't match any referenced schema, check if it is current schemaName or alias
-        if (
-          schemaName === currentSchema.name ||
-          schemaName === currentSchema.alias
-        )
+        if (schemaName === currentSchema.name || schemaName === currentSchema.alias)
           schemaName = currentSchema.name;
       }
 
@@ -91,13 +71,9 @@ export class UnitGraph {
       // Get schema with schema key
       const schema = await this._context.getSchema(schemaKey);
       if (!schema) {
-        throw new BentleyError(
-          BentleyStatus.ERROR,
-          "Cannot find schema",
-          () => {
+        throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema", () => {
             return { schema: schemaName };
-          }
-        );
+        });
       } else {
         // Set currentSchema to look up schemaItem to be whatever is prefixed in name
         currentSchema = schema;
@@ -111,32 +87,21 @@ export class UnitGraph {
     // Get schema item with schema item key
     const item = await this._context.getSchemaItem(itemKey);
     if (!item)
-      throw new BentleyError(
-        BentleyStatus.ERROR,
-        "Cannot find schema item",
-        () => {
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item", () => {
           return { item: name };
-        }
-      );
-    if (
-      item.schemaItemType === SchemaItemType.Unit ||
-      item.schemaItemType === SchemaItemType.Constant
-    )
+      });
+
+    if (item.schemaItemType === SchemaItemType.Unit || item.schemaItemType === SchemaItemType.Constant)
       return item as Unit | Constant;
 
-    throw new BentleyError(
-      BentleyStatus.ERROR,
-      "Item is neither a unit or a constant",
-      () => {
+    throw new BentleyError(BentleyStatus.ERROR, "Item is neither a unit or a constant", () => {
         return { itemType: item.key.fullName };
-      }
-    );
+    });
   }
 
   /**
    * Adds unit and corresponding children to graph as well as edges between units
    * @param unit current unit to be added to graph
-   * @internal
    */
   public async addUnit(unit: Unit | Constant): Promise<void> {
     if (this._graph.hasNode(unit.key.fullName)) return;
@@ -166,7 +131,6 @@ export class UnitGraph {
     await Promise.all(children);
   }
 
-  /** @internal */
   private isIdentity(unit: Unit | Constant) {
     return unit.definition === unit.name;
   }
@@ -176,28 +140,14 @@ export class UnitGraph {
    * @param unit Unit to be processed
    * @param stopNodes The tree exploration should stop here
    */
-  public reduce(
-    unit: Unit | Constant,
-    stopNodes: Set<string>
-  ): Map<string, UnitConversion> {
+  public reduce(unit: Unit | Constant, stopNodes: Set<string>): Map<string, UnitConversion> {
     const unitFullName = unit.key.fullName;
     const innerMapStore = new Map<string, UnitConversion>();
-    const outerMapStore = GraphUtils.dfsReduce(
-      this._graph,
-      unitFullName,
-      (p, c) => this.reducingFunction(stopNodes, p, c),
-      (c) => !stopNodes.has(c),
-      innerMapStore
-    );
+    const outerMapStore = GraphUtils.dfsReduce(this._graph, unitFullName, (p, c) => this.reducingFunction(stopNodes, p, c), (c) => !stopNodes.has(c), innerMapStore);
     return outerMapStore;
   }
 
-  /** @internal */
-  private reducingFunction(
-    stopNodes: Set<string>,
-    innermapStore: Map<string, UnitConversion>,
-    unitFullName: string
-  ) {
+  private reducingFunction(stopNodes: Set<string>, innermapStore: Map<string, UnitConversion>, unitFullName: string) {
     if (stopNodes.has(unitFullName)) {
       innermapStore.set(unitFullName, UnitConversion.identity);
       return innermapStore;
@@ -211,9 +161,7 @@ export class UnitGraph {
         const emap = map.raise(exponent);
         return pm ? pm.multiply(emap) : emap;
       }, undefined);
-      const thisMap = this._graph.node(unitFullName)
-        ? UnitConversion.from(this._graph.node(unitFullName))
-        : UnitConversion.identity;
+      const thisMap = this._graph.node(unitFullName) ? UnitConversion.from(this._graph.node(unitFullName)) : UnitConversion.identity;
       const other = cmap || UnitConversion.identity;
       const result = other.compose(thisMap);
       innermapStore.set(unitFullName, result);
