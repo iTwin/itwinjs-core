@@ -54,10 +54,6 @@ export class ApplyModelDisplayScaleTool extends Tool {
       if (undefined !== vp.view.modelDisplayTransformProvider) {
         vp.view.modelDisplayTransformProvider = undefined;
         console.log(`ApplyModelDisplayScaleTool A   isWebGL2 ${System.instance.capabilities.isWebGL2}   change in scale uniforimty ${newScaleIsUniform !== oldScaleIsUniform}`);
-        if (!System.instance.capabilities.isWebGL2 && newScaleIsUniform !== oldScaleIsUniform) {
-          vp.invalidateScene();
-          vp.requestRedraw();
-        }
         return true;
       } else {
         return false;
@@ -88,11 +84,6 @@ export class ApplyModelDisplayScaleTool extends Tool {
     vp.zoomToVolume(Range3d.createArray(points));
 
     console.log(`ApplyModelDisplayScaleTool B   isWebGL2 ${System.instance.capabilities.isWebGL2}   change in scale uniforimty ${newScaleIsUniform !== oldScaleIsUniform}`);
-    if (!System.instance.capabilities.isWebGL2 && newScaleIsUniform !== oldScaleIsUniform) {
-      vp.invalidateScene();
-      vp.requestRedraw();
-    }
-
     return true;
   }
 
