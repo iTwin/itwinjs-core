@@ -644,9 +644,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (!SchemaItem.isSchemaItem(object))
       return false;
 
-    const objectType = (object as ECClass).schemaItemType;
-    return objectType === SchemaItemType.EntityClass || objectType === SchemaItemType.Mixin || objectType === SchemaItemType.RelationshipClass ||
-            objectType === SchemaItemType.StructClass || objectType === SchemaItemType.CustomAttributeClass;
+    return object.schemaItemType === SchemaItemType.EntityClass || object.schemaItemType === SchemaItemType.Mixin || object.schemaItemType === SchemaItemType.RelationshipClass ||
+            object.schemaItemType === SchemaItemType.StructClass || object.schemaItemType === SchemaItemType.CustomAttributeClass;
   }
 
   /**

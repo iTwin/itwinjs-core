@@ -110,7 +110,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect(((await testSchema.getItem<EntityClass>("TestEntity")) as EntityClass).schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
     });
 
     it("should succeed for mixin class", async () => {
@@ -118,7 +118,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createMixinClass("TestMixin");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
-      expect(((await testSchema.getItem<Mixin>("TestMixin")) as Mixin).schemaItemType).to.equal(SchemaItemType.Mixin);
+      expect((await testSchema.getItem<Mixin>("TestMixin"))?.schemaItemType).to.equal(SchemaItemType.Mixin);
     });
 
     it("should succeed for struct class", async () => {
@@ -126,7 +126,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createStructClass("TestStruct");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
-      expect(((await testSchema.getItem<StructClass>("TestStruct")) as StructClass).schemaItemType).to.equal(SchemaItemType.StructClass);
+      expect((await testSchema.getItem<StructClass>("TestStruct"))?.schemaItemType).to.equal(SchemaItemType.StructClass);
     });
 
     it("should succeed for non-class schema items", async () => {
