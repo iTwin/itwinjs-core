@@ -381,7 +381,7 @@ export class DecorateContext extends RenderContext {
         return; // defer output of 1st direction line until minDist can be evaluated...
       }
 
-      const minDist = Math.min(Math.abs(startEndDistances.x0), Math.abs(startEndDistances.x1)) / gridLineIdentifier.stepCount;
+      const minDist = Math.abs(startEndDistances.x0 + startEndDistances.x1) / (gridLineIdentifier.stepCount * 2);
       if (minDist < GridDisplaySettings.minFadeSeparation)
         thisTransparency = Math.ceil(Geometry.interpolate(255, minDist / (GridDisplaySettings.minFadeSeparation + gridOptions.distanceBetweenLines), lineTransparency));
       else
