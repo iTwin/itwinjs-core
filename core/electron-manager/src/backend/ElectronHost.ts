@@ -222,10 +222,11 @@ export class ElectronHost {
 class ElectronAppHandler extends IpcHandler {
   public get channelName() { return "electron-safe"; }
   public async callElectron(member: string, method: string, ...args: any) {
-    const func = (ElectronHost.electron as any)[member][method];
+    const electronMember = (ElectronHost.electron as any)[member];
+    const func = electronMember[method];
     if (typeof func !== "function")
       throw new IModelError(IModelStatus.FunctionNotFound, `Method ${method} not found electron.${member}`);
 
-    return func.call(...args);
+    return func.call(electronMember, ...args);
   }
 }
