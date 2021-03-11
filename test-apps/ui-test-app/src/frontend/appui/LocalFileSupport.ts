@@ -12,22 +12,26 @@ import { IModelError } from "@bentley/imodeljs-common";
 export class LocalFileSupport {
 
   public static localFilesSupported = (): boolean => {
-    if (!SampleAppIModelApp.testAppConfiguration?.snapshotPath) {
+    if (ProcessDetector.isElectronAppFrontend)
+      return true;
+    else if (SampleAppIModelApp.testAppConfiguration?.snapshotPath)
+      return true;
+    else {
       alert("imjs_TESTAPP_SNAPSHOT_FILEPATH must be set on the backend and point to a folder containing local snapshot files.");
       return false;
     }
-    return true;
   };
 
-  public static openLocalFile = async (fileName: string, writable: boolean): Promise<IModelConnection | undefined> => {
+  public static openLocalFile = async (fileSpec: string, writable: boolean): Promise<IModelConnection | undefined> => {
     // Close the current iModelConnection
     await SampleAppIModelApp.closeCurrentIModel();
 
     let iModelConnection: IModelConnection | undefined;
-    const filePath = `${SampleAppIModelApp.testAppConfiguration?.snapshotPath}/${fileName}`;
+    let filePath = "";
 
     // Open the iModel
     if (ProcessDetector.isElectronAppFrontend) {
+      filePath = fileSpec;
       Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: Opening standalone. path=${filePath} writable=${writable}`);
       try {
         iModelConnection = await BriefcaseConnection.openStandalone(filePath, writable ? OpenMode.ReadWrite : OpenMode.Readonly, { key: filePath });
@@ -43,6 +47,7 @@ export class LocalFileSupport {
         }
       }
     } else {
+      filePath = `${SampleAppIModelApp.testAppConfiguration?.snapshotPath}/${fileSpec}`;
       Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: Opening snapshot. path=${filePath}`);
       try {
         iModelConnection = await SnapshotConnection.openFile(filePath);
