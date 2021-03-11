@@ -6,7 +6,7 @@ import { BriefcaseConnection, IModelConnection, SnapshotConnection } from "@bent
 import { SampleAppIModelApp } from "../index";
 import { IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend"; // NEEDSWORK: No exporting barrel file in @bentley/electron-manager
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 // cSpell:ignore TESTAPP FILEPATH
 

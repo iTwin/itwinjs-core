@@ -7,7 +7,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend"; // NEEDSWORK: No exporting barrel file in @bentley/electron-manager
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
 import { Button, ButtonSize, ButtonType, FillCentered, Headline } from "@bentley/ui-core";
@@ -140,10 +140,12 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
   };
 
   private _handleElectronFileOpen = async () => {
-    // NEEDSWORK: These OpenDialogOptions filters/extensions are not working
+    // NEEDSWORK: These OpenDialogOptions filters/extensions are not working. All files in a folder are shown and filter is not listed in drop-down.
     const opts: OpenDialogOptions = {
       properties: ["openFile"],
-      filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
+      filters: [
+        { name: "iModels", extensions: ["ibim", "bim"] },
+      ],
     };
     const val = await ElectronApp.callDialog("showOpenDialog", opts);
     if (val.canceled)
