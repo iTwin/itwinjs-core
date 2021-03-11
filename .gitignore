@@ -41,6 +41,7 @@ package-deps.json
 # Mac specfic
 .DS_Store
 
+.env.local
 .env.*.local
 
 debug.log

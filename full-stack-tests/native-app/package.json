@@ -51,7 +51,7 @@
     "@types/node": "10.14.1",
     "@types/nock": "^11.1.0",
     "chai": "^4.1.2",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "glob": "^7.1.2",
     "istanbul-instrumenter-loader": "^3.0.1",
     "internal-tools": "0.0.0",

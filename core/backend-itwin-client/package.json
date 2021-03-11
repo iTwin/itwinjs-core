@@ -78,7 +78,7 @@
     "@types/stream-buffers": "~3.0.2",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "internal-tools": "0.0.0",
     "mocha": "^5.2.0",
     "nock": "^12.0.3",
