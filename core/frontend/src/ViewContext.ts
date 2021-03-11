@@ -9,7 +9,7 @@
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
   ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
-  Point3d, Range1d, Range3d, Ray3d, Transform, Vector2d, Vector3d, ViewGraphicsOps, ViewportGraphicsGridLineIdentifier, XAndY} from "@bentley/geometry-core";
+  Point3d, Range1d, Range3d, Ray3d, Transform, Vector2d, Vector3d, ViewGraphicsOps, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY} from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, NpcCenter, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
@@ -365,13 +365,24 @@ export class DecorateContext extends RenderContext {
 
     const refColor = color.withTransparency(gridConstants.refTransparency);
     const linePat = eyeDot < 0.0 ? LinePixels.Code2 : LinePixels.Solid;
-
+    const _world000 = vp.worldToNpcMap.transform1.multiplyXYZW(0, 0, 0, 1);
+    const _world111 = vp.worldToNpcMap.transform1.multiplyXYZW(1, 1, 1, 1);
+    const _view000 = vp.worldToViewMap.transform0.multiplyPoint4d(_world000);
+    const _view111 = vp.worldToViewMap.transform0.multiplyPoint4d(_world111);
     builder.setSymbology(refColor, planeColor, 1, linePat);
-    const npcRange = Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1);
-    ViewGraphicsOps.announceGridLinesInView(gridOrigin,
-      Vector3d.create(refSpacing.x, 0, 0),
-      Vector3d.create(0, refSpacing.x, 0),
-      vp.worldToNpcMap, npcRange, DecorateContext._minNpcSeparation,
+    const npcRange = Range3d.createXYZXYZ(_view000.x, _view000.y, _view000.z, _view111.x, _view111.y, _view111.z);
+    const gridXStep = rMatrix.columnX().scale(refSpacing.x);
+    const gridYStep = rMatrix.columnY().scale(refSpacing.y);
+
+    const gridOptions = ViewportGraphicsGridSpacingOptions.create(
+      DecorateContext._minPixelSeparation,
+      DecorateContext._gridCullingOption,
+      DecorateContext._gridClippingOption
+    );
+
+    ViewGraphicsOps.announceGridLinesInView(
+      gridOrigin, gridXStep, gridYStep,
+      vp.worldToViewMap, npcRange, gridOptions,
       (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number| undefined,
         _gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
         builder.addLineString([pointA, pointB]);
@@ -380,7 +391,12 @@ export class DecorateContext extends RenderContext {
     this.addDecorationFromBuilder(builder);
   }
   /** @internal */
-  private static _minNpcSeparation = 0.01;
+  private static _minPixelSeparation = 2.0;
+  /** @internal */
+  private static _gridCullingOption: 0 | 1 | 2 = 1;
+  /** @internal */
+  private static _gridClippingOption: 0 | 1 = 1;
+
   /** @internal */
   private _gridSelect = 1;
   /** @internal */

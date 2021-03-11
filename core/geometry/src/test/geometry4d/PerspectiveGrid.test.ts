@@ -18,7 +18,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Loop } from "../../curve/Loop";
 import { ClipPlane } from "../../clipping/ClipPlane";
-import { ViewGraphicsOps, ViewportGraphicsGridLineIdentifier } from "../../geometry4d/ViewGraphicsOps";
+import { ViewGraphicsOps, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions } from "../../geometry4d/ViewGraphicsOps";
 import { BoxTopology } from "../../polyface/BoxTopology";
 import { LineString3d } from "../../curve/LineString3d";
 
@@ -139,7 +139,9 @@ describe("PerspectiveGrid", () => {
         const x0FromFunction = x0 + backSize;
         // GeometryCoreTestIO.captureCloneGeometry(allGeometry, createTransformedUnitBoxMesh(map.transform1, 0.0, 1.0), x0FromFunction, y0, z0);
         captureFrustumEdges(allGeometry, map.transform1, x0FromFunction, y0, z0);
-        ViewGraphicsOps.announceGridLinesInView(gridOrigin, gridX, gridY, map, unitRange, displayableDistance,
+        const options = ViewportGraphicsGridSpacingOptions.create(displayableDistance, 2, 1);
+
+        ViewGraphicsOps.announceGridLinesInView(gridOrigin, gridX, gridY, map, unitRange, options,
           (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
           _gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
             const pointA1 = map.transform0.multiplyPoint3dQuietNormalize(pointA);

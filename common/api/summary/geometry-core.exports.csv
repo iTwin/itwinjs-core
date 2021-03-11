@@ -272,6 +272,7 @@ public;Vector3d
 public;Vector3dArray
 internal;ViewGraphicsOps
 internal;ViewportGraphicsGridLineIdentifier
+internal;ViewportGraphicsGridSpacingOptions
 public;WeightStyle
 public;WritableLowAndHighXY
 public;WritableLowAndHighXYZ

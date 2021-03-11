@@ -5564,7 +5564,7 @@ export class Vector3dArray {
 
 // @internal
 export class ViewGraphicsOps {
-    static announceGridLinesInView(gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d, worldToDisplay: Map4d, viewRange: Range3d, xyDistanceBetweenLines: number, announceLine: (
+    static announceGridLinesInView(gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d, worldToDisplay: Map4d, viewRange: Range3d, options: ViewportGraphicsGridSpacingOptions, announceLine: (
     pointA: Point3d,
     pointB: Point3d,
     perspectiveZA: number | undefined,
@@ -5576,6 +5576,15 @@ export class ViewGraphicsOps {
 export interface ViewportGraphicsGridLineIdentifier {
     direction: 0 | 1;
     index: number;
+}
+
+// @internal
+export class ViewportGraphicsGridSpacingOptions {
+    clippingOption: 0 | 1;
+    // (undocumented)
+    static create(distanceBetweenLines: number, cullingOption?: 0 | 1 | 2, clippingOption?: 0 | 1): ViewportGraphicsGridSpacingOptions;
+    cullingOption: 0 | 1 | 2;
+    distanceBetweenLines: number;
 }
 
 // @public

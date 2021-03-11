@@ -32,6 +32,46 @@ export interface ViewportGraphicsGridLineIdentifier {
    */
   index: number;
 }
+/**
+ * options for grid line constructions
+ * @internal
+ */
+export class ViewportGraphicsGridSpacingOptions {
+  /**
+   * * 0 ==> output all lines (In this case clipping options is ignored)
+   * * 1 ==> output when sufficiently distant from immediate neighbor (measured to immediate neighbor even if neighbor is skipped)
+   * * 2 ==> output when sufficiently distant from previously output line (including distance across multiple skipped lines)
+   */
+  public cullingOption: 0 | 1 | 2;
+  /**
+   * clipping of each line where it is close to its neighbor.
+   * * This option is NOT applied when culling options is 0
+   * * 0 ==> output entire line (entire line is clipped by view frustum but not limited by neighbors)
+   * * 1 ==> clip line where it is close predecessor line
+   */
+  public clippingOption: 0 | 1;
+  /**
+   * distance-between-lines criteria for use when filtering lines.
+   * * Units depend on choice of map (view or npc)
+   */
+  public distanceBetweenLines: number;
+
+  private constructor(distanceBetweenLines: number, cullingOption: 0 | 1 | 2, clippingOption: 0 | 1 ) {
+    this.distanceBetweenLines = distanceBetweenLines;
+    this.cullingOption = cullingOption;
+    this.clippingOption = clippingOption;
+  }
+  /**
+   * Create a ViewportGraphicsSpacingOptions instance
+   * @param distanceBetweenLines  cutoff for decisions about spacing between lines.  In units of the perspective map (npc or pixels)
+   * @param cullingOption See ViewportGraphicsGridSpacingOptions
+   * @param clippingOption See ViewportGraphicsGridSpacingOptions
+   */
+  public static create(distanceBetweenLines: number, cullingOption: 0 | 1 | 2 = 2, clippingOption: 0 | 1 = 1) {
+    return new ViewportGraphicsGridSpacingOptions(distanceBetweenLines, cullingOption, clippingOption);
+  }
+}
+
 /** helper class for managing step-by-step review of a lines.
  * "A" is a previous line.
  * "B" is a new line.
@@ -124,14 +164,14 @@ class LineProximityContext {
    * @param perspectiveZStartEnd pre-allocated receiver for depths at (fractional!) start and end
    * @param distanceRange pre-allocated receiver for min and max absolute distance at ends
    */
-  public intervalOfSeparation(minimumDistance: number, point0B: Point3d, point1B: Point3d,
+  public intervalOfSeparation(options: ViewportGraphicsGridSpacingOptions, point0B: Point3d, point1B: Point3d,
     fractions: Range1d,
     perspectiveZStartEnd: Segment1d,
     distanceRange: Range1d
   ): boolean {
     if (this.divMagU === undefined)
       return false;
-
+    const minimumDistance = options.distanceBetweenLines;
     this.worldToNPC.multiplyPoint3dQuietNormalize(point0B, this.npc0B);
     this.worldToNPC.multiplyPoint3dQuietNormalize(point1B, this.npc1B);
     const d0 = this.signedDistanceToNPCPoint(this.npc0B);
@@ -193,7 +233,7 @@ export class ViewGraphicsOps {
     gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d,
     worldToDisplay: Map4d,
     viewRange: Range3d,
-    xyDistanceBetweenLines: number,
+    options: ViewportGraphicsGridSpacingOptions,
     announceLine: (
       /** world coordinates start point of the line */
       pointA: Point3d,
@@ -265,23 +305,29 @@ export class ViewGraphicsOps {
       gridPoint0.interpolate(f1, gridPoint1, clippedGridPoint1);  // those are in grid line counter space !!!
       const clippedPointWorld0 = gridTransform.multiplyPoint3d(clippedGridPoint0);
       const clippedPointWorld1 = gridTransform.multiplyPoint3d(clippedGridPoint1);
-
+      if (options.cullingOption === 0) {
+        lineContext.announceLineAWorld(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd);
+        announceLine (clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
+        numAnnounced++;
+        return;
+      }
       if (!lineContext.hasValidLine) {
         lineContext.announceLineAWorld(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd);
         announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
         numAnnounced++;
       } else {
-        if (!lineContext.intervalOfSeparation(xyDistanceBetweenLines, clippedPointWorld0, clippedPointWorld1,
+        if (!lineContext.intervalOfSeparation(options, clippedPointWorld0, clippedPointWorld1,
           fractionRange, perspectiveZStartEnd, distanceRange)) {
-          // LEAVE LINE A WHERE IT IS.   Subsequent candidate lines will move away
+          if (options.cullingOption === 1)
+            lineContext.moveLineBToLineA();
         } else {
-          if (fractionRange.isExact01)
+          if (options.clippingOption === 0 || fractionRange.isExact01)
             announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
           else {
             announceLine(clippedPointWorld0.interpolate(fractionRange.low, clippedPointWorld1),
               clippedPointWorld0.interpolate(fractionRange.high, clippedPointWorld1),
               perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
-        }
+          }
           lineContext.moveLineBToLineA();
           numAnnounced++;
         }
