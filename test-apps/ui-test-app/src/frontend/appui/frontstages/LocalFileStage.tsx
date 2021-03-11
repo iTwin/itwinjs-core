@@ -7,7 +7,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend"; // NEEDSWORK: No exporting barrel file in @bentley/electron-manager
 import { OpenDialogOptions } from "electron";
 
 import { Button, ButtonSize, ButtonType, FillCentered, Headline } from "@bentley/ui-core";
