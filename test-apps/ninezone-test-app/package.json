@@ -21,7 +21,7 @@
   "devDependencies": {
     "@bentley/build-tools": "2.14.0-dev.16",
     "@bentley/eslint-plugin": "2.14.0-dev.16",
-    "@bentley/react-scripts": "3.4.9",
+    "@bentley/react-scripts": "4.0.3-dev.0",
     "@types/classnames": "^2.2.3",
     "@types/react": "16.9.43",
     "@types/react-dom": "^16.8.0",
