@@ -97,42 +97,52 @@ export class Model extends Entity implements ModelProps {
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onInsert(props: ModelProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert); }
+  protected static onInsert(props: Readonly<ModelProps>, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert);
+    }
   }
   /** Called after a new model is inserted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
   protected static onInserted(id: string, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert); }
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert);
+    }
   }
   /** Called before a model is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onUpdate(props: ModelProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update); }
+  protected static onUpdate(props: Readonly<ModelProps>, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update);
+    }
   }
   /** Called after a model is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onUpdated(props: ModelProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update); }
+  protected static onUpdated(props: Readonly<ModelProps>, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update);
+    }
   }
   /** Called before a model is deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onDelete(props: ModelProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete); }
+  protected static onDelete(props: Readonly<ModelProps>, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete);
+    }
   }
   /** Called after a model is deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onDeleted(_props: ModelProps, _iModel: IModelDb): void { }
+  protected static onDeleted(_props: Readonly<ModelProps>, _iModel: IModelDb): void { }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 

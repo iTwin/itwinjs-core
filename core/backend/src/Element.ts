@@ -125,47 +125,57 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onInsert(props: ElementProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert); }
+  protected static onInsert(props: Readonly<ElementProps>, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert);
+    }
   }
   /** Called before an Element is updated.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onUpdate(props: ElementProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update); }
+  protected static onUpdate(props: Readonly<ElementProps>, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update);
+    }
   }
   /** Called before an Element is deleted.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onDelete(props: ElementProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete); }
+  protected static onDelete(props: Readonly<ElementProps>, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
+    }
   }
   /** Called after a new Element was inserted.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onInserted(props: ElementProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert); }
+  protected static onInserted(props: Readonly<ElementProps>, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert);
+    }
   }
   /** Called after an Element was updated.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onUpdated(props: ElementProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update); }
+  protected static onUpdated(props: Readonly<ElementProps>, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) {
+      iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update);
+    }
   }
   /** Called after an Element was deleted.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onDeleted(_props: ElementProps, _iModel: IModelDb): void { }
+  protected static onDeleted(_props: Readonly<ElementProps>, _iModel: IModelDb): void { }
   /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
    * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.
    * This callback is only meant to be overridden if there are other Ids in non-standard locations that need to be remapped or other data that needs to be fixed up after the clone.

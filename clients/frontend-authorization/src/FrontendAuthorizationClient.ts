@@ -13,16 +13,16 @@ import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
  */
 export interface FrontendAuthorizationClient extends AuthorizationClient {
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
-  signIn(requestContext: ClientRequestContext): Promise<void>;
+  signIn(requestContext?: ClientRequestContext): Promise<void>;
 
   /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
-  signOut(requestContext: ClientRequestContext): Promise<void>;
+  signOut(requestContext?: ClientRequestContext): Promise<void>;
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
   readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
-  hasSignedIn: boolean;
+  readonly hasSignedIn: boolean;
 }
 
 /** FrontendAuthorization type guard.

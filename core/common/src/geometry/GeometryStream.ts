@@ -20,6 +20,7 @@ import { AreaPattern } from "./AreaPattern";
 import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
 import { TextString, TextStringProps } from "./TextString";
+import { Base64EncodedString } from "../Base64EncodedString";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -103,7 +104,7 @@ export namespace BRepEntity {
    */
   export interface DataProps {
     /** data as Base64 encoded string. Must be specifically requested using [[ElementLoadProps.wantBRepData]]. */
-    data?: string;
+    data?: Base64EncodedString;
     /** body type, default is Solid */
     type?: Type;
     /** body transform, default is identity */

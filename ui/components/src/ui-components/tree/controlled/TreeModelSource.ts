@@ -26,13 +26,12 @@ export interface TreeModelChanges {
  * @beta
  */
 export class TreeModelSource {
-  private _model = new MutableTreeModel();
   private _visibleNodes?: VisibleTreeNodes;
 
   /** Event that is emitted every time tree model is changed. */
   public onModelChanged = new BeUiEvent<[TreeModel, TreeModelChanges]>();
 
-  constructor() {
+  constructor(private _model: MutableTreeModel = new MutableTreeModel()) {
     this.onModelChanged.addListener(() => this._visibleNodes = undefined);
   }
 

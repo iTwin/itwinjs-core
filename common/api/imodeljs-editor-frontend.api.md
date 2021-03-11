@@ -6,8 +6,14 @@
 
 import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
 import { BeButtonEvent } from '@bentley/imodeljs-frontend';
+import { DialogItem } from '@bentley/ui-abstract';
+import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DynamicsContext } from '@bentley/imodeljs-frontend';
 import { ElementSetTool } from '@bentley/imodeljs-frontend';
+import { Frustum } from '@bentley/imodeljs-common';
+import { Point3d } from '@bentley/geometry-core';
+import { PropertyDescription } from '@bentley/ui-abstract';
+import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { Transform } from '@bentley/geometry-core';
 
@@ -34,12 +40,24 @@ export class DeleteElementsTool extends ElementSetTool {
 }
 
 // @alpha
+export interface EditorOptions {
+    registerBasicManipulationTools?: true | undefined;
+    registerUndoRedoTools?: true | undefined;
+}
+
+// @alpha
 export class EditTools {
     // (undocumented)
     static callCommand(methodName: string, ...args: any[]): Promise<any>;
-    static initialize(): Promise<void>;
+    static initialize(options?: EditorOptions): Promise<void>;
+    // (undocumented)
+    static namespace: string;
     // (undocumented)
     static startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T>;
+    // (undocumented)
+    static tools: string;
+    // @internal (undocumented)
+    static translate(prompt: string): string;
 }
 
 // @alpha
@@ -52,6 +70,88 @@ export class MoveElementsTool extends TransformElementsTool {
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @alpha
+export class RedoTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha (undocumented)
+export enum RotateAbout {
+    // (undocumented)
+    Center = 2,
+    // (undocumented)
+    Origin = 1,
+    // (undocumented)
+    Point = 0
+}
+
+// @alpha
+export class RotateElementsTool extends TransformElementsTool {
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    // (undocumented)
+    protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
+    // (undocumented)
+    protected _getAboutDescription: () => PropertyDescription;
+    // (undocumented)
+    protected _getMethodDescription: () => PropertyDescription;
+    // (undocumented)
+    protected haveFinalPoint: boolean;
+    // (undocumented)
+    protected havePivotPoint: boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onRestartTool(): void;
+    parseAndRun(...inputArgs: string[]): boolean;
+    // (undocumented)
+    protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    protected get requireAcceptForSelectionSetDynamics(): boolean;
+    // (undocumented)
+    get rotateAbout(): RotateAbout;
+    set rotateAbout(about: RotateAbout);
+    // (undocumented)
+    get rotateAngle(): number;
+    set rotateAngle(value: number);
+    // (undocumented)
+    get rotateMethod(): RotateMethod;
+    set rotateMethod(method: RotateMethod);
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected transformAgenda(transform: Transform): Promise<void>;
+    // (undocumented)
+    protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void;
+    // (undocumented)
+    protected get wantAdditionalInput(): boolean;
+    // (undocumented)
+    protected wantProcessAgenda(ev: BeButtonEvent): boolean;
+    // (undocumented)
+    protected xAxisPoint?: Point3d;
+}
+
+// @alpha (undocumented)
+export enum RotateMethod {
+    // (undocumented)
+    By3Points = 0,
+    // (undocumented)
+    ByAngle = 1
 }
 
 // @alpha
@@ -71,6 +171,10 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected createAgendaGraphics(changed: boolean): Promise<void>;
     // (undocumented)
+    protected _elementAlignedBoxes?: Frustum[];
+    // (undocumented)
+    protected _elementOrigins?: Point3d[];
+    // (undocumented)
     protected initAgendaDynamics(): Promise<boolean>;
     // (undocumented)
     protected onAgendaModified(): Promise<void>;
@@ -83,6 +187,8 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected startCommand(): Promise<string>;
     // (undocumented)
+    protected _startedCmd?: string;
+    // (undocumented)
     protected transformAgenda(transform: Transform): Promise<void>;
     // (undocumented)
     protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void;
@@ -94,6 +200,22 @@ export abstract class TransformElementsTool extends ElementSetTool {
     protected get wantDynamics(): boolean;
     // (undocumented)
     protected get wantMakeCopy(): boolean;
+}
+
+// @alpha
+export class UndoAllTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class UndoTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 
