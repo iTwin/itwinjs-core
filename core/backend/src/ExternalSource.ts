@@ -15,7 +15,7 @@ import { IModelDb } from "./IModelDb";
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
  * @alpha
  */
-export class ExternalSource extends InformationReferenceElement implements ExternalSourceProps {
+export class ExternalSource extends InformationReferenceElement {
   /** @internal */
   public static get className(): string { return "ExternalSource"; }
   /** @internal */
@@ -28,7 +28,7 @@ export class ExternalSource extends InformationReferenceElement implements Exter
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
  * @alpha
  */
-export class ExternalSourceAttachment extends InformationReferenceElement implements ExternalSourceAttachmentProps {
+export class ExternalSourceAttachment extends InformationReferenceElement {
   /** @internal */
   public static get className(): string { return "ExternalSourceAttachment"; }
   /** @internal */
@@ -54,7 +54,7 @@ export class ExternalSourceGroup extends ExternalSource {
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
  * @alpha
  */
-export class SynchronizationConfigLink extends UrlLink implements SynchronizationConfigLinkProps {
+export class SynchronizationConfigLink extends UrlLink {
   /** @internal */
   public static get className(): string { return "SynchronizationConfigLink"; }
   /** @internal */
