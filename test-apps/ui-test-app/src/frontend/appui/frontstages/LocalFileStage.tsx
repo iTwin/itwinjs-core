@@ -140,7 +140,6 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
   };
 
   private _handleElectronFileOpen = async () => {
-    // NEEDSWORK: These OpenDialogOptions filters/extensions are not working. All files in a folder are shown and filter is not listed in drop-down.
     const opts: OpenDialogOptions = {
       properties: ["openFile"],
       filters: [
