@@ -628,7 +628,7 @@ describe("IModelTransformer", () => {
     assert.notEqual(sourceDb1.iModelId, sourceDb2.iModelId); // iModelId must be different to detect provenance scope conflicts
 
     const targetDbFile = IModelTestUtils.prepareOutputFile("IModelTransformer", "ConflictingScopes.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Conflicting Scopes Test" }});
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Conflicting Scopes Test" } });
 
     const transformer1 = new IModelTransformer(sourceDb1, targetDb); // did not set targetScopeElementId
     const transformer2 = new IModelTransformer(sourceDb2, targetDb); // did not set targetScopeElementId

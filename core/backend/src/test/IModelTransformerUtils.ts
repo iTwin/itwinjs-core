@@ -244,6 +244,7 @@ export namespace IModelTransformerUtils {
       commonDouble: 1.1,
       commonString: "Unique",
       commonLong: physicalObjectId1,
+      commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
       sourceDouble: 11.1,
       sourceString: "UniqueAspect",
       sourceLong: physicalObjectId1,
@@ -634,6 +635,7 @@ export namespace IModelTransformerUtils {
     assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
     assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique");
     assert.equal(targetUniqueAspects[0].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
+    assert.equal(Base64EncodedString.fromUint8Array(targetUniqueAspects[0].asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])));
     assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
     assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect");
     assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
