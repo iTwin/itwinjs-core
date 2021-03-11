@@ -24,7 +24,7 @@ import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcParams, DesktopAuthorizationClientConfiguration, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions,
-  IModelConnection, NativeApp, NativeAppLogger, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOptions,
+  IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOptions,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
@@ -69,7 +69,6 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
 import { AppSettingsProvider } from "./appui/uiproviders/AppSettingsProvider";
-import { AppQuantityOverridesManager } from "./AppQuantityOverridesManager";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -183,7 +182,6 @@ export class SampleAppIModelApp {
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
   private static _appUiSettings = new AppUiSettings();
-  private static _appQuantityOverridesManager = new AppQuantityOverridesManager();
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
@@ -280,6 +278,7 @@ export class SampleAppIModelApp {
     // default to showing imperial formatted units
     await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
     Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
+    await IModelApp.quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(true)); // pass true to save per imodel
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();

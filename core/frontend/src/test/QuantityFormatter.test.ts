@@ -6,7 +6,7 @@
 import { Parser } from "@bentley/imodeljs-quantity";
 import { assert } from "chai";
 
-import { QuantityFormatter, QuantityType, QuantityTypeArg } from "../QuantityFormatter";
+import { QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {

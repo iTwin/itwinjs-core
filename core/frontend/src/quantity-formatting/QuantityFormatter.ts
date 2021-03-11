@@ -10,8 +10,9 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import {
   Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
-import { IModelApp } from "./IModelApp";
+import { IModelApp } from "../IModelApp";
 import { BasicUnitsProvider } from "./BasicUnitsProvider";
+import { IModelConnection } from "../imodeljs-frontend";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
 
@@ -253,14 +254,38 @@ export interface QuantityFormatsChangedArgs {
   readonly quantityType: string;
 }
 
-/** Arguments sent to QuantityFormatOverridesChanged event listeners.
+/** Arguments sent to UnitFormattingSettingsProvider when overrides are changed.
  * @alpha
  */
 export interface QuantityFormatOverridesChangedArgs {
   // string that represents the QuantityType that has been overriden or the overrides cleared.
-  readonly unitSystem: UnitSystemKey;
-  readonly quantityType: QuantityTypeKey;
-  readonly formatProps?: FormatProps; // if formatProps is undefined then clearing existing overrides
+  readonly typeKey: QuantityTypeKey;
+  // overrideEntry will be undefined when clearing overrides
+  readonly overrideEntry?: OverrideFormatEntry;
+  // used only when change applies to a single unit system
+  readonly unitSystem?: UnitSystemKey;
+}
+
+/** The UnitFormattingSettingsProvider interface is used to store and retrieve FormatProps to be used to format and parse values
+ *  for a specific QuantityType. If none are defined then the default formats specified in the QuantityFormatter are used.
+ *  @alpha */
+export interface UnitFormattingSettingsProvider {
+  // serializes JSON object containing format overrides for a specific quantity type.
+  store (quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
+  // retrieves serialized JSON object containing format overrides for a specific quantity type.
+  retrieve (quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry|undefined>;
+  // removes the override formats for a specific quantity type.
+  remove (quantityTypeKey: QuantityTypeKey): Promise<boolean>;
+  // retrieves the active unit system typically based on the "active" iModelConnection
+  retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
+  // store the active unit system typically for the "active" iModelConnection
+  storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
+  // Function to load overrides for a specific IModelConnection. Typically this is not called often since typical implementations monitor for IModelConnection
+  // changes and call this method internally.
+  loadOverrides(imodel: IModelConnection|undefined): Promise<void>;
+  storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
+  storeFormatOverrides(args: QuantityFormatOverridesChangedArgs): Promise<void>;
+  readonly maintainOverridesPerIModel: boolean;
 }
 
 /** Class that supports formatting quantity values into strings and parsing strings into quantity values. This class also maintains
@@ -281,6 +306,14 @@ export class QuantityFormatter implements UnitsProvider {
   protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
   protected _activeParserSpecsByType = new Map<QuantityTypeKey, ParserSpec>();
   protected _overrideFormatPropsByUnitSystem = new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>();
+  protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
+
+  /** set the settings provider and if not imodel specific initialize setting for user. */
+  public async setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider ) {
+    this._unitFormattingSettingsProvider = provider;
+    if (!provider.maintainOverridesPerIModel)
+      await provider.loadOverrides(undefined);
+  }
 
   /** Called after the active unit system is changed.
    * The useImperial argument should not be relied on now that multiple systems are supported. It will
@@ -301,9 +334,6 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Fired when the active UnitsProvider is updated. This will allow cached Formatter and Parser specs to be updated if necessary. */
   public readonly onUnitsProviderChanged = new BeUiEvent<void>();
-
-  /** Fired when a format override is set. This will allow app to save overrides so they can be reloaded when necessary, typically when a new imodel is loaded. */
-  public readonly onQuantityFormatOverridesChanged = new BeUiEvent<QuantityFormatOverridesChangedArgs>();
 
   /**
    * constructor
@@ -435,15 +465,16 @@ export class QuantityFormatter implements UnitsProvider {
       if (props) {
         if (this._overrideFormatPropsByUnitSystem.has(unitSystemKey)) {
           this._overrideFormatPropsByUnitSystem.get(unitSystemKey)!.set(typeKey, props);
-          this.onQuantityFormatOverridesChanged.emit({unitSystem: unitSystemKey, quantityType: typeKey, formatProps:props});
         } else {
           const newMap = new Map<string, FormatProps>();
           newMap.set(typeKey, props);
           this._overrideFormatPropsByUnitSystem.set(unitSystemKey, newMap);
-          this.onQuantityFormatOverridesChanged.emit({unitSystem: unitSystemKey, quantityType: typeKey, formatProps:props});
         }
       }
     });
+
+    this._unitFormattingSettingsProvider &&
+      this._unitFormattingSettingsProvider.storeFormatOverrides({typeKey, overrideEntry});
 
     const formatProps = this.getOverrideFormatPropsByQuantityType(typeKey, this.activeUnitSystem);
     if (formatProps) {
@@ -463,7 +494,8 @@ export class QuantityFormatter implements UnitsProvider {
       const overrideMap = this._overrideFormatPropsByUnitSystem.get(unitSystem);
       if (overrideMap && overrideMap.has(type)) {
         overrideMap.delete(type);
-        this.onQuantityFormatOverridesChanged.emit({unitSystem, quantityType: type});
+        this._unitFormattingSettingsProvider &&
+          this._unitFormattingSettingsProvider.storeFormatOverrides({typeKey:type, unitSystem});
 
         await this.loadDefaultFormatAndParserSpecForQuantity(type);
         // trigger a message to let callers know the format has changed.
@@ -500,12 +532,33 @@ export class QuantityFormatter implements UnitsProvider {
       return false;
 
     this._quantityTypeRegistry.set(entry.key, entry);
+    // load any overrides so any saved overrides for the type being registered are applied
+    if (this._unitFormattingSettingsProvider)
+      await this._unitFormattingSettingsProvider.loadOverrides(undefined);
+
     if (entry.getDefaultFormatPropsBySystem) {
       const formatProps = entry.getDefaultFormatPropsBySystem(this.activeUnitSystem);
       await this.loadFormatAndParserSpec(entry, formatProps);
       return true;
     }
     return false;
+  }
+
+  /** Reinitialize caches. Typically called by active UnitFormattingSettingsProvider.
+   * startDefaultTool - set to true to start the Default to instead of leaving any active tool pointing to cached unit data that is no longer valid
+   * @beta
+   */
+  public async reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>,
+    unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void> {
+    this._overrideFormatPropsByUnitSystem.clear();
+    if (overrideFormatPropsByUnitSystem.size) {
+      this._overrideFormatPropsByUnitSystem = overrideFormatPropsByUnitSystem;
+    }
+
+    unitSystemKey && (this._activeUnitSystem = unitSystemKey);
+    await this.loadFormatAndParsingMapsForSystem(this._activeUnitSystem);
+    fireUnitSystemChanged && this.onActiveFormattingUnitSystemChanged.emit({ system: this._activeUnitSystem });
+    IModelApp.toolAdmin && startDefaultTool && IModelApp.toolAdmin.startDefaultTool();
   }
 
   /** Set the Active unit system to one of the supported types. This will asynchronously load the formatter and parser specs for the activated system. */
@@ -523,6 +576,8 @@ export class QuantityFormatter implements UnitsProvider {
     await this.loadFormatAndParsingMapsForSystem(systemType);
     // fire deprecated event
     this.onActiveUnitSystemChanged.emit({ useImperial: systemType === "imperial" }); // eslint-disable-line deprecation/deprecation
+    // allow settings provider to store the change
+    this._unitFormattingSettingsProvider && this._unitFormattingSettingsProvider.storeUnitSystemSetting ({ system: systemType });
     // fire current event
     this.onActiveFormattingUnitSystemChanged.emit({ system: systemType });
     if (IModelApp.toolAdmin && restartActiveTool)
@@ -572,7 +627,8 @@ export class QuantityFormatter implements UnitsProvider {
       if (overrides && overrides.size) {
         overrides.forEach((_props, typeKey) => {
           typesRemoved.push(typeKey);
-          this.onQuantityFormatOverridesChanged.emit({unitSystem:this.activeUnitSystem, quantityType: typeKey});
+          this._unitFormattingSettingsProvider &&
+            this._unitFormattingSettingsProvider.storeFormatOverrides({typeKey, unitSystem:this.activeUnitSystem});
         });
       }
 
