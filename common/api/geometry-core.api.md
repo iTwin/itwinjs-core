@@ -5569,6 +5569,7 @@ export class ViewGraphicsOps {
     pointB: Point3d,
     perspectiveZA: number | undefined,
     perspectiveZB: number | undefined,
+    startEndDistance: Segment1d | undefined,
     gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => void): boolean;
 }
 
@@ -5576,12 +5577,12 @@ export class ViewGraphicsOps {
 export interface ViewportGraphicsGridLineIdentifier {
     direction: 0 | 1;
     index: number;
+    stepCount: number;
 }
 
 // @internal
 export class ViewportGraphicsGridSpacingOptions {
     clippingOption: 0 | 1;
-    // (undocumented)
     static create(distanceBetweenLines: number, cullingOption?: 0 | 1 | 2, clippingOption?: 0 | 1): ViewportGraphicsGridSpacingOptions;
     cullingOption: 0 | 1 | 2;
     distanceBetweenLines: number;
