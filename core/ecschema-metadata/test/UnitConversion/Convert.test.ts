@@ -8,7 +8,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Float } from "../../src/UnitConversion/Float";
 import { deserializeXml } from "./DeserializeSchema";
-import { UnitConverterContext } from "../../src/UnitConversion/Convert";
+import { UnitConverter } from "../../src/UnitConversion/UnitConverter";
 
 interface TestData {
   From: string;
@@ -21,7 +21,7 @@ describe("A unit tree creator", () => {
   const context = new SchemaContext();
 
   const testData: TestData[] = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "assets", "./unit-test-data.json"), "utf-8")
+    fs.readFileSync(path.join(__dirname, "assets", "./UnitTests.json"), "utf-8")
   );
 
   before(() => {
@@ -32,8 +32,10 @@ describe("A unit tree creator", () => {
 
   testData.forEach((test: TestData) => {
     it(`should convert ${test.From} to ${test.To}`, async () => {
-      const converter = new UnitConverterContext(context);
-      const map = await converter.findConversion(test.From, test.To, "Units", "Units");
+      const converter = new UnitConverter(context);
+      const fromFullName = `Units:${test.From}`;
+      const toFullName = `Units:${test.To}`;
+      const map = await converter.calculateConversion(fromFullName, toFullName);
       const actual = map.evaluate(test.Input);
       const ulp = Float.ulp(Math.max(test.Input, test.Expect));
       expect(

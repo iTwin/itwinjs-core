@@ -8,7 +8,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Float } from "../../src/UnitConversion/Float";
 import { deserializeXml } from "./DeserializeSchema";
-import { UnitConverterContext } from "../../src/UnitConversion/Convert";
+import { UnitConverter } from "../../src/UnitConversion/UnitConverter";
 
 interface TestData {
   FromSchema: string;
@@ -23,7 +23,7 @@ describe("Testing creating second schema", () => {
   const context = new SchemaContext();
 
   const testData: TestData[] = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "assets", "./cross-schema-test-data.json"), "utf-8")
+    fs.readFileSync(path.join(__dirname, "assets", "./CrossSchemaTests.json"), "utf-8")
   );
 
   before(() => {
@@ -42,8 +42,10 @@ describe("Testing creating second schema", () => {
 
   testData.forEach((test: TestData) => {
     it(`should convert ${test.FromSchema}:${test.From} to ${test.ToSchema}:${test.To}`, async () => {
-      const converter = new UnitConverterContext(context);
-      const map = await converter.findConversion(test.From, test.To, test.FromSchema, test.ToSchema);
+      const converter = new UnitConverter(context);
+      const fromFullName = `${test.FromSchema}.${test.From}`;
+      const toFullName = `${test.ToSchema}.${test.To}`;
+      const map = await converter.calculateConversion(fromFullName, toFullName);
       const actual = map.evaluate(test.Input);
       const ulp = Float.ulp(Math.max(test.Input, test.Expect));
       expect(
@@ -55,15 +57,15 @@ describe("Testing creating second schema", () => {
   });
 
   it("should throw when schema name is not in context", async () => {
-    const converter = new UnitConverterContext(context);
+    const converter = new UnitConverter(context);
     try {
-      await converter.findConversion("CM", "M", "MockSchema", "SIUnits");
+      await converter.calculateConversion("MockSchema:CM", "SIUnits:M");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find from's and/or to's schema");
     }
     try {
-      await converter.findConversion("M", "CM", "SIUnits", "MockSchema");
+      await converter.calculateConversion("SIUnits:M", "MockSchema:CM");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find from's and/or to's schema");
@@ -71,15 +73,15 @@ describe("Testing creating second schema", () => {
   });
 
   it("should throw when schema item is not in schema ", async () => {
-    const converter = new UnitConverterContext(context);
+    const converter = new UnitConverter(context);
     try {
-      await converter.findConversion("MockUnit", "CM", "SIUnits", "MetricUnits");
+      await converter.calculateConversion("SIUnits:MockUnit", "MetricUnits:CM");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema item");
     }
     try {
-      await converter.findConversion("CM", "MockUnit", "MetricUnits", "SIUnits");
+      await converter.calculateConversion("MetricUnits:CM", "SIUnits:MockUnit");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema item");

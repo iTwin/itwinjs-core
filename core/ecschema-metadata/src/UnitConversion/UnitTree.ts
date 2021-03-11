@@ -43,7 +43,7 @@ export class UnitGraph {
 
   /**
    * Tries to find the unit/constant given by name in currentSchema
-   * @param name schemaItem name/parsed definition to find unit of; could be {schemaName}:{schemaItemName} or {alias}:{schemaItemName} or {schemaItemName}
+   * @param name SchemaItem name or parsed definition to find unit of; Could be {schemaName}:{schemaItemName} or {alias}:{schemaItemName} or {schemaItemName}
    * @param currentSchema schema to find name in; name could also be in a referenced schema of current schema
    */
   public async resolveUnit(name: string, currentSchema: Schema): Promise<Unit | Constant> {
@@ -72,7 +72,7 @@ export class UnitGraph {
       const schema = await this._context.getSchema(schemaKey);
       if (!schema) {
         throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema", () => {
-            return { schema: schemaName };
+          return { schema: schemaName };
         });
       } else {
         // Set currentSchema to look up schemaItem to be whatever is prefixed in name
@@ -88,20 +88,20 @@ export class UnitGraph {
     const item = await this._context.getSchemaItem(itemKey);
     if (!item)
       throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item", () => {
-          return { item: name };
+        return { item: name };
       });
 
     if (item.schemaItemType === SchemaItemType.Unit || item.schemaItemType === SchemaItemType.Constant)
       return item as Unit | Constant;
 
     throw new BentleyError(BentleyStatus.ERROR, "Item is neither a unit or a constant", () => {
-        return { itemType: item.key.fullName };
+      return { itemType: item.key.fullName };
     });
   }
 
   /**
    * Adds unit and corresponding children to graph as well as edges between units
-   * @param unit current unit to be added to graph
+   * @param unit Current unit to be added to graph
    */
   public async addUnit(unit: Unit | Constant): Promise<void> {
     if (this._graph.hasNode(unit.key.fullName)) return;
@@ -152,6 +152,7 @@ export class UnitGraph {
       innermapStore.set(unitFullName, UnitConversion.identity);
       return innermapStore;
     }
+
     const outEdges = this._graph.outEdges(unitFullName);
     if (outEdges) {
       const cmap = outEdges.reduce<UnitConversion | undefined>((pm, e) => {
