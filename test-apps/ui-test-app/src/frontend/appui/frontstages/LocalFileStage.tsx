@@ -140,6 +140,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
   };
 
   private _handleElectronFileOpen = async () => {
+    // NEEDSWORK: These OpenDialogOptions filters/extensions are not working
     const opts: OpenDialogOptions = {
       properties: ["openFile"],
       filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
