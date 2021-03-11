@@ -371,8 +371,8 @@ export class DecorateContext extends RenderContext {
     const _view111 = vp.worldToViewMap.transform0.multiplyPoint4d(_world111);
     builder.setSymbology(refColor, planeColor, 1, linePat);
     const npcRange = Range3d.createXYZXYZ(_view000.x, _view000.y, _view000.z, _view111.x, _view111.y, _view111.z);
-    const gridXStep = rMatrix.columnX().scale(refSpacing.x);
-    const gridYStep = rMatrix.columnY().scale(refSpacing.y);
+    const gridXStep = rMatrix.rowX().scale(refSpacing.x);
+    const gridYStep = rMatrix.rowY().scale(refSpacing.y);
 
     const gridOptions = ViewportGraphicsGridSpacingOptions.create(
       DecorateContext._minPixelSeparation,
