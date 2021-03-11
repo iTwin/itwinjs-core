@@ -11,6 +11,11 @@ export class UnitConversion {
   /** @internal */
   constructor(public readonly factor: number = 1.0, public readonly offset: number = 0.0) {}
 
+  /**
+   * Converts x using UnitConversion
+   * @param x Input magnitude to be converted
+   * @returns Output magnitude after conversion
+   */
   public evaluate(x: number): number {
     return this.factor * x + this.offset;
   }
@@ -22,17 +27,17 @@ export class UnitConversion {
   }
 
   /** @internal */
-  public compose(map: UnitConversion): UnitConversion {
+  public compose(conversion: UnitConversion): UnitConversion {
     return new UnitConversion(
-      this.factor * map.factor,
-      map.factor * this.offset + map.offset
+      this.factor * conversion.factor,
+      conversion.factor * this.offset + conversion.offset
     );
   }
 
   /** @internal */
-  public multiply(map: UnitConversion): UnitConversion {
-    if (Float.equals(map.offset, 0.0) && Float.equals(this.offset, 0.0))
-      return new UnitConversion(this.factor * map.factor, 0.0);
+  public multiply(conversion: UnitConversion): UnitConversion {
+    if (Float.equals(conversion.offset, 0.0) && Float.equals(this.offset, 0.0))
+      return new UnitConversion(this.factor * conversion.factor, 0.0);
 
     throw new Error("Cannot multiply two maps with non-zero offsets");
   }

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { Constant, SchemaContext, SchemaKey, Unit } from "../ecschema-metadata";
+import { Constant, SchemaContext, SchemaItem, SchemaKey, Unit } from "../ecschema-metadata";
 import { UnitConversion } from "./UnitConversion";
 import { UnitGraph } from "./UnitTree";
 
@@ -11,7 +11,7 @@ import { UnitGraph } from "./UnitTree";
  * Converter context is used to process unit conversion
  * @alpha
  */
-export class UnitConverterContext {
+export class UnitConverter {
   private _uGraph: UnitGraph;
 
   /**
@@ -23,13 +23,17 @@ export class UnitConverterContext {
   }
 
   /**
-   * Find conversion between from and to units/constants
-   * @param from schema item name of source unit/constant
-   * @param to schema item name of target unit/constant
-   * @param fromSchema schema name which from belongs
-   * @param toSchema schema name which to belongs
+   * Find conversion between from and to units, formatted {schemaName}.{schemaItemName} or {schemaName}:{schemaItemName}
+   * @param fromFullName SchemaItem full name of source unit
+   * @param toFullName SchemaItem full name of target unit
+   * @returns UnitConversion converting fromFullName -> toFullName with a factor and an offset
+   * @throws Error if from and to Units' SchemaItem is not found in Schema or Schema prefix is not found in SchemaContext
+   * @throws Error if from and to Units do not belong to the same phenomenon
+   * @throws Error if definitions' SchemaItems cannot be found in its own or referenced Schemas
    */
-  public async findConversion(from: string, to: string, fromSchemaName: string, toSchemaName: string): Promise<UnitConversion> {
+  public async calculateConversion(fromFullName: string, toFullName: string): Promise<UnitConversion> {
+    const [fromSchemaName, fromSchemaItemName] = SchemaItem.parseFullName(fromFullName);
+    const [toSchemaName, toSchemaItemName] = SchemaItem.parseFullName(toFullName);
     const fromSchemaKey = new SchemaKey(fromSchemaName);
     const toSchemaKey = new SchemaKey(toSchemaName);
 
@@ -38,33 +42,28 @@ export class UnitConverterContext {
 
     if (!fromSchema || !toSchema) {
       throw new BentleyError(BentleyStatus.ERROR, "Cannot find from's and/or to's schema", () => {
-          return { fromSchema: fromSchemaName, toSchema: toSchemaName };
+        return { from: fromFullName, fromSchema: fromSchemaName, to: toFullName, toSchema: toSchemaName };
       });
     }
 
-    // Check if from and to are units or constants in the respective schemas
-    const fromUnit = await this._uGraph.resolveUnit(from, fromSchema);
-    const toUnit = await this._uGraph.resolveUnit(to, toSchema);
+    const fromUnit = await this._uGraph.resolveUnit(fromSchemaItemName, fromSchema);
+    const toUnit = await this._uGraph.resolveUnit(toSchemaItemName, toSchema);
 
     return this.processUnits(fromUnit, toUnit);
   }
 
   /**
-   * @param from source unit/constant converted from
-   * @param to target unit/constant converted to
-   * @return UnitConversion converting from -> to with a factor and an offset
+   * @param from Source unit converted from
+   * @param to Target unit converted to
    * @internal
    */
   private async processUnits(from: Unit | Constant, to: Unit | Constant): Promise<UnitConversion> {
     if (from.key.matches(to.key)) return UnitConversion.identity;
 
-    const fromPhenomenon = await from.phenomenon;
-    const toPhenomenon = await to.phenomenon;
-
-    // Check if their phenomenons have the same names
-    if (!fromPhenomenon || !toPhenomenon || fromPhenomenon.key.name !== toPhenomenon.key.name)
-      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not belong to same phenomenon`, () => {
-          return { from, to };
+    const areCompatiblePhenomenons = await Unit.areCompatiblePhenomenons(from as Unit, to as Unit);
+    if (!areCompatiblePhenomenons)
+      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not belong to same phenomenon`, ()  => {
+        return { from, to };
       });
 
     // Add nodes and subsequent children to graph

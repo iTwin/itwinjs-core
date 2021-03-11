@@ -49,6 +49,19 @@ export class Unit extends SchemaItem {
   public get denominator(): number { return this._denominator; }
 
   /**
+   * Check if units phenomena's SchemaItemKey have the same names
+   * @internal
+   */
+  public static async areCompatiblePhenomenons(unitA: Unit, unitB: Unit): Promise<boolean> {
+    const unitAPhenomenon = await unitA.phenomenon;
+    const unitBPhenomenon = await unitB.phenomenon;
+
+    if (!unitAPhenomenon || !unitBPhenomenon || unitAPhenomenon.key.name !== unitBPhenomenon.key.name)
+      return Promise.resolve(false);
+    return Promise.resolve(true);
+  }
+
+  /**
    * Save this Unit's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.

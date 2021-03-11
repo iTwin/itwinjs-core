@@ -2,12 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  Schema,
-  SchemaContext,
-  SchemaReadHelper,
-  XmlParser,
-} from "../../src/ecschema-metadata";
+import { Schema, SchemaContext, SchemaReadHelper, XmlParser } from "../../src/ecschema-metadata";
 import { DOMParser } from "xmldom";
 
 export function deserializeXml(
