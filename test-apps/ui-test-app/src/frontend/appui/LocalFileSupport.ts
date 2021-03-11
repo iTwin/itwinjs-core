@@ -4,22 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 import { BriefcaseConnection, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "../index";
-import { IModelStatus, Logger, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 // cSpell:ignore TESTAPP FILEPATH
 
 export class LocalFileSupport {
 
   public static localFilesSupported = (): boolean => {
-    if (ProcessDetector.isElectronAppFrontend)
+    if (ElectronApp.isValid)
       return true;
-    else if (SampleAppIModelApp.testAppConfiguration?.snapshotPath)
-      return true;
-    else {
+
+    if (!SampleAppIModelApp.testAppConfiguration?.snapshotPath) {
       alert("imjs_TESTAPP_SNAPSHOT_FILEPATH must be set on the backend and point to a folder containing local snapshot files.");
       return false;
     }
+
+    return true;
   };
 
   public static openLocalFile = async (fileSpec: string, writable: boolean): Promise<IModelConnection | undefined> => {
@@ -30,7 +32,7 @@ export class LocalFileSupport {
     let filePath = "";
 
     // Open the iModel
-    if (ProcessDetector.isElectronAppFrontend) {
+    if (ElectronApp.isValid) {
       filePath = fileSpec;
       Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: Opening standalone. path=${filePath} writable=${writable}`);
       try {
