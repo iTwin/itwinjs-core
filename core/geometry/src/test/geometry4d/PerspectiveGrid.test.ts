@@ -21,6 +21,7 @@ import { ClipPlane } from "../../clipping/ClipPlane";
 import { ViewGraphicsOps, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions } from "../../geometry4d/ViewGraphicsOps";
 import { BoxTopology } from "../../polyface/BoxTopology";
 import { LineString3d } from "../../curve/LineString3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
 
 function _createTransformedUnitBoxMesh(transform: Transform | Matrix4d, z0: number = 0, z1: number = 1): IndexedPolyface {
   const builder = PolyfaceBuilder.create();
@@ -142,8 +143,10 @@ describe("PerspectiveGrid", () => {
         const options = ViewportGraphicsGridSpacingOptions.create(displayableDistance, 2, 1);
 
         ViewGraphicsOps.announceGridLinesInView(gridOrigin, gridX, gridY, map, unitRange, options,
-          (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
-          _gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
+          (pointA: Point3d, pointB: Point3d,
+            _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
+            _startEndDistances: Segment1d | undefined,
+            _gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
             const pointA1 = map.transform0.multiplyPoint3dQuietNormalize(pointA);
             const pointB1 = map.transform0.multiplyPoint3dQuietNormalize(pointB);
             GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointA, pointB),

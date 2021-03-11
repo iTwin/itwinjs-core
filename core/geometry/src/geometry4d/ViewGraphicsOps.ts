@@ -31,6 +31,12 @@ export interface ViewportGraphicsGridLineIdentifier {
    * Grid lines through the grid origin are at index 0.
    */
   index: number;
+  /** grid step since previously output line.
+   * * 0 is first line
+   * * 1 is consecutive lines
+   * * 2 or higher means (stepCount - 1) were skipped
+   */
+  stepCount: number;
 }
 /**
  * options for grid line constructions
@@ -162,12 +168,12 @@ class LineProximityContext {
    * @param point1B
    * @param fractions pre-allocated receiver for fractional interval
    * @param perspectiveZStartEnd pre-allocated receiver for depths at (fractional!) start and end
-   * @param distanceRange pre-allocated receiver for min and max absolute distance at ends
+   * @param startEndDistance pre-allocated receiver for min and max absolute distance at ends
    */
   public intervalOfSeparation(options: ViewportGraphicsGridSpacingOptions, point0B: Point3d, point1B: Point3d,
     fractions: Range1d,
     perspectiveZStartEnd: Segment1d,
-    distanceRange: Range1d
+    startEndDistance: Segment1d
   ): boolean {
     if (this.divMagU === undefined)
       return false;
@@ -176,7 +182,7 @@ class LineProximityContext {
     this.worldToNPC.multiplyPoint3dQuietNormalize(point1B, this.npc1B);
     const d0 = this.signedDistanceToNPCPoint(this.npc0B);
     const d1 = this.signedDistanceToNPCPoint(this.npc1B);
-    distanceRange.setXXUnordered(d0, d1);
+    startEndDistance.set(d0, d1);
     if (d0 < -minimumDistance) {
       if (d1 < -minimumDistance) {
         return this.setRanges(fractions, 0, 1, perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
@@ -243,6 +249,8 @@ export class ViewGraphicsOps {
       perspectiveZA: number | undefined,
       /** depth in view -- the z/w part of the display side of the worldToDisplay transform of pointB.  0 is back, 1 is front */
       perspectiveZB: number | undefined,
+      /** distances from A and B to neighbor line.  The same object pointer is passed on all calls -- do not retain the pointer or modify the contents */
+      startEndDistance: Segment1d | undefined,
       /** identifies if this is an x or y line, and it's index
        * * NOTE The same instance is updated and passed to each call.
        */
@@ -296,39 +304,67 @@ export class ViewGraphicsOps {
     const xLow = stRange.low.x;
     const xHigh = stRange.high.x;
     const fractionRange = Range1d.createNull();
-    const distanceRange = Range1d.createNull();
+    const startEndDistance = Segment1d.create();
     const perspectiveZStartEnd = Segment1d.create();
     let numAnnounced = 0;
-    const gridLineIdentifier: ViewportGraphicsGridLineIdentifier = { direction: 0, index: 0 };
+    const gridLineIdentifier: ViewportGraphicsGridLineIdentifier = { direction: 0, index: 0, stepCount: 0};
     const announceInterval: AnnounceNumberNumber = (f0: number, f1: number) => {
       gridPoint0.interpolate(f0, gridPoint1, clippedGridPoint0);
       gridPoint0.interpolate(f1, gridPoint1, clippedGridPoint1);  // those are in grid line counter space !!!
       const clippedPointWorld0 = gridTransform.multiplyPoint3d(clippedGridPoint0);
       const clippedPointWorld1 = gridTransform.multiplyPoint3d(clippedGridPoint1);
+      // "Every line case " -- still need to know prior line distances
       if (options.cullingOption === 0) {
-        lineContext.announceLineAWorld(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd);
-        announceLine (clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
-        numAnnounced++;
-        return;
+        if (!lineContext.hasValidLine) {
+          lineContext.announceLineAWorld(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd);
+          gridLineIdentifier.stepCount = 0;
+          announceLine(clippedPointWorld0, clippedPointWorld1,
+            perspectiveZStartEnd.x0, perspectiveZStartEnd.x1,
+            undefined,
+            gridLineIdentifier);
+        } else {
+          gridLineIdentifier.stepCount = 1;
+          if (lineContext.intervalOfSeparation(options, clippedPointWorld0, clippedPointWorld1,
+            fractionRange, perspectiveZStartEnd, startEndDistance)) {
+            announceLine(clippedPointWorld0, clippedPointWorld1,
+              perspectiveZStartEnd.x0, perspectiveZStartEnd.x1,
+              startEndDistance,
+              gridLineIdentifier);
+          }
+          numAnnounced++;
+          return;
+        }
       }
+
       if (!lineContext.hasValidLine) {
         lineContext.announceLineAWorld(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd);
-        announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
+        gridLineIdentifier.stepCount = 0;
+        announceLine(clippedPointWorld0, clippedPointWorld1,
+          perspectiveZStartEnd.x0, perspectiveZStartEnd.x1,
+          undefined,
+          gridLineIdentifier);
         numAnnounced++;
       } else {
+        gridLineIdentifier.stepCount++;
         if (!lineContext.intervalOfSeparation(options, clippedPointWorld0, clippedPointWorld1,
-          fractionRange, perspectiveZStartEnd, distanceRange)) {
+          fractionRange, perspectiveZStartEnd, startEndDistance)) {
           if (options.cullingOption === 1)
             lineContext.moveLineBToLineA();
         } else {
           if (options.clippingOption === 0 || fractionRange.isExact01)
-            announceLine(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
+            announceLine(clippedPointWorld0, clippedPointWorld1,
+              perspectiveZStartEnd.x0, perspectiveZStartEnd.x1,
+              startEndDistance,
+              gridLineIdentifier);
           else {
             announceLine(clippedPointWorld0.interpolate(fractionRange.low, clippedPointWorld1),
               clippedPointWorld0.interpolate(fractionRange.high, clippedPointWorld1),
-              perspectiveZStartEnd.x0, perspectiveZStartEnd.x1, gridLineIdentifier);
+              perspectiveZStartEnd.x0, perspectiveZStartEnd.x1,
+              startEndDistance,
+              gridLineIdentifier);
           }
           lineContext.moveLineBToLineA();
+          gridLineIdentifier.stepCount = 0;
           numAnnounced++;
         }
       }

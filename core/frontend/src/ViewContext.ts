@@ -9,7 +9,7 @@
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
   ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
-  Point3d, Range1d, Range3d, Ray3d, Transform, Vector2d, Vector3d, ViewGraphicsOps, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY} from "@bentley/geometry-core";
+  Point3d, Range1d, Range3d, Ray3d, Segment1d, Transform, Vector2d, Vector3d, ViewGraphicsOps, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY} from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, NpcCenter, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
@@ -383,7 +383,8 @@ export class DecorateContext extends RenderContext {
     ViewGraphicsOps.announceGridLinesInView(
       gridOrigin, gridXStep, gridYStep,
       vp.worldToViewMap, npcRange, gridOptions,
-      (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number| undefined,
+      (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
+        _startEndDistances: Segment1d | undefined,
         _gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
         builder.addLineString([pointA, pointB]);
       });
