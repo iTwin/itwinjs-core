@@ -151,14 +151,14 @@ export class TileDrawArgs {
         center = this._nearFrontCenter;
       } else {
       // Find point on sphere closest to eye.
-      const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
+        const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
 
-      if (toEye) {  // Only if tile is not already behind the eye.
-        toEye.scaleInPlace(radius);
-        center.addInPlace(toEye);
+        if (toEye) {  // Only if tile is not already behind the eye.
+          toEye.scaleInPlace(radius);
+          center.addInPlace(toEye);
+        }
       }
     }
-  }
 
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
