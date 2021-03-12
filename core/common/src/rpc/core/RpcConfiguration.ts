@@ -124,6 +124,9 @@ export abstract class RpcConfiguration {
   /** The target interval (in milliseconds) between connection attempts for pending RPC operation requests. */
   public pendingOperationRetryInterval = 10000;
 
+  /** The maximum number of transient faults permitted before request failure. */
+  public transientFaultLimit = 3;
+
   /** @alpha */
   public readonly routing: RpcRoutingToken = RpcRoutingToken.default;
 
