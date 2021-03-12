@@ -3,11 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Geometry, Matrix3d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { Matrix3d, Point3d, Transform } from "@bentley/geometry-core";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "@bentley/frontend-devtools";
-import { Npc } from "@bentley/imodeljs-common";
-import { System } from "@bentley/imodeljs-frontend/lib/render/webgl/System";
 
 class DisplayScaleTransformProvider {
   public constructor(private readonly _models: Set<string>, private readonly _scaleTransform: Transform) { }
@@ -19,6 +17,8 @@ class DisplayScaleTransformProvider {
     // Apply scale as last part of model to world transform.
     return this._scaleTransform.multiplyTransformTransform(baseTransform);
   }
+
+  public get transform(): Transform { return this._scaleTransform.clone(); }
 }
 
 /** Apply a display transform to all currently displayed models. */
@@ -32,58 +32,44 @@ export class ApplyModelDisplayScaleTool extends Tool {
     if (!vp)
       return false;
 
-    const newScaleIsUniform = Math.abs(scale.x - scale.y) < Geometry.smallMetricDistance && Math.abs(scale.x - scale.z) < Geometry.smallMetricDistance;
-    console.log(`ApplyModelDisplayScaleTool     new scale (${scale.x}, ${scale.y}, ${scale.z})  newScaleIsUniform ${newScaleIsUniform}`);
-    let oldScaleIsUniform = true;
-    if (!System.instance.capabilities.isWebGL2) {
-      // Check to see if any non-uniform scale was being used by the old transform provider.
-      if (undefined !== vp.view.modelDisplayTransformProvider) {
-        vp.view.forEachModel((model) => {
-          const tf = vp.view.getModelDisplayTransform(model.id, Transform.createIdentity());
-          const sx = tf.matrix.getColumn(0).magnitudeSquared();
-          const sy = tf.matrix.getColumn(1).magnitudeSquared();
-          const sz = tf.matrix.getColumn(2).magnitudeSquared();
-          if (Math.abs(sx - sy) > Geometry.smallMetricDistance || Math.abs(sx - sz) > Geometry.smallMetricDistance)
-            oldScaleIsUniform = false;
-          console.log(`ApplyModelDisplayScaleTool     old scale (${sx}, ${sy}, ${sz})  oldScaleIsUniform ${oldScaleIsUniform}`);
-        });
-      }
+    const f = vp.getWorldFrustum();
+    // If there was already a transform then we need to undo it for the frustum.
+    if (undefined !== vp.view.modelDisplayTransformProvider && vp.view.modelDisplayTransformProvider instanceof DisplayScaleTransformProvider) {
+      const t = vp.view.modelDisplayTransformProvider.transform;
+      const sx = t.matrix.getColumn(0).magnitude();
+      const sy = t.matrix.getColumn(1).magnitude();
+      const sz = t.matrix.getColumn(2).magnitude();
+      const inverseMax = 1.0 / Math.max(sx, sy, sz);
+      const scaleFrustumInvTf = Transform.createRefs(Point3d.createZero(), Matrix3d.createScale(inverseMax, inverseMax, inverseMax));
+      f.multiply(scaleFrustumInvTf);
     }
 
+    let scl;
+    let maxScale = 1.0;
     if (scale.isAlmostEqual(Point3d.create(1.0, 1.0, 1.0))) {
       if (undefined !== vp.view.modelDisplayTransformProvider) {
         vp.view.modelDisplayTransformProvider = undefined;
-        console.log(`ApplyModelDisplayScaleTool A   isWebGL2 ${System.instance.capabilities.isWebGL2}   change in scale uniforimty ${newScaleIsUniform !== oldScaleIsUniform}`);
-        return true;
       } else {
         return false;
       }
+      scl = Matrix3d.createIdentity();
+    } else {
+      scl = Matrix3d.createScale(scale.x, scale.y, scale.z);
+      maxScale = Math.max(scale.y, scale.y, scale.z);
     }
 
     const models = new Set<string>();
     vp.view.forEachModel((model) => models.add(model.id));
 
-    let scl;
-    if (undefined !== scale && (scale.x !== 1.0 || scale.y !== 1.0 || scale.z !== 1.0))
-      scl = Matrix3d.createScale(scale.x, scale.y, scale.z);
-    else
-      scl = Matrix3d.createIdentity();
     const sclTf = Transform.createRefs(Point3d.createZero(), scl);
     const tp = new DisplayScaleTransformProvider(models, sclTf);
     vp.setModelDisplayTransformProvider(tp);
 
-    // Scale frustum.
-    const f = vp.getWorldFrustum();
-    // f.multiply(sclTf);
-    // vp.setupViewFromFrustum(f);
-    const points = [];
-    points.push(Point3d.createAdd2Scaled(f.points[Npc.LeftBottomFront], 0.5, f.points[Npc.LeftBottomRear], 0.5));
-    points.push(Point3d.createAdd2Scaled(f.points[Npc.LeftTopFront], 0.5, f.points[Npc.LeftTopRear], 0.5));
-    points.push(Point3d.createAdd2Scaled(f.points[Npc.RightBottomFront], 0.5, f.points[Npc.RightBottomRear], 0.5));
-    points.push(Point3d.createAdd2Scaled(f.points[Npc.RightTopFront], 0.5, f.points[Npc.RightTopRear], 0.5));
-    vp.zoomToVolume(Range3d.createArray(points));
+    // Scale frustum uniformly using the largest of the scale values.
+    const scaleFrustumTf = Transform.createRefs(Point3d.createZero(), Matrix3d.createScale(maxScale, maxScale, maxScale));
+    f.multiply(scaleFrustumTf);
+    vp.setupViewFromFrustum(f);
 
-    console.log(`ApplyModelDisplayScaleTool B   isWebGL2 ${System.instance.capabilities.isWebGL2}   change in scale uniforimty ${newScaleIsUniform !== oldScaleIsUniform}`);
     return true;
   }
 

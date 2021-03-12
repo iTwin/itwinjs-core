@@ -151,9 +151,8 @@ export class BranchUniforms {
   }
 
   public bindModelViewMatrix(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean): void {
-    if (this.update(uniform, geom, isViewCoords)) {
+    if (this.update(uniform, geom, isViewCoords))
       uniform.setMatrix4(this._mv32);
-    }
   }
 
   public bindModelViewProjectionMatrix(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean): void {

@@ -705,26 +705,26 @@ export class AccuSnap implements Decorator {
     };
 
     // If this hit is from a plan projection model, apply the model's elevation to the snap point for display.
+    // Likewise, if it is a hit on a model with a display transform, apply the model's transform to the snap point.
     let snapPoint = result.snapPoint!;
     const elevation = undefined !== thisHit.modelId ? thisHit.viewport.view.getModelElevation(thisHit.modelId) : 0;
     if (0 !== elevation || undefined !== thisHit.viewport.view.modelDisplayTransformProvider) {
       const adjustedSnapPoint = Point3d.fromJSON(snapPoint);
+      thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, adjustedSnapPoint, false);
       adjustedSnapPoint.z += elevation;
-      // Also apply the model display transform if there is one.
-      thisHit.viewport.transformByModelDisplayTransform(thisHit.modelId, adjustedSnapPoint, false);
       snapPoint = adjustedSnapPoint;
     }
 
     const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);
 
-    // Apply model's elevation to curve for display.
+    // Apply model's elevation and display transform to curve for display.
     let transform;
-    if (0 !== elevation)
-      transform = Transform.createTranslationXYZ(0, 0, elevation);
     if (undefined !== thisHit.modelId && undefined !== thisHit.viewport.view.modelDisplayTransformProvider) {
-      if (undefined === transform)
-        transform = Transform.createIdentity();
-      transform = thisHit.viewport.view.getModelDisplayTransform(thisHit.modelId, transform);
+      transform = thisHit.viewport.view.getModelDisplayTransform(thisHit.modelId, Transform.createIdentity());
+      if (0 !== elevation)
+        transform.origin.set(0, 0, elevation);
+    } else if (0 !== elevation) {
+      transform = Transform.createTranslationXYZ(0, 0, elevation);
     }
 
     snap.setCurvePrimitive(parseCurve(result.curve), transform, result.geomType);
@@ -732,11 +732,11 @@ export class AccuSnap implements Decorator {
       snap.parentGeomType = result.parentGeomType;
     if (undefined !== result.hitPoint) {
       snap.hitPoint.setFromJSON(result.hitPoint); // Update hitPoint from readPixels with exact point location corrected to surface/edge geometry...
-      thisHit.viewport.transformByModelDisplayTransform(thisHit.modelId, snap.hitPoint, false);
+      thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, snap.hitPoint, false);
     }
     if (undefined !== result.normal) {
       snap.normal = Vector3d.fromJSON(result.normal);
-      thisHit.viewport.transformNormalByModelDisplayTransform(thisHit.modelId, snap.normal);
+      thisHit.viewport.view.transformNormalByModelDisplayTransform(thisHit.modelId, snap.normal);
     }
 
     if (SnapMode.Intersection !== snap.snapMode)
