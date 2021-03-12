@@ -110,7 +110,7 @@ export class GraphicalElement3dRepresentsElement extends ElementRefersToElements
 /** Relates a [[SynchronizationConfigLink]] to N [[ExternalSource]] instances.
  * Each relationship instance represents an external source processed by the synchronization configuration.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
- * @alpha
+ * @beta
  */
 export class SynchronizationConfigProcessesSources extends ElementRefersToElements {
   /** @internal */
@@ -119,7 +119,7 @@ export class SynchronizationConfigProcessesSources extends ElementRefersToElemen
 
 /** Relates a [[SynchronizationConfigLink]] to *root* [[ExternalSource]] instances.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
- * @alpha
+ * @beta
  */
 export class SynchronizationConfigSpecifiesRootSources extends SynchronizationConfigProcessesSources {
   /** @internal */
@@ -173,7 +173,7 @@ export class GroupImpartsToMembers extends ElementGroupsMembers {
 
 /** Relates an [[ExternalSourceGroup]] to its [[ExternalSource]] members.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
- * @alpha
+ * @beta
  */
 export class ExternalSourceGroupGroupsSources extends ElementGroupsMembers {
   /** @internal */

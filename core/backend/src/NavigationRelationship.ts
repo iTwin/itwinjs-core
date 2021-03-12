@@ -84,7 +84,7 @@ export class PhysicalElementAssemblesElements extends ElementOwnsChildElements {
 
 /** Relates a parent [[ExternalSource]] to its [[ExternalSourceAttachment]] children.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
- * @alpha
+ * @beta
  */
 export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
   public static classFullName = "BisCore:ExternalSourceOwnsAttachments";
@@ -95,7 +95,7 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
 
 /** Relates a parent [[FolderLink]] to its [[RepositoryLink]] children.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
- * @alpha
+ * @beta
  */
 export class FolderContainsRepositories extends ElementOwnsChildElements {
   public static classFullName = "BisCore:FolderContainsRepositories";
@@ -206,7 +206,7 @@ export class ElementOwnsExternalSourceAspects extends ElementOwnsMultiAspects {
 
 /** Relates an [[ExternalSource]] to the [[RepositoryLink]] that it is persisted in.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
- * @alpha
+ * @beta
  */
 export class ExternalSourceIsInRepository extends RelatedElement {
   public static classFullName = "BisCore:ExternalSourceIsInRepository";
@@ -217,7 +217,7 @@ export class ExternalSourceIsInRepository extends RelatedElement {
 
 /** Relates an [[ExternalSource]] to the [[RepositoryLink]] that it is persisted in.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
- * @alpha
+ * @beta
  */
 export class ExternalSourceAttachmentAttachesSource extends RelatedElement {
   public static classFullName = "BisCore:ExternalSourceAttachmentAttachesSource";

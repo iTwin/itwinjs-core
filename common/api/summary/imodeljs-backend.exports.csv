@@ -135,17 +135,17 @@ public;ExportPartInfo
 public;ExportPartInstanceInfo
 public;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
 public;ExportPartLinesInfo
-alpha;ExternalSource 
+beta;ExternalSource 
 public;ExternalSourceAspect 
 public;ExternalSourceAspect
-alpha;ExternalSourceAttachment 
-alpha;ExternalSourceAttachmentAttachesSource 
-alpha;ExternalSourceGroup 
-alpha;ExternalSourceGroupGroupsSources 
-alpha;ExternalSourceIsInRepository 
-alpha;ExternalSourceOwnsAttachments 
+beta;ExternalSourceAttachment 
+beta;ExternalSourceAttachmentAttachesSource 
+beta;ExternalSourceGroup 
+beta;ExternalSourceGroupGroupsSources 
+beta;ExternalSourceIsInRepository 
+beta;ExternalSourceOwnsAttachments 
 public;class FileNameResolver
-alpha;FolderContainsRepositories 
+beta;FolderContainsRepositories 
 alpha;FolderLink 
 public;class FunctionalBreakdownElement 
 public;class FunctionalComponentElement 
@@ -288,9 +288,9 @@ public;SubCategory
 public;Subject 
 public;SubjectOwnsPartitionElements 
 public;SubjectOwnsSubjects 
-alpha;SynchronizationConfigLink 
-alpha;SynchronizationConfigProcessesSources 
-alpha;SynchronizationConfigSpecifiesRootSources 
+beta;SynchronizationConfigLink 
+beta;SynchronizationConfigProcessesSources 
+beta;SynchronizationConfigSpecifiesRootSources 
 beta;TemplateModelCloner 
 beta;TemplateRecipe2d 
 beta;TemplateRecipe3d 

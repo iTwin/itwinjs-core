@@ -1992,12 +1992,14 @@ export interface ExportPartLinesInfo {
     lines: ExportGraphicsLines;
 }
 
-// @alpha
-export class ExternalSource extends InformationReferenceElement implements ExternalSourceProps {
+// @beta
+export class ExternalSource extends InformationReferenceElement {
     // @internal
     constructor(props: ExternalSourceProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    static createCode(iModelDb: IModelDb, codeValue: string): Code;
+    static ensureCodeSpec(iModelDb: IModelDb): Id64String;
 }
 
 // @public
@@ -2030,22 +2032,24 @@ export namespace ExternalSourceAspect {
     }
 }
 
-// @alpha
-export class ExternalSourceAttachment extends InformationReferenceElement implements ExternalSourceAttachmentProps {
+// @beta
+export class ExternalSourceAttachment extends InformationReferenceElement {
     // @internal
     constructor(props: ExternalSourceAttachmentProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    static createCode(iModelDb: IModelDb, scopeElementId: Id64String, codeValue: string): Code;
+    static ensureCodeSpec(iModelDb: IModelDb): Id64String;
 }
 
-// @alpha
+// @beta
 export class ExternalSourceAttachmentAttachesSource extends RelatedElement {
     constructor(externalSourceId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
 }
 
-// @alpha
+// @beta
 export class ExternalSourceGroup extends ExternalSource {
     // @internal
     constructor(props: ExternalSourceProps, iModel: IModelDb);
@@ -2053,20 +2057,20 @@ export class ExternalSourceGroup extends ExternalSource {
     static get className(): string;
 }
 
-// @alpha
+// @beta
 export class ExternalSourceGroupGroupsSources extends ElementGroupsMembers {
     // @internal (undocumented)
     static get className(): string;
 }
 
-// @alpha
+// @beta
 export class ExternalSourceIsInRepository extends RelatedElement {
     constructor(repositoryId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
 }
 
-// @alpha
+// @beta
 export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
@@ -2081,7 +2085,7 @@ export abstract class FileNameResolver {
     tryResolveKey(_fileKey: string): string | undefined;
 }
 
-// @alpha
+// @beta
 export class FolderContainsRepositories extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
@@ -4050,21 +4054,21 @@ export class SubjectOwnsSubjects extends ElementOwnsChildElements {
     static classFullName: string;
 }
 
-// @alpha
-export class SynchronizationConfigLink extends UrlLink implements SynchronizationConfigLinkProps {
+// @beta
+export class SynchronizationConfigLink extends UrlLink {
     // @internal
     constructor(props: SynchronizationConfigLinkProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
 }
 
-// @alpha
+// @beta
 export class SynchronizationConfigProcessesSources extends ElementRefersToElements {
     // @internal (undocumented)
     static get className(): string;
 }
 
-// @alpha
+// @beta
 export class SynchronizationConfigSpecifiesRootSources extends SynchronizationConfigProcessesSources {
     // @internal (undocumented)
     static get className(): string;

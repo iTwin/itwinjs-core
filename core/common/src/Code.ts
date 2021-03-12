@@ -78,6 +78,10 @@ export enum BisCodeSpec {
   displayStyle = "bis:DisplayStyle",
   drawing = "bis:Drawing",
   drawingCategory = "bis:DrawingCategory",
+  /** @see [ExternalSource.ensureCodeSpec]($backend) */
+  externalSource = "bis:ExternalSource",
+  /** @see [ExternalSourceAttachment.ensureCodeSpec]($backend) */
+  externalSourceAttachment = "bis:ExternalSourceAttachment",
   geometryPart = "bis:GeometryPart",
   graphicalType2d = "bis:GraphicalType2d",
   lineStyle = "bis:LineStyle",
