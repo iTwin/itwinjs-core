@@ -3885,6 +3885,19 @@ export enum GraphicType {
     WorldOverlay = 3
 }
 
+// @internal (undocumented)
+export class GridDisplaySettings {
+    static clippingOption: 0 | 1;
+    static cullingOption: 0 | 1 | 2;
+    static cullingPerspectiveOption: 0 | 1 | 2;
+    static lineTransparency: number;
+    static minFadeSeparation: number;
+    static minPerspectiveSeparation: number;
+    static minSeparation: number;
+    static planeTransparency: number;
+    static refTransparency: number;
+}
+
 // @alpha (undocumented)
 export interface GroupMark {
     // (undocumented)
