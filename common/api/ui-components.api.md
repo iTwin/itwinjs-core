@@ -5061,6 +5061,8 @@ export class TreeImageLoader implements ITreeImageLoader {
 // @beta
 export interface TreeModel {
     // (undocumented)
+    getChildOffset(parentId: string | undefined, childId: string): number | undefined;
+    // (undocumented)
     getChildren(parentId: string | undefined): SparseArray<string> | undefined;
     // (undocumented)
     getNode(id: string): TreeModelNode | undefined;
