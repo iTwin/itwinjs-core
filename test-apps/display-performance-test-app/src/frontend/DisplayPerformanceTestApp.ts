@@ -1047,16 +1047,16 @@ async function getAllMatchingModels(testConfig: DefaultConfigs): Promise<string[
 
   const matchingFilesJson = await DisplayPerfRpcInterface.getClient().getMatchingFiles(testConfig.iModelLocation, testConfig.iModelName ?? "*");
   const matchingFiles = JSON.parse(matchingFilesJson);
-  const matchingModels: string[] = [];
+  const matchingIModels: string[] = [];
   matchingFiles.forEach((file: string) => {
     if ((file.endsWith(".bim") || file.endsWith(".ibim"))) {
       const fileSplit = file.split("\\");
       const model = fileSplit[fileSplit.length - 1];
       if (model)
-        matchingModels.push(model);
+        matchingIModels.push(model);
     }
   });
-  return matchingModels;
+  return matchingIModels;
 }
 
 async function getAllMatchingSavedViews(testConfig: DefaultConfigs): Promise<string[]> {
@@ -1649,7 +1649,7 @@ async function testSet(configs: DefaultConfigs, setData: any, logFileName: strin
         const hours = (`0${today.getHours()}`).slice(-2);
         const minutes = (`0${today.getMinutes()}`).slice(-2);
         const seconds = (`0${today.getSeconds()}`).slice(-2);
-        const outStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}  ${testConfig.iModelName!}  [${testConfig.viewName}]`;
+        const outStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}  ${testConfig.iModelName}  [${testConfig.viewName}]`;
         await consoleLog(outStr);
         await writeExternalFile(testConfig.outputPath!, logFileName, true, `${outStr}\n`);
 
