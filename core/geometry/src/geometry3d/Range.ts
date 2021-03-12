@@ -929,6 +929,21 @@ export class Range1d extends RangeBase {
     return result;
   }
 
+  /**
+   * Set this range to (min(x0,x1), max(x0,x1))
+   * @param x0 first value
+   * @param x1 second value
+   */
+  public setXXUnordered(x0: number, x1: number) {
+    if (x0 <= x1) {
+      this.low = x0; this.high = x1;
+    } else {
+      this.low = x1; this.high = x0;
+    }
+  }
+  public get isExact01(): boolean {
+    return this.low === 0.0 && this.high === 1.0;
+}
   /** Create a box from two values. Values are reversed if needed
    * @param xA first value
    * @param xB second value
