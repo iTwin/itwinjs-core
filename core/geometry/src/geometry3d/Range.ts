@@ -930,7 +930,7 @@ export class Range1d extends RangeBase {
   }
 
   /**
-   * Set this range to (min(x0,x1), max(x0,x1)
+   * Set this range to (min(x0,x1), max(x0,x1))
    * @param x0 first value
    * @pram x1 second value
    */
