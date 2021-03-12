@@ -213,6 +213,24 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     });
   }, [setMapSources]);
 
+  React.useEffect(() => {
+    const handleCustomLayerRemoved = (name: string) => {
+      const succeeded = MapLayerSources.removeLayerByName(name);
+      if (!succeeded) {
+        return;
+      }
+      const newSources: MapLayerSource[] = [];
+      MapLayerSources.getInstance()?.layers?.forEach((sourceLayer: MapLayerSource) => {
+        newSources.push(sourceLayer);
+      });
+      setMapSources(newSources);
+    };
+    MapLayerSettingsService.onCustomLayerNameRemoved.addListener(handleCustomLayerRemoved);
+    return (() => {
+      MapLayerSettingsService.onCustomLayerNameRemoved.removeListener(handleCustomLayerRemoved);
+    });
+  }, [setMapSources]);
+
   // update when a different display style is loaded.
   React.useEffect(() => {
     const handleDisplayStyleChange = (vp: Viewport) => {
