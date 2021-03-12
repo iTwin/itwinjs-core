@@ -139,12 +139,12 @@ describe("Schema", () => {
 
       const schemaItems = testSchema.getItems();
 
-      expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.KindOfQuantity);
-      expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.Enumeration);
-      expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.Unit);
-      expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.PropertyCategory);
-      expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.Format);
-      expect(schemaItems.next().done).to.eql(true);
+      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Enumeration);
+      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Unit);
+      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Format);
+      expect(schemaItems.next().done).to.equal(true);
     });
 
     it("should succeed with case-insensitive search", async () => {
@@ -181,17 +181,17 @@ describe("Schema", () => {
 
       it("should return all schema items in schema", () => {
         const itemArray = Array.from(testSchema.getItems());
-        expect(itemArray.length).to.eql(8);
+        expect(itemArray.length).to.equal(8);
 
-        expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.EntityClass);
-        expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.Mixin);
-        expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.StructClass);
-        expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.KindOfQuantity);
-        expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.Enumeration);
-        expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.Unit);
-        expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.PropertyCategory);
-        expect(schemaItems.next().value.schemaItemType).to.eql(SchemaItemType.Format);
-        expect(schemaItems.next().done).to.eql(true);
+        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.EntityClass);
+        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Mixin);
+        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.StructClass);
+        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Enumeration);
+        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Unit);
+        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Format);
+        expect(schemaItems.next().done).to.equal(true);
       });
     });
 

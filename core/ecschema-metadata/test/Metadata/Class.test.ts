@@ -1705,7 +1705,7 @@ describe("ECClass", () => {
 
     it("should return true if object is of ECClass type", async () => {
       const schema = await Schema.fromJson(testSchema, new SchemaContext());
-      expect(testSchema).to.exist;
+      expect(schema).to.exist;
       const testMixin = await schema.getItem<Mixin>("TestMixin");
       expect(ECClass.isECClass(testMixin)).to.be.true;
       const testEntity = await schema.getItem<EntityClass>("TestEntity");

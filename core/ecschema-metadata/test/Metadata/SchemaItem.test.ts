@@ -199,7 +199,7 @@ describe("SchemaItemKey", () => {
   describe("isSchemaItem", () => {
     it("should return false if schemaItem is undefined", () => {
       const undefinedSchemaItem = undefined;
-      expect(Schema.isSchema(undefinedSchemaItem)).to.be.false;
+      expect(SchemaItem.isSchemaItem(undefinedSchemaItem)).to.be.false;
     });
 
     it("should return true if object is of SchemaItem type", () => {
