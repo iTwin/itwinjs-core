@@ -2,6 +2,117 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@bentley/imodeljs-frontend_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update parsing of string input in Accudraw to use quantity parsing."
+          },
+          {
+            "comment": "Initial setup for adding \"basic manipulation\" tools and commands to editor package."
+          },
+          {
+            "comment": "Added ElementSetTool base class."
+          },
+          {
+            "comment": "ElementSetTool class documentation."
+          },
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Fix iOS problem where a viewport would not redraw until resizing after closing multiple viewports."
+          },
+          {
+            "comment": "Fix incorrect GPU memory limits."
+          },
+          {
+            "comment": "Fix incorrect cached transform for plan projection models after the model's range changes."
+          },
+          {
+            "comment": "Fix Viewport.requestRedraw failing to request next animation frame."
+          },
+          {
+            "comment": "Imagery providers were incorrectly created for WMTS and AzureMaps. Improved testing."
+          },
+          {
+            "comment": "Split imagery providers in their own file."
+          },
+          {
+            "comment": "refactor IModelApp startup"
+          },
+          {
+            "comment": "Improve grid line fade for vertical lines by drawing from center out."
+          },
+          {
+            "comment": "Allow applications to react to WebGL context loss by overriding RenderSystem.contextLossHandler."
+          },
+          {
+            "comment": "IPC shim (WIP) for local webviewer apps."
+          },
+          {
+            "comment": "Added MoveElementsTool"
+          },
+          {
+            "comment": "implemented nonlocatable for planar classifiers"
+          },
+          {
+            "comment": "Update how custom QuantityType definitions are defined and registered."
+          },
+          {
+            "comment": "Add planar clip mask support."
+          },
+          {
+            "comment": "Fix transparent depthless map failing to blend with background color or skybox."
+          },
+          {
+            "comment": "add notifications for changed elements on SaveChanges"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Undo/Redo shortcuts"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          },
+          {
+            "comment": "Allow the same label to be used in two different units within the same family but in different systems."
+          },
+          {
+            "comment": "Fix failure to call screen-space effects `shouldApply` function when reading pixels."
+          },
+          {
+            "comment": "fix for running display-performance-test-app with a saved view which has volume classification using overrides"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/imodeljs-frontend_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/imodeljs-frontend_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix incorrect cached transform for plan projection models after the model's range changes."
+          },
+          {
+            "comment": "Add workaround for bogus transform in tile tree for empty model."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/imodeljs-frontend_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
@@ -81,6 +192,24 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@bentley/imodeljs-frontend_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "NativeApp download progress fix"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/imodeljs-frontend_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
     },
     {
       "version": "2.11.0",
