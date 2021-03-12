@@ -220,7 +220,7 @@
     },
     {
       "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "edit", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/ui-components",
@@ -549,6 +549,10 @@
     {
       "name": "glob",
       "allowedCategories": [ "backend", "edit", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "got",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "highlight.js",
@@ -933,6 +937,10 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "stream-buffers",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "style-loader",
