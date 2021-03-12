@@ -379,6 +379,7 @@ export class DecorateContext extends RenderContext {
       }
 
       if (undefined === startEndDistances || 0 === gridLineIdentifier.stepCount) {
+        noOutput = false;
         firstLine = [pointA, pointB];
         return; // defer output of 1st direction line until minDist can be evaluated...
       }
@@ -422,6 +423,7 @@ export class DecorateContext extends RenderContext {
     const gridRefXStep = rMatrix.rowX().scale(refSpacing.x);
     const gridRefYStep = rMatrix.rowY().scale(refSpacing.y);
 
+    let noOutput = true;
     let drawGridLines = false;
     let skipRefLines = false;
     let firstLine: Point3d[] | undefined;
@@ -436,6 +438,16 @@ export class DecorateContext extends RenderContext {
         gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
         addGridLine(pointA, pointB, startEndDistances, gridLineIdentifier);
       });
+
+    // add first line now if it ended up being the only one in the view due to zoom level...
+    if (undefined !== firstLine) {
+      builder.setSymbology(color.withTransparency(lineTransparency), planeColor, 1, linePattern);
+      builder.addLineString(firstLine);
+    }
+
+    // might still need grid lines even if no ref lines are visible in the view due to zoom level...
+    if (noOutput || undefined !== firstLine)
+      drawGridLines = true;
 
     if (drawGridLines) {
       const gridXStep = gridRefXStep.scale(1 / gridsPerRef);
