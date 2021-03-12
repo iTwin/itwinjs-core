@@ -174,14 +174,14 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
   /**
    * Attempts a silent sign in with the authorization provider
-   * @throws [[Error]] If the silent sign in fails
+   * @throws [[BentleyError]] If the silent sign in fails
    */
   public async signInSilent(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
 
     const user = await this.nonInteractiveSignIn(requestContext);
-    assert(!!user && !user.expired, "Expected userManager.signinSilent to always resolve to an authorized user");
-    return;
+    if (user === undefined || user.expired)
+      throw new BentleyError(AuthStatus.Error, "Silent sign-in failed", Logger.logError, FrontendAuthorizationClientLoggerCategory.Authorization);
   }
 
   /**
