@@ -1,6 +1,24 @@
 # Change Log - @bentley/webpack-tools-core
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Updated to use TypeScript 4.1
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:53 GMT
+
+_Version update only_
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -14,12 +32,22 @@ Thu, 18 Feb 2021 22:10:13 GMT
 
 - now searches for imodeljs-native in externals plugin in @bentley/imodeljs-backend in addition to appNodeModules
 
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
+
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
-- Add function to check versions semantically 
+- Add function to check versions semantically
 - Changed the way CopyExternalsPlugin works to grab more dependencies
 
 ## 2.10.3
@@ -34,7 +62,7 @@ Fri, 08 Jan 2021 14:52:02 GMT
 
 ### Updates
 
-- Add function to check versions semantically 
+- Add function to check versions semantically
 
 ## 2.10.1
 Tue, 22 Dec 2020 00:53:38 GMT
