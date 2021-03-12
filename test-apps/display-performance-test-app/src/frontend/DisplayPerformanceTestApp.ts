@@ -3,22 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { ClientRequestContext, Dictionary, Id64, Id64Arg, Id64String, OpenMode, ProcessDetector, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
+import {
+  ClientRequestContext, Dictionary, Id64, Id64Arg, Id64String, OpenMode, ProcessDetector, SortedArray, StopWatch,
+} from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import {
-  BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
-} from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
-  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DesktopAuthorizationClientConfiguration, DisplayStyleProps,
-  FeatureAppearance, FeatureAppearanceProps, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RpcConfiguration,
-  SnapshotIModelRpcInterface, ViewDefinitionProps,
+  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DisplayStyleProps, FeatureAppearance, FeatureAppearanceProps, Hilite,
+  IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RpcConfiguration, SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
-  AuthorizedFrontendRequestContext, DesktopAuthorizationClient, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider,
-  FeatureSymbology, FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, PerformanceMetrics, Pixel, RenderSystem,
-  ScreenViewport, SnapshotConnection, Target, TileAdmin, Viewport, ViewRect, ViewState,
+  AuthorizedFrontendRequestContext, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider, FeatureSymbology,
+  FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, NativeAppAuthorization, PerformanceMetrics, Pixel,
+  RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -405,7 +404,7 @@ let formattedSelectedTileIds = "Selected tiles:\n";
 function formatSelectedTileIds(vp: Viewport): void {
   formattedSelectedTileIds = "Selected tiles:\n";
   const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
-  for (const viewport of [ vp, ...vp.view.secondaryViewports]) {
+  for (const viewport of [vp, ...vp.view.secondaryViewports]) {
     const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
     if (!selected)
       continue;
@@ -996,14 +995,14 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext): Promise<FrontendAuthorizationClient> {
+async function createOidcClient(requestContext: ClientRequestContext): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
 
   if (ProcessDetector.isElectronAppFrontend) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: DesktopAuthorizationClientConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
-    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration);
+    const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
+    const desktopClient = new NativeAppAuthorization(oidcConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {
@@ -1025,7 +1024,7 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<F
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
   const requestContext = new FrontendRequestContext();
-  const oidcClient: FrontendAuthorizationClient = await createOidcClient(requestContext);
+  const oidcClient = await createOidcClient(requestContext);
 
   IModelApp.authorizationClient = oidcClient;
   if (oidcClient.isAuthorized)

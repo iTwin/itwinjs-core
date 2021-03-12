@@ -20,7 +20,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
     // (undocumented)
-    rotatePlacement(_ids: CompressedId64Set, _matrix: Matrix3dProps, _aboutCenter: boolean): Promise<IModelStatus>;
+    rotatePlacement(ids: CompressedId64Set, matrixProps: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
     // (undocumented)
     protected _str: string;
     // (undocumented)

@@ -4,28 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken } from "@bentley/itwin-client";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { DesktopAuthorizationClient } from "@bentley/imodeljs-backend";
+import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 import { ExtensionProps } from "@bentley/extension-client";
+import { NativeHost } from "@bentley/imodeljs-backend";
 
 export async function signIn(): Promise<AccessToken> {
   const clientId = "imodeljs-extension-publisher";
   const redirectUri = "http://localhost:5001/signin-oidc";
-  const requestContext: ClientRequestContext = new ClientRequestContext();
-  const client = new DesktopAuthorizationClient({
+  const requestContext = new ClientRequestContext();
+  const client = new ElectronAuthorizationBackend();
+  await client.initialize(requestContext, {
     clientId,
     redirectUri,
     scope: "openid imodel-extension-service-api context-registry-service:read-only offline_access imodel-extension-service:modify",
   });
-  await client.initialize(requestContext);
   return new Promise<AccessToken>((resolve, reject) => {
-    client.onUserStateChanged.addListener((token) => {
+    NativeHost.onUserStateChanged.addListener((token) => {
       if (token !== undefined) {
         resolve(token);
       } else {
         reject(new Error("Failed to sign in"));
       }
     });
-    client.signIn(requestContext).catch((err) => reject(err));
+    client.signIn().catch((err) => reject(err));
   });
 }
 
