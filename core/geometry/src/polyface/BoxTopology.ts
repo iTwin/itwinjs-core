@@ -8,7 +8,6 @@
  */
 
 import { Point3d } from "../geometry3d/Point3dVector3d";
-import { PointSearchContext } from "../topology/HalfEdgePointInGraphSearch";
 
 //
 //      2------------------3
