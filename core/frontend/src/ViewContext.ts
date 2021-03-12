@@ -41,8 +41,10 @@ export class GridDisplaySettings {
   public static minPerspectiveSeparation = 3.0;
   /** Distance between grid lines in pixels to use for fading lines before they are culled */
   public static minFadeSeparation = 20.0;
-  /** Culling option based on distance to neighbor. 0 for none, 1 for previous neighbor, 2 for previous displayed neighbor */
-  public static cullingOption: 0 | 1 | 2 = 1;
+  /** Culling option based on distance to neighbor when camera is off. 0 for none, 1 for previous neighbor, 2 for previous displayed neighbor */
+  public static cullingOption: 0 | 1 | 2 = 2;
+  /** Culling option based on distance to neighbor when camera is on. 0 for none, 1 for previous neighbor, 2 for previous displayed neighbor */
+  public static cullingPerspectiveOption: 0 | 1 | 2 = 1;
   /** Clipping option based on distance to neighbor. 0 for none */
   public static clippingOption: 0 | 1 = 1;
 }
@@ -387,6 +389,9 @@ export class DecorateContext extends RenderContext {
       else
         thisTransparency = lineTransparency;
 
+      if (gridLineIdentifier.stepCount > 1 && (skipRefLines || thisTransparency > 240))
+        return; // limit number of steps...
+
       if (undefined === lastTransparency || (Math.abs(thisTransparency - lastTransparency) > 5)) {
         builder.setSymbology(color.withTransparency(thisTransparency), planeColor, 1, linePattern);
         lastTransparency = thisTransparency;
@@ -395,7 +400,8 @@ export class DecorateContext extends RenderContext {
       if (undefined !== firstLine) {
         builder.addLineString(firstLine);
         firstLine = undefined;
-        drawGridLines = true;
+        if (1 === gridLineIdentifier.stepCount)
+          drawGridLines = true; // Only need to draw grid lines when ref lines aren't being skipped...
       }
 
       builder.addLineString([pointA, pointB]);
@@ -409,7 +415,7 @@ export class DecorateContext extends RenderContext {
 
     const gridOptions = ViewportGraphicsGridSpacingOptions.create(
       (vp.isCameraOn && Math.abs(zVec.dotProduct(vp.rotation.getRow(2))) < 0.9) ? GridDisplaySettings.minPerspectiveSeparation : GridDisplaySettings.minSeparation,
-      GridDisplaySettings.cullingOption,
+      (vp.isCameraOn ? GridDisplaySettings.cullingPerspectiveOption : GridDisplaySettings.cullingOption),
       GridDisplaySettings.clippingOption
     );
 
