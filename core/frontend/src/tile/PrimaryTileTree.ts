@@ -15,6 +15,7 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
+import { System } from "../render/webgl/System";
 import { SceneContext } from "../ViewContext";
 import { ModelDisplayTransformProvider, ViewState, ViewState3d } from "../ViewState";
 import { SpatialViewState } from "../SpatialViewState";
@@ -24,7 +25,6 @@ import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
 } from "./internal";
-import { System } from "../render/webgl/System";
 
 interface PrimaryTreeId {
   readonly treeId: PrimaryTileTreeId;
@@ -76,7 +76,6 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
       is3d: id.is3d,
       batchType: BatchType.Primary,
     };
-    console.log(`=== Creating tile tree    id.forceNoInstancing ${id.forceNoInstancing ? "true" : "false"}   allowInstancing ${options.allowInstancing ? "true" : "false"}`);
 
     const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);
     if (!id.isPlanProjection)
@@ -151,14 +150,9 @@ class PrimaryTreeReference extends TileTreeReference {
     this._forceNoInstancing = false;
     if (!System.instance.capabilities.isWebGL2) {
       this.checkForceNoInstancing(view.modelDisplayTransformProvider);
-      view.onModelDisplayTransformProviderChanged.addListener((provider: ModelDisplayTransformProvider | undefined) => {
-        console.log(`Listener heard a change...`);
-        this.checkForceNoInstancing(provider);
-        console.log(`    this._forceNoInstancing ${this._forceNoInstancing}`);
-      });
+      view.onModelDisplayTransformProviderChanged.addListener((provider: ModelDisplayTransformProvider | undefined) => this.checkForceNoInstancing(provider));
     }
 
-    console.log(`PrimaryTreeReference constructor   this._forceNoInstancing is ${this._forceNoInstancing}`);
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
@@ -178,7 +172,6 @@ class PrimaryTreeReference extends TileTreeReference {
       const sx = tf.matrix.getColumn(0).magnitudeSquared();
       const sy = tf.matrix.getColumn(1).magnitudeSquared();
       const sz = tf.matrix.getColumn(2).magnitudeSquared();
-      console.log(`    Scale (${sx}, ${sy}, ${sz})`);
       if (Math.abs(sx - sy) > Geometry.smallMetricDistance || Math.abs(sx - sz) > Geometry.smallMetricDistance)
         this._forceNoInstancing = true;
     }
@@ -223,7 +216,6 @@ class PrimaryTreeReference extends TileTreeReference {
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this.view, this._id.modelId, this._id.treeId.animationTransformNodeId);
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || this._forceNoInstancing !== this._id.forceNoInstancing) {
-      console.log(`PrimaryTreeReference treeOwner   this._forceNoInstancing ${this._forceNoInstancing}`);
       this._id = {
         modelId: this._id.modelId,
         is3d: this._id.is3d,

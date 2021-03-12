@@ -32,8 +32,8 @@ const decodeEndPointAndQuadIndices = `
 const animateEndPoint = `g_otherPos.xyz += computeAnimationDisplacement(g_otherIndex, u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);`;
 
 const checkForSilhouetteDiscard = `
-  vec3 n0 = normalize(MAT_NORM * octDecodeNormal(a_normals.xy));
-  vec3 n1 = normalize(MAT_NORM * octDecodeNormal(a_normals.zw));
+  vec3 n0 = MAT_NORM * octDecodeNormal(a_normals.xy);
+  vec3 n1 = MAT_NORM * octDecodeNormal(a_normals.zw);
 
   if (0.0 == MAT_MVP[0].w) {
     return n0.z * n1.z > 0.0;           // orthographic.

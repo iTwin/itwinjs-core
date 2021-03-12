@@ -129,7 +129,7 @@ function adjustPoint(ev: BeButtonEvent, segments?: Array<Segment>, locations?: A
   if (undefined !== IModelApp.accuSnap.currHit && undefined !== IModelApp.accuSnap.currHit.modelId) {
     if ("0" !== IModelApp.accuSnap.currHit.modelId) {
       const newPoint = ev.point.clone();
-      ev.viewport.transformByModelDisplayTransform(IModelApp.accuSnap.currHit.modelId, newPoint, true);
+      ev.viewport.view.transformPointByModelDisplayTransform(IModelApp.accuSnap.currHit.modelId, newPoint, true);
       return newPoint;
     } else {
       // Must have snapped to a decoration, so look through previous any segments & locations for a match to get an adjusted point.

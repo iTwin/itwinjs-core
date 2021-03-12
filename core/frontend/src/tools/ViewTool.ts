@@ -1250,7 +1250,7 @@ class ViewRotate extends HandleWithInertia {
         // If we had hit something we might need to undo the model display transform of the hit.
         const hitDetail = vp.picker.getHit(0);
         if (undefined !== hitDetail && undefined !== hitDetail.modelId) {
-          vp.transformByModelDisplayTransform(hitDetail.modelId, plane.getOriginRef(), false);
+          vp.view.transformPointByModelDisplayTransform(hitDetail.modelId, plane.getOriginRef(), false);
         }
       }
       return true;
