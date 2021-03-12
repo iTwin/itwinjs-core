@@ -160,7 +160,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   /** Create a convex set containing a half space for each edge between points of a polyline.
    * * Caller is responsible for assuring the polyline is convex.
    * @param points array of points.  Only xy parts are considered.
-   * @param interior array whose boolean value is used as both the `interior` and `invisible` bits of the plane for the succeeding segment.
+   * @param interior array whose boolean value is used as both the `interior` and `invisible` bits of the plane for the succeeding segment.   If this array is not provided, both are false.
    * @param leftIsInside if true, the interior is "to the left" of the segments.  If false, interior is "to the right"
    */
   public static createXYPolyLine(points: Point3d[], interior: boolean[] | undefined, leftIsInside: boolean, result?: ConvexClipPlaneSet): ConvexClipPlaneSet {

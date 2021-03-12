@@ -447,7 +447,7 @@ export abstract class Viewport implements IDisposable {
   public get viewDelta(): Vector3d { return this._viewingSpace.viewDelta; }
   /** Provides conversions between world and view coordinates. */
   public get worldToViewMap(): Map4d { return this._viewingSpace.worldToViewMap; }
-  /** Provides conversions between world and view coordinates. */
+  /** Provides conversions between world and Npc (non-dimensional perspective) coordinates. */
   public get worldToNpcMap(): Map4d { return this._viewingSpace.worldToNpcMap; }
   /** @internal */
   public get frustFraction(): number { return this._viewingSpace.frustFraction; }
