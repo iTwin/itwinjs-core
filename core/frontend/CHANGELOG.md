@@ -1,6 +1,52 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Update parsing of string input in Accudraw to use quantity parsing.
+- Initial setup for adding "basic manipulation" tools and commands to editor package.
+- Added ElementSetTool base class.
+- ElementSetTool class documentation.
+- Fixed broken double angle bracket link syntax
+- Fix iOS problem where a viewport would not redraw until resizing after closing multiple viewports.
+- Fix incorrect GPU memory limits.
+- Fix incorrect cached transform for plan projection models after the model's range changes.
+- Fix Viewport.requestRedraw failing to request next animation frame.
+- Imagery providers were incorrectly created for WMTS and AzureMaps. Improved testing.
+- Split imagery providers in their own file.
+- refactor IModelApp startup
+- Improve grid line fade for vertical lines by drawing from center out.
+- Allow applications to react to WebGL context loss by overriding RenderSystem.contextLossHandler.
+- IPC shim (WIP) for local webviewer apps.
+- Added MoveElementsTool
+- implemented nonlocatable for planar classifiers
+- Update how custom QuantityType definitions are defined and registered.
+- Add planar clip mask support.
+- Fix transparent depthless map failing to blend with background color or skybox.
+- add notifications for changed elements on SaveChanges
+- Updated to use TypeScript 4.1
+- Undo/Redo shortcuts
+- begin rename project from iModel.js to iTwin.js
+- Allow the same label to be used in two different units within the same family but in different systems.
+- Fix failure to call screen-space effects `shouldApply` function when reading pixels.
+- fix for running display-performance-test-app with a saved view which has volume classification using overrides
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:52 GMT
+
+### Updates
+
+- Fix incorrect cached transform for plan projection models after the model's range changes.
+- Add workaround for bogus transform in tile tree for empty model.
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -34,6 +80,18 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - Added support for Slope and Hillshade modes for Thematic display of Terrain
 - AccuDraw bi-directional value updates
 - Fixed AccuDraw shortcuts in apps like DR
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+### Updates
+
+- NativeApp download progress fix
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
@@ -247,8 +305,8 @@ Fri, 02 Oct 2020 18:03:32 GMT
 
 - Added MapLayerSettingsService to persist custom map sources between sessions for same project/model
 - Support authorization via URL suffix for Cesium ion.  Handle PBR texture.
-- Fixes to front end methods to pull, merge and push. 
-- Fixed desktop authorization after recent changes. 
+- Fixes to front end methods to pull, merge and push.
+- Fixed desktop authorization after recent changes.
 - Support literal double-quote characters in quoted key-in arguments.
 - Restore reality model and schedule script init - inadvertently removed.
 - Generate normals for 3d view decorations.
@@ -345,7 +403,7 @@ Thu, 20 Aug 2020 20:57:09 GMT
 
 ### Updates
 
-- Change to use toast message to inform user of extension loaded. 
+- Change to use toast message to inform user of extension loaded.
 - Decorators can now optionally have their decorations cached to achieve a potential performance benefit.
 - Introduce IModelApp security options (including CSRF protection).
 - Fixed Web Accessibility issues
@@ -483,7 +541,7 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
 - Add a peerDependency on @bentley/extension-client
 - lookAtViewAlignedVolume should adjust view delta for limits and not fail.
 - Show min/max window error for mouse wheel zoom.
@@ -496,7 +554,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - `IModelApp.shutdown()` is now async.
 - Make locate work for background map with depth turned off.
 - Setup initialization of briefcase cache for offline workflows. (VSTS#286489)
-- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases.
 - Introduce BriefcaseConnection, make IModelConnection abstract
 - Remove ^ for ulas client dep in the frontend"
 - Improve performance of shadow display on macOS by avoiding frequent calls to gl.getParameter().
@@ -509,7 +567,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - WebGL Compatibility functionality moved to webgl-compatibility package
 - Added support for backward slashes in erroneous URLs of Reality Data in PW Context Share
 - Reality models now cast and receive solar shadows.
-- NativeApp.deleteBriefcase should work in offline scenarios. 
+- NativeApp.deleteBriefcase should work in offline scenarios.
 - Dont reproject tiles if GeoLocation from tool.
 - Support for progress/cancel from ios
 - Ensure view decorations are scaled based on device-pixel ratio.
@@ -553,14 +611,14 @@ Wed, 06 May 2020 13:17:49 GMT
 - Ensure the view updates in response to changes to terrain transparency.
 - openBriefcase should not access internet.
 - Fix material color inappropriately being applied in SolidFill mode when feature symbology overrides are in effect.
-- Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. 
-- Refactored NativeApp API and RPC interfaces. This continues to be WIP. 
-- Differentiated RemoteBriefcaseConnection-s from LocalBriefcaseConnection-s for use in web and native applications. These are now sub-classes of the abstract base class BriefcaseConnection. 
-- Setup ability to use NativeApp.openBriefcase() in offline scenarios. 
+- Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline.
+- Refactored NativeApp API and RPC interfaces. This continues to be WIP.
+- Differentiated RemoteBriefcaseConnection-s from LocalBriefcaseConnection-s for use in web and native applications. These are now sub-classes of the abstract base class BriefcaseConnection.
+- Setup ability to use NativeApp.openBriefcase() in offline scenarios.
 - add new interface for native app
-- VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP). 
+- VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP).
 - initialize connectivity status on NativeApp.startup() and unregister callback on NativeApp.shutdown()
-- VSTS#296110: Setup a way to close briefcases when the native application is offline. 
+- VSTS#296110: Setup a way to close briefcases when the native application is offline.
 - Remove named clip code, we ended up not wanting to save clips independent of saved views.
 - Renamed OIDC constructs for consistency; Removed SAML support.
 - Support OrbitGT point cloud dislay.
@@ -574,7 +632,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - Ensure unused tile trees are purged at regular intervals.
 - Added API in MessageManager to display either a Toast or Sticky message using React components.
 - Always accept point on reality model when snapping and remove message about nearest snap.
-- Optimize reality tile display.  
+- Optimize reality tile display.
 - Add mechanism to preload reality tiles included in an expanded frustum. Support display of ellipsoidal map tiles without depth buffering.
 - Reduce the number of surface shader variations by 75%
 - react to new clients packages from imodeljs-clients
@@ -655,7 +713,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 - Fix regression causing background map to be affected by view's symbology overrides.
 - Added support for backward slashes in erroneous URLs of Reality Data in PW Context Share
 - Prevent reuse of cached tiles after project extents change.
-- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests.
 - Fix incorrect aspect ratio for 3d view attachments.
 - Overriding transparency of a textured surface or raster text multiplies the texture alpha by the override rather than replacing it.
 - Better documentation of OidcDesktopClient/IOidcFrontendClient
@@ -668,7 +726,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 - Resolve circular dependencies between tile-related types.
 - Support for TypeDoc 0.16.8
 - Mark as deprecated classes and interfaces that have moved to bentley/ui-abstract.
-- Change feature tracking API for plugins as requested by Design Review. 
+- Change feature tracking API for plugins as requested by Design Review.
 - EN: #124601 - Initial implementation of WebGL2
 
 ## 1.11.0
@@ -703,7 +761,7 @@ Tue, 07 Jan 2020 19:44:01 GMT
 
 ### Updates
 
-- Clear reality tile children loading flag when selecting. 
+- Clear reality tile children loading flag when selecting.
 - Animate change view operations
 - Average the gpu profiler times for the last 120 frames instead of updating each frame; also simplify PerformnaceMetrics
 - Implement tile availability testing for Cesium World Terrain.
@@ -746,7 +804,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 - Code quality report fixes
 - Make iModel.js viewports adhere to DPI of a host display.
 - Code cleanup from codeQL hits
-- Setup OidcDesktopClient for Electron use cases. 
+- Setup OidcDesktopClient for Electron use cases.
 - Don't execute our event loop if there is no need
 - Fix regression causing animation to be uneven.
 - Fix warnings from static analysis
@@ -810,7 +868,7 @@ Fri, 01 Nov 2019 13:28:37 GMT
 - Anisotropic filting of draped map tiles.
 - Add debug tool for drape frustum.
 - Added MarkerSet.changeViewport
-- Allow sub classes of OidcBrowserClient to override the settings passed to the underlying oidc-client library. 
+- Allow sub classes of OidcBrowserClient to override the settings passed to the underlying oidc-client library.
 - Tweaks to ambient occlusion settings.
 - Fixed issues with use of OIDC AuthCode workflow in Electron and Single Page Applications.
 - Update DefaultToolSettingsProvider to create responisve UI.
@@ -838,7 +896,7 @@ Fri, 01 Nov 2019 13:28:37 GMT
 - Fixed bug that caused duplicated points to be handled improperly in batched spatial<->geocoord conversions
 - MarkerSet applies only to a single ScreenViewport
 - Make viewport member of MarkerSet public
-- More OIDC fixes for logout of electron apps. 
+- More OIDC fixes for logout of electron apps.
 - Improve performance for multiple viewports.
 - Added New badge for UI items
 - Cross-platform function to open an image in a new window.
@@ -891,7 +949,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Added Cesium ION logo; fixed exception when opening a second viewport while terrain, shadows,  or planar classification are enabled.
 - Add checkbrowser.js, refine i18n in Tool
 - Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg.
-- Refine frustum calculation for planar projection to create a tighter fit. 
+- Refine frustum calculation for planar projection to create a tighter fit.
 - Added ViewManager.getElementToolTip for overriding default persistent element tooltip.
 - Various EVSM shadow tweaks
 - Fix scenario in which a tile request is canceled after its http request completes and it remains perpetually in the request queue.
@@ -954,7 +1012,7 @@ Tue, 10 Sep 2019 12:09:49 GMT
 - Support reality model masking via black classifier geometry.
 - Support nearest snap for reality models.
 - Remove doubling of planar classifier size.  This caused excessive generation time.
-- Refine texture projection calculation to include height range (for terrain). 
+- Refine texture projection calculation to include height range (for terrain).
 - Ensure DisplayStyle3dState.sunDirection is synchronized with DisplayStyle3dSettings JSON.
 - Clip volume applied to view also applies to reality models.
 - Added SetupCameraTool for defining camera by eye point and target point.
@@ -1027,7 +1085,7 @@ Wed, 24 Jul 2019 11:47:26 GMT
 - Various OIDC related fixes - Bugs: 148507, 148508, Product Backlog Items: 148510, 148517, 148522.
 - Add PluginUiManager class and PluginUiProvider interface that will be used by Plugins to specify UI components to add to an iModeljs application.
 - Choose handle location for for section plane that is visible in the view.
-- Temporarily undid change to save tokens in local storage. 
+- Temporarily undid change to save tokens in local storage.
 - Added ToolAssistance support and Tool.iconSpec
 - The WebGL rendering system now takes advantage of Vertex Array Objects if they are available via an extension.  These provide a measurable performance increase in certain datasets.
 
@@ -1060,7 +1118,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Allow index.html to set a CDN from which to load imodeljs external modules.
 - Make Viewport.invaildateDecorations @beta, was @internal
 - Add default unhandled exception handler to ToolAdmin
-- Added feature tracking info to UserInfo obtained by OidcBrowserClient. 
+- Added feature tracking info to UserInfo obtained by OidcBrowserClient.
 - Ensure we never have two active snap or tooltip requests
 - Refine tile selection for map tiles
 - Prevent default symbology overrides applying to subcategories whose appearances were explicitly overridden.
@@ -1080,7 +1138,7 @@ Mon, 03 Jun 2019 18:09:39 GMT
 ### Updates
 
 - RPC system now accepts only basic values (primitives, "interface" objects, and binary).
-- Updated release tags. 
+- Updated release tags.
 - Added Viewport.changeViewedModel2d
 - Clip shape tool should only set AccuDraw rotation on 1st point.
 - Fix a prompt. Clip from element change to ignore selection set containing clip transient.
@@ -1113,7 +1171,7 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Set max tiles to skip to 1 for reality model tiles. (better user experience)
 - Set release tags for TiledGraphicsProvider classes
 - Reload tile tree if animation id changes
-- Removed use of OidcClientWrapper. 
+- Removed use of OidcClientWrapper.
 - Add cSpell comment.
 - Rename terrain to backgroundMap.
 - Add IModelApp.queryRenderCompatibility() API to allow querying of any rendering limitations of a client system.
@@ -1148,7 +1206,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Save ClipVector on ViewState instead of always creating new one from json.
 - Set initial GL state to match default
 - Dispose of planar classifiers.
-- Add spatial classifier UX 
+- Add spatial classifier UX
 - Hide clip decoration during modify. Easier right-click/touch tap support for non-handle pickable decoration.
 - Add orientation option button to toolsettings for ClipByPlane/ClipByShape tools.
 - ConvexClipPlaneSet modify handles. Make EmphasizeElements internal.
@@ -1218,7 +1276,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Remove "assembly lock" from SelectTool now that SelectionScope has been implemented.
 - Remove IModelApp subclasses
 - Remove IModelConnection.openStandalone and IModelConnection.closeStandalone
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Allow tile content to be requested without edge data, reducing tile size and download time.
 - Support image textures larger than WebGL capabilities by resizing them.
 - Update icons-generic-webfont version to latest available.
@@ -1299,7 +1357,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Fix clipping volume being inconsistently applied to view.
 - Don't make textures transparent unless technique enables it.
 - Fix incorrect "fit view" behavior when empty tiles exist.
-- Handle relative subpaths in reality model tile trees.  Handle Y for axis/ 
+- Handle relative subpaths in reality model tile trees.  Handle Y for axis/
 - Fix handling of null animation visibility - should be 100% not 0.
 - Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.
 - DefaultViewTouchTool should not call handleEvent until it's installed as the active ViewTool.
@@ -1321,10 +1379,10 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Omit animation branches that are not visible.
 - Improve efficiency and completeness of SubCategory loading for ViewStates.
 - Save BUILD_SEMVER to globally accessible map. PluginAdmin and Plugin classes defined. IModelJsLoader improved.
-- Add optional iModel argument to EntityState.clone 
+- Add optional iModel argument to EntityState.clone
 - Added GeometricModelState.queryModelRange
 - Added creatorId, new method to list RD per project, identified numerous area for changes WIP
-- IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections. 
+- IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections.
 - Implemented spatial criterai when searching through all reality data associated to a project.
 - Problem with root document of reality data not in root of blob. Tiles could not be fetched. Root path is added to tiles names.
 - Threading issue accessing Reality Data, RealityData class was transformed to be the main data access object instead of the client that was used by most/all reality data causing cache data clash and mix between many reality data.
@@ -1384,7 +1442,7 @@ Thu, 10 Jan 2019 22:46:17 GMT
 - Fix IModelJsLoader to ensure react loaded before bwc.
 - MeasureLocationTool show lat/long and altitude.
 - Make raster text locate behave better.
-- Removed default OIDC scopes. All applications must now explicitly pass the required scopes. 
+- Removed default OIDC scopes. All applications must now explicitly pass the required scopes.
 - Can now await result from QuantityFormatter. Report delta relative to ACS when context lock enabled. Cleanup "Measure.Points" plug-in example until real measure tools are available.
 - Quantity formatter now allows async method to get FormatterSpec that can be used to format quantities.
 - QuantityFormatter.formatQuantity is now the only method to format quantities.
@@ -1553,7 +1611,7 @@ Mon, 12 Nov 2018 16:42:10 GMT
 
 ### Updates
 
-- Hydrated briefcases for ReadOnly cases from the latest checkpoint, rather than the seed files. This significantly improves performance of IModelDb/IModelConnection.open() for typical cases. 
+- Hydrated briefcases for ReadOnly cases from the latest checkpoint, rather than the seed files. This significantly improves performance of IModelDb/IModelConnection.open() for typical cases.
 
 ## 0.165.0
 Mon, 12 Nov 2018 15:47:00 GMT
