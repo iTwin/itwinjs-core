@@ -6,7 +6,8 @@
  * @module IModelApp
  */
 
-import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcRoutingToken } from "@bentley/imodeljs-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
@@ -41,8 +42,15 @@ export class WebViewerApp {
       BentleyCloudRpcManager.initializeClient(params.rpcParams, opts.iModelApp?.rpcInterfaces ?? [], params.routing);
     }
     await IModelApp.startup(opts.iModelApp);
-    if (opts.webViewerApp.authConfig)
-      IModelApp.authorizationClient = new BrowserAuthorizationClient(opts.webViewerApp.authConfig);
+
+    if (opts.webViewerApp.authConfig) {
+      await BrowserAuthorizationCallbackHandler.handleSigninCallback(opts.webViewerApp.authConfig.redirectUri);
+      const auth = new BrowserAuthorizationClient(opts.webViewerApp.authConfig);
+      IModelApp.authorizationClient = auth;
+      try {
+        await auth.signInSilent(new ClientRequestContext());
+      } catch (err) { }
+    }
   }
 
   public static async shutdown() {
