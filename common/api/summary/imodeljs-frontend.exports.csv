@@ -222,6 +222,7 @@ public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
 public;GraphicType
+internal;GridDisplaySettings
 alpha;GroupMark
 internal;Hilites
 beta;HiliteSet
