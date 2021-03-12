@@ -932,7 +932,7 @@ export class Range1d extends RangeBase {
   /**
    * Set this range to (min(x0,x1), max(x0,x1))
    * @param x0 first value
-   * @pram x1 second value
+   * @param x1 second value
    */
   public setXXUnordered(x0: number, x1: number) {
     if (x0 <= x1) {
