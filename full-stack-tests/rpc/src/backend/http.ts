@@ -8,6 +8,7 @@ import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
 import { initializeMockMobileTest, setupMockMobileTest } from "./mockmobile";
+import { initializeWebRoutingTest } from "./routing";
 import { AttachedInterfaceImpl } from "./TestRpcImpl";
 import { TestServer } from "./TestServer";
 
@@ -28,6 +29,7 @@ async function init() {
   console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
   initializeAttachedInterfacesTest(rpcConfig);
+  initializeWebRoutingTest(rpcConfig.protocol);
 
   await initializeMockMobileTest();
 
