@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { DbResult } from "@bentley/bentleyjs-core";
+import { DbResult, IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelError, StorageValue } from "@bentley/imodeljs-common";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { IModelHost } from "./IModelHost";
@@ -22,9 +22,6 @@ export class NativeAppStorage {
   private static _init: boolean = false;
   private constructor(private _ecdb: ECDb, public readonly id: string) { }
   public setData(key: string, value: StorageValue): void {
-    if (!this._ecdb.isOpen) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cache is not open or disposed");
-    }
     const rc = this._ecdb.withPreparedSqliteStatement("INSERT INTO [app_cache]([key],[type],[val])VALUES(?,?,?) ON CONFLICT([key]) DO UPDATE SET [type]=excluded.[type], [val]=excluded.[val]", (stmt) => {
       let type: string | undefined = value === null ? "null" : typeof value;
       if (type === "object") {
@@ -50,9 +47,6 @@ export class NativeAppStorage {
   }
 
   public getData(key: string): StorageValue | undefined {
-    if (!this._ecdb.isOpen) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cache is not open or disposed");
-    }
     return this._ecdb.withPreparedSqliteStatement("SELECT [type],[val] FROM [app_cache] WHERE [key] = ?", (stmt) => {
       stmt.bindValue(1, key);
       const rc = stmt.step();
@@ -76,9 +70,6 @@ export class NativeAppStorage {
     });
   }
   public getKeys(): string[] {
-    if (!this._ecdb.isOpen) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cache is not open or disposed");
-    }
     const keys = new Array<string>();
     this._ecdb.withPreparedSqliteStatement("SELECT [key] FROM [app_cache]", (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
@@ -88,9 +79,6 @@ export class NativeAppStorage {
     return keys;
   }
   public removeData(key: string) {
-    if (!this._ecdb.isOpen) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cache is not open or disposed");
-    }
     const rc = this._ecdb.withPreparedSqliteStatement("DELETE FROM [app_cache] WHERE [key] = ?", (stmt) => {
       stmt.bindValue(1, key);
       return stmt.step();
@@ -100,9 +88,6 @@ export class NativeAppStorage {
     }
   }
   public removeAll() {
-    if (!this._ecdb.isOpen) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cache is not open or disposed");
-    }
     const rc = this._ecdb.withPreparedSqliteStatement("DELETE FROM [app_cache]", (stmt) => {
       return stmt.step();
     });
@@ -111,9 +96,6 @@ export class NativeAppStorage {
     }
   }
   public close(deleteFile: boolean = false) {
-    if (!this._ecdb.isOpen) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cache is not open or disposed");
-    }
     const storageFile = path.join(NativeHost.appSettingsCacheDir, this.id);
     this._ecdb.saveChanges();
     this._ecdb.closeDb();
@@ -123,15 +105,15 @@ export class NativeAppStorage {
     NativeAppStorage._storages.delete(this.id);
   }
   private static init(ecdb: ECDb): DbResult {
-    if (!ecdb.isOpen) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cache is not open or disposed");
-    }
     return ecdb.withPreparedSqliteStatement("CREATE TABLE [app_cache]([key] PRIMARY KEY, [type], [val]);", (stmt) => {
       return stmt.step();
     });
   }
-  public static find(name: string): NativeAppStorage | undefined {
-    return this._storages.get(name);
+  public static find(name: string): NativeAppStorage {
+    const storage = this._storages.get(name);
+    if (undefined === storage)
+      throw new IModelError(IModelStatus.FileNotFound, `Storage ${name} not open`);
+    return storage;
   }
   public static closeAll() {
     this._storages.forEach((value) => {

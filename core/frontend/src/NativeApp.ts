@@ -234,23 +234,20 @@ export class NativeApp {
     await this.callNativeHost("deleteBriefcaseFiles", fileName);
   }
 
-  /**
-   * Gets briefcases
-   * @returns list of BriefcaseProps in cache
-   */
+  /**  Get a list of all briefcase files held in the local briefcase cache directory */
   public static async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
     return this.callNativeHost("getCachedBriefcases", iModelId);
   }
 
   /**
-   * Opens storage. This automatically create the storage with that name if it does not exist
-   * @param name Should confirm to a filename rules without extension.
-   * @returns storage object that represent the [[Storage]] object.
+   * Opens storage. This automatically creates a storage with that name if it does not exist
+   * @param name Should be a local filename without extension.
+   * @returns the [[Storage]].
    */
   public static async openStorage(name: string): Promise<Storage> {
-    if (this._storages.has(name)) {
+    if (this._storages.has(name))
       return this._storages.get(name)!;
-    }
+
     const storage = new Storage(await this.callNativeHost("storageMgrOpen", name));
     this._storages.set(storage.id, storage);
     return storage;
@@ -262,18 +259,13 @@ export class NativeApp {
    * @param deleteId if set attempt is made to delete the storage from disk permanently.
    */
   public static async closeStorage(storage: Storage, deleteId: boolean): Promise<void> {
-    if (!this._storages.has(storage.id)) {
+    if (!this._storages.has(storage.id))
       throw new Error(`Storage [Id=${storage.id}] not found`);
-    }
     await this.callNativeHost("storageMgrClose", storage.id, deleteId);
-    (storage as any)._isOpen = false;
     this._storages.delete(storage.id);
   }
 
-  /**
-   * Gets storage names
-   * @returns return list of storage available on disk.
-   */
+  /** Get the list of existing Storages on the local disk. */
   public static async getStorageNames(): Promise<string[]> {
     return NativeApp.callNativeHost("storageMgrNames");
   }
@@ -285,83 +277,42 @@ export class NativeApp {
  * @alpha
  */
 export class Storage {
-  constructor(public readonly id: string, private _isOpen: boolean = true) { }
+  constructor(public readonly id: string) { }
 
-  /**
-   * Gets data against a key
-   * @param key a string that represent a key.
-   * @returns data return value against the key
-   * @internal
-   */
+  /** Get the value for a key */
   public async getData(key: string): Promise<StorageValue | undefined> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
     return NativeApp.callNativeHost("storageGet", this.id, key);
   }
 
-  /**
-   * Sets data against a key
-   * @param key a string that represent a key
-   * @param value a value that need to be persisted
-   * @internal
-   */
+  /** Set value for a key */
   public async setData(key: string, value: StorageValue): Promise<void> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
     return NativeApp.callNativeHost("storageSet", this.id, key, value);
   }
 
   /**
    * Return all keys.
    * @note This could be expensive and may block backend depending on size and number of keys
-   * @returns keys a string array of all the keys in storage
+   * @returns array of all the keys in the storage
    */
   public async getKeys(): Promise<string[]> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
     return NativeApp.callNativeHost("storageKeys", this.id);
   }
 
-  /**
-   * Remove all keys
-   * @note Delete all keys and data.
-   */
+  /** Remove a key and its data. */
   public async removeData(key: string): Promise<void> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
     return NativeApp.callNativeHost("storageRemove", this.id, key);
   }
 
-  /**
-   * Remove all keys
-   * @note Delete all keys and data.
-   */
+  /** Remove all keys and data. */
   public async removeAll(): Promise<void> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
     return NativeApp.callNativeHost("storageRemoveAll", this.id);
   }
 
   /**
-   * Closes storage and optionally delete it permanently
-   * @param [deleteIt] if set a attempt is made to delete the storage from disk.
+   * Close this Storage and optionally delete it
+   * @param deleteIt if set a attempt is made to delete the storage from disk.
    */
   public async close(deleteIt: boolean = false): Promise<void> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
     return NativeApp.closeStorage(this, deleteIt);
-  }
-
-  /**
-   * Can be check to see if the storage is still open
-   */
-  public get isOpen(): boolean {
-    return this._isOpen;
   }
 }
