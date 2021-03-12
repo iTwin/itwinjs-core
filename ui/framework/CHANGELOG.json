@@ -2,6 +2,66 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@bentley/ui-framework_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add functions to clear the Hide/Isolate for Models and Categories"
+          },
+          {
+            "comment": "Upgrade react-resize-detector to avoid lodash security vulnerability"
+          },
+          {
+            "comment": " Fix solar timeline component so that sunTime is properly set for project location."
+          },
+          {
+            "comment": "Document uiSettings in ToolAssistanceField"
+          },
+          {
+            "comment": "Fix stateFunction for clear hide/isolate/emphasize tool that is used in UI 1.0."
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "AccuDraw show Z field only for 3d views"
+          },
+          {
+            "comment": "AccuDraw default keyboard shortcuts"
+          },
+          {
+            "comment": "Added AccuDraw notifications for rotation & compass mode"
+          },
+          {
+            "comment": "Added AccuDraw widget"
+          },
+          {
+            "comment": "Support for conditionally disabling/hiding keyboard shortcuts"
+          },
+          {
+            "comment": "Fixed local file support in Electron ui-test-app"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/ui-framework_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/ui-framework_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:53 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/ui-framework_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
@@ -39,6 +99,24 @@
           },
           {
             "comment": "Update remaining syncEventId checks to be case insensitive."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@bentley/ui-framework_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/ui-framework_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated ModelsTree rulesets to better handle updates."
           }
         ]
       }
