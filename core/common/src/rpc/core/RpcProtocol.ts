@@ -57,6 +57,9 @@ export interface RpcRequestFulfillment {
 
   /** A protocol-specific status code value for the request. */
   status: number;
+
+  /* A protocol-specific value for retrying this request. */
+  retry?: string;
 }
 
 /** @public */
