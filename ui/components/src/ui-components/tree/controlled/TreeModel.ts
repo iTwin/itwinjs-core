@@ -185,6 +185,7 @@ export interface TreeModel {
   getNode(nodeId: string | undefined, childIndex?: number): TreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode | undefined;
 
   getChildren(parentId: string | undefined): SparseArray<string> | undefined;
+  getChildOffset(parentId: string | undefined, childId: string): number | undefined;
 
   iterateTreeModelNodes(parentId?: string): IterableIterator<TreeModelNode>;
 }
