@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Id64String, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
@@ -106,7 +106,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
 
   public componentDidMount() {
     if (!this.state.iModelConnection) {
-      if (ProcessDetector.isElectronAppFrontend) {
+      if (ElectronApp.isValid) {
         this._handleElectronFileOpen(); // eslint-disable-line @typescript-eslint/no-floating-promises
       } else if (this._input) {
         this._handleButtonClick();
@@ -116,7 +116,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
 
   private _handleButtonClick = () => {
     if (!this.state.iModelConnection) {
-      if (ProcessDetector.isElectronAppFrontend) {
+      if (ElectronApp.isValid) {
         this._handleElectronFileOpen(); // eslint-disable-line @typescript-eslint/no-floating-promises
       } else if (this._input) {
         this._input.click();
@@ -142,7 +142,9 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
   private _handleElectronFileOpen = async () => {
     const opts: OpenDialogOptions = {
       properties: ["openFile"],
-      filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
+      filters: [
+        { name: "iModels", extensions: ["ibim", "bim"] },
+      ],
     };
     const val = await ElectronApp.callDialog("showOpenDialog", opts);
     if (val.canceled)
@@ -185,7 +187,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
             <Headline>{title}</Headline>
           </div>
           <FillCentered>
-            {!ProcessDetector.isElectronAppFrontend &&
+            {!ElectronApp.isValid &&
               <input id="file-input" ref={(e) => this._input = e}
                 type="file" accept=".bim,.ibim" onChange={this._handleFileInputChange}
                 style={{ display: "none" }} />
