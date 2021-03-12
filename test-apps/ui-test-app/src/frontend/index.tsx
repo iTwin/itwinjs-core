@@ -15,7 +15,7 @@ import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 import {
-  BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, isFrontendAuthorizationClient,
+  BrowserAuthorizationClientConfiguration, isFrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
