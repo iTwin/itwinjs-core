@@ -137,9 +137,12 @@
     "noSettingsProvidersRegistered": "No SettingsProviders have been registered.",
     "noSettingsAvailable": "No Settings Available",
     "quantity-formatting": {
-      "label": "Units/Formatting",
+      "label": "Units",
+      "subLabel": "Quantity Formatting",
       "tooltip": "Define Active Units and Quantity Formats",
-      "formatSectionLabel": "Quantity Formats"
+      "formatSectionLabel": "Quantity Formats",
+      "setButtonLabel": "Set",
+      "clearButtonLabel": "Clear"
     }
   },
   "tools": {

@@ -266,9 +266,10 @@ export interface QuantityFormatOverridesChangedArgs {
   readonly unitSystem?: UnitSystemKey;
 }
 
-/** The UnitFormattingSettingsProvider interface is used to store and retrieve FormatProps to be used to format and parse values
- *  for a specific QuantityType. If none are defined then the default formats specified in the QuantityFormatter are used.
- *  @alpha */
+/** The UnitFormattingSettingsProvider interface is used to store and retrieve override FormatProps and Presentation Unit System for use by the QuantityFormatter.
+ *  If no UnitFormattingSettingsProvider is supplied to the QuantityFormatter then any overrides set are lost when the session is closed.
+ *  @alpha
+ */
 export interface UnitFormattingSettingsProvider {
   // serializes JSON object containing format overrides for a specific quantity type.
   store (quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
@@ -283,8 +284,12 @@ export interface UnitFormattingSettingsProvider {
   // Function to load overrides for a specific IModelConnection. Typically this is not called often since typical implementations monitor for IModelConnection
   // changes and call this method internally.
   loadOverrides(imodel: IModelConnection|undefined): Promise<void>;
+  // function called to save changes to Presentation Unit System
   storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
+  // function called to save format overrides
   storeFormatOverrides(args: QuantityFormatOverridesChangedArgs): Promise<void>;
+  // property that is set by the implementation to inform the BaseUnitFormattingSettingsProvider if the provider should
+  // trigger reloading of the overrides when the "active" imodel changes.
   readonly maintainOverridesPerIModel: boolean;
 }
 

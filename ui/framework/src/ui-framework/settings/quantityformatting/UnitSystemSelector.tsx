@@ -54,7 +54,7 @@ export function UnitSystemSelector(props: UnitSystemSelectorProps) { // eslint-d
   return (
     <div className="quantity-unit-system-selector-container">
       <span className={"uicore-label"}>{label.current}</span>
-      <Select data-testid={`unitSystemSelector`}
+      <Select data-testid="unitSystemSelector"
         value={unitSystemKey}
         options={displayUnitSystems} onChange={handleUnitSystemSelected}
       />

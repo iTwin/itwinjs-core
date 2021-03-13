@@ -38,7 +38,7 @@
     margin-left: 20px;
   }
 
-  .quantity-types-container {
+  .uifw-quantity-types-container {
     display: flex;
     height: 100%;
     width: auto;
@@ -50,7 +50,7 @@
       padding: 10px 50px 20px 20px;
       height: auto;
 
-      ul.core-listbox.quantity-types {
+      ul.core-listbox.uifw-quantity-types {
         height: 100%;
         li.core-listbox-item {
           line-height: 2em;
@@ -66,11 +66,11 @@
       min-width: 410px;
       padding: 10px 20px 20px 0;
 
-      .quantity-types-right-top {
+      .uifw-quantity-types-right-top {
         display: flex;
         padding-bottom: 10px;
 
-        .quantity-types-right-top-sample {
+        .uifw-quantity-types-right-top-sample {
           display: grid;
           grid-template-columns: auto 1fr;
           row-gap: 0;
@@ -92,7 +92,7 @@
         }
       }
 
-      .quantity-types-formats {
+      .uifw-quantity-types-formats {
         display: flex;
         flex-direction: column;
         border: 1px solid $buic-inputs-border;

@@ -26,7 +26,9 @@ function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
   return compare.compare(obj1, obj2);
 }
 
-/** alpha */
+/** Options to initialize the settings page that allows users to set Quantity formatting overrides.
+ * @alpha
+ */
 export interface QuantityFormatterSettingsOptions {
   initialQuantityType: QuantityTypeArg;
   availableUnitSystems: Set<UnitSystemKey>;
@@ -35,6 +37,7 @@ export interface QuantityFormatterSettingsOptions {
 /**
  * Return a SettingsTabEntry that can be used to define the available settings that can be set for an application.
  * @param itemPriority - Used to define the order of the entry in the Settings Stage
+ * @param opts - Options to initialize the settings page that allows users to set Quantity formatting overrides.
  * @alpha
  */
 export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial<QuantityFormatterSettingsOptions>): SettingsTabEntry {
@@ -42,6 +45,7 @@ export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opt
   return {
     itemPriority, tabId: "ui-test-app:Quantity",
     label: UiFramework.translate("settings.quantity-formatting.label"),
+    subLabel: UiFramework.translate("settings.quantity-formatting.subLabel"),
     page: <QuantityFormatSettingsPanel initialQuantityType={initialQuantityType??QuantityType.Length}
       availableUnitSystems={availableUnitSystems??new Set(["metric","imperial","usCustomary","usSurvey"])} />,
     isDisabled: false,
@@ -51,21 +55,24 @@ export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opt
   };
 }
 
-/**
+/** UI Component shown in settings page to set the active Presentation Unit System and to set format overrides.
  * @alpha
  */
 export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitSystems}: QuantityFormatterSettingsOptions) {
   const [activeUnitSystemKey, setActiveUnitSystemKey] = React.useState(IModelApp.quantityFormatter.activeUnitSystem);
-  const [activeQuantityType, setActiveQuantityType] = React.useState(getQuantityTypeKey(initialQuantityType??QuantityType.Length));
+  const [activeQuantityType, setActiveQuantityType] = React.useState(getQuantityTypeKey(initialQuantityType));
   const [activeFormatterSpec, setActiveFormatterSpec] =
     React.useState<FormatterSpec | undefined>(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(getQuantityTypeKey(activeQuantityType)));
   const [saveEnabled, setSaveEnabled] = React.useState(false);
   const [clearEnabled, setClearEnabled] = React.useState(IModelApp.quantityFormatter.hasActiveOverride(initialQuantityType, true));
   const newQuantityTypeRef = React.useRef<QuantityTypeKey>();
   const formatSectionLabel = React.useRef(UiFramework.translate("settings.quantity-formatting.formatSectionLabel"));
+  const setButtonLabel = React.useRef(UiFramework.translate("settings.quantity-formatting.setButtonLabel"));
+  const clearButtonLabel = React.useRef(UiFramework.translate("settings.quantity-formatting.clearButtonLabel"));
 
   React.useEffect(() => {
     const handleUnitSystemChanged = ((): void => {
+      // istanbul ignore else
       if (activeUnitSystemKey !== IModelApp.quantityFormatter.activeUnitSystem) {
         setActiveUnitSystemKey (IModelApp.quantityFormatter.activeUnitSystem);
         setActiveFormatterSpec(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType));
@@ -84,6 +91,7 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
     const handleFormatChanged = ((args: QuantityFormatsChangedArgs): void => {
       if (!newQuantityTypeRef.current) {
         const quantityKey = IModelApp.quantityFormatter.getQuantityTypeKey(activeQuantityType);
+        // istanbul ignore else
         if (args.quantityType === quantityKey) {
           setActiveFormatterSpec(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType));
           setSaveEnabled(false);
@@ -99,9 +107,10 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
   }, [activeQuantityType]);
 
   const saveChanges = React.useCallback((afterSaveFunction: (args: any) => void, args?: any) => {
+    // istanbul ignore else
     if (activeFormatterSpec) {
       const formatProps = activeFormatterSpec.format.toJSON();
-      const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)?.format.toJSON();
+      const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)!.format.toJSON();
       if (formatPropsInUse && !formatAreEqual(formatProps, formatPropsInUse)) {
         ModalDialogManager.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={args} onDialogClose={afterSaveFunction} />, "saveQuantityFormat");
         return;
@@ -122,9 +131,10 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
   }, []);
 
   const onListboxValueChange = React.useCallback((newQuantityType: string) => {
+    // istanbul ignore else
     if (activeFormatterSpec) {
       const formatProps = activeFormatterSpec.format.toJSON();
-      const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)?.format.toJSON();
+      const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)!.format.toJSON();
       if (formatPropsInUse && !formatAreEqual(formatProps, formatPropsInUse)) {
         newQuantityTypeRef.current = newQuantityType;
         ModalDialogManager.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={newQuantityType} onDialogClose={processListboxValueChange} />, "saveQuantityFormat");
@@ -135,9 +145,11 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
   }, [activeFormatterSpec, activeQuantityType, processListboxValueChange]);
 
   const handleOnFormatChanged = React.useCallback(async (formatProps: FormatProps) => {
+    // istanbul ignore else
     if (activeFormatterSpec) {
       const newSpec = await IModelApp.quantityFormatter.generateFormatterSpecByType(activeQuantityType, formatProps);
       const formatPropsInUse = IModelApp.quantityFormatter.getFormatPropsByQuantityType(activeQuantityType);
+      // istanbul ignore else
       if (formatPropsInUse)
         setSaveEnabled(!formatAreEqual(formatProps, formatPropsInUse));
       setActiveFormatterSpec(newSpec);
@@ -145,6 +157,7 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
   }, [activeFormatterSpec, activeQuantityType]);
 
   const handleOnFormatSave = React.useCallback(async () => {
+    // istanbul ignore else
     if (activeFormatterSpec) {
       const format = activeFormatterSpec.format.toJSON();
       await IModelApp.quantityFormatter.setOverrideFormat(activeQuantityType, format);
@@ -158,9 +171,6 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
   }, [activeQuantityType]);
 
   const processNewUnitSystem = React.useCallback(async (unitSystem: UnitSystemKey ) => {
-    if (unitSystem === activeUnitSystemKey)
-      return;
-
     switch (unitSystem) {
       case "imperial":
         Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
@@ -178,10 +188,8 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
         Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsCustomary;
         await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
         break;
-      default:
-        break;
     }
-  },[activeUnitSystemKey]);
+  },[]);
 
   const handleUnitSystemSelected = React.useCallback(async (unitSystem: UnitSystemKey ) => {
     if (unitSystem === activeUnitSystemKey)
@@ -193,9 +201,9 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
     <div className="quantity-formatting-container">
       <UnitSystemSelector selectedUnitSystemKey={activeUnitSystemKey} availableUnitSystems={availableUnitSystems} onUnitSystemSelected={handleUnitSystemSelected} />
       <span className="uifw-quantity-format-section-label">{formatSectionLabel.current}</span>
-      <div className="quantity-types-container">
+      <div className="uifw-quantity-types-container">
         <div className="left-panel">
-          <Listbox id="quantity-types-list" className="quantity-types"
+          <Listbox id="uifw-quantity-types-list" className="uifw-quantity-types"
             onListboxValueChange={onListboxValueChange} selectedValue={activeQuantityType} >
             {
               [...IModelApp.quantityFormatter.quantityTypesRegistry.keys()].map((key) => {
@@ -214,17 +222,17 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
         <div className="right-panel">
           {activeFormatterSpec &&
             <>
-              <div className="quantity-types-right-top">
-                <div className="quantity-types-right-top-sample">
+              <div className="uifw-quantity-types-right-top">
+                <div className="uifw-quantity-types-right-top-sample">
                   <FormatSample formatSpec={activeFormatterSpec} initialMagnitude={1234.56} hideLabels />
                 </div>
               </div>
-              <div className="quantity-types-formats">
+              <div className="uifw-quantity-types-formats">
                 <QuantityFormatPanel onFormatChange={handleOnFormatChanged} quantityType={activeQuantityType} />
               </div>
               <div className="components-button-panel">
-                <Button buttonType={ButtonType.Blue} onClick={handleOnFormatSave} disabled={!saveEnabled}>Set</Button>
-                <Button buttonType={ButtonType.Hollow} onClick={handleOnFormatReset} disabled={!clearEnabled}>Clear</Button>
+                <Button buttonType={ButtonType.Blue} onClick={handleOnFormatSave} disabled={!saveEnabled}>{setButtonLabel.current}</Button>
+                <Button buttonType={ButtonType.Hollow} onClick={handleOnFormatReset} disabled={!clearEnabled}>{clearButtonLabel.current}</Button>
               </div>
             </>
           }
@@ -240,8 +248,7 @@ function SaveFormatModalDialog({ formatProps, quantityType, onDialogCloseArgs, o
   const handleClose = React.useCallback(() => {
     setIsOpen(false);
     ModalDialogManager.closeDialog();
-    if (onDialogClose)
-      onDialogClose(onDialogCloseArgs);
+    onDialogClose && onDialogClose(onDialogCloseArgs);
   }, [onDialogClose, onDialogCloseArgs]);
 
   const handleOK = React.useCallback(() => {
