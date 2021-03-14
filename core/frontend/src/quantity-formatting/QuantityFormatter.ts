@@ -423,7 +423,7 @@ export class QuantityFormatter implements UnitsProvider {
     const formatPropsByType = new Map<QuantityTypeDefinition, FormatProps>();
 
     // load cache for every registered QuantityType
-    [...IModelApp.quantityFormatter.quantityTypesRegistry.keys()].forEach((key) => {
+    [...this.quantityTypesRegistry.keys()].forEach((key) => {
       const entry = this.quantityTypesRegistry.get(key)!;
       formatPropsByType.set(entry, this.getFormatPropsByQuantityTypeEntyAndSystem(entry, systemKey));
     });
@@ -551,7 +551,7 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Reinitialize caches. Typically called by active UnitFormattingSettingsProvider.
    * startDefaultTool - set to true to start the Default to instead of leaving any active tool pointing to cached unit data that is no longer valid
-   * @beta
+   * @alpha
    */
   public async reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>,
     unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void> {

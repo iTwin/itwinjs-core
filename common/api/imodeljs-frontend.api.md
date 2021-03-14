@@ -1386,6 +1386,35 @@ export class BackgroundMapLocation {
     onEcefChanged(ecefLocation: EcefLocation): void;
 }
 
+// @alpha
+export abstract class BaseUnitFormattingSettingsProvider implements UnitFormattingSettingsProvider {
+    constructor(_quantityFormatter: QuantityFormatter, _maintainOverridesPerIModel?: boolean | undefined);
+    // (undocumented)
+    protected applyQuantityFormattingSettingsForIModel: (imodel?: IModelConnection | undefined) => Promise<void>;
+    protected buildQuantityFormatOverridesMap(): Promise<Map<UnitSystemKey, Map<string, FormatProps>>>;
+    // (undocumented)
+    protected get imodelConnection(): IModelConnection | undefined;
+    // (undocumented)
+    protected _imodelConnection: IModelConnection | undefined;
+    // (undocumented)
+    loadOverrides(imodel?: IModelConnection): Promise<void>;
+    // (undocumented)
+    get maintainOverridesPerIModel(): boolean;
+    // (undocumented)
+    abstract remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
+    // (undocumented)
+    abstract retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined>;
+    // (undocumented)
+    abstract retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
+    // (undocumented)
+    abstract store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
+    // (undocumented)
+    storeFormatOverrides: ({ typeKey, overrideEntry, unitSystem }: QuantityFormatOverridesChangedArgs) => Promise<void>;
+    // (undocumented)
+    abstract storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
+    storeUnitSystemSetting: ({ system }: FormattingUnitSystemChangedArgs) => Promise<void>;
+}
+
 // @internal
 export class BatchedTileIdMap {
     constructor(iModel: IModelConnection);
@@ -4877,6 +4906,21 @@ export class LocalhostIpcApp {
     }): Promise<void>;
 }
 
+// @alpha
+export class LocalUnitFormatProvider extends BaseUnitFormattingSettingsProvider {
+    constructor(quantityFormatter: QuantityFormatter, maintainOverridesPerIModel?: boolean);
+    // (undocumented)
+    remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
+    // (undocumented)
+    retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined>;
+    // (undocumented)
+    retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
+    // (undocumented)
+    store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
+    // (undocumented)
+    storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
+}
+
 // @public
 export enum LocateAction {
     // (undocumented)
@@ -7052,6 +7096,16 @@ export class QuadId {
 }
 
 // @alpha
+export interface QuantityFormatOverridesChangedArgs {
+    // (undocumented)
+    readonly overrideEntry?: OverrideFormatEntry;
+    // (undocumented)
+    readonly typeKey: QuantityTypeKey;
+    // (undocumented)
+    readonly unitSystem?: UnitSystemKey;
+}
+
+// @alpha
 export interface QuantityFormatsChangedArgs {
     // (undocumented)
     readonly quantityType: string;
@@ -7119,11 +7173,15 @@ export class QuantityFormatter implements UnitsProvider {
     get quantityTypesRegistry(): Map<string, QuantityTypeDefinition>;
     // (undocumented)
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
+    reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
     setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
     // (undocumented)
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
+    setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider): Promise<void>;
+    // (undocumented)
+    protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
     // (undocumented)
     get unitsProvider(): UnitsProvider;
     set unitsProvider(unitsProvider: UnitsProvider);
@@ -10967,6 +11025,28 @@ export enum UniformType {
     Vec2 = 3,
     Vec3 = 4,
     Vec4 = 5
+}
+
+// @alpha
+export interface UnitFormattingSettingsProvider {
+    // (undocumented)
+    loadOverrides(imodel: IModelConnection | undefined): Promise<void>;
+    // (undocumented)
+    readonly maintainOverridesPerIModel: boolean;
+    // (undocumented)
+    remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
+    // (undocumented)
+    retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined>;
+    // (undocumented)
+    retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
+    // (undocumented)
+    store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
+    // (undocumented)
+    storeFormatOverrides(args: QuantityFormatOverridesChangedArgs): Promise<void>;
+    // (undocumented)
+    storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
+    // (undocumented)
+    storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
 }
 
 // @alpha

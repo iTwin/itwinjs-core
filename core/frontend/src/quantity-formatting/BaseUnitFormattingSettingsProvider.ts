@@ -11,7 +11,7 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { SelectedViewportChangedArgs } from "../ViewManager";
 import {
-  FormattingUnitSystemChangedArgs, OverrideFormatEntry, QuantityFormatOverridesChangedArgs,
+  FormattingUnitSystemChangedArgs, OverrideFormatEntry, QuantityFormatOverridesChangedArgs, QuantityFormatter,
   QuantityTypeKey, UnitFormattingSettingsProvider, UnitSystemKey,
 } from "./QuantityFormatter";
 
@@ -25,9 +25,9 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
    * @param maintainOverridesPerIModel If maintainOverridesPerIModel is true the base class will set up listeners
    * to monitor active iModel changes so the overrides for the QuantityFormatter properly match the overrides set
    * up by the user.
-   * @beta
+   * @alpha
    */
-  constructor(private _maintainOverridesPerIModel?: boolean) {
+  constructor(private _quantityFormatter: QuantityFormatter, private _maintainOverridesPerIModel?: boolean) {
     if (this._maintainOverridesPerIModel) {
       IModelApp.viewManager.onSelectedViewportChanged.addListener(this.handleViewportChanged);
       IModelConnection.onOpen.addListener(this.handleIModelOpen);
@@ -78,8 +78,8 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
     if (this._maintainOverridesPerIModel)
       this._imodelConnection = imodel;
     const overrideFormatProps = await this.buildQuantityFormatOverridesMap();
-    const unitSystemKey = await this.retrieveUnitSystem (IModelApp.quantityFormatter.activeUnitSystem);
-    await IModelApp.quantityFormatter.reinitializeFormatAndParsingsMaps(overrideFormatProps, unitSystemKey, true, true);
+    const unitSystemKey = await this.retrieveUnitSystem (this._quantityFormatter.activeUnitSystem);
+    await this._quantityFormatter.reinitializeFormatAndParsingsMaps(overrideFormatProps, unitSystemKey, true, true);
   };
 
   private handleIModelOpen = async (imodel: IModelConnection) => {
@@ -105,8 +105,8 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
     const overrideFormatProps = new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>();
 
     // use map and await all returned promises - overrides are stored by QuantityType
-    for await (const quantityTypeKey of [...IModelApp.quantityFormatter.quantityTypesRegistry.keys()]) {
-      const quantityTypeDef = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
+    for await (const quantityTypeKey of [...this._quantityFormatter.quantityTypesRegistry.keys()]) {
+      const quantityTypeDef = this._quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
       if (quantityTypeDef) {
         const typeKey = quantityTypeDef.key;
         const overrideEntry = await this.retrieve (typeKey);

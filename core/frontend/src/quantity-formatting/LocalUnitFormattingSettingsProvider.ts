@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { OverrideFormatEntry, QuantityTypeKey, UnitSystemKey } from "./QuantityFormatter";
+import { OverrideFormatEntry, QuantityFormatter, QuantityTypeKey, UnitSystemKey } from "./QuantityFormatter";
 import { BaseUnitFormattingSettingsProvider } from "./BaseUnitFormattingSettingsProvider";
 
 /** Implementation of BaseUnitFormattingSettingsProvider that stores and retrieves data in local storage.
@@ -15,8 +15,8 @@ import { BaseUnitFormattingSettingsProvider } from "./BaseUnitFormattingSettings
 export class LocalUnitFormatProvider extends BaseUnitFormattingSettingsProvider {
   // if maintainOverridesPerIModel is true the base class will set up listeners to monitor active iModel changes
   // so the overrides for the QuantityFormatter properly match the overrides set up by the user.
-  constructor(maintainOverridesPerIModel?: boolean) {
-    super (maintainOverridesPerIModel);
+  constructor(quantityFormatter: QuantityFormatter, maintainOverridesPerIModel?: boolean) {
+    super (quantityFormatter, maintainOverridesPerIModel);
   }
 
   private buildUnitSystemKey() {
