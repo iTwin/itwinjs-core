@@ -50,7 +50,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
 
   log "  Last updated at $(_jq '.updated_at')."
 
-  ## Check if the PR is even 3 hours old
+  ## Check if the PR is even 3 hours old. If so, no reason to check statuses.
   lastUpdatedTime=$(_jq '.updated_at')
   currentTime=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   tooOld=$(node -e "const lutPlus3=new Date('$lastUpdatedTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
