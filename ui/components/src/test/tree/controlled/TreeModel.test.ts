@@ -287,6 +287,90 @@ describe("MutableTreeModel", () => {
     });
   });
 
+  describe("moveNode", () => {
+    beforeEach(() => {
+      treeModel = new MutableTreeModel();
+      treeModel.setChildren(undefined, [createTreeModelNodeInput("root1"), createTreeModelNodeInput("root2")], 0);
+      treeModel.setChildren("root1", [createTreeModelNodeInput("child1"), createTreeModelNodeInput("child2")], 0);
+      treeModel.setChildren("root2", [], 0);
+    });
+
+    it("does nothing when source node does not exist and returns `false`", () => {
+      const resultStatus = treeModel.moveNode("not_existing_node_id", "root1", 1);
+      expect(resultStatus).to.be.false;
+      expect([...treeModel.getChildren("root1")!]).to.be.deep.equal(["child1", "child2"]);
+    });
+
+    it("does nothing when target parent node does not exist and returs `false`", () => {
+      const resultStatus = treeModel.moveNode("child1", "not_existing_node_id", 0);
+      expect(resultStatus).to.be.false;
+      expect([...treeModel.getChildren("root1")!]).to.be.deep.equal(["child1", "child2"]);
+    });
+
+    it("does nothing when target parent node has `undefined` child count and returns `false`", () => {
+      treeModel.setNumChildren("root2", undefined);
+
+      const resultStatus = treeModel.moveNode("root1", "root2", 0);
+
+      expect(resultStatus).to.be.false;
+      expect([...treeModel.getChildren(undefined)!]).to.be.deep.equal(["root1", "root2"]);
+      expect([...treeModel.getChildren("root2")!]).to.be.deep.equal([]);
+    });
+
+    it("does nothing when attempting to creata a cycle and returns `false`", () => {
+      // Make hierarchy deeper so that ancestry is not direct and thus requires more work to detect
+      treeModel.insertChild("child2", createTreeModelNodeInput("grandchild1"), 0);
+      treeModel.setChildren("grandchild1", [], 0);
+
+      const resultStatus = treeModel.moveNode("root1", "grandchild1", 0);
+
+      expect(resultStatus).to.be.false;
+      expect([...treeModel.getChildren(undefined)!]).to.be.deep.equal(["root1", "root2"]);
+      expect([...treeModel.getChildren("grandchild1")!]).to.be.deep.equal([]);
+    });
+
+    it("moves to hierarchy root", () => {
+      const resultStatus = treeModel.moveNode("child1", undefined, 0);
+
+      expect(resultStatus).to.be.true;
+
+      expect(treeModel.getRootNode().numChildren).to.be.equal(3);
+      expect([...treeModel.getChildren(undefined)!]).to.be.deep.equal(["child1", "root1", "root2"]);
+
+      expect(treeModel.getNode("root1")!.numChildren).to.be.equal(1);
+      expect([...treeModel.getChildren("root1")!]).to.be.deep.equal(["child2"]);
+
+      expect(treeModel.getNode("child1")!.depth).to.be.equal(0);
+      expect(treeModel.getNode("child1")!.parentId).to.be.undefined;
+    });
+
+    it("moves to non-hierarchy root", () => {
+      const resultStatus = treeModel.moveNode("root1", "root2", 0);
+
+      expect(resultStatus).to.be.true;
+      expect(treeModel.getRootNode().numChildren).to.be.equal(1);
+      expect([...treeModel.getChildren(undefined)!]).to.be.deep.equal(["root2"]);
+
+      expect(treeModel.getNode("root2")!.numChildren).to.be.equal(1);
+      expect([...treeModel.getChildren("root2")!]).to.be.deep.equal(["root1"]);
+
+      expect(treeModel.getNode("root1")!.depth).to.be.equal(1);
+      expect(treeModel.getNode("root1")!.parentId).to.be.equal("root2");
+      expect([...treeModel.getChildren("root1")!]).to.be.deep.equal(["child1", "child2"]);
+
+      expect(treeModel.getNode("child1")!.depth).to.be.equal(2);
+      expect(treeModel.getNode("child2")!.depth).to.be.equal(2);
+    });
+
+    it("moves to position beyond last one", () => {
+      const resultStatus = treeModel.moveNode("child1", "root1", 3);
+
+      expect(resultStatus).to.be.true;
+      expect(treeModel.getNode("root1")!.numChildren).to.be.equal(3);
+      expect([...treeModel.getChildren("root1")!]).to.be.deep.equal(["child2", undefined, "child1"]);
+    });
+  });
+
   describe("setNumChildren", () => {
     beforeEach(() => {
       treeModel = new MutableTreeModel();
