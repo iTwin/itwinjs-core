@@ -348,6 +348,10 @@ export * from "./ui-framework/zones/ZoneDef";
  * Classes for maintaining state
  */
 /**
+ * @docs-group-description Settings
+ * Classes and components used by settings pages displayed in the modal settings stage
+ */
+/**
  * @docs-group-description StatusBar
  * Classes for defining a StatusBar
  */
