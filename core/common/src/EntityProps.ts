@@ -52,6 +52,10 @@ export interface EntityQueryParams {
   limit?: number;
   /** Optional "OFFSET" clause. Only valid if Limit is also present. */
   offset?: number;
+  /** Bindings for parameterized values.
+   * @see [[ECSqlStatement.bindValues]]
+   */
+  bindings?: any[] | object;
 }
 
 /** The primitive types of an Entity property.
