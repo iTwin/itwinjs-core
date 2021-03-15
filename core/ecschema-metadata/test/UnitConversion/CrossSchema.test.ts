@@ -19,7 +19,7 @@ interface TestData {
   Expect: number;
 }
 
-describe("Testing creating second schema", () => {
+describe("Testing cross-schema unit definitions", () => {
   const context = new SchemaContext();
 
   const testData: TestData[] = JSON.parse(
@@ -54,37 +54,5 @@ describe("Testing creating second schema", () => {
          and not ${actual} error = ${Math.abs(test.Expect - actual)} > ${3 * ulp}`
       ).to.be.true;
     });
-  });
-
-  it("should throw when schema name is not in context", async () => {
-    const converter = new UnitConverter(context);
-    try {
-      await converter.calculateConversion("MockSchema:CM", "SIUnits:M");
-    } catch (err) {
-      expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find from's and/or to's schema");
-    }
-    try {
-      await converter.calculateConversion("SIUnits:M", "MockSchema:CM");
-    } catch (err) {
-      expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find from's and/or to's schema");
-    }
-  });
-
-  it("should throw when schema item is not in schema ", async () => {
-    const converter = new UnitConverter(context);
-    try {
-      await converter.calculateConversion("SIUnits:MockUnit", "MetricUnits:CM");
-    } catch (err) {
-      expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find schema item");
-    }
-    try {
-      await converter.calculateConversion("MetricUnits:CM", "SIUnits:MockUnit");
-    } catch (err) {
-      expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find schema item");
-    }
   });
 });

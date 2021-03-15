@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ECSchema schemaName="MetricUnits" alias="MU" version="01.00.05" description="Standard Set of Unit definitions for the system" displayLabel="Units" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+<ECSchema schemaName="MetricUnits" alias="MU" version="01.00.05" description="Subset of Unit definitions for the METRIC UnitSystem" displayLabel="Units" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
     <ECSchemaReference name="SIUnits" version="01.00.05" alias="SIU"/>
 
     <UnitSystem typeName="METRIC" />
-    <UnitSystem typeName="INTERNATIONAL" />
 
     <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
     <Phenomenon typeName="AREA" definition="LENGTH(2)" displayLabel="Area" />

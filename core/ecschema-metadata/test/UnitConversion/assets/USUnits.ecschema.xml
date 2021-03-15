@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ECSchema schemaName="USUnits" alias="USU" version="01.00.05" description="Standard Set of Unit definitions for the system" displayLabel="Units" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+<ECSchema schemaName="USUnits" alias="USU" version="01.00.05" description="Subset of Unit definitions for USSURVEY and USCUSTOM UnitSystems" displayLabel="Units" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
     <ECSchemaReference name="MetricUnits" version="01.00.05" alias="MU"/>
     <ECSchemaReference name="SIUnits" version="01.00.05" alias="SIU"/>
 
