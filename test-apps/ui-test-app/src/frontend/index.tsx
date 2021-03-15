@@ -15,7 +15,7 @@ import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 import {
-  BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, isFrontendAuthorizationClient,
+  BrowserAuthorizationClientConfiguration, isFrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -750,13 +750,6 @@ async function main() {
 
   // Start the app.
   await SampleAppIModelApp.startup(opts);
-
-  const auth = IModelApp.authorizationClient;
-  if (auth instanceof BrowserAuthorizationClient) {
-    try {
-      await auth.signInSilent(new ClientRequestContext());
-    } catch (err) { }
-  }
 
   // Add ApplicationInsights telemetry client
   const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
