@@ -135,7 +135,7 @@ export function addNormalMatrix(vert: VertexShaderBuilder) {
     });
   });
 
-  if (false && System.instance.capabilities.isWebGL2)
+  if (System.instance.capabilities.isWebGL2)
     vert.addInitializer(computeNormalMatrix2);
   else {
     vert.addUniform("u_modelViewN", VariableType.Mat3, (prog) => {
