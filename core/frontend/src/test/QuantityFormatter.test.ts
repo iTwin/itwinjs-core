@@ -5,7 +5,7 @@
 
 import { Parser } from "@bentley/imodeljs-quantity";
 import { assert } from "chai";
-import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormattingSettingsProvider";
+import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 
 import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";

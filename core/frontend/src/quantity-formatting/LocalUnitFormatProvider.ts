@@ -10,7 +10,7 @@ import { OverrideFormatEntry, QuantityFormatter, QuantityTypeKey, UnitSystemKey 
 import { BaseUnitFormattingSettingsProvider } from "./BaseUnitFormattingSettingsProvider";
 
 /** Implementation of BaseUnitFormattingSettingsProvider that stores and retrieves data in local storage.
- *  @alpha
+ *  @beta
  */
 export class LocalUnitFormatProvider extends BaseUnitFormattingSettingsProvider {
   // if maintainOverridesPerIModel is true the base class will set up listeners to monitor active iModel changes

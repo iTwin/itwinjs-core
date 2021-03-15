@@ -8,7 +8,7 @@ import { getQuantityFormatsSettingsManagerEntry, UiFramework } from "@bentley/ui
 import { SettingsProvider, SettingsTabEntry } from "@bentley/ui-core";
 import { ConnectedUiSettingsPage } from "../frontstages/Settings";
 
-// Sample UI items provider that dynamically adds ui items
+// Sample settings provider that dynamically adds settings into the setting stage
 export class AppSettingsProvider implements SettingsProvider {
   public readonly id = "AppSettingsProvider";
 

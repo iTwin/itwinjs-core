@@ -18,14 +18,14 @@ import {
 /** This abstract class can monitor active imodel changes and update the QuantityFormatter overrides and the active unit system based on
  * any store preferences. This class also monitors the QuantityFormatter for format overrides and active unit system changes
  * and stores these changes.
- * @alpha */
+ * @beta */
 export abstract class BaseUnitFormattingSettingsProvider implements UnitFormattingSettingsProvider {
   protected _imodelConnection: IModelConnection|undefined;
   /**
    * @param maintainOverridesPerIModel If maintainOverridesPerIModel is true the base class will set up listeners
    * to monitor active iModel changes so the overrides for the QuantityFormatter properly match the overrides set
    * up by the user.
-   * @alpha
+   * @beta
    */
   constructor(private _quantityFormatter: QuantityFormatter, private _maintainOverridesPerIModel?: boolean) {
     if (this._maintainOverridesPerIModel) {

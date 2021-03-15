@@ -23,7 +23,7 @@ import { IModelConnection } from "../imodeljs-frontend";
  * "imperial" -> PresentationUnitSystem.BritishImperial ("british-imperial")
  * "usCustomary" -> PresentationUnitSystem.UsCustomary ("us-customary")
  * "usSurvey" -> PresentationUnitSystem.UsSurvey ("us-survey")
- * @alpha
+ * @beta
  */
 export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 
@@ -55,7 +55,7 @@ export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey {
 /** Properties that define an EditorSpec for editing a custom formatting property that is stored in the "custom" property in the FormatProps.
  * The editor controls will be automatically generated in the UI and are limited to a checkbox to set a boolean value, a text dropdown/select
  * component to pick a string value from a list of options, and a text input component that returns a string value.
- * @alpha
+ * @beta
  */
 export interface CustomFormatPropEditorSpec {
   editorType: "checkbox"|"text"|"select";
@@ -63,7 +63,7 @@ export interface CustomFormatPropEditorSpec {
 }
 
 /** CheckboxFormatPropEditorSpec defines getter and setter method for a boolean property editor.
- * @alpha
+ * @beta
  */
 export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec {
   editorType: "checkbox";
@@ -72,14 +72,14 @@ export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec
 }
 
 /** CheckboxFormatPropEditorSpec type guard.
- * @alpha
+ * @beta
  */
 export const isCheckboxFormatPropEditorSpec = (item: CustomFormatPropEditorSpec): item is CheckboxFormatPropEditorSpec => {
   return item.editorType === "checkbox";
 };
 
 /** TextInputFormatPropEditorSpec defines getter and setter method for a text input property editor.
- * @alpha
+ * @beta
  */
 export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
   editorType: "text";
@@ -88,14 +88,14 @@ export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpe
 }
 
 /** TextInputFormatPropEditorSpec type guard.
- * @alpha
+ * @beta
  */
 export const isTextInputFormatPropEditorSpec = (item: CustomFormatPropEditorSpec): item is TextInputFormatPropEditorSpec => {
   return item.editorType === "text";
 };
 
 /** TextSelectFormatPropEditorSpec defines getter and setter method for a Select/Dropdown property editor.
- * @alpha
+ * @beta
  */
 export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSpec {
   editorType: "select";
@@ -105,14 +105,14 @@ export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSp
 }
 
 /** TextSelectFormatPropEditorSpec type guard.
- * @alpha
+ * @beta
  */
 export const isTextSelectFormatPropEditorSpec = (item: CustomFormatPropEditorSpec): item is TextSelectFormatPropEditorSpec => {
   return item.editorType === "select";
 };
 
 /** Definition of a standard QuantityType that is registered with the QuantityFormatter.
- * @alpha
+ * @beta
  */
 export interface QuantityTypeDefinition {
   /** String used as a key to look up the quantity type. If defining a [[CustomQuantityTypeDefinition]] the QuantityTypeKey
@@ -139,7 +139,7 @@ export interface QuantityTypeDefinition {
  * A custom quantity formatter must be able to generate a FormatterSpec and ParserSpec that will be called to format and parse values.
  * Optionally it can provide specification of custom properties that it will use to define any formatting options. CustomQuantityTypeDefinitions
  * must be registered with the [[QuantityFormatter]] using the method `IModelApp.quantityFormatter.registerQuantityType`.
- * @alpha
+ * @beta
  */
 export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
   /** Return true if the FormatProps have the necessary `custom` property definition */
@@ -153,7 +153,7 @@ export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
 }
 
 /** CustomQuantityTypeDefinition type guard.
- * @alpha
+ * @beta
 */
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition {
   return !!(item as CustomQuantityTypeDefinition).isCompatibleFormatProps;
@@ -219,8 +219,8 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
   }
 }
 
-/** Override format entries must define formats for imperial and metric.
- * @alpha
+/** Override format entries can define formats for any of the different unit systems.
+ * @beta
  */
 export interface OverrideFormatEntry {
   imperial?: FormatProps;
@@ -230,7 +230,7 @@ export interface OverrideFormatEntry {
 }
 
 /** Interface that defines the functions required to be implemented to provide custom formatting and parsing of a custom quantity type.
- * @alpha
+ * @beta
  */
 export interface FormatterParserSpecsProvider {
   quantityType: QuantityTypeArg;
@@ -239,7 +239,7 @@ export interface FormatterParserSpecsProvider {
 }
 
 /** Arguments sent to FormattingUnitSystemChanged event listeners.
- * @alpha
+ * @beta
  */
 export interface FormattingUnitSystemChangedArgs {
   // string that defines unit system activated.
@@ -247,7 +247,7 @@ export interface FormattingUnitSystemChangedArgs {
 }
 
 /** Arguments sent to QuantityFormatsChanged event listeners.
- * @alpha
+ * @beta
  */
 export interface QuantityFormatsChangedArgs {
   // string that represents the QuantityType that has been overriden or the overrides cleared.
@@ -255,7 +255,7 @@ export interface QuantityFormatsChangedArgs {
 }
 
 /** Arguments sent to UnitFormattingSettingsProvider when overrides are changed.
- * @alpha
+ * @beta
  */
 export interface QuantityFormatOverridesChangedArgs {
   // string that represents the QuantityType that has been overriden or the overrides cleared.
@@ -268,7 +268,7 @@ export interface QuantityFormatOverridesChangedArgs {
 
 /** The UnitFormattingSettingsProvider interface is used to store and retrieve override FormatProps and Presentation Unit System for use by the QuantityFormatter.
  *  If no UnitFormattingSettingsProvider is supplied to the QuantityFormatter then any overrides set are lost when the session is closed.
- *  @alpha
+ *  @beta
  */
 export interface UnitFormattingSettingsProvider {
   // serializes JSON object containing format overrides for a specific quantity type.
@@ -302,7 +302,7 @@ export interface UnitFormattingSettingsProvider {
  * identified by the [[QuantityType]] enum. [[CustomQuantityTypeDefinition]] can be registered to extend the available quantity types available
  * by frontend tools. The QuantityFormatter also allows the default formats to be overriden.
  *
- * @alpha
+ * @beta
  */
 export class QuantityFormatter implements UnitsProvider {
   private _unitsProvider: UnitsProvider = new BasicUnitsProvider();
@@ -551,7 +551,7 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Reinitialize caches. Typically called by active UnitFormattingSettingsProvider.
    * startDefaultTool - set to true to start the Default to instead of leaving any active tool pointing to cached unit data that is no longer valid
-   * @alpha
+   * @beta
    */
   public async reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>,
     unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void> {

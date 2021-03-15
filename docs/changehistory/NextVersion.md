@@ -5,7 +5,54 @@ publish: false
 
 ## New Settings UI Features
 
-The @bentley/ui-core package has added the [SettingsManager]($ui-core) class that allows any number of [SettingsProvider]($ui-core) classes to be registered. These providers provide [SettingsTabEntry]($ui-core) definitions used to populate the [SettingsContainer]($ui-core) UI component with setting pages used to manage application settings. These new classes are marked as beta in this release and are subject to minor modifications in future releases.
+The @bentley/ui-core package has added the [SettingsManager]($ui-core) class that allows any number of [SettingsProvider]($ui-core) classes to be registered. These providers provide [SettingsTabEntry]($ui-core) definitions used to populate the [SettingsContainer]($ui-core) UI component with setting pages used to manage application settings. The [SettingsModalFrontstage]($ui-framework) can be provided to the [BackstageComposer]($ui-framework) to automatically display a `Settings` option in the backstage menu if `SettingsProviders` are registered with the `SettingsManager`. Below is a simple example of providing a `Settings` stage.
+
+```tsx
+export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposerProps) {
+  const [backstageItems] = React.useState(() => {
+    return [
+      BackstageItemUtilities.createStageLauncher(ViewsFrontstage.stageId, 100, 10, IModelApp.i18n.translate("SampleApp:backstage.viewIModel"), IModelApp.i18n.translate("SampleApp:backstage.iModelStage"), `svg:${stageIconSvg}`),
+      SettingsModalFrontstage.getBackstageActionItem (400, 10),
+    ];
+  });
+
+  return (
+    <BackstageComposer items={backstageItems}
+      header={userInfo && <UserProfileBackstageItem userInfo={userInfo} />}
+    />
+  );
+}
+```
+
+These new classes are marked as beta in this release and are subject to minor modifications in future releases.
+
+### Add Settings Page to set Quantity Formatting Overrides
+
+The `QuantityFormatSettingsPanel` component has been added to the @bentley/ui-framework package to provide the UI to set both the [PresentationUnitSystem] ($presentation-common) and formatting overrides in the `QuantityFormatter`. This panel can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core). Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
+
+```ts
+// Sample settings provider that dynamically adds settings into the setting stage
+export class AppSettingsProvider implements SettingsProvider {
+  public readonly id = "AppSettingsProvider";
+
+  public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
+    return [
+      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
+    ];
+  }
+
+  public static initializeAppSettingProvider() {
+    UiFramework.settingsManager.addSettingsProvider(new AppSettingsProvider());
+  }
+}
+
+```
+
+The `QuantityFormatSettingsPanel` is marked as alpha in this release and is subject to minor modifications in future releases.
+
+## Add ability to provide formats for quantity types
+
+A class that implements the interface [UnitFormattingSettingsProvider]($imodeljs-frontend) can now be registered with the [QuantityFormatter]($imodeljs-frontend). This class will be informed when overrides are set in the QuantityFormatter so the provider can persist the overrides. The provider will also provide these persisted overrides back to the QuantityFormatter on events that the provider is monitoring. The abstract class [BaseUnitFormattingSettingsProvider]($imodeljs-frontend) supports monitoring iModelConnection changes allowing formatting overrides to be stored and retrieved per iModel. The [LocalUnitFormatProvider]($imodeljs-frontend) class provides the ability to store/retrieve formatting overrides to/from local storage.
 
 ## Breaking Api Changes
 
@@ -34,10 +81,13 @@ Property `onClick` in [LinkElementsInfo]($ui-abstract) was changed to be mandato
 #### Initializing TileAdmin
 
 The previously-`alpha` [IModelAppOptions.tileAdmin]($frontend) property has been promoted to `beta` and its type has changed from [TileAdmin]($frontend) to [TileAdmin.Props]($frontend). [TileAdmin.create]($frontend) has become `async`. Replace code like the following:
+
 ```ts
   IModelApp.startup({ tileAdmin: TileAdmin.create(props) });
 ```
+
 with:
+
 ```ts
   IModelApp.startup({ tileAdmin: props });
 ```
@@ -47,25 +97,30 @@ with:
 [Tile]($frontend)s are now required to report the [TileRequestChannel]($frontend) via which requests for their content should be executed, by implementing the new abstract [Tile.channel]($frontend) property. The channel needs to specify a name and a concurrency. The name must be unique among all registered channels, so choose something unlikely to conflict. The concurrency specifies the maximum number of requests that can be simultaneously active on the channel. For example, when using HTTP 1.1 modern browsers allow no more than 6 simultaneous connections to a given hostname, so 6 is a good concurrency for HTTP 1.1-based channels and the hostname is a decent choice for the channel's name.
 
 Typically all tiles in the same [TileTree]($frontend) use the same channel. Your implementation of `Tile.channel` will depend on the mechanism by which the content is obtained. If it uses HTTP, it's easy:
+
 ```ts
   public get channel() { return IModelApp.tileAdmin.getForHttp("my-unique-channel-name"); }
 ```
 
 If your tile never requests content, you can implement like so:
+
 ```ts
   public get channel() { throw new Error("This tile never has content so this property should never be invoked"); }
 ```
 
 If your tile uses the `alpha` `TileAdmin.requestElementGraphics` API, use the dedicated channel for such requests:
+
 ```ts
   public get channel() { return IModelApp.tileAdmin.channels.elementGraphicsRpc; }
 ```
 
 Otherwise, you must register a channel ahead of time. Choose an appropriate concurrency:
+
 - If the tile requests content from some custom [RpcInterface]($common), use `IModelApp.tileAdmin.channels.rpcConcurrency`.
 - Otherwise, choose a reasonably small limit to prevent too much work from being done at one time. Remember that tile requests are frequently canceled shortly after they are enqueued as the user navigates the view. A concurrency somewhere around 6-10 is probably reasonable.
 
 To register a channel at startup:
+
 ```ts
   await IModelApp.startup();
   const channel = new TileRequestChannel("my-unique-channel-name", IModelApp.tileAdmin.rpcConcurrency);
@@ -73,6 +128,7 @@ To register a channel at startup:
 ```
 
 If you store `channel` from the above snippet in a global variable, you can implement your `channel` property to return it directly; otherwise you must look it up:
+
 ```ts
   public get channel() {
     const channel = IModelApp.tileAdmin.channels.get("my-unique-channel-name");
