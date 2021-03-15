@@ -5,11 +5,22 @@ name: "Invalidate PRs after 3 hours"
 
 on:
   workflow_dispatch:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '*/15 * * * *'
+  push:
+    paths:
+    - '.github/workflows/**'
+
+env:
+  token: ${{ secrets.GITHUBTOKEN }}
 
 jobs:
-  sanity:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
       - name: Run Invalidate PR Script
-        run: ./invalidatePRs.sh
+        run: .github/workflows/invalidatePRs.sh
