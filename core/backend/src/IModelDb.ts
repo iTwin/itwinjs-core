@@ -604,6 +604,8 @@ export abstract class IModelDb extends IModel {
 
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {
+      if (params.bindings)
+        stmt.bindValues(params.bindings);
       for (const row of stmt) {
         if (row.id !== undefined) {
           ids.add(row.id);
