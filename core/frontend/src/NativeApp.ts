@@ -57,7 +57,7 @@ export class NativeAppAuthorization {
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
   public get hasSignedIn() { return this._cachedToken !== undefined; }
-  public get isAuthorized(): boolean { return this.hasSignedIn && !this._cachedToken!.isExpired(this._expireSafety * 1000); }
+  public get isAuthorized(): boolean { return this.hasSignedIn && !this._cachedToken!.isExpired(this._expireSafety); }
 
   public constructor(config: NativeAppAuthorizationConfiguration) {
     this._config = config;

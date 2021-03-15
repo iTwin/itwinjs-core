@@ -2948,6 +2948,7 @@ export class MutableTreeModel implements TreeModel {
     getRootNode(): TreeModelRootNode;
     insertChild(parentId: string | undefined, childNodeInput: TreeModelNodeInput, offset: number): void;
     iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
+    moveNode(sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): boolean;
     removeChild(parentId: string | undefined, childId: string): void;
     setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
     setNumChildren(parentId: string | undefined, numChildren: number | undefined): void;
@@ -4156,6 +4157,8 @@ export class SparseTree<T extends Node> {
     // (undocumented)
     insertChild(parentId: string | undefined, child: T, offset: number): void;
     // (undocumented)
+    moveNode(sourceParentId: string | undefined, sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): void;
+    // (undocumented)
     removeChild(parentId: string | undefined, childId: string): void;
     // (undocumented)
     setChildren(parentId: string | undefined, children: T[], offset: number): void;
@@ -5060,6 +5063,8 @@ export class TreeImageLoader implements ITreeImageLoader {
 
 // @beta
 export interface TreeModel {
+    // (undocumented)
+    getChildOffset(parentId: string | undefined, childId: string): number | undefined;
     // (undocumented)
     getChildren(parentId: string | undefined): SparseArray<string> | undefined;
     // (undocumented)

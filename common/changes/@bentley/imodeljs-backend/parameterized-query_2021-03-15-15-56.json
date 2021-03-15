@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-backend",
-      "comment": "",
+      "comment": "add `bindings` member to EntityQueryParams",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-backend",
-  "email": "66480813+paulius-valiunas@users.noreply.github.com"
+  "email": "33296803+kabentley@users.noreply.github.com"
 }
