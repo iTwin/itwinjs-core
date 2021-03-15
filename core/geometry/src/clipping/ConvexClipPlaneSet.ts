@@ -160,10 +160,10 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   /** Create a convex set containing a half space for each edge between points of a polyline.
    * * Caller is responsible for assuring the polyline is convex.
    * @param points array of points.  Only xy parts are considered.
-   * @param interior array whose boolean value is used as both the `interior` and `invisible` bits of the plane for the succeeding segment.
+   * @param interior array whose boolean value is used as both the `interior` and `invisible` bits of the plane for the succeeding segment.   If this array is not provided, both are false.
    * @param leftIsInside if true, the interior is "to the left" of the segments.  If false, interior is "to the right"
    */
-  public static createXYPolyLine(points: Point3d[], interior: boolean[], leftIsInside: boolean, result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
+  public static createXYPolyLine(points: Point3d[], interior: boolean[] | undefined, leftIsInside: boolean, result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
     result._planes.length = 0;
     for (let i0 = 0; (i0 + 1) < points.length; i0++) {
@@ -176,8 +176,11 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
 
       const perpNormalized = perp.normalize();
       if (perpNormalized) {
-        const clip = ClipPlane.createNormalAndPoint(perp, points[i0], interior[i0], interior[i0]);
-        if (clip) { result._planes.push(clip); }
+        const flag = interior !== undefined ? interior[i0] : false;
+        const clip = ClipPlane.createNormalAndPoint(perp, points[i0], flag, flag);
+        if (clip) {
+          result._planes.push(clip);
+        }
       }
     }
 

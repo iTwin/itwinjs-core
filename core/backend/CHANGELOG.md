@@ -1,6 +1,37 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Fixed broken double angle bracket link syntax
+- Ensure elements passed to native code are in proper JSON format.
+- refactor Ipc layers to use IpcHost/IpcApp
+- The export methods of IModelExporter and the process methods of IModelTransformer are now async.
+- IPC shim (WIP) for local webviewer apps.
+- Add docs and test for CTE support
+- Update to @bentley/imodeljs-native@2.13.1
+- Update to @bentley/imodeljs-native@2.13.3
+- Support Node 14
+- add notifications for changed elements on SaveChanges
+- Updated to use TypeScript 4.1
+- Undo/Redo shortcuts
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:52 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.12.6
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -27,6 +58,20 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - Add beta API for TemplateRecipe2d
 - fix incorrect version logic in UsageLoggingUtilities
 
+_Version update only_
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+### Updates
+
+- NativeApp download cancellation fix
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
+
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
 
@@ -34,8 +79,8 @@ Thu, 28 Jan 2021 13:39:27 GMT
 
 - Changed storageType from azure to azure?sas=1 for getCommandArgs function
 - Fix brep DataProps to/from flatbuffer to account for base64 string header.
-- Element geometry creation by brep operations. 
-- Reinstated behavior when re-opening files read-write. 
+- Element geometry creation by brep operations.
+- Reinstated behavior when re-opening files read-write.
 - enhance BriefcaseManager and BriefcaseDb for edit commands
 - Improve ElementGeometry documentation.
 - Add a check to verify, and fix, the DbGuid in the iModel if it is different than the Guid in iModelHub.
@@ -224,8 +269,8 @@ Fri, 02 Oct 2020 18:03:32 GMT
 ### Updates
 
 - Update to @bentley/imodeljs-native@2.7.4
-- Fixes to front end methods to pull, merge and push. 
-- Setup IModelHost.startup() to use proxy servers if configured/available - this is valuable for debugging agents, backends and electron applications. 
+- Fixes to front end methods to pull, merge and push.
+- Setup IModelHost.startup() to use proxy servers if configured/available - this is valuable for debugging agents, backends and electron applications.
 - On iOS download in background
 - Fix ios hang issue
 - Modify queryModelRanges to handle non geometric model errors
@@ -316,7 +361,7 @@ Thu, 20 Aug 2020 20:57:09 GMT
 ### Updates
 
 - Update to imodeljs-native 2.5.0
-- VSTS#419723: Accomodated "bad" checkpoints that may have serialized transactions preventing their use in ReadWrite cases. 
+- VSTS#419723: Accomodated "bad" checkpoints that may have serialized transactions preventing their use in ReadWrite cases.
 - Fix for a recursive exception while closing a briefcase
 - Added mobile oidc client
 - Remove special code handling for mobile.
@@ -380,7 +425,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 - Changes to support imodel-bridge
 - fix spelling mistakes in Device class
 - Fix typo in comments
-- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades. 
+- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades.
 - disallow protected operations for missing schemas marked with SchemaHasBehavior custom attribute
 
 ## 2.2.1
@@ -421,25 +466,25 @@ Thu, 28 May 2020 22:48:59 GMT
 - Update to imodeljs-native 2.1.0
 - Support for finding an ExternalSourceAspect given scope, id, and kind/hash.
 - ApplyChangeset perf tests updated
-- Fixed token expiry check for desktop authorization. 
+- Fixed token expiry check for desktop authorization.
 - Download ChangeSets in chunks
 - (1) In xy region booleans, support curved edges; (2) ExportGraphicsMeshVisitor class
 - Add ability to convert ExportGraphicsMesh to Polyface
 - Fixed validation of Guids (ContextId, IModelId) cached within a briefcase.
 - Moved iModelBridgeFwk to a separate package
-- Simplified logging for monitoring briefcase operations. 
+- Simplified logging for monitoring briefcase operations.
 - Fix transforms for creating and querying part instance geometry in world coordinate.
 - Fix and improvement to performance tests
 - Added support for schema XML import to iModelJs backend via the IModelDb.importSchemaStrings method.
 - channel rules
-- Fixed logging usage when opening connections. 
+- Fixed logging usage when opening connections.
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
 - Added RivisionUtility class for debug/testing
 - node addon 2.0.18
 - addon 2.0.25
@@ -452,23 +497,23 @@ Wed, 06 May 2020 13:17:49 GMT
 - Performance tests for Applying Changesets
 - `IModelHost.startup` is now async.
 - `IModelHost.shutdown` is now async.
-- Refined checks for briefcase id, and fixed failing integration tests. 
+- Refined checks for briefcase id, and fixed failing integration tests.
 - Product Backlog Item 276268: Deleting the briefcase cache if the cache version is incorrect should not attempt to delete the root directory.
 - Setup initialization of briefcase cache for offline workflows. (VSTS#286489)
-- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases.
 - Move briefcase-specific events into BriefcaseIModelDb subclass
 - Fixed param when calling logger so that it is a function as the logger expects
-- Setup a common cache locaton for iModel.js, with briefcases taking up a sub-folder. 
+- Setup a common cache locaton for iModel.js, with briefcases taking up a sub-folder.
 - Changed ChangeSets download API
 - Added unlink for file handler
 - Update UlasClient tests to send more detailed feature log data
 - react to renaming of imodeljs-clients-backend to backend-itwin-client
 - apply changeset performance tests with local datasets
-- BriefcaseManager.delete should work in offline scenarios. 
+- BriefcaseManager.delete should work in offline scenarios.
 - Remove deprecated members of SectionLocation and downgrade to alpha pending refactor.
 - Support for progress/cancel from ios
 - Remove deprecated ExportGraphics types etc for 2.0
-- Updated docs. 
+- Updated docs.
 - IModelDb.findByKey replaces IModelDb.find
 - Include model extents with ViewStateProps for drawing views.
 - Remove deprecated APIs; see NextVersion.md for details.
@@ -489,29 +534,29 @@ Wed, 06 May 2020 13:17:49 GMT
 - Introduce the BriefcaseIModelDb class, make IModelDb abstract.
 - Cleaned up unused async-s in BriefcaseManager
 - Avoided casting of BriefcaseProps to IModelRpcProps.
-- Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. 
+- Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline.
 - Move briefcase property from IModelDb --> BriefcaseIModelDb
 - BriefcaseId is now an enum instead of a class
 - Rename BriefcaseId --> ReservedBriefcaseId, introduce BriefcaseId type
-- VSTS#297017: Update cached briefcase information if changes were applied. 
-- Refactored NativeApp API and RPC interfaces. This continues to be WIP. 
-- Removed the call to simultaneously download and open the briefcase at the backend. This should be done in two separate steps henceforth. The download must be done with BriefcaseManager, and the open is now a synchronous call in BriefcaseDb. 
-- Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase. 
+- VSTS#297017: Update cached briefcase information if changes were applied.
+- Refactored NativeApp API and RPC interfaces. This continues to be WIP.
+- Removed the call to simultaneously download and open the briefcase at the backend. This should be done in two separate steps henceforth. The download must be done with BriefcaseManager, and the open is now a synchronous call in BriefcaseDb.
+- Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase.
 - Removed BriefcaseDb.create
-- Setup ability to use NativeApp.openBriefcase() in offline scenarios. 
+- Setup ability to use NativeApp.openBriefcase() in offline scenarios.
 - fixed flaky test
-- VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP). 
+- VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP).
 - do not throw exception in NativeAppBackend.startup()
-- VSTS#296110: Setup a way to close briefcases when the native application is offline. 
+- VSTS#296110: Setup a way to close briefcases when the native application is offline.
 - Move concurrencyControl from IModelDb to BriefcaseIModelDb
 - Renamed OIDC constructs for consistency; Removed SAML support.
 - Add support for password-protecting snapshot iModels
 - Fixed typo for ElementAspect perf tests
-- VSTS#217447, VSTS#162382: Reinstated option to open briefcases with SyncMode = PullOnly. 
+- VSTS#217447, VSTS#162382: Reinstated option to open briefcases with SyncMode = PullOnly.
 - Add purge dir method to iModelJsFs
 - react to creation of new clients packages from imodeljs-clients
 - ; substitute current date for feature usage without any set start/end dates
-- Removed deprecated utilities. 
+- Removed deprecated utilities.
 - enforce opening Snapshots readonly through StandaloneDb
 - Remove the deprecated Entity.clone method
 - Adjusted calls to some node addon changes (ECUtils removed)
@@ -523,13 +568,13 @@ Wed, 06 May 2020 13:17:49 GMT
 - Add FileNameResolver class
 - Move snapshot methods out of IModelDb and into new SnapshotIModelDb class.
 - Add TemplateModelCloner to place instances of a template model
-- Renamed TestOidcClient and related constructs for consistency. 
+- Renamed TestOidcClient and related constructs for consistency.
 - Add IModelDb.tryPrepareStatement
-- Fixed usage logging. 
+- Fixed usage logging.
 - fix failing ulas tests due to invalid featureId
 - update ULAS test logging & feedback
 - Update UlasUtilities to support exception-throwing native functions
-- Use standalone briefcases for PullOnly cases. 
+- Use standalone briefcases for PullOnly cases.
 
 ## 1.14.1
 Wed, 22 Apr 2020 19:04:00 GMT
@@ -544,7 +589,7 @@ Tue, 31 Mar 2020 15:44:19 GMT
 ### Updates
 
 - Update to addon 1.14.1
-- Fixed downloading of files using https/streaming to resolve when the filestream is closed instead of when the input stream is exhausted. 
+- Fixed downloading of files using https/streaming to resolve when the filestream is closed instead of when the input stream is exhausted.
 - Add handling for invalid predecessor ids to IModelTransformer
 - Accomodate updated imodeljs-native ULAS functions
 
@@ -559,7 +604,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 ### Updates
 
 - Fix IGeometry roundtripping issue through ECSql.  Fix insert/update binary properties for Element Aspect.
-- Separated out routines to download and open briefcases. 
+- Separated out routines to download and open briefcases.
 - bulk mode
 - Consolidated sign-in for integration tests
 - bulkmode
@@ -570,7 +615,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 - Add ViewDefinition.getAuxiliaryCoordinateSystemId and ViewDefinition.setAuxiliaryCoordinateSystemId methods
 - Add SpatialLocationModel.insert
 - Add optional isPlantProjection parameter to PhysicalModel.insert
-- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests.
 - Better documentation of OidcDesktopClient
 - Fixed changeset perf test by using another iModel on Hub
 - Add ViewDetails to ViewDefinition.
@@ -603,7 +648,7 @@ Tue, 07 Jan 2020 19:44:01 GMT
 - Allow events to be sent from backend to frontend
 - Add tryGetInstance / tryGetInstanceProps methods to the Relationship class which return undefined rather than throwing an exception when a relationship is not found.
 - Fix webpack for ios test that were failing due to new dependencies
-- VSTS#225894 - Allowed agents to bypass usage logging calls. These cause usage logging errors. 
+- VSTS#225894 - Allowed agents to bypass usage logging calls. These cause usage logging errors.
 - Add tryGetElement / tryGetElementProps which return undefined rather than throwing an exception when an element is not found.
 - Add tryGetModel, tryGetModelProps, tryGetSubModel which return undefined instead of throwing exceptions when the model is not found.
 
@@ -615,7 +660,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 - Updated to addon 9.1.3
 - Added AliCloud tile cache service
 - Added framework to run imodeljs-backend test on ios using appcenter
-- Setup OidcDesktopClient for Electron use cases. 
+- Setup OidcDesktopClient for Electron use cases.
 - fix warnings from static analysis
 - Enabling testing code for updating LR aspects after fix in native side.
 - Addressing typo in a couple of members, making them match the schema properly.
@@ -671,9 +716,9 @@ Mon, 30 Sep 2019 22:28:48 GMT
 ### Updates
 
 - added support for blank IModelConnections
-- Setup a way to supply authorization through the backend for frontend requests. 
-- Error log when downloading change sets should include iModelId for context. 
-- Fixed the iModelHub client to properly dispose a file handle after upload to the iModelHub. 
+- Setup a way to supply authorization through the backend for frontend requests.
+- Error log when downloading change sets should include iModelId for context.
+- Fixed the iModelHub client to properly dispose a file handle after upload to the iModelHub.
 - Add IModelDb.Elements.hasSubModel
 - Make ExternalSourceAspect.checksum optional
 - Clear statement cache after schema import
@@ -688,14 +733,14 @@ Tue, 10 Sep 2019 12:09:49 GMT
 
 ### Updates
 
-- Setup a way to supply authorization through the backend for frontend requests. 
-- Allow attaching change cache file before change summary extraction. 
-- Added change summary test, and improved doc a little. 
+- Setup a way to supply authorization through the backend for frontend requests.
+- Allow attaching change cache file before change summary extraction.
+- Added change summary test, and improved doc a little.
 - Add minimum brep size option to IModelDb.exportGraphics
 - FunctionalSchema.importSchema is now deprecated.
 - Add support for GeometricModel.geometryGuid for detecting whether tiles for a model can be reused across versions
 - Added performance logging for tile upload
-- IModelConnection.close() for read-only connections should not close the Db at the backend; Opening an iModel with SyncModel.PullAndPush() multiple times (without disposing it) must reuse the briefcase. 
+- IModelConnection.close() for read-only connections should not close the Db at the backend; Opening an iModel with SyncModel.PullAndPush() multiple times (without disposing it) must reuse the briefcase.
 - Add method to create view with camera
 - Fixed misleading logging output in tile upload
 
@@ -705,14 +750,14 @@ Tue, 13 Aug 2019 20:25:53 GMT
 ### Updates
 
 - Allow custom tile cache services.
-- Always acquire a briefcase when creating a new backend instance for PullAndPush workflows. 
-- Added Change Summary integration test, and fixed documentation. 
+- Always acquire a briefcase when creating a new backend instance for PullAndPush workflows.
+- Added Change Summary integration test, and fixed documentation.
 - Trial code for tile upload errors
 - Fixed changeset performance tests
 - Tile upload logging.
 - Mark ExportGraphics API as public
 - Support for gzip compression of tiles
-- Fixed issue with opening iModels with names that are invalid on Unix or Windows. 
+- Fixed issue with opening iModels with names that are invalid on Unix or Windows.
 - Add IModelDb.isSnapshot
 - Tile upload error catching.
 - Azure tile upload logging
@@ -724,7 +769,7 @@ Wed, 24 Jul 2019 11:47:26 GMT
 ### Updates
 
 - Added option to restrict tile cache URLs by client IP address.
-- Apply change sets at the backend in a non-blocking worker thread. 
+- Apply change sets at the backend in a non-blocking worker thread.
 - Add ElementAspect handler methods
 - When deleting a parent element, make sure there are onDelete/onDeleted callbacks for child elements
 - Add support for linework to IModelDb.exportGraphics
@@ -742,19 +787,19 @@ Mon, 01 Jul 2019 19:04:29 GMT
 
 ### Updates
 
-- Open fixes when briefcase requires merges. 
+- Open fixes when briefcase requires merges.
 - Catch tile upload errors.
-- Setting up briefcase is always from an older checkpoint. 
+- Setting up briefcase is always from an older checkpoint.
 - Add materialId, subCategory to ExportGraphicsInfo
-- Fix crash in getViewThumbnail for odd number of bytes 
+- Fix crash in getViewThumbnail for odd number of bytes
 - Adding relationship class for GraphicalElement3dRepresentsElement.
 - Initial implementation of the LinearReferencing typescript domain
 - Adding domain classes for all relatinships in the LinearReferencing schema.
 - Exporting relationships module.
-- Fixes to opening iModel-s ReadWrite from mutiple IModelConnection-s. 
-- Fixed issues with deleting briefcases if there were errors with preparing briefcases. 
+- Fixes to opening iModel-s ReadWrite from mutiple IModelConnection-s.
+- Fixed issues with deleting briefcases if there were errors with preparing briefcases.
 - Add a new method `forceLoadSchemas` to `IModelJsNative.ECPresentationManager`.
-- Introduced AsyncMutex - a utility to run async blocks of code in sequence. 
+- Introduced AsyncMutex - a utility to run async blocks of code in sequence.
 - Properly document ModelSelector.models and CategorySelector.categories as Id64String arrays
 - Made `insertElement` not return Id64.invalid, throws error instead
 - Update to TypeScript 3.5
@@ -765,7 +810,7 @@ Mon, 03 Jun 2019 18:09:39 GMT
 
 ### Updates
 
-- Migrated agent applications to the newer client 
+- Migrated agent applications to the newer client
 - RPC system now accepts only basic values (primitives, "interface" objects, and binary).
 - Switched from iModelHub Project API to Context API
 - Fix bug in IModelDb.createSnapshotFromSeed
@@ -813,12 +858,12 @@ Mon, 13 May 2019 15:52:05 GMT
 - Cleanup old imodelbank references
 - Add InformationRecordModel.insert, GroupModel.insert
 - Introduce LoggerCategory enum to advertise logger categories used by this package.
-- Limited maximum cache size of the backend PromiseMemoizer. 
+- Limited maximum cache size of the backend PromiseMemoizer.
 - Missing dependency on node-report
-- Fixed memoization problem that caused an endless stream of 404 NotFound errors. 
+- Fixed memoization problem that caused an endless stream of 404 NotFound errors.
 - Reinstated old version of OidcAgentClient
-- Unauthorized open requests should cause a more obvious error. 
-- Improved performance logging, especially of IModelDb open operations; ChangeSets are merged one-by-one to prevent hogging the event loop. 
+- Unauthorized open requests should cause a more obvious error.
+- Improved performance logging, especially of IModelDb open operations; ChangeSets are merged one-by-one to prevent hogging the event loop.
 - Memoization fix when opening iModels in shared, read-only mode .
 - Fixed setup of application version.
 - Updated Element CRUD perf tests
@@ -828,7 +873,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Remove ElementPropertyFormatter, IModelDb.getElementPropertiesForDisplay (use presentation rules instead)
 - Remove StandaloneIModelRpcImpl
 - Fix for Render Gradient.Symb test
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Add IModelDb.createSnapshot/openSnapshot/closeSnapshot, deprecate IModelDb.createStandalone/openStandalone/closeStandalone
 - Moved IModelJsExpressServer class into a new package (@bentley/express-server).
 - Simplified tile caching IModelHost config and removed dev flags. Allow
@@ -855,7 +900,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
 - AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes
-- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package. 
+- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package.
 - Clone methods are no longer generic
 - Remove unneeded typedoc plugin dependency
 - Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.
@@ -900,8 +945,8 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics. 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics.
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
 - Renamed RequestProxy->RequestHost. Allowed applications to configure proxy server with HTTPS_PROXY env.
 - Add backend TextureAPI and accompanying test
 
@@ -1006,7 +1051,7 @@ Mon, 03 Dec 2018 18:52:58 GMT
 
 ### Updates
 
-- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application. 
+- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application.
 - Add ElementRefersToElements.insert
 - Fixed front end integration tests.
 - Document the intended purpose of IModelJsExpressServer within a deployment environment.
@@ -1075,11 +1120,11 @@ Thu, 08 Nov 2018 17:59:20 GMT
 
 - Fix JSON representation of DisplayStyle.
 - Add IModelImporter as a base class for utility methods needed by all importers
-- Removed assertion when deleting a memoized open call. 
+- Removed assertion when deleting a memoized open call.
 - Add more methods to IModelImporter
 - Fix snapping test
 - OIDC related enhancments (WIP).
-- Re-enabled several backend integration tests. 
+- Re-enabled several backend integration tests.
 - Refactor analysis-importer to use IModelImporter
 - Updated to TypeScript 3.1
 

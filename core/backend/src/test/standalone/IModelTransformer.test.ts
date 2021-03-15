@@ -7,7 +7,7 @@ import * as path from "path";
 import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
+  AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, IModel, IModelError, PhysicalElementProps, Placement2d, Placement3d,
 } from "@bentley/imodeljs-common";
 import {
   BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionPartition, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
@@ -620,6 +620,33 @@ describe("IModelTransformer", () => {
 
     IModelTransformerUtils.dumpIModelInfo(iModelShared);
     iModelShared.close();
+  });
+
+  it("should detect conflicting provenance scopes", async () => {
+    const sourceDb1 = IModelTransformerUtils.createTeamIModel(outputDir, "S1", Point3d.create(0, 0, 0), ColorDef.green);
+    const sourceDb2 = IModelTransformerUtils.createTeamIModel(outputDir, "S2", Point3d.create(0, 10, 0), ColorDef.blue);
+    assert.notEqual(sourceDb1.iModelId, sourceDb2.iModelId); // iModelId must be different to detect provenance scope conflicts
+
+    const targetDbFile = IModelTestUtils.prepareOutputFile("IModelTransformer", "ConflictingScopes.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Conflicting Scopes Test" }});
+
+    const transformer1 = new IModelTransformer(sourceDb1, targetDb); // did not set targetScopeElementId
+    const transformer2 = new IModelTransformer(sourceDb2, targetDb); // did not set targetScopeElementId
+
+    await transformer1.processAll(); // first one succeeds using IModel.rootSubjectId as the default targetScopeElementId
+
+    try {
+      await transformer2.processAll(); // expect IModelError to be thrown because of the targetScopeElementId conflict with second transformation
+      assert.fail("Expected provenance scope conflict");
+    } catch (e) {
+      assert.isTrue(e instanceof IModelError);
+    } finally {
+      transformer1.dispose();
+      transformer2.dispose();
+      sourceDb1.close();
+      sourceDb2.close();
+      targetDb.close();
+    }
   });
 
   it("IModelCloneContext remap tests", async () => {

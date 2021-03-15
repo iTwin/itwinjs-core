@@ -1,6 +1,29 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Initial setup for adding "basic manipulation" tools and commands to editor package.
+- Fixed broken double angle bracket link syntax
+- Add isIPhoneBrowser to ProcessDetector and make isIOSBrowser work for both iPads and iPhones. Clarify documentation.
+- Add ProcessDetector
+- Adjusted error messages and error when reversing or reinstating schema changesets
+- Updated to use TypeScript 4.1
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:52 GMT
+
+_Version update only_
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -9,6 +32,16 @@ _Version update only_
 
 ## 2.12.0
 Thu, 18 Feb 2021 22:10:12 GMT
+
+_Version update only_
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
 
 ### Updates
 
@@ -272,7 +305,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Added FailedToGetProductSettings error
-- Setup Guid.normalize() for internal use. 
+- Setup Guid.normalize() for internal use.
 - channel rules
 
 ## 2.0.0
@@ -280,12 +313,12 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases.
 - Update Config.App documentation to reflect the removal of the config.json file
 - Added ContextDoesNotExist error
 - BUG273249
-- Updated docs. 
-- Updated error text. 
+- Updated docs.
+- Updated error text.
 - added raw log method that bypass catogory check
 - order imports.
 - Add a type guard for `IDisposable`
@@ -319,7 +352,7 @@ Wed, 22 Jan 2020 19:24:11 GMT
 
 ### Updates
 
-- VSS$257397: Temporary fix for checking electron renderer. 
+- VSS$257397: Temporary fix for checking electron renderer.
 - Upgrade to TypeScript 3.7.2.
 
 ## 1.10.0
@@ -334,7 +367,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 ### Updates
 
-- Setup OidcDesktopClient for Electron use cases. 
+- Setup OidcDesktopClient for Electron use cases.
 - Added non-static wait and executeAfter to BeDuration
 - Fix warnings from static analysis
 - Added `BeDuration.race` for common timeout operations.
@@ -387,7 +420,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 ### Updates
 
 - Added OneAtATimeActivity class
-- Introduced AsyncMutex - a utility to run async blocks of code in sequence. 
+- Introduced AsyncMutex - a utility to run async blocks of code in sequence.
 - Update to TypeScript 3.5
 
 ## 1.0.0
@@ -414,10 +447,10 @@ Mon, 13 May 2019 15:52:05 GMT
 - Logged the fields in ClientRequestContext
 - Logging fixes.
 - Put sourcemap in npm package.
-- Fixed logger to not mutate incoming objects. 
+- Fixed logger to not mutate incoming objects.
 - Improved performance logging
 - Added functions for iterating and obtaining the number of elements of a collection of Id64s represented as an Id64Arg.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Use TextDecoder to decode binary utf-8 strings if supported.
 - Upgrade TypeDoc dependency to 0.14.2
 
@@ -453,7 +486,7 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
@@ -560,7 +593,7 @@ Fri, 16 Nov 2018 21:45:44 GMT
 
 ### Updates
 
-- Changes to debug utilities. 
+- Changes to debug utilities.
 - Fluentd Bunnyan Logger added
 
 ## 0.166.0

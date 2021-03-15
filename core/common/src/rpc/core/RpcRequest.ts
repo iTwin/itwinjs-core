@@ -119,6 +119,9 @@ export abstract class RpcRequest<TResponse = any> {
   private _hasRawListener = false;
   private _raw: ArrayBuffer | string | undefined = undefined;
   private _sending?: Cancellable<number>;
+  private _attempts = 0;
+  private _retryAfter: number | null = null;
+  private _transientFaults = 0;
   protected _response: Response | undefined = undefined;
   protected _rawPromise: Promise<Response | undefined>;
 
@@ -203,6 +206,9 @@ export abstract class RpcRequest<TResponse = any> {
   /** A protocol-specific method identifier for this request. */
   public method: string;
 
+  /** An attempt-specific value for when to next retry this request. */
+  public get retryAfter() { return this._retryAfter; }
+
   /** Finds the first parameter of a given structural type if present. */
   public findParameterOfType<T>(requiredProperties: { [index: string]: string }): T | undefined {
     for (const param of this.parameters) {
@@ -266,6 +272,18 @@ export abstract class RpcRequest<TResponse = any> {
     return true;
   }
 
+  protected computeRetryAfter(attempts: number) {
+    return (((Math.pow(2, attempts) - 1) / 2) * 500) + 500;
+  }
+
+  protected recordTransientFault() {
+    ++this._transientFaults;
+  }
+
+  protected resetTransientFaultCount() {
+    this._transientFaults = 0;
+  }
+
   /* @internal */
   public cancel() {
     if (typeof (this._sending) === "undefined") {
@@ -286,6 +304,8 @@ export abstract class RpcRequest<TResponse = any> {
       return;
 
     this._lastSubmitted = new Date().getTime();
+    this._retryAfter = null;
+    ++this._attempts;
 
     if (this.status === RpcRequestStatus.Created || this.status === RpcRequestStatus.NotFound || this.status === RpcRequestStatus.Cancelled) {
       this.setStatus(RpcRequestStatus.Submitted);
@@ -341,6 +361,10 @@ export abstract class RpcRequest<TResponse = any> {
 
   private handleResponse(code: number, value: RpcSerializedValue) {
     const status = this.protocol.getStatus(code);
+
+    if (RpcRequestStatus.isTransientError(status)) {
+      return this.handleTransientError(status);
+    }
 
     switch (status) {
       case RpcRequestStatus.Resolved: {
@@ -482,6 +506,21 @@ export abstract class RpcRequest<TResponse = any> {
     this._extendedStatus = extendedStatus;
     this.setStatus(status);
     RpcRequest.events.raiseEvent(RpcRequestEvent.PendingUpdateReceived, this);
+  }
+
+  private handleTransientError(status: RpcRequestStatus) {
+    if (!this._active)
+      return;
+
+    this.setLastUpdatedTime();
+    this._retryAfter = this.computeRetryAfter(this._attempts - 1);
+
+    if (this._transientFaults > this.protocol.configuration.transientFaultLimit) {
+      this.reject(new IModelError(BentleyStatus.ERROR, `Exceeded transient fault limit.`));
+    } else {
+      this.setStatus(status);
+      RpcRequest.events.raiseEvent(RpcRequestEvent.TransientErrorReceived, this);
+    }
   }
 
   protected async setHeaders(): Promise<void> {

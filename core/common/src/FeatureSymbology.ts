@@ -92,8 +92,8 @@ export class FeatureAppearance implements FeatureAppearanceProps {
   /** Create a FeatureAppearance with overrides corresponding to those defined by the supplied SubCategoryOverride. */
   public static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance {
     const rgb = undefined !== ovr.color ? RgbColor.fromColorDef(ovr.color) : undefined;
-    const transparency = undefined !== ovr.transparency ? ovr.transparency : undefined;
-    const weight = undefined !== ovr.weight ? ovr.weight : undefined;
+    const transparency = ovr.transparency;
+    const weight = ovr.weight;
     const ignoresMaterial = undefined !== ovr.material && Id64.isValid(ovr.material) ? true : undefined;
     return this.fromJSON({ rgb, transparency, weight, ignoresMaterial });
   }

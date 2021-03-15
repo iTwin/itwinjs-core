@@ -8,7 +8,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   AttachedInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3,
-  TokenValues, ZeroMajorRpcInterface,
+  TokenValues, WebRoutingInterface, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 
 export async function testInterfaceResource() {
@@ -225,8 +225,27 @@ export class AttachedInterfaceImpl extends RpcInterface implements AttachedInter
   }
 }
 
+export class WebRoutingInterfaceImpl extends RpcInterface implements WebRoutingInterface {
+  public static register() {
+    RpcManager.registerImpl(WebRoutingInterface, WebRoutingInterfaceImpl);
+  }
+
+  public async ping502(sent: number): Promise<boolean> {
+    return (Date.now() - sent) >= 2000;
+  }
+
+  public async ping503(sent: number): Promise<boolean> {
+    return (Date.now() - sent) >= 1000;
+  }
+
+  public async ping504(sent: number): Promise<boolean> {
+    return (Date.now() - sent) >= 2000;
+  }
+}
+
 TestRpcImpl.register();
 TestRpcImpl3.register();
 TestZeroMajorRpcImpl.register();
 RpcTransportTestImpl.register();
 MultipleClientsImpl.register();
+WebRoutingInterfaceImpl.register();

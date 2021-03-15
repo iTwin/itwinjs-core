@@ -2,6 +2,57 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@bentley/ui-components_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updates to use new QuantityParserResult"
+          },
+          {
+            "comment": "Upgrade react-resize-detector to avoid lodash security vulnerability"
+          },
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Fix solar timeline component so that sunTime is properly set for project location."
+          },
+          {
+            "comment": "Add ui-components for displaying and editing FormatProps that are used to Format and Parse Quantities."
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Add a captureClicks prop to ColorPickerPopup that will stop propagation of click events from the popup."
+          },
+          {
+            "comment": "`MutableTreeModel`: Add `changeNodeId` method."
+          },
+          {
+            "comment": "`MutableTreeModel`: Allow `undefined` child count in `setNumChildren`."
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/ui-components_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/ui-components_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:53 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/ui-components_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
@@ -27,6 +78,18 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@bentley/ui-components_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/ui-components_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
     },
     {
       "version": "2.11.0",
