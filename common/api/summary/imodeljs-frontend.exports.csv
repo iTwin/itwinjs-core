@@ -117,19 +117,18 @@ internal;DefineACSByPointsTool
 alpha;DepthPointOptions
 alpha;DepthPointSource
 public;DepthRangeNpc
-alpha;DesktopAuthorizationClient 
 internal;DevTools
 beta;DisclosedTileTreeSet 
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
-alpha;DownloadBriefcaseOptions
+beta;DownloadBriefcaseId =
+beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
-alpha;EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection
 alpha;EditingFunctions
 alpha;EditingFunctions
 deprecated;CategoryEditor
@@ -224,6 +223,7 @@ public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
 public;GraphicType
+internal;GridDisplaySettings
 alpha;GroupMark
 internal;Hilites
 beta;HiliteSet
@@ -267,7 +267,7 @@ internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModel
 public;class InputCollector 
 public;InputSource
 internal;InstancedGraphicParams
-alpha;InteractiveEditingSession 
+beta;InteractiveEditingSession 
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
@@ -284,6 +284,7 @@ beta;LengthDescription
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
 internal;LocalhostIpcApp
+internal;LocalHostIpcAppOpts 
 beta;LocalUnitFormatProvider 
 public;LocateAction
 public;LocateFilterStatus
@@ -343,7 +344,9 @@ public;ModelSelectorState
 public;ModelState 
 alpha;ModifyElementSource
 alpha;NativeApp
+alpha;NativeAppAuthorization
 internal;NativeAppLogger
+alpha;NativeAppOpts 
 internal;NoRenderApp
 beta;class NotificationHandler
 public;NotificationManager
@@ -621,7 +624,7 @@ public;WalkViewTool
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
 beta;WebViewerApp
-beta;WebViewerAppOptions
+beta;WebViewerAppOpts
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities

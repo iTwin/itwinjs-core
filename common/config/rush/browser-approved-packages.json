@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/electron-manager",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@bentley/eslint-plugin",
@@ -757,10 +757,6 @@
     {
       "name": "react-autosuggest",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "react-axe",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-beautiful-dnd",

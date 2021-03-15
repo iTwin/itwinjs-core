@@ -54,10 +54,17 @@ export enum BriefcaseIdValue {
   DeprecatedStandalone = 1,
 }
 
-/** Operations allowed when synchronizing changes between the Briefcase and iModelHub
+/** Whether a briefcase is editable or may only accept incoming changesets from iModelHub
  * @public
  */
-export enum SyncMode { FixedVersion = 1, PullAndPush = 2, PullOnly = 3 }
+export enum SyncMode {
+  /** Use a fixed version (i.e. a checkpoint). See [CheckpointManager]($backend) for preferred approach to using checkpoint files. */
+  FixedVersion = 1,
+  /** A briefcase that can be edited. A unique briefcaseId must be assigned by iModelHub. */
+  PullAndPush = 2,
+  /** use [BriefcaseIdValue.Standalone](%backend). This makes a briefcase that can accept changesets from iModelHub but can never create changesets. */
+  PullOnly = 3,
+}
 
 /**
  * Options to open a previously downloaded briefcase

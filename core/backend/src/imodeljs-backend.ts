@@ -49,7 +49,6 @@ export * from "./BackendRequestContext";
 export * from "./CloudStorageBackend";
 export * from "./AliCloudStorageService";
 export * from "./DevTools";
-export * from "./oidc/DesktopAuthorizationClient";
 export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./LocalhostIpcHost";
 export * from "./IModelDb"; // must be last

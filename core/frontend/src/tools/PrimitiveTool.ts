@@ -6,8 +6,9 @@
  * @module Tools
  */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { IModelApp } from "../IModelApp";
-import { EditableConnection } from "../InteractiveEditingSession";
+import { IModelConnection } from "../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { Viewport } from "../Viewport";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
@@ -27,7 +28,10 @@ export abstract class PrimitiveTool extends InteractiveTool {
   /** Get the iModel for this tool.
    * @internal
    */
-  public get iModel(): EditableConnection { return this.targetView!.view.iModel as EditableConnection; }
+  public get iModel(): IModelConnection {
+    assert(undefined !== this.targetView);
+    return this.targetView.view.iModel;
+  }
 
   /**
    * Establish this tool as the active PrimitiveTool.
@@ -188,11 +192,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return true;
   }
 
-  /**
-   * Tools need to call SaveChanges to commit any elements they have added/changes they have made.
-   * This helper method supplies the tool name for the undo string to iModel.saveChanges.
-   */
+  /** If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool name as the undo string. */
   public async saveChanges(): Promise<void> {
-    return this.iModel.saveChanges(this.toolId);
+    if (this.iModel.isBriefcaseConnection())
+      return this.iModel.saveChanges(this.toolId);
   }
 }
