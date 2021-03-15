@@ -207,7 +207,7 @@ export abstract class ViewState extends ElementState {
    *  ```ts
    *  const flags = viewState.viewFlags.clone();
    *  flags.renderMode = RenderMode.SmoothShade; // or whatever alterations are desired
-   *  viewState.viewFlags = flags;
+   *  viewState.displayStyle.viewFlags = flags;
    *  ```ts
    */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
