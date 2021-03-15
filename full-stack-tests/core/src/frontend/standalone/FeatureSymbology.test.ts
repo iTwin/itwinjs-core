@@ -21,6 +21,8 @@ class Overrides extends FeatureSymbology.Overrides {
 
   public expectSubCategory(id: string, expectVisible: boolean): void {
     expect(this.visibleSubCategories.hasId(id)).to.equal(expectVisible);
+    const feature = new Feature("0xabc", id);
+    expect(this.isFeatureVisible(feature)).to.equal(expectVisible);
   }
 }
 
