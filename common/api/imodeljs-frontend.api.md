@@ -7097,17 +7097,13 @@ export class QuadId {
 
 // @beta
 export interface QuantityFormatOverridesChangedArgs {
-    // (undocumented)
     readonly overrideEntry?: OverrideFormatEntry;
-    // (undocumented)
     readonly typeKey: QuantityTypeKey;
-    // (undocumented)
     readonly unitSystem?: UnitSystemKey;
 }
 
 // @beta
 export interface QuantityFormatsChangedArgs {
-    // (undocumented)
     readonly quantityType: string;
 }
 
@@ -11029,23 +11025,14 @@ export enum UniformType {
 
 // @beta
 export interface UnitFormattingSettingsProvider {
-    // (undocumented)
     loadOverrides(imodel: IModelConnection | undefined): Promise<void>;
-    // (undocumented)
     readonly maintainOverridesPerIModel: boolean;
-    // (undocumented)
     remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
-    // (undocumented)
     retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined>;
-    // (undocumented)
     retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
-    // (undocumented)
     store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
-    // (undocumented)
     storeFormatOverrides(args: QuantityFormatOverridesChangedArgs): Promise<void>;
-    // (undocumented)
     storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
-    // (undocumented)
     storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
 }
 
