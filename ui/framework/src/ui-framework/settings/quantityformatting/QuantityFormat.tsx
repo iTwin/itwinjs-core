@@ -27,7 +27,7 @@ function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
 }
 
 /** Options to initialize the settings page that allows users to set Quantity formatting overrides.
- * @alpha
+ * @beta
  */
 export interface QuantityFormatterSettingsOptions {
   initialQuantityType: QuantityTypeArg;
@@ -38,7 +38,7 @@ export interface QuantityFormatterSettingsOptions {
  * Return a SettingsTabEntry that can be used to define the available settings that can be set for an application.
  * @param itemPriority - Used to define the order of the entry in the Settings Stage
  * @param opts - Options to initialize the settings page that allows users to set Quantity formatting overrides.
- * @alpha
+ * @beta
  */
 export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial<QuantityFormatterSettingsOptions>): SettingsTabEntry {
   const {availableUnitSystems, initialQuantityType} = {...opts};
@@ -56,7 +56,7 @@ export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opt
 }
 
 /** UI Component shown in settings page to set the active Presentation Unit System and to set format overrides.
- * @alpha
+ * @beta
  */
 export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitSystems}: QuantityFormatterSettingsOptions) {
   const [activeUnitSystemKey, setActiveUnitSystemKey] = React.useState(IModelApp.quantityFormatter.activeUnitSystem);

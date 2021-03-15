@@ -2677,7 +2677,7 @@ export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedS
 // @internal (undocumented)
 export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[];
 
-// @alpha
+// @beta
 export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial<QuantityFormatterSettingsOptions>): SettingsTabEntry;
 
 // @beta
@@ -4290,10 +4290,10 @@ export class PropsHelper {
     static isShallowEqual(newObj: any, prevObj: any): boolean;
 }
 
-// @alpha
+// @beta
 export function QuantityFormatSettingsPanel({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element;
 
-// @alpha
+// @beta
 export interface QuantityFormatterSettingsOptions {
     // (undocumented)
     availableUnitSystems: Set<UnitSystemKey>;
