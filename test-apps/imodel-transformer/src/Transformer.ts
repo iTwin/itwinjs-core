@@ -5,7 +5,8 @@
 
 import { DbResult, Id64, Logger } from "@bentley/bentleyjs-core";
 import {
-  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, IModelDb, IModelTransformer, IModelTransformOptions, PhysicalModel, PhysicalPartition, Relationship,
+  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, IModelDb, IModelTransformer, IModelTransformOptions, PhysicalModel,
+  PhysicalPartition, Relationship, SubCategory,
 } from "@bentley/imodeljs-backend";
 import { IModel } from "@bentley/imodeljs-common";
 
@@ -14,6 +15,7 @@ export const progressLoggerCategory = "Progress";
 export interface TransformerOptions extends IModelTransformOptions {
   simplifyElementGeometry?: boolean;
   combinePhysicalModels?: boolean;
+  excludeSubCategories?: string[];
 }
 
 export class Transformer extends IModelTransformer {
@@ -32,6 +34,9 @@ export class Transformer extends IModelTransformer {
     if (options?.combinePhysicalModels) {
       transformer._targetPhysicalModelId = PhysicalModel.insert(targetDb, IModel.rootSubjectId, "CombinedPhysicalModel");
       transformer.importer.doNotUpdateElementIds.add(transformer._targetPhysicalModelId);
+    }
+    if (options?.excludeSubCategories) {
+      transformer.excludeSubCategories(options.excludeSubCategories);
     }
     transformer.initialize();
     await transformer.processSchemas(new BackendRequestContext());
@@ -63,6 +68,27 @@ export class Transformer extends IModelTransformer {
     Logger.logInfo(progressLoggerCategory, `numSourceRelationships=${this._numSourceRelationships}`);
   }
 
+  /** Initialize IModelTransformer to exclude SubCategory Elements and geometry entries in a SubCategory from the target iModel.
+   * @param subCategoryNames Array of SubCategory names to exclude
+   * @note This sample code assumes that you want to exclude all SubCategories of a given name regardless of parent Category
+   */
+  private excludeSubCategories(subCategoryNames: string[]): void {
+    const sql = `SELECT ECInstanceId FROM ${SubCategory.classFullName} WHERE CodeValue=:subCategoryName`;
+    for (const subCategoryName of subCategoryNames) {
+      this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+        statement.bindString("subCategoryName", subCategoryName);
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          const subCategoryId = statement.getValue(0).getId();
+          this.context.filterSubCategory(subCategoryId); // filter out geometry entries in this SubCategory from the target iModel
+          this.exporter.excludeElement(subCategoryId); // exclude the SubCategory Element itself from the target iModel
+        }
+      });
+    }
+  }
+
+  /** Override that counts elements processed and optionally remaps PhysicalPartitions.
+   * @note Override of IModelExportHandler.shouldExportElement
+   */
   protected shouldExportElement(sourceElement: Element): boolean {
     if (this._numSourceElementsProcessed < this._numSourceElements) { // with deferred element processing, the number processed can be more than the total
       ++this._numSourceElementsProcessed;
