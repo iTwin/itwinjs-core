@@ -105,22 +105,22 @@ export class SubCategoryAppearance {
   public toJSON(): SubCategoryAppearance.Props {
     const val: SubCategoryAppearance.Props = { color: this.color.toJSON() };
     if (this.invisible)
-       val.invisible = true;
+      val.invisible = true;
 
     if (this.dontPlot)
-       val.dontPlot = true;
+      val.dontPlot = true;
 
     if (this.dontSnap)
-       val.dontSnap = true;
+      val.dontSnap = true;
 
     if (this.dontLocate)
-       val.dontLocate = true;
+      val.dontLocate = true;
 
     if (0 !== this.weight)
-       val.weight = this.weight;
+      val.weight = this.weight;
 
     if (0 !== this.priority)
-       val.priority = this.priority;
+      val.priority = this.priority;
 
     if (Id64.isValid(this.styleId))
       val.style = this.styleId;
