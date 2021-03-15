@@ -258,7 +258,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
   it("Clone/upgrade test", async () => {
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+    const projectId = await HubUtility.getTestContextId(requestContext);
     const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
     const sourceIModelId = await HubUtility.recreateIModel(requestContext, projectId, sourceIModelName);
     assert.isTrue(Guid.isGuid(sourceIModelId));

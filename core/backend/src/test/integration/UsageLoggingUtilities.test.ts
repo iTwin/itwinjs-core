@@ -25,7 +25,6 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
   const defaultAuthType = IModelJsNative.AuthType.OIDC;
 
   before(async () => {
-    IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
     const oidcConfig: TestBrowserAuthorizationClientConfiguration = {

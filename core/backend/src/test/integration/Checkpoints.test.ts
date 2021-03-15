@@ -10,18 +10,14 @@ import { assert } from "chai";
 import { ChildProcess } from "child_process";
 import * as path from "path";
 import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
 // FIXME: Disabled because V2 checkpoints are not in QA yet...
 describe.skip("Checkpoints (#integration)", () => {
-
   let requestContext: AuthorizedBackendRequestContext;
-  const testProjectName = "iModelJsIntegrationTest";
-  const testIModelName = "Stadium Dataset 1";
   let testIModelId: GuidString;
-  let testProjectId: GuidString;
+  let testContextId: GuidString;
   let testChangeSetId: GuidString;
 
   const blockcacheDir = path.join(KnownTestLocations.outputDir, "blockcachevfs");
@@ -31,12 +27,11 @@ describe.skip("Checkpoints (#integration)", () => {
   before(async () => {
     originalEnv = { ...process.env };
     process.env.BLOCKCACHE_DIR = blockcacheDir;
-    IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testProjectId = await HubUtility.queryProjectIdByName(requestContext, testProjectName);
-    testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
+    testContextId = await HubUtility.getTestContextId(requestContext);
+    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
     testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
 
     const checkpointQuery = new CheckpointV2Query().byChangeSetId(testChangeSetId).selectContainerAccessKey();
@@ -69,13 +64,13 @@ describe.skip("Checkpoints (#integration)", () => {
   it("should be able to open and read V2 checkpoint", async () => {
     const iModel = await SnapshotDb.openCheckpointV2({
       requestContext,
-      contextId: testProjectId,
+      contextId: testContextId,
       iModelId: testIModelId,
       changeSetId: testChangeSetId,
     });
     assert.equal(iModel.getGuid(), testIModelId);
     assert.equal(iModel.changeSetId, testChangeSetId);
-    assert.equal(iModel.contextId, testProjectId);
+    assert.equal(iModel.contextId, testContextId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
