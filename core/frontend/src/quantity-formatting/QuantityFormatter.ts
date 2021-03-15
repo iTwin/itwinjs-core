@@ -242,7 +242,7 @@ export interface FormatterParserSpecsProvider {
  * @beta
  */
 export interface FormattingUnitSystemChangedArgs {
-  // string that defines unit system activated.
+  /* string that defines unit system activated. */
   readonly system: UnitSystemKey;
 }
 
@@ -250,7 +250,7 @@ export interface FormattingUnitSystemChangedArgs {
  * @beta
  */
 export interface QuantityFormatsChangedArgs {
-  // string that represents the QuantityType that has been overriden or the overrides cleared.
+  /** string that represents the QuantityType that has been overriden or the overrides cleared. */
   readonly quantityType: string;
 }
 
@@ -258,11 +258,11 @@ export interface QuantityFormatsChangedArgs {
  * @beta
  */
 export interface QuantityFormatOverridesChangedArgs {
-  // string that represents the QuantityType that has been overriden or the overrides cleared.
+  /** string that represents the QuantityType that has been overriden or the overrides cleared. */
   readonly typeKey: QuantityTypeKey;
-  // overrideEntry will be undefined when clearing overrides
+  /** overrideEntry will be undefined when clearing overrides */
   readonly overrideEntry?: OverrideFormatEntry;
-  // used only when change applies to a single unit system
+  /** used only when change applies to a single unit system */
   readonly unitSystem?: UnitSystemKey;
 }
 
@@ -271,25 +271,25 @@ export interface QuantityFormatOverridesChangedArgs {
  *  @beta
  */
 export interface UnitFormattingSettingsProvider {
-  // serializes JSON object containing format overrides for a specific quantity type.
+  /** serializes JSON object containing format overrides for a specific quantity type. */
   store (quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
-  // retrieves serialized JSON object containing format overrides for a specific quantity type.
+  /** retrieves serialized JSON object containing format overrides for a specific quantity type. */
   retrieve (quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry|undefined>;
-  // removes the override formats for a specific quantity type.
+  /** removes the override formats for a specific quantity type. */
   remove (quantityTypeKey: QuantityTypeKey): Promise<boolean>;
-  // retrieves the active unit system typically based on the "active" iModelConnection
+  /** retrieves the active unit system typically based on the "active" iModelConnection */
   retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
-  // store the active unit system typically for the "active" iModelConnection
+  /** store the active unit system typically for the "active" iModelConnection */
   storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
-  // Function to load overrides for a specific IModelConnection. Typically this is not called often since typical implementations monitor for IModelConnection
-  // changes and call this method internally.
+  /** Function to load overrides for a specific IModelConnection. Typically this is not called often since typical
+   * implementations monitor for IModelConnection changes and call this method internally. */
   loadOverrides(imodel: IModelConnection|undefined): Promise<void>;
-  // function called to save changes to Presentation Unit System
+  /** function called to save changes to Presentation Unit System */
   storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
-  // function called to save format overrides
+  /** function called to save format overrides */
   storeFormatOverrides(args: QuantityFormatOverridesChangedArgs): Promise<void>;
-  // property that is set by the implementation to inform the BaseUnitFormattingSettingsProvider if the provider should
-  // trigger reloading of the overrides when the "active" imodel changes.
+  /** property that is set by the implementation to inform the BaseUnitFormattingSettingsProvider if the provider
+   *  should trigger reloading of the overrides when the "active" imodel changes. */
   readonly maintainOverridesPerIModel: boolean;
 }
 
