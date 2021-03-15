@@ -7,7 +7,7 @@
  * @module BrowserAuthorization
  */
 
-import { User, UserManager, UserManagerSettings } from "oidc-client";
+import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
@@ -37,6 +37,8 @@ export interface BrowserAuthorizationClientConfiguration {
   readonly scope: string;
   /** The mechanism (or authentication flow) used to acquire auth information from the user through the authority */
   readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
+  /** if present and marked true, do NOT attempt a silent signIn on startup of the application */
+  readonly noSilentSignInOnAppStartup?: boolean;
 }
 
 /**
@@ -88,6 +90,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       post_logout_redirect_uri: basicSettings.postSignoutRedirectUri, // eslint-disable-line @typescript-eslint/naming-convention
       response_type: basicSettings.responseType, // eslint-disable-line @typescript-eslint/naming-convention
       automaticSilentRenew: true,
+      userStore: new WebStorageStateStore({ store: window.localStorage }),
     };
 
     if (advancedSettings) {
@@ -181,7 +184,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
     const user = await this.nonInteractiveSignIn(requestContext);
     if (user === undefined || user.expired)
-      throw new BentleyError(AuthStatus.Error, "Silent sign-in failed", Logger.logError, FrontendAuthorizationClientLoggerCategory.Authorization);
+      throw new BentleyError(AuthStatus.Error, "Silent sign-in failed");
   }
 
   /**
@@ -205,7 +208,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       user = await userManager.signinSilent(); // calls events
       return user;
     } catch (err) {
-      Logger.logInfo(FrontendAuthorizationClientLoggerCategory.Authorization, "Silent sign-in failed");
       return undefined;
     }
   }
