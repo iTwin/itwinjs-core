@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core";
 import {
-  Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride, ViewDefinitionProps, ViewFlags,
+  ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride, ViewDefinitionProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
@@ -331,5 +331,13 @@ describe("FeatureSymbology.Overrides", () => {
 
     for (const id of ["0x30", "0x32", "0x33"])
       ovrs.expectSubCategory(id, true);
+
+    viewState.displayStyle.overrideSubCategory("0x30", SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr }));
+    ovrs = new Overrides(viewState);
+    ovrs.expectSubCategory("0x30", true);
+
+    viewState.displayStyle.overrideSubCategory("0x30", SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr, invisible: true }));
+    ovrs = new Overrides(viewState);
+    ovrs.expectSubCategory("0x30", false);
   });
 });
