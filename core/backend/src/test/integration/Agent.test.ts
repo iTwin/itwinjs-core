@@ -17,7 +17,6 @@ describe("Agent (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
 
   before(async () => {
-    IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
