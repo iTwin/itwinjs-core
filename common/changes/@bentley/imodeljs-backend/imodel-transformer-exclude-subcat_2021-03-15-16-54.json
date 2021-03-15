@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-backend",
-      "comment": "Ensure elements passed to native code are in proper JSON format.",
+      "comment": "",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-backend",
-  "email": "22944042+pmconne@users.noreply.github.com"
+  "email": "36768600+scsewall@users.noreply.github.com"
 }

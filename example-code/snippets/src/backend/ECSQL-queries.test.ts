@@ -60,7 +60,7 @@ describe("Useful ECSQL queries", () => {
     // If you are sure that the name of the PhysicalPartition is unique within the
     // iModel or if you have some way of filtering results, you could do a direct query
     // for just its code value using the IModelDb.queryEntityIds convenience method.
-    for (const eidStr of iModel.queryEntityIds({ from: PhysicalPartition.classFullName, where: "CodeValue='Physical'" })) {
+    for (const eidStr of iModel.queryEntityIds({ from: PhysicalPartition.classFullName, where: "CodeValue=:cv", bindings: { cv: "Physical" } })) {
       assert.equal(iModel.elements.getElement(eidStr).code.value, "Physical");
     }
     // __PUBLISH_EXTRACT_END__
