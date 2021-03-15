@@ -1313,6 +1313,20 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
 }
 
 // @beta
+export class OverrideSubCategoryTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(inArgs: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export function parseArgs(args: string[]): ToolArgs;
 
 // @beta
