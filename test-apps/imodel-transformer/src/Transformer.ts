@@ -79,8 +79,11 @@ export class Transformer extends IModelTransformer {
         statement.bindString("subCategoryName", subCategoryName);
         while (DbResult.BE_SQLITE_ROW === statement.step()) {
           const subCategoryId = statement.getValue(0).getId();
-          this.context.filterSubCategory(subCategoryId); // filter out geometry entries in this SubCategory from the target iModel
-          this.exporter.excludeElement(subCategoryId); // exclude the SubCategory Element itself from the target iModel
+          const subCategory = this.sourceDb.elements.getElement<SubCategory>(subCategoryId, SubCategory);
+          if (!subCategory.isDefaultSubCategory) { // cannot exclude a default SubCategory
+            this.context.filterSubCategory(subCategoryId); // filter out geometry entries in this SubCategory from the target iModel
+            this.exporter.excludeElement(subCategoryId); // exclude the SubCategory Element itself from the target iModel
+          }
         }
       });
     }
