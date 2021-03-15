@@ -2948,6 +2948,7 @@ export class MutableTreeModel implements TreeModel {
     getRootNode(): TreeModelRootNode;
     insertChild(parentId: string | undefined, childNodeInput: TreeModelNodeInput, offset: number): void;
     iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
+    moveNode(sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): boolean;
     removeChild(parentId: string | undefined, childId: string): void;
     setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
     setNumChildren(parentId: string | undefined, numChildren: number | undefined): void;
@@ -4155,6 +4156,8 @@ export class SparseTree<T extends Node> {
     getNode(nodeId: string): T | undefined;
     // (undocumented)
     insertChild(parentId: string | undefined, child: T, offset: number): void;
+    // (undocumented)
+    moveNode(sourceParentId: string | undefined, sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): void;
     // (undocumented)
     removeChild(parentId: string | undefined, childId: string): void;
     // (undocumented)
