@@ -278,7 +278,7 @@ export class SampleAppIModelApp {
     // default to showing imperial formatted units
     await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
     Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
-    await IModelApp.quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(IModelApp.quantityFormatter, false)); // pass true to save per imodel
+    await IModelApp.quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(IModelApp.quantityFormatter, true)); // pass true to save per imodel
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
