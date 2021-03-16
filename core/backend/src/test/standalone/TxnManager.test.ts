@@ -10,7 +10,7 @@ import {
   Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, TxnChangedEntities, TxnManager, UpdateModelOptions,
+  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, TxnChangedEntities, TxnManager,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
@@ -229,23 +229,15 @@ describe("TxnManager", () => {
     model = models.getModel(modelId);
     assert.notEqual(guid2, model.geometryGuid, "update placement should change guid");
 
-    const guid3 = model.geometryGuid;
-    const modelProps = model.toJSON() as UpdateModelOptions;
-    modelProps.geometryChanged = true;
-    models.updateModel(modelProps);
-    model = models.getModel(modelId);
-    assert.notEqual(guid3, model.geometryGuid, "update model should change guid");
-    imodel.saveChanges("update geometry guid");
-
     const lastMod = models.queryLastModifiedTime(modelId);
     await BeDuration.wait(300); // we're going to update the lastMod below, make sure it will be different by waiting .3 seconds
-    const modelProps2 = model.toJSON() as UpdateModelOptions;
-    modelProps2.updateLastMod = true;
-    models.updateModel(modelProps2);
+    const guid3 = model.geometryGuid;
+    models.updateGeometryGuid(modelId);
     model = models.getModel(modelId);
+    assert.notEqual(guid3, model.geometryGuid, "update model should change guid");
     const lastMod2 = models.queryLastModifiedTime(modelId);
     assert.notEqual(lastMod, lastMod2);
-    imodel.saveChanges("update last mod");
+    // imodel.saveChanges("update geometry guid");
 
     // Deleting a geometric element updates model's GeometryGuid; deleting any element updates model's LastMod.
     await BeDuration.wait(300); // for lastMod...

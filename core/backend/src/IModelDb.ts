@@ -50,6 +50,7 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** Options for [[IModelDb.Models.updateModel]]
+ * @note To mark *only* the geometry as changed, use `IModelDb.Models.updateGeometryGuid` instead.
  * @public
  */
 export interface UpdateModelOptions extends ModelProps {
@@ -1429,6 +1430,19 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         throw new IModelError(error, `updating model id=${props.id}`, Logger.logWarning, loggerCategory);
 
       jsClass.onUpdated(props, this._iModel);
+    }
+
+    /** Mark the geometry of  [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
+     * This is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
+     * [[GeometricElement]]s that reference those definition elements in their geometry streams.
+     * @note This will throw IModelError with [IModelStatus.VersionTooOld]($bentleyjs-core) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
+     * @throws IModelError if unable to update the geometry guid.
+     * @beta
+     */
+    public updateGeometryGuid(modelId: Id64String): void {
+      const error = this._iModel.nativeDb.updateModelGeometryGuid(modelId);
+      if (error !== IModelStatus.Success)
+        throw new IModelError(error, `updating model id=${modelId}`, Logger.logWarning, loggerCategory);
     }
 
     /** Delete one or more existing models.
