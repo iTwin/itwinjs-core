@@ -15,7 +15,7 @@ import { CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interface
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
 
-/** A class used to both define the specifications for formatting a quantity values and the methods to do the formatting.
+/** A class used to define the specifications for formatting quantity values. This class is typically loaded by reading [[FormatProps]].
  * @beta
  */
 export class Format {

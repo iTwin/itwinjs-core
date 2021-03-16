@@ -14,6 +14,7 @@ import { Formatter } from "./Formatter";
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
 
 /** A class that contains both formatting information and the conversion factors necessary to convert from an input unit to the units specified in the format.
+ * Once created the FormatterSpec will be able to format quantity values with synchronous calls.
  * @beta
  */
 export class FormatterSpec {

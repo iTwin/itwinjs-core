@@ -6,7 +6,7 @@
  * @module Quantity
  */
 
-/** This interface defines the persistence format for defining the format of quantity values.
+/** This interface defines the persistence format for describing the formatting of quantity values.
  * @beta
  */
 export interface FormatProps {
