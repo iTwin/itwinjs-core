@@ -14,6 +14,7 @@ import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { ToolAdmin } from "../imodeljs-frontend";
 import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
@@ -31,6 +32,7 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
+import { RealityMeshGeometry } from "./webgl/RealityMesh";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh

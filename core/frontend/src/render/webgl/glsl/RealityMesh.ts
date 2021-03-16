@@ -15,8 +15,9 @@ import { System } from "../System";
 import { FeatureMode, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
-import { addUInt32s } from "./Common";
+import { addShaderFlags, addUInt32s } from "./Common";
 import { unquantize2d } from "./Decode";
+import { addFeatureSymbology, FeatureSymbologyOptions } from "./FeatureSymbology";
 import { addColorPlanarClassifier } from "./PlanarClassification";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addClassificationTranslucencyDiscard, octDecodeNormal } from "./Surface";
@@ -56,21 +57,6 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params) {
 
 const computeTexCoord = "return unquantize2d(a_uvParam, u_qTexCoordParams);";
 const overrideFeatureId = "return addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0;";
-
-function createBuilder(shadowable: IsShadowable): ProgramBuilder {
-  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false));
-  const vert = builder.vert;
-  vert.set(VertexShaderComponent.ComputePosition, computePosition);
-  addModelViewProjectionMatrix(vert);
-
-  if (shadowable === IsShadowable.Yes)
-    addSolarShadowMap(builder, true);
-
-  const frag = builder.frag;
-  frag.addGlobal("featureIncrement", VariableType.Float, "0.0");
-  frag.set(FragmentShaderComponent.OverrideFeatureId, overrideFeatureId);
-  return builder;
-}
 
 function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
   builder.vert.addFunction(unquantize2d);
@@ -123,14 +109,23 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
 }
 
 /** @internal */
-export default function createRealityMeshBuilder(flags: TechniqueFlags, _featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
-  const builder = createBuilder(flags.isShadowable);
+export default function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder {
+  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false));
+  const vert = builder.vert;
+  vert.set(VertexShaderComponent.ComputePosition, computePosition);
+  addModelViewProjectionMatrix(vert);
+
+  if (flags.isShadowable === IsShadowable.Yes)
+    addSolarShadowMap(builder, true);
+
   const frag = builder.frag;
+  frag.addGlobal("featureIncrement", VariableType.Float, "0.0");
+  frag.set(FragmentShaderComponent.OverrideFeatureId, overrideFeatureId);
   const applyTextureStrings = [];
   let textureCount = System.instance.maxRealityImageryLayers;
   let gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
   const caps = System.instance.capabilities;
-  if (Math.min(caps.maxFragTextureUnits, caps.maxVertTextureUnits) < 16 && IsThematic.Yes === thematic) {
+  if (Math.min(caps.maxFragTextureUnits, caps.maxVertTextureUnits) < 16 && IsThematic.Yes === flags.isThematic) {
     textureCount--; // steal the last bg map layer texture for thematic gradient (just when thematic display is applied)
     gradientTextureUnit = -1; // is dependent on drawing mode so will set later
   }
@@ -148,9 +143,19 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags, _feature
   if (doDiscard)
       discard;
 
-  col.a *= u_terrainTransparency;
+  col.rgb = mix(col.rgb, mix(col.rgb, v_color.rgb, .5), step(0.0, v_color.r));
+  col.a = mix(col.a, v_color.a * col.a, step(0.0, v_color.a));
   return col;
 `;
+  const feat = flags.featureMode;
+  const opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
+
+  if (feat === FeatureMode.Overrides)
+    addShaderFlags(builder);
+
+  addFeatureSymbology(builder, feat, opts);
+  builder.addVarying("v_color", VariableType.Vec4);
+  vert.set(VertexShaderComponent.ComputeBaseColor, "return vec4(-1.0, -1.0, -1.0, -1.0);");
 
   frag.addFunction(applyTexture);
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
@@ -163,18 +168,14 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags, _feature
     });
   });
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
-  builder.frag.addUniform("u_terrainTransparency", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_terrainTransparency", (uniform, params) => {
-      uniform.setUniform1f(1.0 - params.target.terrainTransparency);
-    });
-  });
+
   addTextures(builder, textureCount);
   if (flags.isClassified) {
-    addColorPlanarClassifier(builder, true /* Transparency? */, thematic);
+    addColorPlanarClassifier(builder, true /* Transparency? */, flags.isThematic);
     addClassificationTranslucencyDiscard(builder);
   }
 
-  if (IsThematic.Yes === thematic) {
+  if (IsThematic.Yes === flags.isThematic) {
     addNormalMatrix(builder.vert);
     builder.vert.addFunction(octDecodeNormal);
     builder.vert.addGlobal("g_hillshadeIndex", VariableType.Float);

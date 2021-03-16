@@ -11,7 +11,7 @@ import {
   Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
 } from "@bentley/geometry-core";
 import {
-  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
+  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
   TerrainProviderName,
 } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
@@ -696,6 +696,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (this._planarClipMask && this._planarClipMask.settings.isValid)
       context.addPlanarClassifier(tree.modelId, undefined, this._planarClipMask);
 
+    this._symbologyOverrides.overrideModel(tree.modelId, FeatureAppearance.fromJSON({ transparency: this.settings.transparencyOverride }));
     const args = this.createDrawArgs(context);
     if (undefined !== args)
       tree.draw(args);

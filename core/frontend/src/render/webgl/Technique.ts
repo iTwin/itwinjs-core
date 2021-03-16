@@ -8,12 +8,14 @@
 
 import { assert, dispose, using } from "@bentley/bentleyjs-core";
 import { WebGLContext } from "@bentley/webgl-compatibility";
+import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
 import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
+import { createCombine3TexturesProgram } from "./glsl/Combine3Textures";
 import { createCombineTexturesProgram } from "./glsl/CombineTextures";
 import { addEyeSpace, addFrustum, addShaderFlags } from "./glsl/Common";
 import { createCompositeProgram } from "./glsl/Composite";
@@ -32,15 +34,14 @@ import { addUnlitMonochrome } from "./glsl/Monochrome";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
+import createRealityMeshBuilder from "./glsl/RealityMesh";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
-import createRealityMeshBuilder from "./glsl/RealityMesh";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { RenderPass } from "./RenderFlags";
 import { ProgramBuilder } from "./ShaderBuilder";
-import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
 import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
@@ -48,7 +49,6 @@ import {
   FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, TechniqueFlags,
 } from "./TechniqueFlags";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
-import { createCombine3TexturesProgram } from "./glsl/Combine3Textures";
 
 /** Defines a rendering technique implemented using one or more shader programs.
  * @internal
@@ -639,7 +639,7 @@ class PointCloudTechnique extends VariedTechnique {
 }
 
 class RealityMeshTechnique extends VariedTechnique {
-  private static readonly _numVariants = 32;
+  private static readonly _numVariants = 48;
 
   public constructor(gl: WebGLRenderingContext) {
     super(RealityMeshTechnique._numVariants);
@@ -648,14 +648,12 @@ class RealityMeshTechnique extends VariedTechnique {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
           for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
             const flags = scratchTechniqueFlags;
-            const realityMeshFeatureModes = [FeatureMode.None, FeatureMode.Pick];
-            for (const featureMode of realityMeshFeatureModes) {
+            for (const featureMode of featureModes) {
               flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
               flags.isClassified = iClassified;
               flags.isTranslucent = 1 === iTranslucent;
-              const builder = createRealityMeshBuilder(flags, featureMode, thematic);
-              if (FeatureMode.Pick === featureMode)
-                addUniformFeatureSymbology(builder, false);
+              const builder = createRealityMeshBuilder(flags);
+
               if (flags.isTranslucent) {
                 addShaderFlags(builder);
                 addTranslucency(builder);
@@ -681,10 +679,9 @@ class RealityMeshTechnique extends VariedTechnique {
       ndx += 2;
     if (flags.isTranslucent)
       ndx += 4;
-    if (flags.featureMode !== FeatureMode.None)
-      ndx += 8;
+    ndx += 8 * flags.featureMode;
     if (flags.isThematic)
-      ndx += 16;
+      ndx += 24;
     return ndx;
   }
 }
