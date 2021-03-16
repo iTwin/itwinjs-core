@@ -15,14 +15,14 @@ export class BadUnit implements UnitProps {
     // (undocumented)
     name: string;
     // (undocumented)
-    system: string;
+    phenomenon: string;
     // (undocumented)
-    unitFamily: string;
+    system: string;
 }
 
 // @beta
 export class BasicUnit implements UnitProps {
-    constructor(name: string, label: string, unitFamily: string, alternateLabels?: string[], system?: string);
+    constructor(name: string, label: string, phenomenon: string, alternateLabels?: string[], system?: string);
     // (undocumented)
     alternateLabels?: string[];
     // (undocumented)
@@ -32,9 +32,9 @@ export class BasicUnit implements UnitProps {
     // (undocumented)
     name: string;
     // (undocumented)
-    system: string;
+    phenomenon: string;
     // (undocumented)
-    unitFamily: string;
+    system: string;
 }
 
 // @beta
@@ -475,20 +475,20 @@ export interface UnitProps {
     readonly isValid: boolean;
     readonly label: string;
     readonly name: string;
+    readonly phenomenon: string;
     readonly system: string;
-    readonly unitFamily: string;
 }
 
 // @beta
 export interface UnitsProvider {
     // (undocumented)
-    findUnit(unitLabel: string, unitFamily?: string, unitSystem?: string): Promise<UnitProps>;
+    findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
     // (undocumented)
-    getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
+    getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
 }
 
 

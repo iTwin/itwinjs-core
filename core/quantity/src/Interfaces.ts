@@ -15,8 +15,8 @@ export interface UnitProps {
   readonly name: string;
   /** Default label for unit. */
   readonly label: string;
-  /** Unique name of unit family, in the ECMetaData world this is equivalent to Phenomenon. Example family names include 'Units.LENGTH', 'Units.AREA', and 'Units.VOLUME' */
-  readonly unitFamily: string;
+  /** Unique name of unit phenomenon. Example phenomenon names include 'Units.LENGTH', 'Units.AREA', and 'Units.VOLUME' */
+  readonly phenomenon: string;
   /** This is set to true if the Unit is known by the UnitsProvider. */
   readonly isValid: boolean;
   /** Optionally defined set of unit labels that can be used to represent the unit. This is helpful when parsing quantity value strings */
@@ -72,8 +72,8 @@ export interface PotentialParseUnit {
  * @beta
  */
 export interface UnitsProvider {
-  findUnit(unitLabel: string, unitFamily?: string, unitSystem?: string): Promise<UnitProps>;
-  getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
+  findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
+  getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
   findUnitByName(unitName: string): Promise<UnitProps>;
   getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
 }

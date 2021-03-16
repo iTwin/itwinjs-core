@@ -7156,7 +7156,7 @@ export class QuantityFormatter implements UnitsProvider {
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
     // (undocumented)
-    findUnit(unitLabel: string, unitFamily?: string, unitSystem?: string): Promise<UnitProps>;
+    findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
@@ -7175,7 +7175,7 @@ export class QuantityFormatter implements UnitsProvider {
     getQuantityDefiniton(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     // (undocumented)
-    getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
+    getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     // (undocumented)
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;

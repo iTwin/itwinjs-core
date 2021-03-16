@@ -14,16 +14,16 @@ import { UnitProps } from "./Interfaces";
 export class BasicUnit implements UnitProps {
   public name = "";
   public label = "";
-  public unitFamily = "";
+  public phenomenon = "";
   public isValid = false;
   public alternateLabels?: string[];
   public system: string = "unknown";
 
-  constructor(name: string, label: string, unitFamily: string, alternateLabels?: string[], system?: string) {
-    if (name && name.length > 0 && label && label.length > 0 && unitFamily && unitFamily.length > 0) {
+  constructor(name: string, label: string, phenomenon: string, alternateLabels?: string[], system?: string) {
+    if (name && name.length > 0 && label && label.length > 0 && phenomenon && phenomenon.length > 0) {
       this.name = name;
       this.label = label;
-      this.unitFamily = unitFamily;
+      this.phenomenon = phenomenon;
       this.alternateLabels = alternateLabels;
       this.isValid = true;
       if (system)
@@ -38,7 +38,7 @@ export class BasicUnit implements UnitProps {
 export class BadUnit implements UnitProps {
   public name = "";
   public label = "";
-  public unitFamily = "";
+  public phenomenon = "";
   public isValid = false;
   public system = "unknown";
 }

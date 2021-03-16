@@ -813,12 +813,12 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   // keep following to maintain existing API of implementing UnitsProvider
-  public async findUnit(unitLabel: string, unitFamily?: string, unitSystem?: string): Promise<UnitProps> {
-    return this._unitsProvider.findUnit(unitLabel, unitFamily, unitSystem);
+  public async findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
+    return this._unitsProvider.findUnit(unitLabel, phenomenon, unitSystem);
   }
 
-  public async getUnitsByFamily(unitFamily: string): Promise<UnitProps[]> {
-    return this._unitsProvider.getUnitsByFamily(unitFamily);
+  public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
+    return this._unitsProvider.getUnitsByFamily(phenomenon);
   }
 
   public async findUnitByName(unitName: string): Promise<UnitProps> {

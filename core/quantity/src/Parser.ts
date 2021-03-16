@@ -329,11 +329,11 @@ export class Parser {
     }
 
     // now try to find a unit from the same family and system
-    let foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.unitFamily : undefined, defaultUnit ? defaultUnit.system : undefined);
+    let foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.phenomenon : undefined, defaultUnit ? defaultUnit.system : undefined);
 
     // if nothing found yet just limit to family
     if (!foundUnit.isValid && defaultUnit)
-      foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.unitFamily : undefined);
+      foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.phenomenon : undefined);
     return foundUnit;
   }
 
@@ -585,7 +585,7 @@ export class Parser {
   public static async createUnitConversionSpecsForUnit(unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<UnitConversionSpec[]> {
     const unitConversionSpecs: UnitConversionSpec[] = [];
 
-    const familyUnits = await unitsProvider.getUnitsByFamily(outUnit.unitFamily);
+    const familyUnits = await unitsProvider.getUnitsByFamily(outUnit.phenomenon);
     for (const unit of familyUnits) {
       const conversion = await unitsProvider.getConversion(unit, outUnit);
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];
