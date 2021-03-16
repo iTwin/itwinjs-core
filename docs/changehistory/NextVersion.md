@@ -54,6 +54,10 @@ The `QuantityFormatSettingsPanel` is marked as alpha in this release and is subj
 
 A class that implements the interface [UnitFormattingSettingsProvider]($imodeljs-frontend) can now be registered with the [QuantityFormatter]($imodeljs-frontend). This class will be informed when overrides are set in the QuantityFormatter so the provider can persist the overrides. The provider will also provide these persisted overrides back to the QuantityFormatter on events that the provider is monitoring. The abstract class [BaseUnitFormattingSettingsProvider]($imodeljs-frontend) supports monitoring iModelConnection changes allowing formatting overrides to be stored and retrieved per iModel. The [LocalUnitFormatProvider]($imodeljs-frontend) class provides the ability to store/retrieve formatting overrides to/from local storage.
 
+## @bentley/imodeljs-quantity package
+
+The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
+
 ## Breaking Api Changes
 
 ### @bentley/ui-abstract package
