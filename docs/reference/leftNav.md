@@ -9,6 +9,7 @@ packageClassification:  [
          "imodeljs-backend",
          "imodeljs-markup",
          "imodeljs-i18n",
+         "imodeljs-quantity",
          "backend-itwin-client",
          "bentleyjs-core",
          "ecschema-metadata",

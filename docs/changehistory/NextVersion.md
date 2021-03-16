@@ -100,7 +100,7 @@ with:
 
 #### UnitProps property name change
 
-The interface [UnitProps]($imodeljs-quantity) property `unitFamily` has been renamed to `phenomenon` to be consistent with naming in `ecschema-metadata` package.
+The interface [UnitProps]($quantity) property `unitFamily` has been renamed to `phenomenon` to be consistent with naming in `ecschema-metadata` package.
 
 #### Tile request channels
 
