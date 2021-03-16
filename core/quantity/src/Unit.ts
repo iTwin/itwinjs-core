@@ -2,10 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
+
 import { UnitProps } from "./Interfaces";
 
 /** This class provides basic implementation of UnitProps interface.
- * @alpha
+ * @beta
  */
 export class BasicUnit implements UnitProps {
   public name = "";
@@ -29,7 +33,7 @@ export class BasicUnit implements UnitProps {
 }
 
 /** This class is a convenience class that can be returned when a valid Unit cannot be determined.
- * @alpha
+ * @beta
  */
 export class BadUnit implements UnitProps {
   public name = "";

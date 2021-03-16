@@ -2,9 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
+
 /** This interface provides basic information about a Unit that is return from a UnitProvider. This info
  * uniquely identifies a unit by its name.
- * @alpha
+ * @beta
  */
 export interface UnitProps {
   /** Unique name for unit. */
@@ -22,7 +26,7 @@ export interface UnitProps {
 }
 
 /** This interface defines the required properties of a Quantity.
- * @alpha
+ * @beta
  */
 export interface QuantityProps {
   readonly magnitude: number;
@@ -31,7 +35,7 @@ export interface QuantityProps {
 }
 
 /** Interface that defines how to convert between a specific unit an another in synchronous formatting or parsing processing.
- * @alpha
+ * @beta
  */
 export interface UnitConversionSpec {
   /** Unit name that was used to locate the unit by the Unit Provider */
@@ -48,7 +52,7 @@ export interface UnitConversionSpec {
 
 /** This interface defines the properties required to convert a quantity value from one unit to another such as from meters to feet
  * or from Celsius to Fahrenheit.
- * @alpha
+ * @beta
  */
 export interface UnitConversion {
   factor: number;
@@ -56,7 +60,7 @@ export interface UnitConversion {
 }
 
 /** Interface that defines potential parse units that may be found in user's string input of a quantity value.
- * @alpha
+ * @beta
  */
 export interface PotentialParseUnit {
   unitName: string;
@@ -65,7 +69,7 @@ export interface PotentialParseUnit {
 
 /** This interface is implemented by the class that is responsible for locating units by name or label and providing conversion values between units.
  * The methods to be implemented are async allowing the UnitsProvider to query the backend when necessary to look up unit definition and conversion rules.
- * @alpha
+ * @beta
  */
 export interface UnitsProvider {
   findUnit(unitLabel: string, unitFamily?: string, unitSystem?: string): Promise<UnitProps>;

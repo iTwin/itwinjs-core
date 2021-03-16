@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Utils
+ * @module QuantityFormatting
  */
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";

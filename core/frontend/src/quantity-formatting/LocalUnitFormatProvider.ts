@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Utils
+ * @module QuantityFormatting
  */
 
 import { OverrideFormatEntry, QuantityFormatter, QuantityTypeKey, UnitSystemKey } from "./QuantityFormatter";
@@ -13,7 +13,7 @@ import { BaseUnitFormattingSettingsProvider } from "./BaseUnitFormattingSettings
  *  @beta
  */
 export class LocalUnitFormatProvider extends BaseUnitFormattingSettingsProvider {
-  /** if `maintainOverridesPerIModel` is true the base class will set up listeners to monitor active iModel
+  /** If `maintainOverridesPerIModel` is true, the base class will set up listeners to monitor active iModel
    *  changes so the overrides for the QuantityFormatter properly match the overrides set up by the user. */
   constructor(quantityFormatter: QuantityFormatter, maintainOverridesPerIModel?: boolean) {
     super (quantityFormatter, maintainOverridesPerIModel);

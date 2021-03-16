@@ -211,6 +211,10 @@ export * from "./LocalhostIpcApp";
  * Classes for Feature Tracking classification.
  */
 /**
+ * @docs-group-description QuantityFormatting
+ * Classes for formatting and parsing quantity values.
+ */
+/**
  * @docs-group-description Tiles
  * Classes representing graphics as [hierarchical 3d tiles](https://github.com/CesiumGS/3d-tiles).
  */

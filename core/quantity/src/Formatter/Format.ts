@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
+
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
@@ -12,7 +16,7 @@ import { CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interface
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
 
 /** A class used to both define the specifications for formatting a quantity values and the methods to do the formatting.
- * @alpha
+ * @beta
  */
 export class Format {
   private _name = "";

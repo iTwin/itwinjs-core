@@ -2,12 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
 
 import { QuantityProps, UnitConversion, UnitProps } from "./Interfaces";
 
 /** The Quantity class is convenient container to specify both the magnitude and unit of a quantity. This class is commonly
  * returned as the result of parsing a string that represents a quantity.
- * @alpha
+ * @beta
  */
 export class Quantity implements QuantityProps {
   protected _magnitude: number = 0.0;
