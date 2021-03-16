@@ -44,7 +44,16 @@ export interface TxnChangedEntities {
 
 type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
 
+/** Strictly for tests. @internal */
+export function setMaxEntitiesPerEvent(max: number): number {
+  const prevMax = ChangedEntitiesProc.maxPerEvent;
+  ChangedEntitiesProc.maxPerEvent = max;
+  return prevMax;
+}
+
 class ChangedEntitiesProc implements TxnChangedEntities {
+  public static maxPerEvent = 1000;
+
   public inserted = new OrderedId64Array();
   public deleted = new OrderedId64Array();
   public updated = new OrderedId64Array();
@@ -66,7 +75,9 @@ class ChangedEntitiesProc implements TxnChangedEntities {
     }
   }
 
-  public static process(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged", maxSize = 1000) {
+  public static process(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+    const maxSize = ChangedEntitiesProc.maxPerEvent;
+
     const changes = new ChangedEntitiesProc();
     const primaryColumn = "notifyElementsChanged" === evtName ? "ElementId" : "ModelId";
     const tableName = "notifyElementsChanged" === evtName ? "Elements" : "Models";

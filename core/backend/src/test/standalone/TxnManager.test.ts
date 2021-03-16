@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, DbResult, Id64, IModelStatus, OpenMode, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, DbResult, Guid, Id64, IModelStatus, OpenMode, OrderedId64Array } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, UpgradeOptions,
@@ -337,27 +337,35 @@ describe("TxnManager", () => {
     public readonly deleted = new OrderedId64Array();
     public numValidates = 0;
     public numApplyChanges = 0;
+    private readonly _cleanup: Array<() => void> = [];
 
     public constructor(mgr: TxnManager) {
-      mgr.onEndValidation.addListener(() => {
+      this._cleanup.push(mgr.onEndValidation.addListener(() => {
         ++this.numValidates;
-      });
+      }));
 
-      mgr.onCommit.addListener(() => {
+      this._cleanup.push(mgr.onCommit.addListener(() => {
         this.inserted.clear();
         this.updated.clear();
         this.deleted.clear();
-      });
+      }));
 
       // ###TODO onEndApplyChanges
     }
 
+    public dispose(): void {
+      for (const cleanup of this._cleanup)
+        cleanup();
+
+      this._cleanup.length = 0
+    }
+
     public listen(evt: BeEvent<(changes: TxnChangedEntities) => void>): void {
-      evt.addListener((changes) => {
+      this._cleanup.push(evt.addListener((changes) => {
         this.copyArray(changes, "inserted");
         this.copyArray(changes, "updated");
         this.copyArray(changes, "deleted");
-      });
+      }));
     }
 
     private copyArray(changes: TxnChangedEntities, propName: "inserted" | "updated" | "deleted"): void {
@@ -417,15 +425,49 @@ describe("TxnManager", () => {
     accum.expectChanges({ deleted: [ id1, id2 ] });
 
     // ###TODO undo/redo
+
+    accum.dispose();
   });
 
   it("dispatches events when models change", () => {
+    const accum = new EventAccumulator(imodel.txns);
+    accum.listen(imodel.txns.onModelsChanged);
+
+    const existingModelId = props.model;
+    const existingModel = imodel.models.getModel<PhysicalModel>(existingModelId);
+    const newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
+    imodel.saveChanges("1 insert");
+    accum.expectNumValidations(1);
+    accum.expectChanges({ inserted: [ newModelId ] });
+
+    const newModel = imodel.models.getModel<PhysicalModel>(newModelId);
+    const newModelProps = newModel.toJSON();
+    newModelProps.isNotSpatiallyLocated = newModel.isSpatiallyLocated;
+    imodel.models.updateModel(newModelProps);
+    imodel.models.updateGeometryGuid(existingModelId);
+    imodel.saveChanges("1 update");
+    accum.expectNumValidations(2);
+    accum.expectChanges({ updated: [ newModelId ] });
+
+    imodel.elements.insertElement(props);
+    imodel.saveChanges("insert 1 geometric element");
+    accum.expectNumValidations(2);
+    accum.expectChanges({ });
+
+    newModel.delete();
+    imodel.saveChanges("1 delete");
+    accum.expectNumValidations(3);
+    accum.expectChanges({ deleted: [ newModelId ] });
+
+    // ###TODO undo/redo
+
+    accum.dispose();
   });
 
   it("dispatches events when geometry guids change", () => {
   });
 
-  it("dispatches events in chunks", () => {
+  it("dispatches events in batches", () => {
   });
 
   it("Element drives element events", async () => {
