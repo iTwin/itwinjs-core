@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Id64, Logger } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
-  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, IModelDb, IModelTransformer, IModelTransformOptions, PhysicalModel,
+  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions, PhysicalModel,
   PhysicalPartition, Relationship, SubCategory,
 } from "@bentley/imodeljs-backend";
 import { IModel } from "@bentley/imodeljs-common";
@@ -15,6 +15,7 @@ export const progressLoggerCategory = "Progress";
 export interface TransformerOptions extends IModelTransformOptions {
   simplifyElementGeometry?: boolean;
   combinePhysicalModels?: boolean;
+  deleteUnusedGeometryParts?: boolean;
   excludeSubCategories?: string[];
 }
 
@@ -43,6 +44,10 @@ export class Transformer extends IModelTransformer {
     targetDb.saveChanges("processSchemas");
     await transformer.processAll();
     targetDb.saveChanges("processAll");
+    if (options?.deleteUnusedGeometryParts) {
+      transformer.deleteUnusedGeometryParts();
+      targetDb.saveChanges("deleteUnusedGeometryParts");
+    }
     transformer.dispose();
     transformer.logElapsedTime();
   }
@@ -124,5 +129,16 @@ export class Transformer extends IModelTransformer {
   private logElapsedTime(): void {
     const elapsedTimeMinutes: number = (new Date().valueOf() - this._startTime.valueOf()) / 60000.0;
     Logger.logInfo(progressLoggerCategory, `Elapsed time: ${Math.round(100 * elapsedTimeMinutes) / 100.0} minutes`);
+  }
+
+  private deleteUnusedGeometryParts(): void {
+    const geometryPartIds: Id64Array = [];
+    const sql = `SELECT ECInstanceId FROM ${GeometryPart.classFullName}`;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        geometryPartIds.push(statement.getValue(0).getId());
+      }
+    });
+    this.targetDb.elements.deleteDefinitionElements(geometryPartIds); // will delete only if unused
   }
 }
