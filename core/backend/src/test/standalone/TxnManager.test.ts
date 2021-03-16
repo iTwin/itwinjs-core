@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, DbResult, Id64, IModelStatus, OpenMode, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, DbResult, Id64, IModelStatus, OpenMode, OrderedId64Array } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, UpdateModelOptions,
+  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, TxnChangedEntities, TxnManager, UpdateModelOptions,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
@@ -235,6 +235,7 @@ describe("TxnManager", () => {
     models.updateModel(modelProps);
     model = models.getModel(modelId);
     assert.notEqual(guid3, model.geometryGuid, "update model should change guid");
+    imodel.saveChanges("update geometry guid");
 
     const lastMod = models.queryLastModifiedTime(modelId);
     await BeDuration.wait(300); // we're going to update the lastMod below, make sure it will be different by waiting .3 seconds
@@ -244,6 +245,7 @@ describe("TxnManager", () => {
     model = models.getModel(modelId);
     const lastMod2 = models.queryLastModifiedTime(modelId);
     assert.notEqual(lastMod, lastMod2);
+    imodel.saveChanges("update last mod");
 
     // Deleting a geometric element updates model's GeometryGuid; deleting any element updates model's LastMod.
     await BeDuration.wait(300); // for lastMod...
@@ -335,6 +337,103 @@ describe("TxnManager", () => {
     assert.equal(changes.deleted.length, 2);
     assert.isTrue(changes.deleted.contains(elementId1));
     assert.isTrue(changes.deleted.contains(elementId2));
+  });
+
+  class EventAccumulator {
+    public readonly inserted = new OrderedId64Array();
+    public readonly updated = new OrderedId64Array();
+    public readonly deleted = new OrderedId64Array();
+    public numValidates = 0;
+    public numApplyChanges = 0;
+
+    public constructor(mgr: TxnManager) {
+      mgr.onEndValidation.addListener(() => {
+        ++this.numValidates;
+      });
+
+      mgr.onCommit.addListener(() => {
+        this.inserted.clear();
+        this.updated.clear();
+        this.deleted.clear();
+      });
+
+      // ###TODO onEndApplyChanges
+    }
+
+    public listen(evt: BeEvent<(changes: TxnChangedEntities) => void>): void {
+      evt.addListener((changes) => {
+        this.copyArray(changes, "inserted");
+        this.copyArray(changes, "updated");
+        this.copyArray(changes, "deleted");
+      });
+    }
+
+    private copyArray(changes: TxnChangedEntities, propName: "inserted" | "updated" | "deleted"): void {
+      const source = changes[propName];
+      if (!source)
+        return;
+
+      const dest = this[propName];
+      for (const id of source)
+        dest.insert(id);
+    }
+
+    public expectNumValidations(expected: number) {
+      expect(this.numValidates).to.equal(expected);
+    }
+
+    public expectNumApplyChanges(expected: number) {
+      expect(this.numApplyChanges).to.equal(expected);
+    }
+
+    public expectChanges(expected: { inserted?: string[], updated?: string[], deleted?: string[] }): void {
+      this.expect(expected.inserted, "inserted");
+      this.expect(expected.updated, "updated");
+      this.expect(expected.deleted, "deleted");
+    }
+
+    private expect(expected: string[] | undefined, propName: "inserted" | "updated" | "deleted"): void {
+      expect(this[propName].ids).to.deep.equal(expected ?? []);
+    }
+  }
+
+  it("dispatches events when elements change", () => {
+    const accum = new EventAccumulator(imodel.txns);
+    accum.listen(imodel.txns.onElementsChanged);
+
+    const elements = imodel.elements;
+    const id1 = elements.insertElement(props);
+    const id2 = elements.insertElement(props);
+    imodel.saveChanges("2 inserts");
+    accum.expectNumValidations(1);
+    accum.expectChanges({ inserted: [ id1, id2 ] });
+
+    const elem1 = elements.getElement<TestPhysicalObject>(id1);
+    const elem2 = elements.getElement<TestPhysicalObject>(id2);
+    elem1.intProperty = 200;
+    elem1.update();
+    elem2.intProperty = 200;
+    elem2.update();
+    imodel.saveChanges("2 updates");
+    accum.expectNumValidations(2);
+    accum.expectChanges({ updated: [ id1, id2 ] });
+
+    elem1.delete();
+    elem2.delete();
+    imodel.saveChanges("2 deletes");
+    accum.expectNumValidations(3);
+    accum.expectChanges({ deleted: [ id1, id2 ] });
+
+    // ###TODO undo/redo
+  });
+
+  it("dispatches events when models change", () => {
+  });
+
+  it("dispatches events when geometry guids change", () => {
+  });
+
+  it("dispatches events in chunks", () => {
   });
 
   it("Element drives element events", async () => {
