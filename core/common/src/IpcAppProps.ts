@@ -12,6 +12,9 @@ import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./
 import { IModelVersionProps } from "./IModelVersion";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
+/** @public */
+export enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
+
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
  */
@@ -74,6 +77,11 @@ export interface TxnNotifications {
   notifyElementsChanged: (changes: ChangedEntities) => void;
   notifyModelsChanged: (changes: ChangedEntities) => void;
   notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
+  notifyCommit: () => void;
+  notifyCommitted: () => void;
+  notifyChangesApplied: () => void;
+  notifyBeforeUndoRedo: () => void;
+  notifyAfterUndoRedo: (action: TxnAction) => void;
 }
 
 /**

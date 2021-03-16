@@ -13,7 +13,9 @@ import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
 
-/** @public */
+/** @public
+ * @deprecated Use TxnAction from imodeljs-common
+ */
 export enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
 
 /** A string that identifies a Txn.
@@ -166,6 +168,36 @@ export class TxnManager {
   protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void {
     this.onModelGeometryChanged.raiseEvent(changes);
     IpcHost.notifyTxns(this._iModel, "notifyGeometryGuidsChanged", changes);
+  }
+
+  /** @internal */
+  protected _onCommit() {
+    this.onCommit.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyCommit");
+  }
+
+  /** @internal */
+  protected _onCommitted() {
+    this.onCommitted.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyCommitted");
+  }
+
+  /** @internal */
+  protected _onChangesApplied() {
+    // ###TODO ChangedEntitiesProc
+    this.onChangesApplied.raiseEvent();
+  }
+
+  /** @internal */
+  protected _onBeforeUndoRedo() {
+    // ###TODO ChangedEntitiesProc
+    this.onBeforeUndoRedo.raiseEvent();
+  }
+
+  /** @internal */
+  protected _onAfterUndoRedo(action: TxnAction) {
+    // ###TODO ChangedEntitiesProc
+    this.onAfterUndoRedo.raiseEvent(action);
   }
 
   /** Dependency handlers may call method this to report a validation error.
