@@ -77,8 +77,14 @@ class ChangedEntitiesProc implements TxnChangedEntities {
     }
   }
 
-  public static process(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
-    const maxSize = ChangedEntitiesProc.maxPerEvent;
+
+  public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
+    this.processChanges(iModel, mgr.onElementsChanged, "notifyElementsChanged");
+    this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
+  }
+
+  private static processChanges(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+    const maxSize = this.maxPerEvent;
 
     const changes = new ChangedEntitiesProc();
     const primaryColumn = "notifyElementsChanged" === evtName ? "ElementId" : "ModelId";
@@ -153,8 +159,7 @@ export class TxnManager {
    * @internal
    */
   protected _onEndValidate() {
-    ChangedEntitiesProc.process(this._iModel, this.onElementsChanged, "notifyElementsChanged");
-    ChangedEntitiesProc.process(this._iModel, this.onModelsChanged, "notifyModelsChanged");
+    ChangedEntitiesProc.process(this._iModel, this);
     this.onEndValidation.raiseEvent();
   }
 
@@ -184,20 +189,20 @@ export class TxnManager {
 
   /** @internal */
   protected _onChangesApplied() {
-    // ###TODO ChangedEntitiesProc
+    ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
   }
 
   /** @internal */
   protected _onBeforeUndoRedo() {
-    // ###TODO ChangedEntitiesProc
     this.onBeforeUndoRedo.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyBeforeUndoRedo");
   }
 
   /** @internal */
   protected _onAfterUndoRedo(action: TxnAction) {
-    // ###TODO ChangedEntitiesProc
     this.onAfterUndoRedo.raiseEvent(action);
+    IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", action);
   }
 
   /** Dependency handlers may call method this to report a validation error.
