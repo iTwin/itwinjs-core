@@ -9,7 +9,7 @@
 import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
-  ElementGeometryChange, ElementsChanged, IModelChangeNotifications, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
+  ElementGeometryChange, EditingSessionNotifications, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseConnection";
 import { IpcApp } from "./IpcApp";
@@ -36,8 +36,8 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
  * @note iModels with versions of the BisCore ECSchema prior to version 0.1.11 do not support interactive editing.
  * @beta
  */
-export class InteractiveEditingSession extends BriefcaseNotificationHandler implements IModelChangeNotifications {
-  public get briefcaseChannelName() { return IpcAppChannel.IModelChanges; }
+export class InteractiveEditingSession extends BriefcaseNotificationHandler implements EditingSessionNotifications {
+  public get briefcaseChannelName() { return IpcAppChannel.EditingSession; }
 
   /** Maps model Id to accumulated changes to geometric elements within the associated model. */
   private readonly _geometryChanges = new Map<Id64String, ModelChanges>();
@@ -63,11 +63,6 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
    * @see [[onEnding]] for an event raised just before the session ends.
    */
   public readonly onEnded = new BeEvent<(session: InteractiveEditingSession) => void>();
-
-  /** Event raised after Txn validation or changeset apply to indicate the set of changed elements.
-   * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
-   */
-  public readonly onElementChanges = new BeEvent<(changes: ElementsChanged, iModel: BriefcaseConnection) => void>();
 
   /** Event raised after geometric changes are written to the iModel. */
   public readonly onGeometryChanges = new BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>();
@@ -161,11 +156,6 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
       this._cleanup();
       this._cleanup = undefined;
     }
-  }
-
-  /** @internal */
-  public notifyElementsChanged(changed: ElementsChanged) {
-    this.onElementChanges.raiseEvent(changed, this.iModel);
   }
 
   /** @internal */

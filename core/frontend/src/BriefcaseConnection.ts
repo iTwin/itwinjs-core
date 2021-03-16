@@ -6,8 +6,11 @@
  * @module IModelConnection
  */
 
-import { Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError, IModelVersionProps, OpenBriefcaseProps, StandaloneOpenOptions } from "@bentley/imodeljs-common";
+import { BeEvent, Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import {
+  ElementsChanged, IModelConnectionProps, IModelError, IModelVersionProps, IpcAppChannel, ModelIdAndGeometryGuid, OpenBriefcaseProps, RemoveFunction,
+  StandaloneOpenOptions, TxnNotifications,
+} from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
 import { InteractiveEditingSession } from "./InteractiveEditingSession";
@@ -22,6 +25,55 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
   public get channelName() { return `${this.briefcaseChannelName}:${this._key}`; }
 }
 
+/** Dispatches events corresponding to local changes made to a [[BriefcaseConnection]] via [Txns]($docs/learning/InteractiveEditing.md).
+ * @see [[BriefcaseConnection.txns]].
+ * @beta
+ */
+export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNotifications {
+  private readonly _iModel: BriefcaseConnection;
+  private _cleanup?: RemoveFunction;
+
+  public get briefcaseChannelName() {
+    return IpcAppChannel.Txns;
+  }
+
+  /** Event raised after Txn validation or changeset application to indicate the set of changed elements.
+   * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
+   */
+  public readonly onElementsChanged = new BeEvent<(changes: Readonly<ElementsChanged>, iModel: BriefcaseConnection) => void>();
+
+  /** Event raised after the geometry within one or more [[GeometricModelState]]s is modified by application of a changeset or validation of a transaction.
+   * A model's geometry can change as a result of:
+   *  - Insertion or deletion of a geometric element within the model; or
+   *  - Modification of an existing element's geometric properties; or
+   *  - An explicit request to flag it as changed via [IModelDb.updateModel]($backend).
+   */
+  public readonly onModelGeometryChanged = new BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>, iModel: BriefcaseConnection) => void>();
+
+  /** @internal */
+  public constructor(iModel: BriefcaseConnection) {
+    super(iModel.key);
+    this._iModel = iModel;
+    this._cleanup = this.registerImpl();
+  }
+
+  /** @internal */
+  public dispose(): void {
+    if (this._cleanup) {
+      this._cleanup();
+      this._cleanup = undefined;
+    }
+  }
+
+  public notifyElementsChanged(changed: ElementsChanged): void {
+    this.onElementsChanged.raiseEvent(changed, this._iModel);
+  }
+
+  public notifyGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void {
+    this.onModelGeometryChanged.raiseEvent(changes, this._iModel);
+  }
+}
+
 /** A connection to an editable briefcase on the backend. This class uses [Ipc]($docs/learning/IpcInterface.md) to communicate
  * to the backend and may only be used by [[IpcApp]]s.
  * @public
@@ -29,12 +81,20 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
 export class BriefcaseConnection extends IModelConnection {
   private _editingSession?: InteractiveEditingSession;
   protected _isClosed?: boolean;
+  public readonly txns: BriefcaseTxns;
 
   public isBriefcaseConnection(): this is BriefcaseConnection { return true; }
+
   /** The Guid that identifies the *context* that owns this iModel. */
   public get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+
+  protected constructor(props: IModelConnectionProps) {
+    super(props);
+    this.txns = new BriefcaseTxns(this);
+  }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
   public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {

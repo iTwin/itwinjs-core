@@ -6,11 +6,11 @@
  * @module NativeApp
  */
 
-import { IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
-import { ElementsChanged, ModelGeometryChangesProps } from "./ModelGeometryChanges";
+import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
@@ -20,11 +20,38 @@ export interface TileTreeContentIds {
   contentIds: string[];
 }
 
+/** Specifies a [GeometricModel]($backend)'s Id and a Guid identifying the current state of the geometry contained within the model.
+ * @beta
+ */
+export interface ModelIdAndGeometryGuid {
+  /** The model's Id. */
+  id: Id64String;
+  /** A unique identifier for the current state of the model's geometry. If the guid differs between two revisions of the same iModel, it indicates that the geometry differs.
+   * This is primarily an implementation detail used to determine whether [Tile]($frontend)s produced for one revision are compatible with another revision.
+   */
+  guid: GuidString;
+}
+
+/** The set of elements that were changed for a Txn in an [interactive editing session]($docs/learning/InteractiveEditing.md)
+ * @note this object holds lists of ids of elements that were modified somehow during the Txn. Any modifications to [[ElementAspect]]($backend)s will
+ * cause its element to appear in these lists.
+ * @alpha
+ */
+export interface ElementsChanged {
+  /** The ids of elements that were inserted during this Txn */
+  inserted?: CompressedId64Set;
+  /** The ids of elements that were deleted during this Txn */
+  deleted?: CompressedId64Set;
+  /** The ids of elements that were modified during this Txn */
+  updated?: CompressedId64Set;
+}
+
 /** @internal */
 export enum IpcAppChannel {
   Functions = "ipc-app",
   AppNotify = "ipcApp-notify",
-  IModelChanges = "imodel-changes",
+  Txns = "txns",
+  EditingSession = "editing-session",
   PushPull = "push-pull",
 }
 
@@ -36,12 +63,21 @@ export interface IpcAppNotifications {
   notifyApp: () => void;
 }
 
-/**
- * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel
+/** Interface implemented by the frontend [NotificationHandler]($common) to be notified of changes to an iModel.
+ * @see [TxnManager]($backend) for the source of these events.
+ * @see [BriefcaseTxns]($frontend) for the frontend implementation.
  * @internal
  */
-export interface IModelChangeNotifications {
+export interface TxnNotifications {
   notifyElementsChanged: (changes: ElementsChanged) => void;
+  notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
+}
+
+/**
+ * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel during an [InteractiveEditingSession]($frontend).
+ * @internal
+ */
+export interface EditingSessionNotifications {
   notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
 

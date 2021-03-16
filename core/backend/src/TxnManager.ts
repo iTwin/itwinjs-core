@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { ElementsChanged, ModelGeometryChangesProps } from "@bentley/imodeljs-common";
+import { ElementsChanged, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
@@ -54,7 +54,7 @@ class ElementsChangedProc implements TxnElementsChanged {
   private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: BeEvent<(changes: TxnElementsChanged) => void>) {
     if (this._currSize > 0) {
       evt.raiseEvent(this); // send to backend listeners
-      IpcHost.notifyIModelChanges(iModel, "notifyElementsChanged", this.compressIds()); // now notify frontend listeners
+      IpcHost.notifyTxns(iModel, "notifyElementsChanged", this.compressIds()); // now notify frontend listeners
       this.inserted.clear();
       this.deleted.clear();
       this.updated.clear();
@@ -138,7 +138,13 @@ export class TxnManager {
   /** @internal */
   protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]) {
     this.onGeometryChanged.raiseEvent(modelProps);
-    IpcHost.notifyIModelChanges(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
+    IpcHost.notifyEditingSession(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
+  }
+
+  /** @internal */
+  protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void {
+    this.onModelGeometryChanged.raiseEvent(changes);
+    IpcHost.notifyTxns(this._iModel, "notifyGeometryGuidsChanged", changes);
   }
 
   /** Dependency handlers may call method this to report a validation error.
@@ -157,6 +163,14 @@ export class TxnManager {
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
   public readonly onElementsChanged = new BeEvent<(changes: TxnElementsChanged) => void>();
+
+  /** Event raised after the geometry within one or more [[GeometricModel]]s is modified by application of a changeset or validation of a transaction.
+   * A model's geometry can change as a result of:
+   *  - Insertion or deletion of a geometric element within the model; or
+   *  - Modification of an existing element's geometric properties; or
+   *  - An explicit request to flag it as changed via [IModelDb.updateModel]($backend).
+   */
+  public readonly onModelGeometryChanged = new BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>();
 
   public readonly onGeometryChanged = new BeEvent<(models: ModelGeometryChangesProps[]) => void>();
   /** Event raised before a commit operation is performed. Initiated by a call to [[IModelDb.saveChanges]] */
