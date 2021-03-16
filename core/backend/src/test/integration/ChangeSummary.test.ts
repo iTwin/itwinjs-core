@@ -81,9 +81,9 @@ describe("ChangeSummary (#integration)", () => {
 
     testContextId = await HubUtility.getTestContextId(requestContext);
     requestContext.enter();
-    readOnlyTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.readOnly);
+    readOnlyTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
     requestContext.enter();
-    readWriteTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.readWrite);
+    readWriteTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readWrite);
     requestContext.enter();
 
     await HubUtility.purgeAcquiredBriefcasesById(requestContext, readOnlyTestIModelId);

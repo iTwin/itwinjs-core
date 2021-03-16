@@ -21,7 +21,7 @@ describe.skip("ChangedElements (#integration)", () => {
 
     testContextId = await HubUtility.getTestContextId(requestContext);
     requestContext.enter();
-    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.readOnly);
+    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
     requestContext.enter();
 
     // Purge briefcases that are close to reaching the acquire limit

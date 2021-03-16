@@ -5,23 +5,23 @@
 import { assert, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { IModelError } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseIdValue, ChangeSetToken, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
+import { ChangeSetToken, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 
 /** Utility to work with test iModels in the iModelHub */
 export class HubUtility {
   public static logCategory = "HubUtility";
 
-  public static TestContextName = "iModelJsIntegrationTest";
-  public static TestIModelNames = {
+  public static testContextName = "iModelJsIntegrationTest";
+  public static testIModelNames = {
     noVersions: "NoVersionsTest",
     stadium: "Stadium Dataset 1",
     readOnly: "ReadOnlyTest",
-    readWrite: "ReadWriteTest"
+    readWrite: "ReadWriteTest",
   };
 
   private static contextId: GuidString | undefined = undefined;
@@ -30,7 +30,7 @@ export class HubUtility {
     requestContext.enter();
     if (undefined !== HubUtility.contextId)
       return HubUtility.contextId;
-    return await HubUtility.queryProjectIdByName(requestContext, HubUtility.TestContextName);
+    return HubUtility.queryProjectIdByName(requestContext, HubUtility.testContextName);
   }
 
   private static imodelCache = new Map<string, GuidString>();
@@ -611,7 +611,7 @@ export class HubUtility {
    * @returns the iModelId of the newly created iModel.
   */
   public static async recreateIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
-    let deleteIModel = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
+    const deleteIModel = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
     if (undefined !== deleteIModel)
       await IModelHost.iModelClient.iModels.delete(requestContext, contextId, deleteIModel.wsgId);
 

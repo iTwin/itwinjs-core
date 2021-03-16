@@ -72,7 +72,7 @@ describe("IModelWriteTest (#integration)", () => {
     (superRequestContext as any).activityId = "IModelWriteTest (#integration)";
 
     testContextId = await HubUtility.getTestContextId(managerRequestContext);
-    readOnlyTestIModelId = await HubUtility.getTestIModelId(managerRequestContext, HubUtility.TestIModelNames.readOnly);
+    readOnlyTestIModelId = await HubUtility.getTestIModelId(managerRequestContext, HubUtility.testIModelNames.readOnly);
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
 
     readWriteTestIModelId = await HubUtility.recreateIModel(managerRequestContext, testContextId, readWriteTestIModelName);
@@ -424,7 +424,7 @@ describe("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = HubUtility.generateUniqueName("ConcurrencyControlBulkModeTest");
-    let deleteIModel = await HubUtility.queryIModelByName(adminRequestContext, testContextId, iModelName);
+    const deleteIModel = await HubUtility.queryIModelByName(adminRequestContext, testContextId, iModelName);
     if (undefined !== deleteIModel)
       await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, deleteIModel.wsgId);
 
