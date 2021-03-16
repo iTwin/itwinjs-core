@@ -5,7 +5,7 @@
 import * as React from "react";
 import { IModelApp, MapLayerSettingsService, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { Button, ButtonType, Icon, Input, Listbox, ListboxItem, LoadingSpinner, Popup, SpinnerSize, WebFontIcon } from "@bentley/ui-core";
+import * as UiCore  from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { useSourceMapContext } from "./MapLayerManager";
 import { MapUrlDialog } from "./MapUrlDialog";
@@ -33,8 +33,13 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
   const [layerNameUnderCursor, setLayerNameUnderCursor] = React.useState<string | undefined>();
 
   // Make sure we close any active dialog when unloading
+  // 'isMounted' is used to prevent any async operation once the hook has been
+  // unloaded.  Otherwise we get a 'Can't perform a React state update on an unmounted component.' warning in the console.
+  const isMounted = React.useRef(false);
   React.useEffect(() => {
+    isMounted.current = true;
     return () => {
+      isMounted.current = false;
       ModalDialogManager.closeDialog();
     };
   }, []);
@@ -43,7 +48,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     setSourceFilterString(event.target.value);
   }, []);
 
-  const { sources, activeViewport, backgroundLayers, overlayLayers, mapTypesOptions } = useSourceMapContext();
+  const { loadingSources, sources, activeViewport, backgroundLayers, overlayLayers, mapTypesOptions } = useSourceMapContext();
   const contextId = activeViewport?.iModel?.contextId;
   const iModelId = activeViewport?.iModel?.iModelId;
 
@@ -104,19 +109,24 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
                     askForCredentialsOnly={true} />
                 );
               }
-
-              setLoading(false);
-              if (onLayerAttached) {
-                onLayerAttached();
+              if (isMounted) {
+                setLoading(false);
+                if (onLayerAttached) {
+                  onLayerAttached();
+                }
               }
 
             } else {
               const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerValidationFailed", { sourceUrl: mapLayerSettings.url });
               IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
-              setLoading(false);
+              if (isMounted) {
+                setLoading(false);
+              }
             }
           } catch (err) {
-            setLoading(false);
+            if (isMounted) {
+              setLoading(false);
+            }
             const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttachError", { error: err, sourceUrl: mapLayerSettings.url });
             IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
           }
@@ -206,20 +216,20 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 
   return (
     <div className="map-manager-header">
-      {loading && <LoadingSpinner size={SpinnerSize.Medium} message={loadingMapSources} />}
+      {(loading || loadingSources) && <UiCore.LoadingSpinner size={UiCore.SpinnerSize.Medium} message={loadingMapSources} />}
       <div className="map-manager-source-listbox-header">
-        <Input type="text" className="map-manager-source-list-filter"
+        <UiCore.Input type="text" className="map-manager-source-list-filter"
           placeholder={placeholderLabel}
           value={sourceFilterString}
           onChange={handleFilterTextChanged} />
-        <Button className="map-manager-add-source-button" buttonType={ButtonType.Hollow} title={addCustomLayerToolTip} onClick={handleAddNewMapSource}>
-          {addCustomLayerLabel}</Button>
+        <UiCore.Button className="map-manager-add-source-button" buttonType={UiCore.ButtonType.Hollow} title={addCustomLayerToolTip} onClick={handleAddNewMapSource}>
+          {addCustomLayerLabel}</UiCore.Button>
       </div>
       <div className="map-manager-sources">
-        <Listbox id="map-sources" className="map-manager-source-list" onKeyPress={handleKeypressOnSourceList} onListboxValueChange={onListboxValueChange} >
+        <UiCore.Listbox id="map-sources" className="map-manager-source-list" onKeyPress={handleKeypressOnSourceList} onListboxValueChange={onListboxValueChange} >
           {
             filteredOptions?.map((mapName) =>
-              <ListboxItem
+              <UiCore.ListboxItem
                 key={mapName}
                 className="map-source-list-entry"
                 value={mapName}
@@ -229,17 +239,17 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 
                 { // Display the delete icon only when the mouse over a specific item
                   // otherwise list feels cluttered.
-                  (layerNameUnderCursor &&  layerNameUnderCursor === mapName) &&
-                  <Button
+                  (!!contextId && !!iModelId && layerNameUnderCursor &&  layerNameUnderCursor === mapName) &&
+                  <UiCore.Button
                     className="map-source-delete-button"
                     title={removeLayerDefButtonTitle}
                     onClick={onItemRemoveButtonClicked}>
-                    <Icon iconSpec="icon-delete" />
-                  </Button> }
-              </ListboxItem>
+                    <UiCore.Icon iconSpec="icon-delete" />
+                  </UiCore.Button> }
+              </UiCore.ListboxItem>
             )
           }
-        </Listbox>
+        </UiCore.Listbox>
       </div>
     </div>
 
@@ -262,6 +272,7 @@ export interface AttachLayerPopupButtonProps {
 export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
   const [showAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Attach"));
   const [hideAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Close"));
+  const [addCustomLayerButtonLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AddCustomLayerButtonLabel"));
   const [popupOpen, setPopupOpen] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const panelRef =React.useRef<HTMLDivElement>(null);
@@ -323,7 +334,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
       button = (
         <button ref={buttonRef} className="map-manager-attach-layer-button" title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
           onClick={togglePopup}>
-          <WebFontIcon iconName="icon-add" />
+          <UiCore.WebFontIcon iconName="icon-add" />
         </button>
       );
     } else {
@@ -339,7 +350,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
       }
       button = (
         <button ref={buttonRef} className={typeClassName} title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
-          onClick={togglePopup}>Add Layer</button>
+          onClick={togglePopup}>{addCustomLayerButtonLabel}</button>
       );
     }
 
@@ -349,8 +360,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
   return (
     <>
       {renderButton()}
-      <Popup
-        className="map-sources-popup"
+      <UiCore.Popup
         isOpen={popupOpen}
         position={RelativePosition.BottomRight}
         onClose={handleClosePopup}
@@ -360,7 +370,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
         <div ref={panelRef} className="map-sources-popup-panel" >
           <AttachLayerPanel isOverlay={props.isOverlay} onLayerAttached={handleLayerAttached}/>
         </div>
-      </Popup >
+      </UiCore.Popup >
     </>
   );
 }

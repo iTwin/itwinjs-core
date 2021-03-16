@@ -449,11 +449,7 @@ button.map-manager-item-visibility {
 }
 
 .map-sources-delete-confirmation {
-  @include uicore-z-index(dialog-popup);
-  }
-
-.map-sources-popup {
-  @include uicore-z-index(dialog);
+   @include uicore-z-index(status-popup);
   }
 
 .map-sources-popup-panel {

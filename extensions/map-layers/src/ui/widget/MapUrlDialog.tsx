@@ -34,7 +34,7 @@ interface MapUrlDialogProps {
   layerToEdit?: MapLayerProps;
 
   // Dialog will disabled all fields except username/password, and
-  // will force user to provider
+  //  will force user to provider
   askForCredentialsOnly?: boolean;
 }
 
@@ -46,7 +46,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [dialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate(props.layerToEdit ? "mapLayers:CustomAttach.EditCustomLayer" : "mapLayers:CustomAttach.AttachCustomLayer"));
   const [typeLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Type"));
   const [nameLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Name"));
+  const [nameInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.NameInputPlaceHolder"));
   const [urlLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.URL"));
+  const [urlInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.NameInputPlaceHolder"));
   const [projectSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnProjectSettings"));
   const [modelSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnModelSettings"));
   const [missingCredentialsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MissingCredentials"));
@@ -306,9 +308,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             <span className="map-layer-source-label">{typeLabel}</span>
             <Select className="map-manager-base-select" options={mapTypes} value={mapType} disabled={props.askForCredentialsOnly} onChange={handleMapTypeSelection} />
             <span className="map-layer-source-label">{nameLabel}</span>
-            <Input placeholder="Enter Map Name" onChange={onNameChange} value={props.layerToEdit?.name || layerToEdit?.name} disabled={props.askForCredentialsOnly} />
+            <Input placeholder={nameInputPlaceHolder} onChange={onNameChange} value={props.layerToEdit?.name || layerToEdit?.name} disabled={props.askForCredentialsOnly} />
             <span className="map-layer-source-label">{urlLabel}</span>
-            <Input placeholder="Enter Map Source URL" onKeyPress={handleOnKeyDown} onChange={onUrlChange} value={props.layerToEdit?.url || layerToEdit?.url} disabled={props.askForCredentialsOnly} />
+            <Input placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} value={props.layerToEdit?.url || layerToEdit?.url} disabled={props.askForCredentialsOnly} />
             {isAuthSupported() &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>
