@@ -32,17 +32,19 @@ export interface ModelIdAndGeometryGuid {
   guid: GuidString;
 }
 
-/** The set of elements that were changed for a Txn in an [interactive editing session]($docs/learning/InteractiveEditing.md)
- * @note this object holds lists of ids of elements that were modified somehow during the Txn. Any modifications to [[ElementAspect]]($backend)s will
+/** The set of elements or models that were changed for a Txn in an [interactive editing session]($docs/learning/InteractiveEditing.md)
+ * @note this object holds lists of ids of elements or models that were modified somehow during the Txn. Any modifications to an [[ElementAspect]]($backend) will
  * cause its element to appear in these lists.
+ * @see [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend).
+ * @see [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend).
  * @alpha
  */
-export interface ElementsChanged {
-  /** The ids of elements that were inserted during this Txn */
+export interface ChangedEntities {
+  /** The ids of entities that were inserted during this Txn */
   inserted?: CompressedId64Set;
-  /** The ids of elements that were deleted during this Txn */
+  /** The ids of entities that were deleted during this Txn */
   deleted?: CompressedId64Set;
-  /** The ids of elements that were modified during this Txn */
+  /** The ids of entities that were modified during this Txn */
   updated?: CompressedId64Set;
 }
 
@@ -69,7 +71,8 @@ export interface IpcAppNotifications {
  * @internal
  */
 export interface TxnNotifications {
-  notifyElementsChanged: (changes: ElementsChanged) => void;
+  notifyElementsChanged: (changes: ChangedEntities) => void;
+  notifyModelsChanged: (changes: ChangedEntities) => void;
   notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
 }
 

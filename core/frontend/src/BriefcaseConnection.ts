@@ -8,7 +8,7 @@
 
 import { BeEvent, Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import {
-  ElementsChanged, IModelConnectionProps, IModelError, IModelVersionProps, IpcAppChannel, ModelIdAndGeometryGuid, OpenBriefcaseProps, RemoveFunction,
+  ChangedEntities, IModelConnectionProps, IModelError, IModelVersionProps, IpcAppChannel, ModelIdAndGeometryGuid, OpenBriefcaseProps, RemoveFunction,
   StandaloneOpenOptions, TxnNotifications,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
@@ -40,7 +40,12 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** Event raised after Txn validation or changeset application to indicate the set of changed elements.
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onElementsChanged = new BeEvent<(changes: Readonly<ElementsChanged>, iModel: BriefcaseConnection) => void>();
+  public readonly onElementsChanged = new BeEvent<(changes: Readonly<ChangedEntities>, iModel: BriefcaseConnection) => void>();
+
+  /** Event raised after Txn validation or changeset application to indicate the set of changed models.
+   * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
+   */
+  public readonly onModelsChanged = new BeEvent<(changes: Readonly<ChangedEntities>, iModel: BriefcaseConnection) => void>();
 
   /** Event raised after the geometry within one or more [[GeometricModelState]]s is modified by application of a changeset or validation of a transaction.
    * A model's geometry can change as a result of:
@@ -65,8 +70,12 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     }
   }
 
-  public notifyElementsChanged(changed: ElementsChanged): void {
+  public notifyElementsChanged(changed: ChangedEntities): void {
     this.onElementsChanged.raiseEvent(changed, this._iModel);
+  }
+
+  public notifyModelsChanged(changed: ChangedEntities): void {
+    this.onModelsChanged.raiseEvent(changed, this._iModel);
   }
 
   public notifyGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void {

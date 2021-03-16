@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { ElementsChanged, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
+import { ChangedEntities, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
@@ -36,34 +36,41 @@ export interface ValidationError {
 /**
  * @beta
  */
-export interface TxnElementsChanged {
+export interface TxnChangedEntities {
   inserted: OrderedId64Array;
   deleted: OrderedId64Array;
   updated: OrderedId64Array;
 }
 
-class ElementsChangedProc implements TxnElementsChanged {
+type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
+
+class ChangedEntitiesProc implements TxnChangedEntities {
   public inserted = new OrderedId64Array();
   public deleted = new OrderedId64Array();
   public updated = new OrderedId64Array();
   private _currSize = 0;
-  private compressIds(): ElementsChanged {
+
+  private compressIds(): ChangedEntities {
     const toCompressedIds = (idArray: OrderedId64Array) => idArray.isEmpty ? undefined : CompressedId64Set.compressIds(idArray);
     return { inserted: toCompressedIds(this.inserted), deleted: toCompressedIds(this.deleted), updated: toCompressedIds(this.updated) };
   }
-  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: BeEvent<(changes: TxnElementsChanged) => void>) {
+
+  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     if (this._currSize > 0) {
       evt.raiseEvent(this); // send to backend listeners
-      IpcHost.notifyTxns(iModel, "notifyElementsChanged", this.compressIds()); // now notify frontend listeners
+      IpcHost.notifyTxns(iModel, evtName, this.compressIds()); // now notify frontend listeners
       this.inserted.clear();
       this.deleted.clear();
       this.updated.clear();
       this._currSize = 0;
     }
   }
-  public static process(iModel: BriefcaseDb | StandaloneDb, changedEvent: BeEvent<(changes: TxnElementsChanged) => void>, maxSize = 1000) {
-    const changes = new ElementsChangedProc();
-    iModel.withPreparedSqliteStatement("SELECT ElementId,ChangeType FROM temp.txn_Elements", (sql: SqliteStatement) => {
+
+  public static process(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged", maxSize = 1000) {
+    const changes = new ChangedEntitiesProc();
+    const primaryColumn = "notifyElementsChanged" === evtName ? "ElementId" : "ModelId";
+    const tableName = "notifyElementsChanged" === evtName ? "Elements" : "Models";
+    iModel.withPreparedSqliteStatement(`SELECT ${primaryColumn},ChangeType FROM temp.txn_${tableName}`, (sql: SqliteStatement) => {
       const stmt = sql.stmt!;
       while (sql.step() === DbResult.BE_SQLITE_ROW) {
         const id = stmt.getValueId(0);
@@ -78,11 +85,13 @@ class ElementsChangedProc implements TxnElementsChanged {
             changes.deleted.insert(id);
             break;
         }
+
         if (++changes._currSize > maxSize)
-          changes.sendEvent(iModel, changedEvent);
+          changes.sendEvent(iModel, changedEvent, evtName);
       }
     });
-    changes.sendEvent(iModel, changedEvent);
+
+    changes.sendEvent(iModel, changedEvent, evtName);
   }
 }
 
@@ -131,7 +140,8 @@ export class TxnManager {
    * @internal
    */
   protected _onEndValidate() {
-    ElementsChangedProc.process(this._iModel, this.onElementsChanged);
+    ChangedEntitiesProc.process(this._iModel, this.onElementsChanged, "notifyElementsChanged");
+    ChangedEntitiesProc.process(this._iModel, this.onModelsChanged, "notifyModelsChanged");
     this.onEndValidation.raiseEvent();
   }
 
@@ -162,7 +172,13 @@ export class TxnManager {
    * The argument to the event holds the list of elements that were inserted, updated, and deleted.
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onElementsChanged = new BeEvent<(changes: TxnElementsChanged) => void>();
+  public readonly onElementsChanged = new BeEvent<(changes: TxnChangedEntities) => void>();
+
+  /** Called after validation completes from [[IModelDb.saveChanges]].
+   * The argument to the event holds the list of models that were inserted, updated, and deleted.
+   * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
+   */
+  public readonly onModelsChanged = new BeEvent<(changes: TxnChangedEntities) => void>();
 
   /** Event raised after the geometry within one or more [[GeometricModel]]s is modified by application of a changeset or validation of a transaction.
    * A model's geometry can change as a result of:
