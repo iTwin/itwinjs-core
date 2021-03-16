@@ -28,26 +28,8 @@
     "loading": "Loading..."
   },
   "settingsStage": {
-    "settings": "Settings",
-    "light": "Light",
-    "dark": "Dark",
-    "systemPreferred": "System preferred",
-    "themeTitle": "Theme",
-    "themeDescription": "Toggle the theme between light and dark",
-    "autoHideTitle": "Auto-Hide UI",
-    "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
-    "dragInteractionTitle": "Drag Interaction",
-    "dragInteractionDescription": "Toggle the toolbar interaction between click and drag",
-    "newUiTitle": "Use 2.0 Ui",
-    "newUiDescription": "Use new 2.0 UI layout",
-    "useProximityOpacityTitle": "Change Toolbar Opacity",
-    "useProximityOpacityDescription": "Change the toolbar opacity as the mouse gets closer or farther away",
-    "snapWidgetOpacityTitle": "Snap Widget Opacity",
-    "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close",
     "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
     "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
-    "widgetOpacityTitle": "Widget Opacity",
-    "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets"
   },
   "QuantityFormatModalFrontstage": {
     "QuantityFormatStage": "Quantity Format Overrides"

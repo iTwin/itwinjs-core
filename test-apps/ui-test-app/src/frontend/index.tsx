@@ -54,7 +54,7 @@ import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
 import { EditFrontstage } from "./appui/frontstages/editing/EditFrontstage";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
-import { AppSettingsProvider } from "./appui/uiproviders/AppSettingsProvider";
+import { AppSettingsTabsProvider } from "./appui/uiproviders/AppSettingsTabsProvider";
 import { AppUiSettings } from "./AppUiSettings";
 import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Properties Support
 import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
@@ -82,25 +82,17 @@ export enum SampleAppUiActionId {
   setTestProperty = "sampleapp:settestproperty",
   setAnimationViewId = "sampleapp:setAnimationViewId",
   setIsIModelLocal = "sampleapp:setisimodellocal",
-  toggleDragInteraction = "sampleapp:toggledraginteraction",
-  toggleFrameworkVersion = "sampleapp:toggleframeworkversion",
-  setDragInteraction = "sampleapp:setdraginteraction",
-  setFrameworkVersion = "sampleapp:setframeworkversion",
 }
 
 export interface SampleAppState {
   testProperty: string;
   animationViewId: string;
-  dragInteraction: boolean;
-  frameworkVersion: string;
   isIModelLocal: boolean;
 }
 
 const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
-  dragInteraction: true,
-  frameworkVersion: "1",
   isIModelLocal: false,
 };
 
@@ -109,10 +101,6 @@ export const SampleAppActions = {
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
   setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
-  toggleDragInteraction: () => createAction(SampleAppUiActionId.toggleDragInteraction),
-  toggleFrameworkVersion: () => createAction(SampleAppUiActionId.toggleFrameworkVersion),
-  setDragInteraction: (dragInteraction: boolean) => createAction(SampleAppUiActionId.setDragInteraction, dragInteraction),
-  setFrameworkVersion: (frameworkVersion: string) => createAction(SampleAppUiActionId.setFrameworkVersion, frameworkVersion),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -146,18 +134,6 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     }
     case SampleAppUiActionId.setIsIModelLocal: {
       return { ...state, isIModelLocal: action.payload };
-    }
-    case SampleAppUiActionId.toggleDragInteraction: {
-      return { ...state, dragInteraction: !state.dragInteraction };
-    }
-    case SampleAppUiActionId.toggleFrameworkVersion: {
-      return { ...state, frameworkVersion: state.frameworkVersion === "1" ? "2" : "1" };
-    }
-    case SampleAppUiActionId.setDragInteraction: {
-      return { ...state, dragInteraction: action.payload };
-    }
-    case SampleAppUiActionId.setFrameworkVersion: {
-      return { ...state, frameworkVersion: action.payload };
     }
   }
   return state;
@@ -519,7 +495,7 @@ export class SampleAppIModelApp {
   }
 
   public static getUiFrameworkProperty(): string {
-    return SampleAppIModelApp.store.getState().sampleAppState.frameworkVersion;
+    return SampleAppIModelApp.store.getState().frameworkState.configurableUiState.frameworkVersion;
   }
 
   public static saveAnimationViewId(value: string, immediateSync = false) {
@@ -563,11 +539,11 @@ function AppFrameworkVersionComponent(props: { frameworkVersion: string, childre
 }
 
 function mapDragInteractionStateToProps(state: RootState) {
-  return { dragInteraction: state.sampleAppState.dragInteraction };
+  return { dragInteraction: state.frameworkState.configurableUiState.dragInteraction };
 }
 
 function mapFrameworkVersionStateToProps(state: RootState) {
-  return { frameworkVersion: state.sampleAppState.frameworkVersion };
+  return { frameworkVersion: state.frameworkState.configurableUiState.frameworkVersion };
 }
 
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);

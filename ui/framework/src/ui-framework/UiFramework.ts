@@ -468,9 +468,20 @@ export class UiFramework {
   /** Returns the Ui Version.
    * @beta
    */
-  // istanbul ignore next
   public static get uiVersion(): string {
-    return UiFramework._uiVersion;
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion;
+  }
+
+  public static setUiVersion(version: string) {
+    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetFrameworkVersion, payload: version === "1"?"1":"2" });
+  }
+
+  public static get useDragInteraction(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.useDragInteraction : false;
+  }
+
+  public static setUseDragInteraction(useDragInteraction: boolean) {
+    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetDragInteraction, payload: useDragInteraction });
   }
 
   /** Send logging message to the telemetry system

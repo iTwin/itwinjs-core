@@ -21,6 +21,8 @@ export enum ConfigurableUiActionId {
   SetTheme = "configurableui:set_theme",
   SetToolPrompt = "configurableui:set_toolprompt",
   SetWidgetOpacity = "configurableui:set_widget_opacity",
+  SetDragInteraction = "configurableui:setdraginteraction",
+  SetFrameworkVersion = "configurableui:setframeworkversion",
 }
 
 /** The portion of state managed by the ConfigurableUiReducer.
@@ -31,6 +33,8 @@ export interface ConfigurableUiState {
   toolPrompt: string;
   theme: string;
   widgetOpacity: number;
+  useDragInteraction: boolean;
+  frameworkVersion: string;
 }
 
 /** used on first call of ConfigurableUiReducer */
@@ -39,6 +43,8 @@ const initialState: ConfigurableUiState = {
   toolPrompt: "",
   theme: SYSTEM_PREFERRED_COLOR_THEME,
   widgetOpacity: WIDGET_OPACITY_DEFAULT,
+  useDragInteraction: false,
+  frameworkVersion: "2",
 };
 
 /** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer.
@@ -55,6 +61,8 @@ export const ConfigurableUiActions = {   // eslint-disable-line @typescript-esli
   setWidgetOpacity:
     // istanbul ignore next
     (opacity: number) => createAction(ConfigurableUiActionId.SetWidgetOpacity, opacity),
+  setDragInteraction: (dragInteraction: boolean) => createAction(ConfigurableUiActionId.SetDragInteraction, dragInteraction),
+  setFrameworkVersion: (frameworkVersion: string) => createAction(ConfigurableUiActionId.SetFrameworkVersion, frameworkVersion),
 };
 
 /** Union of ConfigurableUi Redux actions
@@ -92,6 +100,12 @@ export function ConfigurableUiReducer(state: ConfigurableUiState = initialState,
       if (undefined !== _action.payload)
         outState = { ...state, widgetOpacity: _action.payload };
       break;
+    }
+    case ConfigurableUiActionId.SetDragInteraction: {
+      return { ...state, useDragInteraction: _action.payload };
+    }
+    case ConfigurableUiActionId.SetFrameworkVersion: {
+      return { ...state, frameworkVersion: _action.payload };
     }
   }
 
