@@ -440,6 +440,7 @@ describe("TxnManager", () => {
     accum.expectNumValidations(1);
     accum.expectChanges({ inserted: [ newModelId ] });
 
+    // NB: Updates to existing models never produce events. I don't think I want to change that as part of this PR.
     const newModel = imodel.models.getModel<PhysicalModel>(newModelId);
     const newModelProps = newModel.toJSON();
     newModelProps.isNotSpatiallyLocated = newModel.isSpatiallyLocated;
@@ -447,16 +448,16 @@ describe("TxnManager", () => {
     imodel.models.updateGeometryGuid(existingModelId);
     imodel.saveChanges("1 update");
     accum.expectNumValidations(2);
-    accum.expectChanges({ updated: [ newModelId ] });
+    accum.expectChanges({ updated: [ ] });
 
     imodel.elements.insertElement(props);
     imodel.saveChanges("insert 1 geometric element");
-    accum.expectNumValidations(2);
+    accum.expectNumValidations(3);
     accum.expectChanges({ });
 
     newModel.delete();
     imodel.saveChanges("1 delete");
-    accum.expectNumValidations(3);
+    accum.expectNumValidations(4);
     accum.expectChanges({ deleted: [ newModelId ] });
 
     // ###TODO undo/redo
@@ -465,6 +466,89 @@ describe("TxnManager", () => {
   });
 
   it("dispatches events when geometry guids change", () => {
+    const modelId = props.model;
+    const test = (func: (model: PhysicalModel) => boolean) => {
+      const model = imodel.models.getModel<PhysicalModel>(modelId);
+      const prevGuid = model.geometryGuid;
+      let newGuid: string | undefined;
+      let numEvents = 0;
+      let dropListener = imodel.txns.onModelGeometryChanged.addListener((changes) => {
+        expect(numEvents).to.equal(0);
+        ++numEvents;
+        expect(changes.length).to.equal(1);
+        expect(changes[0].id).to.equal(modelId);
+        newGuid = changes[0].guid;
+        expect(newGuid).not.to.equal(prevGuid);
+      });
+
+      const expectEvent = func(model);
+
+      imodel.saveChanges("");
+      expect(numEvents).to.equal(expectEvent ? 1 : 0);
+
+      dropListener();
+      if (!expectEvent)
+        return;
+
+      dropListener = imodel.txns.onModelGeometryChanged.addListener((changes) => {
+        ++numEvents;
+        expect(changes.length).to.equal(1);
+        expect(changes[0].id).to.equal(modelId);
+        expect(changes[0].guid).to.equal(prevGuid);
+      });
+
+      imodel.txns.reverseSingleTxn();
+      expect(numEvents).to.equal(2);
+      dropListener();
+
+      dropListener = imodel.txns.onModelGeometryChanged.addListener((changes) => {
+        ++numEvents;
+        expect(changes.length).to.equal(1);
+        expect(changes[0].id).to.equal(modelId);
+        expect(changes[0].guid).to.equal(newGuid);
+      });
+
+      imodel.txns.reinstateTxn();
+      expect(numEvents).to.equal(3);
+      dropListener();
+    };
+
+    test(() => {
+      imodel.models.updateGeometryGuid(modelId);
+      return true;
+    });
+
+    test((model) => {
+      model.geometryGuid = Guid.createValue();
+      model.update();
+      return false;
+    });
+
+    let newElemId: string;
+    test(() => {
+      newElemId = imodel.elements.insertElement(props);
+      return true;
+    });
+
+    test(() => {
+      const elem = imodel.elements.getElement<TestPhysicalObject>(newElemId);
+      elem.userLabel = "not a geometric change";
+      elem.intProperty = 42;
+      elem.update();
+      return false;
+    });
+
+    test(() => {
+      const elem = imodel.elements.getElement<TestPhysicalObject>(newElemId);
+      elem.placement.origin.x += 10;
+      elem.update();
+      return true;
+    });
+
+    test(() => {
+      imodel.elements.deleteElement(newElemId);
+      return true;
+    });
   });
 
   it("dispatches events in batches", () => {
