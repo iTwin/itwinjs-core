@@ -111,3 +111,9 @@ async function signIn(): Promise<boolean> {
   });
 }
 ```
+
+## Enhancements to exportGraphics
+
+[IModelDb.exportGraphics]($imodeljs-backend) and [IModelDb.exportPartGraphics]($imodeljs-backend) have new options that provide more control
+over the amount of detail in their output. See `decimationTol` and `minLineStyleComponentSize` in [ExportGraphicsOptions]($imodeljs-backend)
+for details.
