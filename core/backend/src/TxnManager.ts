@@ -97,7 +97,7 @@ class ChangedEntitiesProc implements TxnChangedEntities {
             break;
         }
 
-        if (++changes._currSize > maxSize)
+        if (++changes._currSize >= maxSize)
           changes.sendEvent(iModel, changedEvent, evtName);
       }
     });

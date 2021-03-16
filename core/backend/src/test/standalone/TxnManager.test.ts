@@ -10,7 +10,8 @@ import {
   Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, TxnChangedEntities, TxnManager,
+  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnAction,
+  TxnChangedEntities, TxnManager,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
@@ -552,6 +553,54 @@ describe("TxnManager", () => {
   });
 
   it("dispatches events in batches", () => {
+    const test = (numChangesExpected: number, func: () => void) => {
+      let numChanged: number[] = [];
+      const prevMax = setMaxEntitiesPerEvent(2);
+      const dropListener = imodel.txns.onElementsChanged.addListener((changes) => {
+        const numEntities = changes.inserted.length + changes.updated.length + changes.deleted.length;
+        numChanged.push(numEntities);
+        expect(numEntities).least(1);
+        expect(numEntities <= 2).to.be.true;
+      });
+
+      func();
+      imodel.saveChanges("");
+      dropListener();
+
+      expect(numChanged.length).to.equal(Math.ceil(numChangesExpected / 2));
+      for (let i = 0; i < numChanged.length - 1; i++)
+        expect(numChanged[i]).to.equal(2);
+
+      if (numChangesExpected > 0)
+        expect(numChanged[numChanged.length - 1]).to.equal(0 === numChangesExpected % 2 ? 2 : 1);
+    };
+
+    let elemId1: string;
+    test(1, () => {
+      elemId1 = imodel.elements.insertElement(props);
+    });
+
+    let elemId2: string;
+    test(2, () => {
+      elemId2 = imodel.elements.insertElement(props);
+      imodel.elements.deleteElement(elemId1);
+    });
+
+    let elemId3: string;
+    test(3, () => {
+      elemId1 = imodel.elements.insertElement(props);
+      elemId3 = imodel.elements.insertElement(props);
+      const elem2 = imodel.elements.getElement<TestPhysicalObject>(elemId2);
+      elem2.intProperty = 321;
+      elem2.update();
+    });
+
+    test(4, () => {
+      imodel.elements.deleteElement(elemId1);
+      imodel.elements.deleteElement(elemId2);
+      imodel.elements.deleteElement(elemId3);
+      imodel.elements.insertElement(props);
+    });
   });
 
   it("Element drives element events", async () => {
