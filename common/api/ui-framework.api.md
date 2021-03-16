@@ -259,6 +259,29 @@ export class AccuDrawPopupManager {
 }
 
 // @alpha
+export interface AccuDrawSettings {
+    angleBackgroundColor?: ColorDef;
+    angleIcon?: IconSpec;
+    angleLabel?: string;
+    distanceBackgroundColor?: ColorDef;
+    distanceIcon?: IconSpec;
+    distanceLabel?: string;
+    xBackgroundColor?: ColorDef;
+    xIcon?: IconSpec;
+    xLabel?: string;
+    yBackgroundColor?: ColorDef;
+    yIcon?: IconSpec;
+    yLabel?: string;
+    zBackgroundColor?: ColorDef;
+    zIcon?: IconSpec;
+    zLabel?: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSettingsChangedEvent extends BeUiEvent<{}> {
+}
+
+// @alpha
 export function AccuDrawWidget(): JSX.Element;
 
 // @alpha
@@ -1987,7 +2010,6 @@ export class FrameworkAccuDraw extends AccuDraw {
     // (undocumented)
     static getFieldDisplayValue(index: ItemField): string;
     grabInputFocus(): void;
-    // (undocumented)
     get hasInputFocus(): boolean;
     static readonly isACSRotationConditional: ConditionalBooleanValue;
     static readonly isContextRotationConditional: ConditionalBooleanValue;
@@ -1997,6 +2019,7 @@ export class FrameworkAccuDraw extends AccuDraw {
     static readonly isSideRotationConditional: ConditionalBooleanValue;
     static readonly isTopRotationConditional: ConditionalBooleanValue;
     static readonly isViewRotationConditional: ConditionalBooleanValue;
+    static readonly onAccuDrawSettingsChangedEvent: AccuDrawSettingsChangedEvent;
     // (undocumented)
     onCompassModeChange(): void;
     // (undocumented)
@@ -2008,6 +2031,8 @@ export class FrameworkAccuDraw extends AccuDraw {
     onRotationModeChange(): void;
     // (undocumented)
     setFocusItem(index: ItemField): void;
+    static get settings(): AccuDrawSettings | undefined;
+    static set settings(v: AccuDrawSettings | undefined);
     // (undocumented)
     static translateFromItemField(item: ItemField): AccuDrawField;
     // (undocumented)
@@ -2096,7 +2121,6 @@ export class FrameworkToolAdmin extends ToolAdmin {
 
 // @beta
 export class FrameworkUiAdmin extends UiAdmin {
-    constructor();
     closeDialog(dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     get cursorPosition(): XAndY;

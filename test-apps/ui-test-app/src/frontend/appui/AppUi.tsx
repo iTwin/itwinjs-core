@@ -26,10 +26,12 @@ import { FillCentered } from "@bentley/ui-core";
 import {
   AccuDrawCommandItems,
   AccuDrawKeyboardShortcuts,
+  AccuDrawSettings,
   CommandItemDef,
   ConfigurableUiManager,
   ContentGroupProps,
   ContentLayoutProps,
+  FrameworkAccuDraw,
   FrontstageManager,
   KeyboardShortcutManager,
   KeyboardShortcutProps,
@@ -56,6 +58,7 @@ import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 
 // cSpell:ignore uitestapp
 
@@ -73,6 +76,8 @@ export class AppUi {
     AppUi.defineKeyboardShortcuts();
 
     AppUi.defineDynamicWidgets();
+
+    // AppUi.setAccuDrawSettings();
   }
 
   /** Define Frontstages
@@ -466,5 +471,22 @@ export class AppUi {
       },
     };
     UiFramework.widgetManager.addWidgetProvider(provider);
+  }
+
+  private static setAccuDrawSettings() {
+    const iconTest = "icon-placeholder";
+
+    const appSettings: AccuDrawSettings = {
+      xBackgroundColor: ColorDef.create(ColorByName.purple),
+      xLabel: "-X-",
+      xIcon: iconTest,
+    };
+
+    const userSettings: AccuDrawSettings = {
+      yBackgroundColor: ColorDef.create(ColorByName.darkBrown),
+      yLabel: "-Y-",
+    };
+
+    FrameworkAccuDraw.settings = {...appSettings, ...userSettings};
   }
 }
