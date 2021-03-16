@@ -12608,6 +12608,7 @@ export abstract class ViewState extends ElementState {
     // (undocumented)
     protected _updateMaxGlobalScopeFactor(): void;
     get viewFlags(): ViewFlags;
+    set viewFlags(flags: ViewFlags);
     viewsCategory(id: Id64String): boolean;
     abstract viewsModel(modelId: Id64String): boolean;
 }
