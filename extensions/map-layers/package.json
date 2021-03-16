@@ -108,8 +108,7 @@
     "require": [
       "ignore-styles",
       "jsdom-global/register",
-      "source-map-support/register",
-      "ts-node/register"
+      "source-map-support/register"
     ],
     "check-coverage": false,
     "statements": 60,
