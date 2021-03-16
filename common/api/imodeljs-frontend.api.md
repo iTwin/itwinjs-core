@@ -7172,7 +7172,7 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined>;
     // (undocumented)
-    getQuantityDefiniton(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
+    getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     // (undocumented)
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;

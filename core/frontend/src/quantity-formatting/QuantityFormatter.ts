@@ -17,12 +17,10 @@ import { IModelConnection } from "../imodeljs-frontend";
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
 
 /** Used to uniquely identify a unit system. There should be an entry for each entry in `PresentationUnitSystem` @presentation-common package
- * Note: The exact string values from PresentationUnitSystem are not used because hyphenated names, used in PresentationUnitSystem,
- * cannot be used as object keys.
- * "metric" -> PresentationUnitSystem.Metric ("metric")
- * "imperial" -> PresentationUnitSystem.BritishImperial ("british-imperial")
- * "usCustomary" -> PresentationUnitSystem.UsCustomary ("us-customary")
- * "usSurvey" -> PresentationUnitSystem.UsSurvey ("us-survey")
+ * "metric" -> PresentationUnitSystem.Metric
+ * "imperial" -> PresentationUnitSystem.BritishImperial
+ * "usCustomary" -> PresentationUnitSystem.UsCustomary
+ * "usSurvey" -> PresentationUnitSystem.UsSurvey
  * @beta
  */
 export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
@@ -652,7 +650,7 @@ export class QuantityFormatter implements UnitsProvider {
     return getQuantityTypeKey(type);
   }
 
-  public getQuantityDefiniton(type: QuantityTypeArg) {
+  public getQuantityDefinition(type: QuantityTypeArg) {
     return this.quantityTypesRegistry.get(this.getQuantityTypeKey(type));
   }
 
