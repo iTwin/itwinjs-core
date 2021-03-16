@@ -6,7 +6,7 @@ import { BentleyError, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { SnapshotDb } from "../../IModelDb";
 import { AuthorizedBackendRequestContext, BriefcaseManager, IModelHost } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -15,29 +15,17 @@ import { HubUtility } from "./HubUtility";
 describe("IModelOpen (#integration)", () => {
 
   let requestContext: AuthorizedBackendRequestContext;
-  let badRequestContext: AuthorizedBackendRequestContext;
-  const testProjectName = "iModelJsIntegrationTest";
-  const testIModelName = "Stadium Dataset 1";
   let testIModelId: GuidString;
-  let testProjectId: GuidString;
+  let testContextId: GuidString;
   let testChangeSetId: GuidString;
 
   before(async () => {
-    IModelTestUtils.setupLogging();
-    // IModelTestUtils.setupDebugLogLevels();
-
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testProjectId = await HubUtility.queryProjectIdByName(requestContext, testProjectName);
-    testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
+    testContextId = await HubUtility.getTestContextId(requestContext);
+    requestContext.enter();
+
+    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
     testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
-
-    // Open and close the iModel to ensure it works and is closed
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(testChangeSetId).toJSON() });
-    assert.isDefined(iModel);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-
-    const badToken = new AccessToken("ThisIsABadToken");
-    badRequestContext = new AuthorizedBackendRequestContext(badToken);
   });
 
   const deleteTestIModelCache = () => {
@@ -46,26 +34,15 @@ describe("IModelOpen (#integration)", () => {
   };
 
   it("Unauthorized requests should cause an obvious error", async () => {
-    // Try the bad request context
-    let error: any;
-    try {
-      await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: badRequestContext, contextId: testProjectId, iModelId: testIModelId });
-    } catch (err) {
-      error = err;
-    }
-    assert.isDefined(error);
-    assert.isTrue(error instanceof BentleyError);
-    assert.equal(401, error.status);
+    const badToken = new AccessToken("ThisIsABadToken");
+    const badRequestContext = new AuthorizedBackendRequestContext(badToken);
 
-    error = undefined;
-    try {
-      await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: badRequestContext, contextId: testProjectId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(testChangeSetId).toJSON() });
-    } catch (err) {
-      error = err;
-    }
-    assert.isDefined(error);
-    assert.isTrue(error instanceof BentleyError);
-    assert.equal(401, error.status);
+    // Try the bad request context
+    await expect(IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: badRequestContext, contextId: testContextId, iModelId: testIModelId }))
+      .to.be.rejectedWith(BentleyError).to.eventually.have.property("status", 401);
+
+    await expect(IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: badRequestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(testChangeSetId).toJSON() }))
+      .to.be.rejectedWith(BentleyError).to.eventually.have.property("status", 401);
   });
 
   it("should be able to handle simultaneous open calls", async () => {
@@ -78,7 +55,7 @@ describe("IModelOpen (#integration)", () => {
     // Open iModel with no timeout, and ensure all promises resolve to the same briefcase
     const openPromises = new Array<Promise<SnapshotDb>>();
     for (let ii = 0; ii < numTries; ii++) {
-      const open = IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testIModelId, asOf: version });
+      const open = IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: version });
       openPromises.push(open);
     }
     const iModels = await Promise.all(openPromises);
@@ -97,7 +74,7 @@ describe("IModelOpen (#integration)", () => {
     const numChangeSets = changeSets.length;
     assert.isAbove(numChangeSets, 10);
 
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[9].wsgId).toJSON() });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[9].wsgId).toJSON() });
     assert.isDefined(iModel);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
   });
@@ -118,7 +95,7 @@ describe("IModelOpen (#integration)", () => {
 
     const openPromises = new Array<Promise<SnapshotDb>>();
     for (const changeSetId of changeSetIds) {
-      const open = IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changeSetId).toJSON() });
+      const open = IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changeSetId).toJSON() });
       openPromises.push(open);
     }
 
