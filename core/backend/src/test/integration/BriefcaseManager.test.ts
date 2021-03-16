@@ -218,7 +218,7 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   // FIXME Breaks other tests
-  it.skip("should set the briefcase cache directory to expected locations", async () => {
+  it("should set the briefcase cache directory to expected locations", async () => {
     // Shutdown IModelHost to allow this test to use it.
     await IModelTestUtils.shutdownBackend();
 

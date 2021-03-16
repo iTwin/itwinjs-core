@@ -57,7 +57,7 @@ describe("IModelTransformerHub (#integration)", () => {
   it.skip("Transform source iModel to target iModel", async () => {
     // Create and push seed of source IModel
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    const projectId = await HubUtility.getTestContextId(requestContext)
+    const projectId = await HubUtility.getTestContextId(requestContext);
     const sourceIModelName: string = HubUtility.generateUniqueName("TransformerSource");
     const sourceSeedFileName: string = path.join(outputDir, `${sourceIModelName}.bim`);
     if (IModelJsFs.existsSync(sourceSeedFileName)) {
