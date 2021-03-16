@@ -254,7 +254,7 @@ export interface QuantityFormatsChangedArgs {
   readonly quantityType: string;
 }
 
-/** Arguments sent to UnitFormattingSettingsProvider when overrides are changed.
+/** Arguments sent to [[UnitFormattingSettingsProvider]] when overrides are changed.
  * @beta
  */
 export interface QuantityFormatOverridesChangedArgs {
