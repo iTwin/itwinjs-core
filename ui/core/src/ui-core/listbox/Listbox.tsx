@@ -120,6 +120,17 @@ export function Listbox(props: ListboxProps) {
   const classes = React.useMemo(() => classnames("core-listbox", className), [className]);
   const [currentValue, setCurrentValue] = React.useState<ListboxValue | undefined>(selectedValue);
   const [focusValue, setFocusValue] = React.useState<ListboxValue | undefined>(currentValue);
+  const initialSelectedValueRef = React.useRef(selectedValue);
+
+  React.useEffect(() => {
+    // istanbul ignore else
+    if (initialSelectedValueRef.current !== selectedValue) {
+      initialSelectedValueRef.current = selectedValue;
+      setCurrentValue(selectedValue);
+      setFocusValue(selectedValue);
+    }
+  }, [currentValue, selectedValue]);
+
   const scrollTopRef = React.useRef(0);
   const handleValueChange = React.useCallback((newValue: ListboxValue, isControlOrCommandPressed?: boolean) => {
     // istanbul ignore else
