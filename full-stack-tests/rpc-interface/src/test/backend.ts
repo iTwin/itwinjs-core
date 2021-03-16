@@ -6,6 +6,7 @@
 // Sets up a local backend to be used for testing within the iModel.js repo.
 
 import * as path from "path";
+import { Config } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";

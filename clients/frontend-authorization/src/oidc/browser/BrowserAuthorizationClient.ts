@@ -7,7 +7,7 @@
  * @module BrowserAuthorization
  */
 
-import { User, UserManager, UserManagerSettings } from "oidc-client";
+import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
@@ -37,13 +37,15 @@ export interface BrowserAuthorizationClientConfiguration {
   readonly scope: string;
   /** The mechanism (or authentication flow) used to acquire auth information from the user through the authority */
   readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
+  /** if true, do NOT attempt a silent signIn on startup of the application */
+  readonly noSilentSignInOnAppStartup?: boolean;
 }
 
 /**
  * @beta
  */
 export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
   protected _accessToken?: AccessToken;
 
@@ -88,6 +90,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       post_logout_redirect_uri: basicSettings.postSignoutRedirectUri, // eslint-disable-line @typescript-eslint/naming-convention
       response_type: basicSettings.responseType, // eslint-disable-line @typescript-eslint/naming-convention
       automaticSilentRenew: true,
+      userStore: new WebStorageStateStore({ store: window.localStorage }),
     };
 
     if (advancedSettings) {
@@ -124,8 +127,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Alias for signInRedirect needed to satisfy [[FrontendAuthorizationClient]]
    * @param requestContext
    */
-  public async signIn(requestContext: ClientRequestContext): Promise<void> {
-    return this.signInRedirect(requestContext);
+  public async signIn(requestContext?: ClientRequestContext): Promise<void> {
+    return this.signInRedirect(requestContext ?? new ClientRequestContext());
   }
 
   /**
@@ -174,14 +177,14 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
   /**
    * Attempts a silent sign in with the authorization provider
-   * @throws [[Error]] If the silent sign in fails
+   * @throws [[BentleyError]] If the silent sign in fails
    */
   public async signInSilent(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
 
     const user = await this.nonInteractiveSignIn(requestContext);
-    assert(!!user && !user.expired, "Expected userManager.signinSilent to always resolve to an authorized user");
-    return;
+    if (user === undefined || user.expired)
+      throw new BentleyError(AuthStatus.Error, "Silent sign-in failed");
   }
 
   /**
@@ -205,7 +208,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       user = await userManager.signinSilent(); // calls events
       return user;
     } catch (err) {
-      Logger.logInfo(FrontendAuthorizationClientLoggerCategory.Authorization, "Silent sign-in failed");
       return undefined;
     }
   }
@@ -243,8 +245,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Alias for signOutRedirect
    * @param requestContext
    */
-  public async signOut(requestContext: ClientRequestContext): Promise<void> {
-    await this.signOutRedirect(requestContext);
+  public async signOut(requestContext?: ClientRequestContext): Promise<void> {
+    await this.signOutRedirect(requestContext ?? new ClientRequestContext());
   }
 
   public async signOutRedirect(requestContext: ClientRequestContext): Promise<void> {

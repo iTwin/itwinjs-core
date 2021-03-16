@@ -5,7 +5,7 @@
 
 import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeSetQuery, ChangesType } from "@bentley/imodelhub-client";
-import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
@@ -14,10 +14,10 @@ import * as path from "path";
 import * as readline from "readline";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseIdValue, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration,
   IModelJsFs, KnownLocations,
 } from "../../imodeljs-backend";
-import { IModelTestUtils, } from "../IModelTestUtils";
+import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 
@@ -61,12 +61,12 @@ describe("BriefcaseManager (#integration)", () => {
 
     testContextId = await HubUtility.getTestContextId(requestContext);
     requestContext.enter();
-    readOnlyTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.readOnly);
+    readOnlyTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
     requestContext.enter();
 
-    readWriteTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.noVersions);
+    readWriteTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.noVersions);
     requestContext.enter();
-    noVersionsTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.readWrite);
+    noVersionsTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readWrite);
     requestContext.enter();
 
     // Purge briefcases that are close to reaching the acquire limit
@@ -76,7 +76,7 @@ describe("BriefcaseManager (#integration)", () => {
     requestContext.enter();
     await HubUtility.purgeAcquiredBriefcasesById(requestContext, readWriteTestIModelId);
     requestContext.enter();
-    await HubUtility.purgeAcquiredBriefcasesById(requestContext, await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.stadium));
+    await HubUtility.purgeAcquiredBriefcasesById(requestContext, await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium));
     requestContext.enter();
 
     managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
@@ -303,8 +303,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.notEqual(briefcaseName, compatName, "briefcase should be found in new location");
   });
 
-  // FIXME: Causes issues...
-  it.skip("should be able to reuse existing briefcases from a previous session", async () => {
+  it("should be able to reuse existing briefcases from a previous session", async () => {
     let checkpoint = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     let numDownloads = 0;
 
@@ -636,7 +635,7 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should be able to show progress when downloading a briefcase (#integration)", async () => {
-    const testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.stadium);
+    const testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
     requestContext.enter();
 
     let numProgressCalls: number = 0;
@@ -644,7 +643,7 @@ describe("BriefcaseManager (#integration)", () => {
     readline.clearLine(process.stdout, 0);
     readline.moveCursor(process.stdout, -20, 0);
     const downloadProgress = (loaded: number, total: number) => {
-      const message = `${HubUtility.TestIModelNames.stadium} Download Progress ... ${(loaded * 100 / total).toFixed(2)}%`;
+      const message = `${HubUtility.testIModelNames.stadium} Download Progress ... ${(loaded * 100 / total).toFixed(2)}%`;
       process.stdout.write(message);
       readline.moveCursor(process.stdout, -1 * message.length, 0);
       if (loaded >= total) {
@@ -674,7 +673,7 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("Should be able to cancel an in progress download (#integration)", async () => {
-    const testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.stadium);
+    const testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
     requestContext.enter();
 
     let aborted = 0;

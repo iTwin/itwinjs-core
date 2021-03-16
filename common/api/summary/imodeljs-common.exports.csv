@@ -20,6 +20,8 @@ public;BackgroundMapProps
 public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
 public;BackgroundMapSettings
 public;BackgroundMapType
+public;Base64EncodedString = string
+public;Base64EncodedString
 alpha;BaseLayerProps = MapLayerProps | ColorDefProps
 alpha;BaseLayerSettings = MapLayerSettings | ColorDef
 public;BatchType
@@ -42,6 +44,7 @@ public;BRepPrimitive
 alpha;BRepRoundProps
 alpha;BRepThickenProps
 beta;BriefcaseDownloader
+public;BriefcaseIdValue
 beta;BriefcaseProps
 internal;BriefcasePushAndPullNotifications
 beta;calculateSolarAngles(date: Date, location: Cartographic):
@@ -100,12 +103,9 @@ beta;CustomAttribute
 beta;CutStyle
 beta;CutStyleProps
 beta;DecorationGeometryProps
-alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 alpha;DeletedElementGeometryChange
-alpha;DesktopAuthorizationClientConfiguration
-internal;DesktopAuthorizationClientMessages
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
@@ -276,6 +276,7 @@ beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
 internal;IpcAppChannel
 internal;IpcAppFunctions
+internal;IpcAppNotifications
 internal;IpcInvokeReturn =
 beta;IpcListener = (evt: Event, ...args: any[]) => void
 beta;IpcSocket
@@ -330,6 +331,7 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
+alpha;NativeAppAuthorizationConfiguration
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications
@@ -473,6 +475,7 @@ public;RpcRequestFulfillment
 public;RpcRequestFulfillment
 public;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
 public;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
+public;RpcRequestStatus
 public;RpcRequestStatus
 public;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
 public;RpcResponseCacheControl

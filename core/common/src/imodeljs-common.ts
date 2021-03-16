@@ -5,6 +5,7 @@
 export * from "./AmbientOcclusion";
 export * from "./AnalysisStyle";
 export * from "./BackgroundMapSettings";
+export * from "./Base64EncodedString";
 export * from "./BriefcaseTypes";
 export * from "./Camera";
 export * from "./ChangedElements";
@@ -93,7 +94,6 @@ export * from "./Tween";
 export * from "./ViewDetails";
 export * from "./ViewFlags";
 export * from "./ViewProps";
-export * from "./oidc/DesktopAuthorizationClientConfiguration";
 export * from "./rpc/DevToolsRpcInterface";
 export * from "./rpc/EditorRpcInterface";
 export * from "./rpc/IModelReadRpcInterface";

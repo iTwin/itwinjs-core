@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/electron-manager",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@bentley/eslint-plugin",
@@ -551,6 +551,10 @@
       "allowedCategories": [ "backend", "edit", "frontend", "internal", "tools" ]
     },
     {
+      "name": "got",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "highlight.js",
       "allowedCategories": [ "internal" ]
     },
@@ -655,6 +659,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "mkdirp",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "mobx",
       "allowedCategories": [ "internal" ]
     },
@@ -753,10 +761,6 @@
     {
       "name": "react-autosuggest",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "react-axe",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-beautiful-dnd",
@@ -933,6 +937,10 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "stream-buffers",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "style-loader",

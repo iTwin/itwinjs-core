@@ -14,6 +14,8 @@ interface CommandLineArgs {
   target: string;
   simplifyElementGeometry?: boolean;
   combinePhysicalModels?: boolean;
+  deleteUnusedGeometryParts?: boolean;
+  excludeSubCategories?: string;
 }
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -25,6 +27,8 @@ interface CommandLineArgs {
     Yargs.demandOption("target");
     Yargs.option("simplifyElementGeometry", { desc: "Simplify element geometry upon import into target iModel", type: "boolean", default: false });
     Yargs.option("combinePhysicalModels", { desc: "Combine all source PhysicalModels into a single PhysicalModel in the target iModel", type: "boolean", default: false });
+    Yargs.option("deleteUnusedGeometryParts", { desc: "Delete unused GeometryParts from the target iModel", type: "boolean", default: false });
+    Yargs.option("excludeSubCategories", { desc: "Exclude geometry in the specified SubCategories (names with comma separators) from the target iModel", type: "string" });
     const args = Yargs.parse() as Yargs.Arguments<CommandLineArgs>;
 
     await IModelHost.startup();
@@ -36,6 +40,11 @@ interface CommandLineArgs {
       Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
       Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
       Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
+    }
+
+    let excludeSubCategories: string[] | undefined;
+    if (args.excludeSubCategories) {
+      excludeSubCategories = args.excludeSubCategories.split(",");
     }
 
     // validate source iModel exists before continuing
@@ -56,6 +65,8 @@ interface CommandLineArgs {
     await Transformer.transformAll(sourceDb, targetDb, {
       simplifyElementGeometry: args.simplifyElementGeometry,
       combinePhysicalModels: args.combinePhysicalModels,
+      deleteUnusedGeometryParts: args.deleteUnusedGeometryParts,
+      excludeSubCategories,
     });
     sourceDb.close();
     targetDb.close();

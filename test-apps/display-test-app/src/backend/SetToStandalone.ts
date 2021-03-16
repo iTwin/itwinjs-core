@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbResult, Guid, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseIdValue, IModelHost } from "@bentley/imodeljs-backend";
-import { IModelError } from "@bentley/imodeljs-common";
+import { IModelHost } from "@bentley/imodeljs-backend";
+import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 
 /* eslint-disable no-console */
 

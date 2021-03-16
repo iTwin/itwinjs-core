@@ -9,6 +9,7 @@ import { flatbuffers } from "flatbuffers";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, GeometryQuery, LineString3d, Loop, Matrix3d, Point2d, Point3d, PointString3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { EGFBAccessors } from "./ElementGeometryFB";
+import { Base64EncodedString } from "../Base64EncodedString";
 import { TextString, TextStringProps } from "./TextString";
 import { ColorDef } from "../ColorDef";
 import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
@@ -795,7 +796,7 @@ export namespace ElementGeometry {
     let data;
     const entityData = ppfb.entityDataArray();
     if (wantBRepData && null !== entityData)
-      data = `encoding=base64;${Base64.fromUint8Array(entityData)}`;
+      data = Base64EncodedString.fromUint8Array(entityData);
 
     return { data, type, transform: transform?.toJSON(), faceSymbology };
   }
@@ -808,10 +809,10 @@ export namespace ElementGeometry {
     let faceSymbOffset;
 
     if (undefined !== brep.data) {
-      const base64Header = "encoding=base64;";
-      if (brep.data.length < base64Header.length || !brep.data.startsWith(base64Header))
+      const entityData = Base64EncodedString.toUint8Array(brep.data);
+      if (entityData.length === 0)
         return undefined;
-      const entityData = Base64.toUint8Array(brep.data.substr(base64Header.length));
+
       dataOffset = builder.createEntityDataVector(fbb, entityData);
     }
 

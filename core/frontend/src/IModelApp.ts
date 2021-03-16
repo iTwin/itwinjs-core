@@ -15,7 +15,7 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { addCsrfHeader, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
+import { IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
@@ -559,7 +559,7 @@ export class IModelApp {
       if (IModelApp.authorizationClient?.hasSignedIn) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         try {
-          const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
+          const accessToken = await IModelApp.authorizationClient.getAccessToken();
           authorization = accessToken.toTokenString(IncludePrefix.Yes);
           const userInfo = accessToken.getUserInfo();
           if (userInfo)

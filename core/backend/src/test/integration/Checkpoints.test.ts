@@ -10,7 +10,6 @@ import { assert } from "chai";
 import { ChildProcess } from "child_process";
 import * as path from "path";
 import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
@@ -32,7 +31,7 @@ describe.skip("Checkpoints (#integration)", () => {
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     testContextId = await HubUtility.getTestContextId(requestContext);
-    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.stadium);
+    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
     testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
 
     const checkpointQuery = new CheckpointV2Query().byChangeSetId(testChangeSetId).selectContainerAccessKey();

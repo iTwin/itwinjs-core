@@ -2,23 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as os from "os";
+import * as path from "path";
+import * as semver from "semver";
 /** @packageDocumentation
  * @module IModelHost
  */
 import {
-  AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager, IntrospectionClient,
+  AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager,
+  IntrospectionClient,
 } from "@bentley/backend-itwin-client";
 import {
-  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector,
+  assert, BeEvent, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector, SessionProps,
 } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
-import * as os from "os";
-import * as path from "path";
-import * as semver from "semver";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BackendRequestContext } from "./BackendRequestContext";
@@ -227,14 +228,20 @@ export class IModelHost {
   /** Event raised just before the backend IModelHost is to be shut down */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
-  /** A uniqueId for this backend session */
-  public static sessionId: GuidString;
+  /** @internal */
+  public static readonly session: SessionProps = { applicationId: "2686", applicationVersion: "1.0.0", sessionId: "" };
 
-  /** The Id of this backend application - needs to be set only if it is an agent application. The applicationId will otherwise originate at the frontend. */
-  public static applicationId: string;
+  /** A uniqueId for this session */
+  public static get sessionId() { return this.session.sessionId; }
+  public static set sessionId(id: GuidString) { this.session.sessionId = id; }
 
-  /** The version of this backend application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
-  public static applicationVersion: string;
+  /** The Id of this application - needs to be set only if it is an agent application. The applicationId will otherwise originate at the frontend. */
+  public static get applicationId() { return this.session.applicationId; }
+  public static set applicationId(id: string) { this.session.applicationId = id; }
+
+  /** The version of this application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
+  public static get applicationVersion() { return this.session.applicationVersion; }
+  public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
 
   /** Root of the directory holding all the files that iModel.js caches */
   public static get cacheDir(): string { return this._cacheDir; }
@@ -248,13 +255,14 @@ export class IModelHost {
   public static snapshotFileNameResolver?: FileNameResolver;
 
   /** Get the active authorization/access token for use with various services
-   * @throws [[BentleyError]] if the access token cannot be obtained
+   * @throws if authorizationClient has not been set up
    */
-  public static async getAccessToken(requestContext: ClientRequestContext = new BackendRequestContext()): Promise<AccessToken> {
-    requestContext.enter();
-    if (!this.authorizationClient)
-      throw new BentleyError(AuthStatus.Error, "No AuthorizationClient has been supplied to IModelHost", Logger.logError, loggerCategory);
-    return this.authorizationClient.getAccessToken(requestContext);
+  public static async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
+    return this.authorizationClient!.getAccessToken(requestContext);
+  }
+  /** @internal */
+  public static async getAuthorizedContext() {
+    return new AuthorizedClientRequestContext(await this.getAccessToken(), undefined, this.applicationId, this.applicationVersion, this.sessionId);
   }
 
   private static get _isNativePlatformLoaded(): boolean {
@@ -355,9 +363,9 @@ export class IModelHost {
       return; // we're already initialized
     this._isValid = true;
 
-    if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
-    if (!IModelHost.applicationVersion) IModelHost.applicationVersion = "1.0.0"; // Default to placeholder version.
-    IModelHost.sessionId = Guid.createValue();
+    if (IModelHost.sessionId === "")
+      IModelHost.sessionId = Guid.createValue();
+
     this.logStartup();
 
     await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
