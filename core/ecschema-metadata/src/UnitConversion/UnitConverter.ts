@@ -60,9 +60,11 @@ export class UnitConverter {
   private async processUnits(from: Unit | Constant, to: Unit | Constant): Promise<UnitConversion> {
     if (from.key.matches(to.key)) return UnitConversion.identity;
 
-    const areCompatiblePhenomenons = await Unit.areCompatiblePhenomenons(from as Unit, to as Unit);
-    if (!areCompatiblePhenomenons)
-      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not belong to same phenomenon`, ()  => {
+    const fromPhenomenon = await from.phenomenon;
+    const toPhenomenon = await to.phenomenon;
+
+    if (!fromPhenomenon || !toPhenomenon || !fromPhenomenon.key.matches(toPhenomenon.key))
+      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not belong to same phenomenon`, () => {
         return { from, to };
       });
 
