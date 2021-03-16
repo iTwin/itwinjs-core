@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "fix check in cartographicToDbFromGcs which causes certain locations to query GCS when they should not.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "47000437+markschlosseratbentley@users.noreply.github.com"
+}
