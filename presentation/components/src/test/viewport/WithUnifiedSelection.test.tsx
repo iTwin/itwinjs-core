@@ -46,16 +46,13 @@ describe("Viewport withUnifiedSelection", () => {
 
   beforeEach(() => {
     viewDefinitionId = createRandomId();
+
     selectionHandlerMock.reset();
+    imodelMock.reset();
+    mockIModel(imodelMock);
+
     const viewsMock = moq.Mock.ofInstance<IModelConnection.Views>(new IModelConnection.Views(imodelMock.object));
     viewsMock.setup(async (views) => views.load(moq.It.isAny())).returns(async () => moq.Mock.ofType<ViewState3d>().object);
-    imodelMock.reset();
-    let hiliteSet: IModelHiliteSet | undefined;
-    imodelMock.setup((imodel) => imodel.hilited).returns((imodel) => {
-      if (!hiliteSet)
-        hiliteSet = new IModelHiliteSet(imodel, false);
-      return hiliteSet;
-    });
     imodelMock.setup((imodel) => imodel.views).returns(() => viewsMock.object);
   });
 
@@ -89,6 +86,8 @@ describe("Viewport withUnifiedSelection", () => {
     it("creates default implementation when not provided through props", () => {
       const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
       selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
+      selectionManagerMock.setup((x) => x.suspendIModelToolSelectionSync(imodelMock.object)).returns(() => ({ dispose: () => { } }));
+      selectionManagerMock.setup(async (x) => x.getHiliteSet(imodelMock.object)).returns(async () => ({ }));
       Presentation.setSelectionManager(selectionManagerMock.object);
 
       const viewport = shallow(<PresentationViewport
