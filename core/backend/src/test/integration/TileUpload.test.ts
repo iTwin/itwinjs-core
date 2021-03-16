@@ -48,8 +48,8 @@ async function getTileProps(iModel: IModelDb, requestContext: AuthorizedBackendR
     return {
       treeId,
       contentId,
-      guid
-    }
+      guid,
+    };
   }
 
   return undefined;
@@ -115,7 +115,7 @@ describe("TileUpload (#integration)", () => {
     // eslint-disable-next-line deprecation/deprecation
     const tileProps = await getTileProps(iModel, requestContext);
     assert.isDefined(tileProps);
-    const tile = await tileRpcInterface.requestTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid);
+    const tile = await tileRpcInterface.requestTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
 
     // Uploads to the cloud storage tile cache happen asynchronously. Don't resolve until they have all finished.
     await Promise.all(IModelHost.tileUploader.activeUploads);
