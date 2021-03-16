@@ -36,7 +36,7 @@ async function getTileProps(iModel: IModelDb, requestContext: AuthorizedBackendR
     const treeProps = await iModel.tiles.requestTileTreeProps(requestContext, treeId);
     // Ignore empty tile trees.
     if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true)
-    continue;
+      continue;
 
     let guid = model.geometryGuid || iModel.changeSetId || "first";
     if (treeProps.contentIdQualifier)
@@ -85,7 +85,7 @@ describe("TileUpload (#integration)", () => {
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     testContextId = await HubUtility.getTestContextId(requestContext);
-    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.TestIModelNames.stadium);
+    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
 
     // Get URL for cached tile
     const credentials = new Azure.SharedKeyCredential(config.tileCacheCredentials.account, config.tileCacheCredentials.accessKey);
