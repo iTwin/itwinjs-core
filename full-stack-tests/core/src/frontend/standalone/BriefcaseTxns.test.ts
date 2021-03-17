@@ -44,14 +44,25 @@ describe("BriefcaseTxns", () => {
       }
 
       const expected: TxnEvent[] = [];
-      const expectEvents = (additionalEvents: TxnEvent[]) => {
+      const expectEvents = async (additionalEvents: TxnEvent[]): Promise<void> => {
+        // The backend sends the events synchronously but the frontend receives them asynchronously relative to this test.
+        // So we must wait until all expected events are received. If our expectations are wrong, we may end up waiting forever.
         for (const additionalEvent of additionalEvents)
           expected.push(additionalEvent);
 
+        const wait = async (): Promise<void> => {
+          if (received.length >= expected.length)
+            return;
+
+          await new Promise<void>((resolve: any) => setTimeout(resolve, 100));
+          return wait();
+        };
+
+        await wait();
         expect(received).to.deep.equal(expected);
       };
 
-      const expectCommit = (evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
+      const expectCommit = async (evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
 
       const editor = await ElementEditor3d.start(imodel);
       const editing = new EditingFunctions(imodel);
@@ -59,11 +70,11 @@ describe("BriefcaseTxns", () => {
       const dictModelId = await imodel.models.getDictionaryModel();
       const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, Guid.createValue(), { color: 0 });
       await imodel.saveChanges();
-      expectCommit(["onElementsChanged"]);
+      await expectCommit(["onElementsChanged"]);
 
       const model = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
       await imodel.saveChanges();
-      expectCommit(["onElementsChanged", "onModelsChanged"]);
+      await expectCommit(["onElementsChanged", "onModelsChanged"]);
 
       const insertLine = async () => {
         const segment = LineSegment3d.create(new Point3d(0, 0, 0), new Point3d(1, 1, 1));
@@ -79,43 +90,43 @@ describe("BriefcaseTxns", () => {
 
       const elem1 = await insertLine();
       await imodel.saveChanges();
-      expectCommit(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectCommit(["onElementsChanged", "onModelGeometryChanged"]);
 
       await editor.startModifyingElements([elem1]);
       await editor.applyTransform(Transform.createTranslationXYZ(1, 0, 0).toJSON());
       await editor.write();
       await imodel.saveChanges();
-      expectCommit(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectCommit(["onElementsChanged", "onModelGeometryChanged"]);
 
       await IModelWriteRpcInterface.getClientForRouting(imodel.routingContext.token).deleteElements(imodel.getRpcProps(), [elem1]);
       await imodel.saveChanges();
-      expectCommit(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectCommit(["onElementsChanged", "onModelGeometryChanged"]);
 
       const undo = async () => IpcApp.callIpcHost("reverseSingleTxn", imodel.key);
-      const expectUndoRedo = (evts: TxnEvent[]) => expectEvents(["onBeforeUndoRedo", ...evts, "onChangesApplied", "onAfterUndoRedo"]);
+      const expectUndoRedo = async (evts: TxnEvent[]) => expectEvents(["onBeforeUndoRedo", ...evts, "onChangesApplied", "onAfterUndoRedo"]);
 
       await undo();
-      expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
       await undo();
-      expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
       await undo();
-      expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
       await undo();
-      expectUndoRedo(["onElementsChanged", "onModelsChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onModelsChanged"]);
       await undo();
-      expectUndoRedo(["onElementsChanged"]);
+      await expectUndoRedo(["onElementsChanged"]);
 
       const redo = async () => IpcApp.callIpcHost("reinstateTxn", imodel.key);
       await redo();
-      expectUndoRedo(["onElementsChanged"]);
+      await expectUndoRedo(["onElementsChanged"]);
       await redo();
-      expectUndoRedo(["onElementsChanged", "onModelsChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onModelsChanged"]);
       await redo();
-      expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
       await redo();
-      expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
       await redo();
-      expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
     });
   }
 });
