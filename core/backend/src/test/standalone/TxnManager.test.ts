@@ -363,7 +363,6 @@ describe("TxnManager", () => {
       this._cleanup.push(mgr.onAfterUndoRedo.addListener(() => {
         ++this._numAfterUndo;
         expect(this._numAfterUndo).to.equal(this._numBeforeUndo);
-        this.clearChanges();
       }));
     }
 
@@ -379,6 +378,14 @@ describe("TxnManager", () => {
       accum.listen(event);
       func(accum);
       accum.dispose();
+    }
+
+    public static testElements(imodel: StandaloneDb, func: (accum: EventAccumulator) => void): void {
+      this.test(imodel.txns, imodel.txns.onElementsChanged, func);
+    }
+
+    public static testModels(imodel: StandaloneDb, func: (accum: EventAccumulator) => void): void {
+      this.test(imodel.txns, imodel.txns.onModelsChanged, func);
     }
 
     public listen(evt: BeEvent<(changes: TxnChangedEntities) => void>): void {
@@ -422,7 +429,7 @@ describe("TxnManager", () => {
       expect(this[propName].ids).to.deep.equal(expected ?? []);
     }
 
-    private clearChanges(): void {
+    public clearChanges(): void {
       this.inserted.clear();
       this.updated.clear();
       this.deleted.clear();
@@ -430,12 +437,11 @@ describe("TxnManager", () => {
   }
 
   it("dispatches events when elements change", () => {
-    const txns = imodel.txns;
     const elements = imodel.elements;
     let id1: string;
     let id2: string;
 
-    EventAccumulator.test(txns, txns.onElementsChanged, (accum) => {
+    EventAccumulator.testElements(imodel, (accum) => {
       id1 = elements.insertElement(props);
       id2 = elements.insertElement(props);
       imodel.saveChanges("2 inserts");
@@ -445,7 +451,7 @@ describe("TxnManager", () => {
 
     let elem1: TestPhysicalObject;
     let elem2: TestPhysicalObject;
-    EventAccumulator.test(txns, txns.onElementsChanged, (accum) => {
+    EventAccumulator.testElements(imodel, (accum) => {
       elem1 = elements.getElement<TestPhysicalObject>(id1);
       elem2 = elements.getElement<TestPhysicalObject>(id2);
       elem1.intProperty = 200;
@@ -457,7 +463,7 @@ describe("TxnManager", () => {
       accum.expectChanges({ updated: [ id1, id2 ] });
     });
 
-    EventAccumulator.test(txns, txns.onElementsChanged, (accum) => {
+    EventAccumulator.testElements(imodel, (accum) => {
       elem1.delete();
       elem2.delete();
       imodel.saveChanges("2 deletes");
@@ -465,15 +471,72 @@ describe("TxnManager", () => {
       accum.expectChanges({ deleted: [ id1, id2 ] });
     });
 
+    // Undo
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ inserted: [ id1, id2 ] });
+      accum.expectNumApplyChanges(1);
+      accum.expectNumValidations(0);
+    });
+
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ updated: [ id1, id2 ] });
+    });
+
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ deleted: [ id1, id2 ] });
+    });
+
+    // Redo
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reinstateTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ inserted: [ id1, id2 ] });
+    });
+
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reinstateTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ updated: [ id1, id2 ] });
+    });
+
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reinstateTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectChanges({ deleted: [ id1, id2 ] });
+      accum.expectNumApplyChanges(1);
+      accum.expectNumValidations(0);
+    });
+
+    // Undo all
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reverseTxns(3);
+      accum.expectNumValidations(0);
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(3);
+      // ###TODO: changed elements
+    });
+
+    // Redo all
+    EventAccumulator.testElements(imodel, (accum) => {
+      imodel.txns.reinstateTxn();
+      accum.expectNumValidations(0);
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(3);
+    });
   });
 
   it("dispatches events when models change", () => {
-    const txns = imodel.txns;
     const existingModelId = props.model;
     const existingModel = imodel.models.getModel<PhysicalModel>(existingModelId);
 
     let newModelId: string;
-    EventAccumulator.test(txns, txns.onModelsChanged, (accum) => {
+    EventAccumulator.testModels(imodel, (accum) => {
       newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
       imodel.saveChanges("1 insert");
       accum.expectNumValidations(1);
@@ -482,7 +545,7 @@ describe("TxnManager", () => {
 
     // NB: Updates to existing models never produce events. I don't think I want to change that as part of this PR.
     let newModel: PhysicalModel;
-    EventAccumulator.test(txns, txns.onModelsChanged, (accum) => {
+    EventAccumulator.testModels(imodel, (accum) => {
       newModel = imodel.models.getModel<PhysicalModel>(newModelId);
       const newModelProps = newModel.toJSON();
       newModelProps.isNotSpatiallyLocated = newModel.isSpatiallyLocated;
@@ -493,14 +556,14 @@ describe("TxnManager", () => {
       accum.expectChanges({ updated: [ ] });
     });
 
-    EventAccumulator.test(txns, txns.onModelsChanged, (accum) => {
+    EventAccumulator.testModels(imodel, (accum) => {
       imodel.elements.insertElement(props);
       imodel.saveChanges("insert 1 geometric element");
       accum.expectNumValidations(1);
       accum.expectChanges({ });
     });
 
-    EventAccumulator.test(txns, txns.onModelsChanged, (accum) => {
+    EventAccumulator.testModels(imodel, (accum) => {
       newModel.delete();
       imodel.saveChanges("1 delete");
       accum.expectNumValidations(1);
@@ -508,8 +571,6 @@ describe("TxnManager", () => {
 
       accum.expectNumApplyChanges(0);
     });
-
-    // ###TODO undo/redo
   });
 
   it("dispatches events when geometry guids change", () => {
