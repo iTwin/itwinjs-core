@@ -11,7 +11,8 @@ import { Range3d } from "@bentley/geometry-core";
 import {
   EditingSessionNotifications, ElementGeometryChange, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
 } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseConnection";
+import { BriefcaseNotificationHandler } from "./BriefcaseTxns";
+import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp } from "./IpcApp";
 
 class ModelChanges extends SortedArray<ElementGeometryChange> {

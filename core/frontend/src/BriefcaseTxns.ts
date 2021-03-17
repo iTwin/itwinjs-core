@@ -11,7 +11,18 @@ import {
   ChangedEntities, IpcAppChannel, ModelIdAndGeometryGuid, RemoveFunction,
   TxnAction, TxnNotifications,
 } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseConnection";
+import { BriefcaseConnection } from "./BriefcaseConnection";
+import { NotificationHandler } from "./IpcApp";
+
+/**
+ * Base class for notification handlers for events from the backend that are specific to a [[BriefcaseConnection]].
+ * @beta
+ */
+export abstract class BriefcaseNotificationHandler extends NotificationHandler {
+  constructor(private _key: string) { super(); }
+  public abstract get briefcaseChannelName(): string;
+  public get channelName() { return `${this.briefcaseChannelName}:${this._key}`; }
+}
 
 /** Dispatches events corresponding to local changes made to a [[BriefcaseConnection]] via [Txns]($docs/learning/InteractiveEditing.md).
  * @see [[BriefcaseConnection.txns]].

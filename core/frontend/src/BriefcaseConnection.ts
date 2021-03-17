@@ -12,19 +12,9 @@ import {
   StandaloneOpenOptions,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
-import { IpcApp, NotificationHandler } from "./IpcApp";
+import { IpcApp } from "./IpcApp";
 import { InteractiveEditingSession } from "./InteractiveEditingSession";
 import { BriefcaseTxns } from "./BriefcaseTxns";
-
-/**
- * Base class for notification handlers for events from the backend that are specific to a Briefcase.
- * @beta
- */
-export abstract class BriefcaseNotificationHandler extends NotificationHandler {
-  constructor(private _key: string) { super(); }
-  public abstract get briefcaseChannelName(): string;
-  public get channelName() { return `${this.briefcaseChannelName}:${this._key}`; }
-}
 
 /** A connection to an editable briefcase on the backend. This class uses [Ipc]($docs/learning/IpcInterface.md) to communicate
  * to the backend and may only be used by [[IpcApp]]s.
