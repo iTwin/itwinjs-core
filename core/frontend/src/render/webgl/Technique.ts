@@ -34,7 +34,7 @@ import { addUnlitMonochrome } from "./glsl/Monochrome";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
-import createRealityMeshBuilder from "./glsl/RealityMesh";
+import createRealityMeshBuilder, { createClassifieRealityMeshHiliter } from "./glsl/RealityMesh";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
@@ -639,10 +639,11 @@ class PointCloudTechnique extends VariedTechnique {
 }
 
 class RealityMeshTechnique extends VariedTechnique {
-  private static readonly _numVariants = 48;
+  private static readonly _numVariants = 49;
 
   public constructor(gl: WebGLRenderingContext) {
     super(RealityMeshTechnique._numVariants);
+    this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, createClassifieRealityMeshHiliter);
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
@@ -659,6 +660,7 @@ class RealityMeshTechnique extends VariedTechnique {
                 addTranslucency(builder);
               } else
                 this.addFeatureId(builder, featureMode);
+
               this.addShader(builder, flags, gl);
             }
           }
@@ -672,7 +674,9 @@ class RealityMeshTechnique extends VariedTechnique {
   protected get _debugDescription() { return "RealityMesh"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    let ndx = 0;
+    if (flags.isHilite)
+      return 0;
+    let ndx = 1;
     if (flags.isClassified)
       ndx++;
     if (flags.isShadowable)

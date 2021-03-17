@@ -16,9 +16,10 @@ import { FeatureMode, IsShadowable, IsThematic, TechniqueFlags } from "../Techni
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addShaderFlags, addUInt32s } from "./Common";
-import { unquantize2d } from "./Decode";
+import { decodeDepthRgb, unquantize2d } from "./Decode";
 import { addFeatureSymbology, FeatureSymbologyOptions } from "./FeatureSymbology";
-import { addColorPlanarClassifier } from "./PlanarClassification";
+import { addAltPickBufferOutputs, addPickBufferOutputs, assignFragColor } from "./Fragment";
+import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier } from "./PlanarClassification";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addClassificationTranslucencyDiscard, octDecodeNormal } from "./Surface";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
@@ -105,6 +106,59 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
       });
     });
   }
+}
+function baseColorFromTextures(textureCount: number) {
+  const applyTextureStrings = [];
+
+  for (let i = 0; i < textureCount; i++)
+    applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texTransform${i})) doDiscard = false; `);
+
+  return `
+  if (!u_texturesPresent)
+    return u_baseColor;
+
+  bool doDiscard = true;
+  vec4 col = u_baseColor;
+  ${applyTextureStrings.join("\n  ")}
+  if (doDiscard)
+      discard;
+
+  col.rgb = mix(col.rgb, mix(col.rgb, v_color.rgb, .5), step(0.0, v_color.r));
+  col.a = mix(col.a, v_color.a * col.a, step(0.0, v_color.a));
+  return col;
+`;
+}
+function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: TextureUnit) {
+  {
+    addNormalMatrix(builder.vert);
+    builder.vert.addFunction(octDecodeNormal);
+    builder.vert.addGlobal("g_hillshadeIndex", VariableType.Float);
+    builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
+    addThematicDisplay(builder, false, true);
+    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, false, false));
+    builder.vert.addUniform("u_worldToViewN", VariableType.Mat3, (prog) => {
+      prog.addGraphicUniform("u_worldToViewN", (uniform, params) => {
+        params.target.uniforms.branch.bindWorldToViewNTransform(uniform, params.geometry, false);
+      });
+    });
+    builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
+      prog.addGraphicUniform("s_texture", (uniform, params) => {
+        params.target.uniforms.thematic.bindTexture(uniform, gradientTextureUnit >= 0 ? gradientTextureUnit : (params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder));
+      });
+    });
+  }
+}
+/** @internal */
+export function createClassifieRealityMeshHiliter(): ProgramBuilder {
+  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false));
+  addHilitePlanarClassifier(builder, false);
+  const vert = builder.vert;
+  vert.set(VertexShaderComponent.ComputePosition, computePosition);
+  addModelViewProjectionMatrix(vert);
+  vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
+  builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  return builder;
 
 }
 
@@ -121,7 +175,6 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
   const frag = builder.frag;
   frag.addGlobal("featureIncrement", VariableType.Float, "0.0");
   frag.set(FragmentShaderComponent.OverrideFeatureId, overrideFeatureId);
-  const applyTextureStrings = [];
   let textureCount = System.instance.maxRealityImageryLayers;
   let gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
   const caps = System.instance.capabilities;
@@ -130,23 +183,8 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
     gradientTextureUnit = -1; // is dependent on drawing mode so will set later
   }
 
-  for (let i = 0; i < textureCount; i++)
-    applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texTransform${i})) doDiscard = false; `);
+  const computeBaseColor = baseColorFromTextures(textureCount);
 
-  const computeBaseColor = `
-  if (!u_texturesPresent)
-    return u_baseColor;
-
-  bool doDiscard = true;
-  vec4 col = u_baseColor;
-  ${applyTextureStrings.join("\n  ")}
-  if (doDiscard)
-      discard;
-
-  col.rgb = mix(col.rgb, mix(col.rgb, v_color.rgb, .5), step(0.0, v_color.r));
-  col.a = mix(col.a, v_color.a * col.a, step(0.0, v_color.a));
-  return col;
-`;
   const feat = flags.featureMode;
   const opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
 
@@ -168,6 +206,18 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
     });
   });
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+  if (!flags.isTranslucent) {
+    if (FeatureMode.None !== feat) {
+      if (flags.isClassified)
+        addFeaturePlanarClassifier(builder);
+
+      builder.frag.addFunction(decodeDepthRgb);
+      if (flags.isClassified)
+        addPickBufferOutputs(builder.frag);
+      else
+        addAltPickBufferOutputs(builder.frag);
+    }
+  }
 
   addTextures(builder, textureCount);
   if (flags.isClassified) {
@@ -175,24 +225,9 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
     addClassificationTranslucencyDiscard(builder);
   }
 
-  if (IsThematic.Yes === flags.isThematic) {
-    addNormalMatrix(builder.vert);
-    builder.vert.addFunction(octDecodeNormal);
-    builder.vert.addGlobal("g_hillshadeIndex", VariableType.Float);
-    builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
-    addThematicDisplay(builder, false, true);
-    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, false, false));
-    builder.vert.addUniform("u_worldToViewN", VariableType.Mat3, (prog) => {
-      prog.addGraphicUniform("u_worldToViewN", (uniform, params) => {
-        params.target.uniforms.branch.bindWorldToViewNTransform(uniform, params.geometry, false);
-      });
-    });
-    builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
-      prog.addGraphicUniform("s_texture", (uniform, params) => {
-        params.target.uniforms.thematic.bindTexture(uniform, gradientTextureUnit >= 0 ? gradientTextureUnit : (params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder));
-      });
-    });
-  }
+  if (IsThematic.Yes === flags.isThematic)
+    addThematicToRealityMesh(builder, gradientTextureUnit);
 
   return builder;
 }
+
