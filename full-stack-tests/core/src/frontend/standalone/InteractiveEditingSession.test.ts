@@ -9,7 +9,8 @@ import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, Proce
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { BatchType, Code, ElementGeometryChange, ChangedEntities, IModelError, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import {
-  BriefcaseConnection, EditingFunctions, ElementEditor3d, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, TileLoadPriority,
+  BriefcaseConnection, EditingFunctions, ElementEditor3d, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession,
+  IpcApp, TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
@@ -175,7 +176,9 @@ describe("InteractiveEditingSession", () => {
       const session = await imodel.beginEditingSession();
 
       let changedElements: ChangedEntities;
-      imodel.txns.onElementsChanged.addListener((ch) => changedElements = ch);
+      imodel.txns.onElementsChanged.addListener((ch) => {
+        changedElements = ch;
+      });
 
       let guidChanged = false;
       imodel.txns.onModelGeometryChanged.addListener((changes) => {
@@ -243,7 +246,36 @@ describe("InteractiveEditingSession", () => {
       await imodel.saveChanges();
       expectChanges([deleteElem1, insertElem2]);
 
-      // ###TODO: No frontend API for testing undo/redo...
+      // Undo
+      // NOTE: Elements do not get removed from the set returned by getGeometryChangedForModel -
+      // but their state may change (e.g. from "insert" to "delete") as a result of undo/redo/
+      const undo = async () => IpcApp.callIpcHost("reverseSingleTxn", imodel!.key);
+      await undo();
+      const deleteElem2 = makeDelete(elem2);
+      expectChanges([insertElem1, deleteElem2]);
+
+      await undo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await undo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await undo();
+      expectChanges([deleteElem1, deleteElem2]);
+
+      // Redo
+      const redo = async () => IpcApp.callIpcHost("reinstateTxn", imodel!.key);
+      await redo();
+      expectChanges([insertElem1, deleteElem2]);
+
+      await redo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await redo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await redo();
+      expectChanges([deleteElem1, insertElem2]);
 
       await session.end();
       await editor.end();
