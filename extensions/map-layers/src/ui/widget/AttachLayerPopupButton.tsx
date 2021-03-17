@@ -242,7 +242,12 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
           {addCustomLayerLabel}</UiCore.Button>
       </div>
       <div className="map-manager-sources">
-        <UiCore.Listbox id="map-sources" className="map-manager-source-list" onKeyPress={handleKeypressOnSourceList} onListboxValueChange={onListboxValueChange} >
+        <UiCore.Listbox
+          id="map-sources"
+          selectedValue={layerNameToAdd}
+          className="map-manager-source-list"
+          onKeyPress={handleKeypressOnSourceList}
+          onListboxValueChange={onListboxValueChange} >
           {
             filteredOptions?.map((mapName) =>
               <UiCore.ListboxItem

@@ -229,7 +229,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
           if (closeDialog) {
             // This handler will close the layer source handler, and therefore the MapUrl dialog.
-            // Dont call it if the dialog needs to remains open.
+            // don't call it if the dialog needs to remains open.
             onOkResult();
           }
 
@@ -290,6 +290,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           if (isMounted.current) {
             setLayerAttachPending(false);
           }
+
+          // In theory the modal dialog should always get closed by the parent
+          // AttachLayerPanel's 'onOkResult' handler.  We close it here just in case.
           if (closeDialog) {
             ModalDialogManager.closeDialog();
           }
