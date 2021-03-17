@@ -2695,7 +2695,6 @@ export class IModelHost {
     static get introspectionClient(): IntrospectionClient | undefined;
     // (undocumented)
     static get isUsingIModelBankClient(): boolean;
-    // (undocumented)
     static get isValid(): boolean;
     // @internal (undocumented)
     static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void;
@@ -3020,9 +3019,7 @@ export class IpcHost {
     static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>): void;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
-    // (undocumented)
     static shutdown(): Promise<void>;
-    // (undocumented)
     static startup(opt?: IpcHostOpts): Promise<void>;
 }
 

@@ -14,8 +14,8 @@ import * as path from "path";
 import * as readline from "readline";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration,
-  IModelJsFs, KnownLocations,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost,
+  IModelJsFs,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -215,39 +215,6 @@ describe("BriefcaseManager (#integration)", () => {
     assert.equal(iModelPullAndPush2.openMode, OpenMode.Readonly);
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelPullAndPush2);
-  });
-
-  // FIXME Breaks other tests
-  it.skip("should set the briefcase cache directory to expected locations", async () => {
-    // Shutdown IModelHost to allow this test to use it.
-    await IModelTestUtils.shutdownBackend();
-
-    const config = new IModelHostConfiguration();
-    const cacheSubDir = "imodels";
-
-    // Test legacy 1.0 cache location
-    await IModelHost.shutdown();
-    config.briefcaseCacheDir = path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"); // eslint-disable-line deprecation/deprecation
-    await IModelHost.startup(config);
-    assert.strictEqual(config.briefcaseCacheDir, BriefcaseManager.cacheDir); // eslint-disable-line deprecation/deprecation
-
-    // Test 3.0 cache default location
-    await IModelHost.shutdown();
-    config.briefcaseCacheDir = undefined; // eslint-disable-line deprecation/deprecation
-    await IModelHost.startup(config);
-    let expectedDir = path.join(IModelHost.cacheDir, cacheSubDir);
-    assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
-
-    // Test 2.0 custom cache location
-    await IModelHost.shutdown();
-    config.briefcaseCacheDir = undefined; // eslint-disable-line deprecation/deprecation
-    config.cacheDir = KnownLocations.tmpdir;
-    await IModelHost.startup(config);
-    expectedDir = path.join(KnownLocations.tmpdir, cacheSubDir);
-    assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
-
-    // Restore the backend to the initial state.
-    await IModelTestUtils.startBackend();
   });
 
   it("should find checkpoints from previous versions", async () => {

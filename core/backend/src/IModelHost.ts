@@ -353,6 +353,7 @@ export class IModelHost {
   }
 
   private static _isValid = false;
+  /** Returns true if IModelHost is started.  */
   public static get isValid() { return this._isValid; }
   /** This method must be called before any iModel.js services are used.
    * @param configuration Host configuration data.
