@@ -6,6 +6,7 @@ const expressionRgx = /^(([A-Z]\w*:)?([A-Z]\w*|\[([A-Z]\w*:)?[A-Z]\w*\])(\(-?\d+
 const tokenRgx = /(?:(\[)?((?:[A-Z]\w*:)?[A-Z]\w*)\]?)(?:\((-?\d+)\))?/i;
 const sp = "*";
 
+/** @internal */
 enum Tokens {
   Bracket = 1,
   Word = 2,

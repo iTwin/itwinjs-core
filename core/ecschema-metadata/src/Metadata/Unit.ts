@@ -49,8 +49,8 @@ export class Unit extends SchemaItem {
   public get denominator(): number { return this._denominator; }
 
   /**
-   * Check if units phenomena's SchemaItemKey matches
-   * @internal
+   * Returns true if a conversion can be calculated between the input units
+   * @alpha
    */
   public static async areCompatible(unitA: Unit, unitB: Unit): Promise<boolean> {
     const unitAPhenomenon = await unitA.phenomenon;

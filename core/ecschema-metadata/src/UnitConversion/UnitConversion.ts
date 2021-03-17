@@ -7,7 +7,7 @@ import { SchemaItemType } from "../ECObjects";
 import { Float } from "./Float";
 
 /**
- * Class used for building unit conversions, storing how to get from source unit to target unit, and evaluating input and converting it to output
+ * Class used for storing calculated conversion between two Units [[UnitConverter.calculateConversion]] and converting values from one Unit to another [[UnitConverter.evaluate]]
  * @alpha
  */
 export class UnitConversion {
@@ -24,7 +24,6 @@ export class UnitConversion {
   }
 
   /**
-   * Compute the UnitConversion's inverse with multiplicative inverse for factor and additive inverse for offset
    * Used to invert source's UnitConversion so that it can be composed with target's UnitConversion cleanly
    * @internal
    */
@@ -34,7 +33,7 @@ export class UnitConversion {
   }
 
   /**
-   * Combines two UnitConversion
+   * Combines two UnitConversions
    * Used to combine source's UnitConversion and target's UnitConversion for a final UnitConversion that can be evaluated
    * @internal
    */
@@ -46,8 +45,7 @@ export class UnitConversion {
   }
 
   /**
-   * Multiples two UnitConversions together
-   * Used during traversal/reducing to get the right factor
+   * Multiples two UnitConversions together to calculate factor during reducing
    * @internal
    */
   public multiply(conversion: UnitConversion): UnitConversion {
@@ -58,14 +56,14 @@ export class UnitConversion {
   }
 
   /**
-   * Raise UnitConversion's factor with power exponent
-   * Used during traversal/reducing to get the right factor when there are exponents between nodes
+   * Raise UnitConversion's factor with power exponent to calculate factor during reducing
    * @internal
    */
   public raise(power: number): UnitConversion {
     if (Float.equals(1.0, power))
       return new UnitConversion(this.factor, this.offset);
-    else if (Float.equals(0.0, power)) return new UnitConversion(1.0, 0.0);
+    else if (Float.equals(0.0, power))
+      return new UnitConversion(1.0, 0.0);
 
     if (Float.equals(this.offset, 0.0))
       return new UnitConversion(this.factor ** power, 0.0);
@@ -73,15 +71,11 @@ export class UnitConversion {
     throw new Error("Cannot raise map with non-zero offset");
   }
 
-  /**
-   * Returns a default UnitConversion with factor of 1 and offset of 0
-   * @internal
-   */
+  /** @internal */
   public static identity = new UnitConversion();
 
   /**
-   * Returns UnitConversion with unit's numerator and denominator in factor and unit's offset in offset
-   * Used during traversal/reducing where it will be composed
+   * Returns UnitConversion with unit's numerator and denominator in factor and unit's offset in offset for reducing
    * @internal
    */
   public static from(unit: Unit | Constant): UnitConversion {
