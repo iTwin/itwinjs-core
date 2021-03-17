@@ -4197,6 +4197,8 @@ export class TxnManager {
     readonly onGeometryChanged: BeEvent<(models: ModelGeometryChangesProps[]) => void>;
     // @internal (undocumented)
     protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]): void;
+    // @internal
+    protected _onGeometryGuidsChanged(): void;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     // @internal (undocumented)
