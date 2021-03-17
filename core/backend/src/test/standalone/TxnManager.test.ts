@@ -374,6 +374,13 @@ describe("TxnManager", () => {
       this._cleanup.length = 0
     }
 
+    public static test(txns: TxnManager, event: BeEvent<(changes: TxnChangedEntities) => void>, func: (accum: EventAccumulator) => void): void {
+      const accum = new EventAccumulator(txns);
+      accum.listen(event);
+      func(accum);
+      accum.dispose();
+    }
+
     public listen(evt: BeEvent<(changes: TxnChangedEntities) => void>): void {
       this._cleanup.push(evt.addListener((changes) => {
         this.copyArray(changes, "inserted");
@@ -423,75 +430,86 @@ describe("TxnManager", () => {
   }
 
   it("dispatches events when elements change", () => {
-    const accum = new EventAccumulator(imodel.txns);
-    accum.listen(imodel.txns.onElementsChanged);
-
+    const txns = imodel.txns;
     const elements = imodel.elements;
-    const id1 = elements.insertElement(props);
-    const id2 = elements.insertElement(props);
-    imodel.saveChanges("2 inserts");
-    accum.expectNumValidations(1);
-    accum.expectChanges({ inserted: [ id1, id2 ] });
+    let id1: string;
+    let id2: string;
 
-    const elem1 = elements.getElement<TestPhysicalObject>(id1);
-    const elem2 = elements.getElement<TestPhysicalObject>(id2);
-    elem1.intProperty = 200;
-    elem1.update();
-    elem2.intProperty = 200;
-    elem2.update();
-    imodel.saveChanges("2 updates");
-    accum.expectNumValidations(2);
-    accum.expectChanges({ updated: [ id1, id2 ] });
+    EventAccumulator.test(txns, txns.onElementsChanged, (accum) => {
+      id1 = elements.insertElement(props);
+      id2 = elements.insertElement(props);
+      imodel.saveChanges("2 inserts");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ inserted: [ id1, id2 ] });
+    });
 
-    elem1.delete();
-    elem2.delete();
-    imodel.saveChanges("2 deletes");
-    accum.expectNumValidations(3);
-    accum.expectChanges({ deleted: [ id1, id2 ] });
+    let elem1: TestPhysicalObject;
+    let elem2: TestPhysicalObject;
+    EventAccumulator.test(txns, txns.onElementsChanged, (accum) => {
+      elem1 = elements.getElement<TestPhysicalObject>(id1);
+      elem2 = elements.getElement<TestPhysicalObject>(id2);
+      elem1.intProperty = 200;
+      elem1.update();
+      elem2.intProperty = 200;
+      elem2.update();
+      imodel.saveChanges("2 updates");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ updated: [ id1, id2 ] });
+    });
 
-    accum.expectNumApplyChanges(0);
+    EventAccumulator.test(txns, txns.onElementsChanged, (accum) => {
+      elem1.delete();
+      elem2.delete();
+      imodel.saveChanges("2 deletes");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ deleted: [ id1, id2 ] });
+    });
 
-    // ###TODO undo/redo
-
-    accum.dispose();
   });
 
   it("dispatches events when models change", () => {
-    const accum = new EventAccumulator(imodel.txns);
-    accum.listen(imodel.txns.onModelsChanged);
-
+    const txns = imodel.txns;
     const existingModelId = props.model;
     const existingModel = imodel.models.getModel<PhysicalModel>(existingModelId);
-    const newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
-    imodel.saveChanges("1 insert");
-    accum.expectNumValidations(1);
-    accum.expectChanges({ inserted: [ newModelId ] });
+
+    let newModelId: string;
+    EventAccumulator.test(txns, txns.onModelsChanged, (accum) => {
+      newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
+      imodel.saveChanges("1 insert");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ inserted: [ newModelId ] });
+    });
 
     // NB: Updates to existing models never produce events. I don't think I want to change that as part of this PR.
-    const newModel = imodel.models.getModel<PhysicalModel>(newModelId);
-    const newModelProps = newModel.toJSON();
-    newModelProps.isNotSpatiallyLocated = newModel.isSpatiallyLocated;
-    imodel.models.updateModel(newModelProps);
-    imodel.models.updateGeometryGuid(existingModelId);
-    imodel.saveChanges("1 update");
-    accum.expectNumValidations(2);
-    accum.expectChanges({ updated: [ ] });
+    let newModel: PhysicalModel;
+    EventAccumulator.test(txns, txns.onModelsChanged, (accum) => {
+      newModel = imodel.models.getModel<PhysicalModel>(newModelId);
+      const newModelProps = newModel.toJSON();
+      newModelProps.isNotSpatiallyLocated = newModel.isSpatiallyLocated;
+      imodel.models.updateModel(newModelProps);
+      imodel.models.updateGeometryGuid(existingModelId);
+      imodel.saveChanges("1 update");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ updated: [ ] });
+    });
 
-    imodel.elements.insertElement(props);
-    imodel.saveChanges("insert 1 geometric element");
-    accum.expectNumValidations(3);
-    accum.expectChanges({ });
+    EventAccumulator.test(txns, txns.onModelsChanged, (accum) => {
+      imodel.elements.insertElement(props);
+      imodel.saveChanges("insert 1 geometric element");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ });
+    });
 
-    newModel.delete();
-    imodel.saveChanges("1 delete");
-    accum.expectNumValidations(4);
-    accum.expectChanges({ deleted: [ newModelId ] });
+    EventAccumulator.test(txns, txns.onModelsChanged, (accum) => {
+      newModel.delete();
+      imodel.saveChanges("1 delete");
+      accum.expectNumValidations(1);
+      accum.expectChanges({ deleted: [ newModelId ] });
 
-    accum.expectNumApplyChanges(0);
+      accum.expectNumApplyChanges(0);
+    });
 
     // ###TODO undo/redo
-
-    accum.dispose();
   });
 
   it("dispatches events when geometry guids change", () => {
