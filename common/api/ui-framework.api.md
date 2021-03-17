@@ -262,6 +262,39 @@ export class AccuDrawPopupManager {
 }
 
 // @alpha
+export interface AccuDrawUiSettings {
+    angleBackgroundColor?: ColorDef | string;
+    angleForegroundColor?: ColorDef | string;
+    angleIcon?: IconSpec;
+    angleLabel?: string;
+    angleStyle?: React_2.CSSProperties;
+    distanceBackgroundColor?: ColorDef | string;
+    distanceForegroundColor?: ColorDef | string;
+    distanceIcon?: IconSpec;
+    distanceLabel?: string;
+    distanceStyle?: React_2.CSSProperties;
+    xBackgroundColor?: ColorDef | string;
+    xForegroundColor?: ColorDef | string;
+    xIcon?: IconSpec;
+    xLabel?: string;
+    xStyle?: React_2.CSSProperties;
+    yBackgroundColor?: ColorDef | string;
+    yForegroundColor?: ColorDef | string;
+    yIcon?: IconSpec;
+    yLabel?: string;
+    yStyle?: React_2.CSSProperties;
+    zBackgroundColor?: ColorDef | string;
+    zForegroundColor?: ColorDef | string;
+    zIcon?: IconSpec;
+    zLabel?: string;
+    zStyle?: React_2.CSSProperties;
+}
+
+// @internal (undocumented)
+export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> {
+}
+
+// @alpha
 export function AccuDrawWidget(): JSX.Element;
 
 // @alpha
@@ -1990,7 +2023,6 @@ export class FrameworkAccuDraw extends AccuDraw {
     // (undocumented)
     static getFieldDisplayValue(index: ItemField): string;
     grabInputFocus(): void;
-    // (undocumented)
     get hasInputFocus(): boolean;
     static readonly isACSRotationConditional: ConditionalBooleanValue;
     static readonly isContextRotationConditional: ConditionalBooleanValue;
@@ -2000,6 +2032,7 @@ export class FrameworkAccuDraw extends AccuDraw {
     static readonly isSideRotationConditional: ConditionalBooleanValue;
     static readonly isTopRotationConditional: ConditionalBooleanValue;
     static readonly isViewRotationConditional: ConditionalBooleanValue;
+    static readonly onAccuDrawUiSettingsChangedEvent: AccuDrawUiSettingsChangedEvent;
     // (undocumented)
     onCompassModeChange(): void;
     // (undocumented)
@@ -2015,7 +2048,9 @@ export class FrameworkAccuDraw extends AccuDraw {
     static translateFromItemField(item: ItemField): AccuDrawField;
     // (undocumented)
     static translateToItemField(field: AccuDrawField): ItemField;
-}
+    static get uiSettings(): AccuDrawUiSettings | undefined;
+    static set uiSettings(v: AccuDrawUiSettings | undefined);
+    }
 
 // @beta
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
@@ -2099,7 +2134,6 @@ export class FrameworkToolAdmin extends ToolAdmin {
 
 // @beta
 export class FrameworkUiAdmin extends UiAdmin {
-    constructor();
     closeDialog(dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     get cursorPosition(): XAndY;

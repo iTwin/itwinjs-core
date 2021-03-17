@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet, CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere, StrokeOptions, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet, CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere, StrokeOptions, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName, ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest, ElementGeometryUpdate, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode, ThematicGradientSettings, ViewFlags } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
@@ -1240,6 +1240,35 @@ describe("ElementGeometry", () => {
     imodel.close();
   });
 
+  it("Exercise using builder/iterator in world coordinates with flatbuffer data", async () => {
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+
+    const pts: Point3d[] = [];
+    pts.push(Point3d.create(5, 10, 0));
+    pts.push(Point3d.create(10, 10, 0));
+    pts.push(Point3d.create(10, 15, 0));
+    pts.push(Point3d.create(5, 15, 0));
+    pts.push(pts[0].clone());
+
+    const builder = new ElementGeometry.Builder();
+    const primitive = LineString3d.create(pts);
+
+    builder.setLocalToWorld3d(testOrigin, testAngles); // Establish world to local transform for append...
+    const status = builder.appendGeometryQuery(primitive);
+    assert.isTrue(status);
+
+    const it = new ElementGeometry.Iterator({ entryArray: builder.entries }, undefined, builder.localToWorld);
+    it.requestWorldCoordinates(); // Apply local to world to entries...
+
+    for (const entry of it) {
+      const geom = entry.toGeometryQuery();
+      assert.exists(geom);
+      assertTrue(geom instanceof LineString3d);
+      assert.isTrue(Point3dArray.isAlmostEqual(pts, geom.points));
+    }
+  });
+
   it("request geometry stream flatbuffer data from existing element", async () => {
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
@@ -1402,6 +1431,48 @@ describe("ElementGeometry", () => {
     assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
     assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
     assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedSkip, false, undefined, 2));
+  });
+
+  it("apply world coordinate transform directly to brep flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const brepProps = createBRepDataProps();
+    const entry = ElementGeometry.fromBRep(brepProps);
+    assert.exists(entry);
+
+    const entityTransform = Transform.createOriginAndMatrix(testOrigin, testAngles.toMatrix3d());
+    const status = ElementGeometry.transformBRep(entry!, entityTransform);
+    assert.isTrue(status);
+
+    const worldBRep = ElementGeometry.toBRep(entry!);
+    assert.exists(worldBRep);
+    const worldTransform = Transform.fromJSON(worldBRep?.transform);
+    assert.isTrue(worldTransform.isAlmostEqual(entityTransform));
+
+    const newEntries: ElementGeometryDataEntry[] = [];
+    newEntries.push(entry!);
+
+    // Facet to make sure brep and face attachments are intact after transformBRep...
+    const expectedFacet: ExpectedElementGeometryEntry[] = [];
+    expectedFacet.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
+    expectedFacet.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
+    expectedFacet.push({ opcode: ElementGeometryOpcode.BasicSymbology });
+    expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
+
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, true));
+    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
   });
 
   it("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {

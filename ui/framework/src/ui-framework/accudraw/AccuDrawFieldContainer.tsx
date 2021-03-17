@@ -14,13 +14,17 @@ import {
   AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldLockEventArgs, AccuDrawSetModeEventArgs,
   AccuDrawUiAdmin, IconSpecUtilities,
 } from "@bentley/ui-abstract";
-import { CommonProps, Orientation, UiSettings } from "@bentley/ui-core";
+import { CommonProps, IconSpec, Orientation, UiSettings } from "@bentley/ui-core";
 import { AccuDrawInputField } from "./AccuDrawInputField";
 import { CompassMode, IModelApp, ItemField, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
-import angleIcon from "./angle.svg?sprite";
-import distanceIcon from "./distance.svg?sprite";
+import angleIconSvg from "./angle.svg?sprite";
+import distanceIconSvg from "./distance.svg?sprite";
+import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
+import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
+import { getCSSColorFromDef } from "@bentley/ui-components";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 /** @alpha */
 export interface AccuDrawFieldContainerProps extends CommonProps {
@@ -38,6 +42,12 @@ function determineShowZ(vp?: ScreenViewport): boolean {
   const showZ = (vp !== undefined) ? /* istanbul ignore next */ vp.view.is3d() : false;
   return showZ;
 }
+
+const defaultXLabel = "X";
+const defaultYLabel = "Y";
+const defaultZLabel = "Z";
+const defaultAngleIcon = IconSpecUtilities.createSvgIconSpec(angleIconSvg);
+const defaultDistanceIcon = IconSpecUtilities.createSvgIconSpec(distanceIconSvg);
 
 /** @alpha */
 export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
@@ -58,6 +68,21 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   const [angleLock, setAngleLock] = React.useState(false);
   const [distanceLock, setDistanceLock] = React.useState(false);
   const [showZ, setShowZ] = React.useState(true);
+  const [xLabel, setXLabel] = React.useState<string | undefined>(defaultXLabel);
+  const [yLabel, setYLabel] = React.useState<string | undefined>(defaultYLabel);
+  const [zLabel, setZLabel] = React.useState<string | undefined>(defaultZLabel);
+  const [angleLabel, setAngleLabel] = React.useState<string | undefined>(undefined);
+  const [distanceLabel, setDistanceLabel] = React.useState<string | undefined>(undefined);
+  const [xIcon, setXIcon] = React.useState<IconSpec | undefined>(undefined);
+  const [yIcon, setYIcon] = React.useState<IconSpec | undefined>(undefined);
+  const [zIcon, setZIcon] = React.useState<IconSpec | undefined>(undefined);
+  const [angleIcon, setAngleIcon] = React.useState<IconSpec | undefined>(defaultAngleIcon);
+  const [distanceIcon, setDistanceIcon] = React.useState<IconSpec | undefined>(defaultDistanceIcon);
+  const [xStyle, setXStyle] = React.useState<React.CSSProperties | undefined>(undefined);
+  const [yStyle, setYStyle] = React.useState<React.CSSProperties | undefined>(undefined);
+  const [zStyle, setZStyle] = React.useState<React.CSSProperties | undefined>(undefined);
+  const [angleStyle, setAngleStyle] = React.useState<React.CSSProperties | undefined>(undefined);
+  const [distanceStyle, setDistanceStyle] = React.useState<React.CSSProperties | undefined>(undefined);
 
   const getInputRef = (field: AccuDrawField): React.RefObject<HTMLInputElement> => {
     let inputRef: React.RefObject<HTMLInputElement>;
@@ -157,12 +182,6 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
     KeyboardShortcutManager.setFocusToHome();
   }, []);
 
-  const classNames = classnames(
-    "uifw-accudraw-field-container",
-    (orientation === Orientation.Vertical) ? "uifw-accudraw-field-container-vertical" : "uifw-accudraw-field-container-horizontal",
-    className,
-  );
-
   React.useEffect(() => {
     setShowZ(showZOverride || determineShowZ(IModelApp.viewManager.selectedView));
 
@@ -174,23 +193,85 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
     return IModelApp.viewManager.onSelectedViewportChanged.addListener(handleSelectedViewportChanged);
   }, [showZOverride]);
 
+  React.useEffect(() => {
+
+    const createFieldStyle = (inStyle: React.CSSProperties | undefined,
+      backgroundColor: ColorDef | string | undefined,
+      foregroundColor: ColorDef | string | undefined): React.CSSProperties | undefined => {
+      let fieldStyle: React.CSSProperties | undefined;
+      let rgbaString = "";
+      if (inStyle || backgroundColor || foregroundColor) {
+        fieldStyle = inStyle ? inStyle : {};
+        if (backgroundColor) {
+          rgbaString = typeof backgroundColor === "string" ? backgroundColor : getCSSColorFromDef(backgroundColor);
+          fieldStyle = {...fieldStyle, backgroundColor: rgbaString};
+        }
+        if (foregroundColor) {
+          rgbaString = typeof foregroundColor === "string" ? foregroundColor : getCSSColorFromDef(foregroundColor);
+          fieldStyle = {...fieldStyle, color: rgbaString};
+        }
+      }
+      return fieldStyle;
+    };
+
+    const processAccuDrawUiSettings = (settings?: AccuDrawUiSettings) => {
+      setXStyle(settings ? createFieldStyle(settings.xStyle, settings.xBackgroundColor, settings.xForegroundColor) : undefined);
+      setYStyle(settings ? createFieldStyle(settings.yStyle, settings.yBackgroundColor, settings.yForegroundColor) : undefined);
+      setZStyle(settings ? createFieldStyle(settings.zStyle, settings.zBackgroundColor, settings.zForegroundColor) : undefined);
+      setAngleStyle(settings ? createFieldStyle(settings.angleStyle, settings.angleBackgroundColor, settings.angleForegroundColor) : undefined);
+      setDistanceStyle(settings ? createFieldStyle(settings.distanceStyle, settings.distanceBackgroundColor, settings.distanceForegroundColor) : undefined);
+
+      setXLabel(settings && settings.xLabel !== undefined ? settings.xLabel : defaultXLabel);
+      setYLabel(settings && settings.yLabel !== undefined ? settings.yLabel : defaultYLabel);
+      setZLabel(settings && settings.zLabel !== undefined ? settings.zLabel : defaultZLabel);
+      setAngleLabel(settings && settings.angleLabel !== undefined ? settings.angleLabel : undefined);
+      setDistanceLabel(settings && settings.distanceLabel !== undefined ? settings.distanceLabel : undefined);
+
+      setXIcon(settings && settings.xIcon !== undefined ? settings.xIcon : undefined);
+      setYIcon(settings && settings.yIcon !== undefined ? settings.yIcon : undefined);
+      setZIcon(settings && settings.zIcon !== undefined ? settings.zIcon : undefined);
+      setAngleIcon(settings && settings.angleIcon !== undefined ? settings.angleIcon : defaultAngleIcon);
+      setDistanceIcon(settings && settings.distanceIcon !== undefined ? settings.distanceIcon : defaultDistanceIcon);
+    };
+
+    if (FrameworkAccuDraw.uiSettings)
+      processAccuDrawUiSettings(FrameworkAccuDraw.uiSettings);
+
+    // istanbul ignore next
+    const handleAccuDrawUiSettingsChanged = () => {
+      processAccuDrawUiSettings(FrameworkAccuDraw.uiSettings);
+    };
+
+    return FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.addListener(handleAccuDrawUiSettingsChanged);
+  }, []);
+
+  const classNames = classnames(
+    "uifw-accudraw-field-container",
+    (orientation === Orientation.Vertical) ? "uifw-accudraw-field-container-vertical" : "uifw-accudraw-field-container-horizontal",
+    className,
+  );
+
   const delay = 250;
+  const labelCentered = (xLabel !== undefined && xLabel.length === 1 && yLabel !== undefined && yLabel.length === 1 && zLabel !== undefined && zLabel.length === 1);
 
   return (
     <div className={classNames} style={style} {...otherProps}>
       {mode === AccuDrawMode.Rectangular &&
         <>
-          <AccuDrawInputField ref={xInputRef} isLocked={xLock} className="uifw-accudraw-x-value"
-            field={AccuDrawField.X} id={`uifw-accudraw-x-${containerIndex}`} label="X" data-testid="uifw-accudraw-x"
+          <AccuDrawInputField ref={xInputRef} isLocked={xLock} className="uifw-accudraw-x-value" style={xStyle}
+            field={AccuDrawField.X} id={`uifw-accudraw-x-${containerIndex}`} data-testid="uifw-accudraw-x"
+            label={xLabel} iconSpec={xIcon} labelCentered={labelCentered}
             valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.X, stringValue)}
             onEscPressed={handleEscPressed} />
-          <AccuDrawInputField ref={yInputRef} isLocked={yLock} className="uifw-accudraw-y-value"
-            field={AccuDrawField.Y} id={`uifw-accudraw-y-${containerIndex}`} label="Y" data-testid="uifw-accudraw-y"
+          <AccuDrawInputField ref={yInputRef} isLocked={yLock} className="uifw-accudraw-y-value" style={yStyle}
+            field={AccuDrawField.Y} id={`uifw-accudraw-y-${containerIndex}`} data-testid="uifw-accudraw-y"
+            label={yLabel} iconSpec={yIcon} labelCentered={labelCentered}
             valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Y, stringValue)}
             onEscPressed={handleEscPressed} />
           {showZ &&
-            <AccuDrawInputField ref={zInputRef} isLocked={zLock} className="uifw-accudraw-z-value"
-              field={AccuDrawField.Z} id={`uifw-accudraw-z-${containerIndex}`} label="Z" data-testid="uifw-accudraw-z"
+            <AccuDrawInputField ref={zInputRef} isLocked={zLock} className="uifw-accudraw-z-value" style={zStyle}
+              field={AccuDrawField.Z} id={`uifw-accudraw-z-${containerIndex}`} data-testid="uifw-accudraw-z"
+              label={zLabel} iconSpec={zIcon} labelCentered={labelCentered}
               valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Z, stringValue)}
               onEscPressed={handleEscPressed} />
           }
@@ -198,14 +279,14 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
       }
       {mode === AccuDrawMode.Polar &&
         <>
-          <AccuDrawInputField ref={angleInputRef} isLocked={angleLock} className="uifw-accudraw-angle-value"
+          <AccuDrawInputField ref={angleInputRef} isLocked={angleLock} className="uifw-accudraw-angle-value" style={angleStyle}
             field={AccuDrawField.Angle} id={`uifw-accudraw-angle-${containerIndex}`} data-testid="uifw-accudraw-angle"
-            iconSpec={IconSpecUtilities.createSvgIconSpec(angleIcon)}
+            label={angleLabel} iconSpec={angleIcon}
             valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Angle, stringValue)}
             onEscPressed={handleEscPressed} />
-          <AccuDrawInputField ref={distanceInputRef} isLocked={distanceLock} className="uifw-accudraw-distance-value"
+          <AccuDrawInputField ref={distanceInputRef} isLocked={distanceLock} className="uifw-accudraw-distance-value" style={distanceStyle}
             field={AccuDrawField.Distance} id={`uifw-accudraw-distance-${containerIndex}`} data-testid="uifw-accudraw-distance"
-            iconSpec={IconSpecUtilities.createSvgIconSpec(distanceIcon)}
+            label={distanceLabel} iconSpec={distanceIcon}
             valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Distance, stringValue)}
             onEscPressed={handleEscPressed} />
         </>

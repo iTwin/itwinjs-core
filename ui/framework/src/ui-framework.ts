@@ -11,6 +11,7 @@ export * from "./ui-framework/accudraw/AccuDrawCommandItems";
 export * from "./ui-framework/accudraw/AccuDrawDialog";
 export * from "./ui-framework/accudraw/AccuDrawKeyboardShortcuts";
 export * from "./ui-framework/accudraw/AccuDrawPopupManager";
+export * from "./ui-framework/accudraw/AccuDrawUiSettings";
 export * from "./ui-framework/accudraw/AccuDrawWidget";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
