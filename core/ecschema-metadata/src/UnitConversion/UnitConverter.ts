@@ -8,7 +8,7 @@ import { UnitConversion } from "./UnitConversion";
 import { UnitGraph } from "./UnitTree";
 
 /**
- * Converter context is used to process unit conversion
+ * Class constructed with SchemaContext and used to calculate [[UnitConversion]] between Units
  * @alpha
  */
 export class UnitConverter {
@@ -26,7 +26,7 @@ export class UnitConverter {
    * Find conversion between from and to units, formatted {schemaName}.{schemaItemName} or {schemaName}:{schemaItemName}
    * @param fromFullName SchemaItem full name of source unit
    * @param toFullName SchemaItem full name of target unit
-   * @returns UnitConversion converting fromFullName -> toFullName with a factor and an offset
+   * @returns [[UnitConversion]] converting fromFullName -> toFullName with a factor and an offset
    * @throws Error if from and to Units' SchemaItem is not found in Schema or Schema prefix is not found in SchemaContext
    * @throws Error if from and to Units do not belong to the same phenomenon
    * @throws Error if definitions' SchemaItems cannot be found in its own or referenced Schemas
