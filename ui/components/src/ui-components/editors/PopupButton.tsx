@@ -65,7 +65,9 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
 
   /** @internal */
   public componentWillUnmount() {
-    this._buttonRef.current?.removeEventListener("keydown", this._handleKeyDown);
+    // istanbul ignore next
+    if (this._buttonRef.current)
+      this._buttonRef.current.removeEventListener("keydown", this._handleKeyDown);
   }
 
   private _togglePopup = (event: React.MouseEvent) => {

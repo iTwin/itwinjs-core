@@ -11,7 +11,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 
 /** Parameters that define the way geometry on a [[SubCategory]] appears.
  * SubCategoryAppearance describes the intrinsic appearance of geometry belonging to that SubCategory, independent of a particular [[ViewState]].
- * Aspects of a SubCategory's appearance can be overridden in the context of a particular [[ViewState]] through the use of [[SubCategoryOverride]s.
+ * Aspects of a SubCategory's appearance can be overridden in the context of a particular [[ViewState]] through the use of [[SubCategoryOverride]]s.
  * @public
  */
 export class SubCategoryAppearance {
@@ -103,13 +103,24 @@ export class SubCategoryAppearance {
 
   /** @internal */
   public toJSON(): SubCategoryAppearance.Props {
-    const val = { color: this.color.toJSON() } as SubCategoryAppearance.Props;
-    if (this.invisible) val.invisible = true;
-    if (this.dontPlot) val.dontPlot = true;
-    if (this.dontSnap) val.dontSnap = true;
-    if (this.dontLocate) val.dontLocate = true;
-    if (0 !== this.weight) val.weight = this.weight;
-    if (0 !== this.priority) val.priority = this.priority;
+    const val: SubCategoryAppearance.Props = { color: this.color.toJSON() };
+    if (this.invisible)
+      val.invisible = true;
+
+    if (this.dontPlot)
+      val.dontPlot = true;
+
+    if (this.dontSnap)
+      val.dontSnap = true;
+
+    if (this.dontLocate)
+      val.dontLocate = true;
+
+    if (0 !== this.weight)
+      val.weight = this.weight;
+
+    if (0 !== this.priority)
+      val.priority = this.priority;
 
     if (Id64.isValid(this.styleId))
       val.style = this.styleId;

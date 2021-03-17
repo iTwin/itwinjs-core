@@ -77,8 +77,8 @@ rush.json       @calebmshafer @scsewall
 /common/**/imodeljs-common/                       @imodeljs/admins
 /common/**/imodeljs-editor-*.*                    @kabentley @pmconne
 /common/**/imodeljs-editor-*/                     @kabentley @pmconne
-/common/**/imodeljs-frontend.*                    @imodeljs/admins
-/common/**/imodeljs-frontend/                     @imodeljs/admins
+/common/**/imodeljs-frontend.*                    @imodeljs/admins @imodeljs/display
+/common/**/imodeljs-frontend/                     @imodeljs/admins @imodeljs/display
 /common/**/imodeljs-i18n.*                        @calebmshafer @wgoehrig
 /common/**/imodeljs-i18n/                         @calebmshafer @wgoehrig
 /common/**/imodeljs-markup.*                      @kabentley @pmconne @bbastings
@@ -135,6 +135,7 @@ rush.json       @calebmshafer @scsewall
 
 /docs/getting-started @calebmshafer @williamkbentley
 /docs/config @calebmshafer @williamkbentley
+/docs/learning/presentation @imodeljs/presentation
 
 # These domains should be split up a bit more
 /domains      @scsewall
@@ -167,6 +168,7 @@ rush.json       @calebmshafer @scsewall
 /test-apps/imodel-from-geojson              @mgooding
 /test-apps/imodel-from-orbitgt              @RBBentley
 /test-apps/imodel-from-reality-model        @RBBentley
+/test-apps/imodel-transformer               @scsewall @mgooding
 /test-apps/ninezone-test-app                @imodeljs/ui
 /test-apps/presentation-test-app            @imodeljs/presentation
 /test-apps/synchro-schedule-importer        @RBBentley

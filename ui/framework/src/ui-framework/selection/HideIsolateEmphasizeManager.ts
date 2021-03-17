@@ -25,6 +25,8 @@ export enum HideIsolateEmphasizeAction {
   HideSelectedModels = "HideSelectedModels",
   HideSelectedCategories = "HideSelectedCategories",
   ClearHiddenIsolatedEmphasized = "ClearHiddenIsolatedEmphasized",
+  ClearOverrideModels = "ClearOverrideModels",
+  ClearOverrideCategories = "ClearOverrideCategories",
 }
 
 const featureIdMap = new Map<HideIsolateEmphasizeAction, GuidString>([
@@ -36,6 +38,8 @@ const featureIdMap = new Map<HideIsolateEmphasizeAction, GuidString>([
   [HideIsolateEmphasizeAction.HideSelectedModels, "8b41e859-ae17-4e19-b220-87a5cf9f8242"],
   [HideIsolateEmphasizeAction.HideSelectedCategories, "c5d6916b-e8d7-4796-bae9-a5303712d46b"],
   [HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized, "7b135c8a-3f3c-4297-b36c-b0ac51f1d8de"],
+  [HideIsolateEmphasizeAction.ClearOverrideModels, "6e519b94-edab-4b13-9ce7-0bcdfa27ccfe"],
+  [HideIsolateEmphasizeAction.ClearOverrideCategories, "9d2be3c6-6992-4c30-84eb-10f6b9379d06"],
 ]);
 
 /** Selection Context Action Event Argument
@@ -162,47 +166,57 @@ export abstract class HideIsolateEmphasizeActionHandler {
   /**
    * Function run when `IsolateSelectedElementsModel` tool button is pressed
    */
-  public abstract async processIsolateSelectedElementsModel(): Promise<void>;
+  public abstract processIsolateSelectedElementsModel(): Promise<void>;
   /**
    * Function run when `IsolateSelectedElementsModel` tool button is pressed
    */
 
-  public abstract async processIsolateSelectedElementsCategory(): Promise<void>;
+  public abstract processIsolateSelectedElementsCategory(): Promise<void>;
 
   /**
    * Function run when `HideSelectedElementsModel` tool button is pressed
    */
-  public abstract async processIsolateSelected(): Promise<void>;
+  public abstract processIsolateSelected(): Promise<void>;
 
   /**
    * Function run when `HideSelectedElementsModel` tool button is pressed
    */
-  public abstract async processHideSelectedElementsModel(): Promise<void>;
+  public abstract processHideSelectedElementsModel(): Promise<void>;
 
   /**
    * Function that is run when `HideSelectedElementsCategory` tool button is pressed
    */
-  public abstract async processHideSelectedElementsCategory(): Promise<void>;
+  public abstract processHideSelectedElementsCategory(): Promise<void>;
 
   /**
    * Function that is run when `HideSelected` tool button is pressed
    */
-  public abstract async processHideSelected(): Promise<void>;
+  public abstract processHideSelected(): Promise<void>;
 
   /**
    * Function that is run when `EmphasizeSelected` tool button is pressed
    */
-  public abstract async processEmphasizeSelected(): Promise<void>;
+  public abstract processEmphasizeSelected(): Promise<void>;
 
   /**
    * Function that is run when `ClearEmphasize` tool button is pressed
    */
-  public abstract async processClearEmphasize(): Promise<void>;
+  public abstract processClearEmphasize(): Promise<void>;
 
   /**
    * Function that informs called if Hide, Isolate, or Emphasize of elements is active.
    */
   public abstract areFeatureOverridesActive(vp: Viewport): boolean;
+
+  /**
+   * Function run when `ClearOverrideCategories` tool button is pressed
+   */
+  public abstract processClearOverrideCategories(): Promise<void>;
+
+  /**
+   * Function run when `ClearOverrideModels` tool button is pressed
+   */
+  public abstract processClearOverrideModels(): Promise<void>;
 }
 
 /** Provides helper functions for doing commands on logical selection like categories and subjects.
@@ -215,6 +229,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   private static _subjectClassName = "BisCore:Subject";
   private static _modelClassName = "BisCore:PhysicalModel";
   private static _subjectModelIdsCache: SubjectModelIdsCache | undefined = undefined;
+  private static _overrideCategoryIds = new Map<Viewport, Set<string>>();
+  private static _overrideModelIds = new Map<Viewport, Set<string>>();
 
   /**
    * Initialize the subject model cache
@@ -501,6 +517,12 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    */
   public static async isolateSelectedElementsModel(vp: Viewport) {
     const modelsToKeep = new Set(await HideIsolateEmphasizeManager.getSelectionSetElementModels(vp.iModel));
+
+    if (vp.view.isSpatialView()) {
+      const modelsToTurnOff = [...vp.view.modelSelector.models].filter((modelId: string) => !modelsToKeep.has(modelId));
+      this.updateModelOverride (vp, modelsToTurnOff);
+    }
+
     await vp.replaceViewedModels(modelsToKeep);
   }
 
@@ -513,6 +535,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     const categoriesToTurnOff = [...vp.view.categorySelector.categories].filter((categoryId: string) => !categoriesToKeep.has(categoryId));
     vp.changeCategoryDisplay(categoriesToTurnOff, false);
     vp.changeCategoryDisplay(categoriesToKeep, true);
+    this.updateCategoryOverride (vp, categoriesToTurnOff);
   }
 
   /**
@@ -540,6 +563,37 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   public static async hideSelectedElementsModel(vp: Viewport) {
     const modelIds = await HideIsolateEmphasizeManager.getSelectionSetElementModels(vp.iModel);
     vp.changeModelDisplay(modelIds, false);
+    this.updateModelOverride (vp, [...modelIds]);
+  }
+
+  /**
+   * Clear (restore) the previously hidden/isolated models hidden by hideSelectedElementsModel
+   * @param vp Viewport to affect
+   */
+  public static clearOverrideModels(vp: Viewport) {
+    const ids = this._overrideModelIds.get(vp);
+    if (ids) {
+      vp.changeModelDisplay([...ids], true);
+      this.clearModelOverride(vp);
+    }
+  }
+
+  /**
+   * Determine if models are hidden by hideSelectedElementsModel or isolateSelectedElementsModel
+   * @param vp Viewport to affect
+   */
+  public static isOverrideModels(vp: Viewport): boolean {
+    const ids = this._overrideModelIds.get(vp);
+    return (ids) ? [...ids].length > 0 : false;
+  }
+
+  /**
+   * Determine if categories are hidden by hideSelectedElementsCategory or isolateSelectedElementsCategory
+   * @param vp Viewport to affect
+   */
+  public static isOverrideCategories(vp: Viewport): boolean {
+    const ids = this._overrideCategoryIds.get(vp);
+    return (ids) ? [...ids].length > 0 : false;
   }
 
   /**
@@ -549,6 +603,19 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   public static async hideSelectedElementsCategory(vp: Viewport) {
     const categoryIds = await HideIsolateEmphasizeManager.getSelectionSetElementCategories(vp.iModel);
     vp.changeCategoryDisplay(categoryIds, false);
+    this.updateCategoryOverride (vp, [...categoryIds]);
+  }
+
+  /**
+   * Clear (restore) the previously hidden categories hidden by hideSelectedElementsCategory
+   * @param vp Viewport to affect
+   */
+  public static clearOverrideCategories(vp: Viewport) {
+    const ids = this._overrideCategoryIds.get(vp);
+    if (ids) {
+      vp.changeCategoryDisplay([...ids], true);
+      this.clearCategoryOverride(vp);
+    }
   }
 
   /** Checks to see if any featureOverrideProviders are active */
@@ -698,5 +765,65 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized });
     UiFramework.postTelemetry(HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized, featureIdMap.get(HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized)); // eslint-disable-line @typescript-eslint/no-floating-promises
     SyncUiEventDispatcher.dispatchSyncUiEvent(HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId);
+  }
+
+  /**
+   * Function that is run when `ClearOverrideModels` tool button is pressed
+   */
+  public async processClearOverrideModels(): Promise<void> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp)
+      return;
+    HideIsolateEmphasizeManager.clearOverrideModels(vp);
+
+    HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.ClearOverrideModels });
+    UiFramework.postTelemetry(HideIsolateEmphasizeAction.ClearOverrideModels, featureIdMap.get(HideIsolateEmphasizeAction.ClearOverrideModels)); // eslint-disable-line @typescript-eslint/no-floating-promises
+    SyncUiEventDispatcher.dispatchSyncUiEvent(HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId);
+  }
+
+  /**
+   * Function that is run when `ClearOverrideCategories` tool button is pressed
+   */
+  public async processClearOverrideCategories(): Promise<void> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp)
+      return;
+    HideIsolateEmphasizeManager.clearOverrideCategories(vp);
+
+    HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.ClearOverrideCategories });
+    UiFramework.postTelemetry(HideIsolateEmphasizeAction.ClearOverrideCategories, featureIdMap.get(HideIsolateEmphasizeAction.ClearOverrideCategories)); // eslint-disable-line @typescript-eslint/no-floating-promises
+    SyncUiEventDispatcher.dispatchSyncUiEvent(HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId);
+  }
+
+  /**
+   * Add category ids to the category override cache (hidden or isolated categories)
+   */
+  private static updateCategoryOverride(vp: Viewport, ids: string[]) {
+    const prevIds = this._overrideCategoryIds.get(vp);
+    const newIds = [...(prevIds || []), ...ids];
+    this._overrideCategoryIds.set (vp, new Set(newIds));
+  }
+
+  /**
+   * Add model ids to the model override cache (hidden or isolated models)
+   */
+  private static updateModelOverride(vp: Viewport, ids: string[]) {
+    const prevIds = this._overrideModelIds.get(vp);
+    const newIds = [...(prevIds || []), ...ids];
+    this._overrideModelIds.set (vp, new Set(newIds));
+  }
+
+  /**
+   * Clear the category override cache (hidden or isolated categories)
+   */
+  private static clearCategoryOverride(vp: Viewport) {
+    this._overrideCategoryIds.delete (vp);
+  }
+
+  /**
+   * Clear the model override cache (hidden or isolated models)
+   */
+  private static clearModelOverride(vp: Viewport) {
+    this._overrideModelIds.delete (vp);
   }
 }

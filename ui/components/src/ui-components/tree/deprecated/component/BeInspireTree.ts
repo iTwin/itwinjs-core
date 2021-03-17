@@ -200,6 +200,7 @@ export class EventsMuteContext implements IDisposable {
       if (++this._triggeredEventsCount >= allowedEventTriggersBeforeMute) {
         this._mute(this._events);
         this._didMute = true;
+        // istanbul ignore else
         if (this._stopListening) {
           this._stopListening();
           this._stopListening = undefined;
@@ -301,6 +302,7 @@ export class BeInspireTree<TNodePayload> {
     this.on([BeInspireTreeEvent.ModelLoaded, BeInspireTreeEvent.ChildrenLoaded], () => {
       // NODES_LOADED_LAST_LISTENER: this listener must be executed last of all ModelLoaded and ChildrenLoaded
       // listeners to avoid excessive re-renders
+      // istanbul ignore else
       if (this._suspendedRendering) {
         this._suspendedRendering.dispose();
         this._suspendedRendering = undefined;
@@ -446,7 +448,7 @@ export class BeInspireTree<TNodePayload> {
       this._tree.removeAllListeners(undefined);
       return;
     }
-    const events = Array.isArray(event) ? event : [event];
+    const events = Array.isArray(event) ? event : /* istanbul ignore next */ [event];
     events.forEach((e) => this._tree.removeAllListeners(e));
   }
 
@@ -593,7 +595,7 @@ export class BeInspireTree<TNodePayload> {
   public updateNodesSelection(nodes: BeInspireTreeNodes<TNodePayload> | Inspire.TreeNodes, nodesToSelect?: string[] | ((payload: TNodePayload) => boolean), muteEvents = true) {
     const selectFunc = (predicate: Inspire.NodeIteratee) => {
       let filtered: Inspire.TreeNode[];
-      if ((nodes as Inspire.TreeNodes).filterBy)
+      if ((nodes as Inspire.TreeNodes).filterBy !== undefined)
         filtered = (nodes as Inspire.TreeNodes).filterBy(predicate).map((n) => n);
       else
         filtered = (nodes as BeInspireTreeNodes<TNodePayload>).filter(predicate);
@@ -743,6 +745,7 @@ export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNo
   if (!anyNode._checkOverriden) {
     const checkBase = inspireNode.check;
     anyNode.check = function (): Inspire.TreeNode {
+      // istanbul ignore else
       if (!this.itree!.state!.checked) {
         this.itree!.state!.checked = true;
         this._tree.emit(BeInspireTreeEvent.NodeChecked, this);
@@ -756,6 +759,7 @@ export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNo
   if (!anyNode._uncheckOverriden) {
     const uncheckBase = inspireNode.uncheck;
     anyNode.uncheck = function (): Inspire.TreeNode {
+      // istanbul ignore else
       if (this.itree!.state!.checked) {
         this.itree!.state!.checked = false;
         this._tree.emit(BeInspireTreeEvent.NodeUnchecked, this);
@@ -1157,6 +1161,7 @@ class PaginationHelper<TPageLoadResult> {
   private onRequestRejected(parentId: string | undefined, pageStart: number) {
     // remove request from active requests list
     const requestedPages = this._requestedPages.get(parentId);
+    // istanbul ignore next
     if (requestedPages)
       requestedPages.delete(pageStart);
   }

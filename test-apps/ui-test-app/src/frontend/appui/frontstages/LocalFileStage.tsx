@@ -6,10 +6,14 @@ import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { OpenDialogOptions } from "electron";
+
 import { Button, ButtonSize, ButtonType, FillCentered, Headline } from "@bentley/ui-core";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, ToolWidget,
-  UiFramework, Widget, Zone,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager,
+  FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../..";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -20,7 +24,7 @@ class LocalFileOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactNode = <LocalFilePage onClose={this._handleClose} onViewsSelected={this._handleViewsSelected} />;
+    this.reactNode = <LocalFilePage onClose={this._handleClose} onViewsSelected={this._handleViewsSelected} writable={SampleAppIModelApp.allowWrite} />;
   }
 
   private _handleClose = () => {
@@ -85,6 +89,7 @@ class FrontstageToolWidget extends React.Component {
 interface LocalFilePageProps {
   onViewsSelected: (iModelConnection: IModelConnection, views: Id64String[]) => void;
   onClose: () => void;
+  writable: boolean;
 }
 
 interface LocalFilePageState {
@@ -100,23 +105,31 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
   };
 
   public componentDidMount() {
-    if (!this.state.iModelConnection && this._input) {
-      this._clickInput();
+    if (!this.state.iModelConnection) {
+      if (ElectronApp.isValid) {
+        this._handleElectronFileOpen(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      } else if (this._input) {
+        this._handleButtonClick();
+      }
     }
   }
 
-  private _clickInput = () => {
-    if (!this.state.iModelConnection && this._input) {
-      this._input.click();
+  private _handleButtonClick = () => {
+    if (!this.state.iModelConnection) {
+      if (ElectronApp.isValid) {
+        this._handleElectronFileOpen(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      } else if (this._input) {
+        this._input.click();
+      }
     }
   };
 
-  private _handleChange = async (_e: React.ChangeEvent) => {
+  private _handleFileInputChange = async (_e: React.ChangeEvent) => {
     if (this._input) {
       if (this._input.files && this._input.files.length) {
         const file: File = this._input.files[0];
         if (file) {
-          const iModelConnection = await LocalFileSupport.openLocalFile(file.name);
+          const iModelConnection = await LocalFileSupport.openLocalFile(file.name, this.props.writable);
           if (iModelConnection) {
             SampleAppIModelApp.setIsIModelLocal(true, true);
             this.setState({ iModelConnection });
@@ -124,6 +137,33 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
         }
       }
     }
+  };
+
+  private _handleElectronFileOpen = async () => {
+    const opts: OpenDialogOptions = {
+      properties: ["openFile"],
+      filters: [
+        { name: "iModels", extensions: ["ibim", "bim"] },
+      ],
+    };
+    const val = await ElectronApp.callDialog("showOpenDialog", opts);
+    if (val.canceled)
+      return;
+
+    const filePath = val.filePaths[0];
+    if (filePath) {
+      const iModelConnection = await LocalFileSupport.openLocalFile(filePath, this.props.writable);
+      if (iModelConnection) {
+        SampleAppIModelApp.setIsIModelLocal(true, true);
+        this.setState({ iModelConnection });
+      }
+    }
+  };
+
+  private _handleClose = async (): Promise<void> => {
+    if (this.state.iModelConnection)
+      await this.state.iModelConnection.close();
+    this.setState({ iModelConnection: undefined }, () => this.props.onClose());
   };
 
   private _handleViewsSelected = (views: ViewDefinitionProps[]): void => {
@@ -147,10 +187,12 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
             <Headline>{title}</Headline>
           </div>
           <FillCentered>
-            <input id="file-input" ref={(e) => this._input = e}
-              type="file" accept=".bim,.ibim" onChange={this._handleChange}
-              style={{ display: "none" }} />
-            <Button size={ButtonSize.Large} buttonType={ButtonType.Primary} onClick={this._clickInput}>
+            {!ElectronApp.isValid &&
+              <input id="file-input" ref={(e) => this._input = e}
+                type="file" accept=".bim,.ibim" onChange={this._handleFileInputChange}
+                style={{ display: "none" }} />
+            }
+            <Button size={ButtonSize.Large} buttonType={ButtonType.Primary} onClick={this._handleButtonClick}>
               {UiFramework.i18n.translate("SampleApp:localFileStage.selectFile")}
             </Button>
           </FillCentered >
@@ -159,7 +201,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
     } else {
       return (
         <IModelViewPicker iModelConnection={this.state.iModelConnection}
-          onClose={this.props.onClose} onViewsSelected={this._handleViewsSelected} />
+          onClose={this._handleClose} onViewsSelected={this._handleViewsSelected} />
       );
     }
   }

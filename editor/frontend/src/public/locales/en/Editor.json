@@ -1,0 +1,47 @@
+{
+  "tools": {
+    "DeleteElements": {
+      "keyin": "editor delete elements",
+      "flyover": "Delete Elements"
+    },
+    "MoveElements": {
+      "keyin": "editor move elements",
+      "flyover": "Move Elements"
+    },
+    "RotateElements": {
+      "keyin": "editor rotate elements",
+      "flyover": "Rotate Elements",
+      "Prompts": {
+        "IdentifyPoint": "Identify point to rotate about",
+        "DefineStart": "Define start of rotation",
+        "DefineAmount": "Define amount of rotation"
+      },
+      "Label": {
+        "Method": "Method",
+        "About": "About",
+        "Angle": "Angle"
+      },
+      "Method": {
+        "3Points": "3 Points",
+        "Angle": "Angle"
+      },
+      "About": {
+        "Point": "Point",
+        "Origin": "Origin",
+        "Center": "Center"
+      }
+    },
+    "UndoAll": {
+      "keyin": "editor undo all",
+      "flyover": "Undo All"
+    },
+    "Undo": {
+      "keyin": "editor undo single",
+      "flyover": "Undo Elements"
+    },
+    "Redo": {
+      "keyin": "editor redo",
+      "flyover": "Redo Elements"
+    }
+  }
+}

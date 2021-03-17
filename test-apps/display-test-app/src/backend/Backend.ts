@@ -9,7 +9,7 @@ import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@bentley/imodeljs-backend";
 import {
   Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
@@ -18,6 +18,7 @@ import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend"
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
+import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 
 class DisplayTestAppRpc extends DtaRpcInterface {
 
@@ -197,9 +198,6 @@ const setupStandaloneConfiguration = () => {
   if (undefined !== process.env.SVT_DPI_LOD)
     configuration.dpiAwareLOD = true;
 
-  if (undefined !== process.env.SVT_NO_CANCEL_TILE_REQUESTS)
-    configuration.cancelBackendTileRequests = false;
-
   const aaSamplesVar = process.env.SVT_AASAMPLES;
   if (undefined !== aaSamplesVar && "0" !== aaSamplesVar && "false" !== aaSamplesVar.toLowerCase()) {
     const aaSamples = Number.parseInt(aaSamplesVar, 10);
@@ -251,14 +249,16 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
-  if (ProcessDetector.isElectronAppBackend)
+  if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost, iModelHost });
-  else if (ProcessDetector.isIOSAppBackend)
-    await IOSHost.startup();
-  else if (ProcessDetector.isAndroidAppBackend)
-    await AndroidHost.startup();
-  else
-    await IModelHost.startup(iModelHost);
+    EditCommandAdmin.register(BasicManipulationCommand);
+  } else if (ProcessDetector.isIOSAppBackend) {
+    await IOSHost.startup({ iModelHost });
+  } else if (ProcessDetector.isAndroidAppBackend) {
+    await AndroidHost.startup({ iModelHost });
+  } else {
+    await LocalhostIpcHost.startup({ iModelHost });
+  }
 
   // Set up logging (by default, no logging is enabled)
   Logger.initializeToConsole();

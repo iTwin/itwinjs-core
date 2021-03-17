@@ -120,6 +120,7 @@ import { Ruleset } from '@bentley/presentation-common';
 import { SafeAreaInsets } from '@bentley/ui-ninezone';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
+import { SettingsManager } from '@bentley/ui-core';
 import { SettingsStatus } from '@bentley/product-settings-client';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
@@ -186,37 +187,41 @@ import { ZoneTargetType } from '@bentley/ui-ninezone';
 // @alpha
 export class AccuDrawCommandItems {
     // (undocumented)
-    static get changeCompassMode(): CommandItemDef;
+    static get bumpToolSetting(): ToolItemDef;
     // (undocumented)
-    static get defineACSByPoints(): CommandItemDef;
+    static get changeCompassMode(): ToolItemDef;
     // (undocumented)
-    static get lockAngle(): CommandItemDef;
+    static get defineACSByPoints(): ToolItemDef;
     // (undocumented)
-    static get lockDistance(): CommandItemDef;
+    static get focusToolSetting(): ToolItemDef;
     // (undocumented)
-    static get lockSmart(): CommandItemDef;
+    static get lockAngle(): ToolItemDef;
     // (undocumented)
-    static get lockX(): CommandItemDef;
+    static get lockDistance(): ToolItemDef;
     // (undocumented)
-    static get lockY(): CommandItemDef;
+    static get lockSmart(): ToolItemDef;
     // (undocumented)
-    static get lockZ(): CommandItemDef;
+    static get lockX(): ToolItemDef;
     // (undocumented)
-    static get rotateAxes(): CommandItemDef;
+    static get lockY(): ToolItemDef;
     // (undocumented)
-    static get rotateCycle(): CommandItemDef;
+    static get lockZ(): ToolItemDef;
     // (undocumented)
-    static get rotateFront(): CommandItemDef;
+    static get rotateAxes(): ToolItemDef;
     // (undocumented)
-    static get rotateSide(): CommandItemDef;
+    static get rotateCycle(): ToolItemDef;
     // (undocumented)
-    static get rotateToElement(): CommandItemDef;
+    static get rotateFront(): ToolItemDef;
     // (undocumented)
-    static get rotateTop(): CommandItemDef;
+    static get rotateSide(): ToolItemDef;
     // (undocumented)
-    static get rotateView(): CommandItemDef;
+    static get rotateToElement(): ToolItemDef;
     // (undocumented)
-    static get setOrigin(): CommandItemDef;
+    static get rotateTop(): ToolItemDef;
+    // (undocumented)
+    static get rotateView(): ToolItemDef;
+    // (undocumented)
+    static get setOrigin(): ToolItemDef;
 }
 
 // @alpha (undocumented)
@@ -251,6 +256,39 @@ export class AccuDrawPopupManager {
     static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)
     static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
+}
+
+// @alpha
+export interface AccuDrawUiSettings {
+    angleBackgroundColor?: ColorDef | string;
+    angleForegroundColor?: ColorDef | string;
+    angleIcon?: IconSpec;
+    angleLabel?: string;
+    angleStyle?: React_2.CSSProperties;
+    distanceBackgroundColor?: ColorDef | string;
+    distanceForegroundColor?: ColorDef | string;
+    distanceIcon?: IconSpec;
+    distanceLabel?: string;
+    distanceStyle?: React_2.CSSProperties;
+    xBackgroundColor?: ColorDef | string;
+    xForegroundColor?: ColorDef | string;
+    xIcon?: IconSpec;
+    xLabel?: string;
+    xStyle?: React_2.CSSProperties;
+    yBackgroundColor?: ColorDef | string;
+    yForegroundColor?: ColorDef | string;
+    yIcon?: IconSpec;
+    yLabel?: string;
+    yStyle?: React_2.CSSProperties;
+    zBackgroundColor?: ColorDef | string;
+    zForegroundColor?: ColorDef | string;
+    zIcon?: IconSpec;
+    zLabel?: string;
+    zStyle?: React_2.CSSProperties;
+}
+
+// @internal (undocumented)
+export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> {
 }
 
 // @alpha
@@ -666,6 +704,18 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
     render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: BooleanListenerState;
+}
+
+// @alpha
+export class BumpToolSetting extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(settingIndexStr?: string): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha (undocumented)
@@ -1291,6 +1341,8 @@ export class CoreTools {
     static get sectionByShapeCommandItemDef(): ToolItemDef;
     // (undocumented)
     static get sectionToolGroup(): GroupItemDef;
+    // (undocumented)
+    static get sectionToolGroupWithPanel(): GroupItemDef;
     // (undocumented)
     static get selectElementCommand(): ToolItemDef;
     // (undocumented)
@@ -1938,6 +1990,17 @@ export interface ExtensibleToolbarProps {
     usage: ToolbarUsage;
 }
 
+// @beta
+export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>): BaseItemState;
+
+// @alpha
+export class FocusToolSettings extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @public
 export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
     // (undocumented)
@@ -1949,16 +2012,14 @@ export interface FooterModeFieldProps extends StatusFieldProps {
     children?: React.ReactNode;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export class FrameworkAccuDraw extends AccuDraw {
     constructor();
     static get displayNotifications(): boolean;
     static set displayNotifications(v: boolean);
     // (undocumented)
     static getFieldDisplayValue(index: ItemField): string;
-    // @internal
     grabInputFocus(): void;
-    // @internal (undocumented)
     get hasInputFocus(): boolean;
     static readonly isACSRotationConditional: ConditionalBooleanValue;
     static readonly isContextRotationConditional: ConditionalBooleanValue;
@@ -1968,23 +2029,25 @@ export class FrameworkAccuDraw extends AccuDraw {
     static readonly isSideRotationConditional: ConditionalBooleanValue;
     static readonly isTopRotationConditional: ConditionalBooleanValue;
     static readonly isViewRotationConditional: ConditionalBooleanValue;
-    // @internal (undocumented)
+    static readonly onAccuDrawUiSettingsChangedEvent: AccuDrawUiSettingsChangedEvent;
+    // (undocumented)
     onCompassModeChange(): void;
-    // @internal (undocumented)
+    // (undocumented)
     onFieldLockChange(index: ItemField): void;
-    // @internal (undocumented)
+    // (undocumented)
     onFieldValueChange(index: ItemField): void;
-    // @internal
     onMotion(_ev: BeButtonEvent): void;
-    // @internal (undocumented)
+    // (undocumented)
     onRotationModeChange(): void;
-    // @internal (undocumented)
+    // (undocumented)
     setFocusItem(index: ItemField): void;
-    // @internal (undocumented)
+    // (undocumented)
     static translateFromItemField(item: ItemField): AccuDrawField;
-    // @internal (undocumented)
+    // (undocumented)
     static translateToItemField(field: AccuDrawField): ItemField;
-}
+    static get uiSettings(): AccuDrawUiSettings | undefined;
+    static set uiSettings(v: AccuDrawUiSettings | undefined);
+    }
 
 // @beta
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
@@ -2068,7 +2131,6 @@ export class FrameworkToolAdmin extends ToolAdmin {
 
 // @beta
 export class FrameworkUiAdmin extends UiAdmin {
-    constructor();
     closeDialog(dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     get cursorPosition(): XAndY;
@@ -2313,7 +2375,11 @@ export class FrontstageDef {
     get defaultLayoutId(): string;
     // (undocumented)
     get defaultTool(): ToolItemDef | undefined;
+    // @beta
+    dockWidgetContainer(widgetId: string): void;
     findWidgetDef(id: string): WidgetDef | undefined;
+    // @beta
+    floatWidget(widgetId: string, point?: PointProps, size?: SizeProps): void;
     // (undocumented)
     get frontstageProvider(): FrontstageProvider | undefined;
     // @beta
@@ -2324,6 +2390,8 @@ export class FrontstageDef {
     // @internal
     initializeFromProps(props: FrontstageProps): void;
     initializeFromProvider(frontstageProvider: FrontstageProvider): void;
+    // (undocumented)
+    isFloatingWidget(widgetId: string): boolean;
     // (undocumented)
     get isInFooterMode(): boolean;
     // @beta (undocumented)
@@ -2431,6 +2499,8 @@ export class FrontstageManager {
     // @internal (undocumented)
     static get nineZoneSize(): Size | undefined;
     static set nineZoneSize(size: Size | undefined);
+    // @alpha
+    static readonly onCloseModalFrontstageRequestedEvent: ModalFrontstageRequestedCloseEvent;
     static readonly onContentControlActivatedEvent: ContentControlActivatedEvent;
     static readonly onContentLayoutActivatedEvent: ContentLayoutActivatedEvent;
     static readonly onFrontstageActivatedEvent: FrontstageActivatedEvent;
@@ -2612,7 +2682,7 @@ export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, d
 export function getFeatureOverrideSyncEventIds(): string[];
 
 // @internal (undocumented)
-export const getFirstItem: (groupItemDef: GroupItemDef) => import("../shared/CommandItemDef").CommandItemDef | ActionButtonItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
+export const getFirstItem: (groupItemDef: GroupItemDef) => AnyItemDef | undefined;
 
 // @internal (undocumented)
 export const getFirstItemId: (groupItemDef: GroupItemDef) => string;
@@ -2740,6 +2810,10 @@ export enum HideIsolateEmphasizeAction {
     // (undocumented)
     ClearHiddenIsolatedEmphasized = "ClearHiddenIsolatedEmphasized",
     // (undocumented)
+    ClearOverrideCategories = "ClearOverrideCategories",
+    // (undocumented)
+    ClearOverrideModels = "ClearOverrideModels",
+    // (undocumented)
     EmphasizeSelectedElements = "EmphasizeSelectedElements",
     // (undocumented)
     HideSelectedCategories = "HideSelectedCategories",
@@ -2762,6 +2836,8 @@ export abstract class HideIsolateEmphasizeActionHandler {
     static emphasizeElementsChanged: BeEvent<(args: EmphasizeElementsChangedArgs) => void>;
     static get hideIsolateEmphasizeUiSyncId(): string;
     abstract processClearEmphasize(): Promise<void>;
+    abstract processClearOverrideCategories(): Promise<void>;
+    abstract processClearOverrideModels(): Promise<void>;
     abstract processEmphasizeSelected(): Promise<void>;
     abstract processHideSelected(): Promise<void>;
     abstract processHideSelectedElementsCategory(): Promise<void>;
@@ -2775,6 +2851,8 @@ export abstract class HideIsolateEmphasizeActionHandler {
 export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
     areFeatureOverridesActive(vp: Viewport): boolean;
     static clearEmphasize(vp: Viewport | undefined): void;
+    static clearOverrideCategories(vp: Viewport): void;
+    static clearOverrideModels(vp: Viewport): void;
     static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
     static emphasizeSelectedCategory(vp: Viewport): Promise<void>;
     static hideCommand(vp: Viewport): Promise<void>;
@@ -2788,7 +2866,11 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     static isolateSelectedElementsModel(vp: Viewport): Promise<void>;
     static isolateSelectedModel(vp: Viewport): Promise<void>;
     static isolateSelectedSubject(vp: Viewport): Promise<void>;
+    static isOverrideCategories(vp: Viewport): boolean;
+    static isOverrideModels(vp: Viewport): boolean;
     processClearEmphasize(): Promise<void>;
+    processClearOverrideCategories(): Promise<void>;
+    processClearOverrideModels(): Promise<void>;
     processEmphasizeSelected(): Promise<void>;
     processHideSelected(): Promise<void>;
     processHideSelectedElementsCategory(): Promise<void>;
@@ -3065,7 +3147,8 @@ export abstract class ItemDefBase {
     // (undocumented)
     static initializeDef(me: ItemDefBase, itemProps: ItemProps): void;
     // (undocumented)
-    isActive: boolean;
+    get isActive(): boolean;
+    set isActive(v: boolean);
     // (undocumented)
     isDisabled?: boolean | ConditionalBooleanValue;
     // @deprecated (undocumented)
@@ -3653,6 +3736,8 @@ export interface ModalFrontstageInfo {
     appBarRight?: React.ReactNode;
     // (undocumented)
     content: React.ReactNode;
+    // @alpha
+    notifyCloseRequest?: boolean;
     // (undocumented)
     title: string;
 }
@@ -3664,6 +3749,16 @@ export interface ModalFrontstageProps extends CommonProps {
     isOpen?: boolean;
     navigateBack?: () => any;
     title: string;
+}
+
+// @alpha
+export class ModalFrontstageRequestedCloseEvent extends UiEvent<ModalFrontstageRequestedCloseEventArgs> {
+}
+
+// @alpha
+export interface ModalFrontstageRequestedCloseEventArgs {
+    modalFrontstage: ModalFrontstageInfo;
+    stageCloseFunc: () => void;
 }
 
 // @public
@@ -4659,6 +4754,25 @@ export const setPanelSize: <Base extends {
     };
 }>(base: Base, side: PanelSide, size: number | undefined) => Base;
 
+// @beta
+export class SettingsModalFrontstage implements ModalFrontstageInfo {
+    constructor(initialSettingsTabId?: string | undefined);
+    // (undocumented)
+    get content(): React.ReactNode;
+    // (undocumented)
+    static getBackstageActionItem(groupPriority: number, itemPriority: number): import("@bentley/ui-abstract").BackstageActionItem;
+    // (undocumented)
+    static id: string;
+    // (undocumented)
+    initialSettingsTabId?: string | undefined;
+    // (undocumented)
+    notifyCloseRequest: boolean;
+    // (undocumented)
+    static showSettingsStage(initialSettingsTab?: string): void;
+    // (undocumented)
+    title: string;
+}
+
 // @internal (undocumented)
 export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
 
@@ -5627,6 +5741,7 @@ export enum SyncUiEventId {
     ModalFrontstageChanged = "modalfrontstagechanged",
     NavigationAidActivated = "navigationaidactivated",
     SelectionSetChanged = "selectionsetchanged",
+    SettingsProvidersChanged = "settingsproviderschanged",
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
     UiSettingsChanged = "uisettingschanged",
@@ -5795,11 +5910,16 @@ export interface ToolAssistanceChangedEventArgs {
 
 // @public
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
+    // @internal
     constructor(p: ToolAssistanceFieldProps);
     // @internal (undocumented)
     componentDidMount(): Promise<void>;
     // @internal (undocumented)
     componentWillUnmount(): void;
+    // @internal (undocumented)
+    context: React.ContextType<typeof UiSettingsContext>;
+    // @internal (undocumented)
+    static contextType: React.Context<UiSettings>;
     // @internal (undocumented)
     static readonly defaultProps: ToolAssistanceFieldDefaultProps;
     // @internal (undocumented)
@@ -5817,7 +5937,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
     defaultPromptAtCursor: boolean;
     fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
-    uiSettings: UiSettings;
+    uiSettings?: UiSettings;
 }
 
 // @internal
@@ -6041,6 +6161,8 @@ export class ToolSettingsManager {
     static get activeToolLabel(): string;
     static set activeToolLabel(label: string);
     static clearToolSettingsData(): void;
+    // (undocumented)
+    static focusIntoToolSettings(): boolean;
     static initialize(): void;
     static initializeDataForTool(tool: InteractiveTool): void;
     static initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
@@ -6206,9 +6328,6 @@ export class UiFramework {
     static closeCursorMenu(): void;
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
-    // @alpha
-    static get escapeToHome(): boolean;
-    static set escapeToHome(v: boolean);
     // @beta
     static get frameworkState(): FrameworkState | undefined;
     // @beta (undocumented)
@@ -6290,6 +6409,8 @@ export class UiFramework {
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setIsUiVisible(visible: boolean): void;
+    // @beta
+    static get settingsManager(): SettingsManager;
     // @beta (undocumented)
     static setUiSettings(uiSettings: UiSettings, immediateSync?: boolean): void;
     // @beta (undocumented)
@@ -6400,7 +6521,7 @@ export function useFrameworkVersion(): FrameworkVersion;
 export function useFrontstageManager(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
-export const useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems;
+export const useGroupedItems: (items: ReadonlyArray<BackstageItem>) => GroupedItems;
 
 // @internal (undocumented)
 export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
@@ -6545,6 +6666,8 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     constructor(props: ViewSelectorProps);
     // (undocumented)
     componentDidMount(): Promise<void>;
+    // (undocumented)
+    componentDidUpdate(prevProps: ViewSelectorProps): Promise<void>;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -7189,7 +7312,7 @@ export enum WidgetType {
 }
 
 // @beta
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "targetRef" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
 
 // @alpha
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {

@@ -201,16 +201,17 @@ export abstract class ViewState extends ElementState {
     };
   }
 
-  /** Get the ViewFlags from the [[DisplayStyleState]] of this ViewState.
-   * @note Do not modify this object directly. Instead, use the setter as follows:
-   *
-   *  ```ts
-   *  const flags = viewState.viewFlags.clone();
-   *  flags.renderMode = RenderMode.SmoothShade; // or whatever alterations are desired
-   *  viewState.viewFlags = flags;
-   *  ```ts
+  /** Flags controlling various aspects of this view's [[DisplayStyleState]].
+   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
+   * @see [DisplayStyleSettings.viewFlags]($common)
    */
-  public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
+  public get viewFlags(): ViewFlags {
+    return this.displayStyle.viewFlags;
+  }
+  public set viewFlags(flags: ViewFlags) {
+    this.displayStyle.viewFlags = flags;
+  }
+
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
   public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.settings.analysisStyle; }
 
@@ -270,7 +271,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Get the name of the [[ViewDefinition]] from which this ViewState originated. */
-  public get name(): string { return this.code.getValue(); }
+  public get name(): string { return this.code.value; }
 
   /** Get this view's background color. */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
@@ -1079,6 +1080,14 @@ export abstract class ViewState extends ElementState {
     // In attachToViewport, we register event listeners on the category selector. We remove them in detachFromViewport.
     // So a non-empty list of event listener removal functions indicates we are currently attached to a viewport.
     return this._unregisterCategorySelectorListeners.length > 0;
+  }
+
+  /** Returns an iterator over additional Viewports used to construct this view's scene. e.g., those used for ViewAttachments and section drawings.
+   * This exists chiefly for display-performance-test-app to determine when all tiles required for the view have been loaded.
+   * @internal
+   */
+  public get secondaryViewports(): Iterable<Viewport> {
+    return [];
   }
 }
 

@@ -8,11 +8,9 @@
 // Do not import it in real code!
 
 export * from "./frontend/AndroidApp";
-export * from "./frontend/AuthorizationFrontend";
 export * from "./frontend/IOSApp";
 export * from "./frontend/MobileApp";
 export * from "./common/MobileRpcManager";
-export * from "./common/MobileAuthorizationClientConfiguration";
 export * from "./backend/AndroidHost";
 export * from "./backend/iOSHost";
 export * from "./backend/MobileHost";

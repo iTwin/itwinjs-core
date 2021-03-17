@@ -1,5 +1,7 @@
 sep=;
 Release Tag;API Item
+beta;ActivateSettingsTabEvent 
+beta;ActivateSettingsTabEventArgs
 internal;AnnularSector
 internal;Annulus
 beta;AsyncGetAutoSuggestDataFunc = (value: string) => Promise
@@ -32,6 +34,7 @@ public;CheckListBoxItemProps
 public;CheckListBoxSeparator(): JSX.Element
 internal;Circle
 public;ClassNameProps
+internal;CloseSettingsContainerEvent 
 public;CommonDivProps 
 public;CommonProps 
 public;ContextMenu 
@@ -80,6 +83,7 @@ alpha;FilteredText(props: FilteredTextProps): JSX.Element
 alpha;FilteredTextProps 
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer(props: CommonDivProps): JSX.Element
+internal;focusIntoContainer(focusContainer: HTMLDivElement, initialFocusElement?: React.RefObject
 internal;FocusTrap(props: FocusTrapProps): JSX.Element | null
 internal;FocusTrapProps 
 beta;Form 
@@ -106,7 +110,7 @@ public;HorizontalAlignment
 public;HorizontalTabs(props: TabsProps): JSX.Element
 public;Icon(props: IconProps): JSX.Element | null
 public;IconHelper
-public;IconInput(props: IconInputProps): JSX.Element
+public;IconInput: (props: IconInputProps) => JSX.Element | null
 public;IconInputProps 
 public;IconProps 
 public;IconSpec = string | ConditionalStringValue | React.ReactNode
@@ -153,6 +157,7 @@ public;LoadingStatus
 public;LoadingStatusProps 
 beta;LocalUiSettings 
 public;MainTabsProps 
+internal;mergeRefs
 public;MessageBox 
 public;MessageBoxProps 
 public;MessageContainer 
@@ -170,7 +175,7 @@ public;NoChildrenProps
 beta;NodeCheckboxProps
 beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
 beta;NodeCheckboxRenderProps = Omit
-beta;NumberInput(props: NumberInputProps): JSX.Element
+beta;NumberInput: (props: NumberInputProps) => JSX.Element | null
 beta;NumberInputProps 
 beta;NumericInput 
 internal;NumericInputDefaultProps = Pick
@@ -189,6 +194,10 @@ public;Popup
 beta;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
 beta;PopupContextMenuProps 
 public;PopupProps 
+beta;ProcessSettingsContainerCloseEvent 
+beta;ProcessSettingsContainerCloseEventArgs
+beta;ProcessSettingsTabActivationEvent 
+beta;ProcessSettingsTabActivationEventArgs
 beta;ProgressBar(props: ProgressBarProps): JSX.Element
 beta;ProgressBarProps 
 beta;ProgressSpinner(props: ProgressSpinnerProps): JSX.Element
@@ -213,10 +222,17 @@ beta;ScrollPositionMaintainer
 public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
 public;SearchBoxProps 
-public;Select(props: SelectProps): JSX.Element
+public;Select: (props: SelectProps) => JSX.Element | null
 public;SelectOption
 public;SelectProps 
 beta;SessionUiSettings 
+beta;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager }: SettingsContainerProps) => JSX.Element
+beta;SettingsContainerProps
+beta;SettingsManager
+beta;SettingsProvider
+beta;SettingsProvidersChangedEvent 
+beta;SettingsProvidersChangedEventArgs
+beta;SettingsTabEntry
 internal;shallowDiffers: (a:
 internal;Size 
 public;SizeProps
@@ -239,6 +255,7 @@ public;SvgPath
 public;SvgPathProps 
 public;SvgSprite 
 public;SvgSpriteProps 
+beta;TabLabel
 public;Tabs 
 public;TabsProps 
 public;Textarea: (props: TextareaProps) => JSX.Element | null
@@ -253,7 +270,7 @@ public;TimeFormat
 public;Timer
 public;Title(props: TextProps): JSX.Element
 public;Title2(props: TextProps): JSX.Element
-public;Toggle(props: ToggleProps): JSX.Element
+public;Toggle: (props: ToggleProps) => JSX.Element | null
 public;ToggleButtonType
 public;ToggleProps 
 internal;TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10
@@ -273,9 +290,9 @@ public;TreeProps
 public;UiCore
 public;UiEvent
 beta;UiSetting
-beta;UiSettings
-beta;UiSettingsResult
-beta;UiSettingsStatus
+public;UiSettings
+public;UiSettingsResult
+public;UiSettingsStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;useDisposable
@@ -286,6 +303,8 @@ internal;useRefEffect
 internal;useRefs
 internal;useRefState
 internal;useResizeObserver
+beta;useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void
+beta;useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void): void
 internal;useTargeted: (ref: React.RefObject
 internal;useWidgetOpacityContext(): WidgetOpacityContextProps
 public;VerticalAlignment

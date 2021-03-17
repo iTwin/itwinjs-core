@@ -25,6 +25,7 @@ interface BooleanEditorState {
  */
 export class BooleanEditor extends React.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
   private _isMounted = false;
+  private _inputElement = React.createRef<HTMLInputElement>();
 
   /** @internal */
   public readonly state: Readonly<BooleanEditorState> = {
@@ -46,6 +47,14 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
     }
 
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._inputElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    return document.activeElement === this._inputElement.current;
   }
 
   private _updateCheckboxValue = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,6 +132,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
 
     return (
       <Checkbox
+        inputRef={this._inputElement}
         onBlur={this.props.onBlur}
         className={className}
         style={this.props.style}

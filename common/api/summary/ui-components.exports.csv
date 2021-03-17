@@ -92,6 +92,7 @@ beta;ControlledSelectableContentProps
 beta;ControlledTree(props: ControlledTreeProps): JSX.Element
 beta;ControlledTreeProps 
 public;ConvertedPrimitives
+internal;convertPrimitiveRecordToString(record: PropertyRecord): string | Promise
 internal;CubeHover
 beta;CubeNavigationAid 
 beta;CubeNavigationAidProps 
@@ -114,6 +115,7 @@ internal;DateTimeEditor
 internal;DateTimePropertyEditor 
 public;DateTimeTypeConverter 
 public;class DateTimeTypeConverterBase 
+beta;DEFAULT_LINKS_HANDLER: LinkElementsInfo
 public;DelayLoadedTreeNodeItem 
 public;DEPRECATED_FilteringInputProps 
 public;DEPRECATED_Tree 
@@ -189,6 +191,7 @@ alpha;FormatUnitLabelProps
 alpha;FormatUnits(props: FormatUnitsProps): JSX.Element
 alpha;FormatUnitsProps 
 public;from
+internal;getCSSColorFromDef(colorDef: ColorDef): string
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 alpha;GridCategoryItem 
@@ -259,7 +262,6 @@ beta;LoadedNodeHierarchy
 beta;LoadedNodeHierarchyItem
 internal;MapMode
 public;MapPayloadToInspireNodeCallback
-public;matchLinks: (text: string) =>
 internal;MenuItem
 alpha;Milestone
 alpha;MilestoneRange

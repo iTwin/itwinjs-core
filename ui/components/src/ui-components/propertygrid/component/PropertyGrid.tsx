@@ -144,10 +144,15 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       return this.gatherData();
     }
 
-    for (const categoryName in propertyData.records) {
-      // istanbul ignore else
-      if (propertyData.records.hasOwnProperty(categoryName))
-        PropertyGridCommons.assignRecordClickHandlers(propertyData.records[categoryName], this.props.onPropertyLinkClick);
+    // Support for deprecated onPropertyLinkClick
+    // eslint-disable-next-line deprecation/deprecation
+    if (this.props.onPropertyLinkClick) {
+      for (const categoryName in propertyData.records) {
+        // istanbul ignore else
+        if (propertyData.records.hasOwnProperty(categoryName))
+          // eslint-disable-next-line deprecation/deprecation
+          PropertyGridCommons.assignRecordClickHandlers(propertyData.records[categoryName], this.props.onPropertyLinkClick);
+      }
     }
 
     this.setState((prevState) => {
@@ -178,9 +183,10 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   private _onCategoryExpansionToggled = (categoryName: string) => {
     this.setState((state) => {
       return produce(state, (draft) => {
-        const category = findCategory(draft.categories, categoryName, true)?.category;
+        const records = findCategory(draft.categories, categoryName, true);
         // istanbul ignore else
-        if (category) {
+        if (records) {
+          const category = records.category;
           category.expand = !category.expand;
         }
       });

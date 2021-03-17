@@ -152,7 +152,7 @@ jobs:
 
       - bash: |
           echo  The current version is $(version)
-          officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$version")
+          officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$(version)")
 
           branchName="release/"$officialVersion
 

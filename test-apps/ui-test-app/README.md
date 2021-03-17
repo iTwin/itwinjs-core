@@ -1,8 +1,8 @@
 ﻿# ui-test-app Test Application
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
-The ui-test-app iModel.js test application provides an easy way to test the React components in the iModel.js UI packages, including the 9-zone components, along with other iModel.js packages.
+The ui-test-app iTwin.js test application provides an easy way to test the React components in the iTwin.js UI packages, including the 9-zone components, along with other iTwin.js packages.
 
 ## Development setup
 
@@ -28,7 +28,27 @@ To start the application, simply install its dependencies and run it:
 
 4. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
 
-5. You can rebuild any of the iModel.js packages independently using `npm run build` in the appropriate folder then refresh the browser to pick up those changes and restart the application.
+5. You can rebuild any of the iTwin.js packages independently using `npm run build` in the appropriate folder then refresh the browser to pick up those changes and restart the application.
+
+## Electron application
+
+To start the application as an Electron app, run the following in the `imodeljs\test-apps\ui-test-app` directory:
+
+  ```sh
+  npm run start
+  ```
+
+Alternately, you can start the web server in one shell using:
+
+  ```sh
+  npm run start:webserver
+  ```
+
+then start the Electron frontend in another shell using:
+
+  ```sh
+  npm run start:electron
+  ```
 
 ## Snapshot file support
 
@@ -39,6 +59,7 @@ You can now open snapshot files using ui-test-app. These are the relevant enviro
 
 __Note:__ You must navigate to your snapshot folder the first time you use the File Open dialog. To open other files, click the "Home" button in the upper-left then click "Open Local File". You still need to sign-in.
 
-## Using the Edit Front stage to test writing to iModel
+## Using the Edit frontstage to test editing an iModel
 
-To test writing to an iModel, the '.env' file in the ui-test-app directory should set the variable imjs_TESTAPP_ALLOW_WRITE=1. Optionally this variable can be set in the command shell before starting the servers. Currently only files from iModelHub can be edited.
+To test editing an iModel, the '.env' file in the ui-test-app directory should set the variable imjs_TESTAPP_ALLOW_WRITE=1. Optionally this variable can be set in the command shell before starting the servers. Files from iModelHub can be edited. Also, standalone files marked as editable can be edited using
+the Electron application.

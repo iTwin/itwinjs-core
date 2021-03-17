@@ -33,6 +33,7 @@ interface TextEditorState {
 export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEditorState> implements TypeEditor {
   private _isMounted = false;
   private _ariaLabel = UiComponents.translate("editor.text");
+  private _inputElement = React.createRef<HTMLInputElement>();
 
   /** @internal */
   public readonly state: Readonly<TextEditorState> = {
@@ -51,6 +52,14 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     }
 
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._inputElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    return document.activeElement === this._inputElement.current;
   }
 
   private _updateInputValue = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,6 +146,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
       onBlur: this.props.onBlur,
       onChange: this._updateInputValue,
       setFocus: this.props.setFocus && !this.state.isDisabled,
+      ref: this._inputElement,
     };
 
     inputProps["aria-label"] = this._ariaLabel;

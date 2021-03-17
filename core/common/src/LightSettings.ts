@@ -24,13 +24,17 @@ function extractIntensity(value: number | undefined, defaultValue: number) {
 export interface SolarLightProps {
   /** Intensity of the light, typically in [0..1] but can range up to 5. Default: 1.0 */
   intensity?: number;
-  /** Direction of the light in world coordinates. Default: (-1, -1, -1) */
+  /** Direction of the light in world coordinates. Defaults to a vector looking down on the scene at a 45 degree angle mostly along the Y axis. */
   direction?: XYZProps;
   /** If true, the light will be applied even when shadows are turned off for the view.
    * If false, a roughly overhead light of the same intensity oriented in view space will be used instead.
    * Default: false.
    */
   alwaysEnabled?: boolean;
+  /** If defined, the time in UNIX milliseconds from which [[direction]] was calculated.
+   * @see [[DisplayStyleSettings.setSunTime]] to compute the solar direction from a point in time.
+   */
+  timePoint?: number;
 }
 
 const defaultSolarDirection = Vector3d.create(0.272166, 0.680414, 0.680414);
@@ -40,26 +44,41 @@ const defaultSolarDirection = Vector3d.create(0.272166, 0.680414, 0.680414);
  * @public
  */
 export class SolarLight {
+  /** Direction of the light in world coordinates. Defaults to a vector looking down on the scene at a 45 degree angle mostly along the Y axis. */
   public readonly direction: Readonly<Vector3d>;
+  /** Intensity of the light, typically in [0..1] but can range up to 5. Default: 1.0 */
   public readonly intensity: number;
+  /** If true, the light will be applied even when shadows are turned off for the view.
+   * If false, a roughly overhead light of the same intensity oriented in view space will be used instead.
+   * Default: false.
+   */
   public readonly alwaysEnabled: boolean;
+  /** If defined, the time in UNIX milliseconds from which [[direction]] was calculated.
+   * @see [[DisplayStyleSettings.setSunTime]] to compute the solar direction from a point in time.
+   */
+  public readonly timePoint?: number;
 
   public constructor(json?: SolarLightProps) {
     json = json || {};
     this.intensity = extractIntensity(json.intensity, 1);
     this.alwaysEnabled = JsonUtils.asBool(json.alwaysEnabled);
+
     if (json.direction)
       this.direction = Vector3d.fromJSON(json.direction);
     else
       this.direction = defaultSolarDirection.clone();
+
+    if (typeof json.timePoint === "number")
+      this.timePoint = json.timePoint;
   }
 
   public toJSON(): SolarLightProps | undefined {
     const direction = this.direction.isAlmostEqual(defaultSolarDirection) ? undefined : this.direction.toJSON();
     const intensity = this.intensity !== 1 ? this.intensity : undefined;
     const alwaysEnabled = this.alwaysEnabled ? true : undefined;
+    const timePoint = this.timePoint;
 
-    if (undefined === direction && undefined === intensity && undefined === alwaysEnabled)
+    if (undefined === direction && undefined === intensity && undefined === alwaysEnabled && undefined === timePoint)
       return undefined;
 
     const json: SolarLightProps = {};
@@ -72,10 +91,16 @@ export class SolarLight {
     if (undefined !== alwaysEnabled)
       json.alwaysEnabled = alwaysEnabled;
 
+    if (undefined !== timePoint)
+      json.timePoint = timePoint;
+
     return json;
   }
 
-  /** Create a copy of this SolarLight, identical except in any properties explicitly specified by `changedProps`. */
+  /** Create a copy of this SolarLight, identical except in any properties explicitly specified by `changedProps`, with a possible exception for [[timePoint]].
+   * If `this.timePoint` is defined and `changedProps` defines `direction` but **doesn't** define `timePoint`, the time point will only be preserved in the
+   * copy if `changesProps.direction` is equal to `this.direction`.
+   */
   public clone(changedProps?: SolarLightProps): SolarLight {
     if (!changedProps)
       return this;
@@ -90,11 +115,22 @@ export class SolarLight {
     if (undefined !== changedProps.alwaysEnabled)
       props.alwaysEnabled = changedProps.alwaysEnabled;
 
+    if (undefined !== changedProps.timePoint)
+      props.timePoint = changedProps.timePoint;
+
+    // If our direction was computed from a time point and the caller only supplies a direction, invalidate the time point unless the input direction matches our direction.
+    // If caller explicitly supplied a timePoint, trust it.
+    if (undefined !== this.timePoint && undefined === changedProps.timePoint && undefined !== changedProps.direction) {
+      const newDirection = Vector3d.fromJSON(changedProps.direction);
+      if (!newDirection.isAlmostEqual(this.direction))
+        props.timePoint = undefined;
+    }
+
     return new SolarLight(props);
   }
 
   public equals(rhs: SolarLight): boolean {
-    return this.intensity === rhs.intensity && this.alwaysEnabled === rhs.alwaysEnabled && this.direction.isExactEqual(rhs.direction);
+    return this.intensity === rhs.intensity && this.alwaysEnabled === rhs.alwaysEnabled && this.direction.isExactEqual(rhs.direction) && this.timePoint === rhs.timePoint;
   }
 }
 

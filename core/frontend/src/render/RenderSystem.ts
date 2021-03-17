@@ -30,6 +30,7 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
+import { ToolAdmin } from "../tools/ToolAdmin";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -464,6 +465,25 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
+
+  /** A function that is invoked after the WebGL context is lost. Context loss is almost always caused by excessive consumption of GPU memory.
+   * After context loss occurs, the RenderSystem will be unable to interact with WebGL by rendering viewports, creating graphics and textures, etc.
+   * By default, this function invokes [[ToolAdmin.exceptionHandler]] with a brief message describing what occurred.
+   * An application can override this behavior as follows:
+   * ```ts
+   * RenderSystem.contextLossHandler = (): Promise<any> => {
+   *  // your implementation here.
+   * }
+   * ```
+   * @note Context loss is reported by the browser some short time *after* it has occurred. It is not possible to determine the specific cause.
+   * @see [[TileAdmin.gpuMemoryLimit]] to limit the amount of GPU memory consumed thereby reducing the likelihood of context loss.
+   * @see [[TileAdmin.totalTileContentBytes]] for the amount of GPU memory allocated for tile graphics.
+   * @beta
+   */
+  public static async contextLossHandler(): Promise<any> {
+    const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
+    return ToolAdmin.exceptionHandler(msg);
+  }
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
