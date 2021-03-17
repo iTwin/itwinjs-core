@@ -12,6 +12,12 @@ import { Schemas } from "../../Schema";
 
 describe("IModelHost", () => {
 
+  afterEach(async () => {
+    // Restore the backend to the initial state.
+    await IModelTestUtils.shutdownBackend();
+    await IModelTestUtils.startBackend();
+  });
+
   it("valid default configuration", async () => {
     await IModelTestUtils.shutdownBackend();
     await IModelHost.startup();
@@ -29,10 +35,6 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("BisCore")).to.exist;
     expect(Schemas.getRegisteredSchema("Generic")).to.exist;
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
-
-    // Restore the backend to the initial state.
-    await IModelTestUtils.shutdownBackend();
-    await IModelTestUtils.startBackend();
   });
 
   it("should set the briefcase cache directory to expected locations", async () => {
@@ -43,7 +45,6 @@ describe("IModelHost", () => {
     const cacheSubDir = "imodels";
 
     // Test legacy 1.0 cache location
-    await IModelHost.shutdown();
     config.briefcaseCacheDir = path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"); // eslint-disable-line deprecation/deprecation
     await IModelHost.startup(config);
     assert.strictEqual(config.briefcaseCacheDir, BriefcaseManager.cacheDir); // eslint-disable-line deprecation/deprecation
@@ -62,10 +63,6 @@ describe("IModelHost", () => {
     await IModelHost.startup(config);
     expectedDir = path.join(KnownLocations.tmpdir, cacheSubDir);
     assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
-
-    // Restore the backend to the initial state.
-    await IModelTestUtils.shutdownBackend();
-    await IModelTestUtils.startBackend();
   });
 
 });

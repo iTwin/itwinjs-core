@@ -46,7 +46,7 @@ describe("IModelTransformerHub (#integration)", () => {
   //    IModelTransformerHub (#integration)
   //         Transform source iModel to target iModel:
   //       Not Found: CodeSpec not found
-  //        at /Users/calebshafer/dev/github/imodeljs/core/backend/src/CodeSpecs.ts:36:15
+  //        at /dev/github/imodeljs/core/backend/src/CodeSpecs.ts:36:15
   //        at BriefcaseDb.withPreparedStatement (src/IModelDb.ts:262:22)
   //        at CodeSpecs.queryId (src/CodeSpecs.ts:33:25)
   //        at CodeSpecs.getByName (src/CodeSpecs.ts:80:29)
