@@ -9,6 +9,8 @@ import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { AnnounceNumberNumber } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d, Range3d } from "../geometry3d/Range";
@@ -75,6 +77,10 @@ export class ViewportGraphicsGridSpacingOptions {
    */
   public static create(distanceBetweenLines: number, cullingOption: 0 | 1 | 2 = 2, clippingOption: 0 | 1 = 1) {
     return new ViewportGraphicsGridSpacingOptions(distanceBetweenLines, cullingOption, clippingOption);
+  }
+  /** Return a member-by-member clone */
+  public clone(): ViewportGraphicsGridSpacingOptions {
+    return new ViewportGraphicsGridSpacingOptions(this.distanceBetweenLines, this.cullingOption, this.clippingOption);
   }
 }
 
@@ -211,12 +217,21 @@ class LineProximityContext {
     this.setupDerivedData();
   }
 }
+
 /**
  * ViewGraphicsOps has static members for various viewing-specific computations.
  * @internal
  */
 export class ViewGraphicsOps {
-  /**
+  static gridRangeMaxXY = 10000.0;
+  static gridRangeMaxZ = 10000.0;  // more or less meaningless -- the grid range z are all zero
+  private static restrictGridRange(range0: Range3d): Range3d{
+    return range0.intersect(Range3d.createXYZXYZ(
+      -this.gridRangeMaxXY, -this.gridRangeMaxXY, -this.gridRangeMaxZ,
+      this.gridRangeMaxXY, this.gridRangeMaxXY, this.gridRangeMaxZ
+    ));
+  }
+/**
    * * Emit line segments of a grid that passes through a display volume.
    * * The chosen segments are culled to have a minimum line-to-line distance.
    * * Hence in a perspective view, grid lines that blur together towards the back of the view are not output.
@@ -293,7 +308,7 @@ export class ViewGraphicsOps {
     if (gridTransformInverse === undefined)
       return false;
     stLoop.multiplyTransformInPlace(gridTransformInverse);
-    const stRange = stLoop.getRange();
+    const stRange = this.restrictGridRange(stLoop.getRange());
     const area = PolygonOps.areaXY(stLoop);
     const stClipper = ConvexClipPlaneSet.createXYPolyLine(stLoop.getPoint3dArray(), undefined, area > 0.0);
     const lineContext = new LineProximityContext(worldToDisplay.transform0);
@@ -394,6 +409,226 @@ export class ViewGraphicsOps {
       gridPoint1.set(ix, yHigh);
       gridLineIdentifier.index = ix;
       stClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
+    }
+
+    return numAnnounced > 0;
+  }
+}
+/**
+ * Context for computing grid lines that are to appear in a view.
+ */
+export class GridInViewContext {
+  // REMARK: worldToGrid, gridToWorld, gridByOriginAndVectors, and grid4d are redundant by simplify logic.
+  private _worldToDisplay: Map4d;
+  private _displayRange: Range3d;
+  private _worldToGrid: Transform;
+  private _gridToWorld: Transform;
+  private _xyzLoop: GrowableXYZArray;
+  private _gridByOriginAndVectors: Plane3dByOriginAndVectors;
+  private _gridSpaceLoop: GrowableXYZArray;
+  private _gridSpaceRange: Range3d;
+  private _gridSpaceClipper: ConvexClipPlaneSet;
+  private _lineProximityContext: LineProximityContext;
+  /**
+   * CAPTURE all members.
+   */
+  private constructor(worldToDisplay: Map4d, displayRange: Range3d,
+    gridToWorld: Transform,
+    worldToGrid: Transform,
+    gridByOriginAndVectors: Plane3dByOriginAndVectors,
+    xyzLoop: GrowableXYZArray,
+    gridSpaceLoop: GrowableXYZArray,
+    gridSpaceRange: Range3d,
+    gridSpaceClipper: ConvexClipPlaneSet,
+    lineProximityContext: LineProximityContext
+  ) {
+    this._worldToDisplay = worldToDisplay;
+    this._displayRange = displayRange;
+    this._gridByOriginAndVectors = gridByOriginAndVectors;
+    this._xyzLoop = xyzLoop;
+    this._gridToWorld = gridToWorld;
+    this._worldToGrid = worldToGrid;
+    this._gridSpaceLoop = gridSpaceLoop;
+    this._gridSpaceRange = gridSpaceRange;
+    this._gridSpaceClipper = gridSpaceClipper;
+    this._lineProximityContext = lineProximityContext;
+  }
+  public static create(
+    gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d,
+    worldToDisplay: Map4d,
+    viewRange: Range3d
+  ): GridInViewContext | undefined {
+    const gridPlane = Plane3dByOriginAndVectors.createOriginAndVectors(gridOrigin, gridXStep, gridYStep);
+    const gridZ = gridXStep.unitCrossProduct(gridYStep)!;
+    const gridToWorld = Transform.createOriginAndMatrixColumns(gridOrigin, gridXStep, gridYStep, gridZ);
+    const worldToGrid = gridToWorld.inverse();
+    if (worldToGrid === undefined)
+      return undefined;
+
+    const toNPC = worldToDisplay.transform0;
+    // promote the grid to 4d . . .
+    const npcOrigin = toNPC.multiplyXYZW(gridOrigin.x, gridOrigin.y, gridOrigin.z, 1.0);
+    const npcGridX = toNPC.multiplyXYZW(gridXStep.x, gridXStep.y, gridXStep.z, 0.0);
+    const npcGridY = toNPC.multiplyXYZW(gridYStep.x, gridYStep.y, gridYStep.z, 0.0);
+    // scale up so there are decent size weights.  (Same scale factor
+    // weights tend to be really small, so we have to trust that things make sense after division . ...
+    const maxWeight = Geometry.maxAbsXYZ(npcOrigin.w, npcGridX.w, npcGridY.w);
+    if (maxWeight === 0.0)
+      return undefined;
+    const divW = 1.0 / maxWeight;
+    npcOrigin.scale(divW, npcOrigin);
+    npcGridX.scale(divW, npcGridX);
+    npcGridY.scale(divW, npcGridY);
+
+    const npcGridXDirection = npcGridX.crossWeightedMinus(npcOrigin).normalize ()!;
+    const npcGridYDirection = npcGridY.crossWeightedMinus(npcOrigin).normalize()!;
+    const npcNormal = npcGridXDirection.unitCrossProduct(npcGridYDirection);
+    const npcOriginXYZ = npcOrigin.realPoint();
+
+    if (npcNormal === undefined || npcOriginXYZ === undefined)
+      return undefined;
+    const npcPlane = ClipPlane.createNormalAndPoint(npcNormal, npcOriginXYZ)!;
+    const npcLoop = npcPlane.intersectRange(viewRange, true)!;
+    if (npcLoop === undefined)
+      return undefined;
+    const xyzLoop = npcLoop.clone();
+    xyzLoop.multiplyMatrix4dAndQuietRenormalizeMatrix4d(worldToDisplay.transform1);
+    const gridSpaceLoop = xyzLoop.clone(); // loop coordinates in grid
+    gridSpaceLoop.multiplyTransformInPlace(worldToGrid);
+    const gridSpaceRange = gridSpaceLoop.getRange();
+    const area = PolygonOps.areaXY(gridSpaceLoop);
+    const gridSpaceClipper = ConvexClipPlaneSet.createXYPolyLine(gridSpaceLoop.getPoint3dArray(), undefined, area > 0.0);
+    const lineProximityContext = new LineProximityContext(worldToDisplay.transform0);
+    return new GridInViewContext(worldToDisplay.clone(), viewRange.clone(), gridToWorld, worldToGrid,
+      gridPlane,
+      xyzLoop,
+      gridSpaceLoop, gridSpaceRange, gridSpaceClipper, lineProximityContext);
+  }
+/**
+ * Process the grid with given options.
+ * @param options
+ * @param announceLine function to be called with (fully clipped) grid lines.
+ * @returns false if invalid setup data or no lines announced.
+ */
+  public processGrid(
+    options: ViewportGraphicsGridSpacingOptions,
+    announceLine: (
+      /** world coordinates start point of the line */
+      pointA: Point3d,
+      /** world coordinates end point of the line */
+      pointB: Point3d,
+      /** depth in view -- the z/w part of the display side of the worldToDisplay transform of pointB.  0 is back, 1 is front */
+      perspectiveZA: number | undefined,
+      /** depth in view -- the z/w part of the display side of the worldToDisplay transform of pointB.  0 is back, 1 is front */
+      perspectiveZB: number | undefined,
+      /** distances from A and B to neighbor line.  The same object pointer is passed on all calls -- do not retain the pointer or modify the contents */
+      startEndDistance: Segment1d | undefined,
+      /** identifies if this is an x or y line, and it's index
+       * * NOTE The same instance is updated and passed to each call.
+       */
+      gridLineIdentifier: ViewportGraphicsGridLineIdentifier
+    ) => void
+  ): boolean {
+    const gridPoint0 = Point3d.create();    // to be referenced from both the clip loop body and the lambda function ....
+    const gridPoint1 = Point3d.create();
+    const clippedGridPoint0 = Point3d.create();
+    const clippedGridPoint1 = Point3d.create();
+    const xLow = this._gridSpaceRange.low.x;
+    const xHigh = this._gridSpaceRange.high.x;
+    const fractionRange = Range1d.createNull();
+    const startEndDistance = Segment1d.create();
+    const perspectiveZStartEnd = Segment1d.create();
+    let numAnnounced = 0;
+    const gridLineIdentifier: ViewportGraphicsGridLineIdentifier = { direction: 0, index: 0, stepCount: 0 };
+    const lineContext = this._lineProximityContext;
+
+    const announceInterval: AnnounceNumberNumber = (f0: number, f1: number) => {
+      gridPoint0.interpolate(f0, gridPoint1, clippedGridPoint0);
+      gridPoint0.interpolate(f1, gridPoint1, clippedGridPoint1);  // those are in grid line counter space !!!
+      const clippedPointWorld0 = this._gridToWorld.multiplyPoint3d(clippedGridPoint0);
+      const clippedPointWorld1 = this._gridToWorld.multiplyPoint3d(clippedGridPoint1);
+      // "Every line case " -- still need to know prior line distances
+      if (options.cullingOption === 0) {
+        if (!lineContext.hasValidLine) {
+          lineContext.announceLineAWorld(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd);
+          gridLineIdentifier.stepCount = 0;
+          announceLine(clippedPointWorld0, clippedPointWorld1,
+            perspectiveZStartEnd.x0, perspectiveZStartEnd.x1,
+            undefined,
+            gridLineIdentifier);
+        } else {
+          gridLineIdentifier.stepCount = 1;
+          if (lineContext.intervalOfSeparation(options, clippedPointWorld0, clippedPointWorld1,
+            fractionRange, perspectiveZStartEnd, startEndDistance)) {
+            announceLine(clippedPointWorld0, clippedPointWorld1,
+              perspectiveZStartEnd.x0, perspectiveZStartEnd.x1,
+              startEndDistance,
+              gridLineIdentifier);
+          }
+          numAnnounced++;
+          return;
+        }
+      }
+
+      if (!lineContext.hasValidLine) {
+        lineContext.announceLineAWorld(clippedPointWorld0, clippedPointWorld1, perspectiveZStartEnd);
+        gridLineIdentifier.stepCount = 0;
+        announceLine(clippedPointWorld0, clippedPointWorld1,
+          perspectiveZStartEnd.x0, perspectiveZStartEnd.x1,
+          undefined,
+          gridLineIdentifier);
+        numAnnounced++;
+      } else {
+        gridLineIdentifier.stepCount++;
+        if (!lineContext.intervalOfSeparation(options, clippedPointWorld0, clippedPointWorld1,
+          fractionRange, perspectiveZStartEnd, startEndDistance)) {
+          if (options.cullingOption === 1)
+            lineContext.moveLineBToLineA();
+        } else {
+          if (options.clippingOption === 0 || fractionRange.isExact01)
+            announceLine(clippedPointWorld0, clippedPointWorld1,
+              perspectiveZStartEnd.x0, perspectiveZStartEnd.x1,
+              startEndDistance,
+              gridLineIdentifier);
+          else {
+            announceLine(clippedPointWorld0.interpolate(fractionRange.low, clippedPointWorld1),
+              clippedPointWorld0.interpolate(fractionRange.high, clippedPointWorld1),
+              perspectiveZStartEnd.x0, perspectiveZStartEnd.x1,
+              startEndDistance,
+              gridLineIdentifier);
+          }
+          lineContext.moveLineBToLineA();
+          gridLineIdentifier.stepCount = 0;
+          numAnnounced++;
+        }
+      }
+    };
+    const iy0 = Math.ceil(this._gridSpaceRange.low.y);
+    const iy1 = Math.floor(this._gridSpaceRange.high.y);
+    // sweep bottom up ...
+    let iy;
+    gridLineIdentifier.direction = 1;
+    this._lineProximityContext.invalidateLine();
+    for (iy = iy0; iy <= iy1; iy++){
+      gridLineIdentifier.index = iy;
+      gridPoint0.set(xLow, iy);
+      gridPoint1.set(xHigh, iy);
+      this._gridSpaceClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
+      }
+
+    // sweep left to right
+    const ix0 = Math.ceil(this._gridSpaceRange.low.x);
+    const ix1 = Math.floor(this._gridSpaceRange.high.x);
+    const yLow = this._gridSpaceRange.low.y;
+    const yHigh = this._gridSpaceRange.high.y;
+    let ix;
+    this._lineProximityContext.invalidateLine();
+    gridLineIdentifier.direction = 0;
+    for (ix = ix0; ix <= ix1; ix++){
+      gridPoint0.set(ix, yLow);
+      gridPoint1.set(ix, yHigh);
+      gridLineIdentifier.index = ix;
+      this._gridSpaceClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
     }
 
     return numAnnounced > 0;
