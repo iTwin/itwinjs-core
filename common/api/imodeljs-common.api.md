@@ -2167,26 +2167,32 @@ export interface ElementAspectProps extends EntityProps {
 
 // @alpha
 export namespace ElementGeometry {
-    export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
+    export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[], worldToLocal?: Transform): boolean;
     export class Builder {
         appendBRepData(brep: BRepEntity.DataProps): boolean;
         appendGeometryParamsChange(geomParams: GeometryParams): boolean;
-        appendGeometryPart(partId: Id64String, partToElement?: Transform): boolean;
+        appendGeometryPart(partId: Id64String, partTransform?: Transform): boolean;
         appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean;
         appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean;
         appendGeometryQuery(geometry: GeometryQuery): boolean;
         appendGeometryRanges(): boolean;
         appendImageGraphic(image: ImageGraphic): boolean;
         appendTextString(text: TextString): boolean;
-        // (undocumented)
         readonly entries: ElementGeometryDataEntry[];
-    }
-    export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
-    export function fromGeometryPart(partId: Id64String, partToElement?: Transform): ElementGeometryDataEntry | undefined;
-    export function fromGeometryQuery(geom: GeometryQuery): ElementGeometryDataEntry | undefined;
-    export function fromImageGraphic(image: ImageGraphicProps): ElementGeometryDataEntry | undefined;
+        get localToWorld(): Transform | undefined;
+        static placementAngleFromPoints(pts: Point3d[], result?: Angle): Angle;
+        static placementAnglesFromPoints(pts: Point3d[], defaultUp?: Vector3d, result?: YawPitchRollAngles): YawPitchRollAngles;
+        setLocalToWorld(localToWorld?: Transform): void;
+        setLocalToWorld2d(origin: Point2d, angle?: Angle): void;
+        setLocalToWorld3d(origin: Point3d, angles?: YawPitchRollAngles): void;
+        get worldToLocal(): Transform | undefined;
+        }
+    export function fromBRep(brep: BRepEntity.DataProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
+    export function fromGeometryPart(partId: Id64String, partTransform?: Transform, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
+    export function fromGeometryQuery(geom: GeometryQuery, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
+    export function fromImageGraphic(image: ImageGraphicProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
     export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
-    export function fromTextString(text: TextStringProps): ElementGeometryDataEntry | undefined;
+    export function fromTextString(text: TextStringProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
     export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
     export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
     export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
@@ -2198,6 +2204,7 @@ export namespace ElementGeometry {
         readonly entryArray: ElementGeometryDataEntry[];
         next(): IteratorResult<IteratorEntry>;
         readonly placement: Placement3d;
+        requestWorldCoordinates(): void;
         readonly viewIndependent?: boolean;
     }
     export interface IteratorData {
@@ -2208,13 +2215,15 @@ export namespace ElementGeometry {
     }
     // (undocumented)
     export class IteratorEntry implements IteratorData {
-        constructor(geomParams: GeometryParams, localToWorld: Transform);
+        constructor(geomParams: GeometryParams, localToWorld: Transform, applyLocalToWorld?: boolean);
         // (undocumented)
         readonly geomParams: GeometryParams;
         // (undocumented)
         localRange?: Range3d;
         // (undocumented)
         readonly localToWorld?: Transform;
+        // (undocumented)
+        get outputTransform(): Transform | undefined;
         toBRepData(wantBRepData?: boolean): BRepEntity.DataProps | undefined;
         toGeometryPart(partToLocal?: Transform, partToWorld?: Transform): Id64String | undefined;
         toGeometryQuery(): GeometryQuery | undefined;
@@ -2224,15 +2233,16 @@ export namespace ElementGeometry {
         get value(): ElementGeometryDataEntry;
         set value(value: ElementGeometryDataEntry);
         }
-    export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
+    export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean, localToWorld?: Transform): BRepEntity.DataProps | undefined;
     export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;
     export function toGeometryPart(entry: ElementGeometryDataEntry, partToElement?: Transform): Id64String | undefined;
-    export function toGeometryQuery(entry: ElementGeometryDataEntry): GeometryQuery | undefined;
-    export function toImageGraphic(entry: ElementGeometryDataEntry): ImageGraphicProps | undefined;
+    export function toGeometryQuery(entry: ElementGeometryDataEntry, localToWorld?: Transform): GeometryQuery | undefined;
+    export function toImageGraphic(entry: ElementGeometryDataEntry, localToWorld?: Transform): ImageGraphicProps | undefined;
     export function toSubGraphicRange(entry: ElementGeometryDataEntry): ElementAlignedBox3d | undefined;
-    export function toTextString(entry: ElementGeometryDataEntry): TextStringProps | undefined;
+    export function toTextString(entry: ElementGeometryDataEntry, localToWorld?: Transform): TextStringProps | undefined;
     export function toTransform(sourceToWorld: Float64Array): Transform | undefined;
-    export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams): boolean;
+    export function transformBRep(entry: ElementGeometryDataEntry, inputTransform: Transform): boolean;
+    export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
 }
 
 // @alpha
