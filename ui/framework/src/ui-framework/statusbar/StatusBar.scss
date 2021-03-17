@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
 .uifw-statusbar-space-between {
 	width: 100%;
@@ -30,6 +31,7 @@
 
 .uifw-statusbar-docked {
   width: 100%;
+  background-color: $buic-background-statusbar;
 }
 
 .uifw-statusbar-item-container {
