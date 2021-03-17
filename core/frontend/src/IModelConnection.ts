@@ -86,11 +86,11 @@ export abstract class IModelConnection extends IModel {
    */
   public readonly geoServices: GeoServices;
   /** @internal Whether GCS has been disabled for this iModelConnection. */
-  protected _gcsDisabled: true | undefined;
+  protected _gcsDisabled = false;
   /** @internal Return true if a GCS is not defined for this iModelConnection; also returns true if GCS is defined but disabled. */
-  public get noGcsDefined(): boolean | undefined { return true === this._gcsDisabled || undefined === this.geographicCoordinateSystem; }
+  public get noGcsDefined(): boolean { return this._gcsDisabled || undefined === this.geographicCoordinateSystem; }
   /** @internal */
-  public disableGCS(disable: boolean): void { this._gcsDisabled = disable ? true : undefined; }
+  public disableGCS(disable: boolean): void { this._gcsDisabled = disable; }
   /** @internal The displayed extents. Union of the the project extents and all displayed reality models.
    * Don't modify this directly - use [[expandDisplayedExtents]].
    */
