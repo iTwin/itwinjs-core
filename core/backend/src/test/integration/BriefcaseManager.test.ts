@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus, Config, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeSetQuery, ChangesType } from "@bentley/imodelhub-client";
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
@@ -686,11 +686,13 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("Should be able to recover after changeSet deletion (#integration)", async () => {
-    // TODO: fix the block below to use the new user with the right feature flag enabled in QA
-    const userContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
+    const testUser = {
+      email: Config.App.getString("imjs_test_imodelhub_user_name"),
+      password: Config.App.getString("imjs_test_imodelhub_user_password"),
+    };
+    const userContext = await TestUtility.getAuthorizedClientRequestContext(testUser);
     const testIModelName = "Delete changeSet test";
     const testUtility = new TestChangeSetUtility(userContext, testIModelName);
-    testUtility.projectId = testProjectId;
 
     // Acquire briefcase and push 1 changeSet
     var iModel = await testUtility.createTestIModel();

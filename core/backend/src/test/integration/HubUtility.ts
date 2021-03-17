@@ -25,6 +25,11 @@ class DeleteChangeSetAction extends WsgInstance {
   public state?: number;
 }
 
+/** Enum to work with iModelHub Actions API */
+enum ActionState {
+  Completed = 2
+}
+
 /** Utility to work with test iModels in the iModelHub */
 export class HubUtility {
   public static logCategory = "HubUtility";
@@ -658,7 +663,7 @@ export class HubUtility {
     const relativeGetActionUrl = `/Repositories/iModel--${iModelId}/iModelActions/DeleteChangeSet/${deleteChangeSetActionId}`;
     return HubUtility.waitForEntityToReachState(
       async () => (await iModelBaseHandler.getInstances(requestContext, DeleteChangeSetAction, relativeGetActionUrl))[0],
-      (action: DeleteChangeSetAction) => action.state === 2);
+      (action: DeleteChangeSetAction) => action.state === ActionState.Completed);
   }
 
   /** Wait until the checkpoint for the specified changeSet fails to generate */
@@ -670,12 +675,17 @@ export class HubUtility {
 
   private static async waitForEntityToReachState<T>(entityQuery: () => Promise<T>, conditionToSatisfy: (entity: T) => Boolean): Promise<void> {
     for (var i = 0; i < 60; i++) {
-      const currentState = await entityQuery();
-      if (conditionToSatisfy(currentState))
+      const currentEntity = await entityQuery();
+      if (!currentEntity)
+        throw new Error("Queried entity is undefined.");
+
+      if (conditionToSatisfy(currentEntity))
         return;
+
       await BeDuration.wait(10000);
     }
-    throw new Error("Entity did not reach the expected state in 10 minutes");
+
+    throw new Error("Entity did not reach the expected state in 10 minutes.");
   }
 }
 
