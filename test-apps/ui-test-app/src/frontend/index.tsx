@@ -73,7 +73,7 @@ import { UiProviderTool } from "./tools/UiProviderTool";
 RpcConfiguration.developmentMode = true;
 
 // cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise mobx hypermodeling testapp urlps
-// cSpell:ignore toggledraginteraction toggleframeworkversion setdraginteraction setframeworkversion
+// cSpell:ignore toggledraginteraction toggleframeworkversion set-drag-interaction set-framework-version
 
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
@@ -259,7 +259,7 @@ export class SampleAppIModelApp {
     // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
     await MapLayersUI.initialize(false); // if false then add widget in FrontstageDef
 
-    AppSettingsProvider.initializeAppSettingProvider();
+    AppSettingsTabsProvider.initializeAppSettingProvider();
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
   }
@@ -539,7 +539,7 @@ function AppFrameworkVersionComponent(props: { frameworkVersion: string, childre
 }
 
 function mapDragInteractionStateToProps(state: RootState) {
-  return { dragInteraction: state.frameworkState.configurableUiState.dragInteraction };
+  return { dragInteraction: state.frameworkState.configurableUiState.useDragInteraction };
 }
 
 function mapFrameworkVersionStateToProps(state: RootState) {

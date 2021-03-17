@@ -14,7 +14,7 @@ import {  FrameworkAccuDraw, UiFramework } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../..";
 
 /** UiSettingsPage displaying the active settings. */
-class UiSettingsPageComponent extends React.Component {
+export class UiSettingsPageComponent extends React.Component {
   private _accuDrawNotificationsTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsTitle");
   private _accuDrawNotificationsDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsDescription");
 
@@ -34,9 +34,6 @@ class UiSettingsPageComponent extends React.Component {
     );
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const ConnectedUiSettingsPage = connect(mapStateToProps, mapDispatchToProps)(UiSettingsPageComponent);
 
 interface SettingsItemProps {
   title: string;

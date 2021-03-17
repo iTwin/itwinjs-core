@@ -29,7 +29,7 @@
   },
   "settingsStage": {
     "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
-    "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
+    "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes"
   },
   "QuantityFormatModalFrontstage": {
     "QuantityFormatStage": "Quantity Format Overrides"

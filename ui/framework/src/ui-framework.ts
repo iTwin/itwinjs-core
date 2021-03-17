@@ -144,6 +144,8 @@ export * from "./ui-framework/selection/SelectionContextItemDef";
 export * from "./ui-framework/selection/HideIsolateEmphasizeManager";
 export * from "./ui-framework/selection/ClearEmphasisStatusField";
 
+export * from "./ui-framework/settings/ui/UiSettings";
+
 export * from "./ui-framework/shared/ActionButtonItemDef";
 export * from "./ui-framework/shared/AnyItemDef";
 export * from "./ui-framework/shared/CommandItemDef";

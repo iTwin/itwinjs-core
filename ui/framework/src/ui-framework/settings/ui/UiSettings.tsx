@@ -6,12 +6,13 @@
  * @module Settings
  */
 
-import "./Settings.scss";
+import "./UiSettings.scss";
 import * as React from "react";
-import { OptionType, Slider, ThemedSelect, Toggle } from "@bentley/ui-core";
+import { OptionType, SettingsTabEntry, Slider, ThemedSelect, Toggle } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 
 function isOptionType(value: OptionType | ReadonlyArray<OptionType>): value is OptionType {
   if (Array.isArray(value))
@@ -21,23 +22,58 @@ function isOptionType(value: OptionType | ReadonlyArray<OptionType>): value is O
 
 /** UiSettingsPage displaying the active settings. */
 export function UiSettingsPageComponent() {
-  const themeTitle = React.useRef(UiFramework.translate("uiSettingsPage.themeTitle"));
-  const themeDescription = React.useRef(UiFramework.translate("uiSettingsPage.themeDescription"));
-  const autoHideTitle = React.useRef(UiFramework.translate("uiSettingsPage.autoHideTitle"));
-  const autoHideDescription = React.useRef(UiFramework.translate("uiSettingsPage.autoHideDescription"));
-  const dragInteractionTitle = React.useRef(UiFramework.translate("uiSettingsPage.dragInteractionTitle"));
-  const dragInteractionDescription = React.useRef(UiFramework.translate("uiSettingsPage.dragInteractionDescription"));
-  const useNewUiTitle = React.useRef(UiFramework.translate("uiSettingsPage.newUiTitle"));
-  const useNewUiDescription = React.useRef(UiFramework.translate("uiSettingsPage.newUiDescription"));
-  const useProximityOpacityTitle = React.useRef(UiFramework.translate("uiSettingsPage.useProximityOpacityTitle"));
-  const useProximityOpacityDescription = React.useRef(UiFramework.translate("uiSettingsPage.useProximityOpacityDescription"));
-  const snapWidgetOpacityTitle = React.useRef(UiFramework.translate("uiSettingsPage.snapWidgetOpacityTitle"));
-  const snapWidgetOpacityDescription = React.useRef(UiFramework.translate("uiSettingsPage.snapWidgetOpacityDescription"));
-  const darkLabel = React.useRef(UiFramework.translate("uiSettingsPage.dark"));
-  const lightLabel = React.useRef(UiFramework.translate("uiSettingsPage.light"));
-  const systemPreferredLabel = React.useRef(UiFramework.translate("uiSettingsPage.systemPreferred"));
-  const widgetOpacityTitle = React.useRef(UiFramework.translate("uiSettingsPage.widgetOpacityTitle"));
-  const widgetOpacityDescription = React.useRef(UiFramework.translate("uiSettingsPage.widgetOpacityDescription"));
+  const themeTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeTitle"));
+  const themeDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeDescription"));
+  const autoHideTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoHideTitle"));
+  const autoHideDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoHideDescription"));
+  const dragInteractionTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.dragInteractionTitle"));
+  const dragInteractionDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.dragInteractionDescription"));
+  const useNewUiTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.newUiTitle"));
+  const useNewUiDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.newUiDescription"));
+  const useProximityOpacityTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.useProximityOpacityTitle"));
+  const useProximityOpacityDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.useProximityOpacityDescription"));
+  const snapWidgetOpacityTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.snapWidgetOpacityTitle"));
+  const snapWidgetOpacityDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.snapWidgetOpacityDescription"));
+  const darkLabel = React.useRef(UiFramework.translate("settings.uiSettingsPage.dark"));
+  const lightLabel = React.useRef(UiFramework.translate("settings.uiSettingsPage.light"));
+  const systemPreferredLabel = React.useRef(UiFramework.translate("settings.uiSettingsPage.systemPreferred"));
+  const widgetOpacityTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.widgetOpacityTitle"));
+  const widgetOpacityDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.widgetOpacityDescription"));
+
+  const [theme, setTheme] = React.useState(()=>UiFramework.getColorTheme());
+  const [uiVersion, setUiVersion] = React.useState(()=>UiFramework.uiVersion);
+  const [useDragInteraction, setUseDragInteraction] = React.useState(()=>UiFramework.useDragInteraction);
+  const [widgetOpacity, setWidgetOpacity] = React.useState(()=>UiFramework.getWidgetOpacity());
+  const [autoHideUi, setAutoHideUi] = React.useState(()=>UiShowHideManager.autoHideUi);
+  const [useProximityOpacity, setUseProximityOpacity] = React.useState(()=>UiShowHideManager.useProximityOpacity);
+  const [snapWidgetOpacity, setSnapWidgetOpacity] = React.useState(()=>UiShowHideManager.snapWidgetOpacity);
+
+  React.useEffect(() => {
+    const syncIdsOfInterest = ["configurableui:set_snapmode","configurableui:set_theme","configurableui:set_toolprompt",
+      "configurableui:set_widget_opacity","configurableui:set-drag-interaction","configurableui:set-framework-version" ];
+
+    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+      if (0 === syncIdsOfInterest.length)
+        return;
+
+      // istanbul ignore else
+      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
+        setTheme(UiFramework.getColorTheme());
+        setAutoHideUi(UiShowHideManager.autoHideUi);
+        setUiVersion(UiFramework.uiVersion);
+        setUseDragInteraction(UiFramework.useDragInteraction);
+        setUseProximityOpacity(UiShowHideManager.useProximityOpacity);
+        setSnapWidgetOpacity(UiShowHideManager.snapWidgetOpacity);
+        setWidgetOpacity(UiFramework.getWidgetOpacity());
+      }
+    };
+
+    // Note: that items with conditions have condition run when loaded into the items manager
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return () => {
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+    };
+  }, []);
 
   const defaultThemeOption = { label: systemPreferredLabel.current, value: SYSTEM_PREFERRED_COLOR_THEME };
   const themeOptions: Array<OptionType> = [
@@ -160,4 +196,20 @@ function SettingsItem(props: SettingsItemProps) {
       </div>
     </div>
   );
+}
+
+/**
+ * Return a SettingsTabEntry that can be used to define the available settings that can be set for an application.
+ * @param itemPriority - Used to define the order of the entry in the Settings Stage
+ * @beta
+ */
+
+ export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntry {
+  return {
+    itemPriority, tabId: "uifw:UiSettings",
+    label: UiFramework.translate("settings.uiSettingsPage.label"),
+    page: <UiSettingsPageComponent />,
+    isDisabled: false,
+    tooltip: UiFramework.translate("settings.uiSettingsPage.tooltip"),
+  };
 }

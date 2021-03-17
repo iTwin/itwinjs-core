@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { UiFramework } from "@bentley/ui-framework";
+import { getUiSettingsManagerEntry, UiFramework } from "@bentley/ui-framework";
 import { SettingsTabEntry, SettingsTabsProvider } from "@bentley/ui-core";
 import { getQuantityFormatsSettingsManagerEntry } from "../frontstages/QuantityFormatStage";
-import { ConnectedUiSettingsPage } from "../frontstages/Settings";
+import { UiSettingsPageComponent } from "../frontstages/Settings";
 
 // Sample UI items provider that dynamically adds ui items
 export class AppSettingsTabsProvider implements SettingsTabsProvider {
@@ -17,13 +17,13 @@ export class AppSettingsTabsProvider implements SettingsTabsProvider {
     return [
       getQuantityFormatsSettingsManagerEntry(10),
       {
-        itemPriority: 20, tabId: "ui-test-app:UI", label: "UI",
-        page: <ConnectedUiSettingsPage />,
+        itemPriority: 20, tabId: "ui-test-app:Accudraw", label: "Accudraw",
+        page: <UiSettingsPageComponent />,
         isDisabled: false,
         icon: "icon-paintbrush",
-        subLabel: "UI and Accudraw",
-        tooltip: "UI and Accudraw Settings",
+        tooltip: "Accudraw Settings",
       },
+      getUiSettingsManagerEntry(30),
     ];
   }
 

@@ -21,8 +21,8 @@ export enum ConfigurableUiActionId {
   SetTheme = "configurableui:set_theme",
   SetToolPrompt = "configurableui:set_toolprompt",
   SetWidgetOpacity = "configurableui:set_widget_opacity",
-  SetDragInteraction = "configurableui:setdraginteraction",
-  SetFrameworkVersion = "configurableui:setframeworkversion",
+  SetDragInteraction = "configurableui:set-drag-interaction",
+  SetFrameworkVersion = "configurableui:set-framework-version",
 }
 
 /** The portion of state managed by the ConfigurableUiReducer.

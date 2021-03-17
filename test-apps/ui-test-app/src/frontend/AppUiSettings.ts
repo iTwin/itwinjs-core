@@ -38,13 +38,13 @@ export class AppUiSettings {
     this._settings.push(this.snapWidgetOpacity);
 
     this.dragInteraction = new UiSetting<boolean>(AppUiSettings._settingNamespace, "DragInteraction",
-      () => SampleAppIModelApp.store.getState().sampleAppState.dragInteraction,
-      (value: boolean) => UiFramework.dispatchActionToStore(SampleAppUiActionId.setDragInteraction, value, true));
+      () => UiFramework.useDragInteraction,
+      (value: boolean) => UiFramework.setUseDragInteraction(value));
     this._settings.push(this.dragInteraction);
 
     this.frameworkVersion = new UiSetting<string>(AppUiSettings._settingNamespace, "FrameworkVersion",
-      () => SampleAppIModelApp.store.getState().sampleAppState.frameworkVersion,
-      (value: string) => UiFramework.dispatchActionToStore(SampleAppUiActionId.setFrameworkVersion, value, true));
+      () => UiFramework.uiVersion,
+      (value: string) => UiFramework.setUiVersion(value));
     this._settings.push(this.frameworkVersion);
 
     this.accuDrawNotifications = new UiSetting<boolean>(AppUiSettings._settingNamespace, "AccuDrawNotifications",

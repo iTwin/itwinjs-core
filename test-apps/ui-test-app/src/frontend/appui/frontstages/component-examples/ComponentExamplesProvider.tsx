@@ -33,7 +33,7 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { QuantityFormatSettingsPanel } from "../QuantityFormatStage";
-import { ConnectedUiSettingsPage } from "../Settings";
+import { UiSettingsPageComponent } from "../Settings";
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -42,8 +42,8 @@ function MySettingsPage() {
       page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} />,
     },
     {
-      itemPriority: 20, tabId: "UI", label: "UI", subLabel: "UI and Accudraw", tooltip: "UI Settings", icon: "icon-paintbrush",
-      page: <ConnectedUiSettingsPage />,
+      itemPriority: 20, tabId: "Accudraw", label: "Accudraw", tooltip: "Accudraw Settings", icon: "icon-paintbrush",
+      page: <UiSettingsPageComponent />,
     },
     { itemPriority: 30, tabId: "page3", label: "page3", page: <div>Page 3</div> },
     { itemPriority: 40, tabId: "page4", label: "page4", subLabel: "disabled page4", isDisabled: true, page: <div>Page 4</div> },
