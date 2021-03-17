@@ -139,6 +139,20 @@ export interface ExportGraphicsOptions {
   angleTol?: number;
   /** Max length of any edge in generated faces, see [StrokeOptions]($geometry-core) */
   maxEdgeLength?: number;
+  /** The longest dimension of a line style's largest component must be at least this size in order for
+   * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.
+   * Line styles can evaluate to 3D geometry that clients expect to receive from exportGraphics, but they
+   * can also generate gigabytes of mesh data when line styles with small components are applied to long
+   * line strings.
+   */
+  minLineStyleComponentSize?: number;
+  /** Max distance between mesh vertices for them to be collapsed.
+   * Meshes stored in GeometryStreams are unaffected by StrokeOptions settings. If decimationTol is undefined,
+   * they are output from exportGraphics without any reduction in quality and can be too detailed for
+   * some uses. However, decimation is a destructive operation that can introduce gaps and other visual
+   * anomalies so it is important to choose an appropriate setting for your use case.
+   */
+  decimationTol?: number;
   /** BRep features with bounding boxes smaller than this size will not generate graphics.
    * This option can be used to ignore expensive details from [BRepEntity.DataProps]($imodeljs-common)
    * like screws and screw holes.
@@ -204,6 +218,20 @@ export interface ExportPartGraphicsOptions {
   angleTol?: number;
   /** Max length of any edge in generated faces, see [StrokeOptions]($geometry-core) */
   maxEdgeLength?: number;
+  /** The longest dimension of a line style's largest component must be at least this size in order for
+   * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.
+   * Line styles can evaluate to 3D geometry that clients expect to receive from exportGraphics, but they
+   * can also generate gigabytes of mesh data when line styles with small components are applied to long
+   * line strings.
+   */
+  minLineStyleComponentSize?: number;
+  /** Max distance between mesh vertices for them to be collapsed.
+   * Meshes stored in GeometryStreams are unaffected by StrokeOptions settings. If decimationTol is undefined,
+   * they are output from exportGraphics without any reduction in quality and can be too detailed for
+   * some uses. However, decimation is a destructive operation that can introduce gaps and other visual
+   * anomalies so it is important to choose an appropriate setting for your use case.
+   */
+  decimationTol?: number;
   /** BRep features with bounding boxes smaller than this size will not generate graphics.
    * This option can be used to ignore expensive details from [BRepEntity.DataProps]($imodeljs-common)
    * like screws and screw holes.
