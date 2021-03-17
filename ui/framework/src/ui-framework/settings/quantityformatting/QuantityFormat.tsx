@@ -47,7 +47,7 @@ export interface QuantityFormatterSettingsOptions {
 export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial<QuantityFormatterSettingsOptions>): SettingsTabEntry {
   const {availableUnitSystems, initialQuantityType} = {...opts};
   return {
-    itemPriority, tabId: "ui-test-app:Quantity",
+    itemPriority, tabId: "uifw:Quantity",
     label: UiFramework.translate("settings.quantity-formatting.label"),
     subLabel: UiFramework.translate("settings.quantity-formatting.subLabel"),
     page: <QuantityFormatSettingsPanel initialQuantityType={initialQuantityType??QuantityType.Length}
