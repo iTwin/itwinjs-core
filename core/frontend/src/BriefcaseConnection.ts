@@ -14,6 +14,7 @@ import {
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
 import { InteractiveEditingSession } from "./InteractiveEditingSession";
+import { BriefcaseTxns } from "./BriefcaseTxns";
 
 /**
  * Base class for notification handlers for events from the backend that are specific to a Briefcase.
@@ -23,64 +24,6 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
   constructor(private _key: string) { super(); }
   public abstract get briefcaseChannelName(): string;
   public get channelName() { return `${this.briefcaseChannelName}:${this._key}`; }
-}
-
-/** Dispatches events corresponding to local changes made to a [[BriefcaseConnection]] via [Txns]($docs/learning/InteractiveEditing.md).
- * @see [[BriefcaseConnection.txns]].
- * @beta
- */
-export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNotifications {
-  private readonly _iModel: BriefcaseConnection;
-  private _cleanup?: RemoveFunction;
-
-  public get briefcaseChannelName() {
-    return IpcAppChannel.Txns;
-  }
-
-  /** Event raised after Txn validation or changeset application to indicate the set of changed elements.
-   * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
-   */
-  public readonly onElementsChanged = new BeEvent<(changes: Readonly<ChangedEntities>, iModel: BriefcaseConnection) => void>();
-
-  /** Event raised after Txn validation or changeset application to indicate the set of changed models.
-   * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
-   */
-  public readonly onModelsChanged = new BeEvent<(changes: Readonly<ChangedEntities>, iModel: BriefcaseConnection) => void>();
-
-  /** Event raised after the geometry within one or more [[GeometricModelState]]s is modified by application of a changeset or validation of a transaction.
-   * A model's geometry can change as a result of:
-   *  - Insertion or deletion of a geometric element within the model; or
-   *  - Modification of an existing element's geometric properties; or
-   *  - An explicit request to flag it as changed via [IModelDb.updateModel]($backend).
-   */
-  public readonly onModelGeometryChanged = new BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>, iModel: BriefcaseConnection) => void>();
-
-  /** @internal */
-  public constructor(iModel: BriefcaseConnection) {
-    super(iModel.key);
-    this._iModel = iModel;
-    this._cleanup = this.registerImpl();
-  }
-
-  /** @internal */
-  public dispose(): void {
-    if (this._cleanup) {
-      this._cleanup();
-      this._cleanup = undefined;
-    }
-  }
-
-  public notifyElementsChanged(changed: ChangedEntities): void {
-    this.onElementsChanged.raiseEvent(changed, this._iModel);
-  }
-
-  public notifyModelsChanged(changed: ChangedEntities): void {
-    this.onModelsChanged.raiseEvent(changed, this._iModel);
-  }
-
-  public notifyGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void {
-    this.onModelGeometryChanged.raiseEvent(changes, this._iModel);
-  }
 }
 
 /** A connection to an editable briefcase on the backend. This class uses [Ipc]($docs/learning/IpcInterface.md) to communicate
