@@ -322,7 +322,7 @@ export class UiFramework {
   }
 
   public static setAccudrawSnapMode(snapMode: SnapMode) {
-    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetSnapMode, payload: snapMode });
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetSnapMode, snapMode, true);
   }
 
   public static getAccudrawSnapMode(): SnapMode {
@@ -446,7 +446,7 @@ export class UiFramework {
   }
 
   public static setColorTheme(theme: string) {
-    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetTheme, payload: theme });
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetTheme, theme, true);
   }
 
   public static getColorTheme(): string {
@@ -454,7 +454,7 @@ export class UiFramework {
   }
 
   public static setWidgetOpacity(opacity: number) {
-    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetWidgetOpacity, payload: opacity });
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetWidgetOpacity, opacity, true);
   }
 
   public static getWidgetOpacity(): number {
@@ -473,7 +473,7 @@ export class UiFramework {
   }
 
   public static setUiVersion(version: string) {
-    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetFrameworkVersion, payload: version === "1"?"1":"2" });
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1"?"1":"2", true);
   }
 
   public static get useDragInteraction(): boolean {
@@ -481,7 +481,7 @@ export class UiFramework {
   }
 
   public static setUseDragInteraction(useDragInteraction: boolean) {
-    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetDragInteraction, payload: useDragInteraction });
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetDragInteraction, useDragInteraction, true);
   }
 
   /** Send logging message to the telemetry system

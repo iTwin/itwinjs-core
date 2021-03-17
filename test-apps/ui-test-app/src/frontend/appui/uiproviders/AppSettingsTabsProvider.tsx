@@ -23,7 +23,7 @@ export class AppSettingsTabsProvider implements SettingsTabsProvider {
         icon: "icon-paintbrush",
         tooltip: "Accudraw Settings",
       },
-      getUiSettingsManagerEntry(30),
+      getUiSettingsManagerEntry(30, true),
     ];
   }
 

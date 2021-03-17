@@ -6,6 +6,7 @@
  * @module Utilities
  */
 
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 
 /** The default inactivity time.
@@ -41,6 +42,7 @@ export class UiShowHideManager {
     return UiShowHideManager._autoHideUi;
   }
   public static set autoHideUi(autoHide: boolean) {
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
     UiShowHideManager._autoHideUi = autoHide;
   }
 
@@ -76,6 +78,7 @@ export class UiShowHideManager {
   }
   public static set useProximityOpacity(value: boolean) {
     UiShowHideManager._useProximityOpacity = value;
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
     UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
   }
 
@@ -85,6 +88,7 @@ export class UiShowHideManager {
   }
   public static set snapWidgetOpacity(value: boolean) {
     UiShowHideManager._snapWidgetOpacity = value;
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.ShowHideManagerSettingChange);
     UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
   }
 

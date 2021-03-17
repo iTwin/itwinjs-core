@@ -17,8 +17,9 @@ export class UiSetting<T> {
    * @param settingName       Name for the setting, passed to UiSettings.
    * @param getValue          Function for getting the value from the application.
    * @param applyValue        Function for applying the setting value to the application.
+   * @param defaultValue      Optional default value if not already stored.
    */
-  public constructor(public settingNamespace: string, public settingName: string, public getValue: () => T, public applyValue?: (v: T) => void) {
+  public constructor(public settingNamespace: string, public settingName: string, public getValue: () => T, public applyValue?: (v: T) => void, public defaultValue?: T) {
   }
 
   /** Gets the setting from UiSettings */
@@ -40,10 +41,15 @@ export class UiSetting<T> {
   public async getSettingAndApplyValue(uiSettings: UiSettings): Promise<UiSettingsResult> {
     if (this.applyValue) {
       const result = await this.getSetting(uiSettings);
-      if (result !== undefined && result.status === UiSettingsStatus.Success) {
-        this.applyValue(result.setting);
+      if (result !== undefined){
+        if (result.status === UiSettingsStatus.Success) {
+          this.applyValue(result.setting);
+        } else if (undefined !== this.defaultValue) {
+          this.applyValue(this.defaultValue);
+          result.status = UiSettingsStatus.Success;
+        }
+        return result;
       }
-      return result;
     }
     return { status: UiSettingsStatus.Uninitialized };
   }

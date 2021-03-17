@@ -12,7 +12,7 @@ import { OptionType, SettingsTabEntry, Slider, ThemedSelect, Toggle } from "@ben
 import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
+import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
 
 function isOptionType(value: OptionType | ReadonlyArray<OptionType>): value is OptionType {
   if (Array.isArray(value))
@@ -21,7 +21,7 @@ function isOptionType(value: OptionType | ReadonlyArray<OptionType>): value is O
 }
 
 /** UiSettingsPage displaying the active settings. */
-export function UiSettingsPageComponent() {
+export function UiSettingsPageComponent({allowSettingUiFrameworkVersion}: {allowSettingUiFrameworkVersion: boolean}) {
   const themeTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeTitle"));
   const themeDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeDescription"));
   const autoHideTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoHideTitle"));
@@ -49,31 +49,32 @@ export function UiSettingsPageComponent() {
   const [snapWidgetOpacity, setSnapWidgetOpacity] = React.useState(()=>UiShowHideManager.snapWidgetOpacity);
 
   React.useEffect(() => {
-    const syncIdsOfInterest = ["configurableui:set_snapmode","configurableui:set_theme","configurableui:set_toolprompt",
-      "configurableui:set_widget_opacity","configurableui:set-drag-interaction","configurableui:set-framework-version" ];
+    const syncIdsOfInterest = ["configurableui:set_theme", "configurableui:set_widget_opacity",
+      "configurableui:set-drag-interaction","configurableui:set-framework-version", SyncUiEventId.ShowHideManagerSettingChange ];
 
     const handleSyncUiEvent = (args: SyncUiEventArgs) => {
-      if (0 === syncIdsOfInterest.length)
-        return;
-
       // istanbul ignore else
       if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
-        setTheme(UiFramework.getColorTheme());
-        setAutoHideUi(UiShowHideManager.autoHideUi);
-        setUiVersion(UiFramework.uiVersion);
-        setUseDragInteraction(UiFramework.useDragInteraction);
-        setUseProximityOpacity(UiShowHideManager.useProximityOpacity);
-        setSnapWidgetOpacity(UiShowHideManager.snapWidgetOpacity);
-        setWidgetOpacity(UiFramework.getWidgetOpacity());
+        if (UiFramework.getColorTheme() !== theme)
+          setTheme(UiFramework.getColorTheme());
+        if (UiShowHideManager.autoHideUi !== autoHideUi)
+          setAutoHideUi(UiShowHideManager.autoHideUi);
+        if (UiFramework.uiVersion !== uiVersion)
+          setUiVersion(UiFramework.uiVersion);
+        if (UiFramework.useDragInteraction !== useDragInteraction)
+          setUseDragInteraction(UiFramework.useDragInteraction);
+        if (UiFramework.getWidgetOpacity() !== widgetOpacity)
+          setWidgetOpacity(UiFramework.getWidgetOpacity());
+        if (UiShowHideManager.autoHideUi !== autoHideUi)
+          setAutoHideUi(UiShowHideManager.autoHideUi);
+        if (UiShowHideManager.useProximityOpacity !== useProximityOpacity)
+          setUseProximityOpacity(UiShowHideManager.useProximityOpacity);
+        if (UiShowHideManager.snapWidgetOpacity !== snapWidgetOpacity)
+          setSnapWidgetOpacity(UiShowHideManager.snapWidgetOpacity);
       }
     };
-
-    // Note: that items with conditions have condition run when loaded into the items manager
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
-    return () => {
-      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
-    };
-  }, []);
+    return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+  }, [autoHideUi, snapWidgetOpacity, theme, uiVersion, useDragInteraction, useProximityOpacity, widgetOpacity]);
 
   const defaultThemeOption = { label: systemPreferredLabel.current, value: SYSTEM_PREFERRED_COLOR_THEME };
   const themeOptions: Array<OptionType> = [
@@ -83,9 +84,9 @@ export function UiSettingsPageComponent() {
   ];
 
   const getDefaultThemeOption = () => {
-    const theme = UiFramework.getColorTheme();
+    const defaultTheme = UiFramework.getColorTheme();
     for (const option of themeOptions) {
-      if (option.value === theme)
+      if (option.value === defaultTheme)
         return option;
     }
     return defaultThemeOption;
@@ -98,39 +99,31 @@ export function UiSettingsPageComponent() {
       return;
 
     UiFramework.setColorTheme(value.value);
-
-    // await SampleAppIModelApp.appUiSettings.colorTheme.saveSetting(SampleAppIModelApp.uiSettings);
   },[]);
 
   const onAutoHideChange = React.useCallback(async () => {
     UiShowHideManager.autoHideUi = !UiShowHideManager.autoHideUi;
-    // await SampleAppIModelApp.appUiSettings.autoHideUi.saveSetting(SampleAppIModelApp.uiSettings);
   },[]);
 
   const onUseProximityOpacityChange = React.useCallback(async () => {
     UiShowHideManager.useProximityOpacity = !UiShowHideManager.useProximityOpacity;
-    // await SampleAppIModelApp.appUiSettings.useProximityOpacity.saveSetting(SampleAppIModelApp.uiSettings);
   },[]);
 
   const onSnapWidgetOpacityChange = React.useCallback(async () => {
     UiShowHideManager.snapWidgetOpacity = !UiShowHideManager.snapWidgetOpacity;
-    // await SampleAppIModelApp.appUiSettings.snapWidgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
   },[]);
 
   const onWidgetOpacityChange = React.useCallback(async (values: readonly number[]) => {
     if (values.length > 0) {
       UiFramework.setWidgetOpacity(values[0]);
-      // await SampleAppIModelApp.appUiSettings.widgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
     }
   },[]);
   const onToggleFrameworkVersion =  React.useCallback(async () => {
-    UiFramework.setUiVersion(UiFramework.uiVersion === "2"? "1" : "2");
-    // await SampleAppIModelApp.appUiSettings.widgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
+    UiFramework.setUiVersion(UiFramework.uiVersion === "2"?"1":"2");
   },[]);
 
   const onToggleDragInteraction =  React.useCallback(async () => {
     UiFramework.setUseDragInteraction(!UiFramework.useDragInteraction);
-    // await SampleAppIModelApp.appUiSettings.widgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
   },[]);
 
   return (
@@ -150,9 +143,9 @@ export function UiSettingsPageComponent() {
       <SettingsItem title={autoHideTitle.current} description={autoHideDescription.current}
         settingUi={ <Toggle isOn={UiShowHideManager.autoHideUi} showCheckmark={false} onChange={onAutoHideChange} /> }
       />
-      <SettingsItem title={useNewUiTitle.current} description={useNewUiDescription.current}
+      {allowSettingUiFrameworkVersion && <SettingsItem title={useNewUiTitle.current} description={useNewUiDescription.current}
         settingUi={ <Toggle isOn={UiFramework.uiVersion === "2"} showCheckmark={false} onChange={onToggleFrameworkVersion} /> }
-      />
+      />}
       {UiFramework.uiVersion === "2" && <>
         <SettingsItem title={dragInteractionTitle.current} description={dragInteractionDescription.current}
           settingUi={ <Toggle isOn={UiFramework.useDragInteraction} showCheckmark={false} onChange={onToggleDragInteraction} /> }
@@ -203,12 +196,11 @@ function SettingsItem(props: SettingsItemProps) {
  * @param itemPriority - Used to define the order of the entry in the Settings Stage
  * @beta
  */
-
- export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntry {
+export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry {
   return {
     itemPriority, tabId: "uifw:UiSettings",
     label: UiFramework.translate("settings.uiSettingsPage.label"),
-    page: <UiSettingsPageComponent />,
+    page: <UiSettingsPageComponent allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />,
     isDisabled: false,
     tooltip: UiFramework.translate("settings.uiSettingsPage.tooltip"),
   };

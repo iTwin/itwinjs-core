@@ -39,7 +39,7 @@ import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
 import {
   ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
-  IModelAppUiSettings, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager,
+  IModelAppUiSettings, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiSettingsProvider,
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
@@ -156,7 +156,7 @@ export class SampleAppIModelApp {
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
-  private static _appUiSettings = new AppUiSettings();
+  private static _appUiSettings? : AppUiSettings;
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
@@ -171,10 +171,28 @@ export class SampleAppIModelApp {
 
   public static set uiSettings(v: UiSettings) {
     UiFramework.setUiSettings(v);
-    SampleAppIModelApp._appUiSettings.apply(v);  // eslint-disable-line @typescript-eslint/no-floating-promises
+    // when uiSettings are set trigger the apply to set the default UI settings.
+    SampleAppIModelApp.appUiSettings.apply(v);  // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  public static get appUiSettings(): AppUiSettings { return SampleAppIModelApp._appUiSettings; }
+  public static get appUiSettings(): AppUiSettings {
+    if (!SampleAppIModelApp._appUiSettings) {
+      const lastTheme = localStorage.getItem("uifw:defaultTheme");
+      const defaults = {
+        colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
+        autoHideUi: false,
+        useProximityOpacity: true,
+        snapWidgetOpacity: true,
+        dragInteraction: false,
+        frameworkVersion: "2",
+        accuDrawNotifications: true,
+        widgetOpacity: 0.8,
+      };
+      SampleAppIModelApp._appUiSettings = new AppUiSettings (defaults);
+    }
+
+    return SampleAppIModelApp._appUiSettings;
+  }
 
   public static async startup(opts: WebViewerAppOpts & NativeAppOpts): Promise<void> {
     if (ProcessDetector.isElectronAppFrontend) {
