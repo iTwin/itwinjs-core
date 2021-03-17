@@ -1907,9 +1907,11 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
 export interface ExportGraphicsOptions {
     angleTol?: number;
     chordTol?: number;
+    decimationTol?: number;
     elementIdArray: Id64Array;
     maxEdgeLength?: number;
     minBRepFeatureSize?: number;
+    minLineStyleComponentSize?: number;
     onGraphics: ExportGraphicsFunction;
     onLineGraphics?: ExportLinesFunction;
     partInstanceArray?: ExportPartInstanceInfo[];
@@ -1947,10 +1949,12 @@ export type ExportPartFunction = (info: ExportPartInfo) => void;
 export interface ExportPartGraphicsOptions {
     angleTol?: number;
     chordTol?: number;
+    decimationTol?: number;
     displayProps: ExportPartDisplayInfo;
     elementId: Id64String;
     maxEdgeLength?: number;
     minBRepFeatureSize?: number;
+    minLineStyleComponentSize?: number;
     onPartGraphics: ExportPartFunction;
     onPartLineGraphics?: ExportPartLinesFunction;
 }
