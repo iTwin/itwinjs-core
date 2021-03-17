@@ -4,16 +4,14 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/itwin-client';
 import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CancelRequest } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { IModelAppOptions } from '@bentley/imodeljs-frontend';
-import { IModelHostConfiguration } from '@bentley/imodeljs-backend';
-import { ImsAuthorizationClient } from '@bentley/itwin-client';
-import { IpcHostOptions } from '@bentley/imodeljs-backend';
+import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
+import { NativeAppOpts } from '@bentley/imodeljs-frontend';
+import { NativeHostOpts } from '@bentley/imodeljs-backend';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { PromiseReturnType } from '@bentley/imodeljs-frontend';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
@@ -44,9 +42,6 @@ export abstract class AndroidDevice extends MobileDevice {
 // @beta (undocumented)
 export class AndroidHost extends MobileHost {
 }
-
-// @alpha
-export const defaultMobileAuthorizationClientExpiryBuffer: number;
 
 // @beta (undocumented)
 export interface DownloadTask {
@@ -86,13 +81,7 @@ export class IOSApp {
 
 // @beta (undocumented)
 export class IOSHost extends MobileHost {
-    static startup(opt?: {
-        mobileHost?: {
-            device: MobileDevice;
-        };
-        ipcHost?: IpcHostOptions;
-        iModelHost?: IModelHostConfiguration;
-    }): Promise<void>;
+    static startup(opt?: MobileHostOpts): Promise<void>;
 }
 
 // @beta (undocumented)
@@ -112,31 +101,7 @@ export class MobileApp {
     // (undocumented)
     static onWillTerminate: BeEvent<() => void>;
     // @internal
-    static startup(opts?: {
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
-}
-
-// @alpha
-export class MobileAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: MobileAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message?: string | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-}
-
-// @alpha
-export interface MobileAuthorizationClientConfiguration {
-    clientId: string;
-    expiryBuffer?: number;
-    redirectUri: string;
-    scope: string;
+    static startup(opts?: NativeAppOpts): Promise<void>;
 }
 
 // @beta (undocumented)
@@ -150,7 +115,7 @@ export abstract class MobileDevice {
     // (undocumented)
     abstract authGetAccessToken(ctx: ClientRequestContext, callback: (accessToken?: string, err?: string) => void): void;
     // (undocumented)
-    abstract authInit(ctx: ClientRequestContext, settings: MobileDeviceAuthSettings, callback: (err?: string) => void): void;
+    abstract authInit(ctx: ClientRequestContext, config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
     // (undocumented)
     abstract authSignIn(ctx: ClientRequestContext, callback: (err?: string) => void): void;
     // (undocumented)
@@ -180,29 +145,11 @@ export abstract class MobileDevice {
 }
 
 // @beta (undocumented)
-export interface MobileDeviceAuthSettings {
-    // (undocumented)
-    clientId: string;
-    // (undocumented)
-    issuerUrl: string;
-    // (undocumented)
-    redirectUrl: string;
-    // (undocumented)
-    scope: string;
-    // (undocumented)
-    stateKey?: string;
-}
-
-// @beta (undocumented)
 export class MobileHost {
-    // (undocumented)
-    static authInit(ctx: ClientRequestContext, settings: MobileDeviceAuthSettings): Promise<void>;
     // (undocumented)
     static get device(): MobileDevice;
     // @internal (undocumented)
     static downloadFile(downloadUrl: string, downloadTo: string, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
-    // (undocumented)
-    static getAccessToken(ctx: ClientRequestContext): Promise<AccessToken>;
     // (undocumented)
     static get isValid(): boolean;
     // (undocumented)
@@ -214,22 +161,18 @@ export class MobileHost {
     // (undocumented)
     static readonly onOrientationChanged: BeEvent<import("@bentley/bentleyjs-core").Listener>;
     // (undocumented)
-    static readonly onUserStateChanged: BeEvent<(accessToken?: string | undefined, err?: string | undefined) => void>;
-    // (undocumented)
     static readonly onWillTerminate: BeEvent<import("@bentley/bentleyjs-core").Listener>;
     // @internal (undocumented)
     static reconnect(connection: number): void;
+    static startup(opt?: MobileHostOpts): Promise<void>;
+}
+
+// @beta (undocumented)
+export interface MobileHostOpts extends NativeHostOpts {
     // (undocumented)
-    static signIn(ctx: ClientRequestContext): Promise<void>;
-    // (undocumented)
-    static signOut(ctx: ClientRequestContext): Promise<void>;
-    static startup(opt?: {
-        mobileHost?: {
-            device?: MobileDevice;
-        };
-        ipcHost?: IpcHostOptions;
-        iModelHost?: IModelHostConfiguration;
-    }): Promise<void>;
+    mobileHost?: {
+        device?: MobileDevice;
+    };
 }
 
 // @beta (undocumented)

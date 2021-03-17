@@ -178,8 +178,9 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     if (FilteringInput.isDeprecatedProps(prevProps) && FilteringInput.isDeprecatedProps(this.props)) {
       // eslint-disable-next-line deprecation/deprecation
       if (prevProps.filteringInProgress !== this.props.filteringInProgress) {
-        // eslint-disable-next-line deprecation/deprecation
-        this.setState((_state, props) => (FilteringInput.isDeprecatedProps(props) ? { prevFilteringInProgress: props.filteringInProgress } : { prevFilteringInProgress: undefined }));
+        this.setState((_state, props) => (FilteringInput.isDeprecatedProps(props) ?
+          { prevFilteringInProgress: props.filteringInProgress } :  // eslint-disable-line deprecation/deprecation
+          /* istanbul ignore next */ { prevFilteringInProgress: undefined }));
       }
       return;
     }

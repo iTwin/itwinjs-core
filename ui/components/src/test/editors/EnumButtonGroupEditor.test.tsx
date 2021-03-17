@@ -6,11 +6,15 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { PrimitiveValue } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor";
 import TestUtils from "../TestUtils";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+
+// cSpell:ignore enumbuttongroup
 
 describe("<EnumButtonGroupEditor />", () => {
   afterEach(cleanup);
@@ -104,6 +108,32 @@ describe("<EnumButtonGroupEditor />", () => {
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(await waitForElement(() => renderedComponent.getByTestId("Blue"))).not.to.be.null;
     expect(renderedComponent.container.querySelector(".components-enumbuttongroup-editor")).to.not.be.null;
+  });
+
+  class MineDataController extends DataControllerBase {
+    public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+    }
+  }
+
+  it("should not commit if DataController fails to validate", async () => {
+    PropertyEditorManager.registerDataController("myData", MineDataController);
+    const record = TestUtils.createEnumStringProperty("Test", "red");
+    TestUtils.addEnumButtonGroupEditorSpecification(record);
+    record.property.dataController = "myData";
+
+    const spyOnCommit = sinon.spy();
+    const renderedComponent = render(<EditorContainer propertyRecord={record} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
+    expect(renderedComponent).not.to.be.undefined;
+
+    expect(await waitForElement(() => renderedComponent.getByTestId("Green"))).not.to.be.null;
+    const greenButton = renderedComponent.getByTestId("Green");
+
+    fireEvent.keyDown(greenButton, { key: SpecialKey.Enter });
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCommit.calledOnce).to.be.false;
+
+    PropertyEditorManager.deregisterDataController("myData");
   });
 
 });

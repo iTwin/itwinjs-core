@@ -256,6 +256,27 @@ export abstract class AttachedInterface extends RpcInterface {
   }
 }
 
+export abstract class WebRoutingInterface extends RpcInterface {
+  public static readonly interfaceName = "WebRoutingInterface";
+  public static interfaceVersion = "1.0.0";
+
+  public static getClient(): WebRoutingInterface {
+    return RpcManager.getClientForInterface(WebRoutingInterface);
+  }
+
+  public async ping502(_sent: number): Promise<boolean> {
+    return this.forward(arguments);
+  }
+
+  public async ping503(_sent: number): Promise<boolean> {
+    return this.forward(arguments);
+  }
+
+  public async ping504(_sent: number): Promise<boolean> {
+    return this.forward(arguments);
+  }
+}
+
 export const rpcInterfaces: RpcInterfaceDefinition[] = [
   IModelReadRpcInterface,
   TestRpcInterface,
@@ -265,4 +286,5 @@ export const rpcInterfaces: RpcInterfaceDefinition[] = [
   WipRpcInterface,
   ZeroMajorRpcInterface,
   MultipleClientsInterface,
+  WebRoutingInterface,
 ];

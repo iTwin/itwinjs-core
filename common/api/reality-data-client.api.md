@@ -12,6 +12,16 @@ import { WsgClient } from '@bentley/itwin-client';
 import { WsgInstance } from '@bentley/itwin-client';
 
 // @internal
+export class DataLocation extends WsgInstance {
+    // (undocumented)
+    id?: string;
+    // (undocumented)
+    location?: string;
+    // (undocumented)
+    provider?: string;
+}
+
+// @internal
 export class FileAccessKey extends WsgInstance {
     // (undocumented)
     permissions?: string;
@@ -44,6 +54,10 @@ export class RealityData extends WsgInstance {
     dataAcquirer?: string;
     // (undocumented)
     dataAcquisitionDate?: string;
+    // (undocumented)
+    dataAcquisitionEndDate?: string;
+    // (undocumented)
+    dataAcquisitionStartDate?: string;
     // (undocumented)
     dataLocationGuid?: string;
     // (undocumented)
@@ -119,6 +133,7 @@ export class RealityDataClient extends WsgClient {
     createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
     deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityDataId: string): Promise<void>;
     deleteRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationshipId: string): Promise<void>;
+    getDataLocation(requestContext: AuthorizedClientRequestContext): Promise<DataLocation[]>;
     getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string, writeAccess?: boolean): Promise<FileAccessKey[]>;
     getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string): Promise<RealityData>;
     getRealityDataIdFromUrl(url: string): string | undefined;

@@ -211,7 +211,7 @@ export enum ChangeSetStatus {
 }
 
 // @public
-export class ClientRequestContext implements ClientRequestContextProps {
+export class ClientRequestContext {
     constructor(activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
     readonly activityId: GuidString;
     readonly applicationId: string;
@@ -220,6 +220,8 @@ export class ClientRequestContext implements ClientRequestContextProps {
     // (undocumented)
     protected static _current: ClientRequestContext;
     enter(): this;
+    // (undocumented)
+    static fromJSON(json: ClientRequestContextProps): ClientRequestContext;
     readonly sessionId: GuidString;
     // @internal (undocumented)
     toJSON(): ClientRequestContextProps;
@@ -229,11 +231,8 @@ export class ClientRequestContext implements ClientRequestContextProps {
     }
 
 // @public
-export interface ClientRequestContextProps {
-    readonly activityId: GuidString;
-    readonly applicationId: string;
-    readonly applicationVersion: string;
-    readonly sessionId: GuidString;
+export interface ClientRequestContextProps extends SessionProps {
+    readonly activityId?: GuidString;
 }
 
 // @public
@@ -1274,6 +1273,7 @@ export class ProcessDetector {
     static get isMobileAppBackend(): boolean;
     static get isMobileAppFrontend(): boolean;
     static get isMobileBrowser(): boolean;
+    static get isNativeAppFrontend(): boolean;
     static get isNodeProcess(): boolean;
 }
 
@@ -1369,6 +1369,13 @@ export interface SerializedClientRequestContext {
     sessionId: string;
     // (undocumented)
     userId?: string;
+}
+
+// @public
+export interface SessionProps {
+    applicationId: string;
+    applicationVersion: string;
+    sessionId: GuidString;
 }
 
 // @public
