@@ -5,8 +5,8 @@ alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
 alpha;AccuDrawDialogProps 
 alpha;AccuDrawKeyboardShortcuts
 alpha;AccuDrawPopupManager
-alpha;AccuDrawSettings
-internal;AccuDrawSettingsChangedEvent 
+alpha;AccuDrawUiSettings
+internal;AccuDrawUiSettingsChangedEvent 
 alpha;AccuDrawWidget(): JSX.Element
 alpha;AccuDrawWidgetControl 
 public;Action

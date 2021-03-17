@@ -15,7 +15,7 @@ import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw
 import { AccuDrawFieldContainer } from "../../ui-framework/accudraw/AccuDrawFieldContainer";
 import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
 import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
-import { AccuDrawSettings } from "../../ui-framework/accudraw/AccuDrawSettings";
+import { AccuDrawUiSettings } from "../../ui-framework/accudraw/AccuDrawUiSettings";
 
 // cspell:ignore uiadmin
 
@@ -290,12 +290,12 @@ describe("AccuDrawFieldContainer", () => {
     (KeyboardShortcutManager.setFocusToHome as any).restore();
   });
 
-  describe("FrameworkAccuDraw.settings", () => {
+  describe("FrameworkAccuDraw.uiSettings", () => {
     const colorTest = ColorByName.red;
     const labelTest = "label-test";
     const iconTest = "icon-test";
 
-    const fullSettings: AccuDrawSettings = {
+    const fullSettings: AccuDrawUiSettings = {
       xBackgroundColor: ColorDef.create(colorTest),
       yBackgroundColor: ColorDef.create(colorTest),
       zBackgroundColor: ColorDef.create(colorTest),
@@ -313,12 +313,12 @@ describe("AccuDrawFieldContainer", () => {
       distanceIcon: iconTest,
     };
 
-    it("should support FrameworkAccuDraw.settings- set after render", async () => {
-      const emptySettings: AccuDrawSettings = {};
+    it("should support FrameworkAccuDraw.uiSettings- set after render", async () => {
+      const emptySettings: AccuDrawUiSettings = {};
 
       const spy = sinon.spy();
-      FrameworkAccuDraw.settings = undefined;
-      const remove = FrameworkAccuDraw.onAccuDrawSettingsChangedEvent.addListener(spy);
+      FrameworkAccuDraw.uiSettings = undefined;
+      const remove = FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.addListener(spy);
       const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
 
       const settingsTest = (count: number) => {
@@ -336,12 +336,12 @@ describe("AccuDrawFieldContainer", () => {
         const iElements = wrapper.container.querySelectorAll(`i.${iconTest}`);
         expect(iElements.length).to.eq(count);
 
-        FrameworkAccuDraw.settings = emptySettings;
+        FrameworkAccuDraw.uiSettings = emptySettings;
         spy.calledTwice.should.true;
         labelElements = wrapper.queryAllByLabelText(labelTest);
         expect(labelElements.length).to.eq(0);
 
-        FrameworkAccuDraw.settings = undefined;
+        FrameworkAccuDraw.uiSettings = undefined;
         spy.calledThrice.should.true;
         labelElements = wrapper.queryAllByLabelText(labelTest);
         expect(labelElements.length).to.eq(0);
@@ -349,7 +349,7 @@ describe("AccuDrawFieldContainer", () => {
 
       IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
       expect(wrapper.queryAllByLabelText(labelTest).length).to.eq(0);
-      FrameworkAccuDraw.settings = fullSettings;
+      FrameworkAccuDraw.uiSettings = fullSettings;
       await TestUtils.flushAsyncOperations();
       settingsTest(3);
 
@@ -357,17 +357,17 @@ describe("AccuDrawFieldContainer", () => {
 
       IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
       expect(wrapper.queryAllByLabelText(labelTest).length).to.eq(0);
-      FrameworkAccuDraw.settings = fullSettings;
+      FrameworkAccuDraw.uiSettings = fullSettings;
       await TestUtils.flushAsyncOperations();
       settingsTest(2);
 
       remove();
     });
 
-    it("should support FrameworkAccuDraw.settings - set before render", async () => {
+    it("should support FrameworkAccuDraw.uiSettings - set before render", async () => {
       const spy = sinon.spy();
-      FrameworkAccuDraw.settings = fullSettings;
-      const remove = FrameworkAccuDraw.onAccuDrawSettingsChangedEvent.addListener(spy);
+      FrameworkAccuDraw.uiSettings = fullSettings;
+      const remove = FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.addListener(spy);
       const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
 
       const settingsTest = (count: number) => {

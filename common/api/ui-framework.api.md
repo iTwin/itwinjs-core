@@ -259,7 +259,7 @@ export class AccuDrawPopupManager {
 }
 
 // @alpha
-export interface AccuDrawSettings {
+export interface AccuDrawUiSettings {
     angleBackgroundColor?: ColorDef;
     angleIcon?: IconSpec;
     angleLabel?: string;
@@ -278,7 +278,7 @@ export interface AccuDrawSettings {
 }
 
 // @internal (undocumented)
-export class AccuDrawSettingsChangedEvent extends BeUiEvent<{}> {
+export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> {
 }
 
 // @alpha
@@ -2019,7 +2019,7 @@ export class FrameworkAccuDraw extends AccuDraw {
     static readonly isSideRotationConditional: ConditionalBooleanValue;
     static readonly isTopRotationConditional: ConditionalBooleanValue;
     static readonly isViewRotationConditional: ConditionalBooleanValue;
-    static readonly onAccuDrawSettingsChangedEvent: AccuDrawSettingsChangedEvent;
+    static readonly onAccuDrawUiSettingsChangedEvent: AccuDrawUiSettingsChangedEvent;
     // (undocumented)
     onCompassModeChange(): void;
     // (undocumented)
@@ -2031,13 +2031,13 @@ export class FrameworkAccuDraw extends AccuDraw {
     onRotationModeChange(): void;
     // (undocumented)
     setFocusItem(index: ItemField): void;
-    static get settings(): AccuDrawSettings | undefined;
-    static set settings(v: AccuDrawSettings | undefined);
     // (undocumented)
     static translateFromItemField(item: ItemField): AccuDrawField;
     // (undocumented)
     static translateToItemField(field: AccuDrawField): ItemField;
-}
+    static get uiSettings(): AccuDrawUiSettings | undefined;
+    static set uiSettings(v: AccuDrawUiSettings | undefined);
+    }
 
 // @beta
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{

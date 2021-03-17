@@ -10,7 +10,7 @@ import { AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField, NotifyMessa
 import { AccuDrawField, AccuDrawMode, AccuDrawSetFieldValueFromUiEventArgs, AccuDrawUiAdmin, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { AccuDrawSettings } from "./AccuDrawSettings";
+import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 
 // cspell:ignore dont
@@ -46,12 +46,12 @@ const rotationModeToKeyMap = new Map<RotationMode, string>([
 ]);
 
 /** @internal */
-export class AccuDrawSettingsChangedEvent extends BeUiEvent<{}> { }
+export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> { }
 
 /** @internal */
 export class FrameworkAccuDraw extends AccuDraw {
   private static _displayNotifications = false;
-  private static _settings: AccuDrawSettings | undefined;
+  private static _uiSettings: AccuDrawUiSettings | undefined;
 
   /** Determines if AccuDraw.rotationMode === RotationMode.Top */
   public static readonly isTopRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.Top, [SyncUiEventId.AccuDrawRotationChanged]);
@@ -71,17 +71,17 @@ export class FrameworkAccuDraw extends AccuDraw {
   public static readonly isRectangularModeConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.compassMode === CompassMode.Rectangular, [SyncUiEventId.AccuDrawCompassModeChanged]);
 
   /** AccuDraw Grab Input Focus event. */
-  public static readonly onAccuDrawSettingsChangedEvent = new AccuDrawSettingsChangedEvent();
+  public static readonly onAccuDrawUiSettingsChangedEvent = new AccuDrawUiSettingsChangedEvent();
 
   /** Determines if notifications should be displayed for AccuDraw changes */
   public static get displayNotifications(): boolean { return FrameworkAccuDraw._displayNotifications; }
   public static set displayNotifications(v: boolean) { FrameworkAccuDraw._displayNotifications = v; }
 
-  /** AccuDraw settings */
-  public static get settings(): AccuDrawSettings | undefined { return FrameworkAccuDraw._settings; }
-  public static set settings(v: AccuDrawSettings | undefined) {
-    FrameworkAccuDraw._settings = v;
-    FrameworkAccuDraw.onAccuDrawSettingsChangedEvent.emit({});
+  /** AccuDraw User Interface settings */
+  public static get uiSettings(): AccuDrawUiSettings | undefined { return FrameworkAccuDraw._uiSettings; }
+  public static set uiSettings(v: AccuDrawUiSettings | undefined) {
+    FrameworkAccuDraw._uiSettings = v;
+    FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.emit({});
   }
 
   constructor() {

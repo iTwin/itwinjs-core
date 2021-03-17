@@ -22,7 +22,7 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import angleIconSvg from "./angle.svg?sprite";
 import distanceIconSvg from "./distance.svg?sprite";
 import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
-import { AccuDrawSettings } from "./AccuDrawSettings";
+import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
 import { getCSSColorFromDef } from "@bentley/ui-components";
 
 /** @alpha */
@@ -193,7 +193,7 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   }, [showZOverride]);
 
   React.useEffect(() => {
-    const processAccuDrawSettings = (settings?: AccuDrawSettings) => {
+    const processAccuDrawUiSettings = (settings?: AccuDrawUiSettings) => {
       setXStyle(settings && settings.xBackgroundColor !== undefined ? {backgroundColor: getCSSColorFromDef(settings.xBackgroundColor)} : undefined);
       setYStyle(settings && settings.yBackgroundColor !== undefined ? {backgroundColor: getCSSColorFromDef(settings.yBackgroundColor)} : undefined);
       setZStyle(settings && settings.zBackgroundColor !== undefined ? {backgroundColor: getCSSColorFromDef(settings.zBackgroundColor)} : undefined);
@@ -213,15 +213,15 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
       setDistanceIcon(settings && settings.distanceIcon !== undefined ? settings.distanceIcon : defaultDistanceIcon);
     };
 
-    if (FrameworkAccuDraw.settings)
-      processAccuDrawSettings(FrameworkAccuDraw.settings);
+    if (FrameworkAccuDraw.uiSettings)
+      processAccuDrawUiSettings(FrameworkAccuDraw.uiSettings);
 
     // istanbul ignore next
-    const handleAccuDrawSettingsChanged = () => {
-      processAccuDrawSettings(FrameworkAccuDraw.settings);
+    const handleAccuDrawUiSettingsChanged = () => {
+      processAccuDrawUiSettings(FrameworkAccuDraw.uiSettings);
     };
 
-    return FrameworkAccuDraw.onAccuDrawSettingsChangedEvent.addListener(handleAccuDrawSettingsChanged);
+    return FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.addListener(handleAccuDrawUiSettingsChanged);
   }, []);
 
   const classNames = classnames(
