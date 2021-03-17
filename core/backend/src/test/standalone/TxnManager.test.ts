@@ -338,6 +338,8 @@ describe("TxnManager", () => {
     public readonly deleted = new OrderedId64Array();
     public numValidates = 0;
     public numApplyChanges = 0;
+    private _numBeforeUndo = 0;
+    private _numAfterUndo = 0;
     private readonly _cleanup: Array<() => void> = [];
 
     public constructor(mgr: TxnManager) {
@@ -346,12 +348,23 @@ describe("TxnManager", () => {
       }));
 
       this._cleanup.push(mgr.onCommit.addListener(() => {
-        this.inserted.clear();
-        this.updated.clear();
-        this.deleted.clear();
+        this.clearChanges();
       }));
 
-      // ###TODO onEndApplyChanges
+      this._cleanup.push(mgr.onChangesApplied.addListener(() => {
+        ++this.numApplyChanges;
+      }));
+
+      this._cleanup.push(mgr.onBeforeUndoRedo.addListener(() => {
+        expect(this._numBeforeUndo).to.equal(this._numAfterUndo);
+        ++this._numBeforeUndo;
+      }));
+
+      this._cleanup.push(mgr.onAfterUndoRedo.addListener(() => {
+        ++this._numAfterUndo;
+        expect(this._numAfterUndo).to.equal(this._numBeforeUndo);
+        this.clearChanges();
+      }));
     }
 
     public dispose(): void {
@@ -387,6 +400,11 @@ describe("TxnManager", () => {
       expect(this.numApplyChanges).to.equal(expected);
     }
 
+    public expectNumUndoRedo(expected: number) {
+      expect(this._numBeforeUndo).to.equal(this._numAfterUndo);
+      expect(this._numBeforeUndo).to.equal(expected);
+    }
+
     public expectChanges(expected: { inserted?: string[], updated?: string[], deleted?: string[] }): void {
       this.expect(expected.inserted, "inserted");
       this.expect(expected.updated, "updated");
@@ -395,6 +413,12 @@ describe("TxnManager", () => {
 
     private expect(expected: string[] | undefined, propName: "inserted" | "updated" | "deleted"): void {
       expect(this[propName].ids).to.deep.equal(expected ?? []);
+    }
+
+    private clearChanges(): void {
+      this.inserted.clear();
+      this.updated.clear();
+      this.deleted.clear();
     }
   }
 
@@ -424,6 +448,8 @@ describe("TxnManager", () => {
     imodel.saveChanges("2 deletes");
     accum.expectNumValidations(3);
     accum.expectChanges({ deleted: [ id1, id2 ] });
+
+    accum.expectNumApplyChanges(0);
 
     // ###TODO undo/redo
 
@@ -460,6 +486,8 @@ describe("TxnManager", () => {
     imodel.saveChanges("1 delete");
     accum.expectNumValidations(4);
     accum.expectChanges({ deleted: [ newModelId ] });
+
+    accum.expectNumApplyChanges(0);
 
     // ###TODO undo/redo
 
