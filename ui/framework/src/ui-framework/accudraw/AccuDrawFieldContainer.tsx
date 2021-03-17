@@ -24,6 +24,7 @@ import distanceIconSvg from "./distance.svg?sprite";
 import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
 import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
 import { getCSSColorFromDef } from "@bentley/ui-components";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 /** @alpha */
 export interface AccuDrawFieldContainerProps extends CommonProps {
@@ -193,12 +194,32 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   }, [showZOverride]);
 
   React.useEffect(() => {
+
+    const createFieldStyle = (inStyle: React.CSSProperties | undefined,
+      backgroundColor: ColorDef | string | undefined,
+      foregroundColor: ColorDef | string | undefined): React.CSSProperties | undefined => {
+      let fieldStyle: React.CSSProperties | undefined;
+      let rgbaString = "";
+      if (inStyle || backgroundColor || foregroundColor) {
+        fieldStyle = inStyle ? inStyle : {};
+        if (backgroundColor) {
+          rgbaString = typeof backgroundColor === "string" ? backgroundColor : getCSSColorFromDef(backgroundColor);
+          fieldStyle = {...fieldStyle, backgroundColor: rgbaString};
+        }
+        if (foregroundColor) {
+          rgbaString = typeof foregroundColor === "string" ? foregroundColor : getCSSColorFromDef(foregroundColor);
+          fieldStyle = {...fieldStyle, color: rgbaString};
+        }
+      }
+      return fieldStyle;
+    };
+
     const processAccuDrawUiSettings = (settings?: AccuDrawUiSettings) => {
-      setXStyle(settings && settings.xBackgroundColor !== undefined ? {backgroundColor: getCSSColorFromDef(settings.xBackgroundColor)} : undefined);
-      setYStyle(settings && settings.yBackgroundColor !== undefined ? {backgroundColor: getCSSColorFromDef(settings.yBackgroundColor)} : undefined);
-      setZStyle(settings && settings.zBackgroundColor !== undefined ? {backgroundColor: getCSSColorFromDef(settings.zBackgroundColor)} : undefined);
-      setAngleStyle(settings && settings.angleBackgroundColor !== undefined ? {backgroundColor: getCSSColorFromDef(settings.angleBackgroundColor)} : undefined);
-      setDistanceStyle(settings && settings.distanceBackgroundColor !== undefined ? {backgroundColor: getCSSColorFromDef(settings.distanceBackgroundColor)} : undefined);
+      setXStyle(settings ? createFieldStyle(settings.xStyle, settings.xBackgroundColor, settings.xForegroundColor) : undefined);
+      setYStyle(settings ? createFieldStyle(settings.yStyle, settings.yBackgroundColor, settings.yForegroundColor) : undefined);
+      setZStyle(settings ? createFieldStyle(settings.zStyle, settings.zBackgroundColor, settings.zForegroundColor) : undefined);
+      setAngleStyle(settings ? createFieldStyle(settings.angleStyle, settings.angleBackgroundColor, settings.angleForegroundColor) : undefined);
+      setDistanceStyle(settings ? createFieldStyle(settings.distanceStyle, settings.distanceBackgroundColor, settings.distanceForegroundColor) : undefined);
 
       setXLabel(settings && settings.xLabel !== undefined ? settings.xLabel : defaultXLabel);
       setYLabel(settings && settings.yLabel !== undefined ? settings.yLabel : defaultYLabel);

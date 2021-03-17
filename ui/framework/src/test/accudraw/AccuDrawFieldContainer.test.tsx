@@ -291,16 +291,27 @@ describe("AccuDrawFieldContainer", () => {
   });
 
   describe("FrameworkAccuDraw.uiSettings", () => {
-    const colorTest = ColorByName.red;
+    const bgColorTest = ColorByName.red;
+    const fgColorTest = ColorByName.black;
     const labelTest = "label-test";
     const iconTest = "icon-test";
 
     const fullSettings: AccuDrawUiSettings = {
-      xBackgroundColor: ColorDef.create(colorTest),
-      yBackgroundColor: ColorDef.create(colorTest),
-      zBackgroundColor: ColorDef.create(colorTest),
-      angleBackgroundColor: ColorDef.create(colorTest),
-      distanceBackgroundColor: ColorDef.create(colorTest),
+      xStyle: {display: "inline"},
+      yStyle: {display: "inline"},
+      zStyle: {display: "inline"},
+      angleStyle: {display: "inline"},
+      distanceStyle: {display: "inline"},
+      xBackgroundColor: ColorDef.create(bgColorTest),
+      yBackgroundColor: ColorDef.create(bgColorTest),
+      zBackgroundColor: ColorDef.create(bgColorTest),
+      angleBackgroundColor: ColorDef.create(bgColorTest),
+      distanceBackgroundColor: ColorDef.create(bgColorTest),
+      xForegroundColor: ColorDef.create(fgColorTest),
+      yForegroundColor: ColorDef.create(fgColorTest),
+      zForegroundColor: ColorDef.create(fgColorTest),
+      angleForegroundColor: ColorDef.create(fgColorTest),
+      distanceForegroundColor: ColorDef.create(fgColorTest),
       xLabel: labelTest,
       yLabel: labelTest,
       zLabel: labelTest,
@@ -330,7 +341,7 @@ describe("AccuDrawFieldContainer", () => {
         const inputElements = wrapper.container.querySelectorAll("input");
         expect(inputElements.length).to.eq(count);
         for (const inputElement of inputElements) {
-          expect(inputElement.getAttribute("style")).to.eq("background-color: rgb(255, 0, 0);");
+          expect(inputElement.getAttribute("style")).to.eq("display: inline; background-color: rgb(255, 0, 0); color: rgb(0, 0, 0);");
         }
 
         const iElements = wrapper.container.querySelectorAll(`i.${iconTest}`);
@@ -377,7 +388,7 @@ describe("AccuDrawFieldContainer", () => {
         const inputElements = wrapper.container.querySelectorAll("input");
         expect(inputElements.length).to.eq(count);
         for (const inputElement of inputElements) {
-          expect(inputElement.getAttribute("style")).to.eq("background-color: rgb(255, 0, 0);");
+          expect(inputElement.getAttribute("style")).to.eq("display: inline; background-color: rgb(255, 0, 0); color: rgb(0, 0, 0);");
         }
 
         const iElements = wrapper.container.querySelectorAll(`i.${iconTest}`);
@@ -393,6 +404,51 @@ describe("AccuDrawFieldContainer", () => {
       settingsTest(2);
 
       remove();
+    });
+
+    it("should support FrameworkAccuDraw.uiSettings with various color combinations", async () => {
+      const backgroundSettings: AccuDrawUiSettings = {
+        xBackgroundColor: ColorDef.create(bgColorTest),
+      };
+
+      const foregroundSettings: AccuDrawUiSettings = {
+        xForegroundColor: ColorDef.create(fgColorTest),
+      };
+
+      const bgStringSettings: AccuDrawUiSettings = {
+        xBackgroundColor: "rgba(255, 0, 0, 0.5)",
+      };
+
+      const fgStringSettings: AccuDrawUiSettings = {
+        xForegroundColor: "rgba(0, 0, 255, 0.5)",
+      };
+
+      const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
+      IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+
+      FrameworkAccuDraw.uiSettings = backgroundSettings;
+      await TestUtils.flushAsyncOperations();
+      let input = wrapper.queryByTestId("uifw-accudraw-x");
+      expect(input).not.to.be.null;
+      expect(input!.getAttribute("style")).to.eq("background-color: rgb(255, 0, 0);");
+
+      FrameworkAccuDraw.uiSettings = foregroundSettings;
+      await TestUtils.flushAsyncOperations();
+      input = wrapper.queryByTestId("uifw-accudraw-x");
+      expect(input).not.to.be.null;
+      expect(input!.getAttribute("style")).to.eq("color: rgb(0, 0, 0);");
+
+      FrameworkAccuDraw.uiSettings = bgStringSettings;
+      await TestUtils.flushAsyncOperations();
+      input = wrapper.queryByTestId("uifw-accudraw-x");
+      expect(input).not.to.be.null;
+      expect(input!.getAttribute("style")).to.eq("background-color: rgba(255, 0, 0, 0.5);");
+
+      FrameworkAccuDraw.uiSettings = fgStringSettings;
+      await TestUtils.flushAsyncOperations();
+      input = wrapper.queryByTestId("uifw-accudraw-x");
+      expect(input).not.to.be.null;
+      expect(input!.getAttribute("style")).to.eq("color: rgba(0, 0, 255, 0.5);");
     });
 
   });

@@ -26,7 +26,7 @@ import { FillCentered } from "@bentley/ui-core";
 import {
   AccuDrawCommandItems,
   AccuDrawKeyboardShortcuts,
-  AccuDrawSettings,
+  AccuDrawUiSettings,
   CommandItemDef,
   ConfigurableUiManager,
   ContentGroupProps,
@@ -77,7 +77,7 @@ export class AppUi {
 
     AppUi.defineDynamicWidgets();
 
-    // AppUi.setAccuDrawSettings();
+    // AppUi.setAccuDrawUiSettings();
   }
 
   /** Define Frontstages
@@ -473,20 +473,21 @@ export class AppUi {
     UiFramework.widgetManager.addWidgetProvider(provider);
   }
 
-  private static setAccuDrawSettings() {
+  private static setAccuDrawUiSettings() {
     const iconTest = "icon-placeholder";
 
-    const appSettings: AccuDrawSettings = {
-      xBackgroundColor: ColorDef.create(ColorByName.purple),
+    const appSettings: AccuDrawUiSettings = {
+      xBackgroundColor: "var(--buic-background-control)",
+      xForegroundColor: "var(--buic-foreground-body)",
       xLabel: "-X-",
       xIcon: iconTest,
     };
 
-    const userSettings: AccuDrawSettings = {
+    const userSettings: AccuDrawUiSettings = {
       yBackgroundColor: ColorDef.create(ColorByName.darkBrown),
       yLabel: "-Y-",
     };
 
-    FrameworkAccuDraw.settings = {...appSettings, ...userSettings};
+    FrameworkAccuDraw.uiSettings = {...appSettings, ...userSettings};
   }
 }

@@ -260,21 +260,31 @@ export class AccuDrawPopupManager {
 
 // @alpha
 export interface AccuDrawUiSettings {
-    angleBackgroundColor?: ColorDef;
+    angleBackgroundColor?: ColorDef | string;
+    angleForegroundColor?: ColorDef | string;
     angleIcon?: IconSpec;
     angleLabel?: string;
-    distanceBackgroundColor?: ColorDef;
+    angleStyle?: React_2.CSSProperties;
+    distanceBackgroundColor?: ColorDef | string;
+    distanceForegroundColor?: ColorDef | string;
     distanceIcon?: IconSpec;
     distanceLabel?: string;
-    xBackgroundColor?: ColorDef;
+    distanceStyle?: React_2.CSSProperties;
+    xBackgroundColor?: ColorDef | string;
+    xForegroundColor?: ColorDef | string;
     xIcon?: IconSpec;
     xLabel?: string;
-    yBackgroundColor?: ColorDef;
+    xStyle?: React_2.CSSProperties;
+    yBackgroundColor?: ColorDef | string;
+    yForegroundColor?: ColorDef | string;
     yIcon?: IconSpec;
     yLabel?: string;
-    zBackgroundColor?: ColorDef;
+    yStyle?: React_2.CSSProperties;
+    zBackgroundColor?: ColorDef | string;
+    zForegroundColor?: ColorDef | string;
     zIcon?: IconSpec;
     zLabel?: string;
+    zStyle?: React_2.CSSProperties;
 }
 
 // @internal (undocumented)
