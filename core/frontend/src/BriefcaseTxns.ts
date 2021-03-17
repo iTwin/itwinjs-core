@@ -6,14 +6,11 @@
  * @module IModelConnection
  */
 
-import { BeEvent, Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import {
-  ChangedEntities, IModelConnectionProps, IModelError, IModelVersionProps, IpcAppChannel, ModelIdAndGeometryGuid, OpenBriefcaseProps, RemoveFunction,
-  StandaloneOpenOptions, TxnAction, TxnNotifications,
+  ChangedEntities, IpcAppChannel, ModelIdAndGeometryGuid, RemoveFunction,
+  TxnAction, TxnNotifications,
 } from "@bentley/imodeljs-common";
-import { IModelConnection } from "./IModelConnection";
-import { IpcApp, NotificationHandler } from "./IpcApp";
-import { InteractiveEditingSession } from "./InteractiveEditingSession";
 import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseConnection";
 
 /** Dispatches events corresponding to local changes made to a [[BriefcaseConnection]] via [Txns]($docs/learning/InteractiveEditing.md).

@@ -6,10 +6,10 @@
  * @module IModelConnection
  */
 
-import { BeEvent, Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import {
-  ChangedEntities, IModelConnectionProps, IModelError, IModelVersionProps, IpcAppChannel, ModelIdAndGeometryGuid, OpenBriefcaseProps, RemoveFunction,
-  StandaloneOpenOptions, TxnNotifications,
+  IModelConnectionProps, IModelError, IModelVersionProps, OpenBriefcaseProps,
+  StandaloneOpenOptions,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";

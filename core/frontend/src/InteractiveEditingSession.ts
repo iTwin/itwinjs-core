@@ -9,7 +9,7 @@
 import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
-  ElementGeometryChange, EditingSessionNotifications, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
+  EditingSessionNotifications, ElementGeometryChange, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseConnection";
 import { IpcApp } from "./IpcApp";
