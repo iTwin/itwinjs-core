@@ -333,9 +333,9 @@ describe("TxnManager", () => {
   });
 
   class EventAccumulator {
-    public readonly inserted = new OrderedId64Array();
-    public readonly updated = new OrderedId64Array();
-    public readonly deleted = new OrderedId64Array();
+    public readonly inserted: string[] = []
+    public readonly updated: string[] = []
+    public readonly deleted: string[] = []
     public numValidates = 0;
     public numApplyChanges = 0;
     private _numBeforeUndo = 0;
@@ -403,7 +403,7 @@ describe("TxnManager", () => {
 
       const dest = this[propName];
       for (const id of source)
-        dest.insert(id);
+        dest.push(id);
     }
 
     public expectNumValidations(expected: number) {
@@ -426,13 +426,13 @@ describe("TxnManager", () => {
     }
 
     private expect(expected: string[] | undefined, propName: "inserted" | "updated" | "deleted"): void {
-      expect(this[propName].ids).to.deep.equal(expected ?? []);
+      expect(this[propName]).to.deep.equal(expected ?? []);
     }
 
     public clearChanges(): void {
-      this.inserted.clear();
-      this.updated.clear();
-      this.deleted.clear();
+      this.inserted.length = 0;
+      this.updated.length = 0;
+      this.deleted.length = 0;
     }
   }
 
@@ -519,7 +519,13 @@ describe("TxnManager", () => {
       accum.expectNumValidations(0);
       accum.expectNumUndoRedo(1);
       accum.expectNumApplyChanges(3);
-      // ###TODO: changed elements
+
+      // We received 3 separate "elements changed" events - one for each txn - and just concatenated the lists.
+      accum.expectChanges({
+        inserted: [ id1, id2 ],
+        updated: [ id1, id2 ],
+        deleted: [ id1, id2 ],
+      });
     });
 
     // Redo all
@@ -528,6 +534,13 @@ describe("TxnManager", () => {
       accum.expectNumValidations(0);
       accum.expectNumUndoRedo(1);
       accum.expectNumApplyChanges(3);
+
+      // We received 3 separate "elements changed" events - one for each txn - and just concatenated the lists.
+      accum.expectChanges({
+        inserted: [ id1, id2 ],
+        updated: [ id1, id2 ],
+        deleted: [ id1, id2 ],
+      });
     });
   });
 
@@ -553,7 +566,7 @@ describe("TxnManager", () => {
       imodel.models.updateGeometryGuid(existingModelId);
       imodel.saveChanges("1 update");
       accum.expectNumValidations(1);
-      accum.expectChanges({ updated: [ ] });
+      accum.expectChanges({ });
     });
 
     EventAccumulator.testModels(imodel, (accum) => {
@@ -570,6 +583,45 @@ describe("TxnManager", () => {
       accum.expectChanges({ deleted: [ newModelId ] });
 
       accum.expectNumApplyChanges(0);
+    });
+
+    // Undo
+    EventAccumulator.testModels(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(1);
+      accum.expectChanges({ inserted: [ newModelId ] });
+    });
+
+    EventAccumulator.testModels(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(1);
+      accum.expectChanges({ });
+    });
+
+    EventAccumulator.testModels(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(1);
+      accum.expectChanges({ });
+    });
+
+    EventAccumulator.testModels(imodel, (accum) => {
+      imodel.txns.reverseSingleTxn();
+      accum.expectNumUndoRedo(1);
+      accum.expectNumApplyChanges(1);
+      accum.expectChanges({ deleted: [ newModelId ] });
+    });
+
+    // Redo
+    EventAccumulator.testModels(imodel, (accum) => {
+      for (let i = 0; i < 4; i++)
+        imodel.txns.reinstateTxn();
+
+      accum.expectNumUndoRedo(4);
+      accum.expectNumApplyChanges(4);
+      accum.expectChanges({ inserted: [ newModelId ], deleted: [ newModelId ] });
     });
   });
 
