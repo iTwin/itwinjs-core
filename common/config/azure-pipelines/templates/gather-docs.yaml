@@ -47,6 +47,7 @@ steps:
       artifactName: Bis Docs
     condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
 
+  # BIS Docs are pulled from the current build for the validation
   - task: DownloadBuildArtifacts@0
     displayName: Download Current Bis Docs Artifacts
     inputs:
