@@ -5,20 +5,17 @@
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
 .uifw-accudraw-field-container {
-  display: flex;
   padding: 6px;
 }
 
 .uifw-accudraw-field-container-horizontal {
   max-width: 550px;
+  display: flex;
   flex-direction: row;
-
-  .uifw-accudraw-input-container:not(:last-child) {
-    padding-right: 4px;
-  }
 }
 
 .uifw-accudraw-field-container-vertical {
   max-width: 250px;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
 }
