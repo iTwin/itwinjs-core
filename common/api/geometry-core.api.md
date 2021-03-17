@@ -5571,7 +5571,9 @@ export class ViewGraphicsOps {
     perspectiveZB: number | undefined,
     startEndDistance: Segment1d | undefined,
     gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => void): boolean;
-}
+    static gridRangeMaxXY: number;
+    static gridRangeMaxZ: number;
+    }
 
 // @internal
 export interface ViewportGraphicsGridLineIdentifier {
