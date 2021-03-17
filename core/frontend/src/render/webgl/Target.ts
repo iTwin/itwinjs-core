@@ -122,7 +122,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
   public activeVolumeClassifierModelId?: Id64String;
-  public nonLocatableTerrain = false;
 
   // RenderTargetDebugControl
   public vcSupportIntersectingVolumes: boolean = false;
@@ -506,8 +505,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     if (!this.assignDC())
       return;
-
-    this.nonLocatableTerrain = !plan.locatableTerrain;
 
     this.isFadeOutActive = plan.isFadeOutActive;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();

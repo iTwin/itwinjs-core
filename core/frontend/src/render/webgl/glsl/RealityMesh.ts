@@ -27,7 +27,7 @@ import { addModelViewProjectionMatrix, addNormalMatrix } from "./Vertex";
 
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeNormal = `
-  vec3 normal = octDecodeNormal(a_norm); // normal coming in for terrain is already in world space
+  vec3 normal = octDecodeNormal(a_norm); // normal coming in for is already in world space
   g_hillshadeIndex = normal.z;           // save off world Z for thematic hill shade mode index
   return normalize(u_worldToViewN * normal);
 `;
