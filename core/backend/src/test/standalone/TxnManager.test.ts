@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, DbResult, Guid, Id64, IModelStatus, OpenMode, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, DbResult, Guid, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, UpgradeOptions,
+  Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnAction,
+  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb,
   TxnChangedEntities, TxnManager,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
@@ -68,7 +68,7 @@ describe("TxnManager", () => {
 
   it("TxnManager", async () => {
     const models = imodel.models;
-    let elements = imodel.elements;
+    const elements = imodel.elements;
     const modelId = props.model;
 
     let model = models.getModel<PhysicalModel>(modelId);
@@ -279,63 +279,12 @@ describe("TxnManager", () => {
     assert.isFalse(txns.isUndoPossible);
     assert.isFalse(txns.hasUnsavedChanges);
     assert.isFalse(txns.hasPendingTxns);
-
-    // tests for onElementsChanged events
-    const changes = {
-      inserted: new OrderedId64Array(),
-      deleted: new OrderedId64Array(),
-      updated: new OrderedId64Array(),
-    };
-    let nValidates = 0;
-    elements = imodel.elements;
-    txns.onCommit.addListener(() => { changes.inserted.clear(); changes.deleted.clear(); changes.updated.clear(); });
-    txns.onEndValidation.addListener(() => ++nValidates);
-    const copyArray = (output: OrderedId64Array, input: OrderedId64Array) => { input.forEach((el) => output.insert(el)); };
-    txns.onElementsChanged.addListener((ch) => {
-      copyArray(changes.inserted, ch.inserted);
-      copyArray(changes.deleted, ch.deleted);
-      copyArray(changes.updated, ch.updated);
-    });
-
-    const elementId1 = elements.insertElement(props);
-    const elementId2 = elements.insertElement(props);
-    imodel.saveChanges("2 inserts");
-    assert.equal(nValidates, 1);
-    assert.equal(changes.inserted.length, 2);
-    assert.isTrue(changes.inserted.contains(elementId1));
-    assert.isTrue(changes.inserted.contains(elementId2));
-    assert.equal(changes.deleted.length, 0);
-    assert.equal(changes.updated.length, 0);
-
-    const element1 = elements.getElement<TestPhysicalObject>(elementId1);
-    const element2 = elements.getElement<TestPhysicalObject>(elementId2);
-    element1.intProperty = 200;
-    element1.update();
-    element2.intProperty = 200;
-    element2.update();
-    imodel.saveChanges("2 updates");
-    assert.equal(nValidates, 2);
-    assert.equal(changes.inserted.length, 0);
-    assert.equal(changes.deleted.length, 0);
-    assert.equal(changes.updated.length, 2);
-    assert.isTrue(changes.updated.contains(elementId1));
-    assert.isTrue(changes.updated.contains(elementId2));
-
-    element1.delete();
-    element2.delete();
-    imodel.saveChanges("2 deletes");
-    assert.equal(nValidates, 3);
-    assert.equal(changes.inserted.length, 0);
-    assert.equal(changes.updated.length, 0);
-    assert.equal(changes.deleted.length, 2);
-    assert.isTrue(changes.deleted.contains(elementId1));
-    assert.isTrue(changes.deleted.contains(elementId2));
   });
 
   class EventAccumulator {
-    public readonly inserted: string[] = []
-    public readonly updated: string[] = []
-    public readonly deleted: string[] = []
+    public readonly inserted: string[] = [];
+    public readonly updated: string[] = [];
+    public readonly deleted: string[] = [];
     public numValidates = 0;
     public numApplyChanges = 0;
     private _numBeforeUndo = 0;
@@ -370,7 +319,7 @@ describe("TxnManager", () => {
       for (const cleanup of this._cleanup)
         cleanup();
 
-      this._cleanup.length = 0
+      this._cleanup.length = 0;
     }
 
     public static test(txns: TxnManager, event: BeEvent<(changes: TxnChangedEntities) => void>, func: (accum: EventAccumulator) => void): void {
@@ -380,12 +329,12 @@ describe("TxnManager", () => {
       accum.dispose();
     }
 
-    public static testElements(imodel: StandaloneDb, func: (accum: EventAccumulator) => void): void {
-      this.test(imodel.txns, imodel.txns.onElementsChanged, func);
+    public static testElements(iModel: StandaloneDb, func: (accum: EventAccumulator) => void): void {
+      this.test(iModel.txns, iModel.txns.onElementsChanged, func);
     }
 
-    public static testModels(imodel: StandaloneDb, func: (accum: EventAccumulator) => void): void {
-      this.test(imodel.txns, imodel.txns.onModelsChanged, func);
+    public static testModels(iModel: StandaloneDb, func: (accum: EventAccumulator) => void): void {
+      this.test(iModel.txns, iModel.txns.onModelsChanged, func);
     }
 
     public listen(evt: BeEvent<(changes: TxnChangedEntities) => void>): void {
@@ -546,7 +495,6 @@ describe("TxnManager", () => {
 
   it("dispatches events when models change", () => {
     const existingModelId = props.model;
-    const existingModel = imodel.models.getModel<PhysicalModel>(existingModelId);
 
     let newModelId: string;
     EventAccumulator.testModels(imodel, (accum) => {
@@ -713,7 +661,7 @@ describe("TxnManager", () => {
 
   it("dispatches events in batches", () => {
     const test = (numChangesExpected: number, func: () => void) => {
-      let numChanged: number[] = [];
+      const numChanged: number[] = [];
       const prevMax = setMaxEntitiesPerEvent(2);
       const dropListener = imodel.txns.onElementsChanged.addListener((changes) => {
         const numEntities = changes.inserted.length + changes.updated.length + changes.deleted.length;
@@ -724,7 +672,9 @@ describe("TxnManager", () => {
 
       func();
       imodel.saveChanges("");
+
       dropListener();
+      setMaxEntitiesPerEvent(prevMax);
 
       expect(numChanged.length).to.equal(Math.ceil(numChangesExpected / 2));
       for (let i = 0; i < numChanged.length - 1; i++)

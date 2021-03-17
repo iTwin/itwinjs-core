@@ -7,16 +7,11 @@
  */
 
 import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { ChangedEntities, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
+import { ChangedEntities, ModelGeometryChangesProps, ModelIdAndGeometryGuid, TxnAction } from "@bentley/imodeljs-common";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-
-/** @public
- * @deprecated Use TxnAction from imodeljs-common
- */
-export enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
 
 /** A string that identifies a Txn.
  * @public
@@ -76,7 +71,6 @@ class ChangedEntitiesProc implements TxnChangedEntities {
       this._currSize = 0;
     }
   }
-
 
   public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
     this.processChanges(iModel, mgr.onElementsChanged, "notifyElementsChanged");
