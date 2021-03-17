@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as os from "os";
-import * as path from "path";
-import * as semver from "semver";
 /** @packageDocumentation
  * @module IModelHost
  */
+
+import * as os from "os";
+import * as path from "path";
+import * as semver from "semver";
 import {
   AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager,
   IntrospectionClient,

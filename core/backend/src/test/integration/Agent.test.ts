@@ -39,7 +39,7 @@ describe("Agent (#integration)", () => {
   });
 
   after(async () => {
-    // Purge briefcases that are close to reaching the aquire limit
+    // Purge briefcases that are close to reaching the acquire limit
     await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
     await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadWriteTest");
   });

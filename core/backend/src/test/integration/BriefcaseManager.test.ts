@@ -218,7 +218,7 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   // FIXME Breaks other tests
-  it("should set the briefcase cache directory to expected locations", async () => {
+  it.skip("should set the briefcase cache directory to expected locations", async () => {
     // Shutdown IModelHost to allow this test to use it.
     await IModelTestUtils.shutdownBackend();
 
@@ -326,15 +326,11 @@ describe("BriefcaseManager (#integration)", () => {
     iModelPullAndPush.close();
     iModelPullOnly.close();
 
-    await IModelHost.shutdown();
-
     // note: we can't tell what files were local before we ran this test. All we can test is that now that we know they're local that it does not cause a download.
     const wasNumDownloads = numDownloads;
     assert.isTrue(IModelJsFs.existsSync(checkpointName));
     assert.isTrue(IModelJsFs.existsSync(pullAndPushPathname));
     assert.isTrue(IModelJsFs.existsSync(pullOnlyPathname));
-
-    await IModelHost.startup();
 
     checkpoint = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     assert.exists(checkpoint);
@@ -364,7 +360,6 @@ describe("BriefcaseManager (#integration)", () => {
     checkpoint = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     assert.equal(numDownloads, 1, "should need download");
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, checkpoint);
-
   });
 
   it("should be able to reverse and reinstate changes", async () => {
