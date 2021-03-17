@@ -54,81 +54,81 @@ steps:
       node ./common/scripts/install-run-rush build -v --to oidc-signin-tool
     displayName: "Rush build"
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: "clients/context-registry"
-  #   displayName: "Run Context Registry Client Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: "clients/context-registry"
+    displayName: "Run Context Registry Client Tests"
+    condition: succeededOrFailed()
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: clients/extension
-  #   displayName: "Run Extension Client Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: clients/extension
+    displayName: "Run Extension Client Tests"
+    condition: succeededOrFailed()
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: clients/forms-data-management
-  #   displayName: "Run Forms Client Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: clients/forms-data-management
+    displayName: "Run Forms Client Tests"
+    condition: succeededOrFailed()
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: "clients/product-settings"
-  #   displayName: "Run Product Settings Client Tests"
-  #   condition: succeededOrFailed()
-  #   enabled: false
+  - script: "npm run test:integration"
+    workingDirectory: "clients/product-settings"
+    displayName: "Run Product Settings Client Tests"
+    condition: succeededOrFailed()
+    enabled: false
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: clients/projectshare
-  #   displayName: "Run ProjectShare Client Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: clients/projectshare
+    displayName: "Run ProjectShare Client Tests"
+    condition: succeededOrFailed()
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: clients/rbac
-  #   displayName: "Run RBAC Client Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: clients/rbac
+    displayName: "Run RBAC Client Tests"
+    condition: succeededOrFailed()
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: clients/reality-data
-  #   displayName: "Run Reality Data Client Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: clients/reality-data
+    displayName: "Run Reality Data Client Tests"
+    condition: succeededOrFailed()
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: "clients/usage-logging"
-  #   displayName: "Run Usage Logging Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: "clients/usage-logging"
+    displayName: "Run Usage Logging Tests"
+    condition: succeededOrFailed()
 
   - script: "npm run test:integration"
     workingDirectory: "core/backend"
     displayName: "Run Backend Tests"
     condition: succeededOrFailed()
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: "core/backend-itwin-client"
-  #   displayName: "Run Backend iTwin Client Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: "core/backend-itwin-client"
+    displayName: "Run Backend iTwin Client Tests"
+    condition: succeededOrFailed()
 
-  # - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
-  #   workingDirectory: "full-stack-tests/core"
-  #   displayName: "Run Core Full Stack Tests"
-  #   condition: succeededOrFailed()
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
+    workingDirectory: "full-stack-tests/core"
+    displayName: "Run Core Full Stack Tests"
+    condition: succeededOrFailed()
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: "full-stack-tests/imodelhub-client"
-  #   displayName: "Run iModelHub Client Full Stack Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: "full-stack-tests/imodelhub-client"
+    displayName: "Run iModelHub Client Full Stack Tests"
+    condition: succeededOrFailed()
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: "full-stack-tests/rpc-interface"
-  #   displayName: "Run RPC Interface Full Stack Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: "full-stack-tests/rpc-interface"
+    displayName: "Run RPC Interface Full Stack Tests"
+    condition: succeededOrFailed()
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: "full-stack-tests/presentation"
-  #   displayName: "Run Presentation Full Stack Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: "full-stack-tests/presentation"
+    displayName: "Run Presentation Full Stack Tests"
+    condition: succeededOrFailed()
 
-  # - script: "npm run test:integration"
-  #   workingDirectory: "tools/oidc-signin-tool"
-  #   displayName: "Run OIDC Sign-in Tool Tests"
-  #   condition: succeededOrFailed()
+  - script: "npm run test:integration"
+    workingDirectory: "tools/oidc-signin-tool"
+    displayName: "Run OIDC Sign-in Tool Tests"
+    condition: succeededOrFailed()
 
   - task: PublishTestResults@2
     displayName: "Publish Context Registry Client Test Results"
