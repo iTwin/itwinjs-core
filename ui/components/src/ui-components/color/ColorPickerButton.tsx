@@ -13,6 +13,7 @@ import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, Popup, useRefs, WebFontIcon } from "@bentley/ui-core";
 import { ColorSwatch } from "./Swatch";
+import { getCSSColorFromDef } from "./getCSSColorFromDef";
 
 // cSpell:ignore colorpicker
 
@@ -111,8 +112,7 @@ const ForwardRefColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPic
       }
     }, [closePopup, colorDef, onColorPick]);
 
-    const { b, g, r, t } = colorDef.colors;
-    const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
+    const rgbaString = getCSSColorFromDef(colorDef);
 
     const buttonStyle = { ...style } as React.CSSProperties;
     const swatchStyle = { backgroundColor: rgbaString } as React.CSSProperties;
