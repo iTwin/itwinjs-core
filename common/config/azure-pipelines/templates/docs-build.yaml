@@ -11,6 +11,9 @@ parameters:
   - name: outputDir
     type: string
     default: $(Agent.BuildDirectory)/tempDocsBuild/public_build
+  - name: downloadCurrentBuildArtifacts
+    type: boolean
+    default: false
 
 steps:
 - script: node common/scripts/install-run-rush.js install
@@ -30,6 +33,7 @@ steps:
   parameters:
     workingDir: ${{ parameters.workingDir }}
     stagingDir: ${{ parameters.stagingDir }}
+    downloadCurrentBuildArtifacts: ${{ parameters.downloadCurrentBuildArtifacts }}
 
 # Currently BeMetalsmith is an internal only tool
 - script: npm install @bentley/bemetalsmith@4.x
@@ -46,4 +50,5 @@ steps:
   inputs:
     targetPath: ${{ parameters.stagingDir }}/config/.updated.json
     artifact: .updated.json
+  condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
   # condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
