@@ -8,7 +8,7 @@ import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
-  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
+  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
@@ -171,7 +171,6 @@ export class DisplayTestApp {
         renderSys,
         rpcInterfaces: [
           DtaRpcInterface,
-          Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
           IModelReadRpcInterface,
           IModelTileRpcInterface,
           IModelWriteRpcInterface,
