@@ -41,7 +41,9 @@ steps:
 
       node ./common/scripts/install-run-rush build -v --to usage-logging-client
 
-      node ./common/scripts/install-run-rush build -v --to @bentley/imodelhub-client-tests
+      node ./common/scripts/install-run-rush build -v --to imodeljs-backend
+
+      node ./common/scripts/install-run-rush build -v --to imodelhub-client-tests
 
       node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
 
@@ -91,6 +93,11 @@ steps:
   - script: "npm run test:integration"
     workingDirectory: "clients/usage-logging"
     displayName: "Run Usage Logging Tests"
+    condition: succeededOrFailed()
+
+  - script: "npm run test:integration"
+    workingDirectory: "core/backend"
+    displayName: "Run Backend Tests"
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
@@ -192,7 +199,6 @@ steps:
     inputs:
       testResultsFiles: "core/backend/lib/test/junit_results.xml"
       testRunTitle: "Core - Backend Tests - ${{ parameters.Node_Version }}"
-    enabled: false
     continueOnError: true
     condition: succeededOrFailed()
 
