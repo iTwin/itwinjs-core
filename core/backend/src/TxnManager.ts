@@ -141,6 +141,12 @@ export class TxnManager {
     IpcHost.notifyIModelChanges(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
   }
 
+  /** ###TODO in progress
+   * @internal
+   */
+  protected _onGeometryGuidsChanged() {
+  }
+
   /** Dependency handlers may call method this to report a validation error.
    * @param error The error. If error.fatal === true, the transaction will cancel rather than commit.
    */
