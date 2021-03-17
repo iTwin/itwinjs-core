@@ -10,6 +10,7 @@ import { DialogItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DynamicsContext } from '@bentley/imodeljs-frontend';
 import { ElementSetTool } from '@bentley/imodeljs-frontend';
+import { Frustum } from '@bentley/imodeljs-common';
 import { Point3d } from '@bentley/geometry-core';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { Tool } from '@bentley/imodeljs-frontend';
@@ -134,6 +135,10 @@ export class RotateElementsTool extends TransformElementsTool {
     // (undocumented)
     static toolId: string;
     // (undocumented)
+    protected transformAgenda(transform: Transform): Promise<void>;
+    // (undocumented)
+    protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void;
+    // (undocumented)
     protected get wantAdditionalInput(): boolean;
     // (undocumented)
     protected wantProcessAgenda(ev: BeButtonEvent): boolean;
@@ -166,6 +171,10 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected createAgendaGraphics(changed: boolean): Promise<void>;
     // (undocumented)
+    protected _elementAlignedBoxes?: Frustum[];
+    // (undocumented)
+    protected _elementOrigins?: Point3d[];
+    // (undocumented)
     protected initAgendaDynamics(): Promise<boolean>;
     // (undocumented)
     protected onAgendaModified(): Promise<void>;
@@ -177,6 +186,8 @@ export abstract class TransformElementsTool extends ElementSetTool {
     processAgenda(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected _startedCmd?: string;
     // (undocumented)
     protected transformAgenda(transform: Transform): Promise<void>;
     // (undocumented)

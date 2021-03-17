@@ -3885,6 +3885,19 @@ export enum GraphicType {
     WorldOverlay = 3
 }
 
+// @internal (undocumented)
+export class GridDisplaySettings {
+    static clippingOption: 0 | 1;
+    static cullingOption: 0 | 1 | 2;
+    static cullingPerspectiveOption: 0 | 1 | 2;
+    static lineTransparency: number;
+    static minFadeSeparation: number;
+    static minPerspectiveSeparation: number;
+    static minSeparation: number;
+    static planeTransparency: number;
+    static refTransparency: number;
+}
+
 // @alpha (undocumented)
 export interface GroupMark {
     // (undocumented)
@@ -7002,7 +7015,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     exitTool(): void;
     getPrompt(): string;
     // @internal
-    get iModel(): BriefcaseConnection;
+    get iModel(): IModelConnection;
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     onRedoPreviousStep(): Promise<boolean>;
@@ -12284,6 +12297,7 @@ export abstract class Viewport implements IDisposable {
     set wantViewAttachments(want: boolean);
     worldToNpc(pt: XYAndZ, out?: Point3d): Point3d;
     worldToNpcArray(pts: Point3d[]): void;
+    get worldToNpcMap(): Map4d;
     worldToView(input: XYAndZ, out?: Point3d): Point3d;
     worldToView4d(input: XYAndZ, out?: Point4d): Point4d;
     worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void;
@@ -12594,6 +12608,7 @@ export abstract class ViewState extends ElementState {
     // (undocumented)
     protected _updateMaxGlobalScopeFactor(): void;
     get viewFlags(): ViewFlags;
+    set viewFlags(flags: ViewFlags);
     viewsCategory(id: Id64String): boolean;
     abstract viewsModel(modelId: Id64String): boolean;
 }

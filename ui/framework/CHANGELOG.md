@@ -1,6 +1,35 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Add functions to clear the Hide/Isolate for Models and Categories
+- Upgrade react-resize-detector to avoid lodash security vulnerability
+-  Fix solar timeline component so that sunTime is properly set for project location.
+- Document uiSettings in ToolAssistanceField
+- Fix stateFunction for clear hide/isolate/emphasize tool that is used in UI 1.0.
+- Updated to use TypeScript 4.1
+- AccuDraw show Z field only for 3d views
+- AccuDraw default keyboard shortcuts
+- Added AccuDraw notifications for rotation & compass mode
+- Added AccuDraw widget
+- Support for conditionally disabling/hiding keyboard shortcuts
+- Fixed local file support in Electron ui-test-app
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:53 GMT
+
+_Version update only_
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -22,12 +51,24 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - Provide dynamic widgets for every section type.
 - Update remaining syncEventId checks to be case insensitive.
 
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+### Updates
+
+- Updated ModelsTree rulesets to better handle updates.
+
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
-- Update components that support providing refs via React.forwardRef to work better with document generation.  
+- Update components that support providing refs via React.forwardRef to work better with document generation.
 - Fix backstage not updating when props.items are updated.
 - Propagate isDisabled MenuItem property to ContextMenuItem disabled property
 - Added partially visible instances support to VisibilityHandler
@@ -110,7 +151,7 @@ Thu, 19 Nov 2020 17:03:42 GMT
 
 ### Updates
 
-- Revert width change to EnumEditor component instead set width to auto only for docked tool settings. 
+- Revert width change to EnumEditor component instead set width to auto only for docked tool settings.
 
 ## 2.9.0
 Wed, 18 Nov 2020 16:01:50 GMT
@@ -218,7 +259,7 @@ Thu, 17 Sep 2020 13:16:12 GMT
 
 ### Updates
 
-- Add support for a feature flag to control the display of the keyin palette.     
+- Add support for a feature flag to control the display of the keyin palette.
 - BadgeType support for Backstage items
 - add itemschanged handler so that items provided can be conditionally hidden
 - Lower case syncEventIds prior to comparison
@@ -374,7 +415,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Add missing @bentley/imodeljs-markup peerDependency
-- Add commandItemDef to clearHiddenIsolatedEmphasized elements. 
+- Add commandItemDef to clearHiddenIsolatedEmphasized elements.
 - Fix z-index of Modeless dialogs.
 - Address React warnings about deprecated methods.
 - Make methods in HideIsolateEmphasizeManager static so they can be called by other packages.
@@ -415,7 +456,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - react to renaming of imodeljs-clients
 - Moved KeyinBrowser component to @beta for 2.0
 - Using center of Messages indicator as target. Added CSS classname overrides to StatusBarComposer for sections. UI 2.0 color tweaks.
-- Fixed FrontendAuthorizationClient type guard. 
+- Fixed FrontendAuthorizationClient type guard.
 - Update GroupButton definition to use ReadonlyArray for child items.
 - Modal Frontstage styling
 - Ui 2.0 - Blur the toolbar item background
@@ -423,7 +464,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - Renamed OIDC constructs for consistency; Removed SAML support.
 - Fixed popup location when passing htmlElement to UiAdmin functions
 - Clean up deprecated APIs
-- Hide stage panel when panel state is off. 
+- Hide stage panel when panel state is off.
 - Added ability to customize selection handling in VisibilityWidget's Models tree
 - Made React functional component specifications consistent across UI packages
 - Slider component tooltipBelow prop & tooltip styling
@@ -470,7 +511,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - Ability to switch to 9-Zone 2.0
 - Refactor to remove duplicate ComponentGenerator instatiation. Rename filea nd components to remove React reference.
 - Update auto-generated dialog items to work with the Tool Settings Bar.
-- Moved Property classes and interfaces to ui-abstract package. Created a "DefaultDialogGridContainer" to turn specifications from abstract DialogItems UI into React components. 
+- Moved Property classes and interfaces to ui-abstract package. Created a "DefaultDialogGridContainer" to turn specifications from abstract DialogItems UI into React components.
 - Refactor DefaultToolSettingsProvider to use DialogItemsManager and remove duplicate code.
 - Fix Indicator to properly load SVG icons.
 - Refactor DefaultToolSettingsProvider to use the DialogItem interfaces in place of ToolSettings classes.
@@ -540,7 +581,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 - Add useActiveIModelConnection hook.
 - Allow setting App Iconspec.
-- Setup OidcDesktopClient for Electron use cases. 
+- Setup OidcDesktopClient for Electron use cases.
 - Fix styling of footer Indicator to work with Themes.
 - Disallow plugins from adding tools anywhere but the end of a toolbar.
 - [ModelsTree] Merge same-label Subject nodes to avoid duplication
@@ -559,7 +600,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 - Use exhaustive-deps linter rule.
 - Ability to opt-in to toolbar drag interaction.
 - Prevent unnecessary resubscribe in useActiveViewport hook.
-- Visibility Widget: Treat dictionary model as never private in Categories tree. 
+- Visibility Widget: Treat dictionary model as never private in Categories tree.
 - Ability to specify initialWidth for Zone component.
 - Removed unused React state variables. Removed unsupported setState calls from render() methods.
 - Code cleanup based on code analysis report from lgtm. Updated status field fade-in/out animation.
@@ -783,7 +824,7 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Release tag cleanup and ui-framework unit tests
 - Updated UI package release tags for 1.0 release.
 - Fixed release tag warnings in UI packages
-- Removed use of OidcClientWrapper. 
+- Removed use of OidcClientWrapper.
 - Remove console log message output by SyncUiEventDispatcher. Add Logging.
 - Changed some release tags from @hidden to @internal
 - Add alpha level support for solar timeline
@@ -830,9 +871,9 @@ Mon, 13 May 2019 15:52:05 GMT
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
 - Remove IModelApp subclasses
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
-- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s. 
+- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s.
 - Rename AppState to SessionState to avoid collision with acutal App's state. Add AvailableSectionScopes to SessionState.
 - Move SelectionScope status field from test app to ui-framework. Update icons-generic-webfont version to latest available.
 - Remove need to sync SelectionMethod since it is not changed within tool code.
@@ -1099,7 +1140,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- OIDC related enhancments (WIP). 
+- OIDC related enhancments (WIP).
 - Updated to TypeScript 3.1
 - ui-core unit tests. Fixed backstage open issue.
 - Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files.
