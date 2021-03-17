@@ -29,8 +29,6 @@ steps:
 
       node ./common/scripts/install-run-rush build -v --to extension-client
 
-      node ./common/scripts/install-run-rush build -v --to forms-data-management-client
-
       node ./common/scripts/install-run-rush build -v --to product-settings-client
 
       node ./common/scripts/install-run-rush build -v --to projectshare-client
@@ -60,11 +58,6 @@ steps:
   - script: "npm run test:integration"
     workingDirectory: clients/extension
     displayName: "Run Extension Client Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: clients/forms-data-management
-    displayName: "Run Forms Client Tests"
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
@@ -136,14 +129,6 @@ steps:
     inputs:
       testResultsFiles: "clients/extension/lib/test/junit_results.xml"
       testRunTitle: "Client - Extension Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Forms Data Management Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/forms-data-management/lib/test/junit_results.xml"
-      testRunTitle: "Client - Forms Data Management Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
