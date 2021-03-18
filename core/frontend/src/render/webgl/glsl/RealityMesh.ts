@@ -123,8 +123,11 @@ function baseColorFromTextures(textureCount: number) {
   if (doDiscard)
       discard;
 
-  col.rgb = mix(col.rgb, mix(col.rgb, v_color.rgb, .5), step(0.0, v_color.r));
+  if (col.a > 0.0)
+    col.rgb /= col.a;
+
   col.a = mix(col.a, v_color.a * col.a, step(0.0, v_color.a));
+  col.rgb = col.a *  mix(col.rgb, mix(col.rgb, v_color.rgb, .5), step(0.0, v_color.r));
   return col;
 `;
 }
@@ -149,13 +152,12 @@ function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: 
   }
 }
 /** @internal */
-export function createClassifieRealityMeshHiliter(): ProgramBuilder {
+export function createClassifierRealityMeshHiliter(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false));
   addHilitePlanarClassifier(builder, false);
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
-  vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   return builder;
@@ -221,7 +223,7 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
 
   addTextures(builder, textureCount);
   if (flags.isClassified) {
-    addColorPlanarClassifier(builder, true /* Transparency? */, flags.isThematic);
+    addColorPlanarClassifier(builder, flags.isTranslucent, flags.isThematic);
     addClassificationTranslucencyDiscard(builder);
   }
 

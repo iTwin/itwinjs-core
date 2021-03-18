@@ -34,7 +34,7 @@ import { addUnlitMonochrome } from "./glsl/Monochrome";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
-import createRealityMeshBuilder, { createClassifieRealityMeshHiliter } from "./glsl/RealityMesh";
+import createRealityMeshBuilder, { createClassifierRealityMeshHiliter } from "./glsl/RealityMesh";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
@@ -643,7 +643,7 @@ class RealityMeshTechnique extends VariedTechnique {
 
   public constructor(gl: WebGLRenderingContext) {
     super(RealityMeshTechnique._numVariants);
-    this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, createClassifieRealityMeshHiliter);
+    this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, createClassifierRealityMeshHiliter);
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
