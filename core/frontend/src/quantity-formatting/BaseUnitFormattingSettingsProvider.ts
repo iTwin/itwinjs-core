@@ -66,7 +66,7 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
     }
   };
 
-  /** save UnitSystem for active Imodel */
+  /** save UnitSystem for active iModel */
   public storeUnitSystemSetting = async ({system}: FormattingUnitSystemChangedArgs) => {
     await this.storeUnitSystemKey(system);
   };
@@ -132,19 +132,19 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
     return overrideFormatProps;
   }
 
-  // serializes JSON object containing format overrides for a specific quantity type.
+  /** Serializes JSON object containing format overrides for a specific quantity type. */
   abstract store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
 
-  // retrieves serialized JSON object containing format overrides for a specific quantity type.
+  /** Retrieves serialized JSON object containing format overrides for a specific quantity type. */
   abstract retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry|undefined>;
 
-  // removes the override formats for a specific quantity type.
+  /** Removes the override formats for a specific quantity type. */
   abstract remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
 
-  // retrieves the active unit system typically based on the "active" iModelConnection
+  /** Retrieves the active unit system typically based on the "active" iModelConnection. */
   abstract  retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
 
-  // store the active unit system typically for the "active" iModelConnection
+  /** Store the active unit system typically for the "active" iModelConnection. */
   abstract  storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
 }
 
