@@ -8,7 +8,7 @@
 
 import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import {
-  AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Transform, Vector3d, XAndY, XYAndZ,
+  AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ,
 } from "@bentley/geometry-core";
 import {
   BentleyStatus, ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps,
@@ -123,7 +123,7 @@ interface Segment { distance: number, slope: number, start: Point3d, end: Point3
 
 /** @internal */
 function adjustPoint(ev: BeButtonEvent, segments?: Array<Segment>, locations?: Array<Location>): Point3d {
-  // If the point was from a hit we must trasnform it by the model display tyransform of what got hit.
+  // If the point was from a hit we must transform it by the model display tyransform of what got hit.
   if (undefined === ev.viewport || undefined === ev.viewport.view.modelDisplayTransformProvider)
     return ev.point;
   if (undefined !== IModelApp.accuSnap.currHit && undefined !== IModelApp.accuSnap.currHit.modelId) {

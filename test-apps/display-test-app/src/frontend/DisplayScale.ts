@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Matrix3d, Point3d, Transform } from "@bentley/geometry-core";
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, ModelDisplayTransformProvider, Tool } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "@bentley/frontend-devtools";
 
-class DisplayScaleTransformProvider {
+class DisplayScaleTransformProvider implements ModelDisplayTransformProvider {
   public constructor(private readonly _models: Set<string>, private readonly _scaleTransform: Transform) { }
 
   public getModelDisplayTransform(modelId: string, baseTransform: Transform): Transform {
