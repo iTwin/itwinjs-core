@@ -9,11 +9,11 @@
 import { from } from "rxjs/internal/observable/from";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { Subject } from "rxjs/internal/Subject";
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { BeUiEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { TreeModelMutator } from "./internal/TreeModelMutator";
 import { Subscription } from "./Observable";
 import {
-  TreeCheckboxStateChangeEventArgs, TreeEvents, TreeNodeEventArgs, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
+  TreeCheckboxStateChangeEventArgs, TreeEvents, TreeNodeEventArgs, TreeRenderedNodeChangeEventArgs, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "./TreeEvents";
 import { TreeModelNode } from "./TreeModel";
 import { TreeModelSource } from "./TreeModelSource";
@@ -65,6 +65,9 @@ export class TreeEventHandler implements TreeEvents, IDisposable {
   }
 
   public get modelSource() { return this._modelMutator.modelSource; }
+
+  /** Emits first and last rendered node index when they tree is scrolled. */
+  public onNodesRendered = new BeUiEvent<TreeRenderedNodeChangeEventArgs>();
 
   /** Expands node and starts loading children. */
   public onNodeExpanded({ nodeId }: TreeNodeEventArgs) {

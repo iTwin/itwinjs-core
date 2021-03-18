@@ -6,6 +6,7 @@
  * @module Tree
  */
 
+import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { CheckBoxState } from "@bentley/ui-core";
 import { TreeNodeItem } from "../TreeDataProvider";
 import { Observable, Subscription } from "./Observable";
@@ -51,6 +52,11 @@ export interface TreeEvents {
    * If Subscription is returned it can be used to stop event handling by calling `unsubscribe()`.
    */
   onCheckboxStateChanged?(event: TreeCheckboxStateChangeEventArgs): Subscription | undefined;
+
+  /**
+   * Raised when rendered nodes in the tree change.
+   */
+  onNodesRendered?: BeUiEvent<TreeRenderedNodeChangeEventArgs>;
 }
 
 /**
@@ -118,4 +124,15 @@ export interface CheckboxStateChange {
   nodeItem: TreeNodeItem;
   /** New state of the checkbox. */
   newState: CheckBoxState;
+}
+
+/**
+ * Data structure that describes tree rendered nodes change event payload.
+ * @alpha
+ */
+export interface TreeRenderedNodeChangeEventArgs {
+  /** Index of the first rendered node from visible tree nodes list */
+  startIndex: number;
+  /** Index of the last rendered node from visible tree nodes list */
+  endIndex: number;
 }

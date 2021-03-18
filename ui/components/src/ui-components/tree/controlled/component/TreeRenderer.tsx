@@ -9,7 +9,7 @@
 import "./ControlledTree.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { areEqual, ListChildComponentProps } from "react-window";
+import { areEqual, ListChildComponentProps, ListOnItemsRenderedProps } from "react-window";
 import { concat } from "rxjs/internal/observable/concat";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { timer } from "rxjs/internal/observable/timer";
@@ -247,6 +247,10 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
     props.treeActions.onTreeKeyUp(e);
   }, [props.treeActions]);
 
+  const handleRenderedItemsChange = React.useCallback(({ overscanStartIndex, overscanStopIndex }: ListOnItemsRenderedProps) => {
+    props.treeActions.onNodesRendered(overscanStartIndex, overscanStopIndex);
+  }, [props.treeActions]);
+
   return (
     <TreeRendererContextProvider value={rendererContext}>
       <CoreTree ref={coreTreeRef} className="components-controlledTree" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
@@ -260,6 +264,7 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
           overscanCount={10}
           itemKey={itemKey}
           innerElementType={innerElementType}
+          onItemsRendered={handleRenderedItemsChange}
         >
           {Node}
         </VirtualizedList>

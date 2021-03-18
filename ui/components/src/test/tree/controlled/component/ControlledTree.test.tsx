@@ -43,6 +43,7 @@ describe("ControlledTree", () => {
 
     visibleNodesMock.reset();
     nodeLoaderMock.reset();
+    treeEventsMock.reset();
 
     node = {
       id: "0",
@@ -62,6 +63,7 @@ describe("ControlledTree", () => {
       },
     };
 
+    treeEventsMock.setup((x) => x.onNodesRendered).returns(() => undefined);
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 0);
     visibleNodesMock.setup((x) => x.getModel()).returns(() => treeModelMock.object);
     treeModelMock.setup((x) => x.getRootNode()).returns(() => ({ depth: -1, id: undefined, numChildren: undefined }));

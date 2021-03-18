@@ -22,4 +22,5 @@ export interface TreeActions {
   onNodeEditorActivated: (nodeId: string) => void;
   onTreeKeyDown: (event: React.KeyboardEvent) => void;
   onTreeKeyUp: (event: React.KeyboardEvent) => void;
+  onNodesRendered: (startIndex: number, stopIndex: number) => void;
 }

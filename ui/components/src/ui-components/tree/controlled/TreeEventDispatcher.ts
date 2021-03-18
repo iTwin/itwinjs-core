@@ -212,6 +212,12 @@ export class TreeEventDispatcher implements TreeActions {
     this._selectionManager.onTreeKeyUp(event, this);
   }
 
+  public onNodesRendered(startIndex: number, endIndex: number): void {
+    // istanbul ignore else
+    if (this._treeEvents !== undefined)
+      this._treeEvents.onNodesRendered?.emit({ startIndex, endIndex });
+  }
+
   private collectSelectionChanges(
     selection: IndividualSelection | RangeSelection,
     deselection: IndividualSelection,
