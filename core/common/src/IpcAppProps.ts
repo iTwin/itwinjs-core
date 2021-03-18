@@ -78,7 +78,7 @@ export interface TxnNotifications {
   notifyCommit: () => void;
   notifyCommitted: () => void;
   notifyChangesApplied: () => void;
-  notifyBeforeUndoRedo: () => void;
+  notifyBeforeUndoRedo: (isUndo: boolean) => void;
   notifyAfterUndoRedo: (isUndo: boolean) => void;
 }
 

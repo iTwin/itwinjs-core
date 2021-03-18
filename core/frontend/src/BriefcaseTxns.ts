@@ -73,7 +73,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** Event raised before an undo/redo operation is performed.
    * @see [[onAfterUndoRedo]] for the event raised after the operation.
    */
-  public readonly onBeforeUndoRedo = new BeEvent<() => void>();
+  public readonly onBeforeUndoRedo = new BeEvent<(isUndo: boolean) => void>();
 
   /** Event raised after an undo/redo operation is performed.
    * @see [[onBeforeUndoRedo]] for the event raised before to the operation.
@@ -183,8 +183,8 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** @internal */
-  public notifyBeforeUndoRedo() {
-    this.onBeforeUndoRedo.raiseEvent();
+  public notifyBeforeUndoRedo(isUndo: boolean) {
+    this.onBeforeUndoRedo.raiseEvent(isUndo);
   }
 
   /** @internal */

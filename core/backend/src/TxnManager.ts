@@ -189,9 +189,9 @@ export class TxnManager {
   }
 
   /** @internal */
-  protected _onBeforeUndoRedo() {
-    this.onBeforeUndoRedo.raiseEvent();
-    IpcHost.notifyTxns(this._iModel, "notifyBeforeUndoRedo");
+  protected _onBeforeUndoRedo(isUndo: boolean) {
+    this.onBeforeUndoRedo.raiseEvent(isUndo);
+    IpcHost.notifyTxns(this._iModel, "notifyBeforeUndoRedo", isUndo);
   }
 
   /** @internal */
@@ -239,7 +239,7 @@ export class TxnManager {
   /** Event raised after a ChangeSet has been applied to this briefcase */
   public readonly onChangesApplied = new BeEvent<() => void>();
   /** Event raised before an undo/redo operation is performed. */
-  public readonly onBeforeUndoRedo = new BeEvent<() => void>();
+  public readonly onBeforeUndoRedo = new BeEvent<(isUndo: boolean) => void>();
   /** Event raised after an undo/redo operation has been performed.
    * @param _action The action that was performed.
    */

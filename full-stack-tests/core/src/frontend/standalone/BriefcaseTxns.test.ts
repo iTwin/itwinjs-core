@@ -34,14 +34,16 @@ describe("BriefcaseTxns", () => {
     });
 
     it("receives events from TxnManager", async () => {
-      type TxnEvent = "onElementsChanged" | "onModelsChanged" | "onModelGeometryChanged" | "onCommit" | "onCommitted" | "onChangesApplied" | "onBeforeUndoRedo" | "onAfterUndoRedo";
+      type TxnEventName = "onElementsChanged" | "onModelsChanged" | "onModelGeometryChanged" | "onCommit" | "onCommitted" | "onChangesApplied";
+      type TxnEvent = TxnEventName | "beforeUndo" | "beforeRedo" | "afterUndo" | "afterRedo";
+
       const received: TxnEvent[] = [];
-      const txnEventNames: TxnEvent[] = ["onElementsChanged", "onModelsChanged", "onModelGeometryChanged", "onCommit", "onCommitted", "onChangesApplied", "onBeforeUndoRedo", "onAfterUndoRedo"];
-      for (const event of txnEventNames) {
-        imodel.txns[event].addListener(() => {
-          received.push(event);
-        });
-      }
+      imodel.txns.onBeforeUndoRedo.addListener((isUndo) => received.push(isUndo ? "beforeUndo" : "beforeRedo"));
+      imodel.txns.onAfterUndoRedo.addListener((isUndo) => received.push(isUndo ? "afterUndo" : "afterRedo"));
+
+      const txnEventNames: TxnEventName[] = ["onElementsChanged", "onModelsChanged", "onModelGeometryChanged", "onCommit", "onCommitted", "onChangesApplied"];
+      for (const event of txnEventNames)
+        imodel.txns[event].addListener(() => received.push(event));
 
       const expected: TxnEvent[] = [];
       const expectEvents = async (additionalEvents: TxnEvent[]): Promise<void> => {
@@ -106,32 +108,33 @@ describe("BriefcaseTxns", () => {
       await expectEvents(["onModelGeometryChanged", "onCommit", "onElementsChanged", "onCommitted"]);
 
       const undo = async () => IpcApp.callIpcHost("reverseSingleTxn", imodel.key);
-      const expectUndoRedo = async (evts: TxnEvent[]) => expectEvents(["onBeforeUndoRedo", ...evts, "onAfterUndoRedo"]);
+      const expectUndo = async (evts: TxnEvent[]) => expectEvents(["beforeUndo", ...evts, "afterUndo"]);
 
       // NB: Reversing or reinstating a txn calls SaveChanges.
       // SaveChanges only produces onCommit if there are actual data changes. It always produces onCommitted.
       await undo();
-      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
+      await expectUndo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
       await undo();
-      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
+      await expectUndo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
       await undo();
-      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
+      await expectUndo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
       await undo();
-      await expectUndoRedo(["onElementsChanged", "onModelsChanged", "onChangesApplied", "onCommitted"]);
+      await expectUndo(["onElementsChanged", "onModelsChanged", "onChangesApplied", "onCommitted"]);
       await undo();
-      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted"]);
+      await expectUndo(["onElementsChanged", "onChangesApplied", "onCommitted"]);
 
       const redo = async () => IpcApp.callIpcHost("reinstateTxn", imodel.key);
+      const expectRedo = async (evts: TxnEvent[]) => expectEvents(["beforeRedo", ...evts, "afterRedo"]);
       await redo();
-      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted"]);
+      await expectRedo(["onElementsChanged", "onChangesApplied", "onCommitted"]);
       await redo();
-      await expectUndoRedo(["onElementsChanged", "onModelsChanged", "onChangesApplied", "onCommitted"]);
+      await expectRedo(["onElementsChanged", "onModelsChanged", "onChangesApplied", "onCommitted"]);
       await redo();
-      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
+      await expectRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
       await redo();
-      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
+      await expectRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
       await redo();
-      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
+      await expectRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
     });
   }
 });
