@@ -65,6 +65,7 @@ describe("BriefcaseTxns", () => {
       const expectCommit = async (evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
 
       const editor = await ElementEditor3d.start(imodel);
+      // eslint-disable-next-line deprecation/deprecation
       const editing = new EditingFunctions(imodel);
 
       const dictModelId = await imodel.models.getDictionaryModel();
@@ -99,6 +100,7 @@ describe("BriefcaseTxns", () => {
       await imodel.saveChanges();
       await expectEvents(["onModelGeometryChanged", "onCommit", "onElementsChanged", "onCommitted"]);
 
+      // eslint-disable-next-line deprecation/deprecation
       await IModelWriteRpcInterface.getClientForRouting(imodel.routingContext.token).deleteElements(imodel.getRpcProps(), [elem1]);
       await imodel.saveChanges();
       await expectEvents(["onModelGeometryChanged", "onCommit", "onElementsChanged", "onCommitted"]);

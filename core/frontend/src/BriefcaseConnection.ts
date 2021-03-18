@@ -23,6 +23,9 @@ import { BriefcaseTxns } from "./BriefcaseTxns";
 export class BriefcaseConnection extends IModelConnection {
   private _editingSession?: InteractiveEditingSession;
   protected _isClosed?: boolean;
+  /** Provides notifications about changes to the iModel.
+   * @beta
+   */
   public readonly txns: BriefcaseTxns;
 
   public isBriefcaseConnection(): this is BriefcaseConnection { return true; }

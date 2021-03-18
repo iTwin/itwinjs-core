@@ -55,6 +55,7 @@ import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DownloadBriefcaseStatus } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
+import { EditingSessionNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementAspectProps } from '@bentley/imodeljs-common';
 import { ElementGeometryRequest } from '@bentley/imodeljs-common';
@@ -89,7 +90,6 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
-import { IModelChangeNotifications } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
@@ -120,6 +120,7 @@ import { MapImageryProps } from '@bentley/imodeljs-common';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
+import { ModelIdAndGeometryGuid } from '@bentley/imodeljs-common';
 import { ModelLoadProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
@@ -187,6 +188,8 @@ import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
+import { TxnAction as TxnAction_2 } from '@bentley/imodeljs-common';
+import { TxnNotifications } from '@bentley/imodeljs-common';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
 import { UpgradeOptions } from '@bentley/imodeljs-common';
@@ -2571,6 +2574,8 @@ export namespace IModelDb {
         tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined;
         tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined;
         tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined;
+        // @beta
+        updateGeometryGuid(modelId: Id64String): void;
         updateModel(props: UpdateModelOptions): void;
     }
     // @internal
@@ -3013,11 +3018,13 @@ export class IpcHost {
     // (undocumented)
     static noStack: boolean;
     // @internal (undocumented)
-    static notifyIModelChanges<T extends keyof IModelChangeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<IModelChangeNotifications[T]>): void;
+    static notifyEditingSession<T extends keyof EditingSessionNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingSessionNotifications[T]>): void;
     // @internal (undocumented)
     static notifyIpcFrontend<T extends keyof IpcAppNotifications>(methodName: T, ...args: Parameters<IpcAppNotifications[T]>): void;
     // @internal (undocumented)
     static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>): void;
+    // @internal (undocumented)
+    static notifyTxns<T extends keyof TxnNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<TxnNotifications[T]>): void;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
     // (undocumented)
@@ -3708,6 +3715,9 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
     toJSON(): SectionLocationProps;
 }
 
+// @internal
+export function setMaxEntitiesPerEvent(max: number): number;
+
 // @public
 export class Sheet extends Document implements SheetProps {
     // @internal
@@ -4122,7 +4132,7 @@ export class TitleText extends DetailingSymbol {
     static get className(): string;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export enum TxnAction {
     // (undocumented)
     Abandon = 2,
@@ -4139,7 +4149,7 @@ export enum TxnAction {
 }
 
 // @beta (undocumented)
-export interface TxnElementsChanged {
+export interface TxnChangedEntities {
     // (undocumented)
     deleted: OrderedId64Array;
     // (undocumented)
@@ -4171,20 +4181,30 @@ export class TxnManager {
     get isRedoPossible(): boolean;
     isTxnIdValid(txnId: TxnIdString): boolean;
     get isUndoPossible(): boolean;
-    readonly onAfterUndoRedo: BeEvent<(_action: TxnAction) => void>;
+    readonly onAfterUndoRedo: BeEvent<(_action: TxnAction_2) => void>;
+    // @internal (undocumented)
+    protected _onAfterUndoRedo(action: TxnAction_2): void;
     // @internal (undocumented)
     protected _onAllInputsHandled(elClassName: string, elId: Id64String): void;
     // @internal (undocumented)
     protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void;
     readonly onBeforeUndoRedo: BeEvent<() => void>;
     // @internal (undocumented)
+    protected _onBeforeUndoRedo(): void;
+    // @internal (undocumented)
     protected _onBeginValidate(): void;
     readonly onChangesApplied: BeEvent<() => void>;
+    // @internal (undocumented)
+    protected _onChangesApplied(): void;
     readonly onCommit: BeEvent<() => void>;
+    // @internal (undocumented)
+    protected _onCommit(): void;
     readonly onCommitted: BeEvent<() => void>;
     // @internal (undocumented)
+    protected _onCommitted(): void;
+    // @internal (undocumented)
     protected _onDeletedDependency(props: RelationshipProps): void;
-    readonly onElementsChanged: BeEvent<(changes: TxnElementsChanged) => void>;
+    readonly onElementsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal
     protected _onEndValidate(): void;
     // @internal (undocumented)
@@ -4193,6 +4213,10 @@ export class TxnManager {
     readonly onGeometryChanged: BeEvent<(models: ModelGeometryChangesProps[]) => void>;
     // @internal (undocumented)
     protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]): void;
+    // @internal (undocumented)
+    protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
+    readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
+    readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     // @internal (undocumented)

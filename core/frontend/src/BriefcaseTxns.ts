@@ -96,7 +96,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
 
       this.onElementsChanged.clear();
       this.onModelsChanged.clear();
-      this.onModelGeometryChanges.clear();
+      this.onModelGeometryChanged.clear();
       this.onCommit.clear();
       this.onCommitted.clear();
       this.onChangesApplied.clear();

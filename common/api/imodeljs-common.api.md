@@ -834,6 +834,13 @@ export interface ChangedElements {
     type: number[];
 }
 
+// @beta
+export interface ChangedEntities {
+    deleted?: CompressedId64Set;
+    inserted?: CompressedId64Set;
+    updated?: CompressedId64Set;
+}
+
 // @internal (undocumented)
 export interface ChangedModels {
     // (undocumented)
@@ -2112,6 +2119,12 @@ export class EdgeArgs {
     get numEdges(): number;
 }
 
+// @internal
+export interface EditingSessionNotifications {
+    // (undocumented)
+    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
+}
+
 // @alpha @deprecated
 export abstract class Editor3dRpcInterface extends RpcInterface {
     // (undocumented)
@@ -2347,13 +2360,6 @@ export interface ElementProps extends EntityProps {
     model: Id64String;
     parent?: RelatedElementProps;
     userLabel?: string;
-}
-
-// @alpha
-export interface ElementsChanged {
-    deleted?: CompressedId64Set;
-    inserted?: CompressedId64Set;
-    updated?: CompressedId64Set;
 }
 
 // @beta
@@ -3789,14 +3795,6 @@ export abstract class IModel implements IModelProps {
     toJSON(): IModelConnectionProps;
 }
 
-// @internal
-export interface IModelChangeNotifications {
-    // (undocumented)
-    notifyElementsChanged: (changes: ElementsChanged) => void;
-    // (undocumented)
-    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
-}
-
 // @alpha (undocumented)
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
@@ -4079,11 +4077,13 @@ export enum IpcAppChannel {
     // (undocumented)
     AppNotify = "ipcApp-notify",
     // (undocumented)
+    EditingSession = "editing-session",
+    // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
-    IModelChanges = "imodel-changes",
+    PushPull = "push-pull",
     // (undocumented)
-    PushPull = "push-pull"
+    Txns = "txns"
 }
 
 // @internal
@@ -4675,6 +4675,12 @@ export interface ModelGeometryChangesProps {
     readonly inserted?: ElementIdsAndRangesProps;
     readonly range: Range3dProps;
     readonly updated?: ElementIdsAndRangesProps;
+}
+
+// @beta
+export interface ModelIdAndGeometryGuid {
+    guid: GuidString;
+    id: Id64String;
 }
 
 // @public
@@ -7679,6 +7685,36 @@ export class Tweens {
     removeAll(): void;
     // (undocumented)
     update(time?: number, preserve?: boolean): boolean;
+}
+
+// @public
+export enum TxnAction {
+    Abandon = 2,
+    Commit = 1,
+    Merge = 5,
+    None = 0,
+    Reinstate = 4,
+    Reverse = 3
+}
+
+// @internal
+export interface TxnNotifications {
+    // (undocumented)
+    notifyAfterUndoRedo: (action: TxnAction) => void;
+    // (undocumented)
+    notifyBeforeUndoRedo: () => void;
+    // (undocumented)
+    notifyChangesApplied: () => void;
+    // (undocumented)
+    notifyCommit: () => void;
+    // (undocumented)
+    notifyCommitted: () => void;
+    // (undocumented)
+    notifyElementsChanged: (changes: ChangedEntities) => void;
+    // (undocumented)
+    notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
+    // (undocumented)
+    notifyModelsChanged: (changes: ChangedEntities) => void;
 }
 
 // @public
