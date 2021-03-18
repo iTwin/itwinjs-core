@@ -3,6 +3,7 @@
   "version": "2.15.0-dev.0",
   "description": "iModel.js hypermodeling package",
   "main": "lib/hypermodeling-frontend.js",
+  "typings": "lib/hypermodeling-frontend",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
