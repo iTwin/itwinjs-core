@@ -48,7 +48,9 @@ export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
-export * from "./QuantityFormatter";
+export * from "./quantity-formatting/QuantityFormatter";
+export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
+export * from "./quantity-formatting/LocalUnitFormatProvider";
 export * from "./RenderScheduleState";
 export * from "./CheckpointConnection";
 export * from "./SelectionSet";
@@ -207,6 +209,10 @@ export * from "./LocalhostIpcApp";
 /**
  * @docs-group-description Features
  * Classes for Feature Tracking classification.
+ */
+/**
+ * @docs-group-description QuantityFormatting
+ * Classes for formatting and parsing quantity values.
  */
 /**
  * @docs-group-description Tiles

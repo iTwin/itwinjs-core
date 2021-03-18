@@ -211,12 +211,24 @@ class LineProximityContext {
     this.setupDerivedData();
   }
 }
+
 /**
  * ViewGraphicsOps has static members for various viewing-specific computations.
  * @internal
  */
 export class ViewGraphicsOps {
-  /**
+/** maximum gridline index (positive or negative) to consider */
+  public static gridRangeMaxXY = 10000.0;
+/** maximum gridline z value to consider -- but the grid is on z=0 so this is not a significant effect */
+  public static gridRangeMaxZ = 10000.0;
+  /** clamp the range to gridRangeMAXXY */
+  private static restrictGridRange(range0: Range3d): Range3d{
+    return range0.intersect(Range3d.createXYZXYZ(
+      -this.gridRangeMaxXY, -this.gridRangeMaxXY, -this.gridRangeMaxZ,
+      this.gridRangeMaxXY, this.gridRangeMaxXY, this.gridRangeMaxZ
+    ));
+  }
+/**
    * * Emit line segments of a grid that passes through a display volume.
    * * The chosen segments are culled to have a minimum line-to-line distance.
    * * Hence in a perspective view, grid lines that blur together towards the back of the view are not output.
@@ -293,7 +305,7 @@ export class ViewGraphicsOps {
     if (gridTransformInverse === undefined)
       return false;
     stLoop.multiplyTransformInPlace(gridTransformInverse);
-    const stRange = stLoop.getRange();
+    const stRange = this.restrictGridRange(stLoop.getRange());
     const area = PolygonOps.areaXY(stLoop);
     const stClipper = ConvexClipPlaneSet.createXYPolyLine(stLoop.getPoint3dArray(), undefined, area > 0.0);
     const lineContext = new LineProximityContext(worldToDisplay.transform0);

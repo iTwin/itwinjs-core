@@ -45,7 +45,7 @@ describe("IModelTransformerHub (#integration)", () => {
   it("Transform source iModel to target iModel", async () => {
     // Create and push seed of source IModel
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+    const projectId = await HubUtility.getTestContextId(requestContext);
     const sourceIModelName: string = HubUtility.generateUniqueName("TransformerSource");
     const sourceSeedFileName: string = path.join(outputDir, `${sourceIModelName}.bim`);
     if (IModelJsFs.existsSync(sourceSeedFileName)) {
@@ -54,6 +54,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const sourceSeedDb = SnapshotDb.createEmpty(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
     await IModelTransformerUtils.prepareSourceDb(sourceSeedDb);
+    sourceSeedDb.saveChanges();
     sourceSeedDb.close();
     const sourceIModelId = await HubUtility.pushIModel(requestContext, projectId, sourceSeedFileName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
@@ -67,6 +68,8 @@ describe("IModelTransformerHub (#integration)", () => {
     const targetSeedDb = SnapshotDb.createEmpty(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
     assert.isTrue(IModelJsFs.existsSync(targetSeedFileName));
     await IModelTransformerUtils.prepareTargetDb(targetSeedDb);
+    assert.isTrue(targetSeedDb.codeSpecs.hasName("TargetCodeSpec")); // inserted by prepareTargetDb
+    targetSeedDb.saveChanges();
     targetSeedDb.close();
     const targetIModelId = await HubUtility.pushIModel(requestContext, projectId, targetSeedFileName);
     assert.isTrue(Guid.isGuid(targetIModelId));
@@ -78,6 +81,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isTrue(targetDb.isBriefcaseDb());
       assert.isFalse(sourceDb.isSnapshot);
       assert.isFalse(targetDb.isSnapshot);
+      assert.isTrue(targetDb.codeSpecs.hasName("TargetCodeSpec")); // make sure prepareTargetDb changes were saved and pushed to iModelHub
       sourceDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
       targetDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
@@ -133,15 +137,15 @@ describe("IModelTransformerHub (#integration)", () => {
         // expect inserts and a few updates from transforming the result of populateSourceDb
         assert.isAtLeast(targetDbChanges.codeSpec.insertIds.size, 1);
         assert.isAtLeast(targetDbChanges.element.insertIds.size, 1);
+        assert.isAtMost(targetDbChanges.element.updateIds.size, 1, "Expect the root Subject to be updated");
         assert.isAtLeast(targetDbChanges.aspect.insertIds.size, 1);
         assert.isAtLeast(targetDbChanges.model.insertIds.size, 1);
-        assert.equal(targetDbChanges.model.updateIds.size, 1, "Expect the RepositoryModel to be updated");
+        assert.isAtMost(targetDbChanges.model.updateIds.size, 1, "Expect the RepositoryModel to be updated");
         assert.isTrue(targetDbChanges.model.updateIds.has(IModel.repositoryModelId));
         assert.isAtLeast(targetDbChanges.relationship.insertIds.size, 1);
         // expect no other changes from transforming the result of populateSourceDb
         assert.equal(targetDbChanges.codeSpec.updateIds.size, 0);
         assert.equal(targetDbChanges.codeSpec.deleteIds.size, 0);
-        assert.equal(targetDbChanges.element.updateIds.size, 0);
         assert.equal(targetDbChanges.element.deleteIds.size, 0);
         assert.equal(targetDbChanges.aspect.updateIds.size, 0);
         assert.equal(targetDbChanges.aspect.deleteIds.size, 0);
@@ -337,7 +341,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
   it("should merge changes made on a branch back to master", async () => {
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+    const projectId = await HubUtility.getTestContextId(requestContext);
 
     // create and push master IModel
     const masterIModelName = HubUtility.generateUniqueName("Master");
@@ -636,5 +640,3 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   }
 });
-
-// cspell:words ecchange

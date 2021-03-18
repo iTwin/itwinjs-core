@@ -16,6 +16,7 @@ import { CommonProps, Popup, useRefs, WebFontIcon } from "@bentley/ui-core";
 import { ColorPickerPanel } from "./ColorPickerPanel";
 
 import "./ColorPickerPopup.scss";
+import { getCSSColorFromDef } from "./getCSSColorFromDef";
 
 /** Properties for the [[ColorPickerPopup]] React component
  * @beta
@@ -92,8 +93,7 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
       }
     }, [colorDef, props]);
 
-    const { b, g, r, t } = colorDef.colors;
-    const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
+    const rgbaString = getCSSColorFromDef(colorDef);
 
     const buttonStyle = { ...props.style } as React.CSSProperties;
     const swatchStyle = { backgroundColor: rgbaString } as React.CSSProperties;
