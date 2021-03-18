@@ -27,6 +27,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
+import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
 import { MapLayersUI } from "@bentley/map-layers";
@@ -59,8 +60,6 @@ import { AppUiSettings } from "./AppUiSettings";
 import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Properties Support
 import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
-import { DeleteElementTool } from "./tools/editing/DeleteElementTool";
-import { MoveElementTool } from "./tools/editing/MoveElementTool";
 import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
 import { PlaceLineStringTool } from "./tools/editing/PlaceLineStringTool";
 import { Tool1 } from "./tools/Tool1";
@@ -68,6 +67,7 @@ import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
+import { EditingSessionTool } from "./tools/editing/PrimitiveToolEx";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -257,10 +257,9 @@ export class SampleAppIModelApp {
 
     // Register editing tools
     if (this.allowWrite) {
-      MoveElementTool.register(this.sampleAppNamespace);
-      DeleteElementTool.register(this.sampleAppNamespace);
-      PlaceLineStringTool.register(this.sampleAppNamespace);
+      EditingSessionTool.register(this.sampleAppNamespace);
       PlaceBlockTool.register(this.sampleAppNamespace);
+      PlaceLineStringTool.register(this.sampleAppNamespace);
     }
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
@@ -271,6 +270,8 @@ export class SampleAppIModelApp {
 
     await MarkupApp.initialize();
     await FrontendDevTools.initialize();
+    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true });
+
     // Favorite Properties Support
     SampleAppIModelApp._selectionSetListener.initialize();
 
