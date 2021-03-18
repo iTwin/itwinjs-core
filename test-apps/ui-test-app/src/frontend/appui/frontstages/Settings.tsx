@@ -10,7 +10,6 @@ import "./Settings.scss";
 import * as React from "react";
 import { Toggle } from "@bentley/ui-core";
 import { FrameworkAccuDraw, UiFramework } from "@bentley/ui-framework";
-import { SampleAppIModelApp } from "../..";
 
 /** UiSettingsPage displaying the active settings. */
 export class UiSettingsPageComponent extends React.Component {
@@ -19,8 +18,6 @@ export class UiSettingsPageComponent extends React.Component {
 
   private _onAccuDrawNotificationsChange = async () => {
     FrameworkAccuDraw.displayNotifications = !FrameworkAccuDraw.displayNotifications;
-
-    await SampleAppIModelApp.appUiSettings.accuDrawNotifications.saveSetting(SampleAppIModelApp.uiSettings);
   };
 
   public render(): React.ReactNode {

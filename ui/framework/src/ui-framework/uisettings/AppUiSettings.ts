@@ -7,20 +7,14 @@
  */
 
 import { UiSetting, UiSettings } from "@bentley/ui-core";
-import { FrameworkAccuDraw } from "../accudraw/FrameworkAccuDraw";
 import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 /** @alpha */
 export interface InitialAppUiSettings {
   colorTheme: string;
-  autoHideUi: boolean;
-  useProximityOpacity: boolean;
-  snapWidgetOpacity: boolean;
   dragInteraction: boolean;
   frameworkVersion: string;
-  accuDrawNotifications: boolean;
   widgetOpacity: number;
 }
 
@@ -34,10 +28,6 @@ export class AppUiSettings {
   public dragInteraction: UiSetting<boolean>;
   public frameworkVersion: UiSetting<string>;
   public widgetOpacity: UiSetting<number>;
-  public accuDrawNotifications: UiSetting<boolean>;
-  public autoHideUi: UiSetting<boolean>;
-  public useProximityOpacity: UiSetting<boolean>;
-  public snapWidgetOpacity: UiSetting<boolean>;
 
   private setColorTheme = (theme: string) => {
     UiFramework.setColorTheme(theme);
@@ -51,18 +41,6 @@ export class AppUiSettings {
     this.colorTheme = new UiSetting<string>(AppUiSettings._settingNamespace, "ColorTheme", UiFramework.getColorTheme, this.setColorTheme, defaults.colorTheme);
     this._settings.push(this.colorTheme);
 
-    this.autoHideUi = new UiSetting<boolean>(AppUiSettings._settingNamespace, "AutoHideUi",
-      () => UiShowHideManager.autoHideUi, (value: boolean) => UiShowHideManager.autoHideUi = value, defaults.autoHideUi);
-    this._settings.push(this.autoHideUi);
-
-    this.useProximityOpacity = new UiSetting<boolean>(AppUiSettings._settingNamespace, "UseProximityOpacity",
-      () => UiShowHideManager.useProximityOpacity, (value: boolean) => UiShowHideManager.useProximityOpacity = value, defaults.useProximityOpacity);
-    this._settings.push(this.useProximityOpacity);
-
-    this.snapWidgetOpacity = new UiSetting<boolean>(AppUiSettings._settingNamespace, "SnapWidgetOpacity",
-      () => UiShowHideManager.snapWidgetOpacity, (value: boolean) => UiShowHideManager.snapWidgetOpacity = value, defaults.snapWidgetOpacity);
-    this._settings.push(this.snapWidgetOpacity);
-
     this.dragInteraction = new UiSetting<boolean>(AppUiSettings._settingNamespace, "DragInteraction",
       () => UiFramework.useDragInteraction,
       (value: boolean) => UiFramework.setUseDragInteraction(value), defaults.dragInteraction);
@@ -72,10 +50,6 @@ export class AppUiSettings {
       () => UiFramework.uiVersion,
       (value: string) => UiFramework.setUiVersion(value), defaults.frameworkVersion);
     this._settings.push(this.frameworkVersion);
-
-    this.accuDrawNotifications = new UiSetting<boolean>(AppUiSettings._settingNamespace, "AccuDrawNotifications",
-      () => FrameworkAccuDraw.displayNotifications, (value: boolean) => FrameworkAccuDraw.displayNotifications = value, defaults.accuDrawNotifications);
-    this._settings.push(this.accuDrawNotifications);
 
     this.widgetOpacity = new UiSetting<number>(AppUiSettings._settingNamespace, "WidgetOpacity",
       () => UiFramework.getWidgetOpacity(), (value: number) => UiFramework.setWidgetOpacity(value), defaults.widgetOpacity);
@@ -102,12 +76,6 @@ export class AppUiSettings {
 
     if (args.eventIds.has("configurableui:set_widget_opacity"))
       await this.widgetOpacity.saveSetting(UiFramework.getUiSettings());
-
-    if (args.eventIds.has(SyncUiEventId.ShowHideManagerSettingChange)) {
-      await this.autoHideUi.saveSetting(UiFramework.getUiSettings());
-      await this.snapWidgetOpacity.saveSetting(UiFramework.getUiSettings());
-      await this.useProximityOpacity.saveSetting(UiFramework.getUiSettings());
-    }
   };
 
   public async apply(uiSettings: UiSettings): Promise<void> {

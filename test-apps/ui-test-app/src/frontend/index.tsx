@@ -164,14 +164,18 @@ export class SampleAppIModelApp {
     return StateManager.store as Store<RootState>;
   }
 
+  private static async setUiSettings(v: UiSettings) {
+    await UiFramework.setUiSettings(v);
+    // when uiSettings are set trigger the apply to set the default UI settings.
+    await SampleAppIModelApp.appUiSettings.apply(v);
+  }
+
   public static get uiSettings(): UiSettings {
     return UiFramework.getUiSettings();
   }
 
   public static set uiSettings(v: UiSettings) {
-    UiFramework.setUiSettings(v);
-    // when uiSettings are set trigger the apply to set the default UI settings.
-    SampleAppIModelApp.appUiSettings.apply(v);  // eslint-disable-line @typescript-eslint/no-floating-promises
+    SampleAppIModelApp.setUiSettings(v); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   public static get appUiSettings(): AppUiSettings {
@@ -179,9 +183,6 @@ export class SampleAppIModelApp {
       const lastTheme = localStorage.getItem("uifw:defaultTheme");
       const defaults = {
         colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
-        autoHideUi: false,
-        useProximityOpacity: true,
-        snapWidgetOpacity: true,
         dragInteraction: false,
         frameworkVersion: "2",
         accuDrawNotifications: true,

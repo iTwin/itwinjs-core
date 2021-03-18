@@ -34,10 +34,20 @@ import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
-import { UiShowHideManager } from "./utils/UiShowHideManager";
+import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 
 // cSpell:ignore Mobi
+
+/** Interface to be implemented but any classes that want to load their user settings when the UiSetting storage class is set.
+ * @alpha
+ */
+export interface UserSettingsProvider {
+  /** Unique provider Id */
+  providerId: string;
+  /** Function to load settings from settings storage */
+  loadUserSettings(settings: UiSettings): Promise<void>;
+}
 
 /** UiVisibility Event Args interface.
  * @public
@@ -91,6 +101,15 @@ export class UiFramework {
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
   private static _uiSettings: UiSettings;
   private static _settingsManager?: SettingsManager;
+  private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
+
+  public static registerUserSettingsProvider(entry: UserSettingsProvider) {
+    if (this._uiSettingsProviderRegistry.has(entry.providerId))
+      return false;
+
+    this._uiSettingsProviderRegistry.set(entry.providerId, entry);
+    return true;
+  }
 
   /** Get Show Ui event.
    * @public
@@ -135,7 +154,7 @@ export class UiFramework {
     if (frameworkStateKey && store)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
 
-    // set up namespace and register akk tools from package
+    // set up namespace and register all tools from package
     const frameworkNamespace = UiFramework._i18n.registerNamespace(UiFramework.i18nNamespace);
     [
       restoreLayoutTools,
@@ -173,6 +192,9 @@ export class UiFramework {
     });
 
     UiFramework._initialized = true;
+
+    // initialize any standalone settings providers
+    UiShowHideSettingsProvider.initialize ();
 
     return readFinishedPromise;
   }
@@ -377,8 +399,15 @@ export class UiFramework {
   }
 
   /** @beta */
-  public static setUiSettings(uiSettings: UiSettings, immediateSync = false) {
+  public static async setUiSettings(uiSettings: UiSettings, immediateSync = false) {
     UiFramework._uiSettings = uiSettings;
+
+    // let any registered providers to load values from the new storage location
+    const providerKeys = [...this._uiSettingsProviderRegistry.keys()];
+    for await (const key of providerKeys) {
+      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(uiSettings);
+    }
+
     // istanbul ignore next
     if (immediateSync)
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.UiSettingsChanged);

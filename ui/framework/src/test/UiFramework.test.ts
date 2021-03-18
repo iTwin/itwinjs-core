@@ -190,7 +190,7 @@ describe("UiFramework", () => {
     expect(UiFramework.getIModelConnection()).to.eq(imodelMock.object);
 
     const uisettingsMock = moq.Mock.ofType<UiSettings>();
-    UiFramework.setUiSettings(uisettingsMock.object);
+    await UiFramework.setUiSettings(uisettingsMock.object);
     expect(UiFramework.getUiSettings()).to.eq(uisettingsMock.object);
 
     UiFramework.closeCursorMenu();
