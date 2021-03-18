@@ -10,7 +10,7 @@ import "./ModelsTree.scss";
 import * as React from "react";
 import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { NodeKey, Ruleset } from "@bentley/presentation-common";
-import { IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
+import { IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, useHierarchyAutoUpdate, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { ControlledTree, SelectionMode, TreeNodeItem, useVisibleTreeNodes } from "@bentley/ui-components";
 import { useDisposable, useOptionalDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
@@ -96,21 +96,20 @@ export interface ModelsTreeProps {
  * @public
  */
 export function ModelsTree(props: ModelsTreeProps) {
-  const nodeLoader = usePresentationTreeNodeLoader({
+  const showGroupingNodesWithChildCount = (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts)
+  const { nodeLoader, updateTreeModelSource } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     dataProvider: props.dataProvider,
     ruleset: (!props.enableElementsClassGrouping) ? RULESET_MODELS : /* istanbul ignore next */ RULESET_MODELS_GROUPED_BY_CLASS,
-    appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
+    appendChildrenCountForGroupingNodes: showGroupingNodesWithChildCount,
     pagingSize: PAGING_SIZE,
-    enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
   });
-  const searchNodeLoader = usePresentationTreeNodeLoader({
+  const { nodeLoader: searchNodeLoader, updateTreeModelSource: updateSearchTreeModelSource } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     dataProvider: props.dataProvider,
     ruleset: RULESET_MODELS_SEARCH,
     pagingSize: PAGING_SIZE,
     preloadingEnabled: props.enablePreloading,
-    enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
   });
 
   const nodeLoaderInUse = props.filterInfo?.filter ? searchNodeLoader : nodeLoader;
@@ -129,6 +128,21 @@ export function ModelsTree(props: ModelsTreeProps) {
     collapsedChildrenDisposalEnabled: true,
     selectionPredicate: nodeSelectionPredicate,
   }), [filteredNodeLoader, visibilityHandler, nodeSelectionPredicate]));
+
+  useHierarchyAutoUpdate({
+    enable: props.enableHierarchyAutoUpdate ?? false,
+    nodeLoader,
+    eventHandler,
+    updateTreeModelSource,
+    appendChildrenCountForGroupingNodes: showGroupingNodesWithChildCount
+  });
+  useHierarchyAutoUpdate({
+    enable: props.enableHierarchyAutoUpdate ?? false,
+    nodeLoader: searchNodeLoader,
+    eventHandler,
+    updateTreeModelSource: updateSearchTreeModelSource,
+    appendChildrenCountForGroupingNodes: false
+  });
 
   const visibleNodes = useVisibleTreeNodes(filteredNodeLoader.modelSource);
   const treeRenderer = useVisibilityTreeRenderer(true, false);
