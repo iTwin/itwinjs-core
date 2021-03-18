@@ -139,6 +139,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
 /** @alpha Move elements by applying translation to placement. */
 export class MoveElementsTool extends TransformElementsTool {
   public static toolId = "MoveElements";
+  public static iconSpec = "icon-move";
 
   protected calculateTransform(ev: BeButtonEvent): Transform | undefined {
     if (undefined === this.anchorPoint)
@@ -176,6 +177,8 @@ export enum RotateAbout {
 /** @alpha Rotate elements by applying transform to placement. */
 export class RotateElementsTool extends TransformElementsTool {
   public static toolId = "RotateElements";
+  public static iconSpec = "icon-rotate";
+
   protected xAxisPoint?: Point3d;
   protected havePivotPoint = false;
   protected haveFinalPoint = false;
@@ -442,7 +445,8 @@ export class RotateElementsTool extends TransformElementsTool {
     const toolSettings = new Array<DialogItem>();
     toolSettings.push({ value: this._rotateMethodValue, property: this._getMethodDescription(), isDisabled: false, editorPosition: { rowPriority: 1, columnIndex: 2 } });
     toolSettings.push({ value: this._rotateAboutValue, property: this._getAboutDescription(), isDisabled: false, editorPosition: { rowPriority: 2, columnIndex: 2 } });
-    toolSettings.push({ value: this._rotateAngleValue, property: this._getAngleDescription(), isDisabled: false, editorPosition: { rowPriority: 3, columnIndex: 2 } });
+    if (RotateMethod.ByAngle === this.rotateMethod)
+      toolSettings.push({ value: this._rotateAngleValue, property: this._getAngleDescription(), isDisabled: false, editorPosition: { rowPriority: 3, columnIndex: 2 } });
     return toolSettings;
   }
 
