@@ -138,8 +138,12 @@ export interface IpcAppFunctions {
   closeIModel: (key: string) => Promise<void>;
   /** see BriefcaseConnection.saveChanges */
   saveChanges: (key: string, description?: string) => Promise<void>;
-  /** see BriefcaseConnection.hasPendingTxns */
+  /** see BriefcaseTxns.hasPendingTxns */
   hasPendingTxns: (key: string) => Promise<boolean>;
+  /** see BriefcaseTxns.isUndoPossible */
+  isUndoPossible: (key: string) => Promise<boolean>;
+  /** see BriefcaseTxns.isRedoPossible */
+  isRedoPossible: (key: string) => Promise<boolean>;
   /** see BriefcaseConnection.pullAndMergeChanges */
   pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
   /** see BriefcaseConnection.pushChanges */

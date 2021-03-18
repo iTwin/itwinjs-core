@@ -90,7 +90,7 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** @beta */
   public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
-    return IpcApp.callIpcHost("hasPendingTxns", this.key);
+    return this.txns.hasPendingTxns();
   }
 
   /** @beta */

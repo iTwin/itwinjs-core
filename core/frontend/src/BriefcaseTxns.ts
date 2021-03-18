@@ -8,11 +8,11 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import {
-  ChangedEntities, IpcAppChannel, ModelIdAndGeometryGuid, RemoveFunction,
+  ChangedEntities, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid, RemoveFunction,
   TxnAction, TxnNotifications,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
-import { NotificationHandler } from "./IpcApp";
+import { IpcApp, NotificationHandler } from "./IpcApp";
 
 /**
  * Base class for notification handlers for events from the backend that are specific to a [[BriefcaseConnection]].
@@ -24,9 +24,9 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
   public get channelName() { return `${this.briefcaseChannelName}:${this._key}`; }
 }
 
-/** Dispatches events corresponding to local changes made to a [[BriefcaseConnection]] via [Txns]($docs/learning/InteractiveEditing.md).
+/** Manages local changes to a [[BriefcaseConnection]] via [Txns]($docs/learning/InteractiveEditing.md).
  * @see [[BriefcaseConnection.txns]].
- * @see [TxnManager]($backend) for the backend counterpart from which the events originate.
+ * @see [TxnManager]($backend) for the backend counterpart.
  * @beta
  */
 export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNotifications {
@@ -103,6 +103,54 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
       this.onBeforeUndoRedo.clear();
       this.onAfterUndoRedo.clear();
     }
+  }
+
+  /** Query if the briefcase has any pending Txns waiting to be pushed. */
+  public async hasPendingTxns(): Promise<boolean> {
+    return IpcApp.callIpcHost("hasPendingTxns", this._iModel.key);
+  }
+
+  /** Determine if any reversible (undoable) changes exist.
+   * @see [[reverseSingleTxn]] or [[reverseAll]] to undo changes.
+   */
+  public async isUndoPossible(): Promise<boolean> {
+    return IpcApp.callIpcHost("isUndoPossible", this._iModel.key);
+  }
+
+  /** Determine if any reinstatable (redoable) changes exist.
+   * @see [[reinstateTxn]] to redo changes.
+   */
+  public async isRedoPossible(): Promise<boolean> {
+    return IpcApp.callIpcHost("isRedoPossible", this._iModel.key);
+  }
+
+  /** Reverse (undo) the most recent operation.
+   * @see [[reinstateTxn]] to redo operations.
+   * @see [[reverseAll]] to undo all operations.
+   * @see [[isUndoPossible]] to determine if any reversible operations exist.
+   */
+  public async reverseSingleTxn(): Promise<IModelStatus> {
+    return IpcApp.callIpcHost("reverseSingleTxn", this._iModel.key);
+  }
+
+  /** Reverse (undo) all changes back to the beginning of the session.
+   * @see [[reinstateTxn]] to redo changes.
+   * @see [[reverseSingleTxn]] to undo only the most recent operation.
+   * @see [[isUndoPossible]] to determine if any reversible operations exist.
+   */
+  public async reverseAll(): Promise<IModelStatus> {
+    return IpcApp.callIpcHost("reverseAllTxn", this._iModel.key);
+  }
+
+  /** Reinstate (redo) the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
+   * may take multiple calls to this method to reinstate all reversed operations.
+   * @returns Success if a reversed transaction was reinstated, error status otherwise.
+   * @note If there are any outstanding uncommited changes, they are canceled before the Txn is reinstated.
+   * @see [[isRedoPossible]] to determine if any reinstatable operations exist.
+   * @see [[reverseSingleTxn]] or [[reverseAll]] to undo changes.
+   */
+  public async reinstateTxn(): Promise<IModelStatus> {
+    return IpcApp.callIpcHost("reinstateTxn", this._iModel.key);
   }
 
   /** @internal */
