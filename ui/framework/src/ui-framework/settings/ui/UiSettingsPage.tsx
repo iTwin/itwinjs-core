@@ -21,7 +21,7 @@ function isOptionType(value: OptionType | ReadonlyArray<OptionType>): value is O
 }
 
 /** UiSettingsPage displaying the active settings. */
-export function UiSettingsPageComponent({allowSettingUiFrameworkVersion}: {allowSettingUiFrameworkVersion: boolean}) {
+export function UiSettingsPage({allowSettingUiFrameworkVersion}: {allowSettingUiFrameworkVersion: boolean}) {
   const themeTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeTitle"));
   const themeDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeDescription"));
   const autoHideTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoHideTitle"));
@@ -200,7 +200,7 @@ export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFr
   return {
     itemPriority, tabId: "uifw:UiSettings",
     label: UiFramework.translate("settings.uiSettingsPage.label"),
-    page: <UiSettingsPageComponent allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />,
+    page: <UiSettingsPage allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />,
     isDisabled: false,
     tooltip: UiFramework.translate("settings.uiSettingsPage.tooltip"),
   };
