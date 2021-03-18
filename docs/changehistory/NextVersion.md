@@ -5,6 +5,7 @@ publish: false
 
 ## New Settings UI Features
 
+<<<<<<< HEAD
 The @bentley/ui-core package has added the [SettingsManager]($ui-core) class that allows any number of [SettingsProvider]($ui-core) classes to be registered. These providers provide [SettingsTabEntry]($ui-core) definitions used to populate the [SettingsContainer]($ui-core) UI component with setting pages used to manage application settings. These new classes are marked as beta in this release and are subject to minor modifications in future releases.
 
 ## Breaking Api Changes
@@ -121,3 +122,40 @@ for details.
 ## Deprecation and removal of @bentley/forms-data-management-client
 
 The current @bentley/forms-data-management-client package is being deprecated and immediately removed from the source. While this is technically a breaking change outside of the major release cycle, no one is able to use this client due to the required OIDC scopes not being published.
+=======
+### Add Settings Page to set Quantity Formatting Overrides
+
+The [QuantityFormatSettingsPanel]($ui-framework) component has been added to the @bentley/ui-framework package to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This panel can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core). Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
+
+```ts
+// Sample settings provider that dynamically adds settings into the setting stage
+export class AppSettingsProvider implements SettingsProvider {
+  public readonly id = "AppSettingsProvider";
+
+  public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
+    return [
+      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
+    ];
+  }
+
+  public static initializeAppSettingProvider() {
+    UiFramework.settingsManager.addSettingsProvider(new AppSettingsProvider());
+  }
+}
+
+```
+
+The `QuantityFormatSettingsPanel` is marked as alpha in this release and is subject to minor modifications in future releases.
+
+## @bentley/imodeljs-quantity package
+
+The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
+
+## Breaking Api Changes
+
+### @bentley/imodeljs-quantity package
+
+#### UnitProps property name change
+
+The interface [UnitProps]($quantity) property `unitFamily` has been renamed to `phenomenon` to be consistent with naming in `ecschema-metadata` package.
+>>>>>>> ba269e8f83... Add Quantity formatting settings UI and UnitFormattingSettingsProvider interface to persist settings. (#959)
