@@ -316,4 +316,55 @@ describe("<ListBox />", () => {
     // ensure list box value is set to match
     expect(listBoxElement!.getAttribute("data-value")).to.eq(listItems[5]);
   });
+
+  it("renders with selected item/re-render empty selection", () => {
+    const listBox = render(
+      <Listbox id="test-list" className="map-manager-source-list" selectedValue={listItems[1]} >
+        {
+          listItems?.map((cityName) =>
+            <ListboxItem key={cityName} className="map-source-list-entry" value={cityName}>
+              <span className="map-source-list-entry-name" title={cityName}>{cityName}</span>
+            </ListboxItem>)
+        }
+      </Listbox>);
+
+    const listBoxElement = listBox.container.querySelector("ul#test-list");
+    expect(listBoxElement).not.to.be.null;
+    expect(listBox.container.querySelector("ul#test-list[data-value]")).not.to.be.null;
+    expect(listBox.container.querySelector(`li[data-value='${listItems[1]}']`)).not.to.be.null;
+    let selectedItems = listBox.container.querySelectorAll("li[aria-selected='true']");
+    expect(selectedItems.length).to.eq(1);
+    let dataValue = selectedItems[0].getAttribute("data-value");
+    expect(dataValue).to.eq(listItems[1]);
+
+    // re-render with a different selected value
+    listBox.rerender(
+      <Listbox id="test-list" className="map-manager-source-list" selectedValue={listItems[2]} >
+        {
+          listItems?.map((cityName) =>
+            <ListboxItem key={cityName} className="map-source-list-entry" value={cityName}>
+              <span className="map-source-list-entry-name" title={cityName}>{cityName}</span>
+            </ListboxItem>)
+        }
+      </Listbox>);
+
+    selectedItems = listBox.container.querySelectorAll("li[aria-selected='true']");
+    expect(selectedItems.length).to.eq(1);
+    dataValue = selectedItems[0].getAttribute("data-value");
+    expect(dataValue).to.eq(listItems[2]);
+
+    // re-render with no selected value
+    listBox.rerender(
+      <Listbox id="test-list" className="map-manager-source-list" selectedValue={undefined} >
+        {
+          listItems?.map((cityName) =>
+            <ListboxItem key={cityName} className="map-source-list-entry" value={cityName}>
+              <span className="map-source-list-entry-name" title={cityName}>{cityName}</span>
+            </ListboxItem>)
+        }
+      </Listbox>);
+
+    selectedItems = listBox.container.querySelectorAll("li[aria-selected='true']");
+    expect(selectedItems.length).to.eq(0);
+  });
 });

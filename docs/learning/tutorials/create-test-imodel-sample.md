@@ -10,6 +10,12 @@ The quickest way to get access to a cloud hosted iModel is by creating an iModel
   - Any other users will also have to have a Bentley account
 - Click Submit
 
+### Metrostation Sample
+
+A metrostation located in Philadelphia. Contains platform, rails, and subway cars.
+
+![stadium]($docs/learning/tutorials/images/metrostation.png)
+
 ### Stadium
 
 Soccer stadium in Singapore. Features landscape details and a metro station. This is the largest sample iModel.
