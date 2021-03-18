@@ -1403,17 +1403,12 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
     loadOverrides(imodel?: IModelConnection): Promise<void>;
     // (undocumented)
     get maintainOverridesPerIModel(): boolean;
-    // (undocumented)
     abstract remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
-    // (undocumented)
     abstract retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined>;
-    // (undocumented)
     abstract retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
-    // (undocumented)
     abstract store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
     // (undocumented)
     storeFormatOverrides: ({ typeKey, overrideEntry, unitSystem }: QuantityFormatOverridesChangedArgs) => Promise<void>;
-    // (undocumented)
     abstract storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
     storeUnitSystemSetting: ({ system }: FormattingUnitSystemChangedArgs) => Promise<void>;
 }
