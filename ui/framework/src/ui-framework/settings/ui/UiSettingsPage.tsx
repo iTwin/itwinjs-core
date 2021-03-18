@@ -20,7 +20,9 @@ function isOptionType(value: OptionType | ReadonlyArray<OptionType>): value is O
   return true;
 }
 
-/** UiSettingsPage displaying the active settings. */
+/** UiSettingsPage displaying the active settings.
+ * @beta
+ */
 export function UiSettingsPage({allowSettingUiFrameworkVersion}: {allowSettingUiFrameworkVersion: boolean}) {
   const themeTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeTitle"));
   const themeDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeDescription"));

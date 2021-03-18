@@ -122,6 +122,7 @@ import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
 import { SettingsManager } from '@bentley/ui-core';
 import { SettingsStatus } from '@bentley/product-settings-client';
+import { SettingsTabEntry } from '@bentley/ui-core';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
@@ -162,6 +163,7 @@ import { UiAdmin } from '@bentley/ui-abstract';
 import { UiDataProvider } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
 import { UiLayoutDataProvider } from '@bentley/ui-abstract';
+import { UiSetting } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
 import { UiSettingsResult } from '@bentley/ui-core';
 import { UiSettingsStatus } from '@bentley/ui-core';
@@ -481,6 +483,29 @@ export class AppNotificationManager extends NotificationManager {
     setupActivityMessage(details: ActivityMessageDetails): boolean;
     protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
     updatePointerMessage(displayPoint: XAndY, relativePosition: RelativePosition): void;
+}
+
+// @alpha (undocumented)
+export class AppUiSettings {
+    constructor(defaults: Partial<InitialAppUiSettings>);
+    // (undocumented)
+    accuDrawNotifications: UiSetting<boolean>;
+    // (undocumented)
+    apply(uiSettings: UiSettings): Promise<void>;
+    // (undocumented)
+    autoHideUi: UiSetting<boolean>;
+    // (undocumented)
+    colorTheme: UiSetting<string>;
+    // (undocumented)
+    dragInteraction: UiSetting<boolean>;
+    // (undocumented)
+    frameworkVersion: UiSetting<string>;
+    // (undocumented)
+    snapWidgetOpacity: UiSetting<boolean>;
+    // (undocumented)
+    useProximityOpacity: UiSetting<boolean>;
+    // (undocumented)
+    widgetOpacity: UiSetting<number>;
 }
 
 // @beta
@@ -909,6 +934,16 @@ export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): 
 // @internal (undocumented)
 export function clearKeyinPaletteHistory(): void;
 
+// @beta
+export class CloudUiSettings implements UiSettings {
+    // (undocumented)
+    deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    getSetting(namespace: string, name: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult>;
+}
+
 // @public @deprecated
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
 
@@ -1012,6 +1047,10 @@ export class ConfigurableCreateInfo {
 // @public
 export enum ConfigurableUiActionId {
     // (undocumented)
+    SetDragInteraction = "configurableui:set-drag-interaction",
+    // (undocumented)
+    SetFrameworkVersion = "configurableui:set-framework-version",
+    // (undocumented)
     SetSnapMode = "configurableui:set_snapmode",
     // (undocumented)
     SetTheme = "configurableui:set_theme",
@@ -1027,6 +1066,8 @@ export const ConfigurableUiActions: {
     setTheme: (theme: string) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetTheme, string>;
     setToolPrompt: (toolPrompt: string) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetToolPrompt, string>;
     setWidgetOpacity: (opacity: number) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetWidgetOpacity, number>;
+    setDragInteraction: (dragInteraction: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetDragInteraction, boolean>;
+    setFrameworkVersion: (frameworkVersion: string) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetFrameworkVersion, string>;
 };
 
 // @public
@@ -1122,11 +1163,15 @@ export function ConfigurableUiReducer(state: ConfigurableUiState | undefined, _a
 // @public
 export interface ConfigurableUiState {
     // (undocumented)
+    frameworkVersion: string;
+    // (undocumented)
     snapMode: number;
     // (undocumented)
     theme: string;
     // (undocumented)
     toolPrompt: string;
+    // (undocumented)
+    useDragInteraction: boolean;
     // (undocumented)
     widgetOpacity: number;
 }
@@ -2053,7 +2098,7 @@ export class FrameworkAccuDraw extends AccuDraw {
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("@bentley/itwin-client").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("@bentley/itwin-client").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2717,6 +2762,9 @@ export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string)
 // @internal (undocumented)
 export const getStagePanelType: (location: StagePanelLocation_2) => StagePanelType;
 
+// @beta
+export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry;
+
 // @internal (undocumented)
 export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes;
 
@@ -2903,16 +2951,6 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
 }
 
 // @beta
-export class CloudUiSettings implements UiSettings {
-    // (undocumented)
-    deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    getSetting(namespace: string, name: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult>;
-}
-
-// @beta
 export const IModelConnectedCategoryTree: import("react-redux").ConnectedComponent<typeof CategoryTree, any>;
 
 // @alpha
@@ -3030,6 +3068,26 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     constructor(props: IndicatorProps);
     // (undocumented)
     render(): JSX.Element;
+}
+
+// @alpha (undocumented)
+export interface InitialAppUiSettings {
+    // (undocumented)
+    accuDrawNotifications: boolean;
+    // (undocumented)
+    autoHideUi: boolean;
+    // (undocumented)
+    colorTheme: string;
+    // (undocumented)
+    dragInteraction: boolean;
+    // (undocumented)
+    frameworkVersion: string;
+    // (undocumented)
+    snapWidgetOpacity: boolean;
+    // (undocumented)
+    useProximityOpacity: boolean;
+    // (undocumented)
+    widgetOpacity: number;
 }
 
 // @internal (undocumented)
@@ -5742,6 +5800,8 @@ export enum SyncUiEventId {
     NavigationAidActivated = "navigationaidactivated",
     SelectionSetChanged = "selectionsetchanged",
     SettingsProvidersChanged = "settingsproviderschanged",
+    // (undocumented)
+    ShowHideManagerSettingChange = "show-hide-setting-change",
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
     UiSettingsChanged = "uisettingschanged",
@@ -6413,6 +6473,10 @@ export class UiFramework {
     static get settingsManager(): SettingsManager;
     // @beta (undocumented)
     static setUiSettings(uiSettings: UiSettings, immediateSync?: boolean): void;
+    // (undocumented)
+    static setUiVersion(version: string): void;
+    // (undocumented)
+    static setUseDragInteraction(useDragInteraction: boolean): void;
     // @beta (undocumented)
     static setUserInfo(userInfo: UserInfo | undefined, immediateSync?: boolean): void;
     // (undocumented)
@@ -6423,6 +6487,8 @@ export class UiFramework {
     static translate(key: string | string[]): string;
     // @beta
     static get uiVersion(): string;
+    // (undocumented)
+    static get useDragInteraction(): boolean;
     // @alpha (undocumented)
     static get widgetManager(): WidgetManager;
     }
@@ -6439,6 +6505,11 @@ export interface UiIntervalEventArgs {
 
 // @internal (undocumented)
 export const UiSettingsContext: React.Context<UiSettings>;
+
+// @beta
+export function UiSettingsPage({ allowSettingUiFrameworkVersion }: {
+    allowSettingUiFrameworkVersion: boolean;
+}): JSX.Element;
 
 // @alpha
 export function UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element;

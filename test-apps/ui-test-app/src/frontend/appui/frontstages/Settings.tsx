@@ -8,9 +8,8 @@
 
 import "./Settings.scss";
 import * as React from "react";
-import { connect } from "react-redux";
-import {  Toggle } from "@bentley/ui-core";
-import {  FrameworkAccuDraw, UiFramework } from "@bentley/ui-framework";
+import { Toggle } from "@bentley/ui-core";
+import { FrameworkAccuDraw, UiFramework } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../..";
 
 /** UiSettingsPage displaying the active settings. */
@@ -28,7 +27,7 @@ export class UiSettingsPageComponent extends React.Component {
     return (
       <div className="uifw-settings">
         <SettingsItem title={this._accuDrawNotificationsTitle} description={this._accuDrawNotificationsDescription}
-          settingUi={ <Toggle isOn={FrameworkAccuDraw.displayNotifications} showCheckmark={false} onChange={this._onAccuDrawNotificationsChange} /> }
+          settingUi={<Toggle isOn={FrameworkAccuDraw.displayNotifications} showCheckmark={false} onChange={this._onAccuDrawNotificationsChange} />}
         />
       </div>
     );
