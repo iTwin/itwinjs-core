@@ -86,7 +86,7 @@ describe("TxnManager", () => {
     let undoAction = TxnAction.None;
 
     txns.onBeforeUndoRedo.addListener(() => beforeUndo++);
-    txns.onAfterUndoRedo.addListener((action) => { afterUndo++; undoAction = action; });
+    txns.onAfterUndoRedo.addListener((isUndo) => { afterUndo++; undoAction = isUndo ? TxnAction.Reverse : TxnAction.Reinstate; });
 
     let elementId = elements.insertElement(props);
     assert.isFalse(txns.isRedoPossible);

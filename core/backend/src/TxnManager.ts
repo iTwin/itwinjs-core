@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { ChangedEntities, ModelGeometryChangesProps, ModelIdAndGeometryGuid, TxnAction } from "@bentley/imodeljs-common";
+import { ChangedEntities, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
@@ -195,9 +195,9 @@ export class TxnManager {
   }
 
   /** @internal */
-  protected _onAfterUndoRedo(action: TxnAction) {
-    this.onAfterUndoRedo.raiseEvent(action);
-    IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", action);
+  protected _onAfterUndoRedo(isUndo: boolean) {
+    this.onAfterUndoRedo.raiseEvent(isUndo);
+    IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);
   }
 
   /** Dependency handlers may call method this to report a validation error.
@@ -243,7 +243,7 @@ export class TxnManager {
   /** Event raised after an undo/redo operation has been performed.
    * @param _action The action that was performed.
    */
-  public readonly onAfterUndoRedo = new BeEvent<(_action: TxnAction) => void>();
+  public readonly onAfterUndoRedo = new BeEvent<(isUndo: boolean) => void>();
 
   /** Determine whether undo is possible, optionally permitting undoing txns from previous sessions.
    * @param allowCrossSessions if true, allow undoing from previous sessions.

@@ -8,8 +8,7 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import {
-  ChangedEntities, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid, RemoveFunction,
-  TxnAction, TxnNotifications,
+  ChangedEntities, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid, RemoveFunction, TxnNotifications,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
@@ -79,7 +78,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** Event raised after an undo/redo operation is performed.
    * @see [[onBeforeUndoRedo]] for the event raised before to the operation.
    */
-  public readonly onAfterUndoRedo = new BeEvent<(action: TxnAction) => void>();
+  public readonly onAfterUndoRedo = new BeEvent<(isUndo: boolean) => void>();
 
   /** @internal */
   public constructor(iModel: BriefcaseConnection) {
@@ -189,7 +188,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** @internal */
-  public notifyAfterUndoRedo(action: TxnAction) {
-    this.onAfterUndoRedo.raiseEvent(action);
+  public notifyAfterUndoRedo(isUndo: boolean) {
+    this.onAfterUndoRedo.raiseEvent(isUndo);
   }
 }

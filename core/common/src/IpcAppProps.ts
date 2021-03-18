@@ -12,25 +12,6 @@ import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./
 import { IModelVersionProps } from "./IModelVersion";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
-/** Describes the types of actions associated with [Txns]($docs/learning/InteractiveEditing.md).
- * @see [TxnManager]($backend) and [BriefcaseTxns]($frontend).
- * @public
- */
-export enum TxnAction {
-  /** Not currently processing anything. */
-  None = 0,
-  /** Processing a commit initiated by a call to [IModelDb.saveChanges]($backend) or [BriefcaseConnection.saveChanges]($frontend). */
-  Commit = 1,
-  /** Abandoning the current Txn, e.g., via [IModelDb.abandonChanges]($backend). */
-  Abandon = 2,
-  /** Reversing a previously-committed changeset, e.g., via [IModelDb.reverseTxns]($backend). */
-  Reverse = 3,
-  /** Reinstating a previously reversed changeset, e.g., via [IModelDb.reinstateTxn]($backend). */
-  Reinstate = 4,
-  /** Merging a changeset produced by a different briefcase, e.g., via [BriefcaseDb.pullAndMergeChanges]($backend) or [BriefcaseConnection.pullAndMergeChanges]($frontend). */
-  Merge = 5,
-}
-
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
  */
@@ -98,7 +79,7 @@ export interface TxnNotifications {
   notifyCommitted: () => void;
   notifyChangesApplied: () => void;
   notifyBeforeUndoRedo: () => void;
-  notifyAfterUndoRedo: (action: TxnAction) => void;
+  notifyAfterUndoRedo: (isUndo: boolean) => void;
 }
 
 /**
