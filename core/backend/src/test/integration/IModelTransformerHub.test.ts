@@ -42,7 +42,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   });
 
-  it.only("Transform source iModel to target iModel", async () => { // WIP: Need to un-skip from incoming merge!
+  it("Transform source iModel to target iModel", async () => {
     // Create and push seed of source IModel
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     const projectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
