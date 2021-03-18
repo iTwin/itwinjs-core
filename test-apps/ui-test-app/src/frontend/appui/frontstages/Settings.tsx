@@ -12,7 +12,7 @@ import { Toggle } from "@bentley/ui-core";
 import { FrameworkAccuDraw, UiFramework } from "@bentley/ui-framework";
 
 /** UiSettingsPage displaying the active settings. */
-export class UiSettingsPageComponent extends React.Component {
+export class AccudrawSettingsPageComponent extends React.Component {
   private _accuDrawNotificationsTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsTitle");
   private _accuDrawNotificationsDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.accuDrawNotificationsDescription");
 

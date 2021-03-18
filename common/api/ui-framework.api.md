@@ -491,21 +491,13 @@ export class AppNotificationManager extends NotificationManager {
 export class AppUiSettings {
     constructor(defaults: Partial<InitialAppUiSettings>);
     // (undocumented)
-    accuDrawNotifications: UiSetting<boolean>;
-    // (undocumented)
     apply(uiSettings: UiSettings): Promise<void>;
-    // (undocumented)
-    autoHideUi: UiSetting<boolean>;
     // (undocumented)
     colorTheme: UiSetting<string>;
     // (undocumented)
     dragInteraction: UiSetting<boolean>;
     // (undocumented)
     frameworkVersion: UiSetting<string>;
-    // (undocumented)
-    snapWidgetOpacity: UiSetting<boolean>;
-    // (undocumented)
-    useProximityOpacity: UiSetting<boolean>;
     // (undocumented)
     widgetOpacity: UiSetting<number>;
 }
@@ -2060,7 +2052,7 @@ export interface FooterModeFieldProps extends StatusFieldProps {
 }
 
 // @internal (undocumented)
-export class FrameworkAccuDraw extends AccuDraw {
+export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider {
     constructor();
     static get displayNotifications(): boolean;
     static set displayNotifications(v: boolean);
@@ -2076,6 +2068,8 @@ export class FrameworkAccuDraw extends AccuDraw {
     static readonly isSideRotationConditional: ConditionalBooleanValue;
     static readonly isTopRotationConditional: ConditionalBooleanValue;
     static readonly isViewRotationConditional: ConditionalBooleanValue;
+    // (undocumented)
+    loadUserSettings(settingsStorage: UiSettings): Promise<void>;
     static readonly onAccuDrawUiSettingsChangedEvent: AccuDrawUiSettingsChangedEvent;
     // (undocumented)
     onCompassModeChange(): void;
@@ -2086,6 +2080,8 @@ export class FrameworkAccuDraw extends AccuDraw {
     onMotion(_ev: BeButtonEvent): void;
     // (undocumented)
     onRotationModeChange(): void;
+    // (undocumented)
+    readonly providerId = "FrameworkAccuDraw";
     // (undocumented)
     setFocusItem(index: ItemField): void;
     // (undocumented)
@@ -3078,19 +3074,11 @@ export class Indicator extends React.Component<IndicatorProps, any> {
 // @alpha (undocumented)
 export interface InitialAppUiSettings {
     // (undocumented)
-    accuDrawNotifications: boolean;
-    // (undocumented)
-    autoHideUi: boolean;
-    // (undocumented)
     colorTheme: string;
     // (undocumented)
     dragInteraction: boolean;
     // (undocumented)
     frameworkVersion: string;
-    // (undocumented)
-    snapWidgetOpacity: boolean;
-    // (undocumented)
-    useProximityOpacity: boolean;
     // (undocumented)
     widgetOpacity: number;
 }
@@ -6465,6 +6453,8 @@ export class UiFramework {
     }): Promise<void>;
     // @internal (undocumented)
     static get projectServices(): ProjectServices;
+    // @alpha (undocumented)
+    static registerUserSettingsProvider(entry: UserSettingsProvider): boolean;
     // (undocumented)
     static setAccudrawSnapMode(snapMode: SnapMode): void;
     // (undocumented)
@@ -6488,7 +6478,7 @@ export class UiFramework {
     // @beta
     static get settingsManager(): SettingsManager;
     // @beta (undocumented)
-    static setUiSettings(uiSettings: UiSettings, immediateSync?: boolean): void;
+    static setUiSettings(uiSettings: UiSettings, immediateSync?: boolean): Promise<void>;
     // (undocumented)
     static setUiVersion(version: string): void;
     // (undocumented)
@@ -6549,6 +6539,12 @@ export class UiShowHideManager {
     static set inactivityTime(time: number);
     static get isUiVisible(): boolean;
     static set isUiVisible(visible: boolean);
+    // @internal (undocumented)
+    static setAutoHideUi(value: boolean): void;
+    // @internal (undocumented)
+    static setSnapWidgetOpacity(value: boolean): void;
+    // @internal (undocumented)
+    static setUseProximityOpacity(value: boolean): void;
     static get showHideFooter(): boolean;
     static set showHideFooter(showHide: boolean);
     static get showHidePanels(): boolean;
@@ -6559,6 +6555,22 @@ export class UiShowHideManager {
     static set snapWidgetOpacity(value: boolean);
     static get useProximityOpacity(): boolean;
     static set useProximityOpacity(value: boolean);
+    }
+
+// @internal
+export class UiShowHideSettingsProvider implements UserSettingsProvider {
+    // (undocumented)
+    static initialize(): void;
+    // (undocumented)
+    loadUserSettings(settingsStorage: UiSettings): Promise<void>;
+    // (undocumented)
+    readonly providerId = "UiShowHideSettingsProvider";
+    // (undocumented)
+    static storeAutoHideUi(v: boolean): Promise<void>;
+    // (undocumented)
+    static storeSnapWidgetOpacity(v: boolean): Promise<void>;
+    // (undocumented)
+    static storeUseProximityOpacity(v: boolean): Promise<void>;
     }
 
 // @public
@@ -6640,6 +6652,12 @@ export interface UserProfileBackstageItemProps extends CommonProps {
     onOpenSignOut?: () => void;
     // (undocumented)
     userInfo: UserInfo;
+}
+
+// @alpha
+export interface UserSettingsProvider {
+    loadUserSettings(settings: UiSettings): Promise<void>;
+    providerId: string;
 }
 
 // @internal (undocumented)

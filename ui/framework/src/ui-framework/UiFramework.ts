@@ -103,6 +103,7 @@ export class UiFramework {
   private static _settingsManager?: SettingsManager;
   private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
 
+  /** @alpha */
   public static registerUserSettingsProvider(entry: UserSettingsProvider) {
     if (this._uiSettingsProviderRegistry.has(entry.providerId))
       return false;
