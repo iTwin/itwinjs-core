@@ -20,7 +20,7 @@ describe("Parsing tests:", () => {
     const testUnit: UnitProps = new BadUnit();
     assert.isTrue(testUnit.name.length === 0);
     assert.isTrue(testUnit.label.length === 0);
-    assert.isTrue(testUnit.unitFamily.length === 0);
+    assert.isTrue(testUnit.phenomenon.length === 0);
     assert.isTrue(testUnit.isValid === false);
   });
 
@@ -58,7 +58,7 @@ describe("Parsing tests:", () => {
       const unitContext = tstVal.unitContext.length > 0 ? tstVal.unitContext : undefined;
       const fromUnit = await unitsProvider.findUnit(tstVal.label, unitContext);
       for (const toVal of tstVal.cvtTo) {
-        const toUnit = await unitsProvider.findUnit(toVal.label, fromUnit.unitFamily);
+        const toUnit = await unitsProvider.findUnit(toVal.label, fromUnit.phenomenon);
         const conversionData = await unitsProvider.getConversion(fromUnit, toUnit);
         assert.isTrue(Math.fround(conversionData.factor) === toVal.factor);
       }
@@ -144,7 +144,7 @@ describe("Parsing tests:", () => {
       const unitContext = tstVal.unitContext.length > 0 ? tstVal.unitContext : undefined;
       const fromUnit = await unitsProvider.findUnit(tstVal.label, unitContext);
       for (const toVal of tstVal.cvtTo) {
-        const toUnit = await unitsProvider.findUnit(toVal.label, fromUnit.unitFamily);
+        const toUnit = await unitsProvider.findUnit(toVal.label, fromUnit.phenomenon);
         const conversionData = await unitsProvider.getConversion(fromUnit, toUnit);
         assert.isTrue(Math.fround(conversionData.factor) === toVal.factor);
       }
