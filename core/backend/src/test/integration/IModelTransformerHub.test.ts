@@ -42,19 +42,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
   });
 
-  // Fails with,
-  //    IModelTransformerHub (#integration)
-  //         Transform source iModel to target iModel:
-  //       Not Found: CodeSpec not found
-  //        at /dev/github/imodeljs/core/backend/src/CodeSpecs.ts:36:15
-  //        at BriefcaseDb.withPreparedStatement (src/IModelDb.ts:262:22)
-  //        at CodeSpecs.queryId (src/CodeSpecs.ts:33:25)
-  //        at CodeSpecs.getByName (src/CodeSpecs.ts:80:29)
-  //        at IModelCloneContext.remapCodeSpec (src/IModelCloneContext.ts:54:62)
-  //        at TestIModelTransformer.initCodeSpecRemapping (src/test/IModelTransformerUtils.ts:1329:18)
-  //        at new TestIModelTransformer (src/test/IModelTransformerUtils.ts:1311:10)
-  //        at Context.<anonymous> (src/test/integration/IModelTransformerHub.test.ts:117:29)
-  it.skip("Transform source iModel to target iModel", async () => {
+  it("Transform source iModel to target iModel", async () => {
     // Create and push seed of source IModel
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     const projectId = await HubUtility.getTestContextId(requestContext);
