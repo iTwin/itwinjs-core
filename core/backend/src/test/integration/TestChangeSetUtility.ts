@@ -100,8 +100,8 @@ export class TestChangeSetUtility {
       requestContext: this._requestContext,
       contextId: this.projectId,
       iModelId: this._iModel.iModelId,
-      briefcaseId: this._iModel.briefcaseId
-    }
+      briefcaseId: this._iModel.briefcaseId,
+    };
     this._iModel = await IModelTestUtils.downloadAndOpenBriefcase(briefcaseProps);
     this._iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
   }

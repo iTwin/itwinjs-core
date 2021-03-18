@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, BeDuration, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { BriefcaseQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery, IModelBaseHandler, CheckpointQuery, InitializationState, Checkpoint, ChangesType } from "@bentley/imodelhub-client";
-import { IModelError } from "@bentley/imodeljs-common";
+import { BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, Briefcase as HubBriefcase, HubIModel, IModelBaseHandler, IModelHubClient, IModelQuery, InitializationState, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseIdValue, ChangeSetToken, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
+import { ChangeSetToken, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 
 /** DTO to work with iModelHub DeleteChangeSet API */
 @ECJsonTypeMap.classToJson("wsg", "iModelActions.DeleteChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -674,7 +674,7 @@ export class HubUtility {
   }
 
   private static async waitForEntityToReachState<T>(entityQuery: () => Promise<T>, conditionToSatisfy: (entity: T) => Boolean): Promise<void> {
-    for (var i = 0; i < 60; i++) {
+    for (let i = 0; i < 60; i++) {
       const currentEntity = await entityQuery();
       if (!currentEntity)
         throw new Error("Queried entity is undefined.");

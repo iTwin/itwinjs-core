@@ -681,7 +681,7 @@ export class BriefcaseManager {
 
     const { changeSetId: targetChangeSetId, changeSetIndex: targetChangeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, mergeToVersion, db.iModelId);
 
-    var currentChangeSetIndex: number;
+    let currentChangeSetIndex: number;
     try {
       currentChangeSetIndex = await this.getChangeSetIndexFromId(requestContext, db.iModelId, db.changeSetId);
       requestContext.enter();

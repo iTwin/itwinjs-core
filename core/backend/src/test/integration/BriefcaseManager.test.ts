@@ -5,7 +5,7 @@
 
 import { BriefcaseStatus, Config, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeSetQuery, ChangesType } from "@bentley/imodelhub-client";
-import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
@@ -14,7 +14,7 @@ import * as path from "path";
 import * as readline from "readline";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseIdValue, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration,
   IModelJsFs, KnownLocations,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -695,7 +695,7 @@ describe("BriefcaseManager (#integration)", () => {
     const testUtility = new TestChangeSetUtility(userContext, testIModelName);
 
     // Acquire briefcase and push 1 changeSet
-    var iModel = await testUtility.createTestIModel();
+    const iModel = await testUtility.createTestIModel();
 
     // Push 2 valid changeSets
     await testUtility.pushTestChangeSet();
@@ -705,15 +705,15 @@ describe("BriefcaseManager (#integration)", () => {
     const fileHandler = IModelHost.iModelClient.fileHandler!;
     const oldUploadFunc = fileHandler.uploadFile.bind(fileHandler);
     try {
-      var newUploadFunc: (requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback) => Promise<void> =
-        (requestContext, uploadUrlString, filePath, progress) => {
+      const newUploadFunc =
+        async (requestCtx: AuthorizedClientRequestContext, uploadUrl: string, filePath: string, progress?: ProgressCallback): Promise<void> => {
           // Replace changeSet file contents with a string and upload the now invalid file
           const changeSetFileContentsLength = IModelJsFs.readFileSync(filePath).length;
-          const invalidChangeSetFileContents = 'x'.repeat(changeSetFileContentsLength);
+          const invalidChangeSetFileContents = "x".repeat(changeSetFileContentsLength);
           IModelJsFs.writeFileSync(filePath, invalidChangeSetFileContents);
 
-          return oldUploadFunc(requestContext, uploadUrlString, filePath, progress);
-        }
+          return oldUploadFunc(requestCtx, uploadUrl, filePath, progress);
+        };
       fileHandler.uploadFile = newUploadFunc;
       await testUtility.pushTestChangeSet();
     } finally {
@@ -738,7 +738,7 @@ describe("BriefcaseManager (#integration)", () => {
     await HubUtility.waitForChangeSetDeletion(userContext, iModel.iModelId, deleteChangeSetActionId);
 
     // Assert that changeSet push fails
-    var error: IModelError;
+    let error: IModelError;
     try {
       await testUtility.pushTestChangeSet();
     } catch (err) {
