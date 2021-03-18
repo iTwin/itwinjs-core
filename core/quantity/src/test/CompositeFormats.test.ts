@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Format } from "../src/Formatter/Format";
-import { FormatterSpec } from "../src/Formatter/FormatterSpec";
-import { Formatter } from "../src/Formatter/Formatter";
-import { BasicUnit } from "../src/Unit";
+import { Format } from "../Formatter/Format";
+import { FormatterSpec } from "../Formatter/FormatterSpec";
+import { Formatter } from "../Formatter/Formatter";
+import { BasicUnit } from "../Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
 describe("Composite Formats tests:", () => {
