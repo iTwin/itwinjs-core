@@ -25,10 +25,46 @@ export enum DownloadBriefcaseStatus {
   Error,
 }
 
-/** Operations allowed when synchronizing changes between the Briefcase and iModelHub
+/** The reserved BriefcaseId values used to identify special kinds of IModelDbs.
+ * @see [[BriefcaseId]]
  * @public
  */
-export enum SyncMode { FixedVersion = 1, PullAndPush = 2, PullOnly = 3 }
+export enum BriefcaseIdValue {
+  /** Indicates an invalid/illegal BriefcaseId */
+  Illegal = 0xffffffff,
+
+  /** BriefcaseIds must be less than this value */
+  Max = 1 << 24,
+
+  /** All valid iModelHub issued BriefcaseIds will be equal or higher than this */
+  FirstValid = 2,
+
+  /** All valid iModelHub issued BriefcaseIds will be equal or lower than this */
+  LastValid = BriefcaseIdValue.Max - 11,
+
+  /** A Standalone copy of an iModel. Standalone files may accept changesets, but can never create new changesets.
+   * Checkpoints are Standalone files that may not accept any new changesets after they are created.
+   */
+  Standalone = 0,
+
+  /**
+   * @internal
+   * @deprecated use Standalone
+   */
+  DeprecatedStandalone = 1,
+}
+
+/** Whether a briefcase is editable or may only accept incoming changesets from iModelHub
+ * @public
+ */
+export enum SyncMode {
+  /** Use a fixed version (i.e. a checkpoint). See [CheckpointManager]($backend) for preferred approach to using checkpoint files. */
+  FixedVersion = 1,
+  /** A briefcase that can be edited. A unique briefcaseId must be assigned by iModelHub. */
+  PullAndPush = 2,
+  /** use [BriefcaseIdValue.Standalone](%backend). This makes a briefcase that can accept changesets from iModelHub but can never create changesets. */
+  PullOnly = 3,
+}
 
 /**
  * Options to open a previously downloaded briefcase

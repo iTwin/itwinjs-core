@@ -1,422 +1,219 @@
-# 2.11.0 Change Notes
 
-Overview:
+# 2.13.0 Change Notes
 
-- Breaking Changes:
-  - [Breaking API changes](#breaking-api-changes)
-  - [BriefcaseManager changes](#briefcasemanager-breaking-changes)
-- Visualization
-  - [Section-cut graphics](#section-cut-graphics)
-  - [Custom screen-space effects](#custom-screen-space-effects)
-  - [Automatic viewport synchronization](#automatic-viewport-synchronization)
-  - [Globe location tool fixes](#globe-location-tool-fixes)
-  - [Changes to display style excluded elements](#changes-to-display-style-excluded-elements)
-  - [Tile compression](#tile-compression)
-- [Upgrading schemas in an iModel](#upgrading-schemas-in-an-imodel)
-- [Presentation](#presentation)
-  - [Formatted property values in ECExpressions](#formatted-property-values-in-ecexpressions)
-  - [Enhanced navigation property values](#enhanced-navigation-property-values)
-  - [Interactable navigation properties](#interactable-navigation-properties)
-  - [Breaking changes to `ContentRelatedInstances`](#breaking-changes-to-contentrelatedinstances)
-  - React Components
-    - [Filtering in Property Grid](#filtering-in-property-grid)
-- [QuantityFormatter updates](#quantityformatter-updates)
+## The iModel.js Project Is Renamed iTwin.js
 
-## Breaking Changes
+The version begins the process of renaming our project from **iModel.js** to **iTwin.js** to better reflect its purpose as the *platform for infrastructure digital twins*.
+
+iModels are of course a big part of iTwins, so much of the api remains iModel-centric, and many packages within this repository are appropriately named with the `imodeljs` prefix. But, many parts that don't have a direct relationship to iModels will use the term iTwin going forward to avoid confusion.
+
+The full conversion will be made gradually and incrementally, and will likely take several major release cycles to complete. We will not rename packages, classes, methods, etc. unless they are substantially replaced. That may leave some permanent historical vestiges of this transition, but as they say, c'est la vie.
+
+This version begins the process by redirecting `www.imodeljs.org` to `www.itwinjs.org`, and updating references to the project name in markdown files.
 
 ## Breaking API Changes
 
-- The union type [Matrix3dProps]($geometry-core) inadvertently included [Matrix3d]($geometry-core). "Props" types are wire formats and so must be pure JavaScript primitives. To fix compilation errors where you are using `Matrix3d` where a `Matrix3dProps` is expected, simply call [Matrix3d.toJSON]($geometry-core) on your Matrix3d object. Also, since [TransformProps]($geometry-core) includes Matrix3dProps, you may need to call [Transform.toJSON]($geometry-core) on your Transform objects some places too.
+### Quantity package
 
-- The type of [Texture.data]($backend) has been corrected from `string` to `Uint8Array` to match the type in the BIS schema. If you get compilation errors, simply remove calls to `Buffer.from(texture.data, "base64")` for read, and `texture.data.toString("base64")` if you create texture objects.
+The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
+New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.
 
-- Several interfaces in the `@bentley/ui-components` package have been renamed:
+The alpha `UnitConversionSpec` interface now requires a "system" property that can be used during parsing to help determine the unit to parse the value.
 
- Previous
+### Frontend package
 
-  ```ts
-  interface HighlightedRecordProps {
-    activeMatch?: PropertyRecordMatchInfo;
-    searchText: string;
-  }
-  ```
+The alpha class `QuantityFormatter` now registers its own standard `QuantityTypeDefinitions` during initialization. `CustomQuantityTypeDefinitions` must now be registered to support additional `QuantityTypes`. This replaces the use of `FormatterParserSpecsProvider` to provide custom quantity types. Removed koq methods that were never implemented.
 
-  New
+### IModelHostConfiguration.applicationType
 
-  ```ts
-  interface HighlightInfo {
-    highlightedText: string;
-    activeHighlight?: HighlightInfo;
-  }
-  ```
+The type of the internal member `IModelHostConfiguration.applicationType` had a redundant declaration in `IModelHost.ts`. It is now correctly declared to be of type `IModelJsNative.ApplicationType`. The names of the members were the same, so this will not likely cause problems.
 
- > This is just a terminology change, so reacting to the change is as simple as renaming `searchText` -> `highlightedText` and `activeMatch` -> `highlightedText`.
+### IModelTransformer and IModelExporter APIs are now async
 
-Previous
+The *export* methods of [IModelExporter]($backend) and the *process* methods of [IModelTransformer]($backend) are now `async`. This is a breaking API change.
+While exporting and transforming should generally be considered *batch* operations, changing these methods to `async` makes progress reporting and process health monitoring much easier. This is particularly important when processing large iModels.
 
- ```ts
- interface PropertyRecordMatchInfo {
-    matchCounts: {
-        label: number;
-        value: number;
-    };
-    matchIndex: number;
-    propertyName: string;
-  }
-  ```
+To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from within an `async` method. No internal logic was changed, so that should be the only changes required.
 
-New
+## GPU memory limits
 
-  ```ts
-  interface HighlightInfo {
-    highlightedItemIdentifier: string;
-    highlightIndex: number;
-  }
-  ```
+The [RenderGraphic]($frontend)s used to represent a [Tile]($frontend)'s contents consume WebGL resources - chiefly, GPU memory. If the amount of GPU memory consumed exceeds that available, the WebGL context will be lost, causing an error dialog to be displayed and all rendering to cease. The [TileAdmin]($frontend) can now be configured with a strategy for managing the amount of GPU memory consumed and avoiding context loss. Each strategy defines a maximum amount of GPU memory permitted to be allocated to tile graphics; when that limit is exceeded, graphics for tiles that are not currently being displayed by any [Viewport]($frontend) are discarded one by one until the limit is satisfied or no more tiles remain to be discarded. Graphics are discarded in order from least-recently- to most-recently-displayed, and graphics currently being displayed will not be discarded. The available strategies are:
 
-> This is just a terminology change, so reacting to the change is as simple as renaming `matchIndex` -> `highlightedItemIdentifier` and `propertyName` -> `highlightedItemIdentifier`.
+- "default" - a "reasonable" amount of GPU memory can be consumed.
+- "aggressive" - a conservative amount of GPU memory can be consumed.
+- "relaxed" - a generous amount of GPU memory can be consumed.
+- "none" - an unbounded amount of GPU memory can be consumed - no maximum is imposed.
 
-- Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PrimitiveRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
+The precise amount of memory permitted by each strategy varies based on whether or not the client is running on a mobile device; see [TileAdmin.mobileGpuMemoryLimits]($frontend) and [TileAdmin.nonMobileGpuMemoryLimits]($frontend) for precise values. The application can also specify an exact amount in number of bytes instead.
 
-- Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PropertyRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
-
-- The methods fromJson and toJson from alpha class `Format`, in the quantity package, have been renamed to fromJSON and toJSON respectively.
-
-- The method parseIntoQuantityValue from alpha class `QuantityFormatter` in the imodeljs-frontend package, has been renamed to parseToQuantityValue.
-
-### BriefcaseManager breaking changes
-
-This version changes the approach to storing Briefcase and Checkpoint files in the local disk cache. Now, [BriefcaseManager]($backend) will create a subdirectory from the root directory supplied in [BriefcaseManager.initialize]($backend) for each iModelId, and then folders called `briefcases` and `checkpoints` within that folder. The Briefcase and Checkpoint files themselves are named with the `BriefcaseId` and `ChangeSetId` respectively.
-
-> For backwards compatibility: When searching for local files from RPC calls, the previous locations and naming rules are checked for briefcase and checkpoint files. This check will be removed in a future version.
-
-Several methods on the @beta class `BriefcaseManager` have been changed to simplify how local Briefcase files are acquired and managed. Previously the location and name of the local files holding Briefcases was hidden behind a local in-memory cache that complicated the API. Now, the [BriefcaseDb.open]($backend) method takes an argument that specifies the file name. This makes working with local Briefcases much simpler. BriefcaseManager's role is limited to acquiring and releasing briefcases, and for downloading, uploading, and applying changesets.
-
-In particular, the method `BriefcaseManager.download` was removed and replaced with [BriefcaseManager.downloadBriefcase]($backend), since backwards compatibility could not be maintained. See the documentation on that method to understand what you may need to change in your code.
-
-The `BriefcaseManager.imodelClient` has been removed in favor of directly using [IModelHost.iModelClient]($backend).
-
-> Note that the frontend APIs have not changed, so the impact of this change to the beta APIs should be limited.
-
-Also, the `@internal` class `NativeApp` has several changed methods, so some refactoring may be necessary to react to those changes for anyone implementing native applications using this internal API.
-
-## Section-cut graphics
-
-A [DisplayStyleState]($frontend) can now be configured to produce section-cut graphics from the view's [ClipVector]($geometry-core). In the image below, a clipping plane has been applied to produce a cross-section view of a house. Note that all of the geometry intersecting the clipping plane appears to be hollow, whereas in the real world we'd expect things like walls, floors, and tables to be solid throughout:
-
-![Clipped view without section-cut graphics](./assets/house-section-clip.jpg)
-
-Now, every [DisplayStyleSettings]($common) has a [ClipStyle]($common) that specifies how the clipping planes should affect the view. [ClipStyle.produceCutGeometry]($common) specifies that additional graphics should be produced for solid geometry intersecting the clipping planes, causing solid objects to continue to appear solid when sliced by a clipping plane, as shown below:
-
-![Clipped view with section-cut graphics](./assets/house-section-cut.jpg)
-
-A [ClipStyle]($common) can also specify a [CutStyle]($common) controlling how the section-cut geometry is displayed by overriding:
-
-- Aspects of the [ViewFlags]($common) with which it is drawn;
-- The edge symbology via [HiddenLine.Settings]($common); and
-- The color, transparency, etc of the geometry via [FeatureAppearance]($common).
-
-In the image below, the section-cut graphics are drawn in orange with visible blue edges as specified by the [CutStyle]($common).
-
-![Section-cut view with CutStyle overriding symbology](./assets/house-section-cut-style.jpg)
-
-NOTE: If a ClipStyle is associated with a [Viewport]($frontend), it should be modified via [Viewport.clipStyle]($frontend) to ensure the viewport's contents are updated to reflect the change.
-
-## Custom screen-space effects
-
-The display system now allows applications to apply their own post-processing effects to the image rendered by a [Viewport]($frontend) using [RenderSystem.createScreenSpaceEffectBuilder]($frontend). A couple of example effects can be found in the [frontend-devtools package](https://github.com/imodeljs/imodeljs/tree/master/core/frontend-devtools), including [LensDistortionEffect]($frontend-devtools) (illustrated below) for simulating the distortion produced by real-world cameras with wide fields of view; and various [ConvolutionEffect]($frontend-devtools)s for producing a blurred, sharpened, or embossed image.
-
-Wide-angle camera with no lens distortion:
-![Wide-angle camera with no lens distortion](./assets/wide-fov-no-distortion.jpg)
-
-Wide-angle camera with lens distortion:
-![Wide-angle camera with lens distortion](./assets/wide-fov-distortion.jpg)
-
-## Automatic viewport synchronization
-
-A [Viewport]($frontend) holds a reference to a [ViewState]($frontend) defining its viewing parameters, which in turn holds references to objects like a [DisplayStyleState]($frontend) and [CategorySelectorState]($frontend) controlling the styling and contents of the Viewport. Previously, directly modifying the ViewState or its components would not cause the Viewport to update immediately on-screen - instead, callers would either need to manually invoke methods like `Viewport.invalidateScene` to notify the Viewport that something had changed; or use special Viewport APIs like [Viewport.changeCategoryDisplay]($frontend) that would forward to the appropriate object and also invalidate the Viewport's internal state. This was error-prone and tedious.
-
-New events have been added to ViewState and its related classes to notify listeners when aspects of their states change. For example, changing the background color via [DisplayStyleSettings.backgroundColor]($common) raises the [DisplayStyleSettings.onBackgroundColorChanged]($common) event. A Viewport now listens for such events and updates its own state automatically. This eliminates the need for most manual synchronization. However, [Viewport.synchWithView]($frontend) should still be used when modifying the ViewState's [Frustum]($common)
-
-## Globe location tool fixes
-
-The globe location tools now will properly use GCS reprojection when navigating. Previously, navigating to certain cartographic locations within the iModel extents could be slightly inaccurate.
-
-The tools affected are:
-
-- [ViewGlobeSatelliteTool]($frontend)
-- [ViewGlobeBirdTool]($frontend)
-- [ViewGlobeLocationTool]($frontend)
-- [ViewGlobeIModelTool]($frontend)
-
-The [ViewGlobeLocationTool]($frontend) has been further improved to navigate better across long distances when using plane mode.
-
-There is now a method called `lookAtGlobalLocationFromGcs` on [ViewState3d]($frontend). This method behaves exactly like `lookAtGlobalLocation` except that is async and uses the GCS to reproject the location.
-
-[ViewState3d]($frontend) also has GCS versions of these methods:
-
-- `rootToCartographicFromGcs` behaves like `rootToCartographic` except it is async and uses the GCS to reproject the location.
-- `cartographicToRootFromGcs` behaves like `cartographicToRoot` except it is async and uses the GCS to reproject the location.
-
-## Changes to display style excluded elements
-
-[DisplayStyleSettings.excludedElements]($common) allows a display style to specify a set of elements that should not be drawn. Previously, this set was always persisted to the database as an array of element Ids, and represented in JSON and in memory as a `Set<string>`. However, element Ids tend to be long strings (at least 13 characters), and sets of excluded elements can occasionally grow quite large. To reduce the amount of data associated with these sets:
-
-- They are now always persisted to the database as a [CompressedId64Set]($bentleyjs-core).
-- The type of [DisplayStyleSettingsProps.excludedElements]($common) has changed from `Id64Array` to `Id64Array | CompressedId64Set`.
-- [DisplayStyleSettings.excludedElements]($common) - a `Set<string>` - has been deprecated in favor of [DisplayStyleSettings.excludedElementIds]($common) - an [OrderedId64Iterable]($bentleyjs-core).
-- [IModelDb.Views.getViewStateData]($backend) and [ElementLoadProps]($common) allow the caller to specify whether the Ids should be returned in compressed (string) form or as an uncompressed array; by default, they are uncompressed.
-- [IModelConnection.Views.load]($frontend) will always use the compressed representation of the Ids.
-
-To adjust code that uses [DisplayStyleSettings.excludedElements]($common), given `settings: DisplayStyleSettings`:
+The limit defaults to "default" for mobile devices and "none" for non-mobile devices. To configure the limit when calling [IModelApp.startup]($frontend), specify [TileAdmin.Props.gpuMemoryLimits]($frontend). For example:
 
 ```ts
-  settings.excludedElements.add(id); // Replace this...
-  settings.addExcludedElements(id); // ...with this.
-
-  settings.excludedElements.delete(id); // Replace this...
-  settings.dropExcludedElements(id); // ...with this.
-
-  settings.excludedElements.clear(); // Replace this...
-  settings.clearExcludedElements(); // ...with this.
-
-  for (const id of settings.excludedElements) { } // Replace this...
-  for (const id of settings.excludedElementIds) { } // ...with this.
+  IModelApp.startup({ tileAdmin: TileAdmin.create({ gpuMemoryLimits: "aggressive" }) });
 ```
 
-Note that [DisplayStyleSettings.addExcludedElements]($common) and [DisplayStyleSettings.dropExcludedElements]($common) can accept any number of Ids. If you have multiple Ids, prefer to pass them all at once rather than one at a time - it is more efficient.
-
-## Tile compression
-
-[IModelHostConfiguration.compressCachedTiles]($backend) specifies whether tiles uploaded to blob storage should be compressed using gzip. Previously, it defaulted to `false` if omitted. The default has now been switched to `true`. Compressing tiles conserves bandwidth; the tiles are transparently and efficiently decompressed by the browser.
-
-## Upgrading schemas in an iModel
-
-In previous versions the method to open briefcases ([BriefcaseDb.open]($backend)) and standalone files (`StandaloneDb.open` renamed to `StandaloneDb.openFile`) provided options to upgrade the schemas in the iModel. This functionality has been now separated out, and there are separate methods to validate and upgrade the schemas in the iModel. As a result [OpenBriefcaseProps]($common) and [SnapshotOpenOptions]($common) do not include options to upgrade anymore.
-
-See section on [Upgrading Schemas]($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel) for more information.
-
-## Filtering in Property Grid
-
-Now it is possible to filter property grid items (Records or Categories) using `FilteringPropertyDataProvider`. In addition, support for highlighting parts of items that matched the search criteria has also been added.
-
-![Property Filtering](./assets/property-filtering.png "Property Filtering")
-
-Filtering is done by `FilteringPropertyDataProvider` and `IPropertyDataFilterer` that is passed to the provider. We provide a number of read-to-use filterers:
-
-- `CompositePropertyDataFilterer` combines two other filterers
-- `PropertyCategoryLabelFilterer` filters `PropertyCategories` by label
-- `DisplayValuePropertyDataFilterer` filters `PropertyRecords` by display value
-- `LabelPropertyDataFilterer` filters `PropertyRecords` by property label
-- `FavoritePropertiesDataFilterer` (in `@bentley/presentation-components`) filters `PropertyRecords` by whether the property is favorite or not.
-
-**Example:**
+Separate limits for mobile and non-mobile devices can be specified at startup if desired; the appropriate limit will be selected based on the type of device the client is running on:
 
 ```ts
-const searchString = "Test";
-
-const filteringDataProvider = useDisposable(React.useCallback(() => {
-  // Combine a filterer that filters out favorite properties having `searchString` in their category label,
-  // property label or display value
-  const valueFilterer = new DisplayValuePropertyDataFilterer(searchString);
-  const labelFilterer = new LabelPropertyDataFilterer(searchString);
-  const categoryFilterer = new PropertyCategoryLabelFilterer(searchString);
-  const recordFilterer = new CompositePropertyDataFilterer(labelFilterer, CompositeFilterType.Or, valueFilterer);
-  const recordAndCategoryFilterer = new CompositePropertyDataFilterer(recordFilterer, CompositeFilterType.Or, categoryFilterer);
-  const favoritesFilterer = new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: true });
-  const combinedFilterer = new CompositePropertyDataFilterer(recordAndCategoryFilterer, CompositeFilterType.And, favoritesFilterer);
-  // Create the provider
-  return new FilteringPropertyDataProvider(dataProvider, combinedFilterer);
-}, [dataProvider]));
-
-// Getting results from FilteringDataProvider
-const { value: filteringResult } = useDebouncedAsyncValue(React.useCallback(async () => {
-  return await filteringDataProvider.getData();
-}, [filteringDataProvider]));
-
-// Getting a match at index 10, which we want to actively highlight
-const [activeHighlight, setActiveHighlight] = React.useState<HighlightInfo>();
-React.useEffect(() => {
-    if (filteringResult?.getMatchByIndex)
-      setActiveHighlight(filteringResult.getMatchByIndex(10));
-}, [filteringDataProvider, filteringResult]);
-
-// Set up props for highlighting matches
-const highlightProps: HighlightingComponentProps = {
-  highlightedText: searchString,
-  activeHighlight,
-  filteredTypes: filteringResult?.filteredTypes,
-};
-
-// Render the component with filtering data provider and highlight props
-return (
-  <VirtualizedPropertyGridWithDataProvider
-    dataProvider={filteringDataProvider}
-    highlight={highlightProps}
-    ...
-  />
-);
+  IModelApp.startup({ tileAdmin: TileAdmin.create({
+    gpuMemoryLimits: {
+      mobile: "default",
+      nonMobile: "relaxed",
+    }),
+  });
 ```
+
+To adjust the limit after startup, assign to [TileAdmin.gpuMemoryLimit]($frontend).
+
+This feature replaces the `@alpha` `TileAdmin.Props.mobileExpirationMemoryThreshold` option.
+
+## IModelHost and IModelApp Initialization Changes
+
+Initialization processing of iTwin.js applications, and in particular the order of individual steps for frontend and backend classes has been complicated and vague, involving several steps that vary depending on application type and platform. This release attempts to clarify and simplify that process, while maintaining backwards compatibility. In general, if your code uses [IModelHost.startup]($backend) and [IModelApp.startup]($frontend) for web visualization, it will continue to work without changes. However, for native (desktop and mobile) apps, some refactoring may be necessary. See [IModelHost documentation](../learning/backend/IModelHost.md) for appropriate backend initialization, and [IModelApp documentation](../learning/frontend/IModelApp.md) for frontend initialization.
+
+The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes `ElectronHost` and `ElectronApp`.
+
+To create an Electron application, you should initialize your frontend via:
+
+```ts
+  import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+  ...
+  await ElectronApp.startup();
+```
+
+And your backend via:
+
+```ts
+  import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+  ...
+  await ElectronHost.startup();
+```
+
+Likewise, to create an iOS application, you should initialize your frontend via:
+
+```ts
+  import { IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
+  ...
+  await IOSApp.startup();
+```
+
+And your backend via:
+
+```ts
+  import { IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
+  ...
+  await IOSHost.startup();
+```
+
+Both frontend and backend `startup` methods take optional arguments to customize the App/Host environments.
+
+## ProcessDetector API
+
+It is frequently necessary to detect the type of JavaScript process currently executing. Previously, there were several ways (sometimes redundant, sometimes conflicting) to do that, depending on the subsystem being used. This release attempts to centralize process classification into the class [ProcessDetector]($bentley) in the `@bentleyjs-core` package. All previous methods for detecting process type have been deprecated in favor of `ProcessDetector`. The deprecated methods will likely be removed in version 3.0.
+
+## Common table expression support in ECSQL
+
+CTE are now supported in ECSQL. For more information read [Common Table Expression](../learning/CommonTableExp.md)
+
+## Planar clip masks
+
+Planar clip masks provide a two and a half dimensional method for masking the regions where the background map, reality models and BIM geometry overlap. A planar clip mask is described by [PlanarClipMaskProps]($common).A planar clip mask may be applied to a contexual reality model as a [ContextRealityModelProps.planarClipMask]($common) to the background map as [BackgroundMapProps.planarClipMask]($common) or as an override to attached reality models with the [DisplayStyleSettingsProps.planarClipOvr]($common) array of [DisplayStyleRealityModelPlanarClipMaskProps]($common).   The planar clip mask geometry is not required to be planar as the masks will be generated from their projection to the X-Y plane, therefore any 3D model or reality model can be used to generate a planar clip mask.
+
+The [PlanarClipMaskProps.mode]($common) specifies how the mask geometry is collected.  [PlanarClipMaskMode]$(common) includes collection of masks by models, subcategories, elements (included or excluded) or by a priority scheme that clips against other models with a higher priority.
+
+### By masking a reality model with a BIM model we can display the BIM model without the overlapping reality model
+
+![Building and reality model without mask](./assets/PlanarMask_BuildingNoMask.jpg)
+![Reality model masked by building](./assets/PlanarMask_BuildingMasked.jpg)
+
+### By masking the background map terrain with the reality model we can display the current state of the quarry without intrusive terrain
+
+![Quarry and Background Map Terrain without mask](./assets/PlanarMask_QuarryNoMask.jpg)
+![Background Map Terrain masked by quarry reality model](./assets/PlanarMask_QuarryMasked.jpg)
+
+### Planar Clip Mask Transparency
+
+Planar clip masks support transparency.  If a mask is not transparent then the masked geometry is omitted completely, if transparency is included then increasing the transparency will decrease the masking and increase a translucent blending of the masked geometry.  A transparency value of 1 would indicate no masking.  If no transparency is included then the transparency value from the mask elements is used.  In the image below a transparent mask is applied to the reality model to show the underground tunnel.
+
+![Planar clip mask with transparency](./assets/PlanarMask_TunnelTransparent.jpg)
 
 ## Presentation
 
-### Formatted property values in ECExpressions
+### Highlighting members of GroupInformationElement
 
-ECExpressions now support formatted property values. `GetFormattedValue` function can be used in ECExpressions to get formatted value of the property. This adds ability to filter instances by some formatted value:
+Presentation rules used by [HiliteSetProvider]($presentation-frontend) have been modified to return geometric elements grouped by *BisCore.GroupInformationElement* instances.
 
-```ts
-GetFormattedValue(this.Length, "Metric") = "10.0 m"
-```
+### Setting up default formats
 
-### Enhanced navigation property values
-
-Navigation property values now contain related instance class information in addition to instance ids, making them now full-fledged instance keys. As a result, it is now possible to use navigation property values directly with Unified Selection APIs.
-
-### Interactable navigation properties
-
-A property value renderer for instance key values has been added, which allows users to click the key value to select the referenced instance in Unified Selection. This can be used, for instance, to implement navigation between related elements through navigation properties. To enable this new renderer, you'll need to wrap your UI components with [UnifiedSelectionContextProvider]($presentation-components) and set `SelectableInstance` renderer on specific properties using Presentation Rules:
-
-```json
-{
-  "ruleType": "ContentModifier",
-  "propertyOverrides": [
-    {
-      "name": "<navigation property to make clickable>",
-      "renderer": {
-        "rendererName": "SelectableInstance"
-      }
-    }
-  ]
-}
-```
-
-### Breaking changes to `ContentRelatedInstances`
-
-Behavior of `ContentRelatedInstances` specification used in content rules was changed. It used to include input instances into the result if all paths in `relationshipPaths` property had `count: "*"` and target class matched input instance class. The behavior was changed to match cases where steps `relationshipPaths` have `count` set to specific number - the result only includes instances resulting from step outputs. See [RelationshipPathSpecification documentation](../learning/presentation/RelationshipPathSpecification.md) for more details and examples.
-
+A new feature was introduced, which allows supplying default unit formats to use for formatting properties that don't have a presentation unit for requested unit system. The formats are set when initializing [Presentation]($presentation-backend) and passing `PresentationManagerProps.defaultFormats`.
 Example:
 
-```json
-{
-  "ruleType": "Content",
-  "specifications": [
-    {
-      "specType": "ContentRelatedInstances",
-      "relationshipPaths": [
-        [
-          {
-            "relationship": {
-              "schemaName": "BisCore",
-              "className": "GeometricElement3dHasTypeDefinition"
-            },
-            "direction": "Backward",
-            "count": "*"
-          },
-          {
-            "relationship": {
-              "schemaName": "BisCore",
-              "className": "ElementOwnsChildElements"
-            },
-            "direction": "Forward",
-            "count": "*"
-          }
-        ]
-      ]
-    }
-  ]
-}
-```
-
-This rule used to include *BisCore.TypeDefinitionElement* instance used as input along side *BisCore.GeometricElement3d* instances. If previous behavior is desired `SelectedNodeInstance` specification can be added to the content rule:
-
-```json
-{
-  "ruleType": "Content",
-  "specifications": [
-    {
-      "specType": "SelectedNodeInstances"
+```ts
+Presentation.initialize({
+  defaultFormats: {
+    length: {
+      unitSystems: [PresentationUnitSystem.BritishImperial],
+      format: MY_DEFAULT_FORMAT_FOR_LENGTHS_IN_BRITISH_IMPERIAL_UNITS,
     },
+    area: {
+      unitSystems: [PresentationUnitSystem.UsCustomary, PresentationUnitSystem.UsSurvey],
+      format: MY_DEFAULT_FORMAT_FOR_AREAS_IN_US_UNITS,
+    },
+  },
+});
+```
+
+### Accessing selection in instance filter of content specifications
+
+Added a way to create and filter content that's related to given input through some ID type of property that is not part of a relationship. That can be done by
+using [ContentInstancesOfSpecificClasses specification](../learning/presentation/content/ContentInstancesOfSpecificClasses.md) with an instance filter that makes use
+of the newly added [SelectedInstanceKeys](../learning/presentation/content/ECExpressions.md#instance=filter) ECExpression symbol. Example:
+
+```json
+{
+  "ruleType": "Content",
+  "condition": "SelectedNode.IsOfClass(\"ECClassDef\", \"ECDbMeta\")",
+  "specifications": [
     {
-      "specType": "ContentRelatedInstances",
-      "relationshipPaths": [
-        [
-          {
-            "relationship": {
-              "schemaName": "BisCore",
-              "className": "GeometricElement3dHasTypeDefinition"
-            },
-            "direction": "Backward",
-            "count": "*"
-          },
-          {
-            "relationship": {
-              "schemaName": "BisCore",
-              "className": "ElementOwnsChildElements"
-            },
-            "direction": "Forward",
-            "count": "*"
-          }
-        ]
-      ]
+      "specType": "ContentInstancesOfSpecificClasses",
+      "classes": {
+        "schemaName": "BisCore",
+        "classNames": ["Element"]
+      },
+      "arePolymorphic": true,
+      "instanceFilter": "SelectedInstanceKeys.AnyMatches(x => this.IsOfClass(x.ECInstanceId))"
     }
   ]
 }
 ```
 
-## QuantityFormatter updates
+The above example creates content for `ECDbMeta.ECClassDef` instances by selecting all `BisCore.Element` instances
+that are of given `ECDbMeta.ECClassDef` instances.
 
-The [QuantityFormatter]($frontend) now support four unit systems: Metric, Imperial, US Survey, and US Customary. This allows it to align with the four unit systems supported in the `Presentation` package. The method `setActiveUnitSystem` and property `activeUnitSystem` can be used to set and query the active unit system. See [UnitSystemKey]($frontend).
+Previously this was not possible, because there is no ECRelationship between `ECDbMeta.ECClassDef` and `BisCore.Element`.
 
-```ts
-export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
+### ECInstance ECExpression context method enhancements
+
+Added lambda versions for [ECInstance ECExpression context](../learning/presentation/ECExpressions.md#ecinstance) methods: `GetRelatedInstancesCount`,
+`HasRelatedInstance`, `GetRelatedValue`. This allows using those methods without the need of an ECRelationship between "current" ECInstance
+and related ECInstance. Example:
+
+```json
+{
+  "ruleType": "RootNodes",
+  "specifications": [
+    {
+      "specType": "InstanceNodesOfSpecificClasses",
+      "classes": {
+        "schemaName": "ECDbMeta",
+        "classNames": ["ECClassDef"]
+      },
+      "instanceFilter": "this.HasRelatedInstance(\"BisCore:Element\", el => el.IsOfClass(this.ECInstanceId))",
+      "groupByClass": false,
+      "groupByLabel": false
+    }
+  ]
+}
 ```
 
-There are also new methods to set and
-clear override formats for a particular [QuantityType]($frontend). The example below show how to set an override format for QuantityType.Length used be the measure tool.
-
-```ts
-    const overrideLengthFormats = {
-      metric: {
-        composite: {
-          includeZero: true,
-          spacer: " ",
-          units: [{ label: "cm", name: "Units.CM" }],
-        },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 4,
-        type: "Decimal",
-      },
-      imperial: {
-        composite: {
-          includeZero: true,
-          spacer: " ",
-          units: [{ label: "in", name: "Units.IN" }],
-        },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 4,
-        type: "Decimal",
-      },
-      usCustomary: {
-        composite: {
-          includeZero: true,
-          spacer: " ",
-          units: [{ label: "in", name: "Units.IN" }],
-        },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 4,
-        type: "Decimal",
-      },
-      usSurvey: {
-        composite: {
-          includeZero: true,
-          spacer: " ",
-          units: [{ label: "in", name: "Units.US_SURVEY_IN" }],
-        },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 4,
-        type: "Decimal",
-      },
-    };
-
-await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthFormats);
-```
+The above example returns `ECDbMeta:ECClassDef` instances only if there are `BisCore:Elements` of those classes.

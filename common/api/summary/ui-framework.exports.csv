@@ -5,6 +5,8 @@ alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
 alpha;AccuDrawDialogProps 
 alpha;AccuDrawKeyboardShortcuts
 alpha;AccuDrawPopupManager
+alpha;AccuDrawUiSettings
+internal;AccuDrawUiSettingsChangedEvent 
 alpha;AccuDrawWidget(): JSX.Element
 alpha;AccuDrawWidgetControl 
 public;Action
@@ -65,6 +67,7 @@ beta;BasicToolWidget(props: BasicToolWidgetProps): JSX.Element
 beta;BasicToolWidgetProps
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
+alpha;BumpToolSetting 
 alpha;Calculator 
 internal;CalculatorEngine
 internal;CalculatorKeyType
@@ -186,6 +189,7 @@ beta;ExpandableSectionProps
 internal;expandWidget: 
 beta;ExtensibleToolbarProps
 beta;featureOverridesActiveStateFunc(state: Readonly
+alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 
 internal;FrameworkAccuDraw 
@@ -237,6 +241,7 @@ beta;getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
 internal;getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[]
+beta;getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial
 beta;getSelectionContextSyncEventIds(): string[]
 internal;getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
@@ -347,6 +352,8 @@ public;ModalFrontstageClosedEventArgs
 internal;ModalFrontstageComposer({ stageInfo }:
 public;ModalFrontstageInfo
 public;ModalFrontstageProps 
+alpha;ModalFrontstageRequestedCloseEvent 
+alpha;ModalFrontstageRequestedCloseEventArgs
 public;ModelessDialog 
 public;ModelessDialogChangedEvent 
 public;ModelessDialogManager
@@ -409,6 +416,8 @@ internal;ProjectScope
 internal;ProjectServices
 public;PromptField: import("react-redux").ConnectedComponent
 public;PropsHelper
+beta;QuantityFormatSettingsPanel({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element
+beta;QuantityFormatterSettingsOptions
 alpha;ReactContent
 public;ReactMessage = ReactMessage_2
 public;ReactNotifyMessageDetails
@@ -449,6 +458,7 @@ beta;SessionStateActionsUnion = ActionsUnion
 beta;sessionStateMapDispatchToProps:
 beta;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
 internal;setPanelSize: 
+beta;SettingsModalFrontstage 
 internal;settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus
 internal;setWidgetLabel: 
 internal;setWidgetState: 

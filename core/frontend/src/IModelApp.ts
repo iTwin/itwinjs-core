@@ -15,7 +15,7 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { addCsrfHeader, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
+import { IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
@@ -36,7 +36,7 @@ import { FrontendRequestContext } from "./FrontendRequestContext";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
-import { QuantityFormatter } from "./QuantityFormatter";
+import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
@@ -93,10 +93,10 @@ export interface IModelAppOptions {
    * @beta
   */
   mapLayerOptions?: MapLayerOptions;
-  /** If present, supplies the [[TileAdmin]] for this session.
-   * @alpha
+  /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session.
+   * @beta
    */
-  tileAdmin?: TileAdmin;
+  tileAdmin?: TileAdmin.Props;
   /** If present, supplies the [[NotificationManager]] for this session. */
   notifications?: NotificationManager;
   /** If present, supplies the [[ToolAdmin]] for this session. */
@@ -414,7 +414,7 @@ export class IModelApp {
 
     this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
     this._viewManager = (opts.viewManager !== undefined) ? opts.viewManager : new ViewManager();
-    this._tileAdmin = (opts.tileAdmin !== undefined) ? opts.tileAdmin : TileAdmin.create();
+    this._tileAdmin = await TileAdmin.create(opts.tileAdmin);
     this._notifications = (opts.notifications !== undefined) ? opts.notifications : new NotificationManager();
     this._toolAdmin = (opts.toolAdmin !== undefined) ? opts.toolAdmin : new ToolAdmin();
     this._accuDraw = (opts.accuDraw !== undefined) ? opts.accuDraw : new AccuDraw();
@@ -559,7 +559,7 @@ export class IModelApp {
       if (IModelApp.authorizationClient?.hasSignedIn) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         try {
-          const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
+          const accessToken = await IModelApp.authorizationClient.getAccessToken();
           authorization = accessToken.toTokenString(IncludePrefix.Yes);
           const userInfo = accessToken.getUserInfo();
           if (userInfo)

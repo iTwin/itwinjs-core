@@ -54,6 +54,7 @@ internal;AzureMapsLayerImageryProvider
 internal;B3dmReader 
 internal;BackgroundMapGeometry
 internal;BackgroundMapLocation
+beta;class BaseUnitFormattingSettingsProvider 
 internal;BatchedTileIdMap
 public;BeButton
 public;BeButtonEvent 
@@ -65,6 +66,7 @@ public;BeTouchEventProps
 public;BeWheelEvent 
 public;BeWheelEventProps 
 internal;BingElevationProvider
+internal;BingLocationProvider
 internal;BingMapsImageryLayerProvider 
 public;BlankConnection 
 public;BlankConnectionProps
@@ -81,7 +83,7 @@ public;CategorySelectorState
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
-alpha;CheckboxFormatPropEditorSpec 
+beta;CheckboxFormatPropEditorSpec 
 public;CheckpointConnection 
 alpha;ClipEventType
 public;Cluster
@@ -102,8 +104,8 @@ internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferencePro
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;CurrentInputState
 internal;CurrentState
-alpha;CustomFormatPropEditorSpec
-alpha;CustomQuantityTypeDefinition 
+beta;CustomFormatPropEditorSpec
+beta;CustomQuantityTypeDefinition 
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
@@ -115,19 +117,18 @@ internal;DefineACSByPointsTool
 alpha;DepthPointOptions
 alpha;DepthPointSource
 public;DepthRangeNpc
-alpha;DesktopAuthorizationClient 
 internal;DevTools
 beta;DisclosedTileTreeSet 
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
-alpha;DownloadBriefcaseOptions
+beta;DownloadBriefcaseId =
+beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
-alpha;EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection
 alpha;EditingFunctions
 alpha;EditingFunctions
 deprecated;CategoryEditor
@@ -175,8 +176,8 @@ public;FitViewTool
 internal;Flags
 public;FlyViewTool 
 beta;class FormattedQuantityDescription 
-alpha;FormatterParserSpecsProvider
-alpha;FormattingUnitSystemChangedArgs
+beta;FormatterParserSpecsProvider
+beta;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
@@ -222,6 +223,7 @@ public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
 public;GraphicType
+internal;GridDisplaySettings
 alpha;GroupMark
 internal;Hilites
 beta;HiliteSet
@@ -265,16 +267,16 @@ internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModel
 public;class InputCollector 
 public;InputSource
 internal;InstancedGraphicParams
-alpha;InteractiveEditingSession 
+beta;InteractiveEditingSession 
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
 beta;IpcApp
 beta;IpcAppOptions
-alpha;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
-alpha;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
-alpha;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
-alpha;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
+beta;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
+beta;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
+beta;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
+beta;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
 beta;KeyinParseError
 internal;KeyinStatus
@@ -282,6 +284,8 @@ beta;LengthDescription
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
 internal;LocalhostIpcApp
+internal;LocalHostIpcAppOpts 
+beta;LocalUnitFormatProvider 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -340,7 +344,9 @@ public;ModelSelectorState
 public;ModelState 
 alpha;ModifyElementSource
 alpha;NativeApp
+alpha;NativeAppAuthorization
 internal;NativeAppLogger
+alpha;NativeAppOpts 
 internal;NoRenderApp
 beta;class NotificationHandler
 public;NotificationManager
@@ -359,7 +365,7 @@ beta;OsmBuildingDisplayOptions
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
-alpha;OverrideFormatEntry
+beta;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
 beta;ParseAndRunResult
@@ -384,11 +390,12 @@ public;class PrimitiveTool
 alpha;PrimitiveVisibility
 beta;PromiseReturnType
 internal;QuadId
-alpha;QuantityFormatsChangedArgs
-alpha;QuantityFormatter 
+beta;QuantityFormatOverridesChangedArgs
+beta;QuantityFormatsChangedArgs
+beta;QuantityFormatter 
 beta;QuantityType
 beta;QuantityTypeArg = QuantityType | string
-alpha;QuantityTypeDefinition
+beta;QuantityTypeDefinition
 beta;QuantityTypeKey = string
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
@@ -495,8 +502,8 @@ internal;TerrainDisplayOverrides
 internal;class TerrainMeshProvider
 internal;TerrainTexture
 internal;TerrainTileContent 
-alpha;TextInputFormatPropEditorSpec 
-alpha;TextSelectFormatPropEditorSpec 
+beta;TextInputFormatPropEditorSpec 
+beta;TextSelectFormatPropEditorSpec 
 internal;TextureDrapeMap = Map
 internal;TextureImage
 internal;ThreeAxes
@@ -517,6 +524,9 @@ internal;TilePatch = PlanarTilePatch | EllipsoidPatch
 beta;TileRequest
 beta;TileRequest
 internal;State
+beta;TileRequestChannel
+beta;TileRequestChannels
+beta;TileRequestChannelStatistics
 beta;Tiles
 beta;class TileTree
 beta;TileTreeDiscloser
@@ -558,7 +568,8 @@ beta;UniformArrayParams
 beta;UniformContext
 beta;UniformParams
 beta;UniformType
-alpha;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
+beta;UnitFormattingSettingsProvider
+beta;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
 internal;UpsampledMapTile 
 beta;VaryingType
 public;ViewAnimationOptions
@@ -613,7 +624,7 @@ public;WalkViewTool
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
 beta;WebViewerApp
-beta;WebViewerAppOptions
+beta;WebViewerAppOpts
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities

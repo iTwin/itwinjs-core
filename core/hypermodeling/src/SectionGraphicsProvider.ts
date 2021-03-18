@@ -12,7 +12,7 @@ import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, View
 import {
   CategorySelectorState, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,
   FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelApp, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
-  TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, Viewport, ViewState2d,
+  TileLoadPriority, TileRequest, TileRequestChannel, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, Viewport, ViewState2d,
 } from "@bentley/imodeljs-frontend";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
@@ -272,6 +272,7 @@ class ProxyTile extends Tile {
   public get hasChildren() { return false; }
   public get hasGraphics() { return true; }
 
+  public get channel(): TileRequestChannel { throw new Error("Proxy tile has no content"); }
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> { return undefined; }
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> { return {}; }
   protected _loadChildren(_resolve: (children: Tile[]) => void, _reject: (error: Error) => void): void { }

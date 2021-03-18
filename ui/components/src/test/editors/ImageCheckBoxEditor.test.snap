@@ -9,6 +9,11 @@ exports[`<ImageCheckBoxEditor /> renders correctly 1`] = `
   disabled={false}
   imageOff=""
   imageOn=""
+  inputRef={
+    Object {
+      "current": null,
+    }
+  }
   onClick={[Function]}
 />
 `;

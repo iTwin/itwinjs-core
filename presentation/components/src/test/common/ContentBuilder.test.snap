@@ -293,9 +293,6 @@ PropertyRecord {
             "Movies": PropertyRecord {
               "description": "some display value 1 with link www.testLink.com",
               "isReadonly": true,
-              "links": Object {
-                "matcher": [Function],
-              },
               "property": Object {
                 "displayLabel": "SDD",
                 "name": "Florida$Movies",
@@ -327,9 +324,6 @@ PropertyRecord {
             "Movies": PropertyRecord {
               "description": "some display value 2 with link http://www.testLinkTwo.com",
               "isReadonly": true,
-              "links": Object {
-                "matcher": [Function],
-              },
               "property": Object {
                 "displayLabel": "SDD",
                 "name": "Florida$Movies",
@@ -640,7 +634,7 @@ PropertyRecord {
   "property": Object {
     "displayLabel": "infrastructures Hong Kong Dollar Integration",
     "name": "Down-sized",
-    "typename": "Dong",
+    "typename": "dong",
   },
   "value": Object {
     "displayValue": "merged",
@@ -687,7 +681,7 @@ PropertyRecord {
   "property": Object {
     "displayLabel": "Credit Card Account",
     "name": "Savings Account",
-    "typename": "Lari",
+    "typename": "lari",
   },
   "value": Object {
     "displayValue": "",

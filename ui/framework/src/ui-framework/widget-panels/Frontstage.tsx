@@ -33,6 +33,7 @@ import { WidgetPanelsStatusBar } from "./StatusBar";
 import { WidgetPanelsTab } from "./Tab";
 import { WidgetPanelsToolbars } from "./Toolbars";
 import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
+import { useEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -180,8 +181,13 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
   useItemsManager(frontstageDef);
   useSyncDefinitions(frontstageDef);
   const labels = useLabels();
+  const handleKeyDown = useEscapeSetFocusToHome();
   return (
-    <div className="uifw-widgetPanels-frontstage">
+    <div
+      className="uifw-widgetPanels-frontstage"
+      onKeyDown={handleKeyDown}
+      role="presentation"
+    >
       <NineZone
         dispatch={dispatch}
         labels={labels}
