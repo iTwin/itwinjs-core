@@ -4,21 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { getUiSettingsManagerEntry, UiFramework } from "@bentley/ui-framework";
+import { getQuantityFormatsSettingsManagerEntry, getUiSettingsManagerEntry, UiFramework } from "@bentley/ui-framework";
 import { SettingsTabEntry, SettingsTabsProvider } from "@bentley/ui-core";
-import { getQuantityFormatsSettingsManagerEntry } from "../frontstages/QuantityFormatStage";
-import { UiSettingsPageComponent } from "../frontstages/Settings";
+import { AccudrawSettingsPageComponent } from "../frontstages/Settings";
 
-// Sample UI items provider that dynamically adds ui items
+// Sample settings provider that dynamically adds settings into the setting stage
 export class AppSettingsTabsProvider implements SettingsTabsProvider {
-  public readonly id = "AppSettingsTabsProvider";
+  public readonly id = "AppSettingsProvider";
 
   public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
     return [
-      getQuantityFormatsSettingsManagerEntry(10),
+      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
       {
         itemPriority: 20, tabId: "ui-test-app:Accudraw", label: "Accudraw",
-        page: <UiSettingsPageComponent />,
+        page: <AccudrawSettingsPageComponent />,
         isDisabled: false,
         icon: "icon-paintbrush",
         tooltip: "Accudraw Settings",

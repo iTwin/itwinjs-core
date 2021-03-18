@@ -146,6 +146,7 @@ export * from "./ui-framework/selection/HideIsolateEmphasizeManager";
 export * from "./ui-framework/selection/ClearEmphasisStatusField";
 
 export * from "./ui-framework/settings/ui/UiSettingsPage";
+export * from "./ui-framework/settings/quantityformatting/QuantityFormat";
 
 export * from "./ui-framework/shared/ActionButtonItemDef";
 export * from "./ui-framework/shared/AnyItemDef";
@@ -348,6 +349,10 @@ export * from "./ui-framework/zones/ZoneDef";
 /**
  * @docs-group-description State
  * Classes for maintaining state
+ */
+/**
+ * @docs-group-description Settings
+ * Classes and components used by settings pages displayed in the modal settings stage
  */
 /**
  * @docs-group-description StatusBar
