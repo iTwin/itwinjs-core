@@ -9,21 +9,17 @@ import {
   Code, ExternalSourceAttachmentProps, ExternalSourceProps, IModel, RepositoryLinkProps, SynchronizationConfigLinkProps,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, ExternalSource, ExternalSourceAttachment, ExternalSourceAttachmentAttachesSource, ExternalSourceGroup,
-  ExternalSourceGroupGroupsSources, ExternalSourceIsInRepository, ExternalSourceOwnsAttachments, FolderContainsRepositories, FolderLink, IModelDb,
-  LinkElement, RepositoryLink, SnapshotDb, SynchronizationConfigLink, SynchronizationConfigProcessesSources,
-  SynchronizationConfigSpecifiesRootSources,
+  ExternalSource, ExternalSourceAttachment, ExternalSourceAttachmentAttachesSource, ExternalSourceGroup, ExternalSourceGroupGroupsSources,
+  ExternalSourceIsInRepository, ExternalSourceOwnsAttachments, FolderContainsRepositories, FolderLink, IModelDb, LinkElement, RepositoryLink,
+  SnapshotDb, SynchronizationConfigLink, SynchronizationConfigProcessesSources, SynchronizationConfigSpecifiesRootSources,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-describe.only("ExternalSource", () => {
+describe("ExternalSource", () => {
 
-  it("should create elements and relationships like an iModel Connector would", async () => {
+  it("should create elements and relationships like an iModel Connector would", () => {
     const iModelFileName = IModelTestUtils.prepareOutputFile("ExternalSource", "ExternalSource.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "ExternalSource Test" } });
-    const bisCore1013 = "d:/src/imodel02/BisSchemas/Domains/Core/BisCore.ecschema.xml"; // WIP: BisCore 1.0.13 is not yet released
-    await iModelDb.importSchemas(new BackendRequestContext(), [bisCore1013]);
-    iModelDb.saveChanges();
 
     assert.isTrue(iModelDb.containsClass(SynchronizationConfigLink.classFullName));
     assert.isTrue(iModelDb.containsClass(ExternalSource.classFullName));
