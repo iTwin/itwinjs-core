@@ -216,6 +216,7 @@ class AdditionalTools {
     ToolbarHelper.createToolbarItemFromItemDef(110, CoreTools.keyinBrowserButtonItemDef),
     ToolbarHelper.createToolbarItemFromItemDef(115, EditTools.deleteElementTool),
     ToolbarHelper.createToolbarItemFromItemDef(115, EditTools.moveElementTool),
+    ToolbarHelper.createToolbarItemFromItemDef(115, EditTools.rotateElementTool),
     ToolbarHelper.createToolbarItemFromItemDef(120, EditTools.placeLineStringTool),
     ToolbarHelper.createToolbarItemFromItemDef(130, EditTools.placeBlockTool),
   ];

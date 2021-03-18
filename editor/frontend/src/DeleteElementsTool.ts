@@ -11,6 +11,7 @@ import { EditTools } from "./EditTool";
 /** @alpha Delete elements immediately from active selection set or prompt user to identify elements to delete. */
 export class DeleteElementsTool extends ElementSetTool {
   public static toolId = "DeleteElements";
+  public static iconSpec = "icon-delete";
 
   protected get allowSelectionSet(): boolean { return true; }
   protected get allowGroups(): boolean { return true; }
