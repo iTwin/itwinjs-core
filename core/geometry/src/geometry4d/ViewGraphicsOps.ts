@@ -223,8 +223,11 @@ class LineProximityContext {
  * @internal
  */
 export class ViewGraphicsOps {
-  static gridRangeMaxXY = 10000.0;
-  static gridRangeMaxZ = 10000.0;  // more or less meaningless -- the grid range z are all zero
+/** maximum gridline index (positive or negative) to consider */
+  public static gridRangeMaxXY = 10000.0;
+/** maximum gridline z value to consider -- but the grid is on z=0 so this is not a significant effect */
+  public static gridRangeMaxZ = 10000.0;
+  /** clamp the range to gridRangeMAXXY */
   private static restrictGridRange(range0: Range3d): Range3d{
     return range0.intersect(Range3d.createXYZXYZ(
       -this.gridRangeMaxXY, -this.gridRangeMaxXY, -this.gridRangeMaxZ,

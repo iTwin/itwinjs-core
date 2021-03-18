@@ -25,7 +25,6 @@ packageClassification:  [
      "packages": [
        "context-registry-client",
        "extension-client",
-       "forms-data-management-client",
        "frontend-authorization-client",
        "imodelhub-client",
        "itwin-client",

@@ -116,6 +116,7 @@ alpha;NestMenuHandler = (expanded: boolean) => void
 alpha;NumericInputHandler = (value: number, input: HTMLInputElement) => void
 alpha;NumericInputProps
 alpha;class OverrideSubCategoryPriorityTool 
+beta;OverrideSubCategoryTool 
 beta;parseArgs(args: string[]): ToolArgs
 beta;parseBoolean(arg: string | undefined): boolean | undefined
 beta;parseToggle(arg: string | undefined): string | boolean | undefined

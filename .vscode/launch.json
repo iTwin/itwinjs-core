@@ -899,6 +899,23 @@
       ]
     },
     {
+      "name": "imodel-transformer tests",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/test-apps/imodel-transformer",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "OIDC Signin Tool Tests (Integration)",
       "presentation": {
         "group": "6_Misc"
@@ -1722,7 +1739,6 @@
       "description": "Select client library to debug",
       "type": "pickString",
       "options": [
-        "forms-data-management",
         "product-settings",
         "projectshare",
         "rbac"

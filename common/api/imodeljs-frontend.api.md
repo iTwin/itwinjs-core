@@ -4414,6 +4414,8 @@ export abstract class IModelConnection extends IModel {
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
     fontMap?: FontMap;
     // @internal
+    protected _gcsDisabled: boolean;
+    // @internal
     readonly geoServices: GeoServices;
     // @beta
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
@@ -4440,9 +4442,7 @@ export abstract class IModelConnection extends IModel {
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
     // @internal
-    get noGcsDefined(): boolean | undefined;
-    // @internal
-    protected _noGcsDefined?: boolean;
+    get noGcsDefined(): boolean;
     static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
@@ -12608,6 +12608,7 @@ export abstract class ViewState extends ElementState {
     // (undocumented)
     protected _updateMaxGlobalScopeFactor(): void;
     get viewFlags(): ViewFlags;
+    set viewFlags(flags: ViewFlags);
     viewsCategory(id: Id64String): boolean;
     abstract viewsModel(modelId: Id64String): boolean;
 }
