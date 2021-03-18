@@ -301,6 +301,7 @@ export class MutableTreeModel implements TreeModel {
       return false;
     }
 
+    (node.id as string) = newId;
     for (const [childId] of this.getChildren(newId)?.iterateValues() ?? []) {
       const child = this.getNode(childId);
       assert(child !== undefined);
