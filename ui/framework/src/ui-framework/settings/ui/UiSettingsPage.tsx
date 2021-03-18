@@ -6,7 +6,7 @@
  * @module Settings
  */
 
-import "./UiSettings.scss";
+import "./UiSettingsPage.scss";
 import * as React from "react";
 import { OptionType, SettingsTabEntry, Slider, ThemedSelect, Toggle } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";

@@ -2,9 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { UiSetting, UiSettings } from "@bentley/ui-core";
-import { FrameworkAccuDraw, SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
+/** @packageDocumentation
+ * @module Settings
+ */
 
+import { UiSetting, UiSettings } from "@bentley/ui-core";
+import { FrameworkAccuDraw } from "../accudraw/FrameworkAccuDraw";
+import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
+
+/** @alpha */
 export interface InitialAppUiSettings {
   colorTheme: string;
   autoHideUi: boolean;
@@ -16,6 +24,7 @@ export interface InitialAppUiSettings {
   widgetOpacity: number;
 }
 
+/** @alpha */
 export class AppUiSettings {
   private static _settingNamespace = "AppUiSettings";
   private _settings: Array<UiSetting<any>> = [];

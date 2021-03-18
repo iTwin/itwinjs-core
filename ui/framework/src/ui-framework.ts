@@ -144,7 +144,7 @@ export * from "./ui-framework/selection/SelectionContextItemDef";
 export * from "./ui-framework/selection/HideIsolateEmphasizeManager";
 export * from "./ui-framework/selection/ClearEmphasisStatusField";
 
-export * from "./ui-framework/settings/ui/UiSettings";
+export * from "./ui-framework/settings/ui/UiSettingsPage";
 
 export * from "./ui-framework/shared/ActionButtonItemDef";
 export * from "./ui-framework/shared/AnyItemDef";
@@ -223,7 +223,8 @@ export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 
 export * from "./ui-framework/uiprovider/DefaultDialogGridContainer";
 
-export * from "./ui-framework/uisettings/IModelAppUiSettings";
+export * from "./ui-framework/uisettings/AppUiSettings";
+export * from "./ui-framework/uisettings/CloudUiSettings";
 export * from "./ui-framework/uisettings/useUiSettings";
 
 export * from "./ui-framework/utils/ViewUtilities";

@@ -2869,7 +2869,7 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
 }
 
 // @beta
-export class IModelAppUiSettings implements UiSettings {
+export class CloudUiSettings implements UiSettings {
     // (undocumented)
     deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;
     // (undocumented)

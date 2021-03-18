@@ -14,7 +14,7 @@ import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core
  * Implementation of [[UiSettings]] that uses settings admin from `IModelApp.settings`.
  * @beta
  */
-export class IModelAppUiSettings implements UiSettings {
+export class CloudUiSettings implements UiSettings {
   public async getSetting(namespace: string, name: string): Promise<UiSettingsResult> {
     if (!this.isSignedIn)
       return { status: UiSettingsStatus.AuthorizationError };
