@@ -194,7 +194,7 @@ export class UiFramework {
 
     UiFramework._initialized = true;
 
-    // initialize any standalone settings providers
+    // initialize any standalone settings providers that don't need to have defaults set by iModelApp
     UiShowHideSettingsProvider.initialize ();
 
     return readFinishedPromise;
@@ -401,6 +401,9 @@ export class UiFramework {
 
   /** @beta */
   public static async setUiSettings(uiSettings: UiSettings, immediateSync = false) {
+    if (UiFramework._uiSettings === uiSettings)
+      return;
+
     UiFramework._uiSettings = uiSettings;
 
     // let any registered providers to load values from the new storage location

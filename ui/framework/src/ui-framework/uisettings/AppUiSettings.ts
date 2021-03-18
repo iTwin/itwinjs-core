@@ -7,8 +7,8 @@
  */
 
 import { UiSetting, UiSettings } from "@bentley/ui-core";
-import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework } from "../UiFramework";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework, UserSettingsProvider } from "../UiFramework";
 
 /** @alpha */
 export interface InitialAppUiSettings {
@@ -19,7 +19,9 @@ export interface InitialAppUiSettings {
 }
 
 /** @alpha */
-export class AppUiSettings {
+export class AppUiSettings implements UserSettingsProvider  {
+  public readonly providerId = "AppUiSettingsProvider";
+
   private static _settingNamespace = "AppUiSettings";
   private _settings: Array<UiSetting<any>> = [];
   private _applyingLocalSettings = false;
@@ -84,5 +86,9 @@ export class AppUiSettings {
       await setting.getSettingAndApplyValue(uiSettings);
     }
     this._applyingLocalSettings = false;
+  }
+
+  public async loadUserSettings(settings: UiSettings): Promise<void> {
+    await this.apply(settings);
   }
 }

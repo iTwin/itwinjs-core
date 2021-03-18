@@ -155,7 +155,8 @@ export class SampleAppIModelApp {
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
-  private static _appUiSettings? : AppUiSettings;
+  private static _localUiSettings = new LocalUiSettings();
+  private static _cloudUiSettings = new CloudUiSettings();
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
@@ -164,34 +165,12 @@ export class SampleAppIModelApp {
     return StateManager.store as Store<RootState>;
   }
 
-  private static async setUiSettings(v: UiSettings) {
-    await UiFramework.setUiSettings(v);
-    // when uiSettings are set trigger the apply to set the default UI settings.
-    await SampleAppIModelApp.appUiSettings.apply(v);
-  }
-
-  public static get uiSettings(): UiSettings {
-    return UiFramework.getUiSettings();
-  }
-
-  public static set uiSettings(v: UiSettings) {
-    SampleAppIModelApp.setUiSettings(v); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
-
-  public static get appUiSettings(): AppUiSettings {
-    if (!SampleAppIModelApp._appUiSettings) {
-      const lastTheme = localStorage.getItem("uifw:defaultTheme");
-      const defaults = {
-        colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
-        dragInteraction: false,
-        frameworkVersion: "2",
-        accuDrawNotifications: true,
-        widgetOpacity: 0.8,
-      };
-      SampleAppIModelApp._appUiSettings = new AppUiSettings (defaults);
+  public static getUiSettings(): UiSettings {
+    const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
+    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
+      return SampleAppIModelApp._localUiSettings;
     }
-
-    return SampleAppIModelApp._appUiSettings;
+    return SampleAppIModelApp._cloudUiSettings;
   }
 
   public static async startup(opts: WebViewerAppOpts & NativeAppOpts): Promise<void> {
@@ -279,6 +258,22 @@ export class SampleAppIModelApp {
     await MapLayersUI.initialize(false); // if false then add widget in FrontstageDef
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
+
+    // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
+    const lastTheme = localStorage.getItem("uifw:defaultTheme");
+    const defaults = {
+      colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
+      dragInteraction: false,
+      frameworkVersion: "2",
+      widgetOpacity: 0.8,
+    };
+
+    // initialize any settings providers that may need to have defaults set by iModelApp
+    UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
+
+    // go ahead and initialize settings before login or in case login is by-passed
+    await UiFramework.setUiSettings(SampleAppIModelApp.getUiSettings());
+
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
   }
@@ -579,7 +574,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
     this.state = {
       authorized,
-      uiSettings: this.getUiSettings(authorized),
+      uiSettings: SampleAppIModelApp.getUiSettings(),
     };
   }
 
@@ -587,21 +582,13 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
 
-  private _onUserStateChanged = (_accessToken: AccessToken | undefined) => {
+  private _onUserStateChanged = async (_accessToken: AccessToken | undefined) => {
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-    this.setState({ authorized, uiSettings: this.getUiSettings(authorized) });
+    const uiSettings = SampleAppIModelApp.getUiSettings();
+    await UiFramework.setUiSettings(uiSettings);
+    this.setState({ authorized, uiSettings});
     this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
-
-  private getUiSettings(authorized: boolean): UiSettings {
-    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
-      SampleAppIModelApp.uiSettings = new LocalUiSettings();
-    } else {
-      SampleAppIModelApp.uiSettings = new CloudUiSettings();
-    }
-
-    return SampleAppIModelApp.uiSettings;
-  }
 
   private _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage exit: id=${args.deactivatedFrontstageDef.id} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
@@ -753,7 +740,6 @@ async function main() {
     IModelApp.telemetry.addClient(applicationInsightsClient);
   }
 
-  // wait for both our i18n namespaces to be read.
   await SampleAppIModelApp.initialize();
 
   // register new QuantityType
