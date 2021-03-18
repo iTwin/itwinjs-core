@@ -2407,6 +2407,7 @@ export interface EntityProps {
 
 // @public
 export interface EntityQueryParams {
+    bindings?: any[] | object;
     from?: string;
     limit?: number;
     offset?: number;
@@ -6046,6 +6047,7 @@ export abstract class RpcConfiguration {
     // @internal (undocumented)
     static supply(definition: RpcInterface): RpcConfiguration;
     static throwOnTokenMismatch: boolean;
+    transientFaultLimit: number;
 }
 
 // @public (undocumented)
@@ -6454,6 +6456,8 @@ export abstract class RpcRequest<TResponse = any> {
     // (undocumented)
     cancel(): void;
     readonly client: RpcInterface;
+    // (undocumented)
+    protected computeRetryAfter(attempts: number): number;
     get connecting(): boolean;
     static current(context: RpcInterface): RpcRequest;
     // @internal (undocumented)
@@ -6483,12 +6487,17 @@ export abstract class RpcRequest<TResponse = any> {
     protected _rawPromise: Promise<Response | undefined>;
     get rawResponse(): Promise<Response | undefined>;
     // (undocumented)
+    protected recordTransientFault(): void;
+    // (undocumented)
     protected reject(reason: any): void;
+    // (undocumented)
+    protected resetTransientFaultCount(): void;
     // (undocumented)
     protected _resolveRaw: (value?: Response | PromiseLike<Response> | undefined) => void;
     readonly response: Promise<TResponse | undefined>;
     // (undocumented)
     protected _response: Response | undefined;
+    get retryAfter(): number | null;
     retryInterval: number;
     protected abstract send(): Promise<number>;
     protected abstract setHeader(name: string, value: string): void;
@@ -6498,7 +6507,7 @@ export abstract class RpcRequest<TResponse = any> {
     get status(): RpcRequestStatus;
     // (undocumented)
     submit(): Promise<void>;
-}
+    }
 
 // @public
 export type RpcRequestCallback_T = (request: RpcRequest) => void;
@@ -6515,7 +6524,9 @@ export enum RpcRequestEvent {
     // (undocumented)
     PendingUpdateReceived = 1,
     // (undocumented)
-    StatusChanged = 0
+    StatusChanged = 0,
+    // (undocumented)
+    TransientErrorReceived = 2
 }
 
 // @public
@@ -6527,6 +6538,8 @@ export interface RpcRequestFulfillment {
     interfaceName: string;
     rawResult: any;
     result: RpcSerializedValue;
+    // (undocumented)
+    retry?: string;
     status: number;
 }
 
@@ -6545,11 +6558,15 @@ export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFo
 // @public
 export enum RpcRequestStatus {
     // (undocumented)
+    BadGateway = 10,
+    // (undocumented)
     Cancelled = 8,
     // (undocumented)
     Created = 1,
     // (undocumented)
     Disposed = 6,
+    // (undocumented)
+    GatewayTimeout = 12,
     // (undocumented)
     NoContent = 9,
     // (undocumented)
@@ -6561,9 +6578,17 @@ export enum RpcRequestStatus {
     // (undocumented)
     Resolved = 4,
     // (undocumented)
+    ServiceUnavailable = 11,
+    // (undocumented)
     Submitted = 2,
     // (undocumented)
     Unknown = 0
+}
+
+// @public (undocumented)
+export namespace RpcRequestStatus {
+    // (undocumented)
+    export function isTransientError(status: RpcRequestStatus): boolean;
 }
 
 // @public
@@ -8203,6 +8228,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
 // @public
 export class WebAppRpcRequest extends RpcRequest {
     constructor(client: RpcInterface, operation: string, parameters: any[]);
+    // (undocumented)
+    protected computeRetryAfter(attempts: number): number;
     protected static computeTransportType(value: RpcSerializedValue, source: any): RpcContentType;
     // (undocumented)
     protected handleUnknownResponse(code: number): void;

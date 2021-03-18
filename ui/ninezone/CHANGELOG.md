@@ -1,6 +1,25 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Updated to use TypeScript 4.1
+- Floating widget opacity for UI 2.0. Slider formatMin, formatMax props.
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:53 GMT
+
+_Version update only_
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -9,6 +28,14 @@ _Version update only_
 
 ## 2.12.0
 Thu, 18 Feb 2021 22:10:13 GMT
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
 
 _Version update only_
 
@@ -231,7 +258,7 @@ Thu, 20 Aug 2020 20:57:10 GMT
 - lock down @types/react version at 16.9.43 to prevent build error from csstype dependency
 - Added Table component keyboard row selection. Miscellaneous a11y fixes.
 - Switch to ESLint
-- Add drop shadow to toolsettings overflow popup.  
+- Add drop shadow to toolsettings overflow popup.
 - Close widget overflow popup when tab is clicked.
 - Add corner resize handles to floating widgets.
 - Add preferredPanelWidgetSize to TabState.
@@ -338,7 +365,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Ability to drag docked tool settings to widget mode.
 - Support for floating widget targets.
-- Fix safe area insets for bottom zones w/o footer. 
+- Fix safe area insets for bottom zones w/o footer.
 - Keep active tab visible.
 - Reparent widget content when dragging widget around.
 - Floating widget stacking order.

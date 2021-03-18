@@ -119,3 +119,7 @@ async function signIn(): Promise<boolean> {
   });
 }
 ```
+
+## Deprecation and removal of @bentley/forms-data-management-client
+
+The current @bentley/forms-data-management-client package is being deprecated and immediately removed from the source. While this is technically a breaking change outside of the major release cycle, no one is able to use this client due to the required OIDC scopes not being published.

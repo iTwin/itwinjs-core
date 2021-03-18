@@ -64,13 +64,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/forms-data-management-client",
-      "projectFolder": "clients/forms-data-management",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/frontend-authorization-client",
       "projectFolder": "clients/frontend-authorization",
       "reviewCategory": "frontend",

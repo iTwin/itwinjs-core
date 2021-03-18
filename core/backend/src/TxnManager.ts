@@ -200,6 +200,12 @@ export class TxnManager {
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", action);
   }
 
+  /** ###TODO in progress
+   * @internal
+   */
+  protected _onGeometryGuidsChanged() {
+  }
+
   /** Dependency handlers may call method this to report a validation error.
    * @param error The error. If error.fatal === true, the transaction will cancel rather than commit.
    */
