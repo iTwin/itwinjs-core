@@ -88,45 +88,48 @@ describe("BriefcaseTxns", () => {
         return ret[0].id!;
       };
 
+      // NB: onCommit is produced *after* we process all changes. onModelGeometryChanged is produced *during* change processing.
       const elem1 = await insertLine();
       await imodel.saveChanges();
-      await expectCommit(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectEvents(["onModelGeometryChanged", "onCommit", "onElementsChanged", "onCommitted"]);
 
       await editor.startModifyingElements([elem1]);
       await editor.applyTransform(Transform.createTranslationXYZ(1, 0, 0).toJSON());
       await editor.write();
       await imodel.saveChanges();
-      await expectCommit(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectEvents(["onModelGeometryChanged", "onCommit", "onElementsChanged", "onCommitted"]);
 
       await IModelWriteRpcInterface.getClientForRouting(imodel.routingContext.token).deleteElements(imodel.getRpcProps(), [elem1]);
       await imodel.saveChanges();
-      await expectCommit(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectEvents(["onModelGeometryChanged", "onCommit", "onElementsChanged", "onCommitted"]);
 
       const undo = async () => IpcApp.callIpcHost("reverseSingleTxn", imodel.key);
-      const expectUndoRedo = async (evts: TxnEvent[]) => expectEvents(["onBeforeUndoRedo", ...evts, "onChangesApplied", "onAfterUndoRedo"]);
+      const expectUndoRedo = async (evts: TxnEvent[]) => expectEvents(["onBeforeUndoRedo", ...evts, "onAfterUndoRedo"]);
 
+      // NB: Reversing or reinstating a txn calls SaveChanges.
+      // SaveChanges only produces onCommit if there are actual data changes. It always produces onCommitted.
       await undo();
-      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
       await undo();
-      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
       await undo();
-      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
       await undo();
-      await expectUndoRedo(["onElementsChanged", "onModelsChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onModelsChanged", "onChangesApplied", "onCommitted"]);
       await undo();
-      await expectUndoRedo(["onElementsChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted"]);
 
       const redo = async () => IpcApp.callIpcHost("reinstateTxn", imodel.key);
       await redo();
-      await expectUndoRedo(["onElementsChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted"]);
       await redo();
-      await expectUndoRedo(["onElementsChanged", "onModelsChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onModelsChanged", "onChangesApplied", "onCommitted"]);
       await redo();
-      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
       await redo();
-      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
       await redo();
-      await expectUndoRedo(["onElementsChanged", "onModelGeometryChanged"]);
+      await expectUndoRedo(["onElementsChanged", "onChangesApplied", "onCommitted", "onModelGeometryChanged"]);
     });
   }
 });

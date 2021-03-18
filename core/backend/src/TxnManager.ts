@@ -185,6 +185,7 @@ export class TxnManager {
   protected _onChangesApplied() {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyChangesApplied");
   }
 
   /** @internal */
