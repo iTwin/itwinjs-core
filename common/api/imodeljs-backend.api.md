@@ -1907,9 +1907,11 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
 export interface ExportGraphicsOptions {
     angleTol?: number;
     chordTol?: number;
+    decimationTol?: number;
     elementIdArray: Id64Array;
     maxEdgeLength?: number;
     minBRepFeatureSize?: number;
+    minLineStyleComponentSize?: number;
     onGraphics: ExportGraphicsFunction;
     onLineGraphics?: ExportLinesFunction;
     partInstanceArray?: ExportPartInstanceInfo[];
@@ -1947,10 +1949,12 @@ export type ExportPartFunction = (info: ExportPartInfo) => void;
 export interface ExportPartGraphicsOptions {
     angleTol?: number;
     chordTol?: number;
+    decimationTol?: number;
     displayProps: ExportPartDisplayInfo;
     elementId: Id64String;
     maxEdgeLength?: number;
     minBRepFeatureSize?: number;
+    minLineStyleComponentSize?: number;
     onPartGraphics: ExportPartFunction;
     onPartLineGraphics?: ExportPartLinesFunction;
 }
@@ -2695,7 +2699,6 @@ export class IModelHost {
     static get introspectionClient(): IntrospectionClient | undefined;
     // (undocumented)
     static get isUsingIModelBankClient(): boolean;
-    // (undocumented)
     static get isValid(): boolean;
     // @internal (undocumented)
     static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void;
@@ -3020,9 +3023,7 @@ export class IpcHost {
     static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>): void;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
-    // (undocumented)
     static shutdown(): Promise<void>;
-    // (undocumented)
     static startup(opt?: IpcHostOpts): Promise<void>;
 }
 
@@ -4193,6 +4194,8 @@ export class TxnManager {
     readonly onGeometryChanged: BeEvent<(models: ModelGeometryChangesProps[]) => void>;
     // @internal (undocumented)
     protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]): void;
+    // @internal
+    protected _onGeometryGuidsChanged(): void;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     // @internal (undocumented)

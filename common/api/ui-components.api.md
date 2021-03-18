@@ -2123,6 +2123,9 @@ export interface FormatUnitsProps extends CommonProps {
 // @public
 export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
 
+// @internal (undocumented)
+export function getCSSColorFromDef(colorDef: ColorDef): string;
+
 // @beta @deprecated
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
 
