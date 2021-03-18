@@ -222,9 +222,7 @@ export class HubUtility {
     await HubUtility.downloadIModelById(requestContext, projectId, iModelId, downloadDir, reDownload);
   }
 
-  /** Delete an IModel from the hub
-   * @internal
-   */
+  /** Delete an IModel from the hub */
   public static async deleteIModel(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string): Promise<void> {
     const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
@@ -293,8 +291,7 @@ export class HubUtility {
     return results;
   }
 
-  /** Validate apply with briefcase on disk
-   */
+  /** Validate apply with briefcase on disk */
   public static validateApplyChangeSetsOnDisk(iModelDir: string) {
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
