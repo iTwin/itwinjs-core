@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Move Quantity Formatting settings page from ui-test-app to ui-framework and add ability to set Presentation Unit System.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}
