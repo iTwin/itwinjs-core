@@ -36,7 +36,7 @@ import { FrontendRequestContext } from "./FrontendRequestContext";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
-import { QuantityFormatter } from "./QuantityFormatter";
+import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";

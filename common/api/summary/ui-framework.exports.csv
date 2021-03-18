@@ -241,6 +241,7 @@ beta;getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
 internal;getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[]
+beta;getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial
 beta;getSelectionContextSyncEventIds(): string[]
 internal;getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
@@ -415,6 +416,8 @@ internal;ProjectScope
 internal;ProjectServices
 public;PromptField: import("react-redux").ConnectedComponent
 public;PropsHelper
+beta;QuantityFormatSettingsPanel({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element
+beta;QuantityFormatterSettingsOptions
 alpha;ReactContent
 public;ReactMessage = ReactMessage_2
 public;ReactNotifyMessageDetails
