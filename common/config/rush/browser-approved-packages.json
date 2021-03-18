@@ -3,6 +3,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
+      "name": "@azure/service-bus",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@azure/storage-blob",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -289,6 +293,10 @@
     {
       "name": "autoprefixer",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "azure-sb",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "babel-loader",

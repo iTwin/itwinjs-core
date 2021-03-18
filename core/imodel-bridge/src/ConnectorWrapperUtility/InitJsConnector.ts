@@ -8,13 +8,12 @@ import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { BridgeJobDefArgs, BridgeRunner } from "../imodel-bridge";
 import { ServerArgs } from "../IModelHubUtils";
 import { ConfigMapper } from "./ConfigMapper";
-import { IModelHelper } from "./IModelHelper";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import {ProjectShareClient, ProjectShareFileQuery} from "@bentley/projectshare-client";
 
 let configMapper: ConfigMapper;
 
-async function initOperations() {
+export async function initJsOperations() {
   Logger.initializeToConsole();
   Logger.setLevelDefault(1);
   configMapper = new ConfigMapper();
@@ -29,7 +28,7 @@ async function initOperations() {
   // Set up bridgeRunner arguments
 
   const bridgeJobDef = new BridgeJobDefArgs();
-  bridgeJobDef.sourcePath = configMapper.inputFileName;
+  bridgeJobDef.sourcePath = configMapper.InputFileName;
   bridgeJobDef.bridgeModule = configMapper.frameworkExePath;
   bridgeJobDef.outputDir = configMapper.stagingDirectory;
   bridgeJobDef.documentGuid = configMapper.documentGuid;
@@ -42,13 +41,13 @@ async function initOperations() {
     const token = await configMapper.imodelServiceToken(); // This line won't work a token provider being initialized, need to get a token elsewhere
     return AccessToken.fromTokenString(token);
   };
-  if (bridgeJobDef.dmsServerUrl && bridgeJobDef.sourcePath && configMapper.workingDir) {
+  if (bridgeJobDef.dmsServerUrl && bridgeJobDef.sourcePath && configMapper.WorkingDir) {
     // this whole if block is for downloading external files if your connector requires that in some cases
     const token = await serverArgs.getToken();
     const requestContext = new AuthorizedClientRequestContext(token);
     try {
-      const urlToDownload = await getDownloadableUrl(requestContext, configMapper.dmsType!, bridgeJobDef.dmsServerUrl, serverArgs.contextId!);
-      const filePath = await downloadFile(requestContext, urlToDownload!, configMapper.workingDir, bridgeJobDef.sourcePath);
+      const urlToDownload = await getDownloadableUrl(requestContext, configMapper.DmsType!, bridgeJobDef.dmsServerUrl, serverArgs.contextId!);
+      const filePath = await downloadFile(requestContext, urlToDownload!, configMapper.WorkingDir, bridgeJobDef.sourcePath);
       if (filePath) {
         bridgeJobDef.sourcePath = filePath;
       }
@@ -134,33 +133,37 @@ async function downloadFile(
   return filePath;
 }
 
-initOperations()
-  .then(() => {
+export function setJsConfigMapper(config: ConfigMapper){
+  configMapper = config;
+}
 
-    let token = "";
-    configMapper.imodelServiceToken()
-      .then((_value) => {
-        token = _value;
-      })
-      .catch((_err) => {
-        Logger.logError("iModelBridgeFwk Wrapper", _err);
-      });
-    IModelHelper.releaseSchemaLockForCurrentBriefcase(token, configMapper); // This call verifies that all locks are released for this specific iModel, in this case they should already be but double checking
-  })
-  .catch((err) => {
-    let token = "";
-    configMapper.imodelServiceToken()
-      .then((_value) => {
-        token = _value;
-      })
-      .catch((_err) => {
-        Logger.logError("iModelBridgeFwk Wrapper", _err);
-      });
+// initJsOperations()
+//   .then(() => {
 
-    IModelHelper.releaseAllIModelHubLocksForCurrentBriefcase(token, configMapper); // This call releases locks in the event of a connector failure
-    Logger.logError(
-      "iModelBridgeFwk Wrapper",
-      `[iModelBridgeService.NodeJsWrapper]: Failed with error- ${err}`,
-    );
-    process.exit(1);
-  });
+//     let token = "";
+//     configMapper.imodelServiceToken()
+//       .then((_value) => {
+//         token = _value;
+//       })
+//       .catch((_err) => {
+//         Logger.logError("iModelBridgeFwk Wrapper", _err);
+//       });
+//     IModelHelper.releaseSchemaLockForCurrentBriefcase(token, configMapper); // This call verifies that all locks are released for this specific iModel, in this case they should already be but double checking
+//   })
+//   .catch((err) => {
+//     let token = "";
+//     configMapper.imodelServiceToken()
+//       .then((_value) => {
+//         token = _value;
+//       })
+//       .catch((_err) => {
+//         Logger.logError("iModelBridgeFwk Wrapper", _err);
+//       });
+
+//     IModelHelper.releaseAllIModelHubLocksForCurrentBriefcase(token, configMapper); // This call releases locks in the event of a connector failure
+//     Logger.logError(
+//       "iModelBridgeFwk Wrapper",
+//       `[iModelBridgeService.NodeJsWrapper]: Failed with error- ${err}`,
+//     );
+//     process.exit(1);
+//   });
