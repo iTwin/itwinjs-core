@@ -12,10 +12,9 @@ import { MessageSeverity } from "@bentley/ui-core";
 import { Backstage, CommandItemDef, ModalDialogManager, SyncUiEventDispatcher, ToolItemDef } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../";
 import { TestMessageBox } from "../../appui/dialogs/TestMessageBox";
-import { DeleteElementTool } from "./DeleteElementTool";
-import { MoveElementTool } from "./MoveElementTool";
 import { PlaceBlockTool } from "./PlaceBlockTool";
 import { PlaceLineStringTool } from "./PlaceLineStringTool";
+import { EditTools as BuiltinEditTools, DeleteElementsTool, MoveElementsTool, RotateElementsTool } from "@bentley/imodeljs-editor-frontend";
 
 // cSpell:ignore appuiprovider
 
@@ -39,24 +38,36 @@ UiItemsManager.register(new AppItemsProvider());
 export class EditTools {
   public static get deleteElementTool() {
     return new ToolItemDef({
-      toolId: DeleteElementTool.toolId,
-      iconSpec: "icon-delete",
-      labelKey: "SampleApp:tools.DeleteElement.flyover",
-      tooltipKey: "SampleApp:tools.DeleteElement.description",
+      toolId: DeleteElementsTool.toolId,
+      iconSpec: DeleteElementsTool.iconSpec,
+      labelKey: `${BuiltinEditTools.tools}DeleteElements.flyover`,
+      tooltipKey: `${BuiltinEditTools.tools}DeleteElements.description`,
       execute: () => {
-        IModelApp.tools.run(DeleteElementTool.toolId);
+        IModelApp.tools.run(DeleteElementsTool.toolId);
       },
     });
   }
 
   public static get moveElementTool() {
     return new ToolItemDef({
-      toolId: MoveElementTool.toolId,
-      iconSpec: "icon-move",
-      labelKey: "SampleApp:tools.MoveElement.flyover",
-      tooltipKey: "SampleApp:tools.MoveElement.description",
+      toolId: MoveElementsTool.toolId,
+      iconSpec: MoveElementsTool.iconSpec,
+      labelKey: `${BuiltinEditTools.tools}MoveElements.flyover`,
+      tooltipKey: `${BuiltinEditTools.tools}MoveElements.description`,
       execute: () => {
-        IModelApp.tools.run(MoveElementTool.toolId);
+        IModelApp.tools.run(MoveElementsTool.toolId);
+      },
+    });
+  }
+
+  public static get rotateElementTool() {
+    return new ToolItemDef({
+      toolId: RotateElementsTool.toolId,
+      iconSpec: RotateElementsTool.iconSpec,
+      labelKey: `${BuiltinEditTools.tools}RotateElements.flyover`,
+      tooltipKey: `${BuiltinEditTools.tools}RotateElements.description`,
+      execute: () => {
+        IModelApp.tools.run(RotateElementsTool.toolId);
       },
     });
   }
@@ -64,7 +75,7 @@ export class EditTools {
   public static get placeLineStringTool() {
     return new ToolItemDef({
       toolId: PlaceLineStringTool.toolId,
-      iconSpec: "icon-line",
+      iconSpec: PlaceLineStringTool.iconSpec,
       labelKey: "SampleApp:tools.PlaceLineString.flyover",
       tooltipKey: "SampleApp:tools.PlaceLineString.description",
       execute: () => {
@@ -76,9 +87,9 @@ export class EditTools {
   public static get placeBlockTool() {
     return new ToolItemDef({
       toolId: PlaceBlockTool.toolId,
-      iconSpec: "icon-select-box",
-      labelKey: "SampleApp:tools.PlaceBlockTool.flyover",
-      tooltipKey: "SampleApp:tools.PlaceBlockTool.description",
+      iconSpec: PlaceBlockTool.iconSpec,
+      labelKey: "SampleApp:tools.PlaceBlock.flyover",
+      tooltipKey: "SampleApp:tools.PlaceBlock.description",
       execute: async () => {
         IModelApp.tools.run(PlaceBlockTool.toolId);
       },
