@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Update Quantity Formatter to support UnitFormattingSettingsProvider for persisting and retrieving unit format settings.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}
