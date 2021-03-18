@@ -11,7 +11,7 @@ import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@bentley/imodeljs-backend";
 import {
-  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
+  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
@@ -90,7 +90,6 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
   const rpcs: RpcInterfaceDefinition[] = [
     DtaRpcInterface,
-    Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
     IModelReadRpcInterface,
     IModelTileRpcInterface,
     IModelWriteRpcInterface,
