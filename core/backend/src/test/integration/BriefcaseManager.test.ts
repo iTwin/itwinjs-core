@@ -14,12 +14,25 @@ import * as path from "path";
 import * as readline from "readline";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration,
-  IModelJsFs, KnownLocations,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost,
+  IModelJsFs,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
+
+// Configuration needed:
+//    imjs_test_regular_user_name
+//    imjs_test_regular_user_password
+//    imjs_test_manager_user_name
+//    imjs_test_manager_user_password
+//    imjs_test_super_manager_user_name
+//    imjs_test_super_manager_password
+//    imjs_oidc_browser_test_client_id
+//      - Required to be a SPA
+//    imjs_oidc_browser_test_redirect_uri
+//    imjs_oidc_browser_test_scopes
+//      - Required scopes: "openid imodelhub context-registry-service:read-only"
 
 describe("BriefcaseManager (#integration)", () => {
   let testContextId: string;
@@ -204,38 +217,6 @@ describe("BriefcaseManager (#integration)", () => {
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelPullAndPush2);
   });
 
-  it("should set the briefcase cache directory to expected locations", async () => {
-    const config = new IModelHostConfiguration();
-    const cacheSubDir = "imodels";
-
-    // Test legacy 1.0 cache location
-    await IModelHost.shutdown();
-    config.briefcaseCacheDir = path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"); // eslint-disable-line deprecation/deprecation
-    await IModelHost.startup(config);
-    assert.strictEqual(config.briefcaseCacheDir, BriefcaseManager.cacheDir); // eslint-disable-line deprecation/deprecation
-
-    // Test 3.0 cache default location
-    await IModelHost.shutdown();
-    config.briefcaseCacheDir = undefined; // eslint-disable-line deprecation/deprecation
-    await IModelHost.startup(config);
-    let expectedDir = path.join(IModelHost.cacheDir, cacheSubDir);
-    assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
-
-    // Test 2.0 custom cache location
-    await IModelHost.shutdown();
-    config.briefcaseCacheDir = undefined; // eslint-disable-line deprecation/deprecation
-    config.cacheDir = KnownLocations.tmpdir;
-    await IModelHost.startup(config);
-    expectedDir = path.join(KnownLocations.tmpdir, cacheSubDir);
-    assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
-
-    // Restore defaults
-    await IModelHost.shutdown();
-    config.briefcaseCacheDir = undefined; // eslint-disable-line deprecation/deprecation
-    config.cacheDir = undefined;
-    await IModelHost.startup(config);
-  });
-
   it("should find checkpoints from previous versions", async () => {
     const arg = { requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId };
     let checkpoint = await IModelTestUtils.openCheckpointUsingRpc(arg);
@@ -312,15 +293,11 @@ describe("BriefcaseManager (#integration)", () => {
     iModelPullAndPush.close();
     iModelPullOnly.close();
 
-    await IModelHost.shutdown();
-
     // note: we can't tell what files were local before we ran this test. All we can test is that now that we know they're local that it does not cause a download.
     const wasNumDownloads = numDownloads;
     assert.isTrue(IModelJsFs.existsSync(checkpointName));
     assert.isTrue(IModelJsFs.existsSync(pullAndPushPathname));
     assert.isTrue(IModelJsFs.existsSync(pullOnlyPathname));
-
-    await IModelHost.startup();
 
     checkpoint = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     assert.exists(checkpoint);
@@ -350,7 +327,6 @@ describe("BriefcaseManager (#integration)", () => {
     checkpoint = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     assert.equal(numDownloads, 1, "should need download");
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, checkpoint);
-
   });
 
   it("should be able to reverse and reinstate changes", async () => {
@@ -450,7 +426,7 @@ describe("BriefcaseManager (#integration)", () => {
     const userContext2 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
 
     // User1 creates an iModel on the Hub
-    const testUtility = new TestChangeSetUtility(userContext1, "BriefcaseReuseTest");
+    const testUtility = new TestChangeSetUtility(userContext1, HubUtility.generateUniqueName("BriefcaseReuseTest"));
     await testUtility.createTestIModel();
 
     // User2 opens and then closes the iModel pullOnly/pullPush, keeping the briefcase
