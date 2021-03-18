@@ -60,6 +60,8 @@ export interface SettingsContainerProps {
   onSettingsTabSelected?: (tab: SettingsTabEntry) => void;
   // The SettingsManager that can have event handlers registered against it so pages can save its settings before the page is closed.
   settingsManager: SettingsManager;
+  // if true show tab label as header above page contents.
+  showHeader?: boolean;
 }
 
 /**
@@ -67,7 +69,7 @@ export interface SettingsContainerProps {
  * Note: that SettingsContainer is not rendered if tabs array is empty
  * @beta
  */
-export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsTab, settingsManager}: SettingsContainerProps) => {
+export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader}: SettingsContainerProps) => {
   // sort the tabs based on itemPriority
   tabs = tabs.sort((a, b)=> a.itemPriority - b.itemPriority);
 
@@ -137,10 +139,10 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
         <VerticalTabs labels={labels} activeIndex={activeIndex} onActivateTab={onActivateTab} />
       </div>
       <div className="core-settings-container-right">
-        <div className="core-settings-container-right-header">
+        {showHeader && <div className="core-settings-container-right-header">
           <span className="core-settings-container-main-header">{openTab.label}</span>
           {openTab.subLabel && <span className="core-settings-container-main-sub-header">{openTab.subLabel}</span>}
-        </div>
+        </div>}
         <div className="core-settings-container-right-contents">
           {openTab.page}
         </div>
