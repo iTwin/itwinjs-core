@@ -57,8 +57,8 @@ export class Unit extends SchemaItem {
     const unitBPhenomenon = await unitB.phenomenon;
 
     if (!unitAPhenomenon || !unitBPhenomenon || !unitAPhenomenon.key.matches(unitBPhenomenon.key))
-      return Promise.resolve(false);
-    return Promise.resolve(true);
+      return false;
+    return true;
   }
 
   /**

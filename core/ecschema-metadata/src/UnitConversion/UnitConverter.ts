@@ -24,16 +24,16 @@ export class UnitConverter {
 
   /**
    * Find conversion between from and to units, formatted {schemaName}.{schemaItemName} or {schemaName}:{schemaItemName}
-   * @param fromFullName SchemaItem full name of source unit
-   * @param toFullName SchemaItem full name of target unit
+   * @param fromUnit SchemaItem full name of source unit
+   * @param toUnit SchemaItem full name of target unit
    * @returns [[UnitConversion]] converting fromFullName -> toFullName with a factor and an offset
    * @throws Error if from and to Units' SchemaItem is not found in Schema or Schema prefix is not found in SchemaContext
    * @throws Error if from and to Units do not belong to the same phenomenon
    * @throws Error if definitions' SchemaItems cannot be found in its own or referenced Schemas
    */
-  public async calculateConversion(fromFullName: string, toFullName: string): Promise<UnitConversion> {
-    const [fromSchemaName, fromSchemaItemName] = SchemaItem.parseFullName(fromFullName);
-    const [toSchemaName, toSchemaItemName] = SchemaItem.parseFullName(toFullName);
+  public async calculateConversion(fromUnit: string, toUnit: string): Promise<UnitConversion> {
+    const [fromSchemaName, fromSchemaItemName] = SchemaItem.parseFullName(fromUnit);
+    const [toSchemaName, toSchemaItemName] = SchemaItem.parseFullName(toUnit);
     const fromSchemaKey = new SchemaKey(fromSchemaName);
     const toSchemaKey = new SchemaKey(toSchemaName);
 
@@ -42,14 +42,14 @@ export class UnitConverter {
 
     if (!fromSchema || !toSchema) {
       throw new BentleyError(BentleyStatus.ERROR, "Cannot find from's and/or to's schema", () => {
-        return { from: fromFullName, fromSchema: fromSchemaName, to: toFullName, toSchema: toSchemaName };
+        return { from: fromUnit, fromSchema: fromSchemaName, to: toUnit, toSchema: toSchemaName };
       });
     }
 
-    const fromUnit = await this._uGraph.resolveUnit(fromSchemaItemName, fromSchema);
-    const toUnit = await this._uGraph.resolveUnit(toSchemaItemName, toSchema);
+    const from = await this._uGraph.resolveUnit(fromSchemaItemName, fromSchema);
+    const to = await this._uGraph.resolveUnit(toSchemaItemName, toSchema);
 
-    return this.processUnits(fromUnit, toUnit);
+    return this.processUnits(from, to);
   }
 
   /**

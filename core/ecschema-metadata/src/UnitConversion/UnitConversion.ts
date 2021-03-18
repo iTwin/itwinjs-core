@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as almostEqual from "almost-equal";
 import { Constant, Unit } from "../ecschema-metadata";
 import { SchemaItemType } from "../ECObjects";
-import { Float } from "./Float";
 
 /**
  * Class used for storing calculated conversion between two Units [[UnitConverter.calculateConversion]] and converting values from one Unit to another [[UnitConverter.evaluate]]
@@ -49,7 +49,7 @@ export class UnitConversion {
    * @internal
    */
   public multiply(conversion: UnitConversion): UnitConversion {
-    if (Float.equals(conversion.offset, 0.0) && Float.equals(this.offset, 0.0))
+    if (almostEqual(conversion.offset, 0.0) && almostEqual(this.offset, 0.0))
       return new UnitConversion(this.factor * conversion.factor, 0.0);
 
     throw new Error("Cannot multiply two maps with non-zero offsets");
@@ -60,12 +60,12 @@ export class UnitConversion {
    * @internal
    */
   public raise(power: number): UnitConversion {
-    if (Float.equals(1.0, power))
+    if (almostEqual(power, 1.0))
       return new UnitConversion(this.factor, this.offset);
-    else if (Float.equals(0.0, power))
+    else if (almostEqual(power, 0.0))
       return new UnitConversion(1.0, 0.0);
 
-    if (Float.equals(this.offset, 0.0))
+    if (almostEqual(this.offset, 0.0))
       return new UnitConversion(this.factor ** power, 0.0);
 
     throw new Error("Cannot raise map with non-zero offset");
