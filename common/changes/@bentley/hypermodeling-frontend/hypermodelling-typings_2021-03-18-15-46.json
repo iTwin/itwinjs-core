@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/hypermodeling-frontend",
+      "comment": "Added \"typings\" to hypermodelling package.json",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/hypermodeling-frontend",
+  "email": "3196604+StefanRetief@users.noreply.github.com"
+}
