@@ -55,12 +55,12 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    */
   public readonly onModelGeometryChanged = new BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>();
 
-  /** Event raised before a commit operation is performed. Initiated by a call to [[BriefcaseConnection.saveChanges]].
+  /** Event raised before a commit operation is performed. Initiated by a call to [[BriefcaseConnection.saveChanges]], unless there are no changes to save.
    * @see [[onCommitted]] for the event raised after the operation.
    */
   public readonly onCommit = new BeEvent<() => void>();
 
-  /** Event raised after a commit operation is performed. Initiated by a call to [[BriefcaseConnection.saveChanges]].
+  /** Event raised after a commit operation is performed. Initiated by a call to [[BriefcaseConnection.saveChanges]], even if there were no changes to save.
    * @see [[onCommit]] for the event raised before the operation.
    */
   public readonly onCommitted = new BeEvent<() => void>();

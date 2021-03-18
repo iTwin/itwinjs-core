@@ -232,9 +232,9 @@ export class TxnManager {
   public readonly onModelGeometryChanged = new BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>();
 
   public readonly onGeometryChanged = new BeEvent<(models: ModelGeometryChangesProps[]) => void>();
-  /** Event raised before a commit operation is performed. Initiated by a call to [[IModelDb.saveChanges]] */
+  /** Event raised before a commit operation is performed. Initiated by a call to [[IModelDb.saveChanges]], unless there are no changes to save. */
   public readonly onCommit = new BeEvent<() => void>();
-  /** Event raised after a commit operation has been performed. Initiated by a call to [[IModelDb.saveChanges]] */
+  /** Event raised after a commit operation has been performed. Initiated by a call to [[IModelDb.saveChanges]], even if there were no changes to save. */
   public readonly onCommitted = new BeEvent<() => void>();
   /** Event raised after a ChangeSet has been applied to this briefcase */
   public readonly onChangesApplied = new BeEvent<() => void>();
