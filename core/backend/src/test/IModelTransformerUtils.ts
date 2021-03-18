@@ -1249,6 +1249,7 @@ export class PhysicalModelConsolidator extends IModelTransformer {
   protected shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
       this.context.remapElement(sourceElement.id, this._targetModelId);
+      // NOTE: must allow export to continue so the PhysicalModel sub-modeling the PhysicalPartition is processed
     }
     return super.shouldExportElement(sourceElement);
   }
