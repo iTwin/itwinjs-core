@@ -31,11 +31,13 @@ fs.ensureDir(path.normalize(argv.outDir));
 // create output file
 const trimmedApiSignature = (argv.apiSignature.split('.'))[0];
 const sigFileName = path.basename(path.normalize(trimmedApiSignature))
-const sigFilePath = path.join(argv.outDir, sigFileName + ".exports.csv")
-fs.createFileSync(sigFilePath);
+const sigFilePath = path.join(argv.outDir, "summary4.exports.csv")
+if (!fs.existsSync(sigFilePath))
+  fs.createFileSync(sigFilePath);
 
 const outputLines = [];
-outputLines.push("sep=;");
+console.log(sigFileName)
+outputLines.push(`\n${sigFileName}`);
 outputLines.push("Release Tag;API Item");
 
 // Open up the signature file
@@ -68,5 +70,5 @@ fs.readFile(argv.apiSignature, function (error, data) {
     previousLine = matches[1];
   });
 
-  fs.writeFileSync(sigFilePath, outputLines.join("\n"));
+  fs.appendFileSync(sigFilePath, outputLines.join("\n"));
 });
