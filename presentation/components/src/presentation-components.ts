@@ -79,7 +79,7 @@ export { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParam
 export { useControlledTreeFiltering, ControlledTreeFilteringProps } from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
 export { DEPRECATED_controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./presentation-components/tree/controlled/WithFilteringSupport";
 export { DEPRECATED_controlledTreeWithVisibleNodes, ControlledTreeWithVisibleNodesProps } from "./presentation-components/tree/controlled/WithVisibleNodes";
-export { usePresentationTreeNodeLoader, PresentationTreeNodeLoaderProps } from "./presentation-components/tree/controlled/TreeHooks";
+export { usePresentationTreeNodeLoader, PresentationTreeNodeLoaderProps, useHierarchyAutoUpdate, HierarchyAutoUpdateProps } from "./presentation-components/tree/controlled/TreeHooks";
 
 /**
  * @module Viewport

@@ -53,7 +53,7 @@ export function useFilteredNodeLoader(
 ) {
   const normalizedFilter = normalizeFilter(filter);
   const dataProvider = normalizeDataProvider(nodeLoader.dataProvider);
-  const { value: nodePaths, inProgress } = useNodePaths(dataProvider, normalizedFilter);
+  const { value: nodePaths, inProgress } = useNodePaths(nodeLoader, normalizedFilter);
 
   const { filteredProvider, matchesCount } = useMemo(() => {
     if (nodePaths !== undefined) {
@@ -81,8 +81,8 @@ export function useFilteredNodeLoader(
   };
 }
 
-const useNodePaths = (dataProvider: IPresentationTreeDataProvider, filter: string) => {
-  const getFilteredNodePaths = useCallback(async () => dataProvider.getFilteredNodePaths(filter), [dataProvider, filter]);
+const useNodePaths = (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filter: string) => {
+  const getFilteredNodePaths = useCallback(async () => nodeLoader.dataProvider.getFilteredNodePaths(filter), [nodeLoader, filter]);
   return useDebouncedAsyncValue(filter ? getFilteredNodePaths : undefined);
 };
 
