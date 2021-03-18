@@ -102,6 +102,9 @@ export class OverrideFormat {
     return fullName;
   }
 
+  /**
+   * @internal
+   */
   public static isOverrideFormat(object: any): object is OverrideFormat {
     const overrideFormat = object as OverrideFormat;
 

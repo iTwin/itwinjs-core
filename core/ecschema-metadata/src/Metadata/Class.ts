@@ -640,6 +640,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return this.traverseBaseClassesSync(SchemaItem.equalByKey, targetClass);
   }
 
+  /**
+   * @internal
+   */
   public static isECClass(object: any): object is ECClass {
     if (!SchemaItem.isSchemaItem(object))
       return false;

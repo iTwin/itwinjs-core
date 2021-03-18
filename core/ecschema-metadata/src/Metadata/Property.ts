@@ -240,7 +240,9 @@ export abstract class Property implements CustomAttributeContainerProps {
 
     return customAttributes;
   }
-
+  /**
+   * @internal
+   */
   public static isProperty(object: any): object is Property {
     const property = object as Property;
 

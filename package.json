@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "echo NOTE: use 'rush build' instead",
+    "watchDocs": "bmsWatch",
     "clean": "echo NOTE: use 'rush clean' instead",
     "docs": "echo NOTE: use 'rush docs' instead",
     "lint": "echo NOTE: use 'rush lint' instead",
@@ -29,7 +30,12 @@
     "url": "http://www.bentley.com"
   },
   "//dependencies": "NOTE: dependencies will be empty here and instead specified in each package.",
-  "dependencies": {},
+  "dependencies": {
+    "@bentley/ecjson2md": "^0.6.0",
+    "@bentley/imodeljs-i18n": "^1.14.1"
+  },
   "//devDependencies": "NOTE: devDependencies will be empty here and instead specified in each package.",
-  "devDependencies": {}
+  "devDependencies": {
+    "@bentley/bemetalsmith": "^4.0.36"
+  }
 }

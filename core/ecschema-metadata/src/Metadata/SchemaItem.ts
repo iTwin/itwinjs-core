@@ -138,6 +138,9 @@ export abstract class SchemaItem {
     return thisSchemaItem.key.matches(key);
   }
 
+  /**
+  * @internal
+  */
   public static isSchemaItem(object: any): object is SchemaItem {
     const schemaItem = object as SchemaItem;
 

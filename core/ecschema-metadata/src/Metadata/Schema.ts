@@ -580,6 +580,9 @@ export class Schema implements CustomAttributeContainerProps {
     return schema;
   }
 
+  /**
+   * @internal
+   */
   public static isSchema(object: any): object is Schema {
     const schema = object as Schema;
 
