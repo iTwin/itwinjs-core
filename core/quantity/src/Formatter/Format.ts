@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
+
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
@@ -11,8 +15,8 @@ import { CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interface
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
 
-/** A class used to both define the specifications for formatting a quantity values and the methods to do the formatting.
- * @alpha
+/** A class used to define the specifications for formatting quantity values. This class is typically loaded by reading [[FormatProps]].
+ * @beta
  */
 export class Format {
   private _name = "";
@@ -328,7 +332,7 @@ export class Format {
       if (unitObj.toLowerCase() === name.toLowerCase()) // duplicate names are not allowed
         throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
     }
-    const newUnit: UnitProps = await unitsProvider.findUnit(name);
+    const newUnit: UnitProps = await unitsProvider.findUnitByName(name);
     if (!newUnit || !newUnit.isValid)
       throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
     this.units!.push([newUnit, label]);

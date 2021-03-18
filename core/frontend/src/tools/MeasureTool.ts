@@ -20,7 +20,7 @@ import { HitDetail, HitGeomType } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { Marker } from "../Marker";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
-import { QuantityType } from "../QuantityFormatter";
+import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { GraphicType } from "../render/GraphicBuilder";
 import { DecorateContext } from "../ViewContext";
