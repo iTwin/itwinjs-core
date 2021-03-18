@@ -180,18 +180,9 @@ describe("InteractiveEditingSession", () => {
         changedElements = ch;
       });
 
-      let guidChanged = false;
-      imodel.txns.onModelGeometryChanged.addListener((changes) => {
-        expect(changes.length).to.equal(1);
-        expect(changes[0].id).to.equal(modelId);
-        guidChanged = true;
-      });
-
       function expectChanges(expected: ElementGeometryChange[], compareRange = false): void {
         const changes = session.getGeometryChangesForModel(modelId);
         expect(undefined === changes).to.equal(expected.length === 0);
-        expect(guidChanged).to.equal(expected.length > 0);
-        guidChanged = false;
         if (changes) {
           const actual = Array.from(changes).sort((x, y) => compareStrings(x.id, y.id));
           if (compareRange) {
