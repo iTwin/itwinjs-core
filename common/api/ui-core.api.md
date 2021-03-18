@@ -1900,7 +1900,7 @@ export class SessionUiSettings implements UiSettings {
 }
 
 // @beta
-export const SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element;
+export const SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager }: SettingsContainerProps) => JSX.Element;
 
 // @beta (undocumented)
 export interface SettingsContainerProps {
@@ -1910,8 +1910,6 @@ export interface SettingsContainerProps {
     onSettingsTabSelected?: (tab: SettingsTabEntry) => void;
     // (undocumented)
     settingsManager: SettingsManager;
-    // (undocumented)
-    showHeader?: boolean;
     // (undocumented)
     tabs: SettingsTabEntry[];
 }
