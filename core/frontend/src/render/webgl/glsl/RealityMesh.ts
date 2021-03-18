@@ -128,6 +128,7 @@ function baseColorFromTextures(textureCount: number) {
 
   col.a = mix(col.a, v_color.a * col.a, step(0.0, v_color.a));
   col.rgb = col.a *  mix(col.rgb, mix(col.rgb, v_color.rgb, .5), step(0.0, v_color.r));
+  col.a = mix(col.a, v_color.a * col.a, step(0.0, v_color.a));
   return col;
 `;
 }
@@ -188,10 +189,16 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
   const computeBaseColor = baseColorFromTextures(textureCount);
 
   const feat = flags.featureMode;
-  const opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
+  let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
 
   if (feat === FeatureMode.Overrides)
     addShaderFlags(builder);
+
+  if (flags.isClassified) {
+    opts &= ~FeatureSymbologyOptions.Alpha;
+    addColorPlanarClassifier(builder, flags.isTranslucent, flags.isThematic);
+    addClassificationTranslucencyDiscard(builder);
+  }
 
   addFeatureSymbology(builder, feat, opts);
   builder.addVarying("v_color", VariableType.Vec4);
@@ -222,10 +229,6 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
   }
 
   addTextures(builder, textureCount);
-  if (flags.isClassified) {
-    addColorPlanarClassifier(builder, flags.isTranslucent, flags.isThematic);
-    addClassificationTranslucencyDiscard(builder);
-  }
 
   if (IsThematic.Yes === flags.isThematic)
     addThematicToRealityMesh(builder, gradientTextureUnit);
