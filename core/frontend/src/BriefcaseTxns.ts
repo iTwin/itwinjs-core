@@ -33,6 +33,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   private readonly _iModel: BriefcaseConnection;
   private _cleanup?: RemoveFunction;
 
+  /** @internal */
   public get briefcaseChannelName() {
     return IpcAppChannel.Txns;
   }
@@ -92,6 +93,15 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     if (this._cleanup) {
       this._cleanup();
       this._cleanup = undefined;
+
+      this.onElementsChanged.clear();
+      this.onModelsChanged.clear();
+      this.onModelGeometryChanges.clear();
+      this.onCommit.clear();
+      this.onCommitted.clear();
+      this.onChangesApplied.clear();
+      this.onBeforeUndoRedo.clear();
+      this.onAfterUndoRedo.clear();
     }
   }
 

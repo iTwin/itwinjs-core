@@ -12,8 +12,24 @@ import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./
 import { IModelVersionProps } from "./IModelVersion";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
-/** @public */
-export enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
+/** Describes the types of actions associated with [Txns]($docs/learning/InteractiveEditing.md).
+ * @see [TxnManager]($backend) and [BriefcaseTxns]($frontend).
+ * @public
+ */
+export enum TxnAction {
+  /** Not currently processing anything. */
+  None = 0,
+  /** Processing a commit initiated by a call to [IModelDb.saveChanges]($backend) or [BriefcaseConnection.saveChanges]($frontend). */
+  Commit = 1,
+  /** Abandoning the current Txn, e.g., via [IModelDb.abandonChanges]($backend). */
+  Abandon = 2,
+  /** Reversing a previously-committed changeset, e.g., via [IModelDb.reverseTxns]($backend). */
+  Reverse = 3,
+  /** Reinstating a previously reversed changeset, e.g., via [IModelDb.reinstateTxn]($backend). */
+  Reinstate = 4,
+  /** Merging a changeset produced by a different briefcase, e.g., via [BriefcaseDb.pullAndMergeChanges]($backend) or [BriefcaseConnection.pullAndMergeChanges]($frontend). */
+  Merge = 5,
+}
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
@@ -24,6 +40,7 @@ export interface TileTreeContentIds {
 }
 
 /** Specifies a [GeometricModel]($backend)'s Id and a Guid identifying the current state of the geometry contained within the model.
+ * @see [TxnManager.onModelGeometryChanged]($backend) and [BriefcaseTxns.onModelGeometryChanged]($frontend).
  * @beta
  */
 export interface ModelIdAndGeometryGuid {
@@ -40,7 +57,7 @@ export interface ModelIdAndGeometryGuid {
  * cause its element to appear in these lists.
  * @see [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend).
  * @see [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend).
- * @alpha
+ * @beta
  */
 export interface ChangedEntities {
   /** The ids of entities that were inserted during this Txn */
