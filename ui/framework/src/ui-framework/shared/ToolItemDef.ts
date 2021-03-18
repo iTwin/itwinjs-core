@@ -35,7 +35,7 @@ export class ToolItemDef extends ActionButtonItemDef {
   public static getItemDefForTool(tool: typeof Tool, iconSpec?: string, args?: any[]): ToolItemDef {
     return new ToolItemDef({
       toolId: tool.toolId,
-      iconSpec: iconSpec ? iconSpec : (tool.iconSpec && tool.iconSpec.length > 0) ? tool.iconSpec : "icon-placeholder",
+      iconSpec: iconSpec ? iconSpec : (tool.iconSpec && tool.iconSpec.length > 0) ? tool.iconSpec : undefined,
       label: () => tool.flyover,
       description: () => tool.description,
       execute: () => { IModelApp.tools.run(tool.toolId, args); },
