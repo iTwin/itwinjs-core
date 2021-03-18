@@ -6,14 +6,15 @@ import { expect } from "chai";
 import * as faker from "faker";
 import { enablePatches } from "immer";
 import * as sinon from "sinon";
+import { useMemo } from "react";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { ChildNodeSpecificationTypes, PartialHierarchyModification, RuleTypes, StandardNodeTypes } from "@bentley/presentation-common";
-import { IPresentationTreeDataProvider, PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
+import { IPresentationTreeDataProvider, PresentationTreeNodeLoaderProps, useHierarchyAutoUpdate, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { PrimitiveValue } from "@bentley/ui-abstract";
 import {
   AbstractTreeNodeLoader, DelayLoadedTreeNodeItem, MutableTreeModelNode, PagedTreeNodeLoader, Subscription, TreeModelNode, TreeModelRootNode,
-  TreeModelSource,
+  TreeModelSource, useTreeEventsHandler,
 } from "@bentley/ui-components";
 import { renderHook } from "@testing-library/react-hooks";
 import { initialize, terminate } from "../IntegrationTests";
@@ -48,7 +49,6 @@ describe("Update", () => {
       defaultProps = {
         imodel,
         pagingSize: 100,
-        enableHierarchyAutoUpdate: true,
       };
     });
 
@@ -190,7 +190,7 @@ describe("Update", () => {
               },
             },
           ],
-          [{ ["Physical Object"]: ["Physical Object [0-39]"] }],
+          [{ label: "Physical Object", expanded: true, children: ["Physical Object [0-39]"] }],
         );
       });
     });
@@ -610,12 +610,19 @@ describe("Update", () => {
       color?: number;
     };
 
+    function useAutoUpdatingTreeNodeLoader(props: PresentationTreeNodeLoaderProps) {
+      const { nodeLoader, updateTreeModelSource } = usePresentationTreeNodeLoader(props);
+      const eventHandler = useTreeEventsHandler(useMemo(() => ({ nodeLoader, modelSource: nodeLoader.modelSource }), [nodeLoader]));
+      useHierarchyAutoUpdate({ enable: true, nodeLoader, updateTreeModelSource, eventHandler, appendChildrenCountForGroupingNodes: false })
+      return nodeLoader;
+    }
+
     async function verifyHierarchy(
       props: PresentationTreeNodeLoaderProps,
       expectedTree: TreeHierarchy[],
     ): Promise<VerifiedHierarchy> {
       const { result, waitForNextUpdate } = renderHook(
-        (hookProps: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(hookProps),
+        (hookProps: PresentationTreeNodeLoaderProps) => useAutoUpdatingTreeNodeLoader(hookProps),
         { initialProps: props },
       );
       await expectTree(result.current, expectedTree);
@@ -694,8 +701,8 @@ describe("Update", () => {
         expect(ruleset).to.not.be.undefined;
 
         const { result, unmount } = renderHook(
-          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-          { initialProps: { imodel, ruleset, pagingSize: 100, enableHierarchyAutoUpdate: true } },
+          (props: PresentationTreeNodeLoaderProps) => useAutoUpdatingTreeNodeLoader(props),
+          { initialProps: { imodel, ruleset, pagingSize: 100 } },
         );
         await loadHierarchy(result.current);
         unmount();
