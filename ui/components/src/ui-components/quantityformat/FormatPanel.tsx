@@ -63,6 +63,16 @@ export function FormatPanel(props: FormatPanelProps) {
     onFormatChange && onFormatChange(newProps);
   }, [onFormatChange]);
 
+  const isMounted = React.useRef (false);
+
+  // runs returned function only when component is unmounted.
+  React.useEffect(() => {
+    isMounted.current = true;
+    return (() => {
+      isMounted.current = false;
+    });
+  }, []);
+
   React.useEffect(() => {
     async function fetchFormatSpec() {
       const pu = await persistenceUnit;
@@ -72,7 +82,7 @@ export function FormatPanel(props: FormatPanelProps) {
       } else {
         newFormatSpec = await generateFormatSpec(formatProps, pu, unitsProvider);
       }
-      setFormatSpec(newFormatSpec);
+      isMounted.current && setFormatSpec(newFormatSpec);
     }
     if (!formatSpec)
       fetchFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises
