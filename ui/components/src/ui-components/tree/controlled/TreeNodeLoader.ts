@@ -359,16 +359,24 @@ function updateChildren(
     return;
   }
 
-  model.setChildren(
-    parentId,
-    hierarchyItems.map(({ item }) => convertToTreeModelNodeInput(item)),
-    startIndex,
-  );
+  let offset = startIndex;
+  for (const hierarchyItem of hierarchyItems) {
+    const nodeInput = convertToTreeModelNodeInput(hierarchyItem.item);
+    const existingNode = model.getNode(hierarchyItem.item.id);
 
-  for (const item of hierarchyItems) {
-    if (item.children) {
-      updateChildren(model, item.item.id, item.children, 0, item.numChildren);
+    // if same item exists in the same position and is expanded update it without removing it's subtree
+    if (!existingNode || !existingNode.isExpanded || model.getChildOffset(parentId, existingNode.id) !== offset || nodeInput.numChildren === 0) {
+      model.setChildren(parentId, [nodeInput], offset);
+    } else {
+      existingNode.label = nodeInput.label;
+      existingNode.description = nodeInput.description ?? "";
+      existingNode.item = nodeInput.item;
     }
+
+    if (hierarchyItem.children) {
+      updateChildren(model, hierarchyItem.item.id, hierarchyItem.children, 0, hierarchyItem.numChildren);
+    }
+    offset++;
   }
 }
 
