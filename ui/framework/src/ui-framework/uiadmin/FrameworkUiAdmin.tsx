@@ -24,7 +24,6 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
 import { UiDataProvidedDialog } from "../dialog/UiDataProvidedDialog";
-import { FrameworkAccuDrawUiAdmin } from "../accudraw/FrameworkAccuDrawUiAdmin";
 
 /** Controls whether localized and/or non-localized key-in strings appear in a KeyinField's auto-completion list.
  * @beta
@@ -55,11 +54,6 @@ export interface KeyinEntry {
  */
 export class FrameworkUiAdmin extends UiAdmin {
   private _localizedKeyinPreference: KeyinFieldLocalization = KeyinFieldLocalization.NonLocalized;
-
-  constructor() {
-    super();
-    this.accuDrawUi = new FrameworkAccuDrawUiAdmin();
-  }
 
   public get localizedKeyinPreference(): KeyinFieldLocalization { return this._localizedKeyinPreference; }
   public set localizedKeyinPreference(preference: KeyinFieldLocalization) { this._localizedKeyinPreference = preference; }
