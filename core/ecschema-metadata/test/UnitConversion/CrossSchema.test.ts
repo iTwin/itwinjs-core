@@ -6,7 +6,7 @@ import { SchemaContext } from "../../src/ecschema-metadata";
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { Float } from "../../src/UnitConversion/Float";
+import * as almostEqual from "almost-equal";
 import { deserializeXml } from "./DeserializeSchema";
 import { UnitConverter } from "../../src/UnitConversion/UnitConverter";
 
@@ -47,11 +47,10 @@ describe("Testing creating second schema", () => {
       const toFullName = `${test.ToSchema}.${test.To}`;
       const map = await converter.calculateConversion(fromFullName, toFullName);
       const actual = map.evaluate(test.Input);
-      const ulp = Float.ulp(Math.max(test.Input, test.Expect));
       expect(
-        Float.equals(test.Expect, actual, 3 * ulp),
+        almostEqual(test.Expect, actual, almostEqual.FLT_EPSILON, almostEqual.FLT_EPSILON),
         `${test.Input} ${test.From} in ${test.To} should be ${test.Expect}
-         and not ${actual} error = ${Math.abs(test.Expect - actual)} > ${3 * ulp}`
+         and not ${actual} error = ${Math.abs(test.Expect - actual)} > ${almostEqual.FLT_EPSILON}`
       ).to.be.true;
     });
   });
