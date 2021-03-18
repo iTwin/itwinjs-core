@@ -295,6 +295,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "almost-equal",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "applicationinsights",
       "allowedCategories": [ "backend" ]
     },
@@ -1040,10 +1044,6 @@
     },
     {
       "name": "typescript-json-schema",
-      "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "ulp",
       "allowedCategories": [ "common" ]
     },
     {
