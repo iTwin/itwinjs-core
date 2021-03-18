@@ -52,7 +52,7 @@ export interface ModelIdAndGeometryGuid {
   guid: GuidString;
 }
 
-/** The set of elements or models that were changed for a Txn in an [interactive editing session]($docs/learning/InteractiveEditing.md)
+/** The set of elements or models that were changed by a [Txn]($docs/learning/InteractiveEditing.md)
  * @note this object holds lists of ids of elements or models that were modified somehow during the Txn. Any modifications to an [[ElementAspect]]($backend) will
  * cause its element to appear in these lists.
  * @see [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend).
