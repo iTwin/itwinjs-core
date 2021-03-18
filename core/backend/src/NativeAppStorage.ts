@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
+import { join } from "path";
 import { DbResult, IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelError, StorageValue } from "@bentley/imodeljs-common";
 import { ECDb, ECDbOpenMode } from "./ECDb";
@@ -11,13 +11,11 @@ import { IModelJsFs } from "./IModelJsFs";
 import { NativeHost } from "./NativeHost";
 
 /**
- * Native app storage allow key value pair to be persisted in a sqlite db in app cache.
- * This is exposed to frontend through [[NativeApp]]
+ * An ECDb in the app cache for storing key/value pairs.
  * @internal
  */
 export class NativeAppStorage {
-  private static readonly _version = 1;
-  private static readonly _ext = `.v${NativeAppStorage._version}.ecdb`;
+  private static readonly _ext = ".v1.ecdb";
   private static _storages = new Map<string, NativeAppStorage>();
   private static _init: boolean = false;
   private constructor(private _ecdb: ECDb, public readonly id: string) { }
@@ -96,7 +94,7 @@ export class NativeAppStorage {
     }
   }
   public close(deleteFile: boolean = false) {
-    const storageFile = path.join(NativeHost.appSettingsCacheDir, this.id);
+    const storageFile = join(NativeHost.appSettingsCacheDir, this.id);
     this._ecdb.saveChanges();
     this._ecdb.closeDb();
     if (deleteFile) {
@@ -135,7 +133,7 @@ export class NativeAppStorage {
     if (!IModelJsFs.existsSync(NativeHost.appSettingsCacheDir)) {
       IModelJsFs.recursiveMkDirSync(NativeHost.appSettingsCacheDir);
     }
-    const storageFile = path.join(NativeHost.appSettingsCacheDir, fileName);
+    const storageFile = join(NativeHost.appSettingsCacheDir, fileName);
     let storage = this.find(fileName);
     if (!storage) {
       const ecdb: ECDb = new ECDb();
