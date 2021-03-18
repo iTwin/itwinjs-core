@@ -8,7 +8,10 @@
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipVector, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
+import {
+  ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat,
+  PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps,
+} from "@bentley/imodeljs-common";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -432,8 +435,17 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]] */
   public createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
+  /** Create a new texture from a super-compressed Basis image. */
+  public createTextureFromBasisImage(_basisBytes: Uint8Array,  _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
+
   /** Create a new texture from an [[ImageSource]]. */
   public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+    if (ImageSourceFormat.Basis === source.format) {
+      if (source.data instanceof Uint8Array)
+        return IModelApp.hasRenderSystem ? this.createTextureFromBasisImage(source.data, imodel, params) : undefined;
+      return undefined;
+    }
+
     const promise = imageElementFromImageSource(source);
     return promise.then((image: HTMLImageElement) => {
       return IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined;

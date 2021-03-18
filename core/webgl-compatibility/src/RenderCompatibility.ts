@@ -44,6 +44,8 @@ export enum WebGLFeature {
   StandardDerivatives = "standard derivatives",
   /** This feature allows the renderer to smooth curved lines. */
   AntiAliasing = "anti-aliasing",
+  /** This feature allows the renderer to consume less GPU resources in certain situations. */
+  CompressedTextures = "compressed textures",
 }
 
 /** A general "compatibility rating" based on the contents of a [[WebGLRenderCompatibilityInfo]].

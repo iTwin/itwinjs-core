@@ -7,15 +7,18 @@
  */
 
 import { assert, dispose, Id64String } from "@bentley/bentleyjs-core";
-import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
+import {
+  ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture,
+} from "@bentley/imodeljs-common";
 import { imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../imodeljs-frontend";
+import { BasisLoader, TranscodedTextureData } from "./BasisLoader";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
-import { UniformHandle } from "./UniformHandle";
 import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { System } from "./System";
+import { UniformHandle } from "./UniformHandle";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -35,6 +38,65 @@ function computeBytesUsed(width: number, height: number, format: GL.Texture.Form
   }
 
   return width * height * componentsPerPixel * bytesPerComponent;
+}
+
+/** Associate texture data with a WebGLTexture from a GPU compressed image. */
+function loadTexture2DCompressedImage(handle: TextureHandle, params: Texture2DCreateParams, gpuTexData: TranscodedTextureData): void {
+  const tex = handle.getHandle()!;
+  const gl = System.instance.context;
+
+  // Bind the texture object; make sure we do not interfere with other active textures
+  System.instance.activateTexture2d(TextureUnit.Zero, tex);
+
+  const numLevels = gpuTexData.buffers.length;
+  const isCompressed = gl.RGBA !== gpuTexData.glFormat;
+  let allLevelsPow2 = true;
+
+  let bytesUsed = 0;
+  for (let i = 0; i < numLevels; i++) {
+    const width = gpuTexData.dimensions[i].width;
+    const height = gpuTexData.dimensions[i].height;
+
+    if (allLevelsPow2 && (!isPowerOfTwo(width) || !isPowerOfTwo(height)))
+      allLevelsPow2 = false;
+
+    console.log(`texImage2D: level=${  i  }, dimensions=${  width}x${  height}, byteLength=${  gpuTexData.buffers[i].byteLength}, compressed=${ isCompressed ? "yes" : "no"}`);
+
+    if (isCompressed)
+      gl.compressedTexImage2D(gl.TEXTURE_2D, i, gpuTexData.glFormat, width, height, 0, gpuTexData.buffers[i]);
+    else
+      gl.texImage2D(gl.TEXTURE_2D, i, gpuTexData.glFormat, width, height, 0, gpuTexData.glFormat, gl.UNSIGNED_BYTE, gpuTexData.buffers[i]);
+
+    bytesUsed += gpuTexData.buffers[i].byteLength;
+  }
+
+  handle.bytesUsed = bytesUsed;
+
+  // NB: Compressed images should be power of two, enforced when the original images are converted to Basis.
+  // There should also be mip map levels provided, if the image will require it.
+
+  if (params.useMipMaps && allLevelsPow2) {
+    if (1 === numLevels) { // If no mip map levels are provided, try to generate them if uncompressed. Otherwise, assert.
+      if (!isCompressed)
+        gl.generateMipmap(gl.TEXTURE_2D); // Compressed textures formats cannot call this.
+      else
+        assert(false, "Render system wants to do mip-mapping but the compressed Basis texture provided only one level of imagery.");
+    }
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  } else {
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
+  }
+
+  if (params.anisotropicFilter) {
+    System.instance.setMaxAnisotropy(params.anisotropicFilter);
+  }
+
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, params.wrapMode);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, params.wrapMode);
+
+  System.instance.bindTexture2d(TextureUnit.Zero, undefined);
 }
 
 /** Associate texture data with a WebGLTexture from a canvas, image, OR a bitmap. */
@@ -192,6 +254,13 @@ class Texture2DCreateParams {
       (tex: TextureHandle, params: Texture2DCreateParams) => loadTextureFromBytes(tex, params), undefined, undefined);
   }
 
+  public static createForTranscodedImage(gpuTexData: TranscodedTextureData, type: RenderTexture.Type) {
+    const props = this.getImageProperties(false, type); // NB: ignoring isTranslucent - used to determine format, which is not used for Basis.
+
+    return new Texture2DCreateParams(gpuTexData.dimensions[0].width, gpuTexData.dimensions[0].height, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
+      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DCompressedImage(tex, params, gpuTexData), props.useMipMaps, props.interpolate, props.anisotropicFilter);
+  }
+
   public static createForImage(image: HTMLImageElement, hasAlpha: boolean, type: RenderTexture.Type) {
     const props = this.getImageProperties(hasAlpha, type);
 
@@ -347,6 +416,10 @@ export abstract class TextureHandle implements WebGLDisposable {
     return Texture2DHandle.createForElement(id, imodel, type, format);
   }
 
+  public static createForBasisImage(basisBuffer: Uint8Array, type: RenderTexture.Type) {
+    return Texture2DHandle.createForBasisImage(basisBuffer, type);
+  }
+
   protected constructor(glTexture: WebGLTexture) {
     this._glTexture = glTexture;
   }
@@ -489,6 +562,24 @@ export class Texture2DHandle extends TextureHandle {
     return handle;
   }
 
+  /** Create a 2D texture from a super-compressed Basis image. The texture handle initially returned will contain a 1x1 placeholder image until the Basis image finishes transcoding on a web worker. */
+  public static createForBasisImage(basisBuffer: Uint8Array, type: RenderTexture.Type) {
+    // set a placeholder texture while we wait for the basis texture to transcode on a web worker
+    const handle = this.createForData(1, 1, this._placeHolderTextureData, undefined, undefined, GL.Texture.Format.Rgb);
+
+    if (undefined === handle)
+      return undefined;
+
+    const transcodeCompleteCallback = (function (data: TranscodedTextureData) {
+      handle.reload(Texture2DCreateParams.createForTranscodedImage(data, type));
+    });
+
+    // kick off transcoding the texture on a web worker
+    BasisLoader.instance.transcodeBasisTexture(basisBuffer, transcodeCompleteCallback); // eslint-disable-line @typescript-eslint/no-floating-promises
+
+    return handle;
+  }
+
   public reload(params: Texture2DCreateParams) {
     this._width = params.width;
     this._height = params.height;
@@ -527,6 +618,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
   private readonly _maxActiveRequests: number;
   private _activeRequests: Array<ExternalTextureRequest> = [];
   private _pendingRequests: Array<ExternalTextureRequest> = [];
+  private readonly _testBasis = true;
 
   public get numActiveRequests() { return this._activeRequests.length; }
   public get numPendingRequests() { return this._pendingRequests.length; }
@@ -544,6 +636,34 @@ export class ExternalTextureLoader { /* currently exported for tests only */
     }
   }
 
+  private async _fetchBasisFile(basisSrc: any): Promise<ArrayBuffer> {
+    const resp = await fetch(basisSrc);
+    return resp.arrayBuffer();
+  }
+
+  private async _createBasisImage(imgBytes: Uint8Array, req: ExternalTextureRequest) {
+    if (!req.imodel.isClosed) {
+      const gpuTexData = await BasisLoader.instance.transcodeBasisTexture(imgBytes);
+      if (undefined !== gpuTexData) {
+        req.handle.reload(Texture2DCreateParams.createForTranscodedImage(gpuTexData, req.type));
+        IModelApp.tileAdmin.invalidateAllScenes();
+        if (undefined !== req.onLoaded)
+          req.onLoaded(req);
+      }
+    }
+  }
+
+  private async _createRegularImage(imgBytes: Uint8Array, req: ExternalTextureRequest) {
+    const imageSource = new ImageSource(imgBytes, req.format);
+    const image = await imageElementFromImageSource(imageSource);
+    if (!req.imodel.isClosed) {
+      req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
+      IModelApp.tileAdmin.invalidateAllScenes();
+      if (undefined !== req.onLoaded)
+        req.onLoaded(req);
+    }
+  }
+
   private async _activateRequest(req: ExternalTextureRequest) {
     if (req.imodel.isClosed)
       return;
@@ -552,16 +672,19 @@ export class ExternalTextureLoader { /* currently exported for tests only */
 
     try {
       if (!req.imodel.isClosed) {
-        const texBytes = await req.imodel.getTextureImage({ name: req.name });
-        if (undefined !== texBytes) {
-          const imageSource = new ImageSource(texBytes, req.format);
-          const image = await imageElementFromImageSource(imageSource);
-          if (!req.imodel.isClosed) {
-            req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
-            IModelApp.tileAdmin.invalidateAllScenes();
-            if (undefined !== req.onLoaded)
-              req.onLoaded(req);
-          }
+        let imgBytes: Uint8Array | undefined;
+
+        if (this._testBasis) {
+          imgBytes = new Uint8Array(await this._fetchBasisFile("http://localhost:3000/plasma_512.basis"));
+          req.format = ImageSourceFormat.Basis;
+        } else
+          imgBytes = await req.imodel.getTextureImage({ name: req.name });
+
+        if (undefined !== imgBytes) {
+          if (ImageSourceFormat.Basis === req.format)
+            await this._createBasisImage(imgBytes, req);
+          else
+            await this._createRegularImage(imgBytes, req);
         }
       }
     } catch (_e) { }

@@ -9,10 +9,12 @@
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import {
-  ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
+  ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial,
+  RenderTexture,
 } from "@bentley/imodeljs-common";
 import { Capabilities, DepthType, WebGLContext } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
+import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
@@ -29,10 +31,11 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
-import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
+import {
+  DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture,
+} from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
-import { imageElementFromImageSource } from "../../ImageUtil";
+import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
@@ -42,7 +45,6 @@ import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
-import { UniformHandle } from "./UniformHandle";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -54,11 +56,12 @@ import { Primitive, SkyCubePrimitive, SkySpherePrimitive } from "./Primitive";
 import { RenderBuffer, RenderBufferMultiSample } from "./RenderBuffer";
 import { TextureUnit } from "./RenderFlags";
 import { RenderState } from "./RenderState";
+import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
 import { TerrainMeshGeometry } from "./TerrainMesh";
 import { Texture, TextureHandle } from "./Texture";
-import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
+import { UniformHandle } from "./UniformHandle";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -240,6 +243,11 @@ export class IdMap implements WebGLDisposable {
     return this.createTexture(params, TextureHandle.createForElement(id, imodel, params.type, format));
   }
 
+  /** Create a texture from a super-compressed Basis image. The texture handle initially returned will contain a 1x1 placeholder image until the Basis image finishes transcoding on a web worker. */
+  private createTextureFromBasisImage(basisBuffer: Uint8Array, params: RenderTexture.Params): RenderTexture | undefined {
+    return this.createTexture(params, TextureHandle.createForBasisImage(basisBuffer, params.type));
+  }
+
   public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textures.get(key) : undefined; }
 
   /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
@@ -296,6 +304,10 @@ export class IdMap implements WebGLDisposable {
 
   public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
     return this.createTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
+  }
+
+  public getTextureFromBasisImage(basisBuffer: Uint8Array, params: RenderTexture.Params): RenderTexture | undefined {
+    return this.createTextureFromBasisImage(basisBuffer, params);
   }
 
   /** Find or attempt to create a new texture using gradient symbology. If a new texture was created, it will be cached using the gradient. */
@@ -662,6 +674,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   /** Attempt to create a texture from a cube of HTML images. */
   public createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
+  }
+
+  public createTextureFromBasisImage(basisBuffer: Uint8Array, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+    return this.getIdMap(imodel).getTextureFromBasisImage(basisBuffer, params);
   }
 
   /** Attempt to create a texture using gradient symbology. */

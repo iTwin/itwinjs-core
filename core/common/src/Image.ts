@@ -110,6 +110,10 @@ export enum ImageSourceFormat {
    * @note SVG is only valid for ImageSources in JavaScript. It *may not* be used for persistent textures.
    */
   Svg = 3,
+  /** Image is stored as a super-compressed Basis texture.
+   * @alpha
+   */
+  Basis = 4,
 }
 
 /** @internal */
@@ -118,13 +122,14 @@ export function isValidImageSourceFormat(format: ImageSourceFormat): boolean {
     case ImageSourceFormat.Jpeg:
     case ImageSourceFormat.Png:
     case ImageSourceFormat.Svg:
+    case ImageSourceFormat.Basis:
       return true;
     default:
       return false;
   }
 }
 
-/** Image data encoded and compressed in either Jpeg or Png format.
+/** Image data encoded and compressed in Jpeg, Png, Svg, or Basis format.
  * @public
  */
 export class ImageSource {

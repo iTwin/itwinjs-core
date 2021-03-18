@@ -6,16 +6,16 @@
  * @module Compatibility
  */
 
-import {
-  GraphicsDriverBugs, WebGLContext, WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus,
-} from "./RenderCompatibility";
+import { GraphicsDriverBugs, WebGLContext, WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus } from "./RenderCompatibility";
 
 /** @internal */
 export type WebGLExtensionName =
   "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" |
   "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" |
   "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" |
-  "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2" | "OES_standard_derivatives" | "EXT_float_blend";
+  "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2" | "OES_standard_derivatives" | "EXT_float_blend" |
+  "WEBGL_compressed_texture_s3tc" | "WEBGL_compressed_texture_etc" | "WEBGL_compressed_texture_etc1" | "WEBGL_compressed_texture_pvrtc" |
+  "WEBKIT_WEBGL_compressed_texture_pvrtc";
 
 const knownExtensions: WebGLExtensionName[] = [
   "WEBGL_draw_buffers",
@@ -36,6 +36,11 @@ const knownExtensions: WebGLExtensionName[] = [
   "EXT_disjoint_timer_query_webgl2",
   "OES_standard_derivatives",
   "EXT_float_blend",
+  "WEBGL_compressed_texture_s3tc",
+  "WEBGL_compressed_texture_etc",
+  "WEBGL_compressed_texture_etc1",
+  "WEBGL_compressed_texture_pvrtc",
+  "WEBKIT_WEBGL_compressed_texture_pvrtc",
 ];
 
 /** Describes the type of a render target. Used by Capabilities to represent maximum precision render target available on host system.
@@ -82,6 +87,14 @@ function detectIsMobile(): boolean {
   return isAndroid || isIOS || isIpad;
 }
 
+/** @internal */
+export interface CompressedTextureExtensions {
+  dxt?: any;
+  etc2?: any;
+  etc1?: any;
+  pvrtc?: any;
+}
+
 /** Describes the rendering capabilities of the host system.
  * @internal
  */
@@ -101,6 +114,7 @@ export class Capabilities {
   private _maxAnisotropy?: number;
   private _maxAntialiasSamples: number = 1;
 
+  private _compressedTextureExtensions: CompressedTextureExtensions = {};
   private _extensionMap: { [key: string]: any } = {}; // Use this map to store actual extension objects retrieved from GL.
   private _presentFeatures: WebGLFeature[] = []; // List of features the system can support (not necessarily dependent on extensions)
 
@@ -138,9 +152,9 @@ export class Capabilities {
   public get supportsFragDepth(): boolean { return this._isWebGL2 || this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined; }
   public get supportsDisjointTimerQuery(): boolean { return (this._isWebGL2 && this.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2") !== undefined) || this.queryExtensionObject<any>("EXT_disjoint_timer_query") !== undefined; }
   public get supportsStandardDerivatives(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_standard_derivatives>("OES_standard_derivatives") !== undefined; }
-
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
+  public get supportsCompressedTextures(): boolean { return this._compressedTextureExtensions.dxt || this._compressedTextureExtensions.etc2 || this._compressedTextureExtensions.etc1 || this._compressedTextureExtensions.pvrtc; }
 
   public get canRenderDepthWithoutColor(): boolean { return this._canRenderDepthWithoutColor; }
 
@@ -162,6 +176,8 @@ export class Capabilities {
     return this.findExtension(ext) as T;
   }
 
+  public get compressedTextureExtensions(): CompressedTextureExtensions { return this._compressedTextureExtensions; }
+
   public static readonly optionalFeatures: WebGLFeature[] = [
     WebGLFeature.MrtTransparency,
     WebGLFeature.MrtPick,
@@ -172,6 +188,7 @@ export class Capabilities {
     WebGLFeature.FragDepth,
     WebGLFeature.StandardDerivatives,
     WebGLFeature.AntiAliasing,
+    WebGLFeature.CompressedTextures,
   ];
   public static readonly requiredFeatures: WebGLFeature[] = [
     WebGLFeature.UintElementIndex,
@@ -188,6 +205,19 @@ export class Capabilities {
         missingFeatures.push(featureName);
     }
     return missingFeatures;
+  }
+
+  private _gatherCompressedTextureExtensions(): CompressedTextureExtensions {
+    let pvrtc = this.queryExtensionObject<any>("WEBGL_compressed_texture_pvrtc");
+    if (undefined === pvrtc)
+      pvrtc = this.queryExtensionObject<any>("WEBKIT_WEBGL_compressed_texture_pvrtc");
+
+    return {
+      dxt: this.queryExtensionObject<WEBGL_compressed_texture_s3tc>("WEBGL_compressed_texture_s3tc"),
+      etc2: this.queryExtensionObject<any>("WEBGL_compressed_texture_etc"),
+      etc1: this.queryExtensionObject<any>("WEBGL_compressed_texture_etc1"),
+      pvrtc,
+    };
   }
 
   /** Populate and return an array containing features that this system supports. */
@@ -214,6 +244,8 @@ export class Capabilities {
       features.push(WebGLFeature.StandardDerivatives);
     if (this.supportsAntiAliasing)
       features.push(WebGLFeature.AntiAliasing);
+    if (this.supportsCompressedTextures)
+      features.push(WebGLFeature.CompressedTextures);
 
     if (DepthType.TextureUnsignedInt24Stencil8 === this._maxDepthType)
       features.push(WebGLFeature.DepthTexture);
@@ -291,6 +323,8 @@ export class Capabilities {
     this._maxDepthType = this._isWebGL2 || this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
     this._canRenderDepthWithoutColor = this._maxDepthType === DepthType.TextureUnsignedInt24Stencil8 ? this.isDepthRenderableWithoutColor(gl) : false;
+
+    this._compressedTextureExtensions = this._gatherCompressedTextureExtensions();
 
     this._presentFeatures = this._gatherFeatures();
     const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
