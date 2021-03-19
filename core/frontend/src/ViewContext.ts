@@ -147,8 +147,6 @@ export class DecorateContext extends RenderContext {
   private readonly _decorations: Decorations;
   private readonly _cache: DecorationsCache;
   private _curCacheableDecorator?: ViewportDecorator;
-  /** @internal */
-  private static _doSecondPhaseGridLines = true;
 
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn.
    * @deprecated use [[DecorateContext.viewport]].
@@ -369,8 +367,7 @@ export class DecorateContext extends RenderContext {
       return;
 
     const meterPerPixel = vp.getPixelSizeAtPoint(loopPt);
-    const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef;
-    const refSpacing = Vector2d.create(spacing.x, spacing.y).scale(refScale);
+    const refSpacing = Vector2d.create(spacing.x, spacing.y);
 
     const viewZ = vp.rotation.getRow(2);
     const gridOffset = Point3d.create(viewZ.x * meterPerPixel, viewZ.y * meterPerPixel, viewZ.z * meterPerPixel); // Avoid z fighting with coincident geometry
@@ -425,7 +422,8 @@ export class DecorateContext extends RenderContext {
     const gridOptions = ViewportGraphicsGridSpacingOptions.create(
       (vp.isCameraOn && Math.abs(zVec.dotProduct(vp.rotation.getRow(2))) < 0.9) ? GridDisplaySettings.minPerspectiveSeparation : GridDisplaySettings.minSeparation,
       (vp.isCameraOn ? GridDisplaySettings.cullingPerspectiveOption : GridDisplaySettings.cullingOption),
-      GridDisplaySettings.clippingOption
+      GridDisplaySettings.clippingOption,
+      10      // first pass only gets major block lines !!!
     );
 
     const gridRefXStep = rMatrix.rowX().scale(refSpacing.x);
@@ -440,6 +438,7 @@ export class DecorateContext extends RenderContext {
     let lastTransparency: number;
     let thisTransparency: number;
     const gridInViewContext = GridInViewContext.create(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
+    gridOptions.gridMultiple = gridsPerRef > 0 ? gridsPerRef: 1;
     gridInViewContext?.processGrid (gridOptions,
       (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
         startEndDistances: Segment1d | undefined,
@@ -455,16 +454,14 @@ export class DecorateContext extends RenderContext {
     if (noOutput || undefined !== firstLine)
       drawGridLines = true;
 
-    if (drawGridLines && DecorateContext._doSecondPhaseGridLines) {
-      const gridXStep = gridRefXStep.scale(1 / gridsPerRef);
-      const gridYStep = gridRefYStep.scale(1 / gridsPerRef);
+    if (drawGridLines) {
 
       lineTransparency = GridDisplaySettings.lineTransparency;
       linePattern = LinePixels.Solid;
       skipRefLines = true;
-
-      const gridInViewContext1 = GridInViewContext.create(gridOrigin, gridXStep, gridYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
-      gridInViewContext1?.processGrid (gridOptions,
+      gridOptions.gridMultiple = 1;
+      // const gridInViewContext1 = GridInViewContext.create(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
+      gridInViewContext?.processGrid (gridOptions,
         (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
           startEndDistances: Segment1d | undefined,
           gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {

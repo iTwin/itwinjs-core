@@ -661,7 +661,7 @@ describe("LinearSystems", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphereImplicit", "RayIntersection");
   });
-  it.only("ImplicitLine", () => {
+  it("ImplicitLine", () => {
     const ck = new Checker();
     const b = 3.0;
     for (const degrees of [ 0, 30,90, -225]){

@@ -1839,6 +1839,7 @@ export class SineCosinePolynomial {
 /**
  * Support for an implicit linear equation (half space)
  * f(x,y) = a0 + x * ax + y * ay
+ * @internal
  */
 export class ImplicitLineXY {
   /**
