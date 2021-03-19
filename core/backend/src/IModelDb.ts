@@ -1448,7 +1448,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public updateGeometryGuid(modelId: Id64String): void {
       const error = this._iModel.nativeDb.updateModelGeometryGuid(modelId);
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, `updating model id=${modelId}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(error, `updating geometry guid for model ${modelId}`, Logger.logWarning, loggerCategory);
     }
 
     /** Delete one or more existing models.
