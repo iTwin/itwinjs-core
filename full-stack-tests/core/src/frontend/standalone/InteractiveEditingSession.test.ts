@@ -10,7 +10,7 @@ import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAng
 import { BatchType, ChangedEntities, Code, ElementGeometryChange, IModelError, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import {
   BriefcaseConnection, EditingFunctions, ElementEditor3d, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession,
-  IpcApp, TileLoadPriority,
+  TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
@@ -240,8 +240,11 @@ describe("InteractiveEditingSession", () => {
       // Undo
       // NOTE: Elements do not get removed from the set returned by getGeometryChangedForModel -
       // but their state may change (e.g. from "insert" to "delete") as a result of undo/redo/
-      const undo = async () => IpcApp.callIpcHost("reverseSingleTxn", imodel!.key);
-      await undo();
+      const isUndoPossible = await imodel.txns.isUndoPossible();
+      expect(isUndoPossible).to.be.true;
+
+      const undo = async () => imodel!.txns.reverseSingleTxn();
+      await imodel.txns.reverseSingleTxn();
       const deleteElem2 = makeDelete(elem2);
       expectChanges([insertElem1, deleteElem2]);
 
@@ -255,7 +258,7 @@ describe("InteractiveEditingSession", () => {
       expectChanges([deleteElem1, deleteElem2]);
 
       // Redo
-      const redo = async () => IpcApp.callIpcHost("reinstateTxn", imodel!.key);
+      const redo = async () => imodel!.txns.reinstateTxn();
       await redo();
       expectChanges([insertElem1, deleteElem2]);
 

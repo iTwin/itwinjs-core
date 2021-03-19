@@ -7,9 +7,7 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelJson, LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
-import {
-  BriefcaseConnection, EditingFunctions, ElementEditor3d, IpcApp,
-} from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection, EditingFunctions, ElementEditor3d } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 describe("BriefcaseTxns", () => {
@@ -64,7 +62,7 @@ describe("BriefcaseTxns", () => {
         expect(received).to.deep.equal(expected);
       };
 
-      const expectCommit = async (evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
+      const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
 
       const editor = await ElementEditor3d.start(imodel);
       // eslint-disable-next-line deprecation/deprecation
@@ -73,11 +71,11 @@ describe("BriefcaseTxns", () => {
       const dictModelId = await imodel.models.getDictionaryModel();
       const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, Guid.createValue(), { color: 0 });
       await imodel.saveChanges();
-      await expectCommit(["onElementsChanged"]);
+      await expectCommit("onElementsChanged");
 
       const model = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
       await imodel.saveChanges();
-      await expectCommit(["onElementsChanged", "onModelsChanged"]);
+      await expectCommit("onElementsChanged", "onModelsChanged");
 
       const insertLine = async () => {
         const segment = LineSegment3d.create(new Point3d(0, 0, 0), new Point3d(1, 1, 1));
@@ -94,18 +92,19 @@ describe("BriefcaseTxns", () => {
       // NB: onCommit is produced *after* we process all changes. onModelGeometryChanged is produced *during* change processing.
       const elem1 = await insertLine();
       await imodel.saveChanges();
-      await expectEvents(["onModelGeometryChanged", "onCommit", "onElementsChanged", "onCommitted"]);
+
+      await expectCommit("onModelGeometryChanged", "onElementsChanged");
 
       await editor.startModifyingElements([elem1]);
       await editor.applyTransform(Transform.createTranslationXYZ(1, 0, 0).toJSON());
       await editor.write();
       await imodel.saveChanges();
-      await expectEvents(["onModelGeometryChanged", "onCommit", "onElementsChanged", "onCommitted"]);
+      await expectCommit("onModelGeometryChanged", "onElementsChanged");
 
       // eslint-disable-next-line deprecation/deprecation
       await IModelWriteRpcInterface.getClientForRouting(imodel.routingContext.token).deleteElements(imodel.getRpcProps(), [elem1]);
       await imodel.saveChanges();
-      await expectEvents(["onModelGeometryChanged", "onCommit", "onElementsChanged", "onCommitted"]);
+      await expectCommit("onModelGeometryChanged", "onElementsChanged");
 
       const undo = async () => imodel.txns.reverseSingleTxn();
       const expectUndo = async (evts: TxnEvent[]) => expectEvents(["beforeUndo", ...evts, "afterUndo"]);

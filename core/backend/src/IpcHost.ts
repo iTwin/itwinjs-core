@@ -200,10 +200,10 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.hasPendingTxns();
   }
   public async isUndoPossible(key: string): Promise<boolean> {
-    return BriefcaseDb.findByKey(key).txns.isUndoPossible;
+    return IModelDb.findByKey(key).nativeDb.isUndoPossible();
   }
   public async isRedoPossible(key: string): Promise<boolean> {
-    return BriefcaseDb.findByKey(key).txns.isRedoPossible;
+    return IModelDb.findByKey(key).nativeDb.isRedoPossible();
   }
   public async pullAndMergeChanges(key: string, version?: IModelVersionProps): Promise<void> {
     const iModelDb = BriefcaseDb.findByKey(key);
