@@ -93,9 +93,7 @@ export enum BisCodeSpec {
    * @see [CategorySelector.createCode]($backend)
    */
   categorySelector = "bis:CategorySelector",
-  /** The name of the standard [[CodeSpec]] used when creating codes for [ColorBook]($backend) elements.
-   * @see [ColorBook.createCode]($backend)
-   */
+  /** @internal */
   colorBook = "bis:ColorBook",
   /** The name of the standard [[CodeSpec]] used when creating codes for [DisplayStyle]($backend) elements.
    * @see [DisplayStyle.createCode]($backend)
@@ -141,8 +139,8 @@ export enum BisCodeSpec {
    * @see [InformationPartitionElement.createCode]($backend)
    */
   informationPartitionElement = "bis:InformationPartitionElement",
-  /** The name of the standard [[CodeSpec]] used when creating codes for [RenderMaterial]($backend) elements.
-   * @see [RenderMaterial.createCode]($backend)
+  /** The name of the standard [[CodeSpec]] used when creating codes for [RenderMaterialElement]($backend) elements.
+   * @see [RenderMaterialElement.createCode]($backend)
    */
   renderMaterial = "bis:RenderMaterial",
   /** The name of the standard [[CodeSpec]] used when creating codes for [Sheet]($backend) elements.

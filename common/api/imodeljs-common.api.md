@@ -478,6 +478,7 @@ export enum BisCodeSpec {
     auxCoordSystem3d = "bis:AuxCoordSystem3d",
     auxCoordSystemSpatial = "bis:AuxCoordSystemSpatial",
     categorySelector = "bis:CategorySelector",
+    // @internal (undocumented)
     colorBook = "bis:ColorBook",
     displayStyle = "bis:DisplayStyle",
     drawing = "bis:Drawing",
