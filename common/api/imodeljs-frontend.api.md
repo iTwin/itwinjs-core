@@ -5288,7 +5288,11 @@ export interface MapLayerSetting {
 
 // @internal (undocumented)
 export class MapLayerSettingsService {
+    // (undocumented)
+    static deleteSharedSettingsByName(name: string, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
     static getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
+    // (undocumented)
+    static readonly onCustomLayerNameRemoved: BeEvent<(name: string) => void>;
     // (undocumented)
     static readonly onNewCustomLayerSource: BeEvent<(source: MapLayerSource) => void>;
     // (undocumented)
@@ -5347,7 +5351,11 @@ export class MapLayerSources {
     // (undocumented)
     findByName(name: string, baseMap?: boolean): MapLayerSource | undefined;
     // (undocumented)
+    static getInstance(): MapLayerSources | undefined;
+    // (undocumented)
     get layers(): MapLayerSource[];
+    // (undocumented)
+    static removeLayerByName(name: string): boolean;
     }
 
 // @internal (undocumented)
