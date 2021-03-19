@@ -16,7 +16,6 @@ export * from "./DevTools";
 export * from "./DisplayStyleState";
 export * from "./DrawingViewState";
 export * from "./EditingFunctions";
-export * from "./ElementEditor";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
