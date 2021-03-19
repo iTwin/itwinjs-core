@@ -136,6 +136,7 @@ import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
+import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { IModelVersionProps } from '@bentley/imodeljs-common';
@@ -275,7 +276,6 @@ import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
 import { Tweens } from '@bentley/imodeljs-common';
-import { TxnAction } from '@bentley/imodeljs-common';
 import { TxnNotifications } from '@bentley/imodeljs-common';
 import { UiAdmin } from '@bentley/ui-abstract';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
@@ -1660,10 +1660,15 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     get briefcaseChannelName(): IpcAppChannel;
     // @internal (undocumented)
     dispose(): void;
+    getRedoString(): Promise<string>;
+    getUndoString(allowCrossSessions?: boolean): Promise<string>;
+    hasPendingTxns(): Promise<boolean>;
+    isRedoPossible(): Promise<boolean>;
+    isUndoPossible(): Promise<boolean>;
     // @internal (undocumented)
-    notifyAfterUndoRedo(action: TxnAction): void;
+    notifyAfterUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
-    notifyBeforeUndoRedo(): void;
+    notifyBeforeUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
     notifyChangesApplied(): void;
     // @internal (undocumented)
@@ -1676,14 +1681,18 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     notifyGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     // @internal (undocumented)
     notifyModelsChanged(changed: ChangedEntities): void;
-    readonly onAfterUndoRedo: BeEvent<(action: TxnAction) => void>;
-    readonly onBeforeUndoRedo: BeEvent<() => void>;
+    readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
+    readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onChangesApplied: BeEvent<() => void>;
     readonly onCommit: BeEvent<() => void>;
     readonly onCommitted: BeEvent<() => void>;
     readonly onElementsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
+    reinstateTxn(): Promise<IModelStatus>;
+    reverseAll(): Promise<IModelStatus>;
+    reverseSingleTxn(): Promise<IModelStatus>;
+    reverseTxns(numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus>;
 }
 
 // @internal (undocumented)

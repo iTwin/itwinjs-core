@@ -4092,9 +4092,13 @@ export interface IpcAppFunctions {
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     closeIModel: (key: string) => Promise<void>;
+    getRedoString: (key: string) => Promise<string>;
+    getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
     hasPendingTxns: (key: string) => Promise<boolean>;
     // (undocumented)
     isInteractiveEditingSupported: (key: string) => Promise<boolean>;
+    isRedoPossible: (key: string) => Promise<boolean>;
+    isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
@@ -4106,7 +4110,7 @@ export interface IpcAppFunctions {
     // (undocumented)
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
-    reverseSingleTxn: (key: string) => Promise<IModelStatus>;
+    reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
     toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
@@ -7725,9 +7729,9 @@ export enum TxnAction {
 // @internal
 export interface TxnNotifications {
     // (undocumented)
-    notifyAfterUndoRedo: (action: TxnAction) => void;
+    notifyAfterUndoRedo: (isUndo: boolean) => void;
     // (undocumented)
-    notifyBeforeUndoRedo: () => void;
+    notifyBeforeUndoRedo: (isUndo: boolean) => void;
     // (undocumented)
     notifyChangesApplied: () => void;
     // (undocumented)

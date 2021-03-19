@@ -188,7 +188,6 @@ import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
-import { TxnAction as TxnAction_2 } from '@bentley/imodeljs-common';
 import { TxnNotifications } from '@bentley/imodeljs-common';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
@@ -4181,16 +4180,16 @@ export class TxnManager {
     get isRedoPossible(): boolean;
     isTxnIdValid(txnId: TxnIdString): boolean;
     get isUndoPossible(): boolean;
-    readonly onAfterUndoRedo: BeEvent<(_action: TxnAction_2) => void>;
+    readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
     // @internal (undocumented)
-    protected _onAfterUndoRedo(action: TxnAction_2): void;
+    protected _onAfterUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
     protected _onAllInputsHandled(elClassName: string, elId: Id64String): void;
     // @internal (undocumented)
     protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void;
-    readonly onBeforeUndoRedo: BeEvent<() => void>;
+    readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
     // @internal (undocumented)
-    protected _onBeforeUndoRedo(): void;
+    protected _onBeforeUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
     protected _onBeginValidate(): void;
     readonly onChangesApplied: BeEvent<() => void>;
