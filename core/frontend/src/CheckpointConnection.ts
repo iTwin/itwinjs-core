@@ -6,12 +6,11 @@
  * @module IModelConnection
  */
 
-import { BentleyStatus, GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyStatus, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import {
   AxisAlignedBox3d, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, IModelWriteRpcInterface,
   RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, WipRpcInterface,
 } from "@bentley/imodeljs-common";
-import { EditingFunctions } from "./EditingFunctions";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { AuthorizedFrontendRequestContext, FrontendLoggerCategory, IModelRoutingContext } from "./imodeljs-frontend";
@@ -200,19 +199,8 @@ export class CheckpointConnection extends IModelConnection {
  * @deprecated use BriefcaseConnection with an IpcApp
  */
 export class RemoteBriefcaseConnection extends CheckpointConnection {
-  private _editing: EditingFunctions | undefined;
-
   public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<RemoteBriefcaseConnection> {
     return (await super.open(contextId, iModelId, openMode, version)) as RemoteBriefcaseConnection;
-  }
-
-  /** General editing functions
-   * @internal
-   */
-  public get editing(): EditingFunctions {
-    if (this._editing === undefined)
-      this._editing = new EditingFunctions(this);
-    return this._editing;
   }
 
   /** WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
@@ -253,7 +241,9 @@ export class RemoteBriefcaseConnection extends CheckpointConnection {
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem updating the extents.
    */
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
-    return this.editing.updateProjectExtents(newExtents);
+    if (OpenMode.ReadWrite !== this.openMode)
+      throw new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError);
+    return IModelWriteRpcInterface.getClientForRouting(this.routingContext.token).updateProjectExtents(this.getRpcProps(), newExtents.toJSON());
   }
 
   /** Commit pending changes to this iModel
@@ -261,6 +251,8 @@ export class RemoteBriefcaseConnection extends CheckpointConnection {
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem saving changes.
    */
   public async saveChanges(description?: string): Promise<void> {
-    return this.editing.saveChanges(description);
+    if (OpenMode.ReadWrite !== this.openMode)
+      throw new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError);
+    return IModelWriteRpcInterface.getClientForRouting(this.routingContext.token).saveChanges(this.getRpcProps(), description);
   }
 }
