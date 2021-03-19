@@ -468,67 +468,41 @@ export { BentleyStatus }
 
 // @public
 export enum BisCodeSpec {
-    // (undocumented)
+    // @internal (undocumented)
     annotationFrameStyle = "bis:AnnotationFrameStyle",
-    // (undocumented)
+    // @internal (undocumented)
     annotationLeaderStyle = "bis:AnnotationLeaderStyle",
-    // (undocumented)
+    // @internal (undocumented)
     annotationTextStyle = "bis:AnnotationTextStyle",
-    // (undocumented)
     auxCoordSystem2d = "bis:AuxCoordSystem2d",
-    // (undocumented)
     auxCoordSystem3d = "bis:AuxCoordSystem3d",
-    // (undocumented)
     auxCoordSystemSpatial = "bis:AuxCoordSystemSpatial",
-    // (undocumented)
     categorySelector = "bis:CategorySelector",
-    // (undocumented)
+    // @internal (undocumented)
     colorBook = "bis:ColorBook",
-    // (undocumented)
     displayStyle = "bis:DisplayStyle",
-    // (undocumented)
     drawing = "bis:Drawing",
-    // (undocumented)
     drawingCategory = "bis:DrawingCategory",
-    // (undocumented)
     geometryPart = "bis:GeometryPart",
-    // (undocumented)
     graphicalType2d = "bis:GraphicalType2d",
-    // (undocumented)
     informationPartitionElement = "bis:InformationPartitionElement",
-    // (undocumented)
     lineStyle = "bis:LineStyle",
-    // (undocumented)
     linkElement = "bis:LinkElement",
-    // (undocumented)
     modelSelector = "bis:ModelSelector",
-    // (undocumented)
     nullCodeSpec = "bis:NullCodeSpec",
-    // (undocumented)
     physicalMaterial = "bis:PhysicalMaterial",
-    // (undocumented)
     physicalType = "bis:PhysicalType",
-    // (undocumented)
     renderMaterial = "bis:RenderMaterial",
-    // (undocumented)
     sheet = "bis:Sheet",
-    // (undocumented)
     spatialCategory = "bis:SpatialCategory",
-    // (undocumented)
     spatialLocationType = "bis:SpatialLocationType",
-    // (undocumented)
     subCategory = "bis:SubCategory",
-    // (undocumented)
     subject = "bis:Subject",
-    // (undocumented)
     templateRecipe2d = "bis:TemplateRecipe2d",
-    // (undocumented)
     templateRecipe3d = "bis:TemplateRecipe3d",
-    // (undocumented)
+    // @internal (undocumented)
     textAnnotationSeed = "bis:TextAnnotationSeed",
-    // (undocumented)
     texture = "bis:Texture",
-    // (undocumented)
     viewDefinition = "bis:ViewDefinition"
 }
 
@@ -2110,47 +2084,6 @@ export class EdgeArgs {
     get isValid(): boolean;
     // (undocumented)
     get numEdges(): number;
-}
-
-// @alpha @deprecated
-export abstract class Editor3dRpcInterface extends RpcInterface {
-    // (undocumented)
-    applyTransform(_tokenProps: IModelRpcProps, _editorId: GuidString, _tprops: TransformProps): Promise<any>;
-    // (undocumented)
-    createElement(_tokenProps: IModelRpcProps, _editorId: GuidString, _props: GeometricElement3dProps, _origin?: Point3d, _angles?: YawPitchRollAngles, _geometry?: any): Promise<void>;
-    // (undocumented)
-    end(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    static getClient(): Editor3dRpcInterface;
-    static readonly interfaceName = "Editor3dRpcInterface";
-    static interfaceVersion: string;
-    // (undocumented)
-    popState(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    pushState(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    start(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    startModifyingElements(_tokenProps: IModelRpcProps, _editorId: GuidString, _elementIds: Id64Array): Promise<void>;
-    // (undocumented)
-    writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, _editorId: GuidString, _opts: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void>;
-}
-
-// @alpha (undocumented)
-export interface Editor3dRpcInterfaceWriteOptions {
-    returnPropsOptions?: Editor3dRpcInterfaceWriteReturnPropsOptions;
-    returnType?: Editor3dRpcInterfaceWriteReturnType;
-}
-
-// @alpha (undocumented)
-export interface Editor3dRpcInterfaceWriteReturnPropsOptions {
-    geometry?: boolean;
-}
-
-// @alpha (undocumented)
-export enum Editor3dRpcInterfaceWriteReturnType {
-    Ids = 1,
-    None = 0,
-    Props = 2
 }
 
 // @public
