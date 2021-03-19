@@ -2069,6 +2069,7 @@ export class GridInViewContext {
     perspectiveZB: number | undefined,
     startEndDistance: Segment1d | undefined,
     gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => void): boolean;
+    get xyzLoop(): Point3d[];
     }
 
 // @public

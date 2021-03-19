@@ -303,6 +303,10 @@ export class GridInViewContext {
   private _gridCandidateRange: Range3d;
   private _gridSpaceClipper: ConvexClipPlaneSet;
   private _lineProximityContext: LineProximityContext;
+  /** Return the polygon of intersection between the grid plane and the frustum.
+   * * this is a copy of the internal form.
+   */
+  public get xyzLoop(): Point3d[] { return this._xyzLoop.getPoint3dArray();}
   /**
    * CAPTURE all members.
    */
