@@ -33,7 +33,7 @@ export class MapLayerSource implements MapLayerProps {
 
   private constructor(public formatId: string, public name: string, public url: string, public baseMap = false, public transparentBackground?: boolean, public maxZoom?: number, public userName?: string, public password?: string) { }
   public static fromJSON(json: any): MapLayerSource | undefined {
-    const baseMap = json.baseMap === true || (json.url && json.url.toLowerCase().indexOf("basemap") >= 0);
+    const baseMap = json.baseMap === true;
     return (typeof json.name === "string" && typeof json.url === "string" && typeof json.formatId === "string") ? new MapLayerSource(json.formatId, json.name, json.url, baseMap, json.transparentBackground === undefined ? true : json.transparentBackground, json.maxZoom, json.userName, json.password) : undefined;
   }
 
