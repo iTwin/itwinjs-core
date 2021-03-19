@@ -36,6 +36,7 @@ import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVari
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { WithClientRequestContext } from "../presentation-backend/Utils";
+import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 describe("PresentationManager", () => {
@@ -496,6 +497,16 @@ describe("PresentationManager", () => {
       expect(() => manager.getNativePlatform()).to.throw(PresentationError);
     });
 
+    it("unregisters PresentationIpcHandler if IpcHost is valid", () => {
+      sinon.stub(IpcHost, "isValid").get(() => true);
+      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
+      const unregisterSpy = sinon.spy();
+      sinon.stub(PresentationIpcHandler, "register").returns(unregisterSpy);
+      const manager = new PresentationManager({ addon: nativePlatformMock.object });
+      manager.dispose();
+      expect(unregisterSpy).to.be.calledOnce;
+    });
+
   });
 
   describe("getRulesetId", () => {
@@ -523,6 +534,7 @@ describe("PresentationManager", () => {
 
     it("returns correct id when input is a ruleset and in one-backend-one-frontend mode", async () => {
       sinon.stub(IpcHost, "isValid").get(() => true);
+      sinon.stub(IpcHost, "handle");
       manager = new PresentationManager({ addon: moq.Mock.ofType<NativePlatformDefinition>().object });
       const ruleset = await createRandomRuleset();
       expect(manager.getRulesetId(ruleset)).to.eq(ruleset.id);
@@ -1159,13 +1171,14 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: HierarchyCompareInfoJSON = setup({
+        const unprocessedResponse: HierarchyCompareInfoJSON = {
           changes: [{
             type: "Insert",
             position: 1,
             node: createRandomECInstancesNodeJSON(),
           }],
-        });
+        };
+        const addonResponse = setup(unprocessedResponse);
 
         // test
         const options: PresentationDataCompareOptions<IModelDb, NodeKey> = {
@@ -1200,13 +1213,14 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: HierarchyCompareInfoJSON = setup({
+        const unprocessedResponse: HierarchyCompareInfoJSON = {
           changes: [{
             type: "Insert",
             position: 1,
             node: createRandomECInstancesNodeJSON(),
           }],
-        });
+        };
+        const addonResponse = setup(unprocessedResponse);
 
         // test
         const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
@@ -1238,12 +1252,13 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: HierarchyCompareInfoJSON = setup({
+        const addonResponse: HierarchyCompareInfoJSON = {
           changes: [{
             type: "Delete",
-            node: createRandomECInstancesNodeJSON(),
+            target: createRandomECInstancesNodeJSON().key,
           }],
-        });
+        };
+        setup(addonResponse);
 
         // test
         const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
@@ -1275,13 +1290,14 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: HierarchyCompareInfoJSON = setup({
+        const addonResponse: HierarchyCompareInfoJSON = {
           changes: [{
             type: "Update",
-            node: createRandomECInstancesNodeJSON(),
-            changes: [],
+            target: createRandomECInstancesNodeJSON().key,
+            changes: {},
           }],
-        });
+        };
+        setup(addonResponse);
 
         // test
         const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
@@ -1341,9 +1357,10 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: HierarchyCompareInfoJSON = setup({
+        const addonResponse: HierarchyCompareInfoJSON = {
           changes: [],
-        });
+        };
+        setup(addonResponse);
 
         // test
         const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
@@ -1376,9 +1393,10 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: HierarchyCompareInfoJSON = setup({
+        const addonResponse: HierarchyCompareInfoJSON = {
           changes: [],
-        });
+        };
+        setup(addonResponse);
 
         // test
         const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {

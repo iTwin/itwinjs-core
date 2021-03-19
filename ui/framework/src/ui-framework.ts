@@ -11,6 +11,7 @@ export * from "./ui-framework/accudraw/AccuDrawCommandItems";
 export * from "./ui-framework/accudraw/AccuDrawDialog";
 export * from "./ui-framework/accudraw/AccuDrawKeyboardShortcuts";
 export * from "./ui-framework/accudraw/AccuDrawPopupManager";
+export * from "./ui-framework/accudraw/AccuDrawUiSettings";
 export * from "./ui-framework/accudraw/AccuDrawWidget";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
@@ -78,6 +79,7 @@ export * from "./ui-framework/frontstage/FrontstageManager";
 export * from "./ui-framework/frontstage/FrontstageProvider";
 export * from "./ui-framework/frontstage/NestedFrontstage";
 export * from "./ui-framework/frontstage/ModalFrontstage";
+export * from "./ui-framework/frontstage/ModalSettingsStage";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
 export * from "./ui-framework/hooks/useActiveViewport";
@@ -214,6 +216,7 @@ export * from "./ui-framework/tools/CoreToolDefinitions";
 export * from "./ui-framework/tools/FrameworkToolAdmin";
 export * from "./ui-framework/tools/MarkupToolDefinitions";
 export * from "./ui-framework/tools/RestoreLayoutTool";
+export * from "./ui-framework/tools/ToolSettingsTools";
 
 export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 

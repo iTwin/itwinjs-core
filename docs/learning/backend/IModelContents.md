@@ -24,7 +24,7 @@ The iModel has been optimized to persist and track changes to many data types in
 - Information records that are tightly coupled with the above
 
 The following data types are purposely not persisted in the iModel.
-However, the iModel.js library has been optimized to display them as context for the data in the iModel:
+However, the iTwin.js library has been optimized to display them as context for the data in the iModel:
 
 - Background maps and satellite imagery
 - Reality data (see below)
@@ -35,7 +35,7 @@ When the data type does not fall neatly into any of the above categories, the ne
 - How is the data normally transacted?
 - Is it important to track changes at a component level over time?
 
-> Note: Whether the data originates from an iModel or not, the iModel.js library is the ideal way to form connections between the iModel and other federated data sources.
+> Note: Whether the data originates from an iModel or not, the iTwin.js library is the ideal way to form connections between the iModel and other federated data sources.
 
 ## Special Considerations
 
@@ -147,7 +147,7 @@ However, it would be common for a website to link to both the training video and
 
 There are services that specialize in the capture, management, and preparation of reality data. Here is an [example](https://www.bentley.com/en/products/product-line/reality-modeling-software).
 
-The iModel.js library has capabilities that make it easy to display and work with reality data.
+The iTwin.js library has capabilities that make it easy to display and work with reality data.
 
 > Note: For cases where an AI/ML algorithm recognizes objects from reality data, the resulting objects output from that algorithm likely belong in the iModel.
 
@@ -177,4 +177,4 @@ It is not possible to cover all potential cases, so the general guidance is:
 | No            | Analysis results |
 | No            | Objects with frequently changing status |
 
-> Note: The iModel.js library has been designed with federation in mind and is the ideal way to form connections with the iModel.
+> Note: The iTwin.js library has been designed with federation in mind and is the ideal way to form connections with the iModel.

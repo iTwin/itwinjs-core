@@ -62,7 +62,6 @@ public;DefinitionGroupGroupsDefinitions
 public;DefinitionModel 
 public;DefinitionPartition 
 public;class DefinitionSet 
-alpha;DesktopAuthorizationClient 
 public;DetailCallout 
 public;class DetailingSymbol 
 internal;DevTools
@@ -204,7 +203,7 @@ public;class InformationReferenceElement
 beta;InstanceChange
 beta;class IpcHandler
 beta;IpcHost
-beta;IpcHostOptions
+beta;IpcHostOpts
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -212,10 +211,13 @@ public;LineStyleDefinition
 public;class LinkElement 
 public;LinkModel 
 public;LinkPartition 
+internal;LocalhostIpcHost
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+internal;class NativeAppAuthorizationBackend 
 beta;NativeHost
+beta;NativeHostOpts = IpcHostOpts
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -286,8 +288,10 @@ internal;TemplateViewDefinition3d
 public;TextAnnotation2d 
 public;TextAnnotation3d 
 public;Texture 
+internal;TextureCreateProps 
 public;TitleText 
 public;TxnAction
+beta;TxnElementsChanged
 public;TxnIdString = string
 beta;TxnManager
 public;class TypeDefinitionElement 

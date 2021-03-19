@@ -29,6 +29,7 @@ export * from "./tools/ModelAppearanceTools";
 export * from "./tools/parseArgs";
 export * from "./tools/parseBoolean";
 export * from "./tools/parseToggle";
+export * from "./tools/PlanarMaskTools";
 export * from "./tools/PlanProjectionTools";
 export * from "./tools/ProjectExtents";
 export * from "./tools/RealityModelTools";

@@ -16,7 +16,6 @@ import { SkyBox } from "../../DisplayStyleState";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
-import { ToolAdmin } from "../../tools/ToolAdmin";
 import { Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
@@ -704,12 +703,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     // Make this System a subscriber to the the IModelConnection onClose event
     this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
 
-    canvas.addEventListener("webglcontextlost", async () => this.handleContextLoss(), false);
-  }
-
-  protected async handleContextLoss(): Promise<void> {
-    const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
-    return ToolAdmin.exceptionHandler(msg);
+    canvas.addEventListener("webglcontextlost", async () => RenderSystem.contextLossHandler(), false);
   }
 
   /** Exposed strictly for tests. */

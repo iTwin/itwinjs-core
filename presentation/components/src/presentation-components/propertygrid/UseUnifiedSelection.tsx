@@ -26,7 +26,7 @@ export interface PropertyDataProviderWithUnifiedSelectionProps {
    * Maximum number of instances to request content for.
    *
    * When the number of selected instances is higher than this value, `dataProvider.keys` is set to an
-   * empty [[KeySet] and the result of the hook has `isOverLimit = true`.
+   * empty [[KeySet]] and the result of the hook has `isOverLimit = true`.
    *
    * Defaults to `100`.
    */

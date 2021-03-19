@@ -7,7 +7,7 @@
  */
 import { AuthStatus, BentleyError, Logger } from "@bentley/bentleyjs-core";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
-import { UserInfo } from "./UserInfo";
+import { UserInfo, UserInfoProps } from "./UserInfo";
 const loggerCategory = ITwinClientLoggerCategory.Authorization;
 
 /**
@@ -41,20 +41,30 @@ class TokenPrefixToTypeContainer {
   public static tokenPrefixToConstructorDict: { [key: string]: any } = {};
 }
 
+/** Properties for transmitting AccessTokens between processes
+ * @beta
+ */
+export interface AccessTokenProps {
+  tokenString: string;
+  startsAt?: string;
+  expiresAt?: string;
+  userInfo?: UserInfoProps;
+}
+
 /** Token issued by DelegationSecureTokenService for API access
  * @beta
  */
 @TokenPrefix("Bearer")
 export class AccessToken {
   protected _prefix: string;
-  protected _tokenString?: string;
+  protected _tokenString: string;
   private _userInfo?: UserInfo;
   private _startsAt?: Date;
   private _expiresAt?: Date;
 
-  /** Create a new AccessToken given a JWT (Jason Web Token) */
+  /** Create a new AccessToken given a JWT (JSON Web Token) */
   public constructor(tokenString?: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo) {
-    this._tokenString = tokenString;
+    this._tokenString = tokenString ?? "";
     this._startsAt = startsAt;
     this._expiresAt = expiresAt;
     this._userInfo = userInfo;
@@ -84,6 +94,13 @@ export class AccessToken {
     this._prefix = prefix;
   }
 
+  /** returns true if this token has expired
+   * @param buffer amount of time in seconds to return true before the real expiration time.
+   */
+  public isExpired(buffer: number) {
+    return (undefined !== this._expiresAt) && (this._expiresAt.getTime() - (buffer * 1000)) < Date.now();
+  }
+
   /**
    * Convert this AccessToken to a string that can be passed across the wire
    * Users should overwrite this method in a subclass of AccessToken if their token is not converted to a string in this way.
@@ -91,7 +108,7 @@ export class AccessToken {
    * @beta
    */
   public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
-    const jwt = this._tokenString || "";
+    const jwt = this._tokenString;
     return (includePrefix === IncludePrefix.Yes) ? `${this._prefix} ${jwt}` : jwt;
   }
   /**
@@ -137,16 +154,23 @@ export class AccessToken {
    * @throws [BentleyError]($bentley) if the supplied tokenResponse is undefined, or does not contain an "access_token" field
    * @beta
    */
-  public static fromJson(jsonObj: any): AccessToken {
-    if (!jsonObj || !jsonObj._tokenString) {
-      throw new BentleyError(AuthStatus.Error, "Expected JSON representing the token to contain the _tokenString field", Logger.logError, loggerCategory, () => jsonObj);
-    }
-    const jwt = jsonObj._tokenString;
-    const startsAt = jsonObj._startsAt !== undefined ? new Date(jsonObj._startsAt) : undefined;
-    const expiresAt = jsonObj._expiresAt !== undefined ? new Date(jsonObj._expiresAt) : undefined;
-    const userInfo = UserInfo.fromJson(jsonObj._userInfo);
+  public static fromJson(jsonObj: AccessTokenProps): AccessToken {
+    const jwt = jsonObj.tokenString;
+    const startsAt = jsonObj.startsAt !== undefined ? new Date(jsonObj.startsAt) : undefined;
+    const expiresAt = jsonObj.expiresAt !== undefined ? new Date(jsonObj.expiresAt) : undefined;
+    const userInfo = jsonObj.userInfo !== undefined ? UserInfo.fromJson(jsonObj.userInfo) : undefined;
     return new AccessToken(jwt, startsAt, expiresAt, userInfo);
   }
+
+  public toJSON(): AccessTokenProps {
+    return {
+      tokenString: this._tokenString,
+      startsAt: this._startsAt?.toJSON(),
+      expiresAt: this._expiresAt?.toJSON(),
+      userInfo: this._userInfo,
+    };
+  }
+
   /**
    * Creates AccessToken from the typical token responses obtained from Authorization servers
    * - The fields from the token response to different names in AccessToken to keep with naming guidelines

@@ -5,6 +5,8 @@ alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
 alpha;AccuDrawDialogProps 
 alpha;AccuDrawKeyboardShortcuts
 alpha;AccuDrawPopupManager
+alpha;AccuDrawUiSettings
+internal;AccuDrawUiSettingsChangedEvent 
 alpha;AccuDrawWidget(): JSX.Element
 alpha;AccuDrawWidgetControl 
 public;Action
@@ -65,6 +67,7 @@ beta;BasicToolWidget(props: BasicToolWidgetProps): JSX.Element
 beta;BasicToolWidgetProps
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
+alpha;BumpToolSetting 
 alpha;Calculator 
 internal;CalculatorEngine
 internal;CalculatorKeyType
@@ -185,9 +188,11 @@ beta;ExpandableSection
 beta;ExpandableSectionProps 
 internal;expandWidget: 
 beta;ExtensibleToolbarProps
+beta;featureOverridesActiveStateFunc(state: Readonly
+alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 
-alpha;FrameworkAccuDraw 
+internal;FrameworkAccuDraw 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
@@ -228,7 +233,7 @@ internal;getBadgeClassName(badgeType: BadgeType | undefined): "uifw-badge-new" |
 alpha;getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise
 internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps
 beta;getFeatureOverrideSyncEventIds(): string[]
-internal;getFirstItem: (groupItemDef: GroupItemDef) => import("../shared/CommandItemDef").CommandItemDef | ActionButtonItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined
+internal;getFirstItem: (groupItemDef: GroupItemDef) => AnyItemDef | undefined
 internal;getFirstItemId: (groupItemDef: GroupItemDef) => string
 internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
@@ -346,6 +351,8 @@ public;ModalFrontstageClosedEventArgs
 internal;ModalFrontstageComposer({ stageInfo }:
 public;ModalFrontstageInfo
 public;ModalFrontstageProps 
+alpha;ModalFrontstageRequestedCloseEvent 
+alpha;ModalFrontstageRequestedCloseEventArgs
 public;ModelessDialog 
 public;ModelessDialogChangedEvent 
 public;ModelessDialogManager
@@ -448,6 +455,7 @@ beta;SessionStateActionsUnion = ActionsUnion
 beta;sessionStateMapDispatchToProps:
 beta;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
 internal;setPanelSize: 
+beta;SettingsModalFrontstage 
 internal;settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus
 internal;setWidgetLabel: 
 internal;setWidgetState: 
@@ -606,7 +614,7 @@ beta;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly Co
 beta;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[]
 internal;useFrameworkVersion(): FrameworkVersion
 internal;useFrontstageManager(frontstageDef: FrontstageDef): void
-internal;useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems
+internal;useGroupedItems: (items: ReadonlyArray
 internal;useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
 internal;useItemsManager(frontstageDef: FrontstageDef): void

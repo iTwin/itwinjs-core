@@ -19,7 +19,7 @@ ECSQL allows filters by type
 > SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d)"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d)"></iframe>
 
 ---
 
@@ -33,7 +33,7 @@ ECSQL allows filters by type
 > SELECT * FROM bis.Element WHERE ECClassId IS (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT * FROM bis.Element WHERE ECClassId IS (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT * FROM bis.Element WHERE ECClassId IS (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)"></iframe>
 
 ---
 

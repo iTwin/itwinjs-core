@@ -24,7 +24,6 @@ import { ViewChangeOptions } from "../ViewAnimation";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { ViewStatus } from "../ViewStatus";
-import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
@@ -1229,10 +1228,7 @@ export class ToolAdmin {
   }
 
   /** Process shortcut key events */
-  public processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
-    if (wentDown && IModelApp.accuDraw.isEnabled)
-      return AccuDrawShortcuts.processShortcutKey(keyEvent);
-
+  public processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): boolean {
     return false;
   }
 
@@ -1471,6 +1467,16 @@ export class ToolAdmin {
   public reloadToolSettingsProperties(): void {
     if (this.reloadToolSettingsHandler)
       this.reloadToolSettingsHandler();
+  }
+
+  /** Method used to "bump" the value of a tool setting for the current tool.
+   * To "bump" a setting means to toggle a boolean value or cycle through enum values.
+   * If no `settingIndex` param is specified, the first setting is bumped.
+   * Returns true if the setting was successfully bumped.
+   * @beta
+   */
+  public async bumpToolSetting(settingIndex?: number): Promise<boolean> {
+    return this.currentTool.bumpToolSetting(settingIndex);
   }
 
   /** Method used by interactive tools to inform one or more UI components to refresh. This is typically used to update labels or icons associated with a specific tool.

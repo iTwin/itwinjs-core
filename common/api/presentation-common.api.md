@@ -186,6 +186,12 @@ export interface ClassInfoJSON {
     name: string;
 }
 
+// @internal (undocumented)
+export interface CommonIpcParams {
+    // (undocumented)
+    clientId: string;
+}
+
 // @public
 export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
@@ -1321,6 +1327,8 @@ export interface Node {
 // @public (undocumented)
 export namespace Node {
     export function fromJSON(json: NodeJSON | string): Node;
+    // @internal (undocumented)
+    export function fromPartialJSON(json: PartialNodeJSON): PartialNode;
     // @internal
     export function listFromJSON(json: NodeJSON[] | string): Node[];
     // @internal
@@ -1328,6 +1336,8 @@ export namespace Node {
     // @internal
     export function reviver(key: string, value: any): any;
     export function toJSON(node: Node): NodeJSON;
+    // @internal (undocumented)
+    export function toPartialJSON(node: PartialNode): PartialNodeJSON;
 }
 
 // @public
@@ -1342,7 +1352,7 @@ export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
 // @alpha (undocumented)
 export interface NodeDeletionInfo {
     // (undocumented)
-    node: Node;
+    target: NodeKey;
     // (undocumented)
     type: "Delete";
 }
@@ -1350,7 +1360,7 @@ export interface NodeDeletionInfo {
 // @alpha (undocumented)
 export interface NodeDeletionInfoJSON {
     // (undocumented)
-    node: NodeJSON;
+    target: NodeKeyJSON;
     // (undocumented)
     type: "Delete";
 }
@@ -1359,6 +1369,8 @@ export interface NodeDeletionInfoJSON {
 export interface NodeInsertionInfo {
     // (undocumented)
     node: Node;
+    // (undocumented)
+    parent?: NodeKey;
     // (undocumented)
     position: number;
     // (undocumented)
@@ -1369,6 +1381,8 @@ export interface NodeInsertionInfo {
 export interface NodeInsertionInfoJSON {
     // (undocumented)
     node: NodeJSON;
+    // (undocumented)
+    parent?: NodeKeyJSON;
     // (undocumented)
     position: number;
     // (undocumented)
@@ -1489,13 +1503,9 @@ export interface NodePathFilteringDataJSON {
 // @alpha (undocumented)
 export interface NodeUpdateInfo {
     // (undocumented)
-    changes: Array<{
-        name: string;
-        old: unknown;
-        new: unknown;
-    }>;
+    changes: PartialNode;
     // (undocumented)
-    node: Node;
+    target: NodeKey;
     // (undocumented)
     type: "Update";
 }
@@ -1503,13 +1513,9 @@ export interface NodeUpdateInfo {
 // @alpha (undocumented)
 export interface NodeUpdateInfoJSON {
     // (undocumented)
-    changes: Array<{
-        name: string;
-        old: unknown;
-        new: unknown;
-    }>;
+    changes: PartialNodeJSON;
     // (undocumented)
-    node: NodeJSON;
+    target: NodeKeyJSON;
     // (undocumented)
     type: "Update";
 }
@@ -1546,8 +1552,17 @@ export namespace PartialHierarchyModification {
 // @alpha (undocumented)
 export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON;
 
+// @alpha (undocumented)
+export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
+
+// @alpha (undocumented)
+export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
+
 // @internal (undocumented)
 export const PRESENTATION_COMMON_ROOT: string;
+
+// @internal (undocumented)
+export const PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface";
 
 // @alpha
 export interface PresentationDataCompareOptions<TIModel, TNodeKey> extends RequestOptionsWithRuleset<TIModel> {
@@ -1579,6 +1594,12 @@ export class PresentationError extends BentleyError {
 // @alpha (undocumented)
 export enum PresentationIpcEvents {
     Update = "presentation.onUpdate"
+}
+
+// @internal (undocumented)
+export interface PresentationIpcInterface {
+    setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void>;
+    updateHierarchyState(params: UpdateHierarchyStateParams<NodeKeyJSON>): Promise<void>;
 }
 
 // @public
@@ -1839,6 +1860,7 @@ export enum PropertyGroupingValue {
 export interface PropertyInfo {
     classInfo: ClassInfo;
     enumerationInfo?: EnumerationInfo;
+    extendedType?: string;
     // @alpha
     kindOfQuantity?: KindOfQuantityInfo;
     name: string;
@@ -2192,6 +2214,16 @@ export interface RulesetVariable {
 }
 
 // @public
+export interface RulesetVariableJSON {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    type: VariableValueTypes;
+    // (undocumented)
+    value: VariableValueJSON;
+}
+
+// @public
 export type RulesetVariableRpcRequestOptions = PresentationRpcRequestOptions<{
     rulesetId: string;
 }>;
@@ -2308,6 +2340,14 @@ export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TI
 // @public
 export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>>;
 
+// @internal (undocumented)
+export interface SetRulesetVariableParams<TVariable> extends CommonIpcParams {
+    // (undocumented)
+    rulesetId: string;
+    // (undocumented)
+    variable: TVariable;
+}
+
 // @public
 export interface SingleSchemaClassSpecification {
     className: string;
@@ -2407,6 +2447,18 @@ export type TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | 
 
 // @alpha (undocumented)
 export const UPDATE_FULL = "FULL";
+
+// @internal (undocumented)
+export interface UpdateHierarchyStateParams<TNodeKey> extends CommonIpcParams {
+    // (undocumented)
+    changeType: "nodesExpanded" | "nodesCollapsed";
+    // (undocumented)
+    imodelKey: string;
+    // (undocumented)
+    nodeKeys: Array<TNodeKey>;
+    // (undocumented)
+    rulesetId: string;
+}
 
 // @alpha (undocumented)
 export interface UpdateInfo {

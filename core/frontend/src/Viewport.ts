@@ -18,7 +18,8 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
+  SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -35,12 +36,11 @@ import { IModelConnection } from "./IModelConnection";
 import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ToolTipOptions } from "./NotificationManager";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
-import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Pixel } from "./render/Pixel";
-import { GraphicList, RenderGraphicOwner } from "./render/RenderGraphic";
+import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
@@ -58,6 +58,7 @@ import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
+import { DecorationsCache } from "./DecorationsCache";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -77,21 +78,10 @@ export interface ViewportDecorator {
    */
   readonly useCachedDecorations?: true;
 
-  /** Implement this method to add [[Decorations}} into the supplied DecorateContext.
+  /** Implement this method to add [[Decorations]] into the supplied DecorateContext.
    * @see [[useCachedDecorations]] to avoid unnecessarily recreating decorations.
    */
   decorate(context: DecorateContext): void;
-}
-
-/** @internal */
-export type CachedDecoration =
-  { type: "graphic", graphicType: GraphicType, graphicOwner: RenderGraphicOwner } |
-  { type: "canvas", canvasDecoration: CanvasDecoration, atFront: boolean } |
-  { type: "html", htmlElement: HTMLElement };
-
-function disposeCachedDecoration(dec: CachedDecoration): void {
-  if ("graphic" === dec.type)
-    dec.graphicOwner.disposeGraphic();
 }
 
 /** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
@@ -290,7 +280,6 @@ export abstract class Viewport implements IDisposable {
   private _timePointValid = false;
   /** @internal */
   public get timePointValid() { return this._timePointValid; }
-  private readonly _decorationCache: Map<ViewportDecorator, CachedDecoration[]> = new Map<ViewportDecorator, CachedDecoration[]>();
 
   /** Strictly for tests. @internal */
   public setAllValid(): void {
@@ -313,13 +302,14 @@ export abstract class Viewport implements IDisposable {
     this._sceneValid = false;
     this._timePointValid = false;
     this.invalidateDecorations();
-    this._disposeDecorationCache(); // When the scene is invalidated, remove all cached decorations so they get regenerated.
   }
+
   /** @internal */
   public invalidateRenderPlan(): void {
     this._renderPlanValid = false;
     this.invalidateScene();
   }
+
   /** @internal */
   public invalidateController(): void {
     this._controllerValid = this._analysisFractionValid = false;
@@ -330,6 +320,7 @@ export abstract class Viewport implements IDisposable {
   public setValidScene() {
     this._sceneValid = true;
   }
+
   /** @deprecated Use requestRedraw.
    * @internal
    */
@@ -343,6 +334,7 @@ export abstract class Viewport implements IDisposable {
    */
   public requestRedraw(): void {
     this._redrawPending = true;
+    IModelApp.requestNextAnimation();
   }
 
   private _animator?: Animator;
@@ -455,6 +447,8 @@ export abstract class Viewport implements IDisposable {
   public get viewDelta(): Vector3d { return this._viewingSpace.viewDelta; }
   /** Provides conversions between world and view coordinates. */
   public get worldToViewMap(): Map4d { return this._viewingSpace.worldToViewMap; }
+  /** Provides conversions between world and Npc (non-dimensional perspective) coordinates. */
+  public get worldToNpcMap(): Map4d { return this._viewingSpace.worldToNpcMap; }
   /** @internal */
   public get frustFraction(): number { return this._viewingSpace.frustFraction; }
 
@@ -519,13 +513,9 @@ export abstract class Viewport implements IDisposable {
    */
   public get isGridOn(): boolean { return this.viewFlags.grid; }
 
-  /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered.
-   * @note Do **not** modify the ViewFlags directly. Instead do something like:
-   * ```ts
-   *   const vf = viewport.viewFlags.clone();
-   *   vf.backgroundMap = true; // Or any other modifications
-   *   viewport.viewFlags = vf;
-   * @see [DisplayStyleSettings.viewFlags]($common)
+  /** Flags controlling aspects of how the contents of this viewport are rendered.
+   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
+   * @see [DisplayStyleSettings.viewFlags]($common).
    */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   public set viewFlags(viewFlags: ViewFlags) {
@@ -736,6 +726,13 @@ export abstract class Viewport implements IDisposable {
    */
   public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
     return this.displayStyle.getRealityModelAppearanceOverride(index);
+  }
+
+  /** Return the "contextual" reality model index for a transient model ID or -1 if none found
+   * @beta
+   */
+  public getRealityModelIndexFromTransientId(id: Id64String): number {
+    return this.displayStyle.getRealityModelIndexFromTransientId(id);
   }
 
   /** @beta
@@ -1014,40 +1011,10 @@ export abstract class Viewport implements IDisposable {
     IModelApp.tileAdmin.registerViewport(this);
   }
 
-  /** Forces removal of a specific decorator's cached decorations from this viewport, if they exist.
-   * This will force those decorations to be regenerated.
-   * @see [[ViewportDecorator.useCachedDecorations]].
-   * @beta
-   */
-  public invalidateCachedDecorations(decorator: ViewportDecorator) {
-    assert(true === decorator.useCachedDecorations, "Cannot invalidate cached decorations on a decorator which does not support cached decorations.");
-    if (true !== decorator.useCachedDecorations)
-      return;
-
-    const decorations = this._decorationCache.get(decorator);
-    if (decorations) {
-      decorations.forEach((decoration) => disposeCachedDecoration(decoration));
-      this._decorationCache.delete(decorator);
-    }
-
-    // Always invalidate decorations. Decorator may have no cached decorations currently, but wants them created.
-    this.invalidateDecorations();
-  }
-
-  /** Disposes of the entire decoration cache for this viewport. */
-  private _disposeDecorationCache() {
-    this._decorationCache.forEach((decorations: CachedDecoration[]) => {
-      decorations.forEach((decoration) => disposeCachedDecoration(decoration));
-    });
-
-    this._decorationCache.clear();
-  }
-
   public dispose(): void {
     if (this.isDisposed)
       return;
 
-    this._disposeDecorationCache();
     this._target = dispose(this._target);
     this.subcategories.dispose();
     IModelApp.tileAdmin.forgetViewport(this);
@@ -1126,6 +1093,7 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onRealityModelPlanarClipMaskChanged.addListener(displayStyleChanged));
 
     const analysisChanged = () => {
       this._changeFlags.setDisplayStyle();
@@ -1604,9 +1572,20 @@ export abstract class Viewport implements IDisposable {
     return retVal;
   }
 
+  /** Turn the camera off it is currently on.
+   * @see [[turnCameraOn]] to turn the camera on.
+   */
+  public turnCameraOff(): void {
+    if (this.view.is3d() && this.view.isCameraOn) {
+      this.view.turnCameraOff();
+      this.setupFromView();
+    }
+  }
+
   /** Turn the camera on if it is currently off. If the camera is already on, adjust it to use the supplied lens angle.
    * @param lensAngle The lens angle for the camera. If undefined, use view.camera.lens.
    * @note This method will fail if the ViewState is not 3d.
+   * @see [[turnCameraOff]] to turn the camera off.
    */
   public turnCameraOn(lensAngle?: Angle): ViewStatus {
     const view = this.view;
@@ -1618,30 +1597,37 @@ export abstract class Viewport implements IDisposable {
 
     Camera.validateLensAngle(lensAngle);
 
-    if (view.isCameraOn)
-      return view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle);
+    let status;
+    if (view.isCameraOn) {
+      status = view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle);
+    } else {
+      // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
+      // We use the depth of the center of the view for that.
+      let depthRange = this.determineVisibleDepthRange();
+      if (undefined === depthRange || Geometry.isAlmostEqualNumber(depthRange.minimum, depthRange.maximum))
+        depthRange = { minimum: 0, maximum: 1 };
 
-    // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
-    // We use the depth of the center of the view for that.
-    let depthRange = this.determineVisibleDepthRange();
-    if (undefined === depthRange || Geometry.isAlmostEqualNumber(depthRange.minimum, depthRange.maximum))
-      depthRange = { minimum: 0, maximum: 1 };
+      const middle = depthRange.minimum + ((depthRange.maximum - depthRange.minimum) / 2.0);
+      const corners = [
+        new Point3d(0.0, 0.0, middle), // lower left, at target depth
+        new Point3d(1.0, 1.0, middle), // upper right at target depth
+        new Point3d(0.0, 0.0, depthRange.maximum), // lower left, at closest npc
+        new Point3d(1.0, 1.0, depthRange.maximum), // upper right at closest
+      ];
 
-    const middle = depthRange.minimum + ((depthRange.maximum - depthRange.minimum) / 2.0);
-    const corners = [
-      new Point3d(0.0, 0.0, middle), // lower left, at target depth
-      new Point3d(1.0, 1.0, middle), // upper right at target depth
-      new Point3d(0.0, 0.0, depthRange.maximum), // lower left, at closest npc
-      new Point3d(1.0, 1.0, depthRange.maximum), // upper right at closest
-    ];
+      this.npcToWorldArray(corners);
 
-    this.npcToWorldArray(corners);
+      const eye = corners[2].interpolate(0.5, corners[3]); // middle of closest plane
+      const target = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
+      const backDist = eye.distance(target) * 2.0;
+      const frontDist = view.minimumFrontDistance();
+      status = view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
+    }
 
-    const eye = corners[2].interpolate(0.5, corners[3]); // middle of closest plane
-    const target = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
-    const backDist = eye.distance(target) * 2.0;
-    const frontDist = view.minimumFrontDistance();
-    return view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
+    if (ViewStatus.Success === status)
+      this.setupFromView();
+
+    return status;
   }
 
   /** Orient this viewport to one of the [[StandardView]] rotations. */
@@ -1934,7 +1920,6 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public computeViewRange(): Range3d {
-    this.setupFromView(); // can't proceed if viewport isn't valid (not active)
     const fitRange = this.view.computeFitRange();
     this.forEachTiledGraphicsProviderTree((ref) => {
       ref.unionFitRange(fitRange);
@@ -2302,23 +2287,6 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   protected addDecorations(_decorations: Decorations): void { }
 
-  /** @internal */
-  public getCachedDecorations(decorator: ViewportDecorator): CachedDecoration[] | undefined {
-    return this._decorationCache.get(decorator);
-  }
-
-  /** @internal */
-  public addCachedDecoration(decorator: ViewportDecorator, decoration: CachedDecoration): void {
-    assert(true === decorator.useCachedDecorations);
-    let list = this._decorationCache.get(decorator);
-    if (!list) {
-      list = [];
-      this._decorationCache.set(decorator, list);
-    }
-
-    list.push(decoration);
-  }
-
   /** Read selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
    * @param selector Specifies which aspect(s) of data to read.
@@ -2580,6 +2548,7 @@ export class ScreenViewport extends Viewport {
   private _lastPose?: ViewPose; // the pose the last time this view was rendered
   private _webglCanvas?: HTMLCanvasElement;
   private _logo!: HTMLImageElement;
+  private readonly _decorationCache = new DecorationsCache();
 
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
@@ -2611,6 +2580,32 @@ export class ScreenViewport extends Viewport {
     const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
     vp.changeView(view);
     return vp;
+  }
+
+  /** @internal */
+  public dispose(): void {
+    super.dispose();
+    this._decorationCache.clear();
+  }
+
+  /** @internal */
+  public invalidateScene(): void {
+    super.invalidateScene();
+
+    // When the scene is invalidated, so are all cached decorations - they will be regenerated.
+    this._decorationCache.clear();
+  }
+
+  /** Forces removal of a specific decorator's cached decorations from this viewport, if they exist.
+   * This will force those decorations to be regenerated.
+   * @see [[ViewportDecorator.useCachedDecorations]].
+   * @beta
+   */
+  public invalidateCachedDecorations(decorator: ViewportDecorator) {
+    this._decorationCache.delete(decorator);
+
+    // Always invalidate decorations. Decorator may have no cached decorations currently, but wants them created.
+    this.invalidateDecorations();
   }
 
   /** @internal */
@@ -2679,7 +2674,7 @@ export class ScreenViewport extends Viewport {
       if (undefined !== IModelApp.applicationLogoCard)
         logos.appendChild(IModelApp.applicationLogoCard());
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
-      this.displayStyle.getAttribution(logos, this);
+      this.forEachTileTreeRef((ref) => ref.addLogoCards(logos, this));
       ev.stopPropagation();
     };
     logo.onclick = showLogos;
@@ -2890,15 +2885,23 @@ export class ScreenViewport extends Viewport {
     // SEE: decorationDiv doc comment
     // eslint-disable-next-line deprecation/deprecation
     ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
-    const context = new DecorateContext(this, decorations);
-    context.addFromDecorator(this.view);
-    this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
+    const context = new DecorateContext(this, decorations, this._decorationCache);
+    try {
+      // It is an error to try to remove cached decorations while we are decorating.
+      // Some naughty decorators unwittingly do so by e.g. invalidating the scene in their decorate method.
+      this._decorationCache.prohibitRemoval = true;
 
-    for (const decorator of IModelApp.viewManager.decorators)
-      context.addFromDecorator(decorator);
+      context.addFromDecorator(this.view);
+      this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
 
-    // eslint-disable-next-line deprecation/deprecation
-    ScreenViewport.removeMarkedChildren(this.decorationDiv);
+      for (const decorator of IModelApp.viewManager.decorators)
+        context.addFromDecorator(decorator);
+
+      // eslint-disable-next-line deprecation/deprecation
+      ScreenViewport.removeMarkedChildren(this.decorationDiv);
+    } finally {
+      this._decorationCache.prohibitRemoval = false;
+    }
   }
 
   /** Change the cursor for this Viewport */

@@ -35,6 +35,7 @@ beta;Animator
 public;AppearanceOverrideProps
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
+internal;ArcGISMapLayerImageryProvider 
 internal;ArcGisToken
 internal;ArcGisTokenClientType
 internal;ArcGisTokenGenerator
@@ -49,6 +50,7 @@ public;AuxCoordSystem2dState
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
+internal;AzureMapsLayerImageryProvider 
 internal;B3dmReader 
 internal;BackgroundMapGeometry
 internal;BackgroundMapLocation
@@ -63,6 +65,7 @@ public;BeTouchEventProps
 public;BeWheelEvent 
 public;BeWheelEventProps 
 internal;BingElevationProvider
+internal;BingLocationProvider
 internal;BingMapsImageryLayerProvider 
 public;BlankConnection 
 public;BlankConnectionProps
@@ -93,6 +96,7 @@ internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
 internal;createEmptyRenderPlan(): RenderPlan
+internal;createMaskTreeReference(model: GeometricModelState): TileTreeReference
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
@@ -104,6 +108,7 @@ alpha;CustomQuantityTypeDefinition
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
+internal;DecorationsCache
 public;Decorator 
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
@@ -111,19 +116,18 @@ internal;DefineACSByPointsTool
 alpha;DepthPointOptions
 alpha;DepthPointSource
 public;DepthRangeNpc
-alpha;DesktopAuthorizationClient 
 internal;DevTools
 beta;DisclosedTileTreeSet 
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
-alpha;DownloadBriefcaseOptions
+beta;DownloadBriefcaseId =
+beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
-alpha;EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection
 alpha;EditingFunctions
 alpha;EditingFunctions
 deprecated;CategoryEditor
@@ -218,6 +222,7 @@ public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
 public;GraphicType
+internal;GridDisplaySettings
 alpha;GroupMark
 internal;Hilites
 beta;HiliteSet
@@ -261,7 +266,7 @@ internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModel
 public;class InputCollector 
 public;InputSource
 internal;InstancedGraphicParams
-alpha;InteractiveEditingSession 
+beta;InteractiveEditingSession 
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
@@ -277,6 +282,8 @@ internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
+internal;LocalhostIpcApp
+internal;LocalHostIpcAppOpts 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -288,6 +295,7 @@ public;LookViewTool
 internal;LRUTileList
 internal;LRUTileListNode
 alpha;ManipulatorToolEvent
+internal;MapBoxLayerImageryProvider 
 internal;MapCartoRectangle 
 internal;MapLayerFormat
 internal;MapLayerFormatRegistry
@@ -334,7 +342,9 @@ public;ModelSelectorState
 public;ModelState 
 alpha;ModifyElementSource
 alpha;NativeApp
+alpha;NativeAppAuthorization
 internal;NativeAppLogger
+alpha;NativeAppOpts 
 internal;NoRenderApp
 beta;class NotificationHandler
 public;NotificationManager
@@ -371,6 +381,8 @@ public;PhysicalModelState
 internal;PingTestResult
 beta;Pixel
 internal;PlanarClassifierMap = Map
+internal;PlanarClassifierTarget
+beta;PlanarClipMaskState
 internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
@@ -509,6 +521,9 @@ internal;TilePatch = PlanarTilePatch | EllipsoidPatch
 beta;TileRequest
 beta;TileRequest
 internal;State
+beta;TileRequestChannel
+beta;TileRequestChannels
+beta;TileRequestChannelStatistics
 beta;Tiles
 beta;class TileTree
 beta;TileTreeDiscloser
@@ -517,6 +532,7 @@ beta;TileTreeOwner
 beta;TileTreeParams
 beta;class TileTreeReference
 beta;TileTreeSupplier
+internal;TileUrlImageryProvider 
 beta;TileUsageMarker
 beta;TileVisibility
 public;Tool
@@ -604,13 +620,15 @@ public;WalkViewTool
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
 beta;WebViewerApp
-beta;WebViewerAppOptions
+beta;WebViewerAppOpts
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities
 internal;WmsCapability
+internal;WmsMapLayerImageryProvider 
 internal;WmsUtilities
 internal;WmtsCapabilities
 internal;WmtsCapability
+internal;WmtsMapLayerImageryProvider 
 public;ZoomToOptions
 public;ZoomViewTool 

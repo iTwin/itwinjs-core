@@ -16,6 +16,8 @@ import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { ImageCheckBox } from "@bentley/ui-core";
 
+// cSpell:ignore imagecheckbox
+
 /** @internal */
 interface ImageCheckBoxEditorState {
   /** Image for the "checked" state */
@@ -30,16 +32,17 @@ interface ImageCheckBoxEditorState {
  * @beta
  */
 export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps, ImageCheckBoxEditorState> implements TypeEditor {
-
   private _isMounted = false;
-  /** @internal */
+  private _inputElement: React.RefObject<HTMLInputElement> = React.createRef();
 
+  /** @internal */
   public readonly state: Readonly<ImageCheckBoxEditorState> = {
     imageOff: "",
     imageOn: "",
     checkboxValue: false,
     isDisabled: false,
   };
+
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
     let propertyValue: PropertyValue | undefined;
@@ -54,6 +57,14 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
     }
 
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._inputElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    return document.activeElement === this._inputElement.current;
   }
 
   /** @internal */
@@ -124,6 +135,7 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
 
     return (
       <ImageCheckBox
+        inputRef={this._inputElement}
         imageOff={this.state.imageOff}
         imageOn={this.state.imageOn}
         className={className}

@@ -104,6 +104,12 @@ export class RealityData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.DataAcquisitionDate")
   public dataAcquisitionDate?: string;
 
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.DataAcquisitionStartDate")
+  public dataAcquisitionStartDate?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.DataAcquisitionEndDate")
+  public dataAcquisitionEndDate?: string;
+
   @ECJsonTypeMap.propertyToJson("wsg", "properties.DataAcquirer")
   public dataAcquirer?: string;
 
@@ -343,6 +349,23 @@ export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
   action?: string;
 }
 
+/** DataLocation
+ * This class is used to represent a data location
+ * @internal
+ */
+@ECJsonTypeMap.classToJson("wsg", "S3MX.DataLocation", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class DataLocation extends WsgInstance {
+
+  @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
+  public id?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Provider")
+  public provider?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Location")
+  public location?: string;
+}
+
 /**
  * Client wrapper to Reality Data Service.
  * An instance of this class is used to extract reality data from the ProjectWise Context Share (Reality Data Service)
@@ -439,7 +462,7 @@ export class RealityDataClient extends WsgClient {
 
     const newQueryOptions = { project: projectId } as RequestQueryOptions;
     if (!type)
-      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'`;
+      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'+or+Type+eq+'OMR'`;
     else
       newQueryOptions.$filter = `Type+eq+'${type}'`;
 
@@ -465,7 +488,7 @@ export class RealityDataClient extends WsgClient {
 
     const newQueryOptions = { project: projectId, polygon: polygonString } as RequestQueryOptions;
     if (!type)
-      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'`;
+      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'+or+Type+eq+'OMR'`;
     else
       newQueryOptions.$filter = `Type+eq+'${type}'`;
     return this.getRealityDatas(requestContext, projectId, newQueryOptions);
@@ -644,5 +667,16 @@ export class RealityDataClient extends WsgClient {
       realityDataId = urlParts.find(Guid.isGuid);
     }
     return realityDataId;
+  }
+
+  /**
+   * Gets the list of all data locations supported by PW Context Share.
+   * @param requestContext The client request context.
+   * @returns The requested data locations list.
+   */
+  public async getDataLocation(requestContext: AuthorizedClientRequestContext): Promise<DataLocation[]> {
+    requestContext.enter();
+    const dataLocation: DataLocation[] = await this.getInstances<DataLocation>(requestContext, DataLocation, `/Repositories/S3MXECPlugin--Server/S3MX/DataLocation`);
+    return dataLocation;
   }
 }

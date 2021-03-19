@@ -18,7 +18,8 @@ import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { RenderSystem } from "../render/RenderSystem";
 import { GraphicBranch } from "../render/GraphicBranch";
 import {
-  DynamicIModelTile, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeParams,
+  DynamicIModelTile, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
+  TileRequestChannel, TileTree, TileTreeParams,
 } from "./internal";
 
 /** @internal */
@@ -180,7 +181,7 @@ class RootTile extends Tile {
       this._contentRange = this.staticBranch.contentRange.clone();
 
     // Determine initial state.
-    const session = InteractiveEditingSession.get(tree.iModel);
+    const session = tree.iModel.isBriefcaseConnection() ? tree.iModel.editingSession : undefined;
     if (undefined === session) {
       this._tileState = new StaticState(this);
     } else {
@@ -204,6 +205,10 @@ class RootTile extends Tile {
       children.push(this._tileState.rootTile);
 
     resolve(children);
+  }
+
+  public get channel(): TileRequestChannel {
+    throw new Error("Root iModel tile has no content");
   }
 
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {

@@ -28,7 +28,6 @@ export interface FavoritePropertyListProps {
 export class FavoritePropertyList extends React.PureComponent<FavoritePropertyListProps> {
   /** @internal */
   public render() {
-    // istanbul ignore else
     if (this.props.propertyData.records.Favorite !== undefined) {
       const propertyValueRendererManager = this.props.propertyValueRendererManager ?? PropertyValueRendererManager.defaultManager;
       const orientation = this.props.orientation ?? Orientation.Horizontal;

@@ -46,21 +46,22 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
   private _isShared: boolean = false;
 
-  /** @internal - used by statement cache */
+  public get stmt() { return this._stmt; }
+
+  /** used by statement cache */
   public setIsShared(b: boolean) { this._isShared = b; }
 
-  /** @internal - used by statement cache */
+  /**  used by statement cache */
   public get isShared(): boolean { return this._isShared; }
 
   /** Check if this statement has been prepared successfully or not */
-  public get isPrepared(): boolean { return !!this._stmt; }
+  public get isPrepared(): boolean { return undefined !== this._stmt; }
 
   /** Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param sql The SQL statement string to prepare
    * @throws [IModelError]($common) if the SQL statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
-   * @internal
    */
   public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, sql: string): void {
     if (this.isPrepared)
@@ -73,7 +74,6 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
 
   /** Indicates whether the prepared statement makes no **direct* changes to the content of the file
    * or not. See [SQLite docs](https://www.sqlite.org/c3ref/stmt_readonly.html) for details.
-   * @return Returns True, if the statement is readonly. False otherwise.
    */
   public get isReadonly(): boolean {
     if (!this.isPrepared)
@@ -97,7 +97,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    */
   public dispose(): void {
     if (this.isShared)
-      throw new Error("you can't dispose an SqliteStatement that is shared with others (e.g., in a cache)");
+      throw new Error("Can't dispose a shared SqliteStatement");
     if (!this.isPrepared)
       return;
     this._stmt!.dispose(); // Tell the peer JS object to free its native resources immediately

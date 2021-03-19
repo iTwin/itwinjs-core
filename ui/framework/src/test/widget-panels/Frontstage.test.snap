@@ -3,6 +3,8 @@
 exports[`ActiveFrontstageDefProvider should render 1`] = `
 <div
   className="uifw-widgetPanels-frontstage"
+  onKeyDown={[Function]}
+  role="presentation"
 >
   <NineZone
     dispatch={[Function]}
