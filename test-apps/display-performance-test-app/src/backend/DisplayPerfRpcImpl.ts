@@ -207,6 +207,21 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     return jsonStr;
   }
 
+  /**
+   * See https://stackoverflow.com/questions/26246601/wildcard-string-comparison-in-javascript
+   * Get regex to find strings matching a given rule wildcard. Makes sure that it is case-insensitive.
+   */
+  private _matchRuleRegex(rule: string) {
+    rule = rule.toLowerCase();
+    const escapeRegex = (str: string) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+    return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`);
+  }
+
+  public async getMatchingFiles(rootDir: string, pattern: string): Promise<string> {
+    const fileNames = JSON.stringify(IModelJsFs.recursiveFindSync(rootDir, this._matchRuleRegex(pattern)));
+    return fileNames;
+  }
+
 }
 
 /** Auto-register the impl when this file is included. */

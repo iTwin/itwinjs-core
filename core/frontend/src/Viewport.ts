@@ -447,6 +447,8 @@ export abstract class Viewport implements IDisposable {
   public get viewDelta(): Vector3d { return this._viewingSpace.viewDelta; }
   /** Provides conversions between world and view coordinates. */
   public get worldToViewMap(): Map4d { return this._viewingSpace.worldToViewMap; }
+  /** Provides conversions between world and Npc (non-dimensional perspective) coordinates. */
+  public get worldToNpcMap(): Map4d { return this._viewingSpace.worldToNpcMap; }
   /** @internal */
   public get frustFraction(): number { return this._viewingSpace.frustFraction; }
 
@@ -511,13 +513,9 @@ export abstract class Viewport implements IDisposable {
    */
   public get isGridOn(): boolean { return this.viewFlags.grid; }
 
-  /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered.
-   * @note Do **not** modify the ViewFlags directly. Instead do something like:
-   * ```ts
-   *   const vf = viewport.viewFlags.clone();
-   *   vf.backgroundMap = true; // Or any other modifications
-   *   viewport.viewFlags = vf;
-   * @see [DisplayStyleSettings.viewFlags]($common)
+  /** Flags controlling aspects of how the contents of this viewport are rendered.
+   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
+   * @see [DisplayStyleSettings.viewFlags]($common).
    */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   public set viewFlags(viewFlags: ViewFlags) {

@@ -2,6 +2,30 @@
   "name": "@bentley/orbitgt-core",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@bentley/orbitgt-core_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/orbitgt-core_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/orbitgt-core_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:53 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/orbitgt-core_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
@@ -11,6 +35,18 @@
       "version": "2.12.0",
       "tag": "@bentley/orbitgt-core_v2.12.0",
       "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@bentley/orbitgt-core_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/orbitgt-core_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
       "comments": {}
     },
     {

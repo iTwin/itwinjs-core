@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as os from "os";
-import * as path from "path";
-import * as semver from "semver";
 /** @packageDocumentation
  * @module IModelHost
  */
+
+import * as os from "os";
+import * as path from "path";
+import * as semver from "semver";
 import {
   AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager,
   IntrospectionClient,
@@ -352,6 +353,7 @@ export class IModelHost {
   }
 
   private static _isValid = false;
+  /** Returns true if IModelHost is started.  */
   public static get isValid() { return this._isValid; }
   /** This method must be called before any iModel.js services are used.
    * @param configuration Host configuration data.

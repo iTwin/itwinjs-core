@@ -20,5 +20,4 @@ This list contains all the OAuth scopes that are required for an application to 
 | context-registry-service:read-only  | Required to access the Context Registry, the service that allows access to an iTwin project |
 | projectwise-share        | Required to view and manage data in ProjectWise Share                                        |
 | product-settings-service | View and manage settings stored in the Product Settings Service                              |
-| components-center-service:external |                                                                                    |
 | offline_access | Required to get a refresh_token (only supported in Desktop registration)                               |

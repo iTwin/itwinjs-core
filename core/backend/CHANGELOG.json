@@ -2,6 +2,72 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@bentley/imodeljs-backend_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Ensure elements passed to native code are in proper JSON format."
+          },
+          {
+            "comment": "refactor Ipc layers to use IpcHost/IpcApp"
+          },
+          {
+            "comment": "The export methods of IModelExporter and the process methods of IModelTransformer are now async."
+          },
+          {
+            "comment": "IPC shim (WIP) for local webviewer apps."
+          },
+          {
+            "comment": "Add docs and test for CTE support"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.13.1"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.13.3"
+          },
+          {
+            "comment": "Support Node 14"
+          },
+          {
+            "comment": "add notifications for changed elements on SaveChanges"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Undo/Redo shortcuts"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/imodeljs-backend_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/imodeljs-backend_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.12.6"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
       "tag": "@bentley/imodeljs-backend_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
@@ -59,6 +125,24 @@
       }
     },
     {
+      "version": "2.11.2",
+      "tag": "@bentley/imodeljs-backend_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "NativeApp download cancellation fix"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/imodeljs-backend_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.11.0",
       "tag": "@bentley/imodeljs-backend_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",
@@ -102,9 +186,7 @@
           },
           {
             "comment": "Version compare property checksums"
-          }
-        ],
-        "undefined": [
+          },
           {
             "comment": "return LocalBriefcaseProps from BriefcaseManager.downloadBriefcase"
           }

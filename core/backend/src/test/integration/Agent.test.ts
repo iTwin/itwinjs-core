@@ -9,6 +9,10 @@ import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
+// Configuration needed
+//    imjs_agent_test_client_id
+//    imjs_agent_test_client_secret
+
 describe("Agent (#integration)", () => {
   // iOS does not support agent test
   let testProjectId: string;
@@ -17,7 +21,6 @@ describe("Agent (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
 
   before(async () => {
-    IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
@@ -36,7 +39,7 @@ describe("Agent (#integration)", () => {
   });
 
   after(async () => {
-    // Purge briefcases that are close to reaching the aquire limit
+    // Purge briefcases that are close to reaching the acquire limit
     await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
     await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadWriteTest");
   });
