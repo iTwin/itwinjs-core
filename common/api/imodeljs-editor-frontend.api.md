@@ -30,6 +30,8 @@ export class DeleteElementsTool extends ElementSetTool {
     // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     onRestartTool(): void;
     // (undocumented)
     processAgendaImmediate(): Promise<void>;
@@ -64,6 +66,8 @@ export class EditTools {
 export class MoveElementsTool extends TransformElementsTool {
     // (undocumented)
     protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
@@ -104,6 +108,8 @@ export class RotateElementsTool extends TransformElementsTool {
     protected haveFinalPoint: boolean;
     // (undocumented)
     protected havePivotPoint: boolean;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
