@@ -123,12 +123,8 @@ function baseColorFromTextures(textureCount: number) {
   if (doDiscard)
       discard;
 
-  if (col.a > 0.0)
-    col.rgb /= col.a;
-
-  col.a = mix(col.a, v_color.a * col.a, step(0.0, v_color.a));
-  col.rgb = col.a *  mix(col.rgb, mix(col.rgb, v_color.rgb, .5), step(0.0, v_color.r));
-  col.a = mix(col.a, v_color.a * col.a, step(0.0, v_color.a));
+  col.rgb = mix(col.rgb, mix(col.rgb, v_color.rgb, .5), step(0.0, v_color.r));
+  col.a = mix(col.a, v_color.a, step(0.0, v_color.a));
   return col;
 `;
 }
