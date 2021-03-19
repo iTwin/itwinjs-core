@@ -10,14 +10,21 @@ import { assert } from "@bentley/bentleyjs-core";
 import { basisWorkerScript } from "./BasisWorker";
 import { System } from "./System";
 
-async function _fetchBasisTranscoderWasm(): Promise<ArrayBuffer> {
-  const resp = await fetch("http://localhost:3000/basis_transcoder.wasm");
-  return resp.arrayBuffer();
-}
+// async function _fetchBasisTranscoderWasm(): Promise<ArrayBuffer> {
+//   const resp = await fetch("http://localhost:3000/basis_transcoder.wasm");
+//   return resp.arrayBuffer();
+// }
 
-async function _fetchBasisTranscoderJs(): Promise<string> {
-  const resp = await fetch("http://localhost:3000/basis_transcoder.js");
-  return resp.text();
+// async function _fetchBasisTranscoderJs(): Promise<string> {
+//   const resp = await fetch("http://localhost:3000/basis_transcoder.js");
+//   return resp.text();
+// }
+
+// The following function dynamically imports the transcoder script and wasm binary.
+// This is ideal because they are both large pieces of data, and we want to skip downloading them when Basis is not used.
+async function _fetchBasisTranscoder(): Promise<{js: string, wasm: Uint8Array}> {
+  const { basisTranscoderScript, basisTranscoderWasm } = await import("./BasisTranscoder");
+  return { js: basisTranscoderScript, wasm: Base64.toUint8Array(basisTranscoderWasm) };
 }
 
 enum BasisTranscodeFormat {
@@ -102,13 +109,12 @@ export class BasisLoader {
 
   private async _init() {
     if (undefined === this._initPromise) {
-      const wasmBinary = _fetchBasisTranscoderWasm();
-      const basisTranscoderScript = _fetchBasisTranscoderJs();
+      const transcoderPromise = _fetchBasisTranscoder();
 
-      this._initPromise = Promise.all([wasmBinary, basisTranscoderScript]).then(([wasmBin, basisTranscoderJs]) => {
-        const js = [basisTranscoderJs, basisWorkerScript].join("\n\n");
+      this._initPromise = Promise.all([transcoderPromise]).then(([transcoder]) => {
+        const js = [transcoder.js, basisWorkerScript].join("\n\n");
         const srcUrl = URL.createObjectURL(new Blob([js]));
-        this._wasmBinary = wasmBin;
+        this._wasmBinary = transcoder.wasm;
         this._basisWorker = new Worker(srcUrl);
         this._basisWorker.addEventListener("message", BasisLoader._basisWorkerEventListener);
         this._basisWorker.postMessage({ command: "initializeBasisModule", wasmBinary: this._wasmBinary});
