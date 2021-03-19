@@ -376,7 +376,7 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
 }
 
 /** Properties of an [ExternalSource]($backend)
- * @alpha
+ * @beta
  */
 export interface ExternalSourceProps extends ElementProps {
   repository?: RelatedElementProps;
@@ -385,7 +385,7 @@ export interface ExternalSourceProps extends ElementProps {
 }
 
 /** The role that an attached ExternalSource plays, e.g. to specify context or a part-of-a-whole.
- * @alpha
+ * @beta
  */
 export enum ExternalSourceAttachmentRole {
   SpecifyContext = 0,
@@ -393,7 +393,7 @@ export enum ExternalSourceAttachmentRole {
 }
 
 /** Properties of an [ExternalSourceAttachment]($backend)
- * @alpha
+ * @beta
  */
 export interface ExternalSourceAttachmentProps extends ElementProps {
   attaches?: RelatedElementProps;
@@ -475,7 +475,7 @@ export interface RepositoryLinkProps extends UrlLinkProps {
 }
 
 /** The properties of a [SynchronizationConfigLink]($backend)
- * @alpha
+ * @beta
  */
 export interface SynchronizationConfigLinkProps extends UrlLinkProps {
   lastSuccessfulRun?: Date;

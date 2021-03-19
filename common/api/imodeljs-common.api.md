@@ -490,6 +490,8 @@ export enum BisCodeSpec {
     drawing = "bis:Drawing",
     // (undocumented)
     drawingCategory = "bis:DrawingCategory",
+    externalSource = "bis:ExternalSource",
+    externalSourceAttachment = "bis:ExternalSourceAttachment",
     // (undocumented)
     geometryPart = "bis:GeometryPart",
     // (undocumented)
@@ -2442,7 +2444,45 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
     jsonProperties?: any;
     kind: string;
     scope: RelatedElementProps;
+    // (undocumented)
+    source?: RelatedElementProps;
     version?: string;
+}
+
+// @beta
+export interface ExternalSourceAttachmentProps extends ElementProps {
+    // (undocumented)
+    attaches?: RelatedElementProps;
+    // (undocumented)
+    pitch?: number;
+    // (undocumented)
+    role?: ExternalSourceAttachmentRole;
+    // (undocumented)
+    roll?: number;
+    // (undocumented)
+    scale?: XYZProps;
+    // (undocumented)
+    translation?: XYZProps;
+    // (undocumented)
+    yaw?: number;
+}
+
+// @beta
+export enum ExternalSourceAttachmentRole {
+    // (undocumented)
+    SpecifyContext = 0,
+    // (undocumented)
+    SpecifyPart = 1
+}
+
+// @beta
+export interface ExternalSourceProps extends ElementProps {
+    // (undocumented)
+    connectorName?: string;
+    // (undocumented)
+    connectorVersion?: string;
+    // (undocumented)
+    repository?: RelatedElementProps;
 }
 
 // @public
@@ -5926,6 +5966,8 @@ export namespace RenderTexture {
 // @public
 export interface RepositoryLinkProps extends UrlLinkProps {
     // (undocumented)
+    format?: string;
+    // (undocumented)
     repositoryGuid?: GuidString;
 }
 
@@ -7104,6 +7146,12 @@ export interface SubjectProps extends ElementProps {
 
 // @alpha (undocumented)
 export type SubLayerId = string | number;
+
+// @beta
+export interface SynchronizationConfigLinkProps extends UrlLinkProps {
+    // (undocumented)
+    lastSuccessfulRun?: Date;
+}
 
 // @public
 export enum SyncMode {
