@@ -27,7 +27,7 @@ export class Quantity implements QuantityProps {
       this._unit = unit;
       this._isValid = true;
     } else {
-      this._unit = { name: "unknown", label: "unknown", unitFamily: "unknown", isValid: false };
+      this._unit = { name: "unknown", label: "unknown", unitFamily: "unknown", isValid: false, system: "unknown" };
     }
 
     if (undefined !== magnitude)

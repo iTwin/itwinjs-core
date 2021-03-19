@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, ItemField, MockRender, RotationMode } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
 import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { AccuDrawUiAdmin } from "@bentley/ui-abstract";
+import { AccuDrawUiAdmin, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 
 // cspell:ignore dont uiadmin
@@ -27,13 +27,38 @@ describe("FrameworkAccuDraw", () => {
     TestUtils.terminateUiFramework();
   });
 
-  it("should call onCompassModeChange & emit onAccuDrawSetModeEvent", () => {
+  it("FrameworkAccuDraw.displayNotifications should set & return correctly", () => {
+    FrameworkAccuDraw.displayNotifications = false;
+    expect(FrameworkAccuDraw.displayNotifications).to.be.false;
+    FrameworkAccuDraw.displayNotifications = true;
+    expect(FrameworkAccuDraw.displayNotifications).to.be.true;
+  });
+
+  it("should call onCompassModeChange & emit onAccuDrawSetModeEvent & set conditionals", () => {
+    FrameworkAccuDraw.displayNotifications = true;
     const spy = sinon.spy();
+    const spyMessage = sinon.spy(IModelApp.notifications, "outputMessage");
     const remove = AccuDrawUiAdmin.onAccuDrawSetModeEvent.addListener(spy);
+
     IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
+    FrameworkAccuDraw.isPolarModeConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isPolarModeConditional)).to.be.true;
     spy.calledOnce.should.true;
+    spyMessage.calledOnce.should.true;
+    spyMessage.resetHistory();
+
     IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+    FrameworkAccuDraw.isRectangularModeConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isRectangularModeConditional)).to.be.true;
     spy.calledTwice.should.true;
+    spyMessage.calledOnce.should.true;
+    spyMessage.resetHistory();
+
+    FrameworkAccuDraw.displayNotifications = false;
+    IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
+    spyMessage.called.should.false;
+    spyMessage.resetHistory();
+
     remove();
   });
 
@@ -56,6 +81,47 @@ describe("FrameworkAccuDraw", () => {
     spy.calledOnce.should.true;
     spy.resetHistory();
     remove();
+  });
+
+  it("should set rotation & conditionals correctly & notify", () => {
+    FrameworkAccuDraw.displayNotifications = true;
+    const spyMessage = sinon.spy(IModelApp.notifications, "outputMessage");
+
+    IModelApp.accuDraw.setRotationMode(RotationMode.Top);
+    FrameworkAccuDraw.isTopRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isTopRotationConditional)).to.be.true;
+    spyMessage.calledOnce.should.true;
+    spyMessage.resetHistory();
+    IModelApp.accuDraw.setRotationMode(RotationMode.Front);
+    FrameworkAccuDraw.isFrontRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isFrontRotationConditional)).to.be.true;
+    spyMessage.calledOnce.should.true;
+    spyMessage.resetHistory();
+    IModelApp.accuDraw.setRotationMode(RotationMode.Side);
+    FrameworkAccuDraw.isSideRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isSideRotationConditional)).to.be.true;
+    spyMessage.calledOnce.should.true;
+    spyMessage.resetHistory();
+    IModelApp.accuDraw.setRotationMode(RotationMode.View);
+    FrameworkAccuDraw.isViewRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isViewRotationConditional)).to.be.true;
+    spyMessage.calledOnce.should.true;
+    spyMessage.resetHistory();
+    IModelApp.accuDraw.setRotationMode(RotationMode.ACS);
+    FrameworkAccuDraw.isACSRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isACSRotationConditional)).to.be.true;
+    spyMessage.calledOnce.should.true;
+    spyMessage.resetHistory();
+    IModelApp.accuDraw.setRotationMode(RotationMode.Context);
+    FrameworkAccuDraw.isContextRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isContextRotationConditional)).to.be.true;
+    spyMessage.calledOnce.should.true;
+    spyMessage.resetHistory();
+
+    FrameworkAccuDraw.displayNotifications = false;
+    IModelApp.accuDraw.setRotationMode(RotationMode.Top);
+    spyMessage.calledOnce.should.false;
+    spyMessage.resetHistory();
   });
 
   it("should call onFieldValueChange & emit onAccuDrawSetFieldValueToUiEvent", () => {

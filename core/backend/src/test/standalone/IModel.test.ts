@@ -652,7 +652,7 @@ describe("iModel", () => {
 
     const mapImagery: MapImageryProps = {
       backgroundBase: ColorDef.red.tbgr,
-      backgroundLayers: [{ transparency: 0.5, userName: "blah" }],
+      backgroundLayers: [{ transparency: 0.5 }],
     };
 
     const props: DisplayStyleSettingsProps = {
@@ -1950,7 +1950,7 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
-    assert.isUndefined(standaloneDb1.contextId);
+    assert.equal(standaloneDb1.contextId, Guid.empty);
     assert.isUndefined(standaloneDb1.changeSetId);
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
@@ -1978,9 +1978,6 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb3.isSnapshot);
-    assert.isFalse(snapshotDb1.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb2.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb3.txns.hasPendingTxns);
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");

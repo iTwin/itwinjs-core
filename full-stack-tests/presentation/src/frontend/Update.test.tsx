@@ -649,6 +649,77 @@ describe("Update", () => {
 
     });
 
+    describe("paging", () => {
+
+      it("collects results from multiple pages", async () => {
+        const ruleset = await Presentation.presentation.rulesets().add({
+          id: faker.random.uuid(),
+          rules: [{
+            ruleType: RuleTypes.RootNodes,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.CustomNode,
+              type: "T_ROOT-1",
+              label: "root-1",
+            }],
+          }],
+        });
+        expect(ruleset).to.not.be.undefined;
+
+        const { result, unmount } = renderHook(
+          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
+          { initialProps: { imodel, ruleset, pagingSize: 100, enableHierarchyAutoUpdate: true } },
+        );
+        await loadHierarchy(result.current);
+        unmount();
+
+        const modifiedRuleset = await Presentation.presentation.rulesets().modify(ruleset, {
+          rules: [
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_ROOT-0",
+                label: "root-0",
+              }],
+            },
+            ...ruleset.rules,
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_ROOT-2",
+                label: "root-2",
+              }],
+            },
+          ],
+        });
+        expect(modifiedRuleset).to.not.be.undefined;
+
+        const rpcSpy = sinon.spy(Presentation.presentation.rpcRequestsHandler, "compareHierarchiesPaged");
+        const changes = await Presentation.presentation.compareHierarchies({
+          imodel,
+          prev: {
+            rulesetOrId: ruleset,
+            rulesetVariables: [],
+          },
+          rulesetOrId: modifiedRuleset,
+          rulesetVariables: [],
+          resultSetSize: 1,
+        });
+        expect(changes).to.containSubset([{
+          type: "Insert",
+          node: { key: { type: "T_ROOT-0" } },
+          position: 0,
+        }, {
+          type: "Insert",
+          node: { key: { type: "T_ROOT-2" } },
+          position: 2,
+        }]);
+        expect(rpcSpy).to.be.calledTwice;
+      });
+
+    });
+
   });
 
 });
