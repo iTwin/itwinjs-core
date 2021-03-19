@@ -57,6 +57,7 @@ export interface TranscodedTextureData {
 
 interface TranscodeJob {
   basisBuffer: Uint8Array;
+  wantMipMaps: boolean;
   textureFormats: TextureFormatsForTranscoder;
   resolver: (value: TranscodedTextureData | PromiseLike<TranscodedTextureData>) => void;
   callback?: (value: TranscodedTextureData) => void;
@@ -163,10 +164,10 @@ export class BasisLoader {
     const activeJob = this._activeTranscodeJob;
     assert(activeJob !== undefined);
     const basisBuffers = [ activeJob.basisBuffer.buffer ];
-    this._basisWorker?.postMessage({ command: "transcodeBasisImage", basisBuffers, transcodeFormats: { rgb: activeJob.textureFormats.rgb.basisFormat, rgba: activeJob.textureFormats.rgba.basisFormat } }, basisBuffers);
+    this._basisWorker?.postMessage({ command: "transcodeBasisImage", basisBuffers, transcodeFormats: { rgb: activeJob.textureFormats.rgb.basisFormat, rgba: activeJob.textureFormats.rgba.basisFormat }, wantMipMaps: activeJob.wantMipMaps }, basisBuffers);
   }
 
-  public async transcodeBasisTexture(basisBuffer: Uint8Array, callback?: (value: TranscodedTextureData) => void): Promise<TranscodedTextureData | undefined> {
+  public async transcodeBasisTexture(basisBuffer: Uint8Array, wantMipMaps: boolean, callback?: (value: TranscodedTextureData) => void): Promise<TranscodedTextureData | undefined> {
     await this._init();
 
     let resultPromise;
@@ -175,12 +176,12 @@ export class BasisLoader {
 
     if (undefined === this._activeTranscodeJob) {
       resultPromise = new Promise<TranscodedTextureData>((resolver) => {
-        this._activeTranscodeJob = { basisBuffer, textureFormats, resolver, callback };
+        this._activeTranscodeJob = { basisBuffer, wantMipMaps, textureFormats, resolver, callback };
         this._startActiveTranscodeJob();
       });
     } else {
       resultPromise = new Promise<TranscodedTextureData>((resolver) => {
-        this._pendingTranscodeJobs.push({ basisBuffer, textureFormats, resolver, callback });
+        this._pendingTranscodeJobs.push({ basisBuffer, wantMipMaps, textureFormats, resolver, callback });
       });
     }
 

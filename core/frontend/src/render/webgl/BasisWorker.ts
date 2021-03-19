@@ -22,7 +22,7 @@ addEventListener('message', function(e) {
       break;
     case 'transcodeBasisImage':
       _initPromise.then( () => {
-        var transcodeResult = transcodeBasisImage(message.basisBuffers[0], message.transcodeFormats);
+        var transcodeResult = transcodeBasisImage(message.basisBuffers[0], message.wantMipMaps, message.transcodeFormats);
         if (undefined === transcodeResult)
           self.postMessage({ type: 'transcodeBasisResult', result: 'failure' });
         else {
@@ -41,12 +41,12 @@ function initializeBasisModule(wasmBinary) {
   });
 }
 
-function transcodeBasisImage(basisBytes, transcodeFormats) {
+function transcodeBasisImage(basisBytes, wantMipMaps, transcodeFormats) {
   var basisFile = new _basisModule.BasisFile(new Uint8Array(basisBytes));
 
-  const images = basisFile.getNumImages();
-  const hasAlpha = basisFile.getHasAlpha();
-  const numLevels = basisFile.getNumLevels(0);
+  var images = basisFile.getNumImages();
+  var hasAlpha = basisFile.getHasAlpha();
+  var numLevels = basisFile.getNumLevels(0);
 
   if (!images || !numLevels)
     return undefined;
@@ -56,11 +56,14 @@ function transcodeBasisImage(basisBytes, transcodeFormats) {
   if (!basisFile.startTranscoding())
     return undefined;
 
+  if (!wantMipMaps)
+    numLevels = 1;
+
   var dimensions = [];
   var transcodedBuffers = [];
   for (var level = 0; level < numLevels; level++) {
-    const width = basisFile.getImageWidth(0, level);
-    const height = basisFile.getImageHeight(0, level);
+    var width = basisFile.getImageWidth(0, level);
+    var height = basisFile.getImageHeight(0, level);
 
     if (!width || !height)
       return undefined;

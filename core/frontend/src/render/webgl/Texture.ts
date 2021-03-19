@@ -48,7 +48,7 @@ function loadTexture2DCompressedImage(handle: TextureHandle, params: Texture2DCr
   // Bind the texture object; make sure we do not interfere with other active textures
   System.instance.activateTexture2d(TextureUnit.Zero, tex);
 
-  const numLevels = gpuTexData.buffers.length;
+  const numLevels = params.useMipMaps ? gpuTexData.buffers.length : 1;
   const isCompressed = gl.RGBA !== gpuTexData.glFormat;
   let allLevelsPow2 = true;
 
@@ -305,15 +305,22 @@ class Texture2DCreateParams {
       (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, element), props.useMipMaps, props.interpolate, props.anisotropicFilter);
   }
 
-  private static getImageProperties(isTranslucent: boolean, type: RenderTexture.Type): TextureImageProperties {
+  public static useMipMaps(type: RenderTexture.Type): TextureFlag {
     const isSky = RenderTexture.Type.SkyBox === type;
     const isTile = RenderTexture.Type.TileSection === type;
+    const isThematic = RenderTexture.Type.ThematicGradient === type;
+    const isFilteredTile = RenderTexture.Type.FilteredTileSection === type;
+
+    return (!isSky && !isTile && !isFilteredTile && !isThematic) ? true : undefined;
+  }
+
+  private static getImageProperties(isTranslucent: boolean, type: RenderTexture.Type): TextureImageProperties {
     const isThematic = RenderTexture.Type.ThematicGradient === type;
     const isFilteredTile = RenderTexture.Type.FilteredTileSection === type;
     const maxAnisotropicFilterLevel = 16;
 
     const wrapMode = RenderTexture.Type.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
-    const useMipMaps: TextureFlag = (!isSky && !isTile && !isFilteredTile && !isThematic) ? true : undefined;
+    const useMipMaps: TextureFlag = Texture2DCreateParams.useMipMaps(type);
     const interpolate: TextureFlag = isThematic ? undefined : true;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
     const anisotropicFilter = isFilteredTile ? maxAnisotropicFilterLevel : undefined;
@@ -575,7 +582,7 @@ export class Texture2DHandle extends TextureHandle {
     });
 
     // kick off transcoding the texture on a web worker
-    BasisLoader.instance.transcodeBasisTexture(basisBuffer, transcodeCompleteCallback); // eslint-disable-line @typescript-eslint/no-floating-promises
+    BasisLoader.instance.transcodeBasisTexture(basisBuffer, true === Texture2DCreateParams.useMipMaps(type), transcodeCompleteCallback); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return handle;
   }
@@ -643,7 +650,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
 
   private async _createBasisImage(imgBytes: Uint8Array, req: ExternalTextureRequest) {
     if (!req.imodel.isClosed) {
-      const gpuTexData = await BasisLoader.instance.transcodeBasisTexture(imgBytes);
+      const gpuTexData = await BasisLoader.instance.transcodeBasisTexture(imgBytes, true === Texture2DCreateParams.useMipMaps(req.type));
       if (undefined !== gpuTexData) {
         req.handle.reload(Texture2DCreateParams.createForTranscodedImage(gpuTexData, req.type));
         IModelApp.tileAdmin.invalidateAllScenes();
