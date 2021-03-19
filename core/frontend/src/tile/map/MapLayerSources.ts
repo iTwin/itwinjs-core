@@ -75,6 +75,8 @@ export class MapLayerSources {
   private static _instance?: MapLayerSources;
   private constructor(private _sources: MapLayerSource[]) { }
 
+  public static getInstance() {return MapLayerSources._instance;}
+
   public findByName(name: string, baseMap: boolean = false): MapLayerSource | undefined {
     const nameTest = name.toLowerCase();
     for (const source of this._sources)
@@ -209,5 +211,18 @@ export class MapLayerSources {
     MapLayerSources._instance._sources.push(mapLayerSource);
     MapLayerSources._instance._sources.sort((a: MapLayerSource, b: MapLayerSource) => compareStrings(a.name.toLowerCase(), b.name.toLowerCase()));
     return MapLayerSources._instance;
+  }
+
+  public static removeLayerByName(name: string): boolean {
+    if (!MapLayerSources._instance) {
+      return false;
+    }
+
+    // For now we only rely on the name
+    const lengthBeforeRemove = MapLayerSources._instance._sources.length;
+    MapLayerSources._instance._sources = MapLayerSources._instance._sources.filter((source) => {
+      return (source.name !== name);
+    });
+    return (lengthBeforeRemove !== MapLayerSources._instance._sources.length);
   }
 }
