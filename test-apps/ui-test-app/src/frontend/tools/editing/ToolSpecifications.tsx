@@ -49,8 +49,8 @@ export class EditTools {
     return new ToolItemDef({
       toolId: PlaceLineStringTool.toolId,
       iconSpec: PlaceLineStringTool.iconSpec,
-      labelKey: "SampleApp:tools.PlaceLineString.flyover",
-      tooltipKey: "SampleApp:tools.PlaceLineString.description",
+      label: PlaceLineStringTool.flyover,
+      tooltip: PlaceLineStringTool.description,
       execute: () => {
         IModelApp.tools.run(PlaceLineStringTool.toolId);
       },
@@ -61,8 +61,8 @@ export class EditTools {
     return new ToolItemDef({
       toolId: PlaceBlockTool.toolId,
       iconSpec: PlaceBlockTool.iconSpec,
-      labelKey: "SampleApp:tools.PlaceBlock.flyover",
-      tooltipKey: "SampleApp:tools.PlaceBlock.description",
+      label: PlaceBlockTool.flyover,
+      tooltip: PlaceBlockTool.description,
       execute: async () => {
         IModelApp.tools.run(PlaceBlockTool.toolId);
       },
