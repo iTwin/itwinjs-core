@@ -123,13 +123,41 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     return IpcApp.callIpcHost("isRedoPossible", this._iModel.key);
   }
 
+  /** Get the description of the operation that would be reversed by calling [[reverseTxns]]`(1)`.
+   * This is useful for showing the operation that would be undone, for example in a menu.
+   * @param allowCrossSessions if true, allow undo from previous sessions.
+   */
+  public async getUndoString(allowCrossSessions?: boolean): Promise<string> {
+    return IpcApp.callIpcHost("getUndoString", this._iModel.key, allowCrossSessions);
+  }
+
+  /** Get a description of the operation that would be reinstated by calling [[reinstateTxn]].
+   * This is useful for showing the operation that would be redone, in a pull-down menu for example.
+   */
+  public async getRedoString(): Promise<string> {
+    return IpcApp.callIpcHost("getRedoString", this._iModel.key);
+  }
+
   /** Reverse (undo) the most recent operation.
    * @see [[reinstateTxn]] to redo operations.
    * @see [[reverseAll]] to undo all operations.
    * @see [[isUndoPossible]] to determine if any reversible operations exist.
    */
   public async reverseSingleTxn(): Promise<IModelStatus> {
-    return IpcApp.callIpcHost("reverseSingleTxn", this._iModel.key);
+    return this.reverseTxns(1);
+  }
+
+  /** Reverse (undo) the most recent operation(s) to the briefcase.
+   * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
+   *  be reinstated together when/if [[reinstateTxn]] is called.
+   * @param allowCrossSessions if true, allow undo from previous sessions.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [TxnManager.beginMultiTxnOperation]($backend). So,
+   * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
+   * @note If numOperations is too large only the number of reversible operations are reversed.
+   */
+  public async reverseTxns(numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus> {
+    return IpcApp.callIpcHost("reverseTxns", this._iModel.key, numOperations, allowCrossSessions);
   }
 
   /** Reverse (undo) all changes back to the beginning of the session.

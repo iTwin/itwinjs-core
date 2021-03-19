@@ -125,6 +125,11 @@ export interface IpcAppFunctions {
   isUndoPossible: (key: string) => Promise<boolean>;
   /** see BriefcaseTxns.isRedoPossible */
   isRedoPossible: (key: string) => Promise<boolean>;
+  /** see BriefcaseTxns.getUndoString */
+  getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
+  /** see BriefcaseTxns.getRedoString */
+  getRedoString: (key: string) => Promise<string>;
+
   /** see BriefcaseConnection.pullAndMergeChanges */
   pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
   /** see BriefcaseConnection.pushChanges */
@@ -139,7 +144,8 @@ export interface IpcAppFunctions {
 
   toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
   isInteractiveEditingSupported: (key: string) => Promise<boolean>;
-  reverseSingleTxn: (key: string) => Promise<IModelStatus>;
+
+  reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
   reverseAllTxn: (key: string) => Promise<IModelStatus>;
   reinstateTxn: (key: string) => Promise<IModelStatus>;
 

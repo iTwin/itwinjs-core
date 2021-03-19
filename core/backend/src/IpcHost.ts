@@ -199,12 +199,20 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async hasPendingTxns(key: string): Promise<boolean> {
     return IModelDb.findByKey(key).nativeDb.hasPendingTxns();
   }
+
   public async isUndoPossible(key: string): Promise<boolean> {
     return IModelDb.findByKey(key).nativeDb.isUndoPossible();
   }
   public async isRedoPossible(key: string): Promise<boolean> {
     return IModelDb.findByKey(key).nativeDb.isRedoPossible();
   }
+  public async getUndoString(key: string, allowCrossSessions?: boolean): Promise<string> {
+    return IModelDb.findByKey(key).nativeDb.getUndoString(allowCrossSessions);
+  }
+  public async getRedoString(key: string): Promise<string> {
+    return IModelDb.findByKey(key).nativeDb.getUndoString();
+  }
+
   public async pullAndMergeChanges(key: string, version?: IModelVersionProps): Promise<void> {
     const iModelDb = BriefcaseDb.findByKey(key);
     const requestContext = await IModelHost.getAuthorizedContext();
@@ -216,6 +224,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     await iModelDb.pushChanges(requestContext, description);
     return iModelDb.changeSetId;
   }
+
   public async toggleInteractiveEditingSession(key: string, startSession: boolean): Promise<boolean> {
     const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key).nativeDb.setGeometricModelTrackingEnabled(startSession);
     if (val.error)
@@ -226,8 +235,9 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async isInteractiveEditingSupported(key: string): Promise<boolean> {
     return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();
   }
-  public async reverseSingleTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key).nativeDb.reverseTxns(1);
+
+  public async reverseTxns(key: string, numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus> {
+    return IModelDb.findByKey(key).nativeDb.reverseTxns(numOperations, allowCrossSessions);
   }
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
     return IModelDb.findByKey(key).nativeDb.reverseAll();
@@ -235,6 +245,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async reinstateTxn(key: string): Promise<IModelStatus> {
     return IModelDb.findByKey(key).nativeDb.reinstateTxn();
   }
+
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
     return IModelHost.platform.queryConcurrency(pool);
   }
