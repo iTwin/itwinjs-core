@@ -23,14 +23,13 @@ describe("IModelHost", () => {
     await IModelHost.startup();
 
     // Valid registered implemented RPCs
-    expect(RpcRegistry.instance.implementationClasses.size).to.equal(7);
+    expect(RpcRegistry.instance.implementationClasses.size).to.equal(6);
     expect(RpcRegistry.instance.implementationClasses.get("IModelReadRpcInterface")).to.exist;
     expect(RpcRegistry.instance.implementationClasses.get("IModelTileRpcInterface")).to.exist;
     expect(RpcRegistry.instance.implementationClasses.get("IModelWriteRpcInterface")).to.exist;
     expect(RpcRegistry.instance.implementationClasses.get("SnapshotIModelRpcInterface")).to.exist;
     expect(RpcRegistry.instance.implementationClasses.get("WipRpcInterface")).to.exist;
     expect(RpcRegistry.instance.implementationClasses.get("DevToolsRpcInterface")).to.exist;
-    expect(RpcRegistry.instance.implementationClasses.get("Editor3dRpcInterface")).to.exist;
 
     expect(Schemas.getRegisteredSchema("BisCore")).to.exist;
     expect(Schemas.getRegisteredSchema("Generic")).to.exist;
