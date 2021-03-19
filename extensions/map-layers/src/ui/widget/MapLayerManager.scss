@@ -10,7 +10,6 @@ $hovered-icon-color: $buic-foreground-primary-tone;
 button.map-manager-item-visibility {
   background-color: transparent;
   border: none;
-  //margin: 0 2px;
   color: $buic-foreground-body;
   background-color: transparent;
 
@@ -36,23 +35,15 @@ button.map-manager-item-visibility {
 }
 
 .map-manager-top-header {
-
   display: flex;
   align-items: center;
   width: 100%;
   padding-top: 5px;
   padding-bottom: 4px;
   margin-bottom: 15px;
-    //background: $buic-background-3;
-/* Full Black border, looks weird
-   border-style: solid;
-  border-width: thin;
-  border-color: black;
- */
- border-bottom-color: #ccc;
- border-bottom-style: solid;
- border-bottom-width: 1px;
-
+  border-bottom-color: #ccc;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
 
   .map-manager-header-label {
     font-size: $uicore-font-size;
@@ -380,7 +371,7 @@ button.map-manager-item-visibility {
 }
 
 .map-manager-item-sub-layer-container {
-  position: relative;
+  @include uicore-z-index(dialog-popup);
 }
 
 .map-manager-sublayer-panel {
@@ -388,9 +379,6 @@ button.map-manager-item-visibility {
   height: 400px;
   color: $buic-foreground-body;
   font-size: $uicore-font-size;
-  /*display: grid;
-  grid-template-columns: 1fr auto;
-  column-gap: 4px;*/
   padding: 4px;
   display: block;
   box-sizing: border-box;
@@ -460,6 +448,10 @@ button.map-manager-item-visibility {
   text-align: center;
 }
 
+.map-sources-delete-confirmation {
+   @include uicore-z-index(status-popup);
+  }
+
 .map-sources-popup-panel {
   padding: 4px;
   width: 400px;
@@ -481,6 +473,23 @@ button.map-manager-item-visibility {
   .map-manager-sources {
     height: 250px;
     min-height: 60px;
+
+    button.map-source-delete-button {
+      padding: 0 4px 0 0;
+      margin: 0;
+      background-color: transparent;
+      border: none;
+      color: $buic-foreground-body;
+
+
+      &:hover {
+        color: $hovered-icon-color;
+      }
+      &:focus {
+        outline: none;
+        box-shadow: $uicore-button-focus-boxshadow;
+      }
+    }
 
     .map-source-list-entry {
       .map-source-list-entry-name {
