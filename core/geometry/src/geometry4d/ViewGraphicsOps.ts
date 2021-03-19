@@ -64,7 +64,7 @@ export class ViewportGraphicsGridSpacingOptions {
    */
   public distanceBetweenLines: number;
 
-  private constructor(distanceBetweenLines: number, cullingOption: 0 | 1 | 2, clippingOption: 0 | 1 ) {
+  private constructor(distanceBetweenLines: number, cullingOption: 0 | 1 | 2, clippingOption: 0 | 1) {
     this.distanceBetweenLines = distanceBetweenLines;
     this.cullingOption = cullingOption;
     this.clippingOption = clippingOption;
@@ -223,18 +223,24 @@ class LineProximityContext {
  * @internal
  */
 export class ViewGraphicsOps {
-/** maximum gridline index (positive or negative) to consider */
+/** maximum gridLine index (positive or negative) to consider */
   public static gridRangeMaxXY = 10000.0;
-/** maximum gridline z value to consider -- but the grid is on z=0 so this is not a significant effect */
+/** maximum gridLine z value to consider -- but the grid is on z=0 so this is not a significant effect */
   public static gridRangeMaxZ = 10000.0;
-  /** clamp the range to gridRangeMAXXY */
-  private static restrictGridRange(range0: Range3d): Range3d{
+  /** clamp the range to gridRangeMaxXY */
+  public static restrictGridRange(range0: Range3d, refPoint: Point3d | undefined = undefined): Range3d{
+    let centerX = 0;
+    let centerY = 0;
+
+    if (refPoint !== undefined) {
+      centerX = Math.floor(refPoint.x);
+      centerY = Math.floor(refPoint.y);
+    }
     return range0.intersect(Range3d.createXYZXYZ(
-      -this.gridRangeMaxXY, -this.gridRangeMaxXY, -this.gridRangeMaxZ,
-      this.gridRangeMaxXY, this.gridRangeMaxXY, this.gridRangeMaxZ
+      centerX - this.gridRangeMaxXY, centerY - this.gridRangeMaxXY, -this.gridRangeMaxZ,
+      centerX + this.gridRangeMaxXY, centerY + this.gridRangeMaxXY, this.gridRangeMaxZ
     ));
-  }
-/**
+  }/**
    * * Emit line segments of a grid that passes through a display volume.
    * * The chosen segments are culled to have a minimum line-to-line distance.
    * * Hence in a perspective view, grid lines that blur together towards the back of the view are not output.
@@ -303,6 +309,7 @@ export class ViewGraphicsOps {
     const npcLoop = npcPlane.intersectRange(viewRange, true)!;
     if (npcLoop === undefined)
       return false;
+
     const xyzLoop = npcLoop.clone();
     xyzLoop.multiplyMatrix4dAndQuietRenormalizeMatrix4d(worldToDisplay.transform1);
     const stLoop = xyzLoop.clone(); // loop coordinates in grid
@@ -312,6 +319,7 @@ export class ViewGraphicsOps {
       return false;
     stLoop.multiplyTransformInPlace(gridTransformInverse);
     const stRange = this.restrictGridRange(stLoop.getRange());
+
     const area = PolygonOps.areaXY(stLoop);
     const stClipper = ConvexClipPlaneSet.createXYPolyLine(stLoop.getPoint3dArray(), undefined, area > 0.0);
     const lineContext = new LineProximityContext(worldToDisplay.transform0);
@@ -419,8 +427,41 @@ export class ViewGraphicsOps {
 }
 /**
  * Context for computing grid lines that are to appear in a view.
+ * @internal
  */
 export class GridInViewContext {
+
+  private static getRestrictedGridRange(npcLoop: GrowableXYZArray, stLoop: GrowableXYZArray, viewRange: Range3d, _maxLinesInDirection: number): Range3d {
+    const stRange1 = stLoop.getRange();   // this might be unreasonably large
+    if (npcLoop.length !== stLoop.length)
+      return ViewGraphicsOps.restrictGridRange (stRange1);    // This should never happen
+
+    let npcZMax = npcLoop.getZAtUncheckedPointIndex(0);
+    let iZMax = 0;
+    for (let i = 1; i < npcLoop.length; i++) {
+      const z = npcLoop.getZAtUncheckedPointIndex(i);
+      if (z > npcZMax) {
+        npcZMax = z;
+        iZMax = i;
+      }
+    }
+    const stRange = Range3d.create(stLoop.getPoint3dAtCheckedPointIndex(iZMax)!);
+    const zTol = 1.0e-8 * viewRange.zLength();
+    for (let i = 0; i < npcLoop.length; i++) {
+      const z = npcLoop.getZAtUncheckedPointIndex(i);
+      if (Math.abs(z - npcZMax) <= zTol) {
+        stRange.extend(stLoop.getPoint3dAtCheckedPointIndex(i)!);
+      }
+    }
+
+    stRange.extendXOnly(Math.min(stRange1.high.x, stRange.high.x + _maxLinesInDirection));
+    stRange.extendXOnly(Math.max(stRange1.low.x, stRange.low.x - _maxLinesInDirection));
+
+    stRange.extendYOnly(Math.min(stRange1.high.y, stRange.high.y + _maxLinesInDirection));
+    stRange.extendYOnly(Math.max(stRange1.low.y, stRange.low.y - _maxLinesInDirection));
+    // Now stRange includes lines that hit the front plane
+    return  ViewGraphicsOps.restrictGridRange (stRange, stLoop.getPoint3dAtUncheckedPointIndex (iZMax));
+  }
   // REMARK: worldToGrid, gridToWorld, gridByOriginAndVectors, and grid4d are redundant by simplify logic.
   private _worldToDisplay: Map4d;
   private _displayRange: Range3d;
@@ -429,7 +470,10 @@ export class GridInViewContext {
   private _xyzLoop: GrowableXYZArray;
   private _gridByOriginAndVectors: Plane3dByOriginAndVectors;
   private _gridSpaceLoop: GrowableXYZArray;
+  // grid range for marching direction
   private _gridSpaceRange: Range3d;
+  // grid range for transverse  extent of candidates
+  private _gridCandidateRange: Range3d;
   private _gridSpaceClipper: ConvexClipPlaneSet;
   private _lineProximityContext: LineProximityContext;
   /**
@@ -442,6 +486,7 @@ export class GridInViewContext {
     xyzLoop: GrowableXYZArray,
     gridSpaceLoop: GrowableXYZArray,
     gridSpaceRange: Range3d,
+    gridCandidateRange: Range3d,
     gridSpaceClipper: ConvexClipPlaneSet,
     lineProximityContext: LineProximityContext
   ) {
@@ -452,6 +497,7 @@ export class GridInViewContext {
     this._gridToWorld = gridToWorld;
     this._worldToGrid = worldToGrid;
     this._gridSpaceLoop = gridSpaceLoop;
+    this._gridCandidateRange = gridCandidateRange;
     this._gridSpaceRange = gridSpaceRange;
     this._gridSpaceClipper = gridSpaceClipper;
     this._lineProximityContext = lineProximityContext;
@@ -459,7 +505,8 @@ export class GridInViewContext {
   public static create(
     gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d,
     worldToDisplay: Map4d,
-    viewRange: Range3d
+    viewRange: Range3d,
+    lineCountLimiter: number
   ): GridInViewContext | undefined {
     const gridPlane = Plane3dByOriginAndVectors.createOriginAndVectors(gridOrigin, gridXStep, gridYStep);
     const gridZ = gridXStep.unitCrossProduct(gridYStep)!;
@@ -498,14 +545,15 @@ export class GridInViewContext {
     xyzLoop.multiplyMatrix4dAndQuietRenormalizeMatrix4d(worldToDisplay.transform1);
     const gridSpaceLoop = xyzLoop.clone(); // loop coordinates in grid
     gridSpaceLoop.multiplyTransformInPlace(worldToGrid);
-    const gridSpaceRange = gridSpaceLoop.getRange();
+    const gridSpaceRange = GridInViewContext.getRestrictedGridRange(npcLoop, gridSpaceLoop, viewRange, lineCountLimiter);
+    const gridCandidateRange = gridSpaceLoop.getRange();
     const area = PolygonOps.areaXY(gridSpaceLoop);
     const gridSpaceClipper = ConvexClipPlaneSet.createXYPolyLine(gridSpaceLoop.getPoint3dArray(), undefined, area > 0.0);
     const lineProximityContext = new LineProximityContext(worldToDisplay.transform0);
     return new GridInViewContext(worldToDisplay.clone(), viewRange.clone(), gridToWorld, worldToGrid,
       gridPlane,
       xyzLoop,
-      gridSpaceLoop, gridSpaceRange, gridSpaceClipper, lineProximityContext);
+      gridSpaceLoop, gridSpaceRange, gridCandidateRange, gridSpaceClipper, lineProximityContext);
   }
 /**
  * Process the grid with given options.
@@ -536,8 +584,6 @@ export class GridInViewContext {
     const gridPoint1 = Point3d.create();
     const clippedGridPoint0 = Point3d.create();
     const clippedGridPoint1 = Point3d.create();
-    const xLow = this._gridSpaceRange.low.x;
-    const xHigh = this._gridSpaceRange.high.x;
     const fractionRange = Range1d.createNull();
     const startEndDistance = Segment1d.create();
     const perspectiveZStartEnd = Segment1d.create();
@@ -608,6 +654,8 @@ export class GridInViewContext {
     };
     const iy0 = Math.ceil(this._gridSpaceRange.low.y);
     const iy1 = Math.floor(this._gridSpaceRange.high.y);
+    const xLow = this._gridCandidateRange.low.x;
+    const xHigh = this._gridCandidateRange.high.x;
     // sweep bottom up ...
     let iy;
     gridLineIdentifier.direction = 1;
@@ -622,8 +670,8 @@ export class GridInViewContext {
     // sweep left to right
     const ix0 = Math.ceil(this._gridSpaceRange.low.x);
     const ix1 = Math.floor(this._gridSpaceRange.high.x);
-    const yLow = this._gridSpaceRange.low.y;
-    const yHigh = this._gridSpaceRange.high.y;
+    const yLow = this._gridCandidateRange.low.y;
+    const yHigh = this._gridCandidateRange.high.y;
     let ix;
     this._lineProximityContext.invalidateLine();
     gridLineIdentifier.direction = 0;

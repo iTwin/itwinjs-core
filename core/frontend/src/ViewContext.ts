@@ -8,8 +8,8 @@
 
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
-  ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
-  Point3d, Range1d, Range3d, Segment1d, Transform, Vector2d, Vector3d, ViewGraphicsOps, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY} from "@bentley/geometry-core";
+  ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GridInViewContext, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
+  Point3d, Range1d, Range3d, Segment1d, Transform, Vector2d, Vector3d, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY} from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
@@ -47,6 +47,10 @@ export class GridDisplaySettings {
   public static cullingPerspectiveOption: 0 | 1 | 2 = 1;
   /** Clipping option based on distance to neighbor. 0 for none */
   public static clippingOption: 0 | 1 = 1;
+  /** crude upper limit on lines to draw.
+   * This is applied symmetrically above and below the limits at "frontMost" points of the grid plane intersection with the frustum
+  */
+  public static lineLimiter: number = 1000;
 }
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
@@ -143,6 +147,8 @@ export class DecorateContext extends RenderContext {
   private readonly _decorations: Decorations;
   private readonly _cache: DecorationsCache;
   private _curCacheableDecorator?: ViewportDecorator;
+  /** @internal */
+  private static _doSecondPhaseGridLines = true;
 
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn.
    * @deprecated use [[DecorateContext.viewport]].
@@ -433,25 +439,23 @@ export class DecorateContext extends RenderContext {
     let lineTransparency = GridDisplaySettings.refTransparency;
     let lastTransparency: number;
     let thisTransparency: number;
-
-    ViewGraphicsOps.announceGridLinesInView(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, gridOptions,
+    const gridInViewContext = GridInViewContext.create(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
+    gridInViewContext?.processGrid (gridOptions,
       (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
         startEndDistances: Segment1d | undefined,
         gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
         addGridLine(pointA, pointB, startEndDistances, gridLineIdentifier);
       });
-
     // add first line now if it ended up being the only one in the view due to zoom level...
     if (undefined !== firstLine) {
       builder.setSymbology(color.withTransparency(lineTransparency), planeColor, 1, linePattern);
       builder.addLineString(firstLine);
     }
-
     // might still need grid lines even if no ref lines are visible in the view due to zoom level...
     if (noOutput || undefined !== firstLine)
       drawGridLines = true;
 
-    if (drawGridLines) {
+    if (drawGridLines && DecorateContext._doSecondPhaseGridLines) {
       const gridXStep = gridRefXStep.scale(1 / gridsPerRef);
       const gridYStep = gridRefYStep.scale(1 / gridsPerRef);
 
@@ -459,14 +463,14 @@ export class DecorateContext extends RenderContext {
       linePattern = LinePixels.Solid;
       skipRefLines = true;
 
-      ViewGraphicsOps.announceGridLinesInView(gridOrigin, gridXStep, gridYStep, vp.worldToViewMap, npcRange, gridOptions,
+      const gridInViewContext1 = GridInViewContext.create(gridOrigin, gridXStep, gridYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
+      gridInViewContext1?.processGrid (gridOptions,
         (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
           startEndDistances: Segment1d | undefined,
           gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
           addGridLine(pointA, pointB, startEndDistances, gridLineIdentifier);
         });
     }
-
     this.addDecorationFromBuilder(builder);
   }
 

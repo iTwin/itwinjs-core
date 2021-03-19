@@ -278,7 +278,9 @@ function exerciseGridInViewContext(
   const sinTheta = gridAngle.sin();
   const gridX = Vector3d.createAdd2Scaled(gridX0, cosTheta, gridY0, sinTheta);
   const gridY = Vector3d.createAdd2Scaled(gridX0, -sinTheta, gridY0, cosTheta);
-  const gridInViewContext = GridInViewContext.create(gridOrigin, gridX, gridY, map, unitRange);
+  const lineLimiter = 40;
+
+  const gridInViewContext = GridInViewContext.create(gridOrigin, gridX, gridY, map, unitRange, lineLimiter);
   const options0 = ViewportGraphicsGridSpacingOptions.create(0.0001, 0, 0);
   // output in xyz frustum
   gridInViewContext?.processGrid (options0,
