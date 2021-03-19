@@ -133,6 +133,24 @@ describe("BriefcaseTxns", () => {
       await expectRedo(["onElementsChanged", "onChangesApplied", "onModelGeometryChanged"]);
       await redo();
       await expectRedo(["onElementsChanged", "onChangesApplied", "onModelGeometryChanged"]);
+
+      await imodel.txns.reverseAll();
+      await expectUndo([
+        "onElementsChanged", "onChangesApplied",
+        "onElementsChanged", "onChangesApplied",
+        "onElementsChanged", "onChangesApplied",
+        "onElementsChanged", "onModelsChanged", "onChangesApplied",
+        "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
+      ]);
+
+      await imodel.txns.reinstateTxn();
+      await expectRedo([
+        "onElementsChanged", "onChangesApplied",
+        "onElementsChanged", "onModelsChanged", "onChangesApplied",
+        "onElementsChanged", "onChangesApplied",
+        "onElementsChanged", "onChangesApplied",
+        "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
+      ]);
     });
   }
 });
