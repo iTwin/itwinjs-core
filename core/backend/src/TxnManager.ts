@@ -81,9 +81,10 @@ class ChangedEntitiesProc implements TxnChangedEntities {
     const maxSize = this.maxPerEvent;
 
     const changes = new ChangedEntitiesProc();
-    const primaryColumn = "notifyElementsChanged" === evtName ? "ElementId" : "ModelId";
-    const tableName = "notifyElementsChanged" === evtName ? "Elements" : "Models";
-    iModel.withPreparedSqliteStatement(`SELECT ${primaryColumn},ChangeType FROM temp.txn_${tableName}`, (sql: SqliteStatement) => {
+    const select = "notifyElementsChanged" === evtName
+      ? "SELECT ElementId, ChangeType FROM temp.txn_Elements"
+      : "SELECT ModelId, ChangeType FROM temp.txn_Models";
+    iModel.withPreparedSqliteStatement(select, (sql: SqliteStatement) => {
       const stmt = sql.stmt!;
       while (sql.step() === DbResult.BE_SQLITE_ROW) {
         const id = stmt.getValueId(0);
@@ -223,7 +224,7 @@ export class TxnManager {
    */
   public readonly onModelsChanged = new BeEvent<(changes: TxnChangedEntities) => void>();
 
-  /** Event raised after the geometry within one or more [[GeometricModel]]s is modified by application of a changeset or validation of a transaction.
+  /** Event raised after the geometry within one or more [[GeometricModel]]s is modified by applying a changeset or validation of a transaction.
    * A model's geometry can change as a result of:
    *  - Insertion or deletion of a geometric element within the model; or
    *  - Modification of an existing element's geometric properties; or

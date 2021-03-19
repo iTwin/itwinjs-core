@@ -47,7 +47,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    */
   public readonly onModelsChanged = new BeEvent<(changes: Readonly<ChangedEntities>) => void>();
 
-  /** Event raised after the geometry within one or more [[GeometricModelState]]s is modified by application of a changeset or validation of a transaction.
+  /** Event raised after the geometry within one or more [[GeometricModelState]]s is modified by applying a changeset or validation of a transaction.
    * A model's geometry can change as a result of:
    *  - Insertion or deletion of a geometric element within the model; or
    *  - Modification of an existing element's geometric properties; or
