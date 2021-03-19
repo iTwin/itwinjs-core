@@ -350,9 +350,9 @@ export function useRenderedNodes(eventHandler: TreeEvents, enableRenderedNodesTr
         debounceTime(200)
       )
       .subscribe({
-        next: (nodes) => setRenderedNodes(nodes)
+        next: (nodes) => setRenderedNodes(nodes),
       });
-    return () => { subscription.unsubscribe() };
+    return () => { subscription.unsubscribe(); };
   }, []);
 
   useEffect(() => {

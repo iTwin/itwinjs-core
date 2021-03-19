@@ -403,7 +403,9 @@ describe("usePresentationNodeLoader", () => {
       void act(() => { nodesRenderedEvent.emit({ startIndex: 0, endIndex: 1 }); });
       await waitForNextUpdate();
 
-      presentationManagerMock.setup(async (x) => x.getNodesAndCount(moq.It.is(({ paging }) => paging?.start === 0 && paging.size === 1), undefined))
+      presentationManagerMock.setup(async (x) => x.getNodesAndCount(
+        moq.It.is(({ paging, parentKey }) => paging?.start === 0 && paging.size === 1 && !parentKey))
+      )
         .returns(async () => ({ count: 1, nodes: [createNode("root1")] }))
         .verifiable(moq.Times.once());
 
@@ -1072,7 +1074,7 @@ describe("applyHierarchyUpdateRecords", () => {
       [{
         parentId: undefined,
         nodeItems: [createTreeNodeItem(createNode("root1")), createTreeNodeItem(createNode("root2")), createTreeNodeItem(createNode("root3"))],
-        offset: 0
+        offset: 0,
       }],
       {}
     );
@@ -1083,24 +1085,24 @@ describe("applyHierarchyUpdateRecords", () => {
 });
 
 describe("reloadVisibleHierarchyParts", () => {
-  type HierarchyItem = {
-    label: string
+  interface HierarchyItem {
+    label: string;
     position: number;
-    children?: HierarchyItem[],
-    childCount?: number
+    children?: HierarchyItem[];
+    childCount?: number;
   }
 
   function addNodes(model: MutableTreeModel, parentId: string | undefined, items?: HierarchyItem[], itemsCount?: number) {
     model.setNumChildren(parentId, itemsCount ?? items?.length);
     for (const item of items ?? []) {
       model.setChildren(parentId, [{ ...createNodeInput(item.label), isExpanded: true }], item.position);
-      addNodes(model, item.label, item.children, item.childCount)
+      addNodes(model, item.label, item.children, item.childCount);
     }
   }
 
   function createVisibleNodes(rootNodesCount: number, hierarchy: HierarchyItem[],) {
     const model = new MutableTreeModel();
-    addNodes(model, undefined, hierarchy, rootNodesCount)
+    addNodes(model, undefined, hierarchy, rootNodesCount);
     return new TreeModelSource(model).getVisibleNodes();
   }
 
@@ -1110,51 +1112,51 @@ describe("reloadVisibleHierarchyParts", () => {
     dataProviderMock.reset();
   });
 
-  it("does not load nodes if they are already loaded", () => {
+  it("does not load nodes if they are already loaded", async () => {
     const visibleNodes = createVisibleNodes(2, [{ label: "root1", position: 0 }, { label: "root2", position: 1 }]);
-    reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 1 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 1 }, dataProviderMock.object);
     dataProviderMock.verify(async (x) => x.getNodes(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
   });
 
-  it("does not load nodes if there are no visible nodes", () => {
+  it("does not load nodes if there are no visible nodes", async () => {
     const visibleNodes = createVisibleNodes(0, []);
-    reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 4 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 4 }, dataProviderMock.object);
     dataProviderMock.verify(async (x) => x.getNodes(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
   });
 
-  it("reloads visible root nodes", () => {
+  it("reloads visible root nodes", async () => {
     const visibleNodes = createVisibleNodes(4, [{ label: "root2", position: 1 }, { label: "root3", position: 2 }]);
     dataProviderMock.setup(async (x) => x.getNodes(undefined, moq.It.isObjectWith({ start: 0, size: 4 })))
       .returns(async () => [])
       .verifiable(moq.Times.once());
-    reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 3 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 3 }, dataProviderMock.object);
     dataProviderMock.verifyAll();
   });
 
-  it("reloads visible child nodes", () => {
+  it("reloads visible child nodes", async () => {
     const visibleNodes = createVisibleNodes(2, [{ label: "root1", position: 0 }, { label: "root2", position: 1, childCount: 3 }]);
     dataProviderMock.setup(async (x) => x.getNodes(moq.It.is((item) => item !== undefined && item.id === "root2"), moq.It.isObjectWith({ start: 0, size: 3 })))
       .returns(async () => [])
       .verifiable(moq.Times.once());
-    reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 5 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 5 }, dataProviderMock.object);
     dataProviderMock.verifyAll();
   });
 
-  it("reloads with correct page size if there are less visible nodes", () => {
+  it("reloads with correct page size if there are less visible nodes", async () => {
     const visibleNodes = createVisibleNodes(1, []);
     dataProviderMock.setup(async (x) => x.getNodes(undefined, moq.It.isObjectWith({ start: 0, size: 1 })))
       .returns(async () => [])
       .verifiable(moq.Times.once());
-    reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 4 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 4 }, dataProviderMock.object);
     dataProviderMock.verifyAll();
   });
 
-  it("reloads with correct page start if there are less visible nodes", () => {
+  it("reloads with correct page start if there are less visible nodes", async () => {
     const visibleNodes = createVisibleNodes(3, []);
     dataProviderMock.setup(async (x) => x.getNodes(undefined, moq.It.isObjectWith({ start: 0, size: 3 })))
       .returns(async () => [])
       .verifiable(moq.Times.once());
-    reloadVisibleHierarchyParts(visibleNodes, { startIndex: 1, endIndex: 3 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 1, endIndex: 3 }, dataProviderMock.object);
     dataProviderMock.verifyAll();
   });
 });

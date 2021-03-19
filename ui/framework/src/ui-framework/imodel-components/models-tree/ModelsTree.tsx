@@ -96,7 +96,7 @@ export interface ModelsTreeProps {
  * @public
  */
 export function ModelsTree(props: ModelsTreeProps) {
-  const showGroupingNodesWithChildCount = (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts)
+  const showGroupingNodesWithChildCount = props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts;
   const { nodeLoader, updateTreeModelSource } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     dataProvider: props.dataProvider,
@@ -134,14 +134,14 @@ export function ModelsTree(props: ModelsTreeProps) {
     nodeLoader,
     eventHandler,
     updateTreeModelSource,
-    appendChildrenCountForGroupingNodes: showGroupingNodesWithChildCount
+    appendChildrenCountForGroupingNodes: showGroupingNodesWithChildCount,
   });
   useHierarchyAutoUpdate({
     enable: props.enableHierarchyAutoUpdate ?? false,
     nodeLoader: searchNodeLoader,
     eventHandler,
     updateTreeModelSource: updateSearchTreeModelSource,
-    appendChildrenCountForGroupingNodes: false
+    appendChildrenCountForGroupingNodes: false,
   });
 
   const visibleNodes = useVisibleTreeNodes(filteredNodeLoader.modelSource);
