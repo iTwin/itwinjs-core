@@ -12,7 +12,8 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   z-Index: 21000;
 
   .core-dialog-content {
-    padding: 11px 11px 0 11px !important;   // default is 11px on all sides, but we prefer no padding on bottom.
+    padding-right: 11px !important;
+    padding-left: 11px !important;
   }
 }
 
