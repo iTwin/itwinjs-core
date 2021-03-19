@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Format } from "../src/Formatter/Format";
 import { FormatterSpec } from "../src/Formatter/FormatterSpec";
 import { Formatter } from "../src/Formatter/Formatter";
@@ -625,17 +625,20 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      {
-        magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30�16'17.272\""
-      },
+      { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30�16'17.272\"" },
       { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153�6'35.041\"" },
+      { magnitude: Math.PI, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "180�0'0\"" },
+      { magnitude: Math.PI/2, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "90�0'0\"" },
+      { magnitude: Math.PI/6, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30�0'0\"" },
+      { magnitude: Math.PI/4, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "45�0'0\"" },
+      { magnitude: 2*Math.PI, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "360�0'0\"" },
     ];
 
     for (const testEntry of testQuantityData) {
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue === testEntry.result);
+      expect (formattedValue).to.be.eql(testEntry.result);
       assert.isTrue(formattedValue.length > 0);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
