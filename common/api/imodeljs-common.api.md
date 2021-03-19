@@ -2112,47 +2112,6 @@ export class EdgeArgs {
     get numEdges(): number;
 }
 
-// @alpha @deprecated
-export abstract class Editor3dRpcInterface extends RpcInterface {
-    // (undocumented)
-    applyTransform(_tokenProps: IModelRpcProps, _editorId: GuidString, _tprops: TransformProps): Promise<any>;
-    // (undocumented)
-    createElement(_tokenProps: IModelRpcProps, _editorId: GuidString, _props: GeometricElement3dProps, _origin?: Point3d, _angles?: YawPitchRollAngles, _geometry?: any): Promise<void>;
-    // (undocumented)
-    end(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    static getClient(): Editor3dRpcInterface;
-    static readonly interfaceName = "Editor3dRpcInterface";
-    static interfaceVersion: string;
-    // (undocumented)
-    popState(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    pushState(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    start(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    startModifyingElements(_tokenProps: IModelRpcProps, _editorId: GuidString, _elementIds: Id64Array): Promise<void>;
-    // (undocumented)
-    writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, _editorId: GuidString, _opts: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void>;
-}
-
-// @alpha (undocumented)
-export interface Editor3dRpcInterfaceWriteOptions {
-    returnPropsOptions?: Editor3dRpcInterfaceWriteReturnPropsOptions;
-    returnType?: Editor3dRpcInterfaceWriteReturnType;
-}
-
-// @alpha (undocumented)
-export interface Editor3dRpcInterfaceWriteReturnPropsOptions {
-    geometry?: boolean;
-}
-
-// @alpha (undocumented)
-export enum Editor3dRpcInterfaceWriteReturnType {
-    Ids = 1,
-    None = 0,
-    Props = 2
-}
-
 // @public
 export type ElementAlignedBox2d = Range2d;
 
