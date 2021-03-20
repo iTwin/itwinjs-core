@@ -130,14 +130,12 @@ public;DrawingViewState
 internal;class DynamicIModelTile 
 public;DynamicsContext 
 alpha;EditingFunctions
+deprecated;EditingFunctions
 alpha;EditingFunctions
-deprecated;CategoryEditor
-deprecated;ConcurrencyControl
-deprecated;ModelEditor
+deprecated;EditingFunctions
 alpha;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
-alpha;ElementEditor3d
 public;ElementLocateManager
 public;ElementPicker
 alpha;class ElementSetTool 
@@ -166,8 +164,6 @@ alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
 public;FeatureOverrideType
 public;FeatureSymbology
-deprecated;Appearance 
-deprecated;AppearanceProps 
 alpha;FeatureTrackingManager
 alpha;FeatureTrackingProps
 alpha;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
@@ -356,6 +352,7 @@ internal;NullTarget
 internal;OffScreenTarget 
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
+deprecated;OidcBrowserClient 
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
@@ -412,6 +409,7 @@ internal;RealityTileParams
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 public;RemoteBriefcaseConnection 
+deprecated;RemoteBriefcaseConnection 
 beta;class RenderClipVolume 
 public;RenderContext
 internal;RenderDiagnostics

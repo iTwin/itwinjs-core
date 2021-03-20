@@ -21,6 +21,7 @@ public;BisCoreSchema
 public;BriefcaseDb 
 public;BriefcaseId = number
 public;BriefcaseIdValue
+deprecated;BriefcaseIdValue
 beta;BriefcaseManager
 public;CachedECSqlStatement
 internal;CachedSqliteStatement
@@ -76,6 +77,7 @@ public;DisplayStyle3d
 public;DisplayStyleCreationOptions 
 public;class Document 
 internal;class DocumentCarrier 
+deprecated;class DocumentCarrier 
 public;DocumentListModel 
 public;DocumentPartition 
 internal;DownloadJob
@@ -193,6 +195,7 @@ alpha;IModelSchemaLoader
 beta;IModelTransformer 
 beta;IModelTransformOptions
 internal;class InformationCarrierElement 
+deprecated;class InformationCarrierElement 
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -254,6 +257,7 @@ public;SectionDrawing
 beta;SectionDrawingLocation 
 public;SectionDrawingModel 
 alpha;SectionLocation 
+deprecated;SectionLocation 
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
