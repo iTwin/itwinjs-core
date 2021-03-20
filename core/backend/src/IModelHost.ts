@@ -30,10 +30,8 @@ import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, 
 import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
-import { IElementEditor } from "./ElementEditor";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
-import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
@@ -247,11 +245,6 @@ export class IModelHost {
   /** Root of the directory holding all the files that iModel.js caches */
   public static get cacheDir(): string { return this._cacheDir; }
 
-  /** Active element editors. Each editor is identified by a GUID.
-   * @internal
-   */
-  public static elementEditors = new Map<GuidString, IElementEditor>();
-
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
 
@@ -426,7 +419,6 @@ export class IModelHost {
       SnapshotIModelRpcImpl,
       WipRpcImpl,
       DevToolsRpcImpl,
-      Editor3dRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 
     [
