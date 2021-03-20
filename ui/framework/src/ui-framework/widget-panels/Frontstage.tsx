@@ -794,11 +794,11 @@ export const setWidgetLabel = produce((nineZone: Draft<NineZoneState>, id: TabSt
 
 /** @internal */
 export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
-  const uiSettings = useUiSettingsContext();
-  const uiSettingsRef = React.useRef(uiSettings);
+  const uiSettingsStorage = useUiSettingsContext();
+  const uiSettingsRef = React.useRef(uiSettingsStorage);
   React.useEffect(() => {
-    uiSettingsRef.current = uiSettings;
-  }, [uiSettings]);
+    uiSettingsRef.current = uiSettingsStorage;
+  }, [uiSettingsStorage]);
   React.useEffect(() => {
     async function fetchFrontstageState() {
       if (frontstageDef.nineZoneState)
@@ -824,7 +824,7 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
 /** @internal */
 export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   const nineZone = useNineZoneState(frontstageDef);
-  const uiSettings = useUiSettingsContext();
+  const uiSettingsStorage = useUiSettingsContext();
   const saveSetting = React.useCallback(debounce(async (id: string, version: number, state: NineZoneState) => {
     const setting: WidgetPanelsFrontstageState = {
       id,
@@ -832,8 +832,8 @@ export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
       stateVersion,
       version,
     };
-    await uiSettings.saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id), setting);
-  }, 1000), [uiSettings]);
+    await uiSettingsStorage.saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id), setting);
+  }, 1000), [uiSettingsStorage]);
   React.useEffect(() => {
     return () => {
       saveSetting.cancel();
@@ -911,11 +911,11 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
       FrontstageManager.onWidgetExpandEvent.removeListener(listener);
     };
   }, [frontstageDef]);
-  const uiSettings = useUiSettingsContext();
+  const uiSettingsStorage = useUiSettingsContext();
   React.useEffect(() => {
     const listener = (args: FrontstageEventArgs) => {
       // TODO: track restoring frontstages to support workflows:  i.e. prevent loading frontstage OR saving layout when delete is pending
-      uiSettings.deleteSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(args.frontstageDef.id)); // eslint-disable-line @typescript-eslint/no-floating-promises
+      uiSettingsStorage.deleteSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(args.frontstageDef.id)); // eslint-disable-line @typescript-eslint/no-floating-promises
       if (frontstageDef.id === args.frontstageDef.id) {
         args.frontstageDef.nineZoneState = initializeNineZoneState(frontstageDef);
       } else {
@@ -926,7 +926,7 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
     return () => {
       FrontstageManager.onFrontstageRestoreLayoutEvent.removeListener(listener);
     };
-  }, [uiSettings, frontstageDef]);
+  }, [uiSettingsStorage, frontstageDef]);
   React.useEffect(() => {
     const listener = createListener(frontstageDef, ({ widgetDef }: WidgetEventArgs) => {
       assert(!!frontstageDef.nineZoneState);

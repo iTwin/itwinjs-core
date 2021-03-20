@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { LocalUiSettings, UiSetting, UiSettingsStatus } from "../../ui-core";
+import { LocalSettingsStorage, LocalUiSettings, UiSetting, UiSettingsStatus } from "../../ui-core";
 import { storageMock } from "../TestUtils";
 
 function getBoolean(): boolean { return true; }
@@ -20,7 +20,7 @@ describe("UiSetting", () => {
   });
 
   describe("saveSetting", () => {
-    const localUiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+    const localUiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window); // eslint-disable-line deprecation/deprecation
 
     it("Should save setting correctly", async () => {
       const uiSetting = new UiSetting<boolean>("Namespace", "Setting", getBoolean);
@@ -30,7 +30,7 @@ describe("UiSetting", () => {
   });
 
   describe("getSetting", async () => {
-    const localUiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+    const localUiSettings = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
     const uiSetting = new UiSetting<string>("Namespace", "Setting", getString);
     await uiSetting.saveSetting(localUiSettings);
 
@@ -43,7 +43,7 @@ describe("UiSetting", () => {
   });
 
   describe("deleteSetting", async () => {
-    const localUiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+    const localUiSettings = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
     const uiSetting = new UiSetting<string>("Namespace", "Setting", getString);
     await uiSetting.saveSetting(localUiSettings);
 
@@ -62,7 +62,7 @@ describe("UiSetting", () => {
     let value = 100;
     function applyNumber(v: number) { value = v; }
 
-    const localUiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+    const localUiSettings = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
     const uiSetting = new UiSetting<number>("Namespace", "Setting", getNumber, applyNumber);
     await uiSetting.saveSetting(localUiSettings);
 

@@ -41,7 +41,7 @@ export interface ConfigurableUiState {
 const initialState: ConfigurableUiState = {
   snapMode: SnapMode.NearestKeypoint as number,
   toolPrompt: "",
-  theme: localStorage.getItem("uifw:defaultTheme")??SYSTEM_PREFERRED_COLOR_THEME,
+  theme: SYSTEM_PREFERRED_COLOR_THEME,
   widgetOpacity: WIDGET_OPACITY_DEFAULT,
   useDragInteraction: false,
   frameworkVersion: "2",

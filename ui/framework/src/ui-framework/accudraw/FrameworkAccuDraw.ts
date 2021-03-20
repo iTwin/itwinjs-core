@@ -81,11 +81,11 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
   public static get displayNotifications(): boolean { return FrameworkAccuDraw._displayNotifications; }
   public static set displayNotifications(v: boolean) {
     FrameworkAccuDraw._displayNotifications = v;
-    void UiFramework.getUiSettings().saveSetting (this._settingsNamespace, this._notificationsKey, v);
+    void UiFramework.getUiSettingsStorage().saveSetting (this._settingsNamespace, this._notificationsKey, v);
   }
 
-  public async loadUserSettings(settingsStorage: UiSettings): Promise<void> {
-    const result = await settingsStorage.getSetting (FrameworkAccuDraw._settingsNamespace, FrameworkAccuDraw._notificationsKey);
+  public async loadUserSettings(storage: UiSettings): Promise<void> {
+    const result = await storage.getSetting (FrameworkAccuDraw._settingsNamespace, FrameworkAccuDraw._notificationsKey);
     if (result.status === UiSettingsStatus.Success)
       FrameworkAccuDraw._displayNotifications = result.setting;
   }

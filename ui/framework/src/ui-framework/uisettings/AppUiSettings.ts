@@ -6,7 +6,7 @@
  * @module Settings
  */
 
-import { UiSetting, UiSettings } from "@bentley/ui-core";
+import { UiSetting, UiSettingsStorage } from "@bentley/ui-core";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
 
@@ -65,30 +65,30 @@ export class AppUiSettings implements UserSettingsProvider  {
       return;
 
     if (args.eventIds.has("configurableui:set_theme")) {
-      await this.colorTheme.saveSetting(UiFramework.getUiSettings());
+      await this.colorTheme.saveSetting(UiFramework.getUiSettingsStorage());
       // always store as default theme in local storage to avoid flicker during startup if user is not yet logged-in
       localStorage.setItem("uifw:defaultTheme", UiFramework.getColorTheme());
     }
 
     if (args.eventIds.has("configurableui:set-drag-interaction"))
-      await this.dragInteraction.saveSetting(UiFramework.getUiSettings());
+      await this.dragInteraction.saveSetting(UiFramework.getUiSettingsStorage());
 
     if (args.eventIds.has("configurableui:set-framework-version"))
-      await this.frameworkVersion.saveSetting(UiFramework.getUiSettings());
+      await this.frameworkVersion.saveSetting(UiFramework.getUiSettingsStorage());
 
     if (args.eventIds.has("configurableui:set_widget_opacity"))
-      await this.widgetOpacity.saveSetting(UiFramework.getUiSettings());
+      await this.widgetOpacity.saveSetting(UiFramework.getUiSettingsStorage());
   };
 
-  public async apply(uiSettings: UiSettings): Promise<void> {
+  public async apply(storage: UiSettingsStorage): Promise<void> {
     this._applyingLocalSettings = true;
     for await (const setting of this._settings) {
-      await setting.getSettingAndApplyValue(uiSettings);
+      await setting.getSettingAndApplyValue(storage);
     }
     this._applyingLocalSettings = false;
   }
 
-  public async loadUserSettings(settings: UiSettings): Promise<void> {
-    await this.apply(settings);
+  public async loadUserSettings(storage: UiSettingsStorage): Promise<void> {
+    await this.apply(storage);
   }
 }

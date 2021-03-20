@@ -6,18 +6,18 @@
  * @module UiSettings
  */
 
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "./UiSettings";
+import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "./UiSettingsStorage";
 
 /**
- * Implementation of [[UiSettings]] using Window.sessionStorage.
- * @beta
+ * Implementation of [[UiSettingsStorage]] using Window.localStorage.
+ * @public
  */
-export class SessionUiSettings implements UiSettings {
+export class LocalSettingsStorage implements UiSettingsStorage {
 
   constructor(public w: Window = window) { }
 
   public async getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
-    const setting = this.w.sessionStorage.getItem(`${settingNamespace}.${settingName}`);
+    const setting = this.w.localStorage.getItem(`${settingNamespace}.${settingName}`);
     if (setting !== null)
       return { status: UiSettingsStatus.Success, setting: JSON.parse(setting) };
     else
@@ -25,16 +25,24 @@ export class SessionUiSettings implements UiSettings {
   }
 
   public async saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult> {
-    this.w.sessionStorage.setItem(`${settingNamespace}.${settingName}`, JSON.stringify(setting));
+    this.w.localStorage.setItem(`${settingNamespace}.${settingName}`, JSON.stringify(setting));
     return { status: UiSettingsStatus.Success };
   }
 
   public async deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
     const name = `${settingNamespace}.${settingName}`;
-    const setting = this.w.sessionStorage.getItem(name);
+    const setting = this.w.localStorage.getItem(name);
     if (setting === null)
       return { status: UiSettingsStatus.NotFound };
-    this.w.sessionStorage.removeItem(name);
+    this.w.localStorage.removeItem(name);
     return { status: UiSettingsStatus.Success };
   }
 }
+
+/** Alias for [[LocalSettingsStorage]]
+ * @public @deprecated use LocalSettingsStorage
+ */
+export class LocalUiSettings extends LocalSettingsStorage {
+  constructor(w: Window = window) { super (w);}
+}
+

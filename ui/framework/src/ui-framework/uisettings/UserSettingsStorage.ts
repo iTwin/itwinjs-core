@@ -8,13 +8,13 @@
 
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
 import { SettingsStatus } from "@bentley/product-settings-client";
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
+import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@bentley/ui-core";
 
 /**
  * Implementation of [[UiSettings]] that uses settings admin from `IModelApp.settings`.
- * @beta
+ * @public
  */
-export class CloudUiSettings implements UiSettings {
+export class UserSettingsStorage implements UiSettingsStorage {
   public async getSetting(namespace: string, name: string): Promise<UiSettingsResult> {
     if (!this.isSignedIn)
       return { status: UiSettingsStatus.AuthorizationError };
@@ -65,4 +65,10 @@ export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSett
   else if (status === SettingsStatus.AuthorizationError)
     return UiSettingsStatus.AuthorizationError;
   return UiSettingsStatus.UnknownError;
+}
+
+/** Alias for [[UserSettingsStorage]]
+ * @public @deprecated use UserSettingsStorage
+ */
+export class IModelAppUiSettings extends UserSettingsStorage {
 }

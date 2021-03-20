@@ -16,7 +16,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiComponents } from "@bentley/ui-components";
-import { LocalUiSettings, SettingsManager, UiEvent, UiSettings } from "@bentley/ui-core";
+import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@bentley/ui-core";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
@@ -46,7 +46,7 @@ export interface UserSettingsProvider {
   /** Unique provider Id */
   providerId: string;
   /** Function to load settings from settings storage */
-  loadUserSettings(settings: UiSettings): Promise<void>;
+  loadUserSettings(storage: UiSettingsStorage): Promise<void>;
 }
 
 /** UiVisibility Event Args interface.
@@ -99,7 +99,7 @@ export class UiFramework {
   private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
   private static _uiVersion = "";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
-  private static _uiSettings: UiSettings;
+  private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage(); // provide a default
   private static _settingsManager?: SettingsManager;
   private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
 
@@ -241,8 +241,12 @@ export class UiFramework {
    * @beta
    */
   public static get frameworkState(): FrameworkState | undefined {
-    // eslint-disable-next-line dot-notation
-    return UiFramework.store.getState()[UiFramework.frameworkStateKey];
+    try {
+      // eslint-disable-next-line dot-notation
+      return UiFramework.store.getState()[UiFramework.frameworkStateKey];
+    } catch (_e){
+      return undefined;
+    }
   }
 
   /** The Redux store */
@@ -400,16 +404,16 @@ export class UiFramework {
   }
 
   /** @beta */
-  public static async setUiSettings(uiSettings: UiSettings, immediateSync = false) {
-    if (UiFramework._uiSettings === uiSettings)
+  public static async setUiSettingsStorage(storage: UiSettingsStorage, immediateSync = false) {
+    if (UiFramework._uiSettingsStorage === storage)
       return;
 
-    UiFramework._uiSettings = uiSettings;
+    UiFramework._uiSettingsStorage = storage;
 
     // let any registered providers to load values from the new storage location
     const providerKeys = [...this._uiSettingsProviderRegistry.keys()];
     for await (const key of providerKeys) {
-      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(uiSettings);
+      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(storage);
     }
 
     // istanbul ignore next
@@ -420,10 +424,8 @@ export class UiFramework {
   }
 
   /** @beta */
-  public static getUiSettings(): UiSettings {
-    if (undefined === UiFramework._uiSettings)
-      UiFramework._uiSettings = new LocalUiSettings();
-    return UiFramework._uiSettings;
+  public static getUiSettingsStorage(): UiSettingsStorage {
+    return UiFramework._uiSettingsStorage;
   }
 
   /** @beta */

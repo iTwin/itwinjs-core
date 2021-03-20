@@ -36,12 +36,12 @@ import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
-import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
+import { LocalSettingsStorage, UiSettings } from "@bentley/ui-core";
 import {
-  ActionsUnion, AppNotificationManager, AppUiSettings, CloudUiSettings, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw,
-  FrameworkReducer, FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
-  FrontstageManager, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
-  ToolbarDragInteractionContext, UiFramework, UiSettingsProvider,
+  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw, FrameworkReducer,
+  FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
+  IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager, ToolbarDragInteractionContext,
+  UiFramework, UiSettingsProvider, UserSettingsStorage,
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import { getSupportedRpcs } from "../common/rpcs";
@@ -155,8 +155,8 @@ export class SampleAppIModelApp {
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
-  private static _localUiSettings = new LocalUiSettings();
-  private static _cloudUiSettings = new CloudUiSettings();
+  private static _localUiSettings = new LocalSettingsStorage();
+  private static _UserUiSettingsStorage = new UserSettingsStorage();
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
@@ -165,12 +165,12 @@ export class SampleAppIModelApp {
     return StateManager.store as Store<RootState>;
   }
 
-  public static getUiSettings(): UiSettings {
+  public static getUiSettingsStorage(): UiSettings {
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
     if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
       return SampleAppIModelApp._localUiSettings;
     }
-    return SampleAppIModelApp._cloudUiSettings;
+    return SampleAppIModelApp._UserUiSettingsStorage;
   }
 
   public static async startup(opts: WebViewerAppOpts & NativeAppOpts): Promise<void> {
@@ -261,7 +261,7 @@ export class SampleAppIModelApp {
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
     // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
-    const lastTheme = localStorage.getItem("uifw:defaultTheme");
+    const lastTheme = (window.localStorage&&window.localStorage.getItem("uifw:defaultTheme"))??SYSTEM_PREFERRED_COLOR_THEME;
     const defaults = {
       colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
       dragInteraction: false,
@@ -273,7 +273,7 @@ export class SampleAppIModelApp {
     UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
 
     // go ahead and initialize settings before login or in case login is by-passed
-    await UiFramework.setUiSettings(SampleAppIModelApp.getUiSettings());
+    await UiFramework.setUiSettingsStorage(SampleAppIModelApp.getUiSettingsStorage());
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
@@ -564,7 +564,7 @@ function mapFrameworkVersionStateToProps(state: RootState) {
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
-class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSettings: UiSettings }> {
+class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSettingsStorage: UiSettings }> {
   constructor(props: any) {
     super(props);
 
@@ -575,7 +575,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
     this.state = {
       authorized,
-      uiSettings: SampleAppIModelApp.getUiSettings(),
+      uiSettingsStorage: SampleAppIModelApp.getUiSettingsStorage(),
     };
   }
 
@@ -585,9 +585,9 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
   private _onUserStateChanged = async (_accessToken: AccessToken | undefined) => {
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-    const uiSettings = SampleAppIModelApp.getUiSettings();
-    await UiFramework.setUiSettings(uiSettings);
-    this.setState({ authorized, uiSettings});
+    const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
+    await UiFramework.setUiSettingsStorage(uiSettingsStorage);
+    this.setState({ authorized, uiSettingsStorage});
     this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
@@ -624,7 +624,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
               <AppDragInteraction>
                 <AppFrameworkVersion>
                   {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-                  <UiSettingsProvider uiSettings={this.state.uiSettings}>
+                  <UiSettingsProvider settingsStorage={this.state.uiSettingsStorage}>
                     <ConfigurableUiContent
                       appBackstage={<AppBackstageComposer />}
                     />

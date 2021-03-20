@@ -7,10 +7,10 @@ import { expect } from "chai";
 import { AuthorizedFrontendRequestContext, IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import { SettingsAdmin, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { UiSettingsStatus } from "@bentley/ui-core";
-import { CloudUiSettings, settingsStatusToUiSettingsStatus } from "../../ui-framework";
+import { settingsStatusToUiSettingsStatus, UserSettingsStorage } from "../../ui-framework";
 import { TestUtils } from "../TestUtils";
 
-describe("CloudUiSettings", () => {
+describe("UserSettingsStorage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
@@ -30,7 +30,7 @@ describe("CloudUiSettings", () => {
       saveUserSetting,
     }));
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: true }));
-    const sut = new CloudUiSettings();
+    const sut = new UserSettingsStorage();
     await sut.saveSetting("TESTNAMESPACE", "TESTNAME", "testvalue");
     saveUserSetting.calledOnceWithExactly(sinon.match.any, "testvalue", "TESTNAMESPACE", "TESTNAME", true).should.true;
   });
@@ -41,7 +41,7 @@ describe("CloudUiSettings", () => {
       deleteUserSetting,
     }));
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: true }));
-    const sut = new CloudUiSettings();
+    const sut = new UserSettingsStorage();
     await sut.deleteSetting("TESTNAMESPACE", "TESTNAME");
     deleteUserSetting.calledOnceWithExactly(sinon.match.any, "TESTNAMESPACE", "TESTNAME", true).should.true;
   });
@@ -52,7 +52,7 @@ describe("CloudUiSettings", () => {
       getUserSetting,
     }));
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: true }));
-    const sut = new CloudUiSettings();
+    const sut = new UserSettingsStorage();
     const settingResult = await sut.getSetting("TESTNAMESPACE", "TESTNAME");
     getUserSetting.calledOnceWithExactly(sinon.match.any, "TESTNAMESPACE", "TESTNAME", true).should.true;
     settingResult.setting.should.eq("testvalue");
@@ -60,21 +60,21 @@ describe("CloudUiSettings", () => {
 
   it("should fail to save setting", async () => {
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: false }));
-    const sut = new CloudUiSettings();
+    const sut = new UserSettingsStorage();
     const result = await sut.saveSetting("TESTNAMESPACE", "TESTNAME", "testvalue");
     expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
   });
 
   it("should fail to delete setting", async () => {
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: false }));
-    const sut = new CloudUiSettings();
+    const sut = new UserSettingsStorage();
     const result = await sut.deleteSetting("TESTNAMESPACE", "TESTNAME");
     expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
   });
 
   it("should fail to get setting", async () => {
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ hasSignedIn: false }));
-    const sut = new CloudUiSettings();
+    const sut = new UserSettingsStorage();
     const result = await sut.getSetting("TESTNAMESPACE", "TESTNAME");
     expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
   });

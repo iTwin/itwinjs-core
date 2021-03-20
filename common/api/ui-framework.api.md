@@ -168,6 +168,7 @@ import { UiSetting } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
 import { UiSettingsResult } from '@bentley/ui-core';
 import { UiSettingsStatus } from '@bentley/ui-core';
+import { UiSettingsStorage } from '@bentley/ui-core';
 import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-components';
 import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
 import { UnitSystemKey } from '@bentley/imodeljs-frontend';
@@ -488,16 +489,20 @@ export class AppNotificationManager extends NotificationManager {
 }
 
 // @alpha (undocumented)
-export class AppUiSettings {
+export class AppUiSettings implements UserSettingsProvider {
     constructor(defaults: Partial<InitialAppUiSettings>);
     // (undocumented)
-    apply(uiSettings: UiSettings): Promise<void>;
+    apply(storage: UiSettingsStorage): Promise<void>;
     // (undocumented)
     colorTheme: UiSetting<string>;
     // (undocumented)
     dragInteraction: UiSetting<boolean>;
     // (undocumented)
     frameworkVersion: UiSetting<string>;
+    // (undocumented)
+    loadUserSettings(storage: UiSettingsStorage): Promise<void>;
+    // (undocumented)
+    readonly providerId = "AppUiSettingsProvider";
     // (undocumented)
     widgetOpacity: UiSetting<number>;
 }
@@ -927,16 +932,6 @@ export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): 
 
 // @internal (undocumented)
 export function clearKeyinPaletteHistory(): void;
-
-// @beta
-export class CloudUiSettings implements UiSettings {
-    // (undocumented)
-    deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    getSetting(namespace: string, name: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult>;
-}
 
 // @public @deprecated
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
@@ -2069,7 +2064,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
     static readonly isTopRotationConditional: ConditionalBooleanValue;
     static readonly isViewRotationConditional: ConditionalBooleanValue;
     // (undocumented)
-    loadUserSettings(settingsStorage: UiSettings): Promise<void>;
+    loadUserSettings(storage: UiSettings): Promise<void>;
     static readonly onAccuDrawUiSettingsChangedEvent: AccuDrawUiSettingsChangedEvent;
     // (undocumented)
     onCompassModeChange(): void;
@@ -2949,6 +2944,10 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
     orientation: Orientation;
     // (undocumented)
     relativePosition: RelativePosition;
+}
+
+// @public @deprecated
+export class IModelAppUiSettings extends UserSettingsStorage {
 }
 
 // @beta
@@ -5983,7 +5982,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     // @internal (undocumented)
     context: React.ContextType<typeof UiSettingsContext>;
     // @internal (undocumented)
-    static contextType: React.Context<UiSettings>;
+    static contextType: React.Context<UiSettingsStorage>;
     // @internal (undocumented)
     static readonly defaultProps: ToolAssistanceFieldDefaultProps;
     // @internal (undocumented)
@@ -6001,7 +6000,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
     defaultPromptAtCursor: boolean;
     fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
-    uiSettings?: UiSettings;
+    uiSettings?: UiSettingsStorage;
 }
 
 // @internal
@@ -6419,7 +6418,7 @@ export class UiFramework {
     // (undocumented)
     static getIsUiVisible(): boolean;
     // @beta (undocumented)
-    static getUiSettings(): UiSettings;
+    static getUiSettingsStorage(): UiSettingsStorage;
     // @beta (undocumented)
     static getUserInfo(): UserInfo | undefined;
     // (undocumented)
@@ -6478,7 +6477,7 @@ export class UiFramework {
     // @beta
     static get settingsManager(): SettingsManager;
     // @beta (undocumented)
-    static setUiSettings(uiSettings: UiSettings, immediateSync?: boolean): Promise<void>;
+    static setUiSettingsStorage(storage: UiSettingsStorage, immediateSync?: boolean): Promise<void>;
     // (undocumented)
     static setUiVersion(version: string): void;
     // (undocumented)
@@ -6510,7 +6509,7 @@ export interface UiIntervalEventArgs {
 }
 
 // @internal (undocumented)
-export const UiSettingsContext: React.Context<UiSettings>;
+export const UiSettingsContext: React.Context<UiSettingsStorage>;
 
 // @beta
 export function UiSettingsPage({ allowSettingUiFrameworkVersion }: {
@@ -6525,7 +6524,7 @@ export interface UiSettingsProviderProps {
     // (undocumented)
     children?: React.ReactNode;
     // (undocumented)
-    uiSettings: UiSettings;
+    settingsStorage: UiSettingsStorage;
 }
 
 // @public
@@ -6562,7 +6561,7 @@ export class UiShowHideSettingsProvider implements UserSettingsProvider {
     // (undocumented)
     static initialize(): void;
     // (undocumented)
-    loadUserSettings(settingsStorage: UiSettings): Promise<void>;
+    loadUserSettings(storage: UiSettings): Promise<void>;
     // (undocumented)
     readonly providerId = "UiShowHideSettingsProvider";
     // (undocumented)
@@ -6656,8 +6655,18 @@ export interface UserProfileBackstageItemProps extends CommonProps {
 
 // @alpha
 export interface UserSettingsProvider {
-    loadUserSettings(settings: UiSettings): Promise<void>;
+    loadUserSettings(storage: UiSettingsStorage): Promise<void>;
     providerId: string;
+}
+
+// @public
+export class UserSettingsStorage implements UiSettingsStorage {
+    // (undocumented)
+    deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    getSetting(namespace: string, name: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult>;
 }
 
 // @internal (undocumented)
@@ -6682,7 +6691,7 @@ export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
 
 // @internal (undocumented)
-export function useUiSettingsContext(): UiSettings;
+export function useUiSettingsContext(): UiSettingsStorage;
 
 // @internal (undocumented)
 export function useUiVisibility(): boolean;

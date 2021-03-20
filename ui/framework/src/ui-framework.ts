@@ -226,7 +226,7 @@ export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 export * from "./ui-framework/uiprovider/DefaultDialogGridContainer";
 
 export * from "./ui-framework/uisettings/AppUiSettings";
-export * from "./ui-framework/uisettings/CloudUiSettings";
+export * from "./ui-framework/uisettings/UserSettingsStorage";
 export * from "./ui-framework/uisettings/useUiSettings";
 
 export * from "./ui-framework/utils/ViewUtilities";
