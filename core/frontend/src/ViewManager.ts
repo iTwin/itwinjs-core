@@ -107,7 +107,7 @@ export class ViewManager {
     this.cursor = "default";
 
     const options = IModelApp.renderSystem.options;
-    this._doIdleWork = true === options.doIdleWork;
+    this._doIdleWork = false !== options.doIdleWork;
     if (this._doIdleWork)
       this._beginIdleWork();
   }
