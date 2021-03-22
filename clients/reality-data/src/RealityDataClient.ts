@@ -462,7 +462,7 @@ export class RealityDataClient extends WsgClient {
 
     const newQueryOptions = { project: projectId } as RequestQueryOptions;
     if (!type)
-      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'`;
+      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'+or+Type+eq+'OMR'`;
     else
       newQueryOptions.$filter = `Type+eq+'${type}'`;
 
@@ -488,7 +488,7 @@ export class RealityDataClient extends WsgClient {
 
     const newQueryOptions = { project: projectId, polygon: polygonString } as RequestQueryOptions;
     if (!type)
-      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'`;
+      newQueryOptions.$filter = `Type+eq+'RealityMesh3DTiles'+or+Type+eq+'OPC'+or+Type+eq+'OMR'`;
     else
       newQueryOptions.$filter = `Type+eq+'${type}'`;
     return this.getRealityDatas(requestContext, projectId, newQueryOptions);

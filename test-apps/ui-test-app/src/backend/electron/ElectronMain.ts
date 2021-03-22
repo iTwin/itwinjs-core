@@ -6,6 +6,8 @@ import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { getSupportedRpcs } from "../../common/rpcs";
+import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+
 /**
  * Initializes Electron backend
  */
@@ -20,6 +22,7 @@ export async function initializeElectron() {
   };
 
   await ElectronHost.startup({ electronHost });
+  EditCommandAdmin.register(BasicManipulationCommand);
 
   // Handle custom keyboard shortcuts
   ElectronHost.app.on("web-contents-created", (_e, wc) => {

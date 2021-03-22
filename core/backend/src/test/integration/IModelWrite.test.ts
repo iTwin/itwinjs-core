@@ -786,18 +786,11 @@ describe("IModelWriteTest (#integration)", () => {
 
   it("should write to briefcase with optimistic concurrency (#integration)", async () => {
     const adminRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
-
-    let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
-    const iModelName = "OptimisticConcurrencyTest";
-    const iModels = await IModelHost.iModelClient.iModels.get(adminRequestContext, testContextId, new IModelQuery().byName(iModelName));
-    for (const iModelTemp of iModels) {
-      await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, iModelTemp.id!);
-    }
-    timer.end();
+    const iModelName = HubUtility.generateUniqueName("OptimisticConcurrencyTest");
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    timer = new Timer("create iModel");
+    let timer = new Timer("create iModel");
     const rwIModelId = await BriefcaseManager.create(adminRequestContext, testContextId, iModelName, { rootSubject: { name: "TestSubject" } });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
@@ -900,6 +893,8 @@ describe("IModelWriteTest (#integration)", () => {
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(adminRequestContext, rwIModel);
     roIModel.close();
+
+    await IModelHost.iModelClient.iModels.delete(adminRequestContext, testContextId, rwIModelId);
   });
 
   it("Run plain SQL against fixed version connection", async () => {

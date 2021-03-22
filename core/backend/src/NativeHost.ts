@@ -201,8 +201,8 @@ export class NativeHost {
 
   /**
    * Start the backend of a native app.
-   * @param configuration
-   * @note this method calls [[IModelHost.startup]] internally.
+   * @param opt
+   * @note this method calls [[IpcHost.startup]] internally.
    */
   public static async startup(opt?: NativeHostOpts): Promise<void> {
     if (!this.isValid) {
@@ -217,7 +217,7 @@ export class NativeHost {
       NativeAppHandler.register();
   }
 
-  /** Shutdown native app backend. Also calls IpcHost.shutdown() */
+  /** Shutdown native app backend. Also calls [[IpcHost.shutdown]] */
   public static async shutdown(): Promise<void> {
     this._isValid = false;
     this.onInternetConnectivityChanged.clear();
