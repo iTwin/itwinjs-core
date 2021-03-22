@@ -45,7 +45,6 @@
     "@types/node": "10.14.1",
     "@types/sinon": "^9.0.0",
     "@types/xmldom": "^0.1.29",
-    "almost-equal": "^1.1.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "eslint": "^6.8.0",
@@ -61,6 +60,9 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.15.0-dev.4",
     "@bentley/imodeljs-i18n": "^2.15.0-dev.4"
+  },
+  "dependencies": {
+    "almost-equal": "^1.1.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
