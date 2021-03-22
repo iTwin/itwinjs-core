@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelJson, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Transform } from "@bentley/geometry-core";
 import { BriefcaseConnection, EditingFunctions } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { deleteElements, initializeEditTools, insertLineElement, transformElements } from "../Editing";

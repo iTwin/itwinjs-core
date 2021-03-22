@@ -5,11 +5,11 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import { BeDuration, compareStrings, CompressedId64Set, DbOpcode, Guid, Id64, Id64String, OpenMode, OrderedId64Array, ProcessDetector } from "@bentley/bentleyjs-core";
-import { LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BatchType, ChangedEntities, Code, ElementGeometryChange, GeometryStreamBuilder, IModelError, PhysicalElementProps } from "@bentley/imodeljs-common";
+import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
 import {
-  BriefcaseConnection, EditingFunctions, GeometricModel3dState, IModelConnection, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, TileLoadPriority,
+  BriefcaseConnection, EditingFunctions, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { deleteElements, initializeEditTools, insertLineElement, makeLineSegment, transformElements } from "../Editing";

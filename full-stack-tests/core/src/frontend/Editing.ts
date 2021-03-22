@@ -46,7 +46,7 @@ export async function insertLineElement(imodel: BriefcaseConnection, model: Id64
     return Id64.invalid;
 
   const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-  return await callCommand("insertGeometricElement", elemProps);
+  return callCommand("insertGeometricElement", elemProps);
 }
 
 export async function transformElements(imodel: BriefcaseConnection, ids: string[], transform: Transform) {
