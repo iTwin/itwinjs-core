@@ -3912,6 +3912,8 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
 // @alpha
 export interface ModelsVisibilityHandlerProps {
     // (undocumented)
+    hierarchyAutoUpdateEnabled?: boolean;
+    // (undocumented)
     rulesetId: string;
     // (undocumented)
     viewport: Viewport;
