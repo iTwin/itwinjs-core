@@ -185,6 +185,7 @@ export interface TreeModel {
   getNode(nodeId: string | undefined, childIndex?: number): TreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode | undefined;
 
   getChildren(parentId: string | undefined): SparseArray<string> | undefined;
+  getChildOffset(parentId: string | undefined, childId: string): number | undefined;
 
   iterateTreeModelNodes(parentId?: string): IterableIterator<TreeModelNode>;
 }
@@ -307,6 +308,61 @@ export class MutableTreeModel implements TreeModel {
     }
 
     return true;
+  }
+
+  /**
+   * Transfers node along with its children to a new location. Fails if destination has undefined child count.
+   * @param sourceNodeId Node that is being moved.
+   * @param targetParentId Node that will receive a new child.
+   * @param targetIndex Insertion location among target's *current* children.
+   * @returns `true` on success, `false` otherwise.
+   */
+  public moveNode(sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): boolean {
+    const sourceNode = this.getNode(sourceNodeId);
+    if (sourceNode === undefined) {
+      return false;
+    }
+
+    const targetParent = targetParentId === undefined ? this._rootNode : this.getNode(targetParentId);
+    if (targetParent === undefined || targetParent.numChildren === undefined) {
+      return false;
+    }
+
+    if (targetParentId !== undefined && this.areNodesRelated(sourceNodeId, targetParentId)) {
+      return false;
+    }
+
+    this._tree.moveNode(sourceNode.parentId, sourceNodeId, targetParentId, targetIndex);
+
+    const sourceParent = sourceNode.parentId === undefined ? this._rootNode : this.getNode(sourceNode.parentId);
+    assert(sourceParent !== undefined);
+    MutableTreeModel.setNumChildrenForNode(sourceParent, this._tree.getChildren(sourceNode.parentId));
+    MutableTreeModel.setNumChildrenForNode(targetParent, this._tree.getChildren(targetParentId));
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    (sourceNode.parentId as string | undefined) = targetParentId;
+
+    const updateDepths = (parentId: string, depth: number) => {
+      const node = this.getNode(parentId);
+      assert(node !== undefined);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      (node.depth as number) = depth;
+      for (const [nodeId] of this.getChildren(parentId)?.iterateValues() ?? []) {
+        updateDepths(nodeId, depth + 1);
+      }
+    };
+
+    updateDepths(sourceNodeId, targetParent.depth + 1);
+    return true;
+  }
+
+  private areNodesRelated(ancestorNodeId: string, descendantNodeId: string): boolean {
+    const node = this.getNode(descendantNodeId);
+    if (node === undefined || node.parentId === undefined) {
+      return false;
+    }
+
+    return node.parentId === ancestorNodeId ? true : this.areNodesRelated(ancestorNodeId, node.parentId);
   }
 
   /**

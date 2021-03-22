@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
+
 import { UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
 import { Format } from "./Format";
 import { Formatter } from "./Formatter";
@@ -10,7 +14,8 @@ import { Formatter } from "./Formatter";
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
 
 /** A class that contains both formatting information and the conversion factors necessary to convert from an input unit to the units specified in the format.
- * @alpha
+ * Once created the FormatterSpec will be able to format quantity values with synchronous calls.
+ * @beta
  */
 export class FormatterSpec {
   protected _name: string;

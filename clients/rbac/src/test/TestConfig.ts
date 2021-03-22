@@ -2,18 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-
-// Note: Turn this off unless really necessary - it causes Error messages on the
-// console with the existing suite of tests, and this is quite misleading,
-// especially when diagnosing CI job failures.
-const loggingConfigFile: string | undefined = process.env.imjs_test_logging_config;
-if (!!loggingConfigFile) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  Logger.configureLevels(require(loggingConfigFile));
-}
 
 function isOfflineSet(): boolean {
   const index = process.argv.indexOf("--offline");

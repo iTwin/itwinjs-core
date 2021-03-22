@@ -10,6 +10,8 @@ import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { ColorPickerButton } from "../../ui-components/color/ColorPickerButton";
 
+// cSpell:ignore colorpicker
+
 describe("<ColorPickerButton/>", () => {
   const colorDef = ColorDef.create(ColorByName.blue);
 
@@ -31,12 +33,17 @@ describe("<ColorPickerButton/>", () => {
     const renderedComponent = render(<ColorPickerButton initialColor={colorDef} />);
     expect(renderedComponent).not.to.be.undefined;
     const button = renderedComponent.getByTestId("components-colorpicker-button");
-    expect(button.getAttribute("data-value")).to.eq("rgb(0,0,255,1)");  // blue
+    expect(button.getAttribute("data-value")).to.eq("rgb(0,0,255)");  // blue
 
     const newColorDef = ColorDef.create(ColorByName.red);
     renderedComponent.rerender(<ColorPickerButton initialColor={newColorDef} />);
     expect(renderedComponent).not.to.be.undefined;
-    expect(button.getAttribute("data-value")).to.eq("rgb(255,0,0,1)"); // red
+    expect(button.getAttribute("data-value")).to.eq("rgb(255,0,0)"); // red
+
+    const colorDefWithAlpha = ColorDef.create(0x80ff0000);
+    renderedComponent.rerender(<ColorPickerButton initialColor={colorDefWithAlpha} />);
+    expect(renderedComponent).not.to.be.undefined;
+    expect(button.getAttribute("data-value")).to.eq("rgba(0,0,255,0.50)"); // blue with alpha
   });
 
   it("round swatches with title should render", () => {
@@ -54,7 +61,7 @@ describe("<ColorPickerButton/>", () => {
 
     const renderedComponent = render(<ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} dropDownTitle="test-title" showCaret />);
     const button = renderedComponent.getByTestId("components-colorpicker-button");
-    expect(button.getAttribute("data-value")).to.eq("rgb(0,0,255,1)");  // blue
+    expect(button.getAttribute("data-value")).to.eq("rgb(0,0,255)");  // blue
     expect(renderedComponent.container.querySelector(".icon-caret-down")).not.to.be.null;
     fireEvent.click(button);
     expect(renderedComponent.container.querySelector(".icon-caret-up")).not.to.be.null;
@@ -71,7 +78,7 @@ describe("<ColorPickerButton/>", () => {
       fireEvent.click(firstColorButton);
 
       expect(spyOnColorPick).to.be.calledOnce;
-      expect(button.getAttribute("data-value")).to.eq("rgb(255,0,0,1)"); // red
+      expect(button.getAttribute("data-value")).to.eq("rgb(255,0,0)"); // red
     }
   });
 

@@ -9,6 +9,7 @@ packageClassification:  [
          "imodeljs-backend",
          "imodeljs-markup",
          "imodeljs-i18n",
+         "imodeljs-quantity",
          "backend-itwin-client",
          "bentleyjs-core",
          "ecschema-metadata",
@@ -25,7 +26,6 @@ packageClassification:  [
      "packages": [
        "context-registry-client",
        "extension-client",
-       "forms-data-management-client",
        "frontend-authorization-client",
        "imodelhub-client",
        "itwin-client",

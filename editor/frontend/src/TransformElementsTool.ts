@@ -19,9 +19,9 @@ export abstract class TransformElementsTool extends ElementSetTool {
   protected get wantAccuSnap(): boolean { return true; }
   protected get wantDynamics(): boolean { return true; }
   protected get wantMakeCopy(): boolean { return false; } // For testing repeat vs. restart...
-  private _elementOrigins?: Point3d[];
-  private _elementAlignedBoxes?: Frustum[]; // TODO: Display agenda "graphics" with supplied transform...
-  private _startedCmd?: string;
+  protected _elementOrigins?: Point3d[];
+  protected _elementAlignedBoxes?: Frustum[]; // TODO: Display agenda "graphics" with supplied transform...
+  protected _startedCmd?: string;
 
   protected abstract calculateTransform(ev: BeButtonEvent): Transform | undefined;
 
@@ -115,7 +115,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
     try {
       this._startedCmd = await this.startCommand();
       if (IModelStatus.Success === await TransformElementsTool.callCommand("transformPlacement", this.agenda.compressIds(), transform.toJSON()))
-        await this.iModel.saveChanges();
+        await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
@@ -139,6 +139,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
 /** @alpha Move elements by applying translation to placement. */
 export class MoveElementsTool extends TransformElementsTool {
   public static toolId = "MoveElements";
+  public static iconSpec = "icon-move";
 
   protected calculateTransform(ev: BeButtonEvent): Transform | undefined {
     if (undefined === this.anchorPoint)
@@ -176,6 +177,8 @@ export enum RotateAbout {
 /** @alpha Rotate elements by applying transform to placement. */
 export class RotateElementsTool extends TransformElementsTool {
   public static toolId = "RotateElements";
+  public static iconSpec = "icon-rotate";
+
   protected xAxisPoint?: Point3d;
   protected havePivotPoint = false;
   protected haveFinalPoint = false;
@@ -312,6 +315,39 @@ export class RotateElementsTool extends TransformElementsTool {
     return Transform.createFixedPointAndMatrix(this.anchorPoint, matrix);
   }
 
+  protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void {
+    if (RotateAbout.Point === this.rotateAbout)
+      return super.transformAgendaDynamics(transform, context);
+
+    if (undefined === this._elementAlignedBoxes || undefined === this._elementOrigins || this._elementAlignedBoxes.length !== this._elementOrigins.length)
+      return;
+
+    const builder = context.target.createGraphicBuilder(GraphicType.WorldDecoration, context.viewport);
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.HiddenLine);
+
+    this._elementAlignedBoxes.forEach((frust, i) => {
+      const rotatePoint = (RotateAbout.Origin === this.rotateAbout ? this._elementOrigins![i] : frust.getCenter());
+      const rotateTrans = Transform.createFixedPointAndMatrix(rotatePoint, transform.matrix);
+
+      builder.addFrustum(frust.transformBy(rotateTrans));
+    });
+
+    context.addGraphic(builder.finish());
+  }
+
+  protected async transformAgenda(transform: Transform): Promise<void> {
+    if (RotateAbout.Point === this.rotateAbout)
+      return super.transformAgenda(transform);
+
+    try {
+      this._startedCmd = await this.startCommand();
+      if (IModelStatus.Success === await TransformElementsTool.callCommand("rotatePlacement", this.agenda.compressIds(), transform.matrix.toJSON(), RotateAbout.Center === this.rotateAbout))
+        await this.saveChanges();
+    } catch (err) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+    }
+  }
+
   public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
     const transform = this.calculateTransform(ev);
     if (undefined !== transform)
@@ -409,7 +445,8 @@ export class RotateElementsTool extends TransformElementsTool {
     const toolSettings = new Array<DialogItem>();
     toolSettings.push({ value: this._rotateMethodValue, property: this._getMethodDescription(), isDisabled: false, editorPosition: { rowPriority: 1, columnIndex: 2 } });
     toolSettings.push({ value: this._rotateAboutValue, property: this._getAboutDescription(), isDisabled: false, editorPosition: { rowPriority: 2, columnIndex: 2 } });
-    toolSettings.push({ value: this._rotateAngleValue, property: this._getAngleDescription(), isDisabled: false, editorPosition: { rowPriority: 3, columnIndex: 2 } });
+    if (RotateMethod.ByAngle === this.rotateMethod)
+      toolSettings.push({ value: this._rotateAngleValue, property: this._getAngleDescription(), isDisabled: false, editorPosition: { rowPriority: 3, columnIndex: 2 } });
     return toolSettings;
   }
 

@@ -641,6 +641,8 @@ export class BoxTopology {
     static readonly faceId: number[][];
     static readonly partnerFace: number[][];
     static readonly points: Point3d[];
+    // (undocumented)
+    static pointsClone(): Point3d[];
     static readonly primaryCapId = -1;
 }
 
@@ -1283,7 +1285,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     static createRange3dPlanes(range: Range3d, lowX?: boolean, highX?: boolean, lowY?: boolean, highY?: boolean, lowZ?: boolean, highZ?: boolean): ConvexClipPlaneSet;
     static createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle?: Angle): ConvexClipPlaneSet | undefined;
     static createXYBox(x0: number, y0: number, x1: number, y1: number, result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
-    static createXYPolyLine(points: Point3d[], interior: boolean[], leftIsInside: boolean, result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
+    static createXYPolyLine(points: Point3d[], interior: boolean[] | undefined, leftIsInside: boolean, result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     static createXYPolyLineInsideLeft(points: Point3d[], result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     static fromJSON(json: ConvexClipPlaneSetProps | undefined, result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     hasIntersectionWithRay(ray: Ray3d, result?: Range1d): boolean;
@@ -2213,6 +2215,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     moveIndexToIndex(fromIndex: number, toIndex: number): void;
     multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix: Matrix3d): boolean;
     multiplyMatrix3dInPlace(matrix: Matrix3d): void;
+    multiplyMatrix4dAndQuietRenormalizeMatrix4d(matrix: Matrix4d): void;
     multiplyTransformInPlace(transform: Transform): void;
     pop(): void;
     push(toPush: XYAndZ): void;
@@ -2886,6 +2889,7 @@ export class LinearSweep extends SolidPrimitive {
 
 // @public
 export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
+    protected constructor(point0: Point3d, point1: Point3d);
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     clone(): LineSegment3d;
@@ -3307,6 +3311,7 @@ export class Matrix4d implements BeJSONFunctions {
     rowArrays(f?: (value: number) => any): any;
     rowDotColumn(rowIndex: number, other: Matrix4d, columnIndex: number): number;
     rowDotRow(rowIndexThis: number, other: Matrix4d, rowIndexOther: number): number;
+    rowDotXYZW(rowIndex: number, x: number, y: number, z: number, w: number): number;
     rowOperation(rowIndexA: number, rowIndexB: number, firstColumnIndex: number, scale: number): void;
     rowW(): Point4d;
     rowX(): Point4d;
@@ -3866,6 +3871,7 @@ export class Point4d implements BeJSONFunctions {
     static createAdd2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d;
     static createAdd3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d;
     static createFromPackedXYZW(data: Float64Array, xIndex?: number, result?: Point4d): Point4d;
+    static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d;
     static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d;
     static createPlanePointPointZ(pointA: Point4d, pointB: Point4d, result?: Point4d): Point4d;
     static createRealDerivativePlane3dByOriginAndVectorsDefault000(x: number, y: number, z: number, w: number, dx: number, dy: number, dz: number, dw: number, ddx: number, ddy: number, ddz: number, ddw: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
@@ -4030,6 +4036,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addRuledSweep(surface: RuledSweep): boolean;
     addSphere(sphere: Sphere, strokeCount?: number): void;
     addTorusPipe(surface: TorusPipe, phiStrokeCount?: number, thetaStrokeCount?: number): void;
+    addTransformedRangeMesh(transform: Transform, range: Range3d, faceSelector?: boolean[]): void;
     addTransformedUnitBox(transform: Transform): void;
     addTriangleFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]): void;
     addTriangleFan(conePoint: Point3d, ls: LineString3d, toggle: boolean): void;
@@ -4307,6 +4314,8 @@ export class Range1d extends RangeBase {
     intersectsRange(other: Range1d): boolean;
     isAlmostEqual(other: Range1d): boolean;
     get isAlmostZeroLength(): boolean;
+    // (undocumented)
+    get isExact01(): boolean;
     get isNull(): boolean;
     get isSinglePoint(): boolean;
     length(): number;
@@ -4317,6 +4326,7 @@ export class Range1d extends RangeBase {
     setFromJSON(json: Range1dProps): void;
     setNull(): void;
     setX(x: number): void;
+    setXXUnordered(x0: number, x1: number): void;
     toJSON(): Range1dProps;
     union(other: Range1d, result?: Range1d): Range1d;
 }
@@ -5550,6 +5560,34 @@ export class Vector3d extends XYZ {
 export class Vector3dArray {
     static cloneVector3dArray(data: XYAndZ[]): Vector3d[];
     static isAlmostEqual(dataA: undefined | Vector3d[], dataB: undefined | Vector3d[]): boolean;
+}
+
+// @internal
+export class ViewGraphicsOps {
+    static announceGridLinesInView(gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d, worldToDisplay: Map4d, viewRange: Range3d, options: ViewportGraphicsGridSpacingOptions, announceLine: (
+    pointA: Point3d,
+    pointB: Point3d,
+    perspectiveZA: number | undefined,
+    perspectiveZB: number | undefined,
+    startEndDistance: Segment1d | undefined,
+    gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => void): boolean;
+    static gridRangeMaxXY: number;
+    static gridRangeMaxZ: number;
+    }
+
+// @internal
+export interface ViewportGraphicsGridLineIdentifier {
+    direction: 0 | 1;
+    index: number;
+    stepCount: number;
+}
+
+// @internal
+export class ViewportGraphicsGridSpacingOptions {
+    clippingOption: 0 | 1;
+    static create(distanceBetweenLines: number, cullingOption?: 0 | 1 | 2, clippingOption?: 0 | 1): ViewportGraphicsGridSpacingOptions;
+    cullingOption: 0 | 1 | 2;
+    distanceBetweenLines: number;
 }
 
 // @public

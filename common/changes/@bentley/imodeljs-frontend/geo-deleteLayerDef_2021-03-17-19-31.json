@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Allow saved map layer definition to be deleted from setting service.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "mdastous-bentley@users.noreply.github.com"
+}

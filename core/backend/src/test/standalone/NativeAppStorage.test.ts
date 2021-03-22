@@ -3,21 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { NativeHost } from "../../NativeHost";
 import { NativeAppStorage } from "../../NativeAppStorage";
 
 describe("NativeApp storage backend", () => {
   before(async () => {
-    await IModelHost.shutdown();
-    await NativeHost.startup();
     IModelJsFs.purgeDirSync(NativeHost.appSettingsCacheDir);
-  });
-
-  after(async () => {
-    await NativeHost.shutdown();
-    await IModelHost.startup();
   });
 
   it("Primitive Type", () => {
