@@ -66,6 +66,7 @@ import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { ExternalSourceAspectProps } from '@bentley/imodeljs-common';
 import { ExternalSourceAttachmentProps } from '@bentley/imodeljs-common';
+import { ExternalSourceAttachmentRole } from '@bentley/imodeljs-common';
 import { ExternalSourceProps } from '@bentley/imodeljs-common';
 import { FilePropertyProps } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
@@ -1993,8 +1994,13 @@ export class ExternalSource extends InformationReferenceElement {
     constructor(props: ExternalSourceProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    connectorName?: string;
+    connectorVersion?: string;
     static createCode(iModelDb: IModelDb, codeValue: string): Code;
     static ensureCodeSpec(iModelDb: IModelDb): Id64String;
+    repository?: ExternalSourceIsInRepository;
+    // @internal (undocumented)
+    toJSON(): ExternalSourceProps;
 }
 
 // @public
@@ -2030,10 +2036,19 @@ export namespace ExternalSourceAspect {
 export class ExternalSourceAttachment extends InformationReferenceElement {
     // @internal
     constructor(props: ExternalSourceAttachmentProps, iModel: IModelDb);
+    attaches?: ExternalSourceAttachmentAttachesSource;
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModelDb: IModelDb, scopeElementId: Id64String, codeValue: string): Code;
     static ensureCodeSpec(iModelDb: IModelDb): Id64String;
+    pitch?: number;
+    role?: ExternalSourceAttachmentRole;
+    roll?: number;
+    scale?: Point3d;
+    // @internal (undocumented)
+    toJSON(): ExternalSourceAttachmentProps;
+    translation?: Point3d;
+    yaw?: number;
 }
 
 // @beta
@@ -4081,6 +4096,8 @@ export class Subject extends InformationReferenceElement implements SubjectProps
     // (undocumented)
     description?: string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String;
+    // @internal (undocumented)
+    toJSON(): SubjectProps;
 }
 
 // @public
@@ -4103,6 +4120,9 @@ export class SynchronizationConfigLink extends UrlLink {
     constructor(props: SynchronizationConfigLinkProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    lastSuccessfulRun?: string;
+    // @internal (undocumented)
+    toJSON(): SynchronizationConfigLinkProps;
 }
 
 // @beta

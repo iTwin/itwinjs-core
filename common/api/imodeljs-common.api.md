@@ -2402,9 +2402,7 @@ export interface ExternalSourceAttachmentProps extends ElementProps {
 
 // @beta
 export enum ExternalSourceAttachmentRole {
-    // (undocumented)
     SpecifyContext = 0,
-    // (undocumented)
     SpecifyPart = 1
 }
 
