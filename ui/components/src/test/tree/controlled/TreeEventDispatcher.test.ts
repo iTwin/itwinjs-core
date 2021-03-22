@@ -12,7 +12,7 @@ import { RangeSelection, TreeSelectionManager } from "../../../ui-components/tre
 import { from } from "../../../ui-components/tree/controlled/Observable";
 import { TreeEventDispatcher } from "../../../ui-components/tree/controlled/TreeEventDispatcher";
 import {
-  TreeCheckboxStateChangeEventArgs, TreeEvents, TreeRenderedNodeChangeEventArgs, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
+  TreeCheckboxStateChangeEventArgs, TreeEvents, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "../../../ui-components/tree/controlled/TreeEvents";
 import {
   isTreeModelNode, isTreeModelRootNode, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, VisibleTreeNodes,
@@ -20,7 +20,6 @@ import {
 import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { extractSequence } from "../../common/ObservableTestHelpers";
 import { createRandomMutableTreeModelNode, createRandomMutableTreeModelNodes } from "./RandomTreeNodesHelpers";
-import { BeUiEvent } from "@bentley/bentleyjs-core";
 
 describe("TreeEventDispatcher", () => {
 
@@ -44,7 +43,6 @@ describe("TreeEventDispatcher", () => {
     treeEventsMock.reset();
     treeNodeLoaderMock.reset();
 
-    treeEventsMock.setup((x) => x.onNodesRendered).returns(() => undefined);
     dispatcher = new TreeEventDispatcher(treeEventsMock.object, treeNodeLoaderMock.object, SelectionMode.Extended, () => visibleNodesMock.object);
     selectionManager = (dispatcher as any)._selectionManager;
 
@@ -446,17 +444,4 @@ describe("TreeEventDispatcher", () => {
 
   });
 
-  describe("onNodesRendered", () => {
-    it("emits tree events 'onNodesRendered' event when nodes are rendered", () => {
-      const event = new BeUiEvent<TreeRenderedNodeChangeEventArgs>();
-      treeEventsMock.reset();
-      treeEventsMock.setup((x) => x.onNodesRendered).returns(() => event);
-
-      const spy = sinon.spy();
-      event.addListener(spy);
-
-      dispatcher.onNodesRendered(1, 5);
-      expect(spy).to.be.calledOnceWith({ startIndex: 1, endIndex: 5 });
-    });
-  });
 });

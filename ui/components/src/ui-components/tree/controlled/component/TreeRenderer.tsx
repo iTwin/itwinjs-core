@@ -28,6 +28,15 @@ import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
 const NODE_LOAD_DELAY = 500;
 
 /**
+ * Data structure that describes range of rendered items in the tree.
+ * @alpha
+ */
+export interface RenderedTreeItems {
+  startIndex: number;
+  endIndex: number;
+}
+
+/**
  * Properties for [[TreeRenderer]] component.
  * @beta
  */
@@ -46,6 +55,12 @@ export interface TreeRendererProps {
 
   /** Properties used to highlight nodes and scroll to active match while filtering. */
   nodeHighlightingProps?: HighlightableTreeProps;
+
+  /**
+   * Callback that is called when rendered items range changes.
+   * @alpha
+   */
+  onItemsRendered?: (renderedItems: RenderedTreeItems) => void;
 
   /**
    * Callback used when an editor closes
@@ -247,9 +262,10 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
     props.treeActions.onTreeKeyUp(e);
   }, [props.treeActions]);
 
+  const onItemsRendered = props.onItemsRendered;
   const handleRenderedItemsChange = React.useCallback(({ overscanStartIndex, overscanStopIndex }: ListOnItemsRenderedProps) => {
-    props.treeActions.onNodesRendered(overscanStartIndex, overscanStopIndex);
-  }, [props.treeActions]);
+    onItemsRendered && onItemsRendered({ startIndex: overscanStartIndex, endIndex: overscanStopIndex });
+  }, [onItemsRendered]);
 
   return (
     <TreeRendererContextProvider value={rendererContext}>

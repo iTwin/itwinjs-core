@@ -602,7 +602,6 @@ describe("handleLoadedNodeHierarchy", () => {
       model.setChildren(undefined, [convertToTreeModelNodeInput(parentNode)], 0);
     });
 
-    // numChildren set to undefined indicates that this is not he first request for children response
     const loadedHierarchy: LoadedNodeHierarchy = {
       parentId: parentNode.id,
       offset: 0,
@@ -635,7 +634,6 @@ describe("handleLoadedNodeHierarchy", () => {
       model.setChildren(root3.id, [convertToTreeModelNodeInput(child2)], 0);
     });
 
-    // numChildren set to undefined indicates that this is not he first request for children response
     const loadedHierarchy: LoadedNodeHierarchy = {
       parentId: undefined,
       offset: 0,
