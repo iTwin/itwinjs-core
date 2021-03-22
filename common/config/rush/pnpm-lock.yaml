@@ -371,7 +371,6 @@ dependencies:
   typemoq: 2.1.0
   typescript: 4.1.5
   typescript-json-schema: 0.43.0
-  ulp: 1.0.1
   url-loader: 1.1.2_webpack@4.42.0
   username: 5.1.0
   uuid: 7.0.3
@@ -18535,10 +18534,6 @@ packages:
       node: '>= 0.8'
     resolution:
       integrity: sha512-KPHm4VL5dDXKz01UuEd88Df+KzynaohSL9fBh096KWAxSKZQDI2uBrVqtvRM4rwrIrRRKsdLNML/lnaaVSRioA==
-  /ulp/1.0.1:
-    dev: false
-    resolution:
-      integrity: sha1-46SltN6b0PquY+RUTuY6DZvTS8U=
   /unbox-primitive/1.0.0:
     dependencies:
       function-bind: 1.1.1
@@ -20168,7 +20163,6 @@ packages:
       sinon: 9.2.4
       ts-node: 7.0.1
       typescript: 4.1.5
-      ulp: 1.0.1
       xmldom: 0.1.31
       xmlhttprequest: 1.8.0
     dev: false
@@ -22601,7 +22595,6 @@ specifiers:
   typemoq: ^2.1.0
   typescript: ~4.1.0
   typescript-json-schema: ^0.43.0
-  ulp: ^1.0.1
   url-loader: ^1.0.1
   username: ^5.1.0
   uuid: ^7.0.3
