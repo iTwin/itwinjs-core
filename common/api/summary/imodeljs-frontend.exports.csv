@@ -132,12 +132,10 @@ public;DynamicsContext
 alpha;EditingFunctions
 alpha;EditingFunctions
 deprecated;CategoryEditor
-deprecated;ConcurrencyControl
 deprecated;ModelEditor
 alpha;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
-alpha;ElementEditor3d
 public;ElementLocateManager
 public;ElementPicker
 alpha;class ElementSetTool 
@@ -208,6 +206,7 @@ beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 alpha;GlobalLocation
 alpha;GlobalLocationArea
 internal;GlobeAnimator 
+internal;GltfMeshData
 internal;class GltfReader
 internal;GltfReaderProps
 internal;GltfReaderResult 
@@ -427,7 +426,6 @@ beta;Options
 beta;RenderSystemDebugControl
 internal;class RenderTarget 
 beta;RenderTargetDebugControl
-internal;class RenderTerrainMeshGeometry 
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 internal;RootIModelTile = Tile &

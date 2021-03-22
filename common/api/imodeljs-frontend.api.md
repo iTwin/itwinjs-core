@@ -207,7 +207,6 @@ import { PropertyDescription } from '@bentley/ui-abstract';
 import { QParams2d } from '@bentley/imodeljs-common';
 import { QParams3d } from '@bentley/imodeljs-common';
 import { QPoint2d } from '@bentley/imodeljs-common';
-import { QPoint2dList } from '@bentley/imodeljs-common';
 import { QPoint3d } from '@bentley/imodeljs-common';
 import { QPoint3dList } from '@bentley/imodeljs-common';
 import { QuantityParseResult } from '@bentley/imodeljs-quantity';
@@ -3588,6 +3587,29 @@ export class GlobeAnimator implements Animator {
 }
 
 // @internal
+export class GltfMeshData {
+    constructor(props: Mesh);
+    // (undocumented)
+    indices?: Uint16Array | Uint32Array;
+    // (undocumented)
+    normals?: Uint16Array;
+    // (undocumented)
+    pointQParams?: QParams3d;
+    // (undocumented)
+    pointRange?: Range3d;
+    // (undocumented)
+    points?: Uint16Array;
+    // (undocumented)
+    primitive: Mesh;
+    // (undocumented)
+    uvQParams?: QParams2d;
+    // (undocumented)
+    uvRange?: Range2d;
+    // (undocumented)
+    uvs?: Uint16Array;
+}
+
+// @internal
 export abstract class GltfReader {
     protected constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type?: BatchType, isCanceled?: ShouldAbortReadGltf);
     // (undocumented)
@@ -3656,17 +3678,13 @@ export abstract class GltfReader {
     // (undocumented)
     protected readIndices(json: any, accessorName: string): number[] | undefined;
     // (undocumented)
-    protected readMeshIndices(mesh: Mesh, json: any): boolean;
+    protected readMeshIndices(mesh: GltfMeshData, json: any): boolean;
     // (undocumented)
-    protected readMeshPrimitive(primitive: any, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): Mesh | undefined;
+    protected readMeshPrimitive(primitive: any, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined;
     // (undocumented)
-    protected readNormals(normals: OctEncodedNormal[], json: any, accessorName: string): boolean;
+    protected readNormals(mesh: GltfMeshData, json: any, accessorName: string): boolean;
     // (undocumented)
     protected readPolylines(polylines: MeshPolylineList, json: any, accessorName: string, disjoint: boolean): boolean;
-    // (undocumented)
-    protected readUVParams(params: Point2d[], json: any, accessorName: string): boolean;
-    // (undocumented)
-    protected readVertices(positions: QPoint3dList, primitive: any, pseudoRtcBias?: Vector3d): boolean;
     // (undocumented)
     protected readonly _renderMaterials: any;
     // (undocumented)
@@ -5390,9 +5408,9 @@ export class MapTile extends RealityTile {
     // (undocumented)
     freeMemory(): void;
     // (undocumented)
-    get geometry(): RenderTerrainMeshGeometry | undefined;
+    get geometry(): RealityMeshGeometry | undefined;
     // (undocumented)
-    protected _geometry?: RenderTerrainMeshGeometry;
+    protected _geometry?: RealityMeshGeometry;
     // (undocumented)
     getClipShape(): Point3d[];
     // (undocumented)
@@ -7783,13 +7801,9 @@ export interface RenderPlan {
     // (undocumented)
     readonly lights?: LightSettings;
     // (undocumented)
-    readonly locatableTerrain: boolean;
-    // (undocumented)
     readonly monochromeMode: MonochromeMode;
     // (undocumented)
     readonly monoColor: ColorDef;
-    // (undocumented)
-    readonly terrainTransparency: number;
     // (undocumented)
     readonly thematic?: ThematicDisplay;
     // (undocumented)
@@ -8022,15 +8036,17 @@ export abstract class RenderSystem implements IDisposable {
     createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
     createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    // @internal (undocumented)
+    createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined;
+    // @internal (undocumented)
+    createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RealityMeshGeometry | undefined;
+    // @internal (undocumented)
+    createRealityMeshGraphic(_terrainGeometry: RealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @beta
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
-    // @internal (undocumented)
-    createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform: Transform): RenderTerrainMeshGeometry | undefined;
-    // @internal (undocumented)
-    createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @internal
     createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined;
@@ -8063,7 +8079,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined>;
     // @internal (undocumented)
-    get maxTerrainImageryLayers(): number;
+    get maxRealityImageryLayers(): number;
     // @internal (undocumented)
     get maxTextureSize(): number;
     // @internal (undocumented)
@@ -8216,14 +8232,6 @@ export interface RenderTargetDebugControl {
     readonly shadowFrustum: Frustum | undefined;
     // @internal (undocumented)
     vcSupportIntersectingVolumes: boolean;
-}
-
-// @internal (undocumented)
-export abstract class RenderTerrainMeshGeometry implements IDisposable, RenderMemory.Consumer {
-    // (undocumented)
-    abstract collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
-    abstract dispose(): void;
 }
 
 // @internal
@@ -9523,8 +9531,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     modelToView(modelPt: XYZ, result?: Point3d): Point3d;
     // (undocumented)
-    nonLocatableTerrain: boolean;
-    // (undocumented)
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
     onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void): void;
@@ -9582,8 +9588,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get solarShadowMap(): SolarShadowMap;
     // (undocumented)
     get techniques(): Techniques;
-    // (undocumented)
-    terrainTransparency: number;
     // (undocumented)
     readonly uniforms: TargetUniforms;
     // (undocumented)
@@ -9714,7 +9718,7 @@ export class TerrainTexture {
 export interface TerrainTileContent extends TileContent {
     // (undocumented)
     terrain?: {
-        geometry?: RenderTerrainMeshGeometry;
+        geometry?: RealityMeshGeometry;
         mesh?: TerrainMeshPrimitive;
     };
 }
@@ -11040,7 +11044,7 @@ export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 // @internal (undocumented)
 export class UpsampledMapTile extends MapTile {
     // (undocumented)
-    get geometry(): RenderTerrainMeshGeometry | undefined;
+    get geometry(): RealityMeshGeometry | undefined;
     // (undocumented)
     get isEmpty(): boolean;
     // (undocumented)
