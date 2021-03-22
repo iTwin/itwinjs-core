@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Arc3d, ClipPlaneContainment, Matrix4d, Point2d, Point3d, Point4d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Arc3d, ClipPlaneContainment, Geometry, Matrix4d, Point2d, Point3d, Point4d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -400,6 +400,34 @@ export abstract class Tile {
     return false;
   }
 
+  private computePixelSizeScaleFactor(args: TileDrawArgs): number {
+    // Check to see if a model display transform with non-uniform scaling is being used.
+    const tf = args.context.viewport.view.getModelDisplayTransform(args.tree.modelId, Transform.createIdentity());
+    const scale = [];
+    scale[0] = tf.matrix.getColumn(0).magnitude();
+    scale[1] = tf.matrix.getColumn(1).magnitude();
+    scale[2] = tf.matrix.getColumn(2).magnitude();
+    if (Math.abs(scale[0] - scale[1]) <= Geometry.smallMetricDistance && Math.abs(scale[0] - scale[2]) <= Geometry.smallMetricDistance)
+      return 1;
+    // If the component with the largest scale is not the same as the component with the largest tile range use it to adjust the pixel size.
+    const rangeDiag = args.tree.range.diagonal();
+    let maxS = 0;
+    let maxR = 0;
+    if (scale[0] > scale[1]) {
+      maxS = (scale[0] > scale[2] ? 0 : 2);
+    } else {
+      maxS = (scale[1] > scale[2] ? 1 : 2);
+    }
+    if (rangeDiag.x > rangeDiag.y) {
+      maxR = (rangeDiag.x > rangeDiag.z ? 0 : 2);
+    } else {
+      maxR = (rangeDiag.y > rangeDiag.z ? 1 : 2);
+    }
+    if (maxS !== maxR)
+      return scale[maxS];
+    return 1;
+  }
+
   /** Determine the visibility of this tile according to the specified args. */
   public computeVisibility(args: TileDrawArgs): TileVisibility {
     // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
@@ -418,7 +446,8 @@ export abstract class Tile {
         return TileVisibility.Visible;
     }
 
-    const pixelSize = args.getPixelSize(this);
+    const scale = this.computePixelSizeScaleFactor(args);
+    const pixelSize = args.getPixelSize(this) * scale;
     const maxSize = this.maximumSize * args.tileSizeModifier;
 
     return pixelSize > maxSize ? TileVisibility.TooCoarse : TileVisibility.Visible;
