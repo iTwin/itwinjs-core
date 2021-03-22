@@ -605,6 +605,10 @@ export class Subject extends InformationReferenceElement implements SubjectProps
   public description?: string;
   /** @internal */
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
+  /** @internal */
+  public toJSON(): SubjectProps { // This override only specializes the return type
+    return super.toJSON() as SubjectProps; // Entity.toJSON takes care of auto-handled properties
+  }
   /** Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
    * @param iModelDb The IModelDb
    * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child Subjects.
