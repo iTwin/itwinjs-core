@@ -102,8 +102,6 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
 
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public get hasFeatures(): boolean { return false; }
-  public get hasUniformFeatures(): boolean { return false; }
-
   public get viewIndependentOrigin(): Point3d | undefined { return undefined; }
   public get isViewIndependent(): boolean { return undefined !== this.viewIndependentOrigin; }
 
