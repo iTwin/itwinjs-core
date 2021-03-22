@@ -141,6 +141,15 @@ describe("ModelsVisibilityHandler", () => {
       expect(vpMock.object.onNeverDrawnChanged.numberOfListeners).to.eq(0);
     });
 
+    it("should unsubscribe from 'onIModelHierarchyChanged' event", () => {
+      const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+      const changeEvent = new BeEvent<(args: IModelHierarchyChangeEventArgs) => void>();
+      presentationManagerMock.setup((x) => x.onIModelHierarchyChanged).returns(() => changeEvent);
+      Presentation.setPresentationManager(presentationManagerMock.object);
+      using(createHandler({ viewport: mockViewport().object, hierarchyAutoUpdateEnabled: true }), (_) => { });
+      expect(changeEvent.numberOfListeners).to.eq(0);
+    });
+
   });
 
   describe("getDisplayStatus", () => {
