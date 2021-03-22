@@ -228,7 +228,7 @@ export class TxnManager {
    * A model's geometry can change as a result of:
    *  - Insertion or deletion of a geometric element within the model; or
    *  - Modification of an existing element's geometric properties; or
-   *  - An explicit request to flag it as changed via [IModelDb.updateModel]($backend).
+   *  - An explicit request to flag it as changed via [[IModelDb.Models.updateModel]].
    */
   public readonly onModelGeometryChanged = new BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>();
 
