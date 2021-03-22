@@ -36,12 +36,6 @@ export enum FrontendLoggerCategory {
   FeatureToggle = "imodeljs-frontend.FeatureToggles",
 
   /**
-   * The logger category used by EditorConnection functions
-   * @alpha
-   */
-  EditorConnection = "imodeljs-frontend.EditorConnection",
-
-  /**
    * The logger category used by FeatureTrackingManager
    * @alpha
    */

@@ -19,7 +19,7 @@ rush.json       @calebmshafer @scsewall
 
 /clients                        @calebmshafer @ramanujam-raman
 /clients/extension              @calebmshafer @paulius-valiunas
-# /clients/imodelhub            @amikoliunas @Animagne
+/clients/imodelhub            @amikoliunas @Animagne
 
 # The syntax used below tries to cover both files and folders in the common folder that operate per=package
 # Due to syntax requirements, both can't be covered in a single line
@@ -44,11 +44,10 @@ rush.json       @calebmshafer @scsewall
 /common/**/*-client/                              @calebmshafer @ramanujam-raman
 /common/**/extension-client.*                     @calebmshafer @paulius-valiunas
 /common/**/extension-client/                      @calebmshafer @paulius-valiunas
-# /common/**/imodelhub-client.*                   @amikoliunas @Animagne
-# /common/**/imodelhub-client/                    @amikoliunas @Animagne
-# /common/**/imodelhub-client-tests/              @amikoliunas @Animagne
+/common/**/imodelhub-client.*                     @amikoliunas @Animagne
+/common/**/imodelhub-client/                      @amikoliunas @Animagne
 
-/common/**/*-extension/                          @bsteinbk @calebmshafer
+/common/**/*-extension/                           @bsteinbk @calebmshafer
 
 /common/**/ecschema-locaters.*                    @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema-locaters/                     @calebmshafer @ColinKerr @wgoehrig
@@ -150,7 +149,7 @@ rush.json       @calebmshafer @scsewall
 /extensions/map-layers                @bsteinbk @mdastous-bentley
 
 /full-stack-tests/core                @imodeljs/admins
-# /full-stack-tests/imodelhub-client    @amikoliunas @Animagne
+/full-stack-tests/imodelhub-client    @amikoliunas @Animagne
 /full-stack-tests/native-app    @calebmshafer @khanaffan @ramanujam-raman
 /full-stack-tests/presentation  @imodeljs/presentation
 /full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
@@ -159,19 +158,19 @@ rush.json       @calebmshafer @scsewall
 /presentation                   @imodeljs/presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
-/test-apps/analysis-importer                @RBBentley
+/test-apps/analysis-importer                @RBBentley @pmconne
 /test-apps/display-performance-test-app     @imodeljs/display
 /test-apps/display-test-app                 @kabentley @imodeljs/display
-/test-apps/export-gltf                      @mgooding
-/test-apps/export-obj                       @mgooding
+/test-apps/export-gltf                      @mgooding @pmconne
+/test-apps/export-obj                       @mgooding @pmconne
 /test-apps/imjs-importer                    @EarlinLutz
-/test-apps/imodel-from-geojson              @mgooding
-/test-apps/imodel-from-orbitgt              @RBBentley
-/test-apps/imodel-from-reality-model        @RBBentley
+/test-apps/imodel-from-geojson              @mgooding @pmconne
+/test-apps/imodel-from-orbitgt              @RBBentley @pmconne
+/test-apps/imodel-from-reality-model        @RBBentley @pmconne
 /test-apps/imodel-transformer               @scsewall @mgooding
 /test-apps/ninezone-test-app                @imodeljs/ui
 /test-apps/presentation-test-app            @imodeljs/presentation
-/test-apps/synchro-schedule-importer        @RBBentley
+/test-apps/synchro-schedule-importer        @RBBentley @pmconne
 /test-apps/ui-test-app                      @imodeljs/ui
 /test-apps/ui-test-extension                @imodeljs/ui
 
