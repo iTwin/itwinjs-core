@@ -33,6 +33,7 @@ export class ExternalSource extends InformationReferenceElement {
   /** @internal */
   public constructor(props: ExternalSourceProps, iModel: IModelDb) {
     super(props, iModel);
+    if (props.repository) this.repository = new ExternalSourceIsInRepository(RelatedElement.idFromJson(props.repository));
   }
   /** @internal */
   public toJSON(): ExternalSourceProps { // This override only specializes the return type
