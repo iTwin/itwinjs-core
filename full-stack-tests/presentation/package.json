@@ -59,7 +59,7 @@
     "cpx": "^1.5.0",
     "deep-equal": "^1",
     "faker": "^4.1.0",
-    "immer": "^8.0.1",
+    "immer": "8.0.1",
     "mocha": "^5.2.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
@@ -83,7 +83,6 @@
     "ignore-styles": "^5.0.1",
     "internal-tools": "0.0.0",
     "jsdom-global": "3.0.2",
-    "ts-node": "^7.0.1",
     "typescript": "~4.1.0"
   },
   "eslintConfig": {
