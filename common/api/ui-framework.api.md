@@ -110,6 +110,7 @@ import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyUpdatedArgs } from '@bentley/ui-components';
 import * as PropTypes from 'prop-types';
+import { QuantityTypeArg } from '@bentley/imodeljs-frontend';
 import * as React from 'react';
 import { ReactMessage as ReactMessage_2 } from '@bentley/ui-core';
 import { RectangleProps } from '@bentley/ui-core';
@@ -122,6 +123,7 @@ import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
 import { SettingsManager } from '@bentley/ui-core';
 import { SettingsStatus } from '@bentley/product-settings-client';
+import { SettingsTabEntry } from '@bentley/ui-core';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
@@ -167,6 +169,7 @@ import { UiSettingsResult } from '@bentley/ui-core';
 import { UiSettingsStatus } from '@bentley/ui-core';
 import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-components';
 import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
+import { UnitSystemKey } from '@bentley/imodeljs-frontend';
 import { UserInfo } from '@bentley/itwin-client';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
@@ -2709,6 +2712,9 @@ export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedS
 export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[];
 
 // @beta
+export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial<QuantityFormatterSettingsOptions>): SettingsTabEntry;
+
+// @beta
 export function getSelectionContextSyncEventIds(): string[];
 
 // @internal (undocumented)
@@ -4318,6 +4324,17 @@ export class PropsHelper {
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
     static isShallowEqual(newObj: any, prevObj: any): boolean;
+}
+
+// @beta
+export function QuantityFormatSettingsPanel({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element;
+
+// @beta
+export interface QuantityFormatterSettingsOptions {
+    // (undocumented)
+    availableUnitSystems: Set<UnitSystemKey>;
+    // (undocumented)
+    initialQuantityType: QuantityTypeArg;
 }
 
 // @alpha

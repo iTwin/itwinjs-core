@@ -66,7 +66,6 @@ import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
-import { Editor3dRpcInterfaceWriteOptions } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementGeometryChange } from '@bentley/imodeljs-common';
 import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
@@ -96,7 +95,6 @@ import { Frustum } from '@bentley/imodeljs-common';
 import { FrustumPlanes } from '@bentley/imodeljs-common';
 import * as Fuse from 'fuse.js';
 import { GeoCoordinatesResponseProps } from '@bentley/imodeljs-common';
-import { GeometricElement3dProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
 import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
@@ -152,7 +150,6 @@ import { LDFlagValue } from 'ldclient-js';
 import { LightSettings } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LocalBriefcaseProps } from '@bentley/imodeljs-common';
-import { LockLevel } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { Loop } from '@bentley/geometry-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
@@ -301,7 +298,6 @@ import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { XYZ } from '@bentley/geometry-core';
 import { XYZProps } from '@bentley/geometry-core';
-import { YawPitchRollAngles } from '@bentley/geometry-core';
 
 // @internal
 export class AccuDraw {
@@ -1389,6 +1385,30 @@ export class BackgroundMapLocation {
     onEcefChanged(ecefLocation: EcefLocation): void;
 }
 
+// @beta
+export abstract class BaseUnitFormattingSettingsProvider implements UnitFormattingSettingsProvider {
+    constructor(_quantityFormatter: QuantityFormatter, _maintainOverridesPerIModel?: boolean | undefined);
+    // (undocumented)
+    protected applyQuantityFormattingSettingsForIModel: (imodel?: IModelConnection | undefined) => Promise<void>;
+    protected buildQuantityFormatOverridesMap(): Promise<Map<UnitSystemKey, Map<string, FormatProps>>>;
+    // (undocumented)
+    protected get imodelConnection(): IModelConnection | undefined;
+    // (undocumented)
+    protected _imodelConnection: IModelConnection | undefined;
+    // (undocumented)
+    loadOverrides(imodel?: IModelConnection): Promise<void>;
+    // (undocumented)
+    get maintainOverridesPerIModel(): boolean;
+    abstract remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
+    abstract retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined>;
+    abstract retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
+    abstract store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
+    // (undocumented)
+    storeFormatOverrides: ({ typeKey, overrideEntry, unitSystem }: QuantityFormatOverridesChangedArgs) => Promise<void>;
+    abstract storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
+    storeUnitSystemSetting: ({ system }: FormattingUnitSystemChangedArgs) => Promise<void>;
+}
+
 // @internal
 export class BatchedTileIdMap {
     constructor(iModel: IModelConnection);
@@ -1782,7 +1802,7 @@ export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
 }
 
-// @alpha
+// @beta
 export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "checkbox";
@@ -2042,7 +2062,7 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
-// @alpha
+// @beta
 export interface CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "checkbox" | "text" | "select";
@@ -2050,7 +2070,7 @@ export interface CustomFormatPropEditorSpec {
     label: string;
 }
 
-// @alpha
+// @beta
 export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
     isCompatibleFormatProps: (formatProps: FormatProps) => boolean;
     primaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
@@ -2527,14 +2547,8 @@ export class EditingFunctions {
     constructor(connection: IModelConnection);
     get categories(): EditingFunctions.CategoryEditor;
     get codes(): EditingFunctions.Codes;
-    get concurrencyControl(): EditingFunctions.ConcurrencyControl;
-    deleteElements(ids: Id64Array): Promise<void>;
-    hasPendingTxns(): Promise<boolean>;
-    hasUnsavedChanges(): Promise<boolean>;
     get models(): EditingFunctions.ModelEditor;
-    saveChanges(description?: string): Promise<void>;
-    updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
-}
+    }
 
 // @alpha @deprecated (undocumented)
 export namespace EditingFunctions {
@@ -2548,12 +2562,6 @@ export namespace EditingFunctions {
         makeCode(specName: string, scope: Id64String, value: string): Promise<CodeProps>;
         makeModelCode(scope: Id64String, value: string): Promise<CodeProps>;
     }
-    // @deprecated
-    export class ConcurrencyControl {
-        constructor(c: IModelConnection);
-        lockModel(modelId: Id64String, level?: LockLevel): Promise<void>;
-        request(): Promise<void>;
-        }
     // @deprecated
     export class ModelEditor {
         constructor(c: IModelConnection);
@@ -2707,23 +2715,6 @@ export class ElementAgenda {
     // (undocumented)
     remove(arg: Id64Arg): boolean;
     setSource(val: ModifyElementSource): void;
-}
-
-// @alpha
-export class ElementEditor3d {
-    applyTransform(tprops: TransformProps): Promise<any>;
-    createElement(props: GeometricElement3dProps, origin?: Point3d, angles?: YawPitchRollAngles, geometry?: any): Promise<void>;
-    end(): Promise<void>;
-    // (undocumented)
-    readonly iModelConnection: IModelConnection;
-    popState(): Promise<void>;
-    pushState(): Promise<void>;
-    restart(): Promise<void>;
-    static start(iModelConnection: IModelConnection): Promise<ElementEditor3d>;
-    startModifyingElements(elementIds: Id64Array): Promise<void>;
-    write(opts?: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void>;
-    writeReturningIds(): Promise<Id64Array>;
-    writeReturningProps(wantGeom?: boolean): Promise<GeometricElement3dProps[]>;
 }
 
 // @public (undocumented)
@@ -3274,7 +3265,7 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
-// @alpha
+// @beta
 export interface FormatterParserSpecsProvider {
     // (undocumented)
     createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
@@ -3284,7 +3275,7 @@ export interface FormatterParserSpecsProvider {
     quantityType: QuantityTypeArg;
 }
 
-// @alpha
+// @beta
 export interface FormattingUnitSystemChangedArgs {
     // (undocumented)
     readonly system: UnitSystemKey;
@@ -3347,8 +3338,6 @@ export interface FrameRenderData {
 // @public
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
-    // @alpha
-    EditorConnection = "imodeljs-frontend.EditorConnection",
     EventSource = "imodeljs-frontend.EventSource",
     FeatureToggle = "imodeljs-frontend.FeatureToggles",
     // @alpha
@@ -4814,16 +4803,16 @@ export interface IpcAppOptions {
     iModelApp?: IModelAppOptions;
 }
 
-// @alpha
+// @beta
 export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec;
 
-// @alpha
+// @beta
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition;
 
-// @alpha
+// @beta
 export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec;
 
-// @alpha
+// @beta
 export const isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec;
 
 // @alpha (undocumented)
@@ -4890,6 +4879,21 @@ export interface LocalHostIpcAppOpts extends WebViewerAppOpts {
     localhostIpcApp?: {
         socketPort?: number;
     };
+}
+
+// @beta
+export class LocalUnitFormatProvider extends BaseUnitFormattingSettingsProvider {
+    constructor(quantityFormatter: QuantityFormatter, maintainOverridesPerIModel?: boolean);
+    // (undocumented)
+    remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
+    // (undocumented)
+    retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined>;
+    // (undocumented)
+    retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
+    // (undocumented)
+    store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
+    // (undocumented)
+    storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
 }
 
 // @public
@@ -5249,7 +5253,11 @@ export interface MapLayerSetting {
 
 // @internal (undocumented)
 export class MapLayerSettingsService {
+    // (undocumented)
+    static deleteSharedSettingsByName(name: string, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
     static getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
+    // (undocumented)
+    static readonly onCustomLayerNameRemoved: BeEvent<(name: string) => void>;
     // (undocumented)
     static readonly onNewCustomLayerSource: BeEvent<(source: MapLayerSource) => void>;
     // (undocumented)
@@ -5308,7 +5316,11 @@ export class MapLayerSources {
     // (undocumented)
     findByName(name: string, baseMap?: boolean): MapLayerSource | undefined;
     // (undocumented)
+    static getInstance(): MapLayerSources | undefined;
+    // (undocumented)
     get layers(): MapLayerSource[];
+    // (undocumented)
+    static removeLayerByName(name: string): boolean;
     }
 
 // @internal (undocumented)
@@ -6749,7 +6761,7 @@ export enum OutputMessageType {
     Toast = 0
 }
 
-// @alpha
+// @beta
 export interface OverrideFormatEntry {
     // (undocumented)
     imperial?: FormatProps;
@@ -7083,13 +7095,19 @@ export class QuadId {
     row: number;
 }
 
-// @alpha
+// @beta
+export interface QuantityFormatOverridesChangedArgs {
+    readonly overrideEntry?: OverrideFormatEntry;
+    readonly typeKey: QuantityTypeKey;
+    readonly unitSystem?: UnitSystemKey;
+}
+
+// @beta
 export interface QuantityFormatsChangedArgs {
-    // (undocumented)
     readonly quantityType: string;
 }
 
-// @alpha
+// @beta
 export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
     // (undocumented)
@@ -7106,7 +7124,7 @@ export class QuantityFormatter implements UnitsProvider {
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
     // (undocumented)
-    findUnit(unitLabel: string, unitFamily?: string, unitSystem?: string): Promise<UnitProps>;
+    findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
@@ -7122,10 +7140,10 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined>;
     // (undocumented)
-    getQuantityDefiniton(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
+    getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     // (undocumented)
-    getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
+    getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     // (undocumented)
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
@@ -7151,11 +7169,15 @@ export class QuantityFormatter implements UnitsProvider {
     get quantityTypesRegistry(): Map<string, QuantityTypeDefinition>;
     // (undocumented)
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
+    reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
     setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
     // (undocumented)
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
+    setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider): Promise<void>;
+    // (undocumented)
+    protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
     // (undocumented)
     get unitsProvider(): UnitsProvider;
     set unitsProvider(unitsProvider: UnitsProvider);
@@ -7189,7 +7211,7 @@ export enum QuantityType {
 // @beta
 export type QuantityTypeArg = QuantityType | string;
 
-// @alpha
+// @beta
 export interface QuantityTypeDefinition {
     description: string;
     generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
@@ -7496,8 +7518,6 @@ export class RemoteBriefcaseConnection extends CheckpointConnection {
     attachChangeCache(): Promise<void>;
     // @internal
     changeCacheAttached(): Promise<boolean>;
-    // @internal
-    get editing(): EditingFunctions;
     // (undocumented)
     static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<RemoteBriefcaseConnection>;
     pullAndMergeChanges(): Promise<void>;
@@ -9699,7 +9719,7 @@ export interface TerrainTileContent extends TileContent {
     };
 }
 
-// @alpha
+// @beta
 export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "text";
@@ -9709,7 +9729,7 @@ export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpe
     setString: (props: FormatProps, value: string) => FormatProps;
 }
 
-// @alpha
+// @beta
 export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "select";
@@ -11001,7 +11021,20 @@ export enum UniformType {
     Vec4 = 5
 }
 
-// @alpha
+// @beta
+export interface UnitFormattingSettingsProvider {
+    loadOverrides(imodel: IModelConnection | undefined): Promise<void>;
+    readonly maintainOverridesPerIModel: boolean;
+    remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
+    retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined>;
+    retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
+    store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
+    storeFormatOverrides(args: QuantityFormatOverridesChangedArgs): Promise<void>;
+    storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
+    storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
+}
+
+// @beta
 export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 
 // @internal (undocumented)
