@@ -7,6 +7,16 @@
 $divider-color: $buic-background-toolbutton-stroke;
 $hovered-icon-color: $buic-foreground-primary-tone;
 
+
+.map-layer-url-dialog {
+  z-Index: 21000;
+
+  .core-dialog-content {
+    padding-right: 11px !important;
+    padding-left: 11px !important;
+  }
+}
+
 .map-layer-source-url {
 
   height: 100%;

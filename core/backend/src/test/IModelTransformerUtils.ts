@@ -10,7 +10,7 @@ import {
   Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
+  AuxCoordSystem2dProps, Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
   FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator,
   GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, PlanProjectionSettings,
   RelatedElement, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
@@ -230,6 +230,8 @@ export namespace IModelTransformerUtils {
       commonNavigation: { id: sourcePhysicalCategoryId },
       commonString: "Common",
       commonDouble: 7.3,
+      sourceBinary: new Uint8Array([1, 3, 5, 7]),
+      commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
       extraString: "Extra",
     } as PhysicalElementProps;
     const sourcePhysicalElementId: Id64String = sourceDb.elements.insertElement(sourcePhysicalElementProps);
@@ -242,6 +244,7 @@ export namespace IModelTransformerUtils {
       commonDouble: 1.1,
       commonString: "Unique",
       commonLong: physicalObjectId1,
+      commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
       sourceDouble: 11.1,
       sourceString: "UniqueAspect",
       sourceLong: physicalObjectId1,
@@ -621,6 +624,8 @@ export namespace IModelTransformerUtils {
     assert.equal(physicalElement1.asAny.commonNavigation.id, targetPhysicalCategoryId, "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonString, "Common", "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
+    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.targetBinary), Base64EncodedString.fromUint8Array(new Uint8Array([1, 3, 5, 7])), "Property should have been remapped by onTransformElement override");
+    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])), "Property should have been automatically remapped (same name)");
     assert.notExists(physicalElement1.asAny.extraString, "Property should have been dropped during transformation");
     assert.equal(childObject1A.parent!.id, physicalObjectId1);
     assert.equal(childObject1B.parent!.id, physicalObjectId1);
@@ -630,6 +635,7 @@ export namespace IModelTransformerUtils {
     assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
     assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique");
     assert.equal(targetUniqueAspects[0].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
+    assert.equal(Base64EncodedString.fromUint8Array(targetUniqueAspects[0].asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])));
     assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
     assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect");
     assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
@@ -903,7 +909,7 @@ export namespace IModelTransformerUtils {
     const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
     assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
     assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
-    assert.isTrue(physicalObject1.code.getValue() === "");
+    assert.isTrue(physicalObject1.code.value === "");
     assert.equal(physicalObject1.category, teamSpatialCategoryId);
     const physicalObjectId2: Id64String = queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
     const physicalObject2: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId2);
@@ -924,7 +930,7 @@ export namespace IModelTransformerUtils {
       const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
       assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
       assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
-      assert.isTrue(physicalObject1.code.getValue() === "");
+      assert.isTrue(physicalObject1.code.value === "");
       assert.equal(physicalObject1.category, teamSpatialCategoryId);
       assert.equal(1, iModelDb.elements.getAspects(physicalObjectId1, ExternalSourceAspect.classFullName).length);
       assert.equal(1, iModelDb.elements.getAspects(teamSpatialCategoryId, ExternalSourceAspect.classFullName).length);
@@ -1187,7 +1193,7 @@ export namespace IModelTransformerUtils {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const viewDefinitionId: Id64String = statement.getValue(0).getId();
         const viewDefinition: ViewDefinition = iModelDb.elements.getElement<ViewDefinition>(viewDefinitionId);
-        IModelJsFs.appendFileSync(outputFileName, `${viewDefinitionId}, ${viewDefinition.code.getValue()}, ${viewDefinition.classFullName}\n`);
+        IModelJsFs.appendFileSync(outputFileName, `${viewDefinitionId}, ${viewDefinition.code.value}, ${viewDefinition.classFullName}\n`);
       }
     });
     IModelJsFs.appendFileSync(outputFileName, "\n=== Elements ===\n");
@@ -1249,6 +1255,7 @@ export class PhysicalModelConsolidator extends IModelTransformer {
   protected shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
       this.context.remapElement(sourceElement.id, this._targetModelId);
+      // NOTE: must allow export to continue so the PhysicalModel sub-modeling the PhysicalPartition is processed
     }
     return super.shouldExportElement(sourceElement);
   }
@@ -1293,13 +1300,13 @@ export class FilterByViewTransformer extends IModelTransformer {
     return super.shouldExportElement(sourceElement);
   }
   /** Override of IModelTransformer.processAll that does additional logging after completion. */
-  public processAll(): void {
-    super.processAll();
+  public async processAll(): Promise<void> {
+    await super.processAll();
     Logger.logInfo(BackendLoggerCategory.IModelTransformer, `processAll complete with ${this._deferredElementIds.size} deferred elements remaining`);
   }
   /** Override of IModelTransformer.processDeferredElements that catches all exceptions and keeps going. */
-  public processDeferredElements(numRetries: number = 3): void {
-    try { super.processDeferredElements(numRetries); } catch (error) { }
+  public async processDeferredElements(numRetries: number = 3): Promise<void> {
+    try { await super.processDeferredElements(numRetries); } catch (error) { }
   }
 }
 
@@ -1378,6 +1385,7 @@ export class TestIModelTransformer extends IModelTransformer {
     if ("TestTransformerSource:SourcePhysicalElement" === sourceElement.classFullName) {
       targetElementProps.targetString = sourceElement.asAny.sourceString;
       targetElementProps.targetDouble = sourceElement.asAny.sourceDouble;
+      targetElementProps.targetBinary = sourceElement.asAny.sourceBinary;
       targetElementProps.targetNavigation = {
         id: this.context.findTargetElementId(sourceElement.asAny.sourceNavigation.id),
         relClassName: "TestTransformerTarget:TargetPhysicalElementUsesTargetDefinition",
@@ -1577,11 +1585,11 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.exporter.registerHandler(this);
     this.exporter.wantGeometry = false;
   }
-  public export(): void {
+  public async export(): Promise<void> {
     this._shouldIndent = true;
-    this.exporter.exportSchemas();
+    await this.exporter.exportSchemas();
     this.writeSeparator();
-    this.exporter.exportAll();
+    await this.exporter.exportAll();
   }
   public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     this._shouldIndent = false;
@@ -1691,8 +1699,8 @@ export class ClassCounter extends IModelExportHandler {
     this.exporter.registerHandler(this);
     this.exporter.wantGeometry = false;
   }
-  public count(): void {
-    this.exporter.exportAll();
+  public async count(): Promise<void> {
+    await this.exporter.exportAll();
     this.outputAllClassCounts();
   }
   private incrementClassCount(map: Map<string, number>, classFullName: string): void {

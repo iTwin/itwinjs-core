@@ -13,11 +13,11 @@ import {
   BeEvent, BriefcaseStatus, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { CheckpointQuery, CheckpointV2Query } from "@bentley/imodelhub-client";
-import { DownloadBriefcaseStatus, IModelError } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, DownloadBriefcaseStatus, IModelError } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -54,13 +54,13 @@ export interface DownloadRequest {
   /** name of local file to hold the downloaded data. */
   localFile: string;
 
-  /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names, it is
+  /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names,
    * no download is performed and `localFile` is updated to reflect the fact that the file exists with that name.
    * This can be used, for example, to look for checkpoints from previous versions if the naming strategy changes.
    */
   aliasFiles?: string[];
 
-  /** Properties of the checkpoint to be being downloaded */
+  /** Properties of the checkpoint to be downloaded */
   checkpoint: CheckpointProps;
 
   /** If present, this function will be called to indicate progress as the briefcase is downloaded. If this

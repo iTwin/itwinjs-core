@@ -4,50 +4,56 @@
 
 ```ts
 
+import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
-import { IpcHandler } from '@bentley/imodeljs-common';
-import { IpcListener } from '@bentley/imodeljs-common';
-import { IpcSocketBackend } from '@bentley/imodeljs-common';
-import { RemoveFunction } from '@bentley/imodeljs-common';
+import { IpcHandler } from '@bentley/imodeljs-backend';
+import { NativeAppOpts } from '@bentley/imodeljs-frontend';
+import { NativeHostOpts } from '@bentley/imodeljs-backend';
+import { PromiseReturnType } from '@bentley/imodeljs-frontend';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
 import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
 
 // @beta
-export class ElectronBackend implements IpcSocketBackend {
-    // @internal (undocumented)
-    addListener(channel: string, listener: IpcListener): RemoveFunction;
+export class ElectronApp {
+    static callApp<T extends AsyncMethodsOf<Electron.App>>(methodName: T, ...args: Parameters<Electron.App[T]>): Promise<PromiseReturnType<Electron.App[T]>>;
+    static callDialog<T extends AsyncMethodsOf<Electron.Dialog>>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): Promise<PromiseReturnType<Electron.Dialog[T]>>;
+    static callShell<T extends AsyncMethodsOf<Electron.Shell>>(methodName: T, ...args: Parameters<Electron.Shell[T]>): Promise<PromiseReturnType<Electron.Shell[T]>>;
     // (undocumented)
-    get app(): Electron.App;
+    static get isValid(): boolean;
     // (undocumented)
-    readonly appIconPath: string;
+    static shutdown(): Promise<void>;
+    static startup(opts?: ElectronAppOpts): Promise<void>;
+}
+
+// @beta (undocumented)
+export type ElectronAppOpts = NativeAppOpts;
+
+// @beta
+export class ElectronHost {
     // (undocumented)
-    get electron(): typeof Electron;
+    static get app(): Electron.App;
     // (undocumented)
-    protected readonly _electronFrontend = "electron://frontend/";
+    static appIconPath: string;
     // (undocumented)
-    readonly frontendURL: string;
-    // @internal (undocumented)
-    handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction;
-    static initialize(opts?: ElectronBackendOptions): ElectronBackend;
+    static get electron(): typeof Electron;
     // (undocumented)
-    static get instance(): ElectronBackend;
+    static frontendURL: string;
     // (undocumented)
-    get ipcMain(): Electron.IpcMain;
-    get mainWindow(): BrowserWindow | undefined;
-    openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
-    // @internal (undocumented)
-    removeListener(channel: string, listener: IpcListener): void;
+    static get ipcMain(): Electron.IpcMain;
     // (undocumented)
-    readonly rpcConfig: RpcConfiguration;
-    // @internal (undocumented)
-    send(channel: string, ...args: any[]): void;
+    static get isValid(): boolean;
+    static get mainWindow(): BrowserWindow | undefined;
+    static openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
     // (undocumented)
-    readonly webResourcesPath: string;
+    static rpcConfig: RpcConfiguration;
+    static startup(opts?: ElectronHostOpts): Promise<void>;
+    // (undocumented)
+    static webResourcesPath: string;
 }
 
 // @beta
-export interface ElectronBackendOptions {
+export interface ElectronHostOptions {
     developmentServer?: boolean;
     frontendPort?: number;
     frontendURL?: string;
@@ -55,6 +61,12 @@ export interface ElectronBackendOptions {
     ipcHandlers?: (typeof IpcHandler)[];
     rpcInterfaces?: RpcInterfaceDefinition[];
     webResourcesPath?: string;
+}
+
+// @beta (undocumented)
+export interface ElectronHostOpts extends NativeHostOpts {
+    // (undocumented)
+    electronHost?: ElectronHostOptions;
 }
 
 

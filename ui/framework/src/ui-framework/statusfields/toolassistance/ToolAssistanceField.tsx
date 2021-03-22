@@ -28,6 +28,8 @@ import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/M
 import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
 import { StatusFieldProps } from "../StatusFieldProps";
+import { UiSettingsContext } from "../../uisettings/useUiSettings";
+
 import acceptPointIcon from "./accept-point.svg?sprite";
 import cursorClickIcon from "./cursor-click.svg?sprite";
 import oneTouchDragIcon from "./gesture-one-finger-drag.svg?sprite";
@@ -53,8 +55,9 @@ import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
   /** Indicates whether to include promptAtCursor Checkbox. Defaults to true. */
   includePromptAtCursor: boolean;
-  /** Optional parameter for persistent UI settings. Defaults to LocalUiSettings. */
-  uiSettings: UiSettings;
+  /** Optional parameter for persistent UI settings. Defaults to UiSettingsContext.
+   */
+  uiSettings?: UiSettings;
   /** Cursor Prompt Timeout period. Defaults to 5000. */
   cursorPromptTimeout: number;
   /** Fade Out the Cursor Prompt when closed. */
@@ -85,8 +88,13 @@ interface ToolAssistanceFieldState {
 
 /** Tool Assistance Field React component.
  * @public
- */
+ */
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
+  /** @internal */
+  public static contextType = UiSettingsContext;
+  /** @internal */
+  public declare context: React.ContextType<typeof UiSettingsContext>;
+
   private static _toolAssistanceKey = "ToolAssistance";
   private static _showPromptAtCursorKey = "showPromptAtCursor";
   private static _mouseTouchTabIndexKey = "mouseTouchTabIndex";
@@ -97,6 +105,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private _indicator = React.createRef<HTMLDivElement>();
   private _cursorPrompt: CursorPrompt;
   private _isMounted = false;
+  private _uiSettings: UiSettings;
 
   /** @internal */
   public static readonly defaultProps: ToolAssistanceFieldDefaultProps = {
@@ -104,9 +113,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     cursorPromptTimeout: 5000,
     fadeOutCursorPrompt: true,
     defaultPromptAtCursor: false,
-    uiSettings: new LocalUiSettings(),
   };
 
+  /** @internal */
   constructor(p: ToolAssistanceFieldProps) {
     super(p);
 
@@ -128,6 +137,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       isPinned: false,
     };
 
+    this._uiSettings = new LocalUiSettings();
     this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
     this._showPromptAtCursorSetting = new UiSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey,
       () => this.state.showPromptAtCursor);
@@ -140,6 +150,12 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     this._isMounted = true;
     MessageManager.onToolAssistanceChangedEvent.addListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
+
+    // istanbul ignore else
+    if (this.props.uiSettings)
+      this._uiSettings = this.props.uiSettings;
+    else if (this.context)
+      this._uiSettings = this.context;
 
     await this.restoreSettings();
   }
@@ -155,9 +171,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined;
     // istanbul ignore else
     if (this.props.includePromptAtCursor) {
-      getShowPromptAtCursor = this._showPromptAtCursorSetting.getSetting(this.props.uiSettings);
+      getShowPromptAtCursor = this._showPromptAtCursorSetting.getSetting(this._uiSettings);
     }
-    const getMouseTouchTabIndex = this._mouseTouchTabIndexSetting.getSetting(this.props.uiSettings);
+    const getMouseTouchTabIndex = this._mouseTouchTabIndexSetting.getSetting(this._uiSettings);
     const [showPromptAtCursorResult, mouseTouchTabIndexResult] = await Promise.all([
       getShowPromptAtCursor,
       getMouseTouchTabIndex,
@@ -270,7 +286,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         showMouseInstructions,
         showTouchInstructions,
       }, async () => {
-        await this._mouseTouchTabIndexSetting.saveSetting(this.props.uiSettings);
+        await this._mouseTouchTabIndexSetting.saveSetting(this._uiSettings);
       });
   };
 
@@ -413,7 +429,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       this.setState({
         showPromptAtCursor: checked,
       }, async () => {
-        await this._showPromptAtCursorSetting.saveSetting(this.props.uiSettings);
+        await this._showPromptAtCursorSetting.saveSetting(this._uiSettings);
       });
   };
 

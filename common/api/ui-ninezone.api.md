@@ -367,6 +367,9 @@ export interface DockedToolSettingsState {
 }
 
 // @internal (undocumented)
+export function dockWidgetContainer(state: NineZoneState, widgetTabId: string): NineZoneState | undefined;
+
+// @internal (undocumented)
 export const DraggedPanelSideContext: React.Context<"left" | "right" | "top" | "bottom" | undefined>;
 
 // @internal (undocumented)
@@ -622,6 +625,9 @@ export interface FloatingWidgetState {
     // (undocumented)
     readonly id: WidgetState["id"];
 }
+
+// @internal (undocumented)
+export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState | undefined;
 
 // @beta
 export class Footer extends React.PureComponent<FooterProps> {
@@ -948,10 +954,16 @@ export interface HorizontalPanelState extends PanelState {
 }
 
 // @internal (undocumented)
+export function isFloatingLocation(location: TabLocation): location is FloatingLocation;
+
+// @internal (undocumented)
 export const isHorizontalPanelSide: (side: PanelSide) => side is HorizontalPanelSide;
 
 // @internal (undocumented)
 export function isHorizontalPanelState(state: PanelState): state is HorizontalPanelState;
+
+// @internal (undocumented)
+export function isPanelLocation(location: TabLocation): location is PanelLocation;
 
 // @internal (undocumented)
 export function isTabTarget(target: DragTarget): target is TabTarget;
@@ -2900,13 +2912,21 @@ export function useLabel(labelKey: keyof NineZoneLabels): string | undefined;
 export function useMode(widgetId: string): "fit" | "fill" | "minimized";
 
 // @internal
-export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray<string> | undefined, (size: number) => void, (size: number) => void, (key: string) => (size: number) => void];
+export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [
+    ReadonlyArray<string> | undefined,
+    (size: number) => void,
+    (size: number) => void,
+    (key: string) => (size: number) => void
+];
 
 // @internal (undocumented)
 export function usePanelsAutoCollapse<T extends Element>(): React.Ref<T>;
 
 // @internal (undocumented)
-export function usePanelTarget<T extends Element>(args: UsePanelTargetArgs): [React.Ref<T>, boolean];
+export function usePanelTarget<T extends Element>(args: UsePanelTargetArgs): [
+    React.Ref<T>,
+    boolean
+];
 
 // @internal (undocumented)
 export interface UsePanelTargetArgs {
@@ -2936,7 +2956,10 @@ export interface UserProfileProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function useTabTarget<T extends Element>(args: UseTabTargetArgs): [React.Ref<T>, boolean];
+export function useTabTarget<T extends Element>(args: UseTabTargetArgs): [
+    React.Ref<T>,
+    boolean
+];
 
 // @internal (undocumented)
 export interface UseTabTargetArgs {
@@ -2956,7 +2979,10 @@ export function useToolSettingsEntry(): DockedToolSettingsEntryContextArgs;
 export function useTransientState(onSave?: () => void, onRestore?: () => void): void;
 
 // @internal (undocumented)
-export function useWidgetTarget<T extends Element>(args: UseWidgetTargetArgs): [React.Ref<T>, boolean];
+export function useWidgetTarget<T extends Element>(args: UseWidgetTargetArgs): [
+    React.Ref<T>,
+    boolean
+];
 
 // @internal (undocumented)
 export interface UseWidgetTargetArgs {

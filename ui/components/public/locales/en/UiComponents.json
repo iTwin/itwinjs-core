@@ -170,5 +170,94 @@
   "QuantityInput": {
     "ParseError": "Parse Error, status=",
     "NoParserDefined": "No Parser Defined!"
+  },
+  "QuantityFormat": {
+    "none": "None",
+    "dash": "Dash",
+    "space": "Space",
+    "decimal": "Decimal",
+    "scientific": "Scientific",
+    "station": "Station",
+    "fractional": "Fractional",
+    "labels": {
+      "compositeSpacer": "Composite Spacer",
+      "formatted": "Formatted",
+      "precision": "Precision",
+      "type": "Type",
+      "appendUnitLabel": "Append Unit Label",
+      "labelSeparator": "Label Separator",
+      "signOptionLabel": "Sign Option",
+      "stationOffsetLabel": "Station Offset",
+      "stationSeparatorLabel": "Station Separator",
+      "decimalSeparatorLabel": "Decimal Separator",
+      "showTrailZerosLabel": "Show Trail Zeros",
+      "keepSingleZeroLabel": "Keep Single Zero",
+      "zeroEmptyLabel": "Zero Empty",
+      "moreLabel": "More",
+      "lessLabel": "Less",
+      "keepDecimalPointLabel": "Keep Decimal Point",
+      "fractionDashLabel": "Fraction Dash",
+      "scientificTypeLabel": "Scientific Type",
+      "useThousandSeparatorLabel": "Use Thousand Separator",
+      "thousandSeparatorLabel": "Thousand Separator",
+      "value": "Value"
+    },
+    "fraction_precision": {
+      "whole": "Whole",
+      "half": "1/2",
+      "quarter": "1/4",
+      "eighth": "1/8",
+      "sixteenth": "1/16",
+      "over32": "1/32",
+      "over64": "1/64",
+      "over128": "1/128",
+      "over256": "1/256"
+    },
+    "station_size": {
+      "two": "0+00",
+      "three": "0+000"
+    },
+    "station_separator": {
+      "plus": "+",
+      "minus": "-",
+      "blank": "Blank",
+      "caret": "^"
+    },
+    "decimal_precision": {
+      "zero": "1",
+      "one": "0.1",
+      "two": "0.01",
+      "three": "0.001",
+      "four": "0.0001",
+      "five": "0.00001",
+      "six": "0.0000001",
+      "seven": "0.0000001",
+      "eight": "0.00000001",
+      "nine": "0.000000001",
+      "ten": "0.0000000001",
+      "eleven": "0.00000000001",
+      "twelve": "0.000000000001"
+    },
+    "sign_option": {
+      "noSign": "No Sign",
+      "onlyNegative": "Only Negative",
+      "signAlways": "Always",
+      "negativeParentheses": "Negative Parentheses"
+    },
+    "thousand_separator": {
+      "comma": "Comma",
+      "point": "Point"
+    },
+    "decimal_separator": {
+      "comma": "Comma",
+      "point": "Point"
+    },
+    "scientific-type": {
+      "normalized": "Normalized",
+      "zero-normalized": "Zero Normalized"
+    },
+    "popupButton": {
+      "setFormat": "Set Format"
+    }
   }
 }

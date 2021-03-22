@@ -15,7 +15,6 @@ import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
 import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
 import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
-import { EventSource } from '@bentley/imodeljs-frontend';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
@@ -47,6 +46,8 @@ import { Ruleset } from '@bentley/presentation-common';
 import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
+import { SetRulesetVariableParams } from '@bentley/presentation-common';
+import { UpdateHierarchyStateParams } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 
 // @internal (undocumented)
@@ -100,7 +101,7 @@ export enum FavoritePropertiesScope {
 }
 
 // @internal (undocumented)
-export const getFieldInfos: (field: Field) => Set<string>;
+export const getFieldInfos: (field: Field) => Set<PropertyFullName>;
 
 // @public
 export function getScopeId(scope: SelectionScope | string | undefined): string;
@@ -153,6 +154,14 @@ export interface IModelHierarchyChangeEventArgs {
 export interface ISelectionProvider {
     getSelection(imodel: IModelConnection, level: number): Readonly<KeySet>;
     selectionChange: SelectionChangeEvent;
+}
+
+// @internal
+export interface NodeIdentifier {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    key: NodeKey;
 }
 
 // @public
@@ -244,6 +253,8 @@ export class PresentationManager implements IDisposable {
     getNodesCount(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>): Promise<number>;
     // @alpha
     getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>>;
+    // @internal (undocumented)
+    get ipcRequestsHandler(): IpcRequestsHandler | undefined;
     // @alpha
     loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
     // @alpha
@@ -255,6 +266,8 @@ export class PresentationManager implements IDisposable {
     // @internal (undocumented)
     get rpcRequestsHandler(): RpcRequestsHandler;
     rulesets(): RulesetManager;
+    // @internal (undocumented)
+    get stateTracker(): StateTracker | undefined;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
@@ -265,9 +278,11 @@ export interface PresentationManagerProps {
     activeUnitSystem?: PresentationUnitSystem;
     clientId?: string;
     // @internal (undocumented)
-    eventSource?: EventSource;
+    ipcRequestsHandler?: IpcRequestsHandler;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
+    // @internal (undocumented)
+    stateTracker?: StateTracker;
 }
 
 // @beta
@@ -402,6 +417,15 @@ export interface SelectionScopesManagerProps {
     localeProvider?: () => string | undefined;
     rpcRequestsHandler: RpcRequestsHandler;
 }
+
+// @internal (undocumented)
+export class StateTracker {
+    constructor(ipcRequestsHandler: IpcRequestsHandler);
+    // (undocumented)
+    onExpandedNodesChanged(imodel: IModelConnection, rulesetId: string, sourceId: string, expandedNodes: NodeIdentifier[]): Promise<void>;
+    // (undocumented)
+    onHierarchyClosed(imodel: IModelConnection, rulesetId: string, sourceId: string): Promise<void>;
+    }
 
 
 // (No @packageDocumentation comment for this package)

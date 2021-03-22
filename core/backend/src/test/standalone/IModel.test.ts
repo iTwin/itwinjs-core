@@ -14,7 +14,7 @@ import {
 } from "@bentley/geometry-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
+  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
   PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
@@ -24,7 +24,7 @@ import { BlobDaemon } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb } from "../../IModelDb";
 import {
-  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
+  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, Category,
   ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
   DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers,
   ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost,
@@ -410,34 +410,6 @@ describe("iModel", () => {
     }
   });
 
-  it("should insert a Texture", () => {
-    const model = imodel2.models.getModel<DictionaryModel>(IModel.dictionaryId);
-    expect(model).not.to.be.undefined;
-
-    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
-    // bottom right pixel.  The rest of the square is red.
-    const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
-
-    const testTextureName = "fake texture name";
-    const testTextureFormat = ImageSourceFormat.Png;
-    const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
-    const testTextureWidth = 3;
-    const testTextureHeight = 3;
-    const testTextureDescription = "empty description";
-    const testTextureFlags = TextureFlags.None;
-
-    const textureId = Texture.insert(imodel2, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
-
-    const texture = imodel2.elements.getElement<Texture>(textureId);
-    assert((texture instanceof Texture) === true, "did not retrieve an instance of Texture");
-    expect(texture.format).to.equal(testTextureFormat);
-    expect(Array.from(texture.data)).to.deep.equal(pngData);
-    expect(texture.width).to.equal(testTextureWidth);
-    expect(texture.height).to.equal(testTextureHeight);
-    expect(texture.description).to.equal(testTextureDescription);
-    expect(texture.flags).to.equal(testTextureFlags);
-  });
-
   it("should insert a RenderMaterial", () => {
     const model = imodel2.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
@@ -710,7 +682,7 @@ describe("iModel", () => {
     const rootSubject = imodel1.elements.getRootSubject();
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
-    assert.isAtLeast(rootSubject.code.getValue().length, 1);
+    assert.isAtLeast(rootSubject.code.value.length, 1);
     assert.isFalse(imodel1.elements.hasSubModel(IModel.rootSubjectId));
 
     try {
@@ -863,7 +835,7 @@ describe("iModel", () => {
         assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
         if (defaultSubCategory instanceof SubCategory) {
           assert.isTrue(defaultSubCategory.parent!.id === categoryId, "defaultSubCategory id should be prescribed value");
-          assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.getValue(), "DefaultSubcategory name should match that of Category");
+          assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.value, "DefaultSubcategory name should match that of Category");
           assert.isTrue(defaultSubCategory.isDefaultSubCategory, "isDefaultSubCategory should return true");
         }
 
@@ -1298,6 +1270,7 @@ describe("iModel", () => {
       assert.equal(count, 1);
     });
 
+    let firstCodeValueId: Id64String | undefined;
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
@@ -1308,10 +1281,15 @@ describe("iModel", () => {
         const row = stmt4.getRow();
         // Verify that we got the row that we asked for
         assert.equal(row.codeValue, codeValueToFind);
+        firstCodeValueId = row.id;
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
     });
+
+    // make sure we can use parameterized values for queryEnityId (test on parameterized codevalue)
+    const ids = imodel2.queryEntityIds({ from: "bis.element", where: "codevalue=:cv", bindings: { cv: firstCodeValue } });
+    assert.equal(ids.values().next().value, firstCodeValueId);
 
     imodel2.withPreparedStatement("select ecinstanceid as id, codevalue from bis.element", (stmt5: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === stmt5.step()) {
@@ -1398,6 +1376,7 @@ describe("iModel", () => {
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
       assert.isFalse(codeSpec.isManagedWithIModel);
+      iModelDb.saveChanges();
       iModelDb.close();
     }
 
@@ -1731,6 +1710,7 @@ describe("iModel", () => {
     const contextId = Guid.createValue();
     const changeSetId = generateChangeSetId();
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
+    snapshot.saveChanges();
     snapshot.close();
 
     // Mock iModelHub
@@ -1947,10 +1927,10 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.pathName, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneDb1.key), "Should be in the list of open StandaloneDbs");
     assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
-    assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
+    assert.equal(standaloneDb1.elements.getRootSubject().code.value, standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
-    assert.isUndefined(standaloneDb1.contextId);
+    assert.equal(standaloneDb1.contextId, Guid.empty);
     assert.isUndefined(standaloneDb1.changeSetId);
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
@@ -1978,9 +1958,6 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb3.isSnapshot);
-    assert.isFalse(snapshotDb1.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb2.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb3.txns.hasPendingTxns);
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");
@@ -2003,10 +1980,10 @@ describe("iModel", () => {
     const iModelGuid3: GuidString = snapshotDb3.getGuid();
     assert.notEqual(iModelGuid1, iModelGuid2, "Expect different iModel GUIDs for each snapshot");
     assert.notEqual(iModelGuid2, iModelGuid3, "Expect different iModel GUIDs for each snapshot");
-    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.getValue();
-    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.getValue();
-    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.getValue();
-    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.getValue();
+    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.value;
+    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.value;
+    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.value;
+    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.value;
     assert.equal(rootSubjectName1, snapshotRootSubjectName);
     assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
     assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
@@ -2283,7 +2260,7 @@ describe("iModel", () => {
     element = imodel4.elements.getElement<InformationRecordElement>(elementId, InformationRecordElement);
     assert.isTrue(Code.isValid(element.code));
     assert.isFalse(Code.isEmpty(element.code));
-    assert.equal(element.code.getValue(), codeValue);
+    assert.equal(element.code.value, codeValue);
   });
 
   it("should update UserLabel", () => {

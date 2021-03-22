@@ -79,7 +79,9 @@ export class IModelTransformer extends IModelExportHandler {
   public readonly exporter: IModelExporter;
   /** The IModelImporter that will import into the target iModel. */
   public readonly importer: IModelImporter;
-  /** The read-only source iModel. */
+  /** The normally read-only source iModel.
+   * @note The source iModel will need to be read/write when provenance is being stored during a reverse synchronization.
+   */
   public readonly sourceDb: IModelDb;
   /** The read/write target iModel. */
   public readonly targetDb: IModelDb;
@@ -141,27 +143,40 @@ export class IModelTransformer extends IModelExportHandler {
     this.context.dispose();
   }
 
-  /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation.
-   * @param sourceElement The new ExternalSourceAspectProps will be tracking this Element from the source iModel.
-   * @param targetElementId The optional Id of the target Element that will own the ExternalSourceAspect.
+  /** Log current settings that affect IModelTransformer's behavior. */
+  private logSettings(): void {
+    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantGeometry=${this.exporter.wantGeometry}`);
+    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantSystemSchemas=${this.exporter.wantSystemSchemas}`);
+    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantTemplateModels=${this.exporter.wantTemplateModels}`);
+    Logger.logInfo(loggerCategory, `this.targetScopeElementId=${this.targetScopeElementId}`);
+    Logger.logInfo(loggerCategory, `this._noProvenance=${this._noProvenance}`);
+    Logger.logInfo(loggerCategory, `this._cloneUsingBinaryGeometry=${this._cloneUsingBinaryGeometry}`);
+    Logger.logInfo(loggerCategory, `this._wasSourceIModelCopiedToTarget=${this._wasSourceIModelCopiedToTarget}`);
+    Logger.logInfo(loggerCategory, `this._isReverseSynchronization=${this._isReverseSynchronization}`);
+    Logger.logInfo(BackendLoggerCategory.IModelImporter, `this.importer.autoExtendProjectExtents=${this.importer.autoExtendProjectExtents}`);
+    Logger.logInfo(BackendLoggerCategory.IModelImporter, `this.importer.simplifyElementGeometry=${this.importer.simplifyElementGeometry}`);
+  }
+
+  /** Return the IModelDb where IModelTransformer will store its provenance.
+   * @note This will be [[targetDb]] except when it is a reverse synchronization. In that case it be [[sourceDb]].
    */
-  private initElementProvenance(sourceElement: Element, targetElementId: Id64String): ExternalSourceAspectProps {
+  public get provenanceDb(): IModelDb {
+    return this._isReverseSynchronization ? this.sourceDb : this.targetDb;
+  }
+
+  /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation. */
+  private initElementProvenance(sourceElementId: Id64String, targetElementId: Id64String): ExternalSourceAspectProps {
+    const elementId = this._isReverseSynchronization ? sourceElementId : targetElementId;
+    const aspectIdentifier = this._isReverseSynchronization ? targetElementId : sourceElementId;
     const aspectProps: ExternalSourceAspectProps = {
       classFullName: ExternalSourceAspect.classFullName,
-      element: { id: targetElementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      element: { id: elementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
       scope: { id: this.targetScopeElementId },
-      identifier: sourceElement.id,
+      identifier: aspectIdentifier,
       kind: ExternalSourceAspect.Kind.Element,
-      version: sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id),
+      version: this.sourceDb.elements.queryLastModifiedTime(sourceElementId),
     };
-    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} a WHERE a.Element.Id=:elementId AND a.Scope.Id=:scopeId AND a.Kind=:kind AND a.Identifier=:identifier LIMIT 1`;
-    aspectProps.id = this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
-      statement.bindId("elementId", targetElementId);
-      statement.bindId("scopeId", this.targetScopeElementId);
-      statement.bindString("kind", ExternalSourceAspect.Kind.Element);
-      statement.bindString("identifier", sourceElement.id); // ExternalSourceAspect.Identifier is of type string
-      return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
-    });
+    aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
     return aspectProps;
   }
 
@@ -172,34 +187,65 @@ export class IModelTransformer extends IModelExportHandler {
    */
   private initRelationshipProvenance(sourceRelationship: Relationship, targetRelInstanceId: Id64String): ExternalSourceAspectProps {
     const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, targetRelInstanceId);
+    const elementId = this._isReverseSynchronization ? sourceRelationship.sourceId : targetRelationship.sourceId;
+    const aspectIdentifier = this._isReverseSynchronization ? targetRelInstanceId : sourceRelationship.id;
     const aspectProps: ExternalSourceAspectProps = {
       classFullName: ExternalSourceAspect.classFullName,
-      element: { id: targetRelationship.sourceId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      element: { id: elementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
       scope: { id: this.targetScopeElementId },
-      identifier: sourceRelationship.id,
+      identifier: aspectIdentifier,
       kind: ExternalSourceAspect.Kind.Relationship,
       jsonProperties: JSON.stringify({ targetRelInstanceId }),
     };
-    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} aspect` +
-      ` WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind=:kind AND aspect.Identifier=:identifier LIMIT 1`;
-    aspectProps.id = this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
-      statement.bindId("elementId", targetRelationship.sourceId);
-      statement.bindId("scopeId", this.targetScopeElementId);
-      statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
-      statement.bindString("identifier", sourceRelationship.id);
-      return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
-    });
+    aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
     return aspectProps;
   }
 
+  private validateScopeProvenance(): void {
+    const aspectProps: ExternalSourceAspectProps = {
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: this.targetScopeElementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      scope: { id: IModel.rootSubjectId }, // the root Subject scopes scope elements
+      identifier: this._isReverseSynchronization ? this.targetDb.iModelId : this.sourceDb.iModelId, // the opposite side of where provenance is stored
+      kind: ExternalSourceAspect.Kind.Scope,
+    };
+    aspectProps.id = this.queryExternalSourceAspectId(aspectProps); // this query includes "identifier"
+    if (undefined === aspectProps.id) {
+      // this query does not include "identifier" to find possible conflicts
+      const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE Element.Id=:elementId AND Scope.Id=:scopeId AND Kind=:kind LIMIT 1`;
+      const hasConflictingScope = this.provenanceDb.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
+        statement.bindId("elementId", aspectProps.element.id);
+        statement.bindId("scopeId", aspectProps.scope.id);
+        statement.bindString("kind", aspectProps.kind);
+        return DbResult.BE_SQLITE_ROW === statement.step();
+      });
+      if (hasConflictingScope) {
+        throw new IModelError(IModelStatus.InvalidId, "Provenance scope conflict", Logger.logError, loggerCategory);
+      }
+      if (!this._noProvenance) {
+        this.provenanceDb.elements.insertAspect(aspectProps);
+      }
+    }
+  }
+
+  private queryExternalSourceAspectId(aspectProps: ExternalSourceAspectProps): Id64String | undefined {
+    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE Element.Id=:elementId AND Scope.Id=:scopeId AND Kind=:kind AND Identifier=:identifier LIMIT 1`;
+    return this.provenanceDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
+      statement.bindId("elementId", aspectProps.element.id);
+      statement.bindId("scopeId", aspectProps.scope.id);
+      statement.bindString("kind", aspectProps.kind);
+      statement.bindString("identifier", aspectProps.identifier);
+      return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
+    });
+  }
+
   /** Iterate all matching ExternalSourceAspects in the target iModel and call a function for each one. */
-  private forEachExternalSourceAspect(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
-    const iModelDb = this._isReverseSynchronization ? this.sourceDb : this.targetDb;
-    if (!iModelDb.containsClass(ExternalSourceAspect.classFullName)) {
+  private forEachTrackedElement(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
+    if (!this.provenanceDb.containsClass(ExternalSourceAspect.classFullName)) {
       throw new IModelError(IModelStatus.BadSchema, "The BisCore schema version of the target database is too old", Logger.logError, loggerCategory);
     }
-    const sql = `SELECT aspect.Identifier,aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
-    iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+    const sql = `SELECT Identifier,Element.Id FROM ${ExternalSourceAspect.classFullName} WHERE Scope.Id=:scopeId AND Kind=:kind`;
+    this.provenanceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("scopeId", this.targetScopeElementId);
       statement.bindString("kind", ExternalSourceAspect.Kind.Element);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -218,7 +264,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
   public initFromExternalSourceAspects(): void {
-    this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
+    this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {
       this.context.remapElement(sourceElementId, targetElementId);
     });
   }
@@ -228,12 +274,12 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processAll]] and is not needed by [[processChanges]], so it only needs to be called directly when processing a subset of an iModel.
    * @throws [[IModelError]] If the required provenance information is not available to detect deletes.
    */
-  public detectElementDeletes(): void {
+  public async detectElementDeletes(): Promise<void> {
     if (this._isReverseSynchronization) {
       throw new IModelError(IModelStatus.BadRequest, "Cannot detect deletes when isReverseSynchronization=true", Logger.logError, loggerCategory);
     }
     const targetElementsToDelete: Id64String[] = [];
-    this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
+    this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {
       if (undefined === this.sourceDb.elements.tryGetElementProps(sourceElementId)) {
         // if the sourceElement is not found, then it must have been deleted, so propagate the delete to the target iModel
         targetElementsToDelete.push(targetElementId);
@@ -312,19 +358,19 @@ export class IModelTransformer extends IModelExportHandler {
    * @param sourceElementId Identifies the Element from the source iModel to import.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processElement(sourceElementId: Id64String): void {
+  public async processElement(sourceElementId: Id64String): Promise<void> {
     if (sourceElementId === IModel.rootSubjectId) {
       throw new IModelError(IModelStatus.BadRequest, "The root Subject should not be directly imported", Logger.logError, loggerCategory);
     }
-    this.exporter.exportElement(sourceElementId);
+    return this.exporter.exportElement(sourceElementId);
   }
 
   /** Import child elements into the target IModelDb
    * @param sourceElementId Import the child elements of this element in the source IModelDb.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processChildElements(sourceElementId: Id64String): void {
-    this.exporter.exportChildElements(sourceElementId);
+  public async processChildElements(sourceElementId: Id64String): Promise<void> {
+    return this.exporter.exportChildElements(sourceElementId);
   }
 
   /** Override of [IModelExportHandler.shouldExportElement]($backend) that is called to determine if an element should be exported from the source iModel.
@@ -383,12 +429,11 @@ export class IModelTransformer extends IModelExportHandler {
     }
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
     if (!this._noProvenance) {
-      // record provenance in ExternalSourceAspect
-      const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement, targetElementProps.id!);
+      const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
       if (aspectProps.id === undefined) {
-        this.targetDb.elements.insertAspect(aspectProps);
+        this.provenanceDb.elements.insertAspect(aspectProps);
       } else {
-        this.targetDb.elements.updateAspect(aspectProps);
+        this.provenanceDb.elements.updateAspect(aspectProps);
       }
     }
   }
@@ -424,8 +469,8 @@ export class IModelTransformer extends IModelExportHandler {
    * @param sourceModeledElementId Import this [Model]($backend) from the source IModelDb.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processModel(sourceModeledElementId: Id64String): void {
-    this.exporter.exportModel(sourceModeledElementId);
+  public async processModel(sourceModeledElementId: Id64String): Promise<void> {
+    return this.exporter.exportModel(sourceModeledElementId);
   }
 
   /** Cause the model contents to be exported from the source iModel and imported into the target iModel.
@@ -434,40 +479,40 @@ export class IModelTransformer extends IModelExportHandler {
    * @param elementClassFullName Optional classFullName of an element subclass to limit import query against the source model.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName: string = Element.classFullName): void {
+  public async processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName: string = Element.classFullName): Promise<void> {
     this.targetDb.models.getModel(targetModelId); // throws if Model does not exist
     this.context.remapElement(sourceModelId, targetModelId); // set remapping in case importModelContents is called directly
-    this.exporter.exportModelContents(sourceModelId, elementClassFullName);
+    return this.exporter.exportModelContents(sourceModelId, elementClassFullName);
   }
 
   /** Cause all sub-models that recursively descend from the specified Subject to be exported from the source iModel and imported into the target iModel. */
-  private processSubjectSubModels(sourceSubjectId: Id64String): void {
+  private async processSubjectSubModels(sourceSubjectId: Id64String): Promise<void> {
     // import DefinitionModels first
     const childDefinitionPartitionSql = `SELECT ECInstanceId FROM ${DefinitionPartition.classFullName} WHERE Parent.Id=:subjectId`;
-    this.sourceDb.withPreparedStatement(childDefinitionPartitionSql, (statement: ECSqlStatement) => {
+    await this.sourceDb.withPreparedStatement(childDefinitionPartitionSql, async (statement: ECSqlStatement) => {
       statement.bindId("subjectId", sourceSubjectId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        this.processModel(statement.getValue(0).getId());
+        await this.processModel(statement.getValue(0).getId());
       }
     });
     // import other partitions next
     const childPartitionSql = `SELECT ECInstanceId FROM ${InformationPartitionElement.classFullName} WHERE Parent.Id=:subjectId`;
-    this.sourceDb.withPreparedStatement(childPartitionSql, (statement: ECSqlStatement) => {
+    await this.sourceDb.withPreparedStatement(childPartitionSql, async (statement: ECSqlStatement) => {
       statement.bindId("subjectId", sourceSubjectId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const modelId: Id64String = statement.getValue(0).getId();
         const model: Model = this.sourceDb.models.getModel(modelId);
         if (!(model instanceof DefinitionModel)) {
-          this.processModel(modelId);
+          await this.processModel(modelId);
         }
       }
     });
     // recurse into child Subjects
     const childSubjectSql = `SELECT ECInstanceId FROM ${Subject.classFullName} WHERE Parent.Id=:subjectId`;
-    this.sourceDb.withPreparedStatement(childSubjectSql, (statement: ECSqlStatement) => {
+    await this.sourceDb.withPreparedStatement(childSubjectSql, async (statement: ECSqlStatement) => {
       statement.bindId("subjectId", sourceSubjectId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        this.processSubjectSubModels(statement.getValue(0).getId());
+        await this.processSubjectSubModels(statement.getValue(0).getId());
       }
     });
   }
@@ -489,15 +534,17 @@ export class IModelTransformer extends IModelExportHandler {
   /** Import elements that were deferred in a prior pass.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processDeferredElements(numRetries: number = 3): void {
+  public async processDeferredElements(numRetries: number = 3): Promise<void> {
     Logger.logTrace(loggerCategory, `processDeferredElements(), numDeferred=${this._deferredElementIds.size}`);
     const copyOfDeferredElementIds: Id64Set = this._deferredElementIds;
     this._deferredElementIds = new Set<Id64String>();
-    copyOfDeferredElementIds.forEach((elementId: Id64String) => this.processElement(elementId));
+    for (const elementId of copyOfDeferredElementIds) {
+      await this.processElement(elementId);
+    }
     if (this._deferredElementIds.size > 0) {
       if (--numRetries > 0) {
         Logger.logTrace(loggerCategory, "Retrying processDeferredElements()");
-        this.processDeferredElements(numRetries);
+        await this.processDeferredElements(numRetries);
       } else {
         throw new IModelError(IModelStatus.BadRequest, "Not all deferred elements could be processed", Logger.logError, loggerCategory);
       }
@@ -508,8 +555,8 @@ export class IModelTransformer extends IModelExportHandler {
    * @param baseRelClassFullName The specified base relationship class.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processRelationships(baseRelClassFullName: string): void {
-    this.exporter.exportRelationships(baseRelClassFullName);
+  public async processRelationships(baseRelClassFullName: string): Promise<void> {
+    return this.exporter.exportRelationships(baseRelClassFullName);
   }
 
   /** Override of [IModelExportHandler.shouldExportRelationship]($backend) that is called to determine if a [Relationship]($backend) should be exported.
@@ -526,7 +573,7 @@ export class IModelTransformer extends IModelExportHandler {
     if (!this._noProvenance && Id64.isValidId64(targetRelationshipInstanceId)) {
       const aspectProps: ExternalSourceAspectProps = this.initRelationshipProvenance(sourceRelationship, targetRelationshipInstanceId);
       if (undefined === aspectProps.id) {
-        this.targetDb.elements.insertAspect(aspectProps);
+        this.provenanceDb.elements.insertAspect(aspectProps);
       }
     }
   }
@@ -557,7 +604,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processAll]] and is not needed by [[processChanges]], so it only needs to be called directly when processing a subset of an iModel.
    * @throws [[IModelError]] If the required provenance information is not available to detect deletes.
    */
-  public detectRelationshipDeletes(): void {
+  public async detectRelationshipDeletes(): Promise<void> {
     if (this._isReverseSynchronization) {
       throw new IModelError(IModelStatus.BadRequest, "Cannot detect deletes when isReverseSynchronization=true", Logger.logError, loggerCategory);
     }
@@ -664,8 +711,8 @@ export class IModelTransformer extends IModelExportHandler {
   /** Cause all fonts to be exported from the source iModel and imported into the target iModel.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processFonts(): void {
-    this.exporter.exportFonts();
+  public async processFonts(): Promise<void> {
+    return this.exporter.exportFonts();
   }
 
   /** Override of [IModelExportHandler.onExportFont]($backend) that imports a font into the target iModel when it is exported from the source iModel. */
@@ -676,15 +723,15 @@ export class IModelTransformer extends IModelExportHandler {
   /** Cause all CodeSpecs to be exported from the source iModel and imported into the target iModel.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processCodeSpecs(): void {
-    this.exporter.exportCodeSpecs();
+  public async processCodeSpecs(): Promise<void> {
+    return this.exporter.exportCodeSpecs();
   }
 
   /** Cause a single CodeSpec to be exported from the source iModel and imported into the target iModel.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processCodeSpec(codeSpecName: string): void {
-    this.exporter.exportCodeSpecByName(codeSpecName);
+  public async processCodeSpec(codeSpecName: string): Promise<void> {
+    return this.exporter.exportCodeSpecByName(codeSpecName);
   }
 
   /** Override of [IModelExportHandler.shouldExportCodeSpec]($backend) that is called to determine if a CodeSpec should be exported from the source iModel.
@@ -698,31 +745,34 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Recursively import all Elements and sub-Models that descend from the specified Subject */
-  public processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void {
+  public async processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void> {
     this.sourceDb.elements.getElement(sourceSubjectId, Subject); // throws if sourceSubjectId is not a Subject
     this.targetDb.elements.getElement(targetSubjectId, Subject); // throws if targetSubjectId is not a Subject
     this.context.remapElement(sourceSubjectId, targetSubjectId);
-    this.processChildElements(sourceSubjectId);
-    this.processSubjectSubModels(sourceSubjectId);
-    this.processDeferredElements();
+    await this.processChildElements(sourceSubjectId);
+    await this.processSubjectSubModels(sourceSubjectId);
+    return this.processDeferredElements();
   }
 
   /** Export everything from the source iModel and import the transformed entities into the target iModel.
    * @note [[processSchemas]] is not called automatically since the target iModel may want a different collection of schemas.
    */
-  public processAll(): void {
+  public async processAll(): Promise<void> {
+    Logger.logTrace(loggerCategory, "processAll()");
+    this.logSettings();
+    this.validateScopeProvenance();
     this.initFromExternalSourceAspects();
-    this.exporter.exportCodeSpecs();
-    this.exporter.exportFonts();
+    await this.exporter.exportCodeSpecs();
+    await this.exporter.exportFonts();
     // The RepositoryModel and root Subject of the target iModel should not be transformed.
-    this.exporter.exportChildElements(IModel.rootSubjectId); // start below the root Subject
-    this.exporter.exportRepositoryLinks();
-    this.exporter.exportSubModels(IModel.repositoryModelId); // start below the RepositoryModel
-    this.exporter.exportRelationships(ElementRefersToElements.classFullName);
-    this.processDeferredElements();
+    await this.exporter.exportChildElements(IModel.rootSubjectId); // start below the root Subject
+    await this.exporter.exportRepositoryLinks();
+    await this.exporter.exportSubModels(IModel.repositoryModelId); // start below the RepositoryModel
+    await this.exporter.exportRelationships(ElementRefersToElements.classFullName);
+    await this.processDeferredElements();
     if (!this._isReverseSynchronization) {
-      this.detectElementDeletes();
-      this.detectRelationshipDeletes();
+      await this.detectElementDeletes();
+      await this.detectRelationshipDeletes();
     }
     this.importer.computeProjectExtents();
   }
@@ -736,10 +786,13 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public async processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     requestContext.enter();
+    Logger.logTrace(loggerCategory, "processChanges()");
+    this.logSettings();
+    this.validateScopeProvenance();
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(requestContext, startChangeSetId);
     requestContext.enter();
-    this.processDeferredElements();
+    await this.processDeferredElements();
     this.importer.computeProjectExtents();
   }
 }
@@ -766,11 +819,11 @@ export class TemplateModelCloner extends IModelTransformer {
    * @note *Predecessors* like the SpatialCategory must be remapped before calling this method.
    * @returns The mapping of sourceElementIds from the template model to the instantiated targetElementIds in the targetDb in case further processing is required.
    */
-  public placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Map<Id64String, Id64String> {
+  public async placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Promise<Map<Id64String, Id64String>> {
     this.context.remapElement(sourceTemplateModelId, targetModelId);
     this._transform3d = Transform.createOriginAndMatrix(placement.origin, placement.angles.toMatrix3d());
     this._sourceIdToTargetIdMap = new Map<Id64String, Id64String>();
-    this.exporter.exportModelContents(sourceTemplateModelId);
+    await this.exporter.exportModelContents(sourceTemplateModelId);
     // Note: the source --> target mapping was needed during the template model cloning phase (remapping parent/child, for example), but needs to be reset afterwards
     for (const sourceElementId of this._sourceIdToTargetIdMap.keys()) {
       const targetElementId = this.context.findTargetElementId(sourceElementId);
@@ -786,11 +839,11 @@ export class TemplateModelCloner extends IModelTransformer {
    * @note *Predecessors* like the DrawingCategory must be remapped before calling this method.
    * @returns The mapping of sourceElementIds from the template model to the instantiated targetElementIds in the targetDb in case further processing is required.
    */
-  public placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Map<Id64String, Id64String> {
+  public async placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Promise<Map<Id64String, Id64String>> {
     this.context.remapElement(sourceTemplateModelId, targetModelId);
     this._transform3d = Transform.createOriginAndMatrix(Point3d.createFrom(placement.origin), placement.rotation);
     this._sourceIdToTargetIdMap = new Map<Id64String, Id64String>();
-    this.exporter.exportModelContents(sourceTemplateModelId);
+    await this.exporter.exportModelContents(sourceTemplateModelId);
     // Note: the source --> target mapping was needed during the template model cloning phase (remapping parent/child, for example), but needs to be reset afterwards
     for (const sourceElementId of this._sourceIdToTargetIdMap.keys()) {
       const targetElementId = this.context.findTargetElementId(sourceElementId);

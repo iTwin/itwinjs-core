@@ -201,7 +201,7 @@ export enum ChangeSetStatus {
     NoTransactions = 90127,
     ParentMismatch = 90128,
     ProcessSchemaChangesOnOpen = 90134,
-    ReverseOrReinstateSchemaChangesOnOpen = 90133,
+    ReverseOrReinstateSchemaChanges = 90133,
     SQLiteError = 90129,
     // (undocumented)
     Success = 0,
@@ -209,7 +209,7 @@ export enum ChangeSetStatus {
 }
 
 // @public
-export class ClientRequestContext implements ClientRequestContextProps {
+export class ClientRequestContext {
     constructor(activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
     readonly activityId: GuidString;
     readonly applicationId: string;
@@ -218,6 +218,8 @@ export class ClientRequestContext implements ClientRequestContextProps {
     // (undocumented)
     protected static _current: ClientRequestContext;
     enter(): this;
+    // (undocumented)
+    static fromJSON(json: ClientRequestContextProps): ClientRequestContext;
     readonly sessionId: GuidString;
     // @internal (undocumented)
     toJSON(): ClientRequestContextProps;
@@ -227,11 +229,8 @@ export class ClientRequestContext implements ClientRequestContextProps {
     }
 
 // @public
-export interface ClientRequestContextProps {
-    readonly activityId: GuidString;
-    readonly applicationId: string;
-    readonly applicationVersion: string;
-    readonly sessionId: GuidString;
+export interface ClientRequestContextProps extends SessionProps {
+    readonly activityId?: GuidString;
 }
 
 // @public
@@ -1005,10 +1004,10 @@ export class IndexMap<T> {
     protected readonly _maximumSize: number;
 }
 
-// @internal
+// @internal @deprecated
 export const isElectronMain: boolean;
 
-// @internal
+// @internal @deprecated
 export const isElectronRenderer: boolean;
 
 // @public
@@ -1186,6 +1185,13 @@ export enum OpenMode {
 // @public
 export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
 
+// @alpha (undocumented)
+export class OrderedId64Array extends SortedArray<Id64String> {
+    constructor();
+    // (undocumented)
+    get ids(): OrderedId64Iterable;
+}
+
 // @beta
 export type OrderedId64Iterable = Iterable<Id64String>;
 
@@ -1247,6 +1253,26 @@ export class PriorityQueue<T> implements Iterable<T> {
     sort(): void;
     // (undocumented)
     protected _swap(a: number, b: number): void;
+}
+
+// @beta
+export class ProcessDetector {
+    static get isAndroidAppBackend(): boolean;
+    static get isAndroidAppFrontend(): boolean;
+    static get isAndroidBrowser(): boolean;
+    static get isBrowserProcess(): boolean;
+    static get isElectronAppBackend(): boolean;
+    static get isElectronAppFrontend(): boolean;
+    static get isIOSAppBackend(): boolean;
+    static get isIOSAppFrontend(): boolean;
+    static get isIOSBrowser(): boolean;
+    static get isIPadBrowser(): boolean;
+    static get isIPhoneBrowser(): boolean;
+    static get isMobileAppBackend(): boolean;
+    static get isMobileAppFrontend(): boolean;
+    static get isMobileBrowser(): boolean;
+    static get isNativeAppFrontend(): boolean;
+    static get isNodeProcess(): boolean;
 }
 
 // @public
@@ -1341,6 +1367,13 @@ export interface SerializedClientRequestContext {
     sessionId: string;
     // (undocumented)
     userId?: string;
+}
+
+// @public
+export interface SessionProps {
+    applicationId: string;
+    applicationVersion: string;
+    sessionId: GuidString;
 }
 
 // @public

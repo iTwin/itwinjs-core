@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
-import { EditTool } from "@bentley/imodeljs-editor-frontend";
-import { IModelApp, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { EditTools } from "@bentley/imodeljs-editor-frontend";
+import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 
 const expect = chai.expect;
@@ -19,21 +19,21 @@ let testOut: TestCmdResult;
 const cmdArg = "test command arg";
 let cmdStr: string;
 
-class TestEditTool1 extends EditTool {
+class TestEditTool1 extends PrimitiveTool {
   public static toolId = "TestEditTool1";
   public isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
   public onRestartTool() { this.exitTool(); }
   public static callCommand<T extends keyof TestCommandIpc>(method: T, ...args: Parameters<TestCommandIpc[T]>): ReturnType<TestCommandIpc[T]> {
-    return super.callCommand(method, ...args) as ReturnType<TestCommandIpc[T]>;
+    return EditTools.callCommand(method, ...args) as ReturnType<TestCommandIpc[T]>;
   }
 
   public async go(cmd: string, str1: string, str2: string, obj1: TestCmdOjb1) {
-    cmdStr = await EditTool.startCommand<string>(cmd, iModel.key, cmdArg);
+    cmdStr = await EditTools.startCommand<string>(cmd, iModel.key, cmdArg);
     testOut = await TestEditTool1.callCommand("testMethod1", str1, str2, obj1);
   }
 }
 
-if (isElectronRenderer) {
+if (ProcessDetector.isElectronAppFrontend) {
   describe("EditTools", () => {
 
     before(async () => {

@@ -6,10 +6,10 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
-import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import {
-  BackendRequestContext, BriefcaseIdValue, DrawingCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory,
+  BackendRequestContext, DrawingCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory,
 } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";

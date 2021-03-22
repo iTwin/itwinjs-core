@@ -47,6 +47,16 @@ export enum RpcRequestStatus {
   NotFound,
   Cancelled,
   NoContent,
+  BadGateway,
+  ServiceUnavailable,
+  GatewayTimeout
+}
+
+/** @public */
+export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no-redeclare
+  export function isTransientError(status: RpcRequestStatus) {
+    return status === RpcRequestStatus.BadGateway || status === RpcRequestStatus.ServiceUnavailable || status === RpcRequestStatus.GatewayTimeout;
+  }
 }
 
 /** RPC request event types.
@@ -55,6 +65,7 @@ export enum RpcRequestStatus {
 export enum RpcRequestEvent {
   StatusChanged,
   PendingUpdateReceived,
+  TransientErrorReceived
 }
 
 /** RPC content types.
@@ -66,15 +77,6 @@ export enum RpcContentType {
   Binary,
   Multipart,
   Stream,
-}
-
-/** RPC supported mobile platforms.
- * @beta
- */
-export enum RpcMobilePlatform {
-  Unknown,
-  Android,
-  iOS,
 }
 
 /** Endpoints for RPC protocols.

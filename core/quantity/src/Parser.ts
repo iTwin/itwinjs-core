@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
+
 import { QuantityConstants } from "./Constants";
 import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
@@ -10,7 +14,7 @@ import { ParserSpec } from "./ParserSpec";
 import { Quantity } from "./Quantity";
 
 /** Possible parser errors
- * @alpha
+ * @beta
  */
 export enum ParseError {
   UnableToGenerateParseTokens = 1,
@@ -22,7 +26,7 @@ export enum ParseError {
 }
 
 /** Parse error result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
- * @alpha
+ * @beta
  */
 export interface ParseQuantityError {
   /** Union discriminator for [[QuantityParseResult]]. */
@@ -32,7 +36,7 @@ export interface ParseQuantityError {
 }
 
 /** Successful result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
- * @alpha
+ * @beta
  */
 export interface ParsedQuantity {
   /** Union discriminator for [[QuantityParseResult]]. */
@@ -43,12 +47,12 @@ export interface ParsedQuantity {
 
 /**
  * Defines Results of parsing a string input by a user into its desired value type
- * @alpha
+ * @beta
  */
 export type QuantityParseResult = ParsedQuantity | ParseQuantityError;
 
 /** A ParseToken holds either a numeric or string token extracted from a string that represents a quantity value.
- * @alpha
+ * @beta
  */
 class ParseToken {
   public value: number | string;
@@ -63,7 +67,7 @@ class ParseToken {
 }
 
 /** A ScientificToken holds an index and string representing the exponent.
- * @alpha
+ * @beta
  */
 class ScientificToken {
   public index: number;
@@ -76,7 +80,7 @@ class ScientificToken {
 }
 
 /** A FractionToken holds an index and the fraction value of numerator / denominator.
- * @alpha
+ * @beta
  */
 class FractionToken {
   public index: number;
@@ -90,7 +94,7 @@ class FractionToken {
 }
 
 /** A Parser class that is used to break a string that represents a quantity value into tokens.
- * @alpha
+ * @beta
  */
 export class Parser {
   private static _log = false;
@@ -307,30 +311,70 @@ export class Parser {
     return tokens;
   }
 
-  private static async createQuantityFromParseTokens(tokens: ParseToken[], format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps> {
+  private static async lookupUnitByLabel(unitLabel: string, format: Format, unitsProvider: UnitsProvider) {
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
+
+    const labelToFind = unitLabel.toLowerCase();
+    // First look in format for a label and matches
+    if (format.units && format.units.length > 0) {
+      const formatUnit = format.units.find(([unit, label])=>{
+        if (label && label.toLowerCase() === labelToFind)
+          return true;
+        if (unit.alternateLabels && unit.alternateLabels.find((lbl)=>lbl.toLowerCase() === labelToFind ))
+          return true;
+        return false;
+      });
+      if (formatUnit)
+        return formatUnit[0];
+    }
+
+    // now try to find a unit from the same family and system
+    let foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.phenomenon : undefined, defaultUnit ? defaultUnit.system : undefined);
+
+    // if nothing found yet just limit to family
+    if (!foundUnit.isValid && defaultUnit)
+      foundUnit = await unitsProvider.findUnit(unitLabel, defaultUnit ? defaultUnit.phenomenon : undefined);
+    return foundUnit;
+  }
+
+  private static async createQuantityFromParseTokens(tokens: ParseToken[], format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps> {
+    let defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
 
     // common case where single value is supplied
     if (tokens.length === 1) {
       if (tokens[0].isNumber) {
         return new Quantity(defaultUnit, tokens[0].value as number);
       } else {
-        try {
-          const unit = await unitsProvider.findUnit(tokens[0].value as string, defaultUnit ? defaultUnit.unitFamily : undefined);
-          return new Quantity(unit);
-        } catch (err) { }
+        const unit = await this.lookupUnitByLabel(tokens[0].value as string, format, unitsProvider);
+        return new Quantity(unit);
       }
     }
 
     // common case where single value and single label are supplied
     if (tokens.length === 2) {
       if (tokens[0].isNumber && tokens[1].isString) {
-        const unit = await unitsProvider.findUnit(tokens[1].value as string, defaultUnit ? defaultUnit.unitFamily : undefined);
-        return new Quantity(unit, tokens[0].value as number);
+        const unit = await this.lookupUnitByLabel(tokens[1].value as string, format, unitsProvider);
+        if (undefined === defaultUnit)
+          defaultUnit = unit;
+        if (defaultUnit && defaultUnit.name === unit.name){
+          return new Quantity(defaultUnit, tokens[0].value as number);
+        } else if (defaultUnit) {
+          const conversion = await unitsProvider.getConversion(unit, defaultUnit);
+          const mag = ((tokens[0].value as number * conversion.factor)) + conversion.offset;
+          return new Quantity(defaultUnit, mag);
+        }
       } else {  // unit specification comes before value (like currency)
         if (tokens[1].isNumber && tokens[0].isString) {
-          const unit = await unitsProvider.findUnit(tokens[0].value as string, defaultUnit ? defaultUnit.unitFamily : undefined);
-          return new Quantity(unit, tokens[1].value as number);
+          const unit = await this.lookupUnitByLabel(tokens[0].value as string, format, unitsProvider);
+          if (undefined === defaultUnit)
+            defaultUnit = unit;
+          if (defaultUnit && defaultUnit.name === unit.name){
+            return new Quantity(defaultUnit, tokens[1].value as number);
+          } else if (defaultUnit) {
+            const conversion = await unitsProvider.getConversion(unit, defaultUnit);
+            const mag = ((tokens[1].value as number * conversion.factor)) + conversion.offset;
+            return new Quantity(defaultUnit, mag);
+          }
         }
       }
     }
@@ -338,17 +382,22 @@ export class Parser {
     // common case where there are multiple value/label pairs
     if (tokens.length % 2 === 0) {
       let mag = 0.0;
-      let masterUnit = defaultUnit;
       for (let i = 0; i < tokens.length; i = i + 2) {
         if (tokens[i].isNumber && tokens[i + 1].isString) {
           const value = tokens[i].value as number;
-          const unit = await unitsProvider.findUnit(tokens[i + 1].value as string, defaultUnit ? defaultUnit.unitFamily : undefined);
+          const unit = await this.lookupUnitByLabel(tokens[i + 1].value as string, format, unitsProvider);
+          if (undefined === defaultUnit)
+            defaultUnit = unit;
           if (0 === i) {
-            masterUnit = unit;
-            mag = mag + value;
+            if (defaultUnit.name === unit.name)
+              mag = value;
+            else{
+              const conversion = await unitsProvider.getConversion(unit, defaultUnit);
+              mag = ((value * conversion.factor)) + conversion.offset;
+            }
           } else {
-            if (masterUnit) {
-              const conversion = await unitsProvider.getConversion(unit, masterUnit);
+            if (defaultUnit) {
+              const conversion = await unitsProvider.getConversion(unit, defaultUnit);
               if (mag < 0.0)
                 mag = mag - ((value * conversion.factor)) + conversion.offset;
               else
@@ -357,7 +406,7 @@ export class Parser {
           }
         }
       }
-      return new Quantity(masterUnit, mag);
+      return new Quantity(defaultUnit, mag);
     }
 
     return new Quantity(defaultUnit);
@@ -377,9 +426,33 @@ export class Parser {
   }
 
   /** method to get the Unit Conversion given a unit label */
-  private static tryFindUnitConversion(unitLabel: string, unitsConversions: UnitConversionSpec[]): UnitConversion | undefined {
+  private static tryFindUnitConversion(unitLabel: string, unitsConversions: UnitConversionSpec[], preferredUnit?: UnitProps): UnitConversion | undefined {
     if (unitsConversions.length > 0) {
       const label = unitLabel.toLocaleLowerCase();
+
+      /* A preferred unit is used to target a unit if a unit label is used in more that one unit definition from the same unit family.
+       * An example is if "ft" is used as the unitLabel and the preferredUnit is "SURVEY_FT" since that unit has an alternate label of "ft" the
+       * conversion to "SURVEY_FT" is returned. If no preferredUnit is specified then the unit "FT" would likely to have been found first.
+       * If "in" is the unit label and "SURVEY_FT" is the preferredUnit then conversion to "SURVEY_IN" would be returned.
+      */
+      if (preferredUnit) {
+        // if there is a preferred unit defined see if unit label matched it or one of its alternates
+        const preferredConversion = unitsConversions.find((conversion) => conversion.name === preferredUnit.name);
+        if (preferredConversion && preferredConversion.parseLabels) {
+          if (-1 !== preferredConversion.parseLabels.findIndex((lbl) => lbl === label))
+            return preferredConversion.conversion;
+        }
+        // see if we can find a matching unitLabel in any unit within the same system as the preferred unit
+        const preferredSystemConversions = unitsConversions.filter((conversion) => conversion.system === preferredUnit.system);
+        for (const conversion of preferredSystemConversions) {
+          if (conversion.parseLabels) {
+            if (-1 !== conversion.parseLabels.findIndex((lbl) => lbl === label))
+              return conversion.conversion;
+          }
+        }
+      }
+
+      // if no unit found based on preferredUnit see if an unit label matches
       for (const conversion of unitsConversions) {
         if (conversion.parseLabels) {
           if (-1 !== conversion.parseLabels.findIndex((lbl) => lbl === label))
@@ -400,17 +473,18 @@ export class Parser {
     if (tokens.length === 1) {
       if (tokens[0].isNumber) {
         if (defaultUnit) {
-          const conversion = Parser.tryFindUnitConversion(defaultUnit.label, unitsConversions);
+          const conversion = Parser.tryFindUnitConversion(defaultUnit.label, unitsConversions, defaultUnit);
           if (conversion) {
             const value = (tokens[0].value as number) * conversion.factor + conversion.offset;
-            return {  ok: true, value };
+            return { ok: true, value };
           }
+        } else {
+          // if no conversion or no defaultUnit, just return parsed number
+          return { ok: true, value: tokens[0].value as number };
         }
-        // if no conversion or no defaultUnit, just return parsed number
-        return {ok: true, value: tokens[0].value as number };
       } else {
         // only the unit label was specified so assume magnitude of 1
-        const conversion = Parser.tryFindUnitConversion(tokens[0].value as string, unitsConversions);
+        const conversion = Parser.tryFindUnitConversion(tokens[0].value as string, unitsConversions, defaultUnit);
         if (undefined !== conversion)
           return { ok: true, value: conversion.factor + conversion.offset };
         else
@@ -421,22 +495,22 @@ export class Parser {
     // common case where single value and single label are supplied
     if (tokens.length === 2) {
       if (tokens[0].isNumber && tokens[1].isString) {
-        const conversion = Parser.tryFindUnitConversion(tokens[1].value as string, unitsConversions);
+        const conversion = Parser.tryFindUnitConversion(tokens[1].value as string, unitsConversions, defaultUnit);
         if (conversion) {
           const value = (tokens[0].value as number) * conversion.factor + conversion.offset;
-          return {ok: true, value };
+          return { ok: true, value };
         }
         // if no conversion, just return parsed number and ignore value in second token
-        return {ok: true,  value: tokens[0].value as number };
+        return { ok: true, value: tokens[0].value as number };
       } else {  // unit specification comes before value (like currency)
         if (tokens[1].isNumber && tokens[0].isString) {
-          const conversion = Parser.tryFindUnitConversion(tokens[0].value as string, unitsConversions);
+          const conversion = Parser.tryFindUnitConversion(tokens[0].value as string, unitsConversions, defaultUnit);
           if (conversion) {
             const value = (tokens[1].value as number) * conversion.factor + conversion.offset;
             return { ok: true, value };
           }
           // if no conversion, just return parsed number and ignore value in second token
-          return {ok: true, value: tokens[1].value as number };
+          return { ok: true, value: tokens[1].value as number };
         }
       }
     }
@@ -447,7 +521,7 @@ export class Parser {
       for (let i = 0; i < tokens.length; i = i + 2) {
         if (tokens[i].isNumber && tokens[i + 1].isString) {
           const value = tokens[i].value as number;
-          const conversion = Parser.tryFindUnitConversion(tokens[i + 1].value as string, unitsConversions);
+          const conversion = Parser.tryFindUnitConversion(tokens[i + 1].value as string, unitsConversions, defaultUnit);
           if (conversion) {
             if (mag < 0.0)
               mag = mag - ((value * conversion.factor)) + conversion.offset;
@@ -456,10 +530,10 @@ export class Parser {
           }
         }
       }
-      return {ok: true,  value: mag };
+      return { ok: true, value: mag };
     }
 
-    return {ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+    return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
   }
 
   /** Method to generate a Quantity given a string that represents a quantity value.
@@ -477,9 +551,22 @@ export class Parser {
    *  @param unitsConversions dictionary of conversions used to convert from unit used in inString to output quantity
    */
   public static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
+    // ensure any labels defined in composite unit definition are specified in unitConversions
+    if (format.units) {
+      format.units.forEach (([unit, label]) => {
+        if (label) {
+          if (unit.label !== label){ // if default unit label does not match composite label ensure the label is in the list of parse labels for the conversion
+            const unitConversion = unitsConversions.find((conversion)=>conversion.name === unit.name);
+            if (unitConversion && unitConversion.parseLabels && !unitConversion.parseLabels.find((entry)=> entry===label))
+              unitConversion.parseLabels.push(label);
+          }
+        }
+      });
+    }
+
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
     if (tokens.length === 0)
-      return {ok: false, error: ParseError.UnableToGenerateParseTokens };
+      return { ok: false, error: ParseError.UnableToGenerateParseTokens };
 
     if (Parser._log) {
       // eslint-disable-next-line no-console
@@ -498,7 +585,7 @@ export class Parser {
   public static async createUnitConversionSpecsForUnit(unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<UnitConversionSpec[]> {
     const unitConversionSpecs: UnitConversionSpec[] = [];
 
-    const familyUnits = await unitsProvider.getUnitsByFamily(outUnit.unitFamily);
+    const familyUnits = await unitsProvider.getUnitsByFamily(outUnit.phenomenon);
     for (const unit of familyUnits) {
       const conversion = await unitsProvider.getConversion(unit, outUnit);
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];
@@ -516,6 +603,7 @@ export class Parser {
         label: unit.label,
         conversion,
         parseLabels,
+        system: unit.system,
       });
     }
     return unitConversionSpecs;
@@ -542,7 +630,7 @@ export class Parser {
 
       const conversion = await unitsProvider.getConversion(unit, outUnit);
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];
-      // add any alternate labels that may be define by the UnitProp
+      // add any alternate labels that may be defined by the UnitProp
       if (unit.alternateLabels) {
         unit.alternateLabels.forEach((label: string) => {
           const potentialLabel = label.toLocaleLowerCase();
@@ -563,6 +651,7 @@ export class Parser {
         label: unit.label,
         conversion,
         parseLabels,
+        system: unit.system,
       });
     }
     return unitConversionSpecs;

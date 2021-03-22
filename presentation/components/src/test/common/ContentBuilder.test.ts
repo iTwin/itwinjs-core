@@ -13,7 +13,7 @@ import {
   createRandomRelationshipPath,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PrimitiveValue } from "@bentley/ui-abstract";
-import { ContentBuilder, FIELD_NAMES_SEPARATOR, getLinks } from "../../presentation-components/common/ContentBuilder";
+import { ContentBuilder, FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
 
 describe("ContentBuilder", () => {
 
@@ -138,33 +138,6 @@ describe("ContentBuilder", () => {
           faker.random.uuid(), undefined, values, displayValues, [field.name]);
         const record = ContentBuilder.createPropertyRecord(field, item);
         expect(record).to.matchSnapshot();
-      });
-
-      it("creates record with links property without onClick handler but with matcher set when display value is primitive in the item", () => {
-        const property: Property = {
-          property: {
-            classInfo: createRandomECClassInfo(),
-            name: faker.random.word(),
-            type: faker.database.type(),
-          },
-          relatedClassPath: [],
-        };
-        const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-          faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), [property]);
-        const values = {
-          [field.name]: "some value",
-        };
-        const displayValues = {
-          [field.name]: "some display value with link www.link.com",
-        };
-        const item = new Item([createRandomECInstanceKey()], faker.random.words(),
-          faker.random.uuid(), undefined, values, displayValues, [], { test: "custom value" });
-        const record = ContentBuilder.createPropertyRecord(field, item);
-        expect(record!.links).to.be.not.undefined;
-        expect(record!.links!.onClick).to.be.undefined;
-        expect(record!.links!.matcher).to.be.not.undefined;
-        expect(record!.links!.matcher).to.be.equal(getLinks);
       });
 
       it("throws on invalid primitive value", () => {
@@ -755,15 +728,4 @@ describe("ContentBuilder", () => {
 
   });
 
-});
-
-describe("getLinks", () => {
-
-  it("detects url link", () => {
-    const testLinkWithIndexes = { link: "Link: https://www.testLink.com", linkIndexes: { start: 6, end: 30 } };
-    const linkResult = getLinks(testLinkWithIndexes.link);
-    expect(linkResult.length).to.be.equal(1);
-    expect(linkResult[0].start).to.be.equal(testLinkWithIndexes.linkIndexes.start);
-    expect(linkResult[0].end).to.be.equal(testLinkWithIndexes.linkIndexes.end);
-  });
 });

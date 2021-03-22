@@ -24,11 +24,14 @@ import * as React from "react";
 import { BadgeType, FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
+  AccuDrawCommandItems,
   AccuDrawKeyboardShortcuts,
+  AccuDrawUiSettings,
   CommandItemDef,
   ConfigurableUiManager,
   ContentGroupProps,
   ContentLayoutProps,
+  FrameworkAccuDraw,
   FrontstageManager,
   KeyboardShortcutManager,
   KeyboardShortcutProps,
@@ -54,6 +57,8 @@ import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFron
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 
 // cSpell:ignore uitestapp
 
@@ -71,6 +76,8 @@ export class AppUi {
     AppUi.defineKeyboardShortcuts();
 
     AppUi.defineDynamicWidgets();
+
+    // AppUi.setAccuDrawUiSettings();
   }
 
   /** Define Frontstages
@@ -386,6 +393,14 @@ export class AppUi {
             key: "l",
             item: AccuDrawPopupTools.showHTMLElement,
           },
+          {
+            key: "n",
+            item: AppUi._bumpToolSettingToggle,
+          },
+          {
+            key: "f",
+            item: AccuDrawCommandItems.focusToolSetting,
+          },
         ],
       },
       {
@@ -397,6 +412,14 @@ export class AppUi {
     ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
 
     ConfigurableUiManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
+  }
+
+  private static get _bumpToolSettingToggle() {
+    return new CommandItemDef({
+      commandId: "bumpToolSettingToggle",
+      labelKey: "SampleApp:buttons.bumpToolSettingToggle",
+      execute: async () => IModelApp.toolAdmin.bumpToolSetting(2),  // Works with ToolWithSettings
+    });
   }
 
   private static get _showShortcutsMenuCommand() {
@@ -448,5 +471,23 @@ export class AppUi {
       },
     };
     UiFramework.widgetManager.addWidgetProvider(provider);
+  }
+
+  private static setAccuDrawUiSettings() {
+    const iconTest = "icon-placeholder";
+
+    const appSettings: AccuDrawUiSettings = {
+      xBackgroundColor: "var(--buic-background-control)",
+      xForegroundColor: "var(--buic-foreground-body)",
+      xLabel: "-X-",
+      xIcon: iconTest,
+    };
+
+    const userSettings: AccuDrawUiSettings = {
+      yBackgroundColor: ColorDef.create(ColorByName.darkBrown),
+      yLabel: "-Y-",
+    };
+
+    FrameworkAccuDraw.uiSettings = {...appSettings, ...userSettings};
   }
 }

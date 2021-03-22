@@ -168,6 +168,7 @@ export class ImageryMapTileTree extends RealityTileTree {
   }
   public cartoRectangleFromQuadId(quadId: QuadId): MapCartoRectangle { return this.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level); }
 }
+
 class ImageryTileLoader extends RealityTileLoader {
   constructor(private _imageryProvider: MapLayerImageryProvider, private _iModel: IModelConnection) {
     super();
@@ -188,8 +189,12 @@ class ImageryTileLoader extends RealityTileLoader {
   public async loadChildren(_tile: RealityTile): Promise<Tile[] | undefined> { assert(false); return undefined; }
   public async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
     const quadId = QuadId.createFromContentId(tile.contentId);
-
     return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
+  }
+
+  public getRequestChannel(_tile: Tile) {
+    // ###TODO use hostname from url - but so many layers to go through to get that...
+    return IModelApp.tileAdmin.channels.getForHttp("itwinjs-imagery");
   }
 
   public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<ImageryTileContent> {

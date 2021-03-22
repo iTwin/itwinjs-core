@@ -3,43 +3,40 @@ publish: false
 ---
 # NextVersion
 
-## GPU memory limits
+## New Settings UI Features
 
-The [RenderGraphic]($frontend)s used to represent a [Tile]($frontend)'s contents consume WebGL resources - chiefly, GPU memory. If the amount of GPU memory consumed exceeds that available, the WebGL context will be lost, causing an error dialog to be displayed and all rendering to cease. The [TileAdmin]($frontend) can now be configured with a strategy for managing the amount of GPU memory consumed and avoiding context loss. Each strategy defines a maximum amount of GPU memory permitted to be allocated to tile graphics; when that limit is exceeded, graphics for tiles that are not currently being displayed by any [Viewport]($frontend) are discarded one by one until the limit is satisfied or no more tiles remain to be discarded. Graphics are discarded in order from least-recently- to most-recently-displayed, and graphics currently being displayed will not be discarded. The available strategies are:
+### Add Settings Page to set Quantity Formatting Overrides
 
-- "default" - a "reasonable" amount of GPU memory can be consumed.
-- "aggressive" - a conservative amount of GPU memory can be consumed.
-- "relaxed" - a generous amount of GPU memory can be consumed.
-- "none" - an unbounded amount of GPU memory can be consumed - no maximum is imposed.
-
-The precise amount of memory permitted by each strategy varies based on whether or not the client is running on a mobile device; see [TileAdmin.mobileGpuMemoryLimits]($frontend) and [TileAdmin.nonMobileGpuMemoryLimits]($frontend) for precise values. The application can also specify an exact amount in number of bytes instead.
-
-The limit defaults to "default" for mobile devices and "none" for non-mobile devices. To configure the limit when calling [IModelApp.startup]($frontend), specify [TileAdmin.Props.gpuMemoryLimits]($frontend). For example:
+The [QuantityFormatSettingsPanel]($ui-framework) component has been added to the @bentley/ui-framework package to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This panel can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core). Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
 
 ```ts
-  IModelApp.startup({ tileAdmin: TileAdmin.create({ gpuMemoryLimits: "aggressive" }) });
+// Sample settings provider that dynamically adds settings into the setting stage
+export class AppSettingsProvider implements SettingsProvider {
+  public readonly id = "AppSettingsProvider";
+
+  public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
+    return [
+      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
+    ];
+  }
+
+  public static initializeAppSettingProvider() {
+    UiFramework.settingsManager.addSettingsProvider(new AppSettingsProvider());
+  }
+}
+
 ```
 
-Separate limits for mobile and non-mobile devices can be specified at startup if desired; the appropriate limit will be selected based on the type of device the client is running on:
+The `QuantityFormatSettingsPanel` is marked as alpha in this release and is subject to minor modifications in future releases.
 
-```ts
-  IModelApp.startup({ tileAdmin: TileAdmin.create({
-    gpuMemoryLimits: {
-      mobile: "default",
-      nonMobile: "relaxed",
-    }),
-  });
-```
+## @bentley/imodeljs-quantity package
 
-To adjust the limit after startup, assign to [TileAdmin.gpuMemoryLimit]($frontend).
+The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
 
-This feature replaces the `@alpha` `TileAdmin.Props.mobileExpirationMemoryThreshold` option.
+## Breaking Api Changes
 
-## Common table expression support in ECSQL
+### @bentley/imodeljs-quantity package
 
-CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
+#### UnitProps property name change
 
-## Breaking API change in quantity package
-
-The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
-New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.
+The interface [UnitProps]($quantity) property `unitFamily` has been renamed to `phenomenon` to be consistent with naming in `ecschema-metadata` package.

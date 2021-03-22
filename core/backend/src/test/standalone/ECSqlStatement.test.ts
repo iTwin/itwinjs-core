@@ -57,6 +57,7 @@ describe("ECSqlStatement", () => {
       const r = await ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
         return stmt.stepForInsert();
       });
+      ecdb.saveChanges();
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       assert.equal(r.id, "0x1");
     });
@@ -198,7 +199,7 @@ describe("ECSqlStatement", () => {
       let successful = 0;
       let rowCount = 0;
       const cb = async () => {
-        return new Promise(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
           try {
             for await (const _row of ecdb.restartQuery("tag", "SELECT * FROM ts.Foo")) {
               rowCount++;
@@ -1706,6 +1707,7 @@ describe("ECSqlStatement", () => {
         });
 
     } finally {
+      iModel.saveChanges();
       iModel.close();
     }
   });
@@ -1727,7 +1729,7 @@ describe("ECSqlStatement", () => {
         assert.isDefined(res.id);
         return res.id!;
       });
-
+      ecdb.saveChanges();
       ecdb.withPreparedStatement("SELECT Range FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1754,6 +1756,7 @@ describe("ECSqlStatement", () => {
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
           assert.isDefined(r.id);
           assert.equal(r.id!, expectedId);
+          ecdb.saveChanges();
 
           ecdb.withPreparedStatement(`SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`, (confstmt: ECSqlStatement) => {
             assert.equal(confstmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2456,6 +2459,7 @@ describe("ECSqlStatement", () => {
         return res.id!;
       });
 
+      ecdb.saveChanges();
       ecdb.withPreparedStatement("SELECT I, HexStr(I) hex FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2787,6 +2791,7 @@ describe("ECSqlStatement", () => {
         assert.isTrue(nativesql.startsWith("INSERT INTO [ts_Foo]"));
         return stmt.stepForInsert();
       });
+      ecdb.saveChanges();
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       assert.equal(r.id, "0x1");
     });

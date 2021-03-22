@@ -13,7 +13,6 @@ import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
 } from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { TestUtils } from "../../TestUtils";
-import { FlatGridTestUtils } from "../component/internal/flat-items/FlatGridTestUtils";
 
 describe("FilteringDataProvider", () => {
   let dataProvider: IPropertyDataProvider;
@@ -308,8 +307,6 @@ describe("FilteringDataProvider", () => {
       const filteringProvider = new FilteringPropertyDataProvider(dataProvider, mockFilterer.object);
 
       const filteredData = await filteringProvider.getData();
-
-      FlatGridTestUtils.removeParentsFromCategories(filteredData.categories);
 
       expect(filteredData.label).to.deep.equal(expectedFilteredData.label);
       expect(filteredData.description).to.equal(expectedFilteredData.description);
