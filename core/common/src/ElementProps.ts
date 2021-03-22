@@ -384,11 +384,13 @@ export interface ExternalSourceProps extends ElementProps {
   connectorVersion?: string;
 }
 
-/** The role that an attached ExternalSource plays, e.g. to specify context or a part-of-a-whole.
+/** The role that an attached [ExternalSource]($backend) plays.
  * @beta
  */
 export enum ExternalSourceAttachmentRole {
+  /** The attached [ExternalSource]($backend) provides context. */
   SpecifyContext = 0,
+  /** The attached [ExternalSource]($backend) models a part of the whole. */
   SpecifyPart = 1,
 }
 
