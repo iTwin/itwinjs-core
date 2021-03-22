@@ -10,7 +10,7 @@ import "./ModelsTree.scss";
 import * as React from "react";
 import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { NodeKey, Ruleset } from "@bentley/presentation-common";
-import { IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, useHierarchyAutoUpdate, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
+import { IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { ControlledTree, SelectionMode, TreeNodeItem, useVisibleTreeNodes } from "@bentley/ui-components";
 import { useDisposable, useOptionalDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
@@ -96,53 +96,22 @@ export interface ModelsTreeProps {
  * @public
  */
 export function ModelsTree(props: ModelsTreeProps) {
-  const showGroupingNodesWithChildCount = props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts;
-  const { nodeLoader, updateTreeModelSource } = usePresentationTreeNodeLoader({
-    imodel: props.iModel,
-    dataProvider: props.dataProvider,
-    ruleset: (!props.enableElementsClassGrouping) ? RULESET_MODELS : /* istanbul ignore next */ RULESET_MODELS_GROUPED_BY_CLASS,
-    appendChildrenCountForGroupingNodes: showGroupingNodesWithChildCount,
-    pagingSize: PAGING_SIZE,
-  });
-  const { nodeLoader: searchNodeLoader, updateTreeModelSource: updateSearchTreeModelSource } = usePresentationTreeNodeLoader({
-    imodel: props.iModel,
-    dataProvider: props.dataProvider,
-    ruleset: RULESET_MODELS_SEARCH,
-    pagingSize: PAGING_SIZE,
-    preloadingEnabled: props.enablePreloading,
-  });
-
-  const nodeLoaderInUse = props.filterInfo?.filter ? searchNodeLoader : nodeLoader;
-  const { filteredNodeLoader, isFiltering, nodeHighlightingProps } = useVisibilityTreeFiltering(nodeLoaderInUse, props.filterInfo, props.onFilterApplied);
-  const filterApplied = filteredNodeLoader !== nodeLoaderInUse;
+  const { nodeLoader, onItemsRendered } = useModelsTreeNodeLoader(props);
+  const { filteredNodeLoader, isFiltering, nodeHighlightingProps } = useVisibilityTreeFiltering(nodeLoader, props.filterInfo, props.onFilterApplied);
+  const filterApplied = filteredNodeLoader !== nodeLoader;
 
   const { activeView, modelsVisibilityHandler, selectionPredicate } = props;
   const nodeSelectionPredicate = React.useCallback((key: NodeKey, node: TreeNodeItem) => {
     return !selectionPredicate ? true : selectionPredicate(key, ModelsVisibilityHandler.getNodeType(node, nodeLoader.dataProvider));
   }, [selectionPredicate, nodeLoader.dataProvider]);
 
-  const visibilityHandler = useVisibilityHandler(nodeLoaderInUse.dataProvider.rulesetId, activeView, modelsVisibilityHandler, getFilteredDataProvider(filteredNodeLoader.dataProvider));
+  const visibilityHandler = useVisibilityHandler(nodeLoader.dataProvider.rulesetId, activeView, modelsVisibilityHandler, getFilteredDataProvider(filteredNodeLoader.dataProvider));
   const eventHandler = useDisposable(React.useCallback(() => new VisibilityTreeEventHandler({
     nodeLoader: filteredNodeLoader,
     visibilityHandler,
     collapsedChildrenDisposalEnabled: true,
     selectionPredicate: nodeSelectionPredicate,
   }), [filteredNodeLoader, visibilityHandler, nodeSelectionPredicate]));
-
-  useHierarchyAutoUpdate({
-    enable: props.enableHierarchyAutoUpdate ?? false,
-    nodeLoader,
-    eventHandler,
-    updateTreeModelSource,
-    appendChildrenCountForGroupingNodes: showGroupingNodesWithChildCount,
-  });
-  useHierarchyAutoUpdate({
-    enable: props.enableHierarchyAutoUpdate ?? false,
-    nodeLoader: searchNodeLoader,
-    eventHandler,
-    updateTreeModelSource: updateSearchTreeModelSource,
-    appendChildrenCountForGroupingNodes: false,
-  });
 
   const visibleNodes = useVisibleTreeNodes(filteredNodeLoader.modelSource);
   const treeRenderer = useVisibilityTreeRenderer(true, false);
@@ -167,6 +136,7 @@ export function ModelsTree(props: ModelsTreeProps) {
         treeRenderer={treeRenderer}
         nodeHighlightingProps={nodeHighlightingProps}
         noDataRenderer={filterApplied ? noFilteredDataRenderer : undefined}
+        onItemsRendered={onItemsRendered}
       />
       {overlay}
     </div>
@@ -179,6 +149,30 @@ export function ModelsTree(props: ModelsTreeProps) {
  * @alpha
  */
 export const IModelConnectedModelsTree = connectIModelConnection(null, null)(ModelsTree); // eslint-disable-line @typescript-eslint/naming-convention
+
+function useModelsTreeNodeLoader(props: ModelsTreeProps) {
+  const { nodeLoader, onItemsRendered } = usePresentationTreeNodeLoader({
+    imodel: props.iModel,
+    dataProvider: props.dataProvider,
+    ruleset: (!props.enableElementsClassGrouping) ? RULESET_MODELS : /* istanbul ignore next */ RULESET_MODELS_GROUPED_BY_CLASS,
+    appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
+    pagingSize: PAGING_SIZE,
+    enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
+  });
+  const { nodeLoader: searchNodeLoader, onItemsRendered: onSeachItemsRendered } = usePresentationTreeNodeLoader({
+    imodel: props.iModel,
+    dataProvider: props.dataProvider,
+    ruleset: RULESET_MODELS_SEARCH,
+    pagingSize: PAGING_SIZE,
+    preloadingEnabled: props.enablePreloading,
+    enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
+  });
+
+  return {
+    nodeLoader: props.filterInfo?.filter ? searchNodeLoader : nodeLoader,
+    onItemsRendered: props.filterInfo?.filter ? onSeachItemsRendered : onItemsRendered,
+  };
+}
 
 const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibilityHandler?: ModelsVisibilityHandler, filteredDataProvider?: IFilteredPresentationTreeDataProvider) => {
   const defaultVisibilityHandler = useOptionalDisposable(React.useCallback(() => {
