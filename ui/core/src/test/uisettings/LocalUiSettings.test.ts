@@ -13,6 +13,10 @@ describe("LocalUiSettings", () => {
     const initialLocalUiSettings = new LocalUiSettings(); // eslint-disable-line deprecation/deprecation
     expect(initialLocalUiSettings).to.not.be.undefined;
   });
+  it("default LocalSettingsStorage constructor executes successfully", () => {
+    const initialLocalUiSettings = new LocalSettingsStorage(); // eslint-disable-line deprecation/deprecation
+    expect(initialLocalUiSettings).to.not.be.undefined;
+  });
   describe("saveSetting", () => {
     const localUiSettings = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
     it("Should save setting correctly", async () => {

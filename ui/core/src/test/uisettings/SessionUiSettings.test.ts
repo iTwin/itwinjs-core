@@ -12,6 +12,10 @@ describe("SessionUiSettings", () => {
     const initialSessionUiSettings = new SessionUiSettings(); // eslint-disable-line deprecation/deprecation
     expect(initialSessionUiSettings).to.not.be.undefined;
   });
+  it("default SessionSettingsStorage constructor executes successfully", () => {
+    const initialSessionUiSettings = new SessionSettingsStorage(); // eslint-disable-line deprecation/deprecation
+    expect(initialSessionUiSettings).to.not.be.undefined;
+  });
   describe("saveSetting", () => {
     const sessionSettings = new SessionSettingsStorage({ sessionStorage: storageMock() } as Window);
     it("Should save setting correctly", async () => {

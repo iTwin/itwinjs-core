@@ -41,15 +41,14 @@ export class UiSetting<T> {
   public async getSettingAndApplyValue(storage: UiSettingsStorage): Promise<UiSettingsResult> {
     if (this.applyValue) {
       const result = await this.getSetting(storage);
-      if (result !== undefined){
-        if (result.status === UiSettingsStatus.Success) {
-          this.applyValue(result.setting);
-        } else if (undefined !== this.defaultValue) {
-          this.applyValue(this.defaultValue);
-          result.status = UiSettingsStatus.Success;
-        }
-        return result;
+      if (result.status === UiSettingsStatus.Success) {
+        this.applyValue(result.setting);
+      } else if (undefined !== this.defaultValue) {
+        this.applyValue(this.defaultValue);
+        result.setting = this.defaultValue;
+        result.status = UiSettingsStatus.Success;
       }
+      return result;
     }
     return { status: UiSettingsStatus.Uninitialized };
   }

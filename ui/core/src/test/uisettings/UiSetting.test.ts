@@ -29,19 +29,6 @@ describe("UiSetting", () => {
     });
   });
 
-  describe("getSetting", async () => {
-    const localUiSettings = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
-    const uiSetting = new UiSetting<string>("Namespace", "Setting", getString);
-    await uiSetting.saveSetting(localUiSettings);
-
-    it("Should load setting correctly", async () => {
-      const result = await uiSetting.getSetting(localUiSettings);
-      expect(result.status).to.equal(UiSettingsStatus.Success);
-      expect(result.setting).to.not.be.null;
-      expect(result.setting).to.equal(getString());
-    });
-  });
-
   describe("deleteSetting", async () => {
     const localUiSettings = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
     const uiSetting = new UiSetting<string>("Namespace", "Setting", getString);
@@ -77,6 +64,16 @@ describe("UiSetting", () => {
       const uiSetting2 = new UiSetting<number>("Namespace", "XYZ", getNumber);
       const result = await uiSetting2.getSettingAndApplyValue(localUiSettings);
       expect(result.status).to.eq(UiSettingsStatus.Uninitialized);
+    });
+
+    it("Should use default value if no applyValue", async () => {
+      const defaultValue = 999;
+      // make sure testing with a new key not yet in mock storage
+      const uiSetting2 = new UiSetting<number>("Namespace", "TEST-XYZ", getNumber, applyNumber, defaultValue);
+      const result = await uiSetting2.getSettingAndApplyValue(localUiSettings);
+      expect(result.status).to.eq(UiSettingsStatus.Success);
+      expect(result.setting).to.eq(defaultValue);
+      expect(value).to.eq(defaultValue);
     });
 
     it("Should return NotFound if not saved", async () => {
