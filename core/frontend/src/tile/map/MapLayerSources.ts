@@ -33,7 +33,7 @@ export class MapLayerSource implements MapLayerProps {
 
   private constructor(public formatId: string, public name: string, public url: string, public baseMap = false, public transparentBackground?: boolean, public maxZoom?: number, public userName?: string, public password?: string) { }
   public static fromJSON(json: any): MapLayerSource | undefined {
-    const baseMap = json.baseMap === true || (json.url && json.url.toLowerCase().indexOf("basemap") >= 0);
+    const baseMap = json.baseMap === true;
     return (typeof json.name === "string" && typeof json.url === "string" && typeof json.formatId === "string") ? new MapLayerSource(json.formatId, json.name, json.url, baseMap, json.transparentBackground === undefined ? true : json.transparentBackground, json.maxZoom, json.userName, json.password) : undefined;
   }
 
@@ -74,6 +74,8 @@ export class MapLayerSource implements MapLayerProps {
 export class MapLayerSources {
   private static _instance?: MapLayerSources;
   private constructor(private _sources: MapLayerSource[]) { }
+
+  public static getInstance() {return MapLayerSources._instance;}
 
   public findByName(name: string, baseMap: boolean = false): MapLayerSource | undefined {
     const nameTest = name.toLowerCase();
@@ -209,5 +211,18 @@ export class MapLayerSources {
     MapLayerSources._instance._sources.push(mapLayerSource);
     MapLayerSources._instance._sources.sort((a: MapLayerSource, b: MapLayerSource) => compareStrings(a.name.toLowerCase(), b.name.toLowerCase()));
     return MapLayerSources._instance;
+  }
+
+  public static removeLayerByName(name: string): boolean {
+    if (!MapLayerSources._instance) {
+      return false;
+    }
+
+    // For now we only rely on the name
+    const lengthBeforeRemove = MapLayerSources._instance._sources.length;
+    MapLayerSources._instance._sources = MapLayerSources._instance._sources.filter((source) => {
+      return (source.name !== name);
+    });
+    return (lengthBeforeRemove !== MapLayerSources._instance._sources.length);
   }
 }

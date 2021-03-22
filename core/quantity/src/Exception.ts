@@ -2,12 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
 
 import { BentleyError } from "@bentley/bentleyjs-core";
 
 /**
  * Status codes used during Quantity parsing and formatting processing.
- * @alpha
+ * @beta
  */
 export enum QuantityStatus {
   QUANTITY_ERROR_BASE = 0x88DF,
@@ -22,7 +25,7 @@ export enum QuantityStatus {
 }
 
 /** The error type thrown by this module. See [[QuantityStatus]] for `errorNumber` values.
- * @alpha
+ * @beta
  */
 export class QuantityError extends BentleyError {
   public constructor(public readonly errorNumber: number, message?: string) {

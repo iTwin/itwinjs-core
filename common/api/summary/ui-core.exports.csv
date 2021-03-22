@@ -226,7 +226,7 @@ public;Select: (props: SelectProps) => JSX.Element | null
 public;SelectOption
 public;SelectProps 
 beta;SessionUiSettings 
-beta;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager }: SettingsContainerProps) => JSX.Element
+beta;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element
 beta;SettingsContainerProps
 beta;SettingsManager
 beta;SettingsProvider
