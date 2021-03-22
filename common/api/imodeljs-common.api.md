@@ -468,67 +468,41 @@ export { BentleyStatus }
 
 // @public
 export enum BisCodeSpec {
-    // (undocumented)
+    // @internal (undocumented)
     annotationFrameStyle = "bis:AnnotationFrameStyle",
-    // (undocumented)
+    // @internal (undocumented)
     annotationLeaderStyle = "bis:AnnotationLeaderStyle",
-    // (undocumented)
+    // @internal (undocumented)
     annotationTextStyle = "bis:AnnotationTextStyle",
-    // (undocumented)
     auxCoordSystem2d = "bis:AuxCoordSystem2d",
-    // (undocumented)
     auxCoordSystem3d = "bis:AuxCoordSystem3d",
-    // (undocumented)
     auxCoordSystemSpatial = "bis:AuxCoordSystemSpatial",
-    // (undocumented)
     categorySelector = "bis:CategorySelector",
-    // (undocumented)
+    // @internal (undocumented)
     colorBook = "bis:ColorBook",
-    // (undocumented)
     displayStyle = "bis:DisplayStyle",
-    // (undocumented)
     drawing = "bis:Drawing",
-    // (undocumented)
     drawingCategory = "bis:DrawingCategory",
-    // (undocumented)
     geometryPart = "bis:GeometryPart",
-    // (undocumented)
     graphicalType2d = "bis:GraphicalType2d",
-    // (undocumented)
     informationPartitionElement = "bis:InformationPartitionElement",
-    // (undocumented)
     lineStyle = "bis:LineStyle",
-    // (undocumented)
     linkElement = "bis:LinkElement",
-    // (undocumented)
     modelSelector = "bis:ModelSelector",
-    // (undocumented)
     nullCodeSpec = "bis:NullCodeSpec",
-    // (undocumented)
     physicalMaterial = "bis:PhysicalMaterial",
-    // (undocumented)
     physicalType = "bis:PhysicalType",
-    // (undocumented)
     renderMaterial = "bis:RenderMaterial",
-    // (undocumented)
     sheet = "bis:Sheet",
-    // (undocumented)
     spatialCategory = "bis:SpatialCategory",
-    // (undocumented)
     spatialLocationType = "bis:SpatialLocationType",
-    // (undocumented)
     subCategory = "bis:SubCategory",
-    // (undocumented)
     subject = "bis:Subject",
-    // (undocumented)
     templateRecipe2d = "bis:TemplateRecipe2d",
-    // (undocumented)
     templateRecipe3d = "bis:TemplateRecipe3d",
-    // (undocumented)
+    // @internal (undocumented)
     textAnnotationSeed = "bis:TextAnnotationSeed",
-    // (undocumented)
     texture = "bis:Texture",
-    // (undocumented)
     viewDefinition = "bis:ViewDefinition"
 }
 
@@ -2110,47 +2084,6 @@ export class EdgeArgs {
     get isValid(): boolean;
     // (undocumented)
     get numEdges(): number;
-}
-
-// @alpha @deprecated
-export abstract class Editor3dRpcInterface extends RpcInterface {
-    // (undocumented)
-    applyTransform(_tokenProps: IModelRpcProps, _editorId: GuidString, _tprops: TransformProps): Promise<any>;
-    // (undocumented)
-    createElement(_tokenProps: IModelRpcProps, _editorId: GuidString, _props: GeometricElement3dProps, _origin?: Point3d, _angles?: YawPitchRollAngles, _geometry?: any): Promise<void>;
-    // (undocumented)
-    end(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    static getClient(): Editor3dRpcInterface;
-    static readonly interfaceName = "Editor3dRpcInterface";
-    static interfaceVersion: string;
-    // (undocumented)
-    popState(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    pushState(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    start(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    startModifyingElements(_tokenProps: IModelRpcProps, _editorId: GuidString, _elementIds: Id64Array): Promise<void>;
-    // (undocumented)
-    writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, _editorId: GuidString, _opts: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void>;
-}
-
-// @alpha (undocumented)
-export interface Editor3dRpcInterfaceWriteOptions {
-    returnPropsOptions?: Editor3dRpcInterfaceWriteReturnPropsOptions;
-    returnType?: Editor3dRpcInterfaceWriteReturnType;
-}
-
-// @alpha (undocumented)
-export interface Editor3dRpcInterfaceWriteReturnPropsOptions {
-    geometry?: boolean;
-}
-
-// @alpha (undocumented)
-export enum Editor3dRpcInterfaceWriteReturnType {
-    Ids = 1,
-    None = 0,
-    Props = 2
 }
 
 // @public
@@ -5510,8 +5443,10 @@ export class QParams2d {
     // (undocumented)
     copyFrom(src: QParams2d): void;
     static fromNormalizedRange(rangeScale?: number): QParams2d;
+    static fromOriginAndScale(ox: number, oy: number, sx: number, sy: number): QParams2d;
     static fromRange(range: Range2d, out?: QParams2d, rangeScale?: number): QParams2d;
     static fromZeroToOne(rangeScale?: number): QParams2d;
+    isQuantizable(point: Point2d): boolean;
     // (undocumented)
     readonly origin: Point2d;
     // (undocumented)
@@ -5519,6 +5454,7 @@ export class QParams2d {
     // (undocumented)
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
+    unquantize(x: number, y: number, out?: Point2d): Point2d;
 }
 
 // @internal
@@ -5531,6 +5467,7 @@ export class QParams3d {
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
     static fromRange(range: Range3d, out?: QParams3d, rangeScale?: number): QParams3d;
     static fromZeroToOne(rangeScale?: number): QParams3d;
+    isQuantizable(point: Point3d): boolean;
     // (undocumented)
     readonly origin: Point3d;
     // (undocumented)
@@ -5539,6 +5476,7 @@ export class QParams3d {
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
     setFromRange(range: Range3d, rangeScale?: number): void;
+    unquantize(x: number, y: number, z: number, out?: Point3d): Point3d;
 }
 
 // @internal

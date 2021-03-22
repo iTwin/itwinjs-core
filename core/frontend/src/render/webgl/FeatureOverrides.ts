@@ -68,8 +68,6 @@ export class FeatureOverrides implements WebGLDisposable {
   private _hiliteSyncObserver: SyncObserver = {};
   private _anyOverridden = true;
   private _allHidden = true;
-  private _allTranslucent = false;
-  private _allOpaque = false;
   private _anyTranslucent = true;
   private _anyOpaque = true;
   private _anyHilited = true;
@@ -79,9 +77,7 @@ export class FeatureOverrides implements WebGLDisposable {
   public get anyOverridden() { return this._anyOverridden; }
   public get allHidden() { return this._allHidden; }
   public get anyTranslucent() { return this._anyTranslucent; }
-  public get allTranslucent() { return this._allTranslucent; }
   public get anyOpaque() { return this._anyOpaque; }
-  public get allOpaque() { return this._allOpaque; }
   public get anyHilited() { return this._anyHilited; }
 
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
@@ -145,8 +141,6 @@ export class FeatureOverrides implements WebGLDisposable {
     this._anyOpaque = this._anyTranslucent = this._anyHilited = false;
 
     let nHidden = 0;
-    let nTranslucent = 0;
-    let nOpaque = 0;
     let nOverridden = 0;
 
     // NB: We currently use 2 RGBA values per feature as follows:
@@ -209,13 +203,10 @@ export class FeatureOverrides implements WebGLDisposable {
           alpha = 0xff;
 
         data.setByteAtIndex(dataIndex + 7, alpha);
-        if (0xff === alpha) {
+        if (0xff === alpha)
           this._anyOpaque = true;
-          nOpaque++;
-        } else {
+        else
           this._anyTranslucent = true;
-          nTranslucent++;
-        }
       }
 
       if (app.overridesWeight && app.weight) {
@@ -244,8 +235,6 @@ export class FeatureOverrides implements WebGLDisposable {
     }
 
     this._allHidden = (nHidden === map.numFeatures);
-    this._allTranslucent = (nTranslucent === map.numFeatures);
-    this._allOpaque = (nOpaque === map.numFeatures);
     this._anyOverridden = (nOverridden > 0);
 
     this.updateUniformSymbologyFlags();
