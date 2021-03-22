@@ -659,6 +659,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "mkdirp",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "mobx",
       "allowedCategories": [ "internal" ]
     },

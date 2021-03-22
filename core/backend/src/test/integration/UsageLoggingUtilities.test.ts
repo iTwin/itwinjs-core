@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
+import * as os from "os";
 import { Config, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getTestAccessToken, TestBrowserAuthorizationClientConfiguration, TestUsers } from "@bentley/oidc-signin-tool";
 import { TelemetryEvent } from "@bentley/telemetry-client";
-import { assert } from "chai";
-import * as os from "os";
 import { AuthorizedBackendRequestContext, IModelJsNative } from "../../imodeljs-backend";
 import { UsageLoggingUtilities } from "../../usage-logging/UsageLoggingUtilities";
-import { IModelTestUtils } from "../IModelTestUtils";
 
 // Configuration needed
 //    imjs_test_regular_user_name
@@ -19,13 +18,12 @@ import { IModelTestUtils } from "../IModelTestUtils";
 //    imjs_oidc_ulas_test_redirect_uri
 //    imjs_oidc_ulas_test_scopes
 
-describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
+describe.skip("UsageLoggingUtilities - OIDC Token (#integration)", () => {
   const imodelJsProductId = 2686;
   let requestContext: AuthorizedBackendRequestContext;
   const defaultAuthType = IModelJsNative.AuthType.OIDC;
 
   before(async () => {
-    IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
     const oidcConfig: TestBrowserAuthorizationClientConfiguration = {
@@ -35,10 +33,6 @@ describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
     };
     const accessToken = await getTestAccessToken(oidcConfig, TestUsers.regular);
     requestContext = new AuthorizedBackendRequestContext(accessToken);
-  });
-
-  after(async () => {
-    IModelTestUtils.resetDebugLogLevels();
   });
 
   it("Check Entitlements (#integration)", async () => {

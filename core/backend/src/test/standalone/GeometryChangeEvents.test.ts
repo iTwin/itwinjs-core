@@ -9,10 +9,9 @@ import {
   Code, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import {
-  IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
+  IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IpcHost } from "../../IpcHost";
 
 describe("Model geometry changes", () => {
   let imodel: StandaloneDb;
@@ -21,9 +20,6 @@ describe("Model geometry changes", () => {
   let lastChanges: ModelGeometryChangesProps[] | undefined;
 
   before(async () => {
-    await IModelHost.shutdown();
-    await IModelHost.startup();
-
     const testFileName = IModelTestUtils.prepareOutputFile("ModelGeometryTracking", "ModelGeometryTracking.bim");
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     IModelJsFs.copySync(seedFileName, testFileName);
@@ -41,9 +37,6 @@ describe("Model geometry changes", () => {
   after(async () => {
     imodel.nativeDb.setGeometricModelTrackingEnabled(false);
     imodel.close();
-
-    await IpcHost.shutdown();
-    await IModelHost.startup();
   });
 
   interface GeometricModelChange {
