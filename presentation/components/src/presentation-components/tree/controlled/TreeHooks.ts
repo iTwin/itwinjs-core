@@ -14,7 +14,7 @@ import {
 } from "@bentley/presentation-common";
 import { IModelHierarchyChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import {
-  isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedTreeItems, Subscription, TreeModel,
+  isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange, Subscription, TreeModel,
   TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, TreeNodeItemData, usePagedTreeNodeLoader, VisibleTreeNodes,
 } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
@@ -133,8 +133,8 @@ interface ModelSourceUpdateProps {
 function useModelSourceUpdateOnIModelHierarchyUpdate(props: ModelSourceUpdateProps) {
   const { modelSource, dataProvider, rerenderWithTreeModel } = props;
   useExpandedNodesTracking({ modelSource, dataProvider, enableNodesTracking: !!props.enable });
-  const renderedItems = useRef<RenderedTreeItems | undefined>(undefined);
-  const onItemsRendered = useCallback((items: RenderedTreeItems) => {
+  const renderedItems = useRef<RenderedItemsRange | undefined>(undefined);
+  const onItemsRendered = useCallback((items: RenderedItemsRange) => {
     renderedItems.current = items;
   }, []);
 
@@ -321,7 +321,7 @@ async function updateModelSourceAfterIModelChange(
   hierarchyUpdateRecords: HierarchyUpdateRecord[],
   dataProvider: IPresentationTreeDataProvider,
   treeNodeItemCreationProps: CreateTreeNodeItemProps,
-  renderedItems?: RenderedTreeItems,
+  renderedItems?: RenderedItemsRange,
 ) {
   const modelWithUpdateRecords = applyHierarchyChanges(modelSource.getModel() as MutableTreeModel, hierarchyUpdateRecords, [], treeNodeItemCreationProps);
   if (modelWithUpdateRecords === modelSource.getModel())
@@ -422,12 +422,12 @@ function createModelNodeInput(oldNode: MutableTreeModelNode | undefined, newNode
 /** @internal */
 export async function reloadVisibleHierarchyParts(
   visibleNodes: VisibleTreeNodes,
-  renderedItems: RenderedTreeItems,
+  renderedItems: RenderedItemsRange,
   dataProvider: IPresentationTreeDataProvider,
 ) {
-  const adjustedRenderedItems = getAdjustedRenderedTreeItems(renderedItems, visibleNodes);
+  const itemsRange = getItemsRange(renderedItems, visibleNodes);
   const partsToReload = new Map<string | undefined, { parentItem: TreeNodeItem | undefined, startIndex: number, endIndex: number }>();
-  for (let i = adjustedRenderedItems.startIndex; i <= adjustedRenderedItems.endIndex; i++) {
+  for (let i = itemsRange.startIndex; i <= itemsRange.endIndex; i++) {
     const node = visibleNodes.getAtIndex(i);
     if (!node || !isTreeModelNodePlaceholder(node))
       continue;
@@ -462,11 +462,11 @@ export async function reloadVisibleHierarchyParts(
   return reloadedHierarchyParts;
 }
 
-function getAdjustedRenderedTreeItems(renderedNodes: RenderedTreeItems, visibleNodes: VisibleTreeNodes): RenderedTreeItems {
-  if (renderedNodes.endIndex < visibleNodes.getNumNodes())
-    return renderedNodes;
+function getItemsRange(renderedNodes: RenderedItemsRange, visibleNodes: VisibleTreeNodes) {
+  if (renderedNodes.visibleStopIndex < visibleNodes.getNumNodes())
+    return { startIndex: renderedNodes.visibleStartIndex, endIndex: renderedNodes.visibleStopIndex };
 
-  const visibleNodesCount = renderedNodes.endIndex - renderedNodes.startIndex;
+  const visibleNodesCount = renderedNodes.visibleStopIndex - renderedNodes.visibleStartIndex;
   const endPosition = visibleNodes.getNumNodes() - 1;
   const startPosition = endPosition - visibleNodesCount;
   return {

@@ -352,7 +352,7 @@ describe("usePresentationNodeLoader", () => {
         { initialProps },
       );
       const oldNodeLoader = result.current.nodeLoader;
-      result.current.onItemsRendered({ startIndex: 0, endIndex: 1 });
+      result.current.onItemsRendered({ overscanStartIndex: 0, overscanStopIndex: 1, visibleStartIndex: 0, visibleStopIndex: 1 });
 
       presentationManagerMock.setup(async (x) => x.getNodesAndCount(
         moq.It.is(({ paging, parentKey }) => paging?.start === 0 && paging.size === 1 && !parentKey))
@@ -1018,13 +1018,13 @@ describe("reloadVisibleHierarchyParts", () => {
 
   it("does not load nodes if they are already loaded", async () => {
     const visibleNodes = createVisibleNodes(2, [{ label: "root1", position: 0 }, { label: "root2", position: 1 }]);
-    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 1 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { overscanStartIndex: 0, overscanStopIndex: 1, visibleStartIndex: 0, visibleStopIndex: 1 }, dataProviderMock.object);
     dataProviderMock.verify(async (x) => x.getNodes(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
   });
 
   it("does not load nodes if there are no visible nodes", async () => {
     const visibleNodes = createVisibleNodes(0, []);
-    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 4 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { overscanStartIndex: 0, overscanStopIndex: 4, visibleStartIndex: 0, visibleStopIndex: 4 }, dataProviderMock.object);
     dataProviderMock.verify(async (x) => x.getNodes(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
   });
 
@@ -1033,7 +1033,7 @@ describe("reloadVisibleHierarchyParts", () => {
     dataProviderMock.setup(async (x) => x.getNodes(undefined, moq.It.isObjectWith({ start: 0, size: 4 })))
       .returns(async () => [])
       .verifiable(moq.Times.once());
-    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 3 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { overscanStartIndex: 0, overscanStopIndex: 3, visibleStartIndex: 0, visibleStopIndex: 3 }, dataProviderMock.object);
     dataProviderMock.verifyAll();
   });
 
@@ -1042,7 +1042,7 @@ describe("reloadVisibleHierarchyParts", () => {
     dataProviderMock.setup(async (x) => x.getNodes(moq.It.is((item) => item !== undefined && item.id === "root2"), moq.It.isObjectWith({ start: 0, size: 3 })))
       .returns(async () => [])
       .verifiable(moq.Times.once());
-    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 5 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { overscanStartIndex: 0, overscanStopIndex: 5, visibleStartIndex: 0, visibleStopIndex: 5 }, dataProviderMock.object);
     dataProviderMock.verifyAll();
   });
 
@@ -1051,7 +1051,7 @@ describe("reloadVisibleHierarchyParts", () => {
     dataProviderMock.setup(async (x) => x.getNodes(undefined, moq.It.isObjectWith({ start: 0, size: 1 })))
       .returns(async () => [])
       .verifiable(moq.Times.once());
-    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 0, endIndex: 4 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { overscanStartIndex: 0, overscanStopIndex: 4, visibleStartIndex: 0, visibleStopIndex: 4 }, dataProviderMock.object);
     dataProviderMock.verifyAll();
   });
 
@@ -1060,7 +1060,7 @@ describe("reloadVisibleHierarchyParts", () => {
     dataProviderMock.setup(async (x) => x.getNodes(undefined, moq.It.isObjectWith({ start: 0, size: 3 })))
       .returns(async () => [])
       .verifiable(moq.Times.once());
-    await reloadVisibleHierarchyParts(visibleNodes, { startIndex: 1, endIndex: 3 }, dataProviderMock.object);
+    await reloadVisibleHierarchyParts(visibleNodes, { overscanStartIndex: 1, overscanStopIndex: 3, visibleStartIndex: 1, visibleStopIndex: 3 }, dataProviderMock.object);
     dataProviderMock.verifyAll();
   });
 });
