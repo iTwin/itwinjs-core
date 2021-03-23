@@ -7081,7 +7081,7 @@ export type SubLayerId = string | number;
 // @beta
 export interface SynchronizationConfigLinkProps extends UrlLinkProps {
     // (undocumented)
-    lastSuccessfulRun?: Date;
+    lastSuccessfulRun?: string;
 }
 
 // @public
