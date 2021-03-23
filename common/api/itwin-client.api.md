@@ -149,6 +149,11 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
 }
 
 // @internal
+export class DownloadError extends BentleyError {
+    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+}
+
+// @internal
 export class DownloadFailed extends BentleyError {
     constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
 }
@@ -419,6 +424,11 @@ export class SasUrlExpired extends BentleyError {
 
 // @internal
 export function TokenPrefix(prefix: string): (constructor: any) => void;
+
+// @internal
+export class UploadError extends BentleyError {
+    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+}
 
 // @internal
 export class UrlDiscoveryClient extends Client {
