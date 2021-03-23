@@ -16,6 +16,7 @@ import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@be
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
+import { ElectronWindowState } from "./ElectronWindowState";
 
 // cSpell:ignore signin devserver webcontents copyfile
 
@@ -74,6 +75,7 @@ export class ElectronHost {
   private static _electron: typeof Electron;
   private static _electronFrontend = "electron://frontend/";
   private static _mainWindow?: BrowserWindow;
+  private static _mainWindowState?: ElectronWindowState;
   public static webResourcesPath: string;
   public static appIconPath: string;
   public static frontendURL: string;
@@ -137,6 +139,21 @@ export class ElectronHost {
 
   /** The "main" BrowserWindow for this application. */
   public static get mainWindow() { return this._mainWindow; }
+
+  /** The Electron BrowserWindow window state. */
+  public static get mainWindowState() { return this._mainWindowState; }
+
+  /** Initialize the Electron BrowserWindow window state.
+   * @param storageName       Name used for NativeAppStorage when saving size, position and maximized state
+   * @param defaultWidth      Default width of window
+   * @param defaultHeight     Default height of window
+   * @param defaultMaximized  Default maximized state of window
+   * @returns ElectronWindowState object for saving and restoring size, position and maximized state of Electron main window
+   */
+  public static initializeMainWindowState(storageName: string, defaultWidth: number, defaultHeight: number, defaultMaximized: boolean = false): ElectronWindowState {
+    this._mainWindowState = new ElectronWindowState(storageName, defaultHeight, defaultWidth, defaultMaximized);
+    return this._mainWindowState;
+  }
 
   /**
    * Open the main Window when the app is ready.

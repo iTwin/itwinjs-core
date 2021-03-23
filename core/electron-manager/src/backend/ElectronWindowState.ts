@@ -1,0 +1,109 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+import { NativeAppStorage } from "@bentley/imodeljs-backend";
+import { StorageValue } from "@bentley/imodeljs-common";
+import { BrowserWindow } from "electron";
+
+// cSpell:ignore unmaximize
+
+/** Maintains main Electron window state for the application.
+ * @beta
+ */
+export class ElectronWindowState {
+  private static _xSettingName = "electron-window-x";
+  private static _ySettingName = "electron-window-y";
+  private static _widthSettingName = "electron-window-width";
+  private static _heightSettingName = "electron-window-height";
+  private static _maximizedSettingName = "electron-window-maximized";
+
+  constructor(public storageName: string, public defaultWidth: number, public defaultHeight: number, public defaultMaximized: boolean = false) {
+  }
+
+  public getPreviousSizeAndPosition = () => {
+    let setting: StorageValue | undefined;
+    let width = this.defaultWidth;
+    let height = this.defaultHeight;
+    let x: number | undefined;
+    let y: number | undefined;
+
+    const store = NativeAppStorage.open(this.storageName);
+
+    setting = store.getData(ElectronWindowState._widthSettingName);
+    if (setting !== undefined)
+      width = JSON.parse(setting as string);
+    setting = store.getData(ElectronWindowState._heightSettingName);
+    if (setting !== undefined)
+      height = JSON.parse(setting as string);
+
+    setting = store.getData(ElectronWindowState._xSettingName);
+    if (setting !== undefined)
+      x = JSON.parse(setting as string);
+    setting = store.getData(ElectronWindowState._ySettingName);
+    if (setting !== undefined)
+      y = JSON.parse(setting as string);
+
+    const result: any = {width, height};
+    if (x !== undefined && y !== undefined) {
+      result.x = x;
+      result.y = y;
+    }
+
+    store.close();
+    return result;
+  };
+
+  public getPreviousMaximizedState = (): boolean => {
+    let maximized = this.defaultMaximized;
+    const store = NativeAppStorage.open(this.storageName);
+    const setting = store.getData(ElectronWindowState._maximizedSettingName);
+    if (setting !== undefined)
+      maximized = JSON.parse(setting as string);
+    store.close();
+    return maximized;
+  };
+
+  private saveWindowSize = (width: number, height: number) => {
+    const store = NativeAppStorage.open(this.storageName);
+    store.setData(ElectronWindowState._widthSettingName, JSON.stringify(width));
+    store.setData(ElectronWindowState._heightSettingName, JSON.stringify(height));
+    store.close();
+  };
+
+  private saveWindowPosition = (x: number, y: number) => {
+    const store = NativeAppStorage.open(this.storageName);
+    store.setData(ElectronWindowState._xSettingName, JSON.stringify(x));
+    store.setData(ElectronWindowState._ySettingName, JSON.stringify(y));
+    store.close();
+  };
+
+  private saveWindowMaximized = (maximized: boolean) => {
+    const store = NativeAppStorage.open(this.storageName);
+    store.setData(ElectronWindowState._maximizedSettingName, JSON.stringify(maximized));
+    store.close();
+  };
+
+  public monitorWindowStateChanges = (mainWindow: BrowserWindow) => {
+    mainWindow.on("resized", () => {
+      const resolution = mainWindow.getSize();
+      this.saveWindowSize(resolution[0], resolution[1]);
+      const position = mainWindow.getPosition();
+      this.saveWindowPosition(position[0], position[1]);
+    });
+
+    mainWindow.on("moved", () => {
+      const position = mainWindow.getPosition();
+      this.saveWindowPosition(position[0], position[1]);
+    });
+
+    mainWindow.on("maximize", () => {
+      this.saveWindowMaximized(true);
+    });
+
+    mainWindow.on("unmaximize", () => {
+      this.saveWindowMaximized(false);
+    });
+  };
+}

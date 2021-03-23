@@ -4,14 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost, ElectronHostOptions, ElectronWindowState } from "@bentley/electron-manager/lib/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 import { IpcHandler } from "@bentley/imodeljs-backend";
 
+let mainWindowState: ElectronWindowState;
+const storageName = "display-test-app";
+const defaultWidth = 1280;
+const defaultHeight = 800;
+
 const getWindowSize = () => {
-  let width = 1280;
-  let height = 800;
+  const sizeAndPosition = mainWindowState.getPreviousSizeAndPosition();
+
   const sizeStr = process.env.SVT_WINDOW_SIZE;
   if (typeof sizeStr === "string") {
     const parts = sizeStr.split(",");
@@ -20,13 +25,14 @@ const getWindowSize = () => {
       const h = Number.parseInt(parts[1], 10);
 
       if (!Number.isNaN(w))
-        width = w;
+        sizeAndPosition.width = w;
 
       if (!Number.isNaN(h))
-        height = h;
+        sizeAndPosition.height = h;
     }
   }
-  return { width, height };
+
+  return sizeAndPosition;
 };
 
 class DtaHandler extends IpcHandler implements DtaIpcInterface {
@@ -53,10 +59,15 @@ const dtaElectronMain = async () => {
   await initializeDtaBackend(opts);
 
   const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
-  const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
+  const maximizeWindowConfig = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
+
+  // Restore previous window size, position and maximized state
+  mainWindowState = ElectronHost.initializeMainWindowState(storageName, defaultWidth, defaultHeight, false);
+  const sizeAndPosition = getWindowSize();
+  const maximizeWindow = maximizeWindowConfig || mainWindowState.getPreviousMaximizedState();
 
   // after backend is initialized, start display-test-app frontend process and open the window
-  await ElectronHost.openMainWindow({ ...getWindowSize(), show: !maximizeWindow, title: "Display Test App" });
+  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: "Display Test App" });
   assert(ElectronHost.mainWindow !== undefined);
 
   if (maximizeWindow) {
@@ -66,6 +77,9 @@ const dtaElectronMain = async () => {
 
   if (autoOpenDevTools)
     ElectronHost.mainWindow.webContents.toggleDevTools();
+
+  // Monitor and save window size, position and maximized state changes
+  mainWindowState.monitorWindowStateChanges(ElectronHost.mainWindow);
 
   // Handle custom keyboard shortcuts
   ElectronHost.app.on("web-contents-created", (_e, wc) => {

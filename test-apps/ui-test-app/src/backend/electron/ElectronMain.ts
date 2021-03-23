@@ -4,15 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost, ElectronHostOptions, ElectronWindowState } from "@bentley/electron-manager/lib/ElectronBackend";
 import { getSupportedRpcs } from "../../common/rpcs";
 import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+
+// cSpell:ignore testapp unmaximize
 
 /**
  * Initializes Electron backend
  */
-const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
-const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
+const autoOpenDevTools = (undefined === process.env.imjs_TESTAPP_NO_DEV_TOOLS);
+const maximizeWindowConfig = (undefined !== process.env.imjs_TESTAPP_MAXIMIZE_WINDOW);
+const windowTitle = "Ui Test App";
+const storageName = "ui-test-app";
+const defaultWidth = 1280;
+const defaultHeight = 1024;
+let mainWindowState: ElectronWindowState;
 
 export async function initializeElectron() {
   const electronHost: ElectronHostOptions = {
@@ -37,13 +44,22 @@ export async function initializeElectron() {
     });
   });
 
-  await ElectronHost.openMainWindow({ width: 800, height: 650, show: !maximizeWindow, title: "Ui Test App" });
+  // Restore previous window size, position and maximized state
+  mainWindowState = ElectronHost.initializeMainWindowState(storageName, defaultWidth, defaultHeight, false);
+  const sizeAndPosition = mainWindowState.getPreviousSizeAndPosition();
+  const maximizeWindow = maximizeWindowConfig || mainWindowState.getPreviousMaximizedState();
+
+  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: windowTitle });
   assert(ElectronHost.mainWindow !== undefined);
 
   if (maximizeWindow) {
     ElectronHost.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
     ElectronHost.mainWindow.show();
   }
+
   if (autoOpenDevTools)
     ElectronHost.mainWindow.webContents.toggleDevTools();
+
+  // Monitor and save window size, position and maximized state changes
+  mainWindowState.monitorWindowStateChanges(ElectronHost.mainWindow);
 }
