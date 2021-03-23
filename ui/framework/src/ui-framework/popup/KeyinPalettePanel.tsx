@@ -15,7 +15,7 @@ import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageTy
 import { UiFramework } from "../UiFramework";
 import { matchesWords, OnItemExecutedFunc, SpecialKey } from "@bentley/ui-abstract";
 import { ClearKeyinPaletteHistoryTool } from "../tools/KeyinPaletteTools";
-import { useUiSettingsContext } from "../uisettings/useUiSettings";
+import { useUiSettingsStorageContext } from "../uisettings/useUiSettings";
 import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 
 const KEYIN_PALETTE_NAMESPACE = "KeyinPalettePanel";
@@ -46,7 +46,7 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
   const inputRef = React.useRef<HTMLInputElement>(null);
   const keyinSeparator = "--#--";
   const [historyKeyins, setHistoryKeyins] = React.useState<string[]>([]);
-  const uiSettingsStorage = useUiSettingsContext();
+  const uiSettingsStorage = useUiSettingsStorageContext();
 
   React.useEffect(() => {
     async function fetchState() {

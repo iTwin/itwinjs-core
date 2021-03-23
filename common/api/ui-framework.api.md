@@ -6516,10 +6516,10 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: {
     allowSettingUiFrameworkVersion: boolean;
 }): JSX.Element;
 
-// @alpha
+// @beta
 export function UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element;
 
-// @alpha
+// @beta
 export interface UiSettingsProviderProps {
     // (undocumented)
     children?: React.ReactNode;
@@ -6690,8 +6690,8 @@ export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2
 // @beta
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
 
-// @internal (undocumented)
-export function useUiSettingsContext(): UiSettingsStorage;
+// @beta (undocumented)
+export function useUiSettingsStorageContext(): UiSettingsStorage;
 
 // @internal (undocumented)
 export function useUiVisibility(): boolean;

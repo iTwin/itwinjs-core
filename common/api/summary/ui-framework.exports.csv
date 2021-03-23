@@ -604,8 +604,8 @@ internal;UiIntervalEvent
 internal;UiIntervalEventArgs
 internal;UiSettingsContext: React.Context
 beta;UiSettingsPage({ allowSettingUiFrameworkVersion }:
-alpha;UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element
-alpha;UiSettingsProviderProps
+beta;UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element
+beta;UiSettingsProviderProps
 public;UiShowHideManager
 internal;UiShowHideSettingsProvider 
 public;UiVisibilityChangedEvent 
@@ -640,7 +640,7 @@ internal;useSyncDefinitions(frontstageDef: FrontstageDef): void
 internal;useToolSettingsNode(): React.ReactNode
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
-internal;useUiSettingsContext(): UiSettingsStorage
+beta;useUiSettingsStorageContext(): UiSettingsStorage
 internal;useUiVisibility(): boolean
 internal;useUpdateNineZoneSize(frontstageDef: FrontstageDef): void
 alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider

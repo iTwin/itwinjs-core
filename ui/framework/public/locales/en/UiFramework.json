@@ -155,7 +155,7 @@
       "autoHideTitle": "Auto-Hide UI",
       "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
       "dragInteractionTitle": "Toolbar Group Buttons show child action item",
-      "dragInteractionDescription": "Requires long press to open group. Single click executes action.",
+      "dragInteractionDescription": "Requires long press to open pop-up panel. Single click executes displayed action.",
       "newUiTitle": "Use 2.0 Ui",
       "newUiDescription": "Use new 2.0 UI layout",
       "useProximityOpacityTitle": "Change Toolbar Opacity",

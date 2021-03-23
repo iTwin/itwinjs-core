@@ -23,7 +23,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
 import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
-import { useUiSettingsContext } from "../uisettings/useUiSettings";
+import { useUiSettingsStorageContext } from "../uisettings/useUiSettings";
 import { WidgetDef, WidgetEventArgs, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
 import { WidgetContent } from "./Content";
@@ -794,7 +794,7 @@ export const setWidgetLabel = produce((nineZone: Draft<NineZoneState>, id: TabSt
 
 /** @internal */
 export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
-  const uiSettingsStorage = useUiSettingsContext();
+  const uiSettingsStorage = useUiSettingsStorageContext();
   const uiSettingsRef = React.useRef(uiSettingsStorage);
   React.useEffect(() => {
     uiSettingsRef.current = uiSettingsStorage;
@@ -824,7 +824,7 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
 /** @internal */
 export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   const nineZone = useNineZoneState(frontstageDef);
-  const uiSettingsStorage = useUiSettingsContext();
+  const uiSettingsStorage = useUiSettingsStorageContext();
   const saveSetting = React.useCallback(debounce(async (id: string, version: number, state: NineZoneState) => {
     const setting: WidgetPanelsFrontstageState = {
       id,
@@ -911,7 +911,7 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
       FrontstageManager.onWidgetExpandEvent.removeListener(listener);
     };
   }, [frontstageDef]);
-  const uiSettingsStorage = useUiSettingsContext();
+  const uiSettingsStorage = useUiSettingsStorageContext();
   React.useEffect(() => {
     const listener = (args: FrontstageEventArgs) => {
       // TODO: track restoring frontstages to support workflows:  i.e. prevent loading frontstage OR saving layout when delete is pending
