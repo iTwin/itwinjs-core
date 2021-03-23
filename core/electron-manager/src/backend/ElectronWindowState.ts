@@ -13,44 +13,45 @@ import { BrowserWindow } from "electron";
  * @beta
  */
 export class ElectronWindowState {
-  private static _xSettingName = "electron-window-x";
-  private static _ySettingName = "electron-window-y";
-  private static _widthSettingName = "electron-window-width";
-  private static _heightSettingName = "electron-window-height";
-  private static _maximizedSettingName = "electron-window-maximized";
+  private static _storageName = "electron-window-state";
+  private static _xSettingName = "window-x";
+  private static _ySettingName = "window-y";
+  private static _widthSettingName = "window-width";
+  private static _heightSettingName = "window-height";
+  private static _maximizedSettingName = "window-maximized";
 
   /** Constructor for ElectronWindowState.
-   * @param storageName       Name used for NativeAppStorage when saving size, position and maximized state
+   * @param settingNamespace  Unique setting namespace used when saving size, position and maximized state
    * @param defaultWidth      Default width of window
    * @param defaultHeight     Default height of window
    * @param defaultMaximized  Default maximized state of window
    */
-  constructor(public storageName: string, public defaultWidth: number, public defaultHeight: number, public defaultMaximized: boolean = false) {
+  constructor(public settingNamespace: string, public defaultWidth: number, public defaultHeight: number, public defaultMaximized: boolean = false) {
   }
 
   /** Gets the saved window size and position */
   public getPreviousSizeAndPosition = () => {
     let setting: StorageValue | undefined;
     let width = this.defaultWidth;
-    const height = this.defaultHeight;
+    let height = this.defaultHeight;
     let x: number | undefined;
     let y: number | undefined;
 
-    const store = NativeAppStorage.open(this.storageName);
+    const store = NativeAppStorage.open(ElectronWindowState._storageName);
 
-    setting = store.getData(ElectronWindowState._widthSettingName);
-    if (setting !== undefined && typeof setting === "number")
+    setting = store.getData(`${this.settingNamespace}-${ElectronWindowState._widthSettingName}`);
+    if (store.isValueNumber(setting))
       width = setting;
-    setting = store.getData(ElectronWindowState._heightSettingName);
-    if (setting !== undefined && typeof setting === "number")
-      width = setting;
+    setting = store.getData(`${this.settingNamespace}-${ElectronWindowState._heightSettingName}`);
+    if (store.isValueNumber(setting))
+      height = setting;
 
-    setting = store.getData(ElectronWindowState._xSettingName);
-    if (setting !== undefined && typeof setting === "number")
-      width = setting;
-    setting = store.getData(ElectronWindowState._ySettingName);
-    if (setting !== undefined && typeof setting === "number")
-      width = setting;
+    setting = store.getData(`${this.settingNamespace}-${ElectronWindowState._xSettingName}`);
+    if (store.isValueNumber(setting))
+      x = setting;
+    setting = store.getData(`${this.settingNamespace}-${ElectronWindowState._ySettingName}`);
+    if (store.isValueNumber(setting))
+      y = setting;
 
     const result: any = {width, height};
     if (x !== undefined && y !== undefined) {
@@ -65,31 +66,31 @@ export class ElectronWindowState {
   /** Gets the saved window maximized state */
   public getPreviousMaximizedState = (): boolean => {
     let maximized = this.defaultMaximized;
-    const store = NativeAppStorage.open(this.storageName);
-    const setting = store.getData(ElectronWindowState._maximizedSettingName);
-    if (setting !== undefined && typeof setting === "boolean")
+    const store = NativeAppStorage.open(ElectronWindowState._storageName);
+    const setting = store.getData(`${this.settingNamespace}-${ElectronWindowState._maximizedSettingName}`);
+    if (store.isValueBoolean(setting))
       maximized = setting;
     store.close();
     return maximized;
   };
 
   private saveWindowSize = (width: number, height: number) => {
-    const store = NativeAppStorage.open(this.storageName);
-    store.setData(ElectronWindowState._widthSettingName, width);
-    store.setData(ElectronWindowState._heightSettingName, height);
+    const store = NativeAppStorage.open(ElectronWindowState._storageName);
+    store.setData(`${this.settingNamespace}-${ElectronWindowState._widthSettingName}`, width);
+    store.setData(`${this.settingNamespace}-${ElectronWindowState._heightSettingName}`, height);
     store.close();
   };
 
   private saveWindowPosition = (x: number, y: number) => {
-    const store = NativeAppStorage.open(this.storageName);
-    store.setData(ElectronWindowState._xSettingName, x);
-    store.setData(ElectronWindowState._ySettingName, y);
+    const store = NativeAppStorage.open(ElectronWindowState._storageName);
+    store.setData(`${this.settingNamespace}-${ElectronWindowState._xSettingName}`, x);
+    store.setData(`${this.settingNamespace}-${ElectronWindowState._ySettingName}`, y);
     store.close();
   };
 
   private saveWindowMaximized = (maximized: boolean) => {
-    const store = NativeAppStorage.open(this.storageName);
-    store.setData(ElectronWindowState._maximizedSettingName, maximized);
+    const store = NativeAppStorage.open(ElectronWindowState._storageName);
+    store.setData(`${this.settingNamespace}-${ElectronWindowState._maximizedSettingName}`, maximized);
     store.close();
   };
 

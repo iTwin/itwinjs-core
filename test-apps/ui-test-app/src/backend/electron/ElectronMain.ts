@@ -16,7 +16,7 @@ import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-ed
 const autoOpenDevTools = (undefined === process.env.imjs_TESTAPP_NO_DEV_TOOLS);
 const maximizeWindowConfig = (undefined !== process.env.imjs_TESTAPP_MAXIMIZE_WINDOW);
 const windowTitle = "Ui Test App";
-const storageName = "ui-test-app";
+const windowSettingNamespace = "ui-test-app";
 const defaultWidth = 1280;
 const defaultHeight = 1024;
 let mainWindowState: ElectronWindowState;
@@ -45,7 +45,7 @@ export async function initializeElectron() {
   });
 
   // Restore previous window size, position and maximized state
-  mainWindowState = new ElectronWindowState(storageName, defaultWidth, defaultHeight, false);
+  mainWindowState = new ElectronWindowState(windowSettingNamespace, defaultWidth, defaultHeight, false);
   const sizeAndPosition = mainWindowState.getPreviousSizeAndPosition();
   const maximizeWindow = maximizeWindowConfig || mainWindowState.getPreviousMaximizedState();
 

@@ -3366,6 +3366,16 @@ export class NativeAppStorage {
     // (undocumented)
     readonly id: string;
     // (undocumented)
+    isValueBoolean: (value: StorageValue | undefined) => value is boolean;
+    // (undocumented)
+    isValueNull(value: StorageValue | undefined): boolean;
+    // (undocumented)
+    isValueNumber: (value: StorageValue | undefined) => value is number;
+    // (undocumented)
+    isValueString: (value: StorageValue | undefined) => value is string;
+    // (undocumented)
+    isValueUndefined(value: StorageValue | undefined): boolean;
+    // (undocumented)
     static open(name: string): NativeAppStorage;
     // (undocumented)
     removeAll(): void;
@@ -3373,6 +3383,8 @@ export class NativeAppStorage {
     removeData(key: string): void;
     // (undocumented)
     setData(key: string, value: StorageValue): void;
+    // (undocumented)
+    valueExists(value: StorageValue | undefined): boolean;
     }
 
 // @beta

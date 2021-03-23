@@ -10,7 +10,7 @@ import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 import { IpcHandler } from "@bentley/imodeljs-backend";
 
 let mainWindowState: ElectronWindowState;
-const storageName = "display-test-app";
+const windowSettingNamespace = "display-test-app";
 const defaultWidth = 1280;
 const defaultHeight = 800;
 
@@ -62,7 +62,7 @@ const dtaElectronMain = async () => {
   const maximizeWindowConfig = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
   // Restore previous window size, position and maximized state
-  mainWindowState = new ElectronWindowState(storageName, defaultWidth, defaultHeight, false);
+  mainWindowState = new ElectronWindowState(windowSettingNamespace, defaultWidth, defaultHeight, false);
   const sizeAndPosition = getWindowSize();
   const maximizeWindow = maximizeWindowConfig || mainWindowState.getPreviousMaximizedState();
 

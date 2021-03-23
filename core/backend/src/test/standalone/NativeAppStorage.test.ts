@@ -65,22 +65,29 @@ describe("NativeApp storage backend", () => {
     test1.removeAll();
     test1.setData("key1", null);
     assert.isNull(test1.getData("key1"));
+    assert.equal(test1.isValueNull(test1.getData("key1")), true);
+    assert.equal(test1.isValueUndefined(test1.getData("key1")), false);
+    assert.equal(test1.valueExists(test1.getData("key1")), true);
 
     test1.setData("key1", 2222);
     assert.isNumber(test1.getData("key1"));
     assert.equal(test1.getData("key1"), 2222);
+    assert.equal(test1.isValueNumber(test1.getData("key1")), true);
 
     test1.setData("key1", "Hello, World");
     assert.isString(test1.getData("key1"));
     assert.equal(test1.getData("key1"), "Hello, World");
+    assert.equal(test1.isValueString(test1.getData("key1")), true);
 
     test1.setData("key1", true);
     assert.isBoolean(test1.getData("key1"));
     assert.equal(test1.getData("key1"), true);
+    assert.equal(test1.isValueBoolean(test1.getData("key1")), true);
 
     test1.setData("key1", false);
     assert.isBoolean(test1.getData("key1"));
     assert.equal(test1.getData("key1"), false);
+    assert.equal(test1.isValueBoolean(test1.getData("key1")), true);
 
     const testArray = new Uint8Array([1, 2, 3, 4, 5]);
     test1.setData("key1", testArray);
@@ -103,4 +110,5 @@ describe("NativeApp storage backend", () => {
       storage.close(true);
     });
   });
+
 });

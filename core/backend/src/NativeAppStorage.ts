@@ -20,7 +20,9 @@ export class NativeAppStorage {
   private static readonly _ext = `.v${NativeAppStorage._version}.ecdb`;
   private static _storages = new Map<string, NativeAppStorage>();
   private static _init: boolean = false;
+
   private constructor(private _ecdb: ECDb, public readonly id: string) { }
+
   public setData(key: string, value: StorageValue): void {
     if (!this._ecdb.isOpen) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cache is not open or disposed");
@@ -75,6 +77,26 @@ export class NativeAppStorage {
       return undefined;
     });
   }
+
+  public valueExists(value: StorageValue | undefined): boolean {
+    return value !== undefined;
+  }
+  public isValueUndefined(value: StorageValue | undefined): boolean {
+    return value === undefined;
+  }
+  public isValueNull(value: StorageValue | undefined): boolean {
+    return value === null;
+  }
+  public isValueNumber = (value: StorageValue | undefined): value is number => {
+    return value !== undefined && typeof value === "number" && !Number.isNaN(value);
+  };
+  public isValueString = (value: StorageValue | undefined): value is string => {
+    return value !== undefined && typeof value === "string";
+  };
+  public isValueBoolean = (value: StorageValue | undefined): value is boolean => {
+    return value !== undefined && typeof value === "boolean";
+  };
+
   public getKeys(): string[] {
     if (!this._ecdb.isOpen) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cache is not open or disposed");
