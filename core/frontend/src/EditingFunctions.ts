@@ -6,9 +6,8 @@
  * @module IModelConnection
  */
 
-import { DbOpcode, Id64Array, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { LockLevel } from "@bentley/imodelhub-client";
-import { AxisAlignedBox3d, BisCodeSpec, CodeProps, IModelError, IModelWriteRpcInterface, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { BisCodeSpec, CodeProps, IModelError, IModelWriteRpcInterface, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelConnection } from "./IModelConnection";
 
@@ -17,13 +16,12 @@ const loggerCategory = FrontendLoggerCategory.IModelConnection;
 /* eslint-disable deprecation/deprecation */
 
 /**
- * General editing functions. See IModelApp.elementEditor for editing 3D elements.
+ * General editing functions.
  * @alpha
  * @deprecated this was an experimental class that was replaced by EditCommands
  */
 export class EditingFunctions {
   private _connection: IModelConnection;
-  private _concurrencyControl?: EditingFunctions.ConcurrencyControl;
   private _models?: EditingFunctions.ModelEditor;
   private _categories?: EditingFunctions.CategoryEditor;
   private _codes?: EditingFunctions.Codes;
@@ -33,15 +31,6 @@ export class EditingFunctions {
     if (connection.isReadonly)
       throw new IModelError(IModelStatus.ReadOnly, "EditingFunctions not available", Logger.logError, loggerCategory);
     this._connection = connection;
-  }
-
-  /**
-   * Concurrency control functions
-   */
-  public get concurrencyControl(): EditingFunctions.ConcurrencyControl {
-    if (this._concurrencyControl === undefined)
-      this._concurrencyControl = new EditingFunctions.ConcurrencyControl(this._connection);
-    return this._concurrencyControl;
   }
 
   /**
@@ -69,52 +58,6 @@ export class EditingFunctions {
     if (this._codes === undefined)
       this._codes = new EditingFunctions.Codes(this._connection);
     return this._codes;
-  }
-
-  /**
-   * Delete elements
-   * @param ids The elements to delete
-   */
-  public async deleteElements(ids: Id64Array) {
-    await IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).requestResources(this._connection.getRpcProps(), ids, [], DbOpcode.Delete);
-    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).deleteElements(this._connection.getRpcProps(), ids);
-  }
-
-  /** Update the project extents of this iModel.
-   * @param newExtents The new project extents as an AxisAlignedBox3d
-   * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem updating the extents.
-   */
-  public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
-    if (OpenMode.ReadWrite !== this._connection.openMode)
-      throw new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError);
-    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).updateProjectExtents(this._connection.getRpcProps(), newExtents.toJSON());
-  }
-
-  /** Commit pending changes to this iModel
-   * @param description Optional description of the changes
-   * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem saving changes.
-   */
-  public async saveChanges(description?: string): Promise<void> {
-    if (OpenMode.ReadWrite !== this._connection.openMode)
-      throw new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError);
-
-    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).saveChanges(this._connection.getRpcProps(), description);
-  }
-
-  /**
-   * Query if there are local changes that have not yet been pushed to the iModel server.
-   */
-  // eslint-disable-next-line @bentley/prefer-get
-  public async hasPendingTxns(): Promise<boolean> {
-    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).hasPendingTxns(this._connection.getRpcProps());
-  }
-
-  /**
-   * Query if there are in-memory changes that have not yet been saved to the briefcase.
-   */
-  // eslint-disable-next-line @bentley/prefer-get
-  public async hasUnsavedChanges(): Promise<boolean> {
-    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).hasUnsavedChanges(this._connection.getRpcProps());
   }
 }
 
@@ -192,34 +135,6 @@ export namespace EditingFunctions { // eslint-disable-line no-redeclare
      */
     public async createAndInsertPhysicalModel(newModelCode: CodeProps, privateModel?: boolean): Promise<Id64String> {
       return this._rpc.createAndInsertPhysicalModel(this._connection.getRpcProps(), newModelCode, !!privateModel);
-    }
-
-  }
-
-  /** Concurrency control functions.
-   * @deprecated this was an experimental class that was replaced by EditCommands
-   */
-  export class ConcurrencyControl {
-    private _connection: IModelConnection;
-    private _rpc: IModelWriteRpcInterface;
-
-    /** @private */
-    public constructor(c: IModelConnection) {
-      this._connection = c;
-      this._rpc = IModelWriteRpcInterface.getClientForRouting(c.routingContext.token);
-    }
-
-    /** Send all pending requests for locks and codes to the server. */
-    public async request(): Promise<void> {
-      return this._rpc.doConcurrencyControlRequest(this._connection.getRpcProps());
-    }
-
-    /** Lock a model.
-     * @param modelId The model
-     * @param level The lock level
-     */
-    public async lockModel(modelId: Id64String, level: LockLevel = LockLevel.Shared): Promise<void> {
-      return this._rpc.lockModel(this._connection.getRpcProps(), modelId, level);
     }
   }
 }
