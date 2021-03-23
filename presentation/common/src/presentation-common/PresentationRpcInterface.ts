@@ -161,7 +161,8 @@ export class PresentationRpcInterface extends RpcInterface {
   // TODO: add paged version of this (#387280)
   public async getFilteredNodePaths(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
 
-  /** @alpha Will be removed in 3.0 */
+  /** @alpha @deprecated Will be removed in 3.0 */
+  // istanbul ignore next
   public async loadHierarchy(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<void> { return this.forward(arguments); }
 
   /** @deprecated Use an overload with [[ContentDescriptorRpcRequestOptions]] */
