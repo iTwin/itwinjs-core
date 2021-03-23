@@ -305,7 +305,7 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>): RowI
     key,
     cells: descriptor.fields.map((field): CellItem => ({
       key: field.name,
-      record: ContentBuilder.createPropertyRecord(field, item),
+      record: ContentBuilder.createPropertyRecord({ field }, item).record,
     })),
   };
 };
