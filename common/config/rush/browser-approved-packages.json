@@ -7,6 +7,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@azure-tools/azcopy-node",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@azure/storage-blob",
       "allowedCategories": [ "backend", "frontend" ]
     },
