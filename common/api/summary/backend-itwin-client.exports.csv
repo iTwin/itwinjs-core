@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 beta;AgentAuthorizationClient 
 beta;AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
+internal;AzCopyFileHandler 
 internal;AzureFileHandler 
 beta;class BackendAuthorizationClient 
 beta;BackendAuthorizationClientConfiguration
