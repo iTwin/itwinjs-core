@@ -2059,6 +2059,19 @@ export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, prope
 // @internal
 export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
 
+// @internal
+export class GridInViewContext {
+    static create(gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d, worldToDisplay: Map4d, viewRange: Range3d, lineCountLimiter: number): GridInViewContext | undefined;
+    processGrid(options: ViewportGraphicsGridSpacingOptions, announceLine: (
+    pointA: Point3d,
+    pointB: Point3d,
+    perspectiveZA: number | undefined,
+    perspectiveZB: number | undefined,
+    startEndDistance: Segment1d | undefined,
+    gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => void): boolean;
+    get xyzLoop(): Point3d[];
+    }
+
 // @public
 export class GrowableBlockedArray {
     constructor(blockSize: number, initialBlocks?: number);
@@ -2591,6 +2604,17 @@ export namespace IModelJson {
         handleUnionRegion(data: UnionRegion): any;
         static toIModelJson(data: any): any;
     }
+}
+
+// @internal
+export class ImplicitLineXY {
+    constructor(a: number, ax: number, ay: number);
+    a: number;
+    addScaledCoefficientsInPlace(a: number, ax: number, ay: number, scale: number): void;
+    ax: number;
+    ay: number;
+    convertToSegmentPoints(b: number): Point3d[] | undefined;
+    evaluatePoint(xy: XAndY): number;
 }
 
 // @public
@@ -5564,16 +5588,10 @@ export class Vector3dArray {
 
 // @internal
 export class ViewGraphicsOps {
-    static announceGridLinesInView(gridOrigin: Point3d, gridXStep: Vector3d, gridYStep: Vector3d, worldToDisplay: Map4d, viewRange: Range3d, options: ViewportGraphicsGridSpacingOptions, announceLine: (
-    pointA: Point3d,
-    pointB: Point3d,
-    perspectiveZA: number | undefined,
-    perspectiveZB: number | undefined,
-    startEndDistance: Segment1d | undefined,
-    gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => void): boolean;
     static gridRangeMaxXY: number;
     static gridRangeMaxZ: number;
-    }
+    static restrictGridRange(range0: Range3d, refPoint?: Point3d | undefined): Range3d;
+}
 
 // @internal
 export interface ViewportGraphicsGridLineIdentifier {
@@ -5585,9 +5603,11 @@ export interface ViewportGraphicsGridLineIdentifier {
 // @internal
 export class ViewportGraphicsGridSpacingOptions {
     clippingOption: 0 | 1;
-    static create(distanceBetweenLines: number, cullingOption?: 0 | 1 | 2, clippingOption?: 0 | 1): ViewportGraphicsGridSpacingOptions;
+    clone(): ViewportGraphicsGridSpacingOptions;
+    static create(distanceBetweenLines: number, cullingOption?: 0 | 1 | 2, clippingOption?: 0 | 1, gridMultiple?: number): ViewportGraphicsGridSpacingOptions;
     cullingOption: 0 | 1 | 2;
     distanceBetweenLines: number;
+    gridMultiple: number;
 }
 
 // @public
