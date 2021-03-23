@@ -31,9 +31,11 @@ const NODE_LOAD_DELAY = 500;
  * Data structure that describes range of rendered items in the tree.
  * @alpha
  */
-export interface RenderedTreeItems {
-  startIndex: number;
-  endIndex: number;
+export interface RenderedItemsRange {
+  overscanStartIndex: number;
+  overscanStopIndex: number;
+  visibleStartIndex: number;
+  visibleStopIndex: number;
 }
 
 /**
@@ -60,7 +62,7 @@ export interface TreeRendererProps {
    * Callback that is called when rendered items range changes.
    * @alpha
    */
-  onItemsRendered?: (renderedItems: RenderedTreeItems) => void;
+  onItemsRendered?: (renderedItems: RenderedItemsRange) => void;
 
   /**
    * Callback used when an editor closes
@@ -263,8 +265,8 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
   }, [props.treeActions]);
 
   const onItemsRendered = props.onItemsRendered;
-  const handleRenderedItemsChange = React.useCallback(({ overscanStartIndex, overscanStopIndex }: ListOnItemsRenderedProps) => {
-    onItemsRendered && onItemsRendered({ startIndex: overscanStartIndex, endIndex: overscanStopIndex });
+  const handleRenderedItemsChange = React.useCallback((onItemsRenderedProps: ListOnItemsRenderedProps) => {
+    onItemsRendered && onItemsRendered({ ...onItemsRenderedProps });
   }, [onItemsRendered]);
 
   return (

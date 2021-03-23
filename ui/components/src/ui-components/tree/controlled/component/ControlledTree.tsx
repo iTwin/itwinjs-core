@@ -18,7 +18,7 @@ import { TreeEvents } from "../TreeEvents";
 import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../TreeModel";
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
-import { RenderedTreeItems, TreeRenderer, TreeRendererProps } from "./TreeRenderer";
+import { RenderedItemsRange, TreeRenderer, TreeRendererProps } from "./TreeRenderer";
 import { DelayedSpinner } from "../../../common/DelayedSpinner";
 
 /**
@@ -59,7 +59,7 @@ export interface ControlledTreeProps extends CommonProps {
    * Callback that is invoked when rendered items range changes.
    * @alpha
    */
-  onItemsRendered?: (items: RenderedTreeItems) => void;
+  onItemsRendered?: (items: RenderedItemsRange) => void;
 }
 
 /**

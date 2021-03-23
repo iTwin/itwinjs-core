@@ -245,7 +245,7 @@ describe("TreeRenderer", () => {
       />);
 
     getByText("test node 1");
-    expect(spy).to.be.calledOnceWith({ startIndex: 0, endIndex: 1 });
+    expect(spy).to.be.calledOnceWith({ overscanStartIndex: 0, visibleStartIndex: 0, overscanStopIndex: 1, visibleStopIndex: 1 });
   });
 
   it("scrolls to highlighted node", () => {
