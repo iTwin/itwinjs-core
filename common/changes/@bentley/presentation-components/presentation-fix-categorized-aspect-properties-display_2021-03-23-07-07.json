@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Refactor the way presentation type of content is mapped to UI type of content. This is a more flexible approach and allowed to fix invalid properties display when an element had multiple aspects with categorized properties.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}
