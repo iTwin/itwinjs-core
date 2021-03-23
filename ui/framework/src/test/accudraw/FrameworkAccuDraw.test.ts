@@ -9,6 +9,7 @@ import TestUtils, { storageMock } from "../TestUtils";
 import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
 import { AccuDrawUiAdmin, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+import { UiFramework } from "../../ui-framework/UiFramework";
 
 // cspell:ignore dont uiadmin
 
@@ -193,6 +194,20 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
 
       remove();
       removeFocusSpy();
+    });
+
+    it("should save/retrieve displayNotifications to/from user storage", async () => {
+      FrameworkAccuDraw.displayNotifications = true;
+      await TestUtils.flushAsyncOperations();
+      expect(FrameworkAccuDraw.displayNotifications).to.be.true;
+      FrameworkAccuDraw.displayNotifications = false;
+      await TestUtils.flushAsyncOperations();
+      expect(FrameworkAccuDraw.displayNotifications).to.be.false;
+
+      const instance = new FrameworkAccuDraw();
+      await instance.loadUserSettings (UiFramework.getUiSettingsStorage());
+      await TestUtils.flushAsyncOperations();
+      expect(FrameworkAccuDraw.displayNotifications).to.be.false;
     });
   });
 });

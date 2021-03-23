@@ -6,6 +6,8 @@
  * @module Utilities
  */
 
+// cSpell:ignore configurableui clientservices
+
 import { Store } from "redux";
 import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
@@ -39,7 +41,7 @@ import { WidgetManager } from "./widgets/WidgetManager";
 
 // cSpell:ignore Mobi
 
-/** Interface to be implemented but any classes that want to load their user settings when the UiSetting storage class is set.
+/** Interface to be implemented but any classes that wants to load their user settings when the UiSetting storage class is set.
  * @alpha
  */
 export interface UserSettingsProvider {
@@ -80,8 +82,8 @@ export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChange
 export interface TrackingTime {
   startTime: Date;
   endTime: Date;
-
 }
+
 /**
  * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
  * @public
@@ -96,14 +98,18 @@ export class UiFramework {
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
   private static _widgetManager?: WidgetManager;
-  private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
+  // private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
   private static _uiVersion = "";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
   private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage(); // provide a default
   private static _settingsManager?: SettingsManager;
   private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
 
-  /** @alpha */
+  /** Registers class that will be informed when the UserSettingsStorage location has been set or changed. This allows
+   * classes to load any previously saved settings from the new storage location. Common storage locations are the browser's
+   * local storage, or the iTwin Product Settings cloud storage available via the SettingsAdmin see `IModelApp.settingsAdmin`.
+   * @alpha
+   */
   public static registerUserSettingsProvider(entry: UserSettingsProvider) {
     if (this._uiSettingsProviderRegistry.has(entry.providerId))
       return false;
@@ -200,7 +206,7 @@ export class UiFramework {
     return readFinishedPromise;
   }
 
-  /** Unregisters the UiFramework internationalization service namespace */
+  /** Un-registers the UiFramework internationalization service namespace */
   public static terminate() {
     UiFramework._store = undefined;
     UiFramework._frameworkStateKeyInStore = "frameworkState";
@@ -481,6 +487,9 @@ export class UiFramework {
   }
 
   public static setColorTheme(theme: string) {
+    if (UiFramework.getColorTheme() === theme)
+      return;
+
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetTheme, theme, true);
   }
 
@@ -489,6 +498,9 @@ export class UiFramework {
   }
 
   public static setWidgetOpacity(opacity: number) {
+    if (UiFramework.getWidgetOpacity() === opacity)
+      return;
+
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetWidgetOpacity, opacity, true);
   }
 
@@ -508,6 +520,9 @@ export class UiFramework {
   }
 
   public static setUiVersion(version: string) {
+    if (UiFramework.uiVersion === version)
+      return;
+
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1"?"1":"2", true);
   }
 
@@ -537,6 +552,7 @@ export class UiFramework {
     UiFramework.postTelemetry(`Ui Version changed to ${args.version} `, "F2772C81-962D-4755-807C-2D675A5FF399");
     UiFramework._uiVersion = args.version;
 
+    /* TODO - Research to see if this is still a problem - likely it is not since Accudraw is set up to use widget opacity
     // If Ui Version 1, save widget opacity
     // istanbul ignore if
     if (args.oldVersion === "1")
@@ -545,6 +561,7 @@ export class UiFramework {
     // If Ui Version 1, restore widget opacity; otherwise, set widget opacity to 1.0 to basically turn the feature off.
     // This fixes use of "backdrop-filter: blur(10px)"" CSS.
     UiFramework.setWidgetOpacity(args.version === "1" ? UiFramework._version1WidgetOpacity : 1.0);
+    */
   };
 
   // istanbul ignore next

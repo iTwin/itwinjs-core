@@ -38,16 +38,16 @@ export class UiShowHideSettingsProvider implements UserSettingsProvider {
       UiShowHideManager.setSnapWidgetOpacity (result.setting);
   }
 
-  public static async storeAutoHideUi(v: boolean) {
-    void UiFramework.getUiSettingsStorage().saveSetting (this._settingsNamespace, this._autoHideUiKey, v);
+  public static async storeAutoHideUi(v: boolean, storage?: UiSettings) {
+    void (storage??UiFramework.getUiSettingsStorage()).saveSetting (this._settingsNamespace, this._autoHideUiKey, v);
   }
 
-  public static async storeUseProximityOpacity(v: boolean) {
-    void UiFramework.getUiSettingsStorage().saveSetting (this._settingsNamespace, this._useProximityOpacityKey, v);
+  public static async storeUseProximityOpacity(v: boolean, storage?: UiSettings) {
+    void (storage??UiFramework.getUiSettingsStorage()).saveSetting (this._settingsNamespace, this._useProximityOpacityKey, v);
   }
 
-  public static async storeSnapWidgetOpacity(v: boolean) {
-    void UiFramework.getUiSettingsStorage().saveSetting (this._settingsNamespace, this._snapWidgetOpacityKey, v);
+  public static async storeSnapWidgetOpacity(v: boolean, storage?: UiSettings) {
+    void (storage??UiFramework.getUiSettingsStorage()).saveSetting (this._settingsNamespace, this._snapWidgetOpacityKey, v);
   }
 }
 

@@ -44,7 +44,7 @@ const initialState: ConfigurableUiState = {
   theme: SYSTEM_PREFERRED_COLOR_THEME,
   widgetOpacity: WIDGET_OPACITY_DEFAULT,
   useDragInteraction: false,
-  frameworkVersion: "2",
+  frameworkVersion: "1",
 };
 
 /** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer.
@@ -73,41 +73,28 @@ export type ConfigurableUiActionsUnion = ActionsUnion<typeof ConfigurableUiActio
 /** Handles actions to update ConfigurableUiState.
  * @public
  */
-export function ConfigurableUiReducer(state: ConfigurableUiState = initialState, _action: ConfigurableUiActionsUnion): ConfigurableUiState {
-  let outState = state;
+export function ConfigurableUiReducer(state: ConfigurableUiState = initialState, action: ConfigurableUiActionsUnion): ConfigurableUiState {
+  const outState = state;
 
-  switch (_action.type) {
+  switch (action.type) {
     case ConfigurableUiActionId.SetSnapMode: {
-      // istanbul ignore else
-      if (undefined !== _action.payload)
-        outState = { ...state, snapMode: _action.payload };
-      break;
+      return { ...state, snapMode: action.payload };
     }
     case ConfigurableUiActionId.SetToolPrompt: {
-      // istanbul ignore else
-      if (undefined !== _action.payload)
-        outState = { ...state, toolPrompt: _action.payload };
-      break;
+      return { ...state, toolPrompt: action.payload };
     }
     case ConfigurableUiActionId.SetTheme: {
-      // istanbul ignore else
-      if (undefined !== _action.payload)
-        outState = { ...state, theme: _action.payload };
-      break;
+      return { ...state, theme: action.payload };
     }
     case ConfigurableUiActionId.SetWidgetOpacity: {
-      // istanbul ignore else
-      if (undefined !== _action.payload)
-        outState = { ...state, widgetOpacity: _action.payload };
-      break;
+      return { ...state, widgetOpacity: action.payload };
     }
     case ConfigurableUiActionId.SetDragInteraction: {
-      return { ...state, useDragInteraction: _action.payload };
+      return { ...state, useDragInteraction: action.payload };
     }
     case ConfigurableUiActionId.SetFrameworkVersion: {
-      return { ...state, frameworkVersion: _action.payload };
+      return { ...state, frameworkVersion: action.payload };
     }
   }
-
   return outState;
 }

@@ -488,7 +488,7 @@ export class AppNotificationManager extends NotificationManager {
     updatePointerMessage(displayPoint: XAndY, relativePosition: RelativePosition): void;
 }
 
-// @alpha (undocumented)
+// @alpha
 export class AppUiSettings implements UserSettingsProvider {
     constructor(defaults: Partial<InitialAppUiSettings>);
     // (undocumented)
@@ -1147,7 +1147,7 @@ export class ConfigurableUiManager {
 }
 
 // @public
-export function ConfigurableUiReducer(state: ConfigurableUiState | undefined, _action: ConfigurableUiActionsUnion): ConfigurableUiState;
+export function ConfigurableUiReducer(state: ConfigurableUiState | undefined, action: ConfigurableUiActionsUnion): ConfigurableUiState;
 
 // @public
 export interface ConfigurableUiState {
@@ -3070,7 +3070,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     render(): JSX.Element;
 }
 
-// @alpha (undocumented)
+// @alpha
 export interface InitialAppUiSettings {
     // (undocumented)
     colorTheme: string;
@@ -6452,7 +6452,7 @@ export class UiFramework {
     }): Promise<void>;
     // @internal (undocumented)
     static get projectServices(): ProjectServices;
-    // @alpha (undocumented)
+    // @alpha
     static registerUserSettingsProvider(entry: UserSettingsProvider): boolean;
     // (undocumented)
     static setAccudrawSnapMode(snapMode: SnapMode): void;
@@ -6565,11 +6565,11 @@ export class UiShowHideSettingsProvider implements UserSettingsProvider {
     // (undocumented)
     readonly providerId = "UiShowHideSettingsProvider";
     // (undocumented)
-    static storeAutoHideUi(v: boolean): Promise<void>;
+    static storeAutoHideUi(v: boolean, storage?: UiSettings): Promise<void>;
     // (undocumented)
-    static storeSnapWidgetOpacity(v: boolean): Promise<void>;
+    static storeSnapWidgetOpacity(v: boolean, storage?: UiSettings): Promise<void>;
     // (undocumented)
-    static storeUseProximityOpacity(v: boolean): Promise<void>;
+    static storeUseProximityOpacity(v: boolean, storage?: UiSettings): Promise<void>;
     }
 
 // @public

@@ -10,7 +10,11 @@ import { UiSetting, UiSettingsStorage } from "@bentley/ui-core";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
 
-/** @alpha */
+// cSpell:ignore configurableui
+
+/** Default values that may be specified for [[AppUiSettings]].
+ * @alpha
+ */
 export interface InitialAppUiSettings {
   colorTheme: string;
   dragInteraction: boolean;
@@ -18,7 +22,17 @@ export interface InitialAppUiSettings {
   widgetOpacity: number;
 }
 
-/** @alpha */
+/** These are the UI settings that are stored in the Redux store. They control the color theme, the UI version,
+ * how toolbar group buttons work, and the opacity of widgets in 1.0 and floating widget in 2.0 when the cursor
+ * is not inside them. It is expect that an IModelApp using App UI components will create and register AppUiSettings with
+ * defaults specific to their application. This would be done by calling the following.
+ *
+ * ```ts
+ * UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
+ * ```
+ *
+ * @alpha
+ */
 export class AppUiSettings implements UserSettingsProvider  {
   public readonly providerId = "AppUiSettingsProvider";
 
@@ -34,7 +48,7 @@ export class AppUiSettings implements UserSettingsProvider  {
   private setColorTheme = (theme: string) => {
     UiFramework.setColorTheme(theme);
     // always store to local storage to avoid flicker during startup if user is not yet logged-in
-    localStorage.setItem("uifw:defaultTheme", theme);
+    window.localStorage.setItem("uifw:defaultTheme", theme);
   };
 
   constructor(defaults: Partial<InitialAppUiSettings>) {
@@ -67,7 +81,7 @@ export class AppUiSettings implements UserSettingsProvider  {
     if (args.eventIds.has("configurableui:set_theme")) {
       await this.colorTheme.saveSetting(UiFramework.getUiSettingsStorage());
       // always store as default theme in local storage to avoid flicker during startup if user is not yet logged-in
-      localStorage.setItem("uifw:defaultTheme", UiFramework.getColorTheme());
+      window.localStorage.setItem("uifw:defaultTheme", UiFramework.getColorTheme());
     }
 
     if (args.eventIds.has("configurableui:set-drag-interaction"))

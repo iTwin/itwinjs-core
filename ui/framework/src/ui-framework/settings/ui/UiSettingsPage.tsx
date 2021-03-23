@@ -6,21 +6,30 @@
  * @module Settings
  */
 
+// cSpell:ignore configurableui checkmark
+
+import widowSettingsIconSvg from "@bentley/icons-generic/icons/window-settings.svg?sprite";
 import "./UiSettingsPage.scss";
 import * as React from "react";
-import { OptionType, SettingsTabEntry, Slider, ThemedSelect, Toggle } from "@bentley/ui-core";
+import { Select, SelectOption, SettingsTabEntry, Slider, Toggle } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
 import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
 
-function isOptionType(value: OptionType | ReadonlyArray<OptionType>): value is OptionType {
-  if (Array.isArray(value))
-    return false;
-  return true;
-}
-
-/** UiSettingsPage displaying the active settings.
+/** UiSettingsPage displaying the active UI settings. This page lets users set the following settings.
+ *
+ * - theme - Dark, Light, or based on OS preference.
+ * - auto hide - Starts a timer and blanks out ui components that overlay content if there is no mouse movement for a period of time.
+ * - drag interaction - If set, toolbar group buttons require a press and drag or a long press to open. In this mode a child action
+ * item is shown as the group button and is activated when button is clicked. If a different child item is selected, it becomes the
+ * active group button item.
+ * - use proximity - Changes the opacity of toolbar from transparent to opaque as the mouse moves closer.
+ * - snap widget opacity - triggers an abrupt change from transparent to opaque for tool and navigation widgets, instead of a gradual change based on mouse location.
+ * - widget opacity - determines how transparent floating widgets in V2 and all widgets in V1 become when the mouse in not in them.
+ * - UI version - if allowed by props, the UI version can be toggled between V1 and V2.
+ *
  * @beta
  */
 export function UiSettingsPage({allowSettingUiFrameworkVersion}: {allowSettingUiFrameworkVersion: boolean}) {
@@ -79,29 +88,16 @@ export function UiSettingsPage({allowSettingUiFrameworkVersion}: {allowSettingUi
   }, [autoHideUi, snapWidgetOpacity, theme, uiVersion, useDragInteraction, useProximityOpacity, widgetOpacity]);
 
   const defaultThemeOption = { label: systemPreferredLabel.current, value: SYSTEM_PREFERRED_COLOR_THEME };
-  const themeOptions: Array<OptionType> = [
+  const themeOptions: Array<SelectOption> = [
     defaultThemeOption,
     { label: lightLabel.current, value: ColorTheme.Light },
     { label: darkLabel.current, value: ColorTheme.Dark },
   ];
 
-  const getDefaultThemeOption = () => {
-    const defaultTheme = UiFramework.getColorTheme();
-    for (const option of themeOptions) {
-      if (option.value === defaultTheme)
-        return option;
-    }
-    return defaultThemeOption;
-  };
-
-  const onThemeChange = React.useCallback(async (value) => {
-    if (!value)
-      return;
-    if (!isOptionType(value))
-      return;
-
-    UiFramework.setColorTheme(value.value);
-  },[]);
+  const onThemeChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.preventDefault();
+    UiFramework.setColorTheme(e.target.value);
+  }, []);
 
   const onAutoHideChange = React.useCallback(async () => {
     UiShowHideManager.autoHideUi = !UiShowHideManager.autoHideUi;
@@ -116,6 +112,7 @@ export function UiSettingsPage({allowSettingUiFrameworkVersion}: {allowSettingUi
   },[]);
 
   const onWidgetOpacityChange = React.useCallback(async (values: readonly number[]) => {
+    // istanbul ignore else
     if (values.length > 0) {
       UiFramework.setWidgetOpacity(values[0]);
     }
@@ -128,14 +125,15 @@ export function UiSettingsPage({allowSettingUiFrameworkVersion}: {allowSettingUi
     UiFramework.setUseDragInteraction(!UiFramework.useDragInteraction);
   },[]);
 
+  const currentTheme = UiFramework.getColorTheme();
+
   return (
     <div className="uifw-settings">
       <SettingsItem title={themeTitle.current} description={themeDescription.current}
         settingUi={
-          <div className="select-container">
-            <ThemedSelect
-              defaultValue={getDefaultThemeOption()}
-              isSearchable={false}
+          <div data-testid="select-theme-container" className="select-theme-container">
+            <Select
+              value={currentTheme}
               onChange={onThemeChange}
               options={themeOptions}
             />
@@ -163,8 +161,8 @@ export function UiSettingsPage({allowSettingUiFrameworkVersion}: {allowSettingUi
       <SettingsItem title={widgetOpacityTitle.current} description={widgetOpacityDescription.current}
         settingUi={
           <Slider  values={[UiFramework.getWidgetOpacity()]} step={0.05} showTooltip onChange={onWidgetOpacityChange}
-            min={0} max={1.0} showMinMax formatMax={(v: number) => v.toFixed(1)}
-            showTicks getTickValues={() => [0,.25,.50,.75,1]} />
+            min={0.20} max={1.0} showMinMax formatMax={(v: number) => v.toFixed(1)}
+            showTicks getTickValues={() => [.20,.40,.60,.80,1]} />
         }
       />
     </div>
@@ -202,6 +200,7 @@ export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFr
   return {
     itemPriority, tabId: "uifw:UiSettings",
     label: UiFramework.translate("settings.uiSettingsPage.label"),
+    icon: IconSpecUtilities.createSvgIconSpec(widowSettingsIconSvg),
     page: <UiSettingsPage allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />,
     isDisabled: false,
     tooltip: UiFramework.translate("settings.uiSettingsPage.tooltip"),

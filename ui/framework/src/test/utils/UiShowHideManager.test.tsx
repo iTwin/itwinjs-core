@@ -9,9 +9,11 @@ import { render } from "@testing-library/react";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, FrontstageManager, INACTIVITY_TIME_DEFAULT, UiFramework,
   UiShowHideManager,
+  UiShowHideSettingsProvider,
 } from "../../ui-framework";
 import { TestFrontstage } from "../frontstage/FrontstageTestUtils";
 import TestUtils, { storageMock } from "../TestUtils";
+import { LocalSettingsStorage } from "@bentley/ui-core";
 
 describe("UiShowHideManager localStorage Wrapper", () => {
 
@@ -240,6 +242,35 @@ describe("UiShowHideManager localStorage Wrapper", () => {
         expect(UiShowHideManager.isUiVisible).to.eq(false);
       });
     });
+  });
+
+  describe("UiShowHideSettingsProvider ", () => {
+
+    it("should get and set defaults", async () => {
+      const settingsStorage = new LocalSettingsStorage ();
+      await UiShowHideSettingsProvider.storeAutoHideUi(false, settingsStorage);
+      await UiShowHideSettingsProvider.storeUseProximityOpacity (false, settingsStorage);
+      await UiShowHideSettingsProvider.storeSnapWidgetOpacity(false, settingsStorage);
+      await TestUtils.initializeUiFramework();
+
+      const uiShowHideSettingsProvider = new UiShowHideSettingsProvider ();
+      await uiShowHideSettingsProvider.loadUserSettings (UiFramework.getUiSettingsStorage());
+
+      expect(UiShowHideManager.autoHideUi).to.eq(false);
+      expect(UiShowHideManager.useProximityOpacity).to.eq(false);
+      expect(UiShowHideManager.snapWidgetOpacity).to.eq(false);
+
+      UiShowHideManager.setAutoHideUi(true);
+      UiShowHideManager.setUseProximityOpacity(true);
+      UiShowHideManager.setSnapWidgetOpacity(true);
+      expect(UiShowHideManager.autoHideUi).to.eq(true);
+      expect(UiShowHideManager.useProximityOpacity).to.eq(true);
+      expect(UiShowHideManager.snapWidgetOpacity).to.eq(true);
+
+      TestUtils.terminateUiFramework();
+
+    });
+
   });
 
 });

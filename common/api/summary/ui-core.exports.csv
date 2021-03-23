@@ -155,7 +155,8 @@ public;LoadingSpinner
 public;LoadingSpinnerProps 
 public;LoadingStatus 
 public;LoadingStatusProps 
-beta;LocalUiSettings 
+public;LocalSettingsStorage 
+public;LocalUiSettings 
 public;MainTabsProps 
 internal;mergeRefs
 public;MessageBox 
@@ -225,14 +226,15 @@ public;SearchBoxProps
 public;Select: (props: SelectProps) => JSX.Element | null
 public;SelectOption
 public;SelectProps 
-beta;SessionUiSettings 
+public;SessionSettingsStorage 
+public;SessionUiSettings 
 beta;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element
 beta;SettingsContainerProps
 beta;SettingsManager
-beta;SettingsProvider
 beta;SettingsProvidersChangedEvent 
 beta;SettingsProvidersChangedEventArgs
 beta;SettingsTabEntry
+beta;SettingsTabsProvider
 internal;shallowDiffers: (a:
 internal;Size 
 public;SizeProps
@@ -289,10 +291,11 @@ public;TreeNodeProps
 public;TreeProps 
 public;UiCore
 public;UiEvent
-beta;UiSetting
-public;UiSettings
+public;UiSetting
+public;UiSettings = UiSettingsStorage
 public;UiSettingsResult
 public;UiSettingsStatus
+public;UiSettingsStorage
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;useDisposable

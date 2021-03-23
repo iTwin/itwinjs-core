@@ -2,6 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// cSpell:ignore typemoq, tabid
+
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
@@ -9,11 +11,11 @@ import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, MockRender, ViewState } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
-import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework } from "../ui-framework";
+import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
 import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
-import { LocalSettingsStorage } from "@bentley/ui-core";
+import { LocalSettingsStorage, UiSettingsStorage } from "@bentley/ui-core";
 import { OpenSettingsTool } from "../ui-framework/tools/OpenSettingsTool";
 
 describe("UiFramework localStorage Wrapper", () => {
@@ -185,8 +187,19 @@ describe("UiFramework localStorage Wrapper", () => {
       TestUtils.terminateUiFramework();
     });
 
+    class testSettingsProvider implements UserSettingsProvider {
+      public readonly providerId = "testSettingsProvider";
+      public settingsLoaded = false;
+      public async loadUserSettings(storage: UiSettingsStorage) {
+        if (storage)
+          this.settingsLoaded = true;
+      }
+    }
+
     it("SessionState setters/getters", async () => {
       await TestUtils.initializeUiFramework();
+      const settingsProvider = new testSettingsProvider();
+      UiFramework.registerUserSettingsProvider(settingsProvider);
 
       const userInfo = mockUserInfo();
 
@@ -204,9 +217,30 @@ describe("UiFramework localStorage Wrapper", () => {
       UiFramework.setIModelConnection(imodelMock.object);
       expect(UiFramework.getIModelConnection()).to.eq(imodelMock.object);
 
+      expect(settingsProvider.settingsLoaded).to.be.false;
+
       const uisettings = new LocalSettingsStorage();
       await UiFramework.setUiSettingsStorage(uisettings);
       expect(UiFramework.getUiSettingsStorage()).to.eq(uisettings);
+      expect(settingsProvider.settingsLoaded).to.be.true;
+      settingsProvider.settingsLoaded = false;
+      // if we try to set storage to same object this should be a noop and the settingsLoaded property should remain false;
+      await UiFramework.setUiSettingsStorage(uisettings);
+      expect(settingsProvider.settingsLoaded).to.be.false;
+
+      const uiVersion1 = "1";
+      UiFramework.setUiVersion (uiVersion1);
+      expect(UiFramework.uiVersion).to.eql(uiVersion1);
+
+      const uiVersion = "2";
+      UiFramework.setUiVersion (uiVersion);
+      expect(UiFramework.uiVersion).to.eql(uiVersion);
+      UiFramework.setUiVersion ("");
+      expect(UiFramework.uiVersion).to.eql(uiVersion);
+
+      const useDragInteraction = true;
+      UiFramework.setUseDragInteraction (useDragInteraction);
+      expect(UiFramework.useDragInteraction).to.eql(useDragInteraction);
 
       UiFramework.closeCursorMenu();
       expect(UiFramework.getCursorMenuData()).to.be.undefined;
@@ -218,6 +252,11 @@ describe("UiFramework localStorage Wrapper", () => {
       const viewState = moq.Mock.ofType<ViewState>();
       UiFramework.setDefaultViewState(viewState.object);
       expect(UiFramework.getDefaultViewState()).not.to.be.undefined;
+
+      TestUtils.terminateUiFramework();
+
+      // try again when store is not defined
+      expect(UiFramework.useDragInteraction).to.eql(false);
     });
 
   });
