@@ -37,6 +37,8 @@
     "@bentley/build-tools": "2.15.0-dev.4",
     "@bentley/eslint-plugin": "2.15.0-dev.4",
     "@bentley/imodeljs-i18n": "2.15.0-dev.4",
+    "@bentley/units-schema": "^1.0.5",
+    "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -61,6 +63,9 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.15.0-dev.4",
     "@bentley/imodeljs-i18n": "^2.15.0-dev.4"
+  },
+  "dependencies": {
+    "almost-equal": "^1.1.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
