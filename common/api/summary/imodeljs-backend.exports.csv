@@ -216,6 +216,7 @@ internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;class NativeAppAuthorizationBackend 
+internal;NativeAppStorage
 beta;NativeHost
 beta;NativeHostOpts = IpcHostOpts
 public;OrthographicViewDefinition 
