@@ -2,50 +2,40 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { GuidString } from "@bentley/bentleyjs-core";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { AuthorizedBackendRequestContext, IModelHost, PhysicalElement } from "../../imodeljs-backend";
-import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
+import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
-describe("Schema XML Import Tests (#integration)", () => {
-  let managerRequestContext: AuthorizedBackendRequestContext;
-  let superRequestContext: AuthorizedBackendRequestContext;
-  let testProjectId: string;
-  let readWriteTestIModel: TestIModelInfo;
+// Configuration needed
+//    imjs_test_manager_user_name
+//    imjs_test_manager_user_password
+//    imjs_oidc_browser_test_client_id
+//    imjs_oidc_browser_test_redirect_uri
+//    imjs_oidc_browser_test_scopes
+//      - Required: "openid imodelhub context-registry-service:read-only"
 
-  let readWriteTestIModelName: string;
+describe("Schema XML Import Tests (#integration)", () => {
+  let requestContext: AuthorizedBackendRequestContext;
+  let testContextId: string;
+  let readWriteTestIModelId: GuidString;
 
   before(async () => {
-    // initialize logging
-    if (true) {
-      Logger.initializeToConsole();
-      Logger.setLevelDefault(LogLevel.Error);
-    }
-
-    managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    superRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.super);
-    testProjectId = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
-    readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
-
-    try {
-      await HubUtility.deleteIModel(managerRequestContext, "iModelJsIntegrationTest", readWriteTestIModelName);
-    } catch (err) {
-    }
-    await IModelHost.iModelClient.iModels.create(managerRequestContext, testProjectId, readWriteTestIModelName, { description: "TestSubject" });
-    readWriteTestIModel = await IModelTestUtils.getTestModelInfo(managerRequestContext, testProjectId, readWriteTestIModelName);
-
-    // Purge briefcases that are close to reaching the acquire limit
-    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
+    testContextId = await HubUtility.getTestContextId(requestContext);
+    requestContext.enter();
+    readWriteTestIModelId = await HubUtility.recreateIModel(requestContext, testContextId, HubUtility.generateUniqueName("ReadWriteTest"));
+    requestContext.enter();
   });
 
   after(async () => {
     try {
-      await HubUtility.deleteIModel(managerRequestContext, "iModelJsIntegrationTest", readWriteTestIModelName);
+      await IModelHost.iModelClient.iModels.delete(requestContext, testContextId, readWriteTestIModelId);
     } catch (err) {
     }
   });
@@ -54,8 +44,10 @@ describe("Schema XML Import Tests (#integration)", () => {
     const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
     const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: superRequestContext, contextId: testProjectId, iModelId: readWriteTestIModel.id });
-    await iModel.importSchemaStrings(superRequestContext, [schemaString]); // will throw an exception if import fails
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
+    requestContext.enter();
+    await iModel.importSchemaStrings(requestContext, [schemaString]); // will throw an exception if import fails
+    requestContext.enter();
 
     const testDomainClass = iModel.getMetaData("Test3:Test3Element"); // will throw on failure
 
