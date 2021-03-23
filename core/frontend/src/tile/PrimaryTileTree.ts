@@ -18,7 +18,6 @@ import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderScheduleState } from "../RenderScheduleState";
 import { SpatialViewState } from "../SpatialViewState";
-import { System } from "../render/webgl/System";
 import { SceneContext } from "../ViewContext";
 import { ModelDisplayTransformProvider, ViewState, ViewState3d } from "../ViewState";
 import {
@@ -148,7 +147,7 @@ class PrimaryTreeReference extends TileTreeReference {
     }
 
     this._forceNoInstancing = false;
-    if (!System.instance.capabilities.isWebGL2) {
+    if (!IModelApp.renderSystem.supportsNonuniformScaledInstancing) {
       this.checkForceNoInstancing(view.modelDisplayTransformProvider);
       view.onModelDisplayTransformProviderChanged.addListener((provider: ModelDisplayTransformProvider | undefined) => this.checkForceNoInstancing(provider));
     }

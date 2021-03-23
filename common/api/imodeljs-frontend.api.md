@@ -8065,6 +8065,8 @@ export abstract class RenderSystem implements IDisposable {
     get supportsInstancing(): boolean;
     // @internal (undocumented)
     get supportsLogZBuffer(): boolean;
+    // @internal (undocumented)
+    get supportsNonuniformScaledInstancing(): boolean;
 }
 
 // @public
