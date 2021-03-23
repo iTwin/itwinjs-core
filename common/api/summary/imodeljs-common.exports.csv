@@ -130,10 +130,6 @@ public;ECJsNames
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
-alpha;class Editor3dRpcInterface 
-alpha;Editor3dRpcInterfaceWriteOptions
-alpha;Editor3dRpcInterfaceWriteReturnPropsOptions
-alpha;Editor3dRpcInterfaceWriteReturnType
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
