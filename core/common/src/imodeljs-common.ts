@@ -91,6 +91,7 @@ export * from "./ThematicDisplay";
 export * from "./Thumbnail";
 export * from "./TileProps";
 export * from "./Tween";
+export * from "./TxnAction";
 export * from "./ViewDetails";
 export * from "./ViewFlags";
 export * from "./ViewProps";

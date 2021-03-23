@@ -7,6 +7,7 @@ export * from "./AccuSnap";
 export * from "./AuxCoordSys";
 export * from "./BingLocation";
 export * from "./BriefcaseConnection";
+export * from "./BriefcaseTxns";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
 export * from "./ContextRealityModelState";
