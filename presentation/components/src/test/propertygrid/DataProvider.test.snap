@@ -367,10 +367,23 @@ Object {
         "value": Object {
           "members": Object {
             "nested-field-4": PropertyRecord {
-              "description": "display value 5",
+              "description": "display value 4",
               "property": Object {
                 "displayLabel": "Simple Field",
                 "name": "root-field$middle-field-2$nested-field-4",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "display value 4",
+                "value": "value 4",
+                "valueFormat": 0,
+              },
+            },
+            "nested-field-5": PropertyRecord {
+              "description": "display value 5",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field-2$nested-field-5",
                 "typename": "string",
               },
               "value": Object {
@@ -1328,10 +1341,23 @@ Object {
         "value": Object {
           "members": Object {
             "nested-field-4": PropertyRecord {
-              "description": "display value 5",
+              "description": "display value 4",
               "property": Object {
                 "displayLabel": "Simple Field",
                 "name": "root-field$middle-field-2$nested-field-4",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "display value 4",
+                "value": "value 4",
+                "valueFormat": 0,
+              },
+            },
+            "nested-field-5": PropertyRecord {
+              "description": "display value 5",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field-2$nested-field-5",
                 "typename": "string",
               },
               "value": Object {

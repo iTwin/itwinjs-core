@@ -743,7 +743,7 @@ describe("PropertyDataProvider", () => {
             const nestedField2 = createPrimitiveField({ name: "nested-field-2", category: category2 });
             const nestedField3 = createPrimitiveField({ name: "nested-field-3", category: category1 });
             const nestedField4 = createPrimitiveField({ name: "nested-field-4", category: category2 });
-            const nestedField5 = createPrimitiveField({ name: "nested-field-4", category: category2 });
+            const nestedField5 = createPrimitiveField({ name: "nested-field-5", category: category2 });
             const rootSiblingField = createPrimitiveField({ name: "root-sibling", category: category1 });
             const middleField1 = createTestNestedContentField({ name: "middle-field-1", category: category1, nestedFields: [nestedField1, nestedField2] });
             const middleField2 = createTestNestedContentField({ name: "middle-field-2", category: category1, nestedFields: [nestedField3, nestedField4, nestedField5] });
@@ -1131,7 +1131,7 @@ describe("PropertyDataProvider", () => {
                           },
                         }],
                       },
-                    }
+                    },
                   },
                 },
               }, {

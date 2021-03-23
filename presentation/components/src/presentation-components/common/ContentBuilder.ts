@@ -136,7 +136,6 @@ export class ContentBuilder {
   public static createPropertyRecord(fieldHierarchy: FieldHierarchy, item: Item): FieldRecord {
     const rootToThisField = createFieldPath(fieldHierarchy.field);
 
-    let isNested = false;
     let namePrefix: string | undefined;
     const pathUpToField = rootToThisField.slice(undefined, -1); // need to remove the last element because the Field information is in `field`
     for (let i = 0; i < pathUpToField.length; ++i) {
@@ -148,7 +147,6 @@ export class ContentBuilder {
 
       item = convertNestedContentItemToStructArrayItem(item, parentField, nextField);
       namePrefix = applyOptionalPrefix(parentField.name, namePrefix);
-      isNested = true;
     }
 
     if (item.isFieldMerged(fieldHierarchy.field.name))
@@ -170,7 +168,7 @@ export class ContentBuilder {
       };
     }
 
-    const recordProps = createPropertyRecordPropsFromFieldHierarchy(fieldHierarchy, isNested, (f) => item.isFieldMerged(f.name), namePrefix);
+    const recordProps = createPropertyRecordPropsFromFieldHierarchy(fieldHierarchy, item.isFieldMerged(fieldHierarchy.field.name), namePrefix);
     recordProps.extendedData = item.extendedData;
 
     return {
@@ -326,8 +324,7 @@ function createPropertyRecordPropsFromFieldInfo(fieldType: TypeDescription, name
   return props;
 }
 
-function createPropertyRecordPropsFromFieldHierarchy(fieldHierarchy: FieldHierarchy, _isNested: boolean, isMerged: (field: Field) => boolean, namePrefix: string | undefined): CreatePropertyRecordProps {
-  const isFieldMerged = isMerged(fieldHierarchy.field);
+function createPropertyRecordPropsFromFieldHierarchy(fieldHierarchy: FieldHierarchy, isFieldMerged: boolean, namePrefix: string | undefined): CreatePropertyRecordProps {
   const props: CreatePropertyRecordProps = {
     ...createPropertyRecordPropsFromFieldInfo(fieldHierarchy.field.type, applyOptionalPrefix(fieldHierarchy.field.name, namePrefix), fieldHierarchy.field.label, fieldHierarchy.field.isReadonly || isFieldMerged),
     description: ContentBuilder.createPropertyDescription(fieldHierarchy.field, { namePrefix }),
@@ -352,7 +349,7 @@ function createPropertyRecordPropsFromFieldHierarchy(fieldHierarchy: FieldHierar
           typename: fieldHierarchy.field.type.memberType.typeName,
         },
         members: fieldHierarchy.childFields?.reduce((members, childFieldHierarchy) => {
-          members[childFieldHierarchy.field.name] = createPropertyRecordPropsFromFieldHierarchy(childFieldHierarchy, false, () => false, applyOptionalPrefix(fieldHierarchy.field.name, namePrefix));
+          members[childFieldHierarchy.field.name] = createPropertyRecordPropsFromFieldHierarchy(childFieldHierarchy, false, applyOptionalPrefix(fieldHierarchy.field.name, namePrefix));
           return members;
         }, {} as { [fieldName: string]: CreatePropertyRecordProps }) ?? {},
         autoExpand: fieldHierarchy.field.autoExpand,
