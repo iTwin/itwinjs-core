@@ -120,6 +120,7 @@ public;class GeometryQuery
 public;GeometryQueryCategory = "polyface" | "curvePrimitive" | "curveCollection" | "solid" | "point" | "pointCollection" | "bsurf"
 internal;GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any
 internal;GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean
+internal;GridInViewContext
 public;GrowableBlockedArray
 public;GrowableFloat64Array
 public;GrowableXYArray 
@@ -131,6 +132,7 @@ internal;HalfEdgeMask
 internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
 public;HasZ = Readonly
 public;IModelJson
+internal;ImplicitLineXY
 public;IndexedCollectionInterval
 public;IndexedPolyface 
 public;IndexedPolyfaceSubsetVisitor 
