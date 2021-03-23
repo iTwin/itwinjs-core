@@ -7,7 +7,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { NativeHost } from "../../NativeHost";
 import { NativeAppStorage } from "../../NativeAppStorage";
 
-describe.only("NativeApp storage backend", () => {
+describe("NativeApp storage backend", () => {
   before(async () => {
     IModelJsFs.purgeDirSync(NativeHost.appSettingsCacheDir);
   });
