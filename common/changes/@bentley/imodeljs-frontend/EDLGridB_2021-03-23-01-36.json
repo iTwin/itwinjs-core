@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Refactor grid-in-view line creation to make the same context repeatedly callable.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "69321059+EarlinLutz@users.noreply.github.com"
+}
