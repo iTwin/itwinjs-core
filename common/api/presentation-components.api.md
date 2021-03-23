@@ -80,7 +80,7 @@ export namespace CacheInvalidationProps {
 // @internal
 export class ContentBuilder {
     static createPropertyDescription(field: Field, props?: PropertyDescriptionCreationProps): PropertyDescription;
-    static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord | undefined;
+    static createPropertyRecord(fieldHierarchy: FieldHierarchy, item: Item): FieldRecord;
 }
 
 // @public
