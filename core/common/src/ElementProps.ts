@@ -480,5 +480,5 @@ export interface RepositoryLinkProps extends UrlLinkProps {
  * @beta
  */
 export interface SynchronizationConfigLinkProps extends UrlLinkProps {
-  lastSuccessfulRun?: Date;
+  lastSuccessfulRun?: string;
 }
