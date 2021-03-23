@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/backend-itwin-client",
+      "comment": "Added AzCopyFileHandler",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/backend-itwin-client",
+  "email": "khanaffan@users.noreply.github.com"
+}
