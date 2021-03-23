@@ -97,9 +97,9 @@ export class NativeAppStorage {
     const storageFile = join(NativeHost.appSettingsCacheDir, this.id);
     this._ecdb.saveChanges();
     this._ecdb.closeDb();
-    if (deleteFile) {
+    (this._ecdb as any) = undefined;
+    if (deleteFile)
       IModelJsFs.removeSync(storageFile);
-    }
     NativeAppStorage._storages.delete(this.id);
   }
   private static init(ecdb: ECDb): DbResult {
@@ -130,12 +130,14 @@ export class NativeAppStorage {
       this._init = true;
     }
     const fileName = name + this._ext;
-    if (!IModelJsFs.existsSync(NativeHost.appSettingsCacheDir)) {
+    if (!IModelJsFs.existsSync(NativeHost.appSettingsCacheDir))
       IModelJsFs.recursiveMkDirSync(NativeHost.appSettingsCacheDir);
-    }
+
     const storageFile = join(NativeHost.appSettingsCacheDir, fileName);
-    let storage = this.find(fileName);
-    if (!storage) {
+    let storage: NativeAppStorage;
+    try {
+      storage = this.find(fileName);
+    } catch (err) {
       const ecdb: ECDb = new ECDb();
       if (IModelJsFs.existsSync(storageFile)) {
         ecdb.openDb(storageFile, ECDbOpenMode.ReadWrite);
