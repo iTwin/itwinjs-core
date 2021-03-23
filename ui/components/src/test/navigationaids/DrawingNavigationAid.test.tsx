@@ -9,10 +9,10 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { AxisIndex, Matrix3d, Point3d, Vector3d } from "@bentley/geometry-core";
 import { DrawingViewState, IModelConnection, ScreenViewport, ViewManager, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
-import { cleanup, fireEvent, render, wait } from "@testing-library/react";
-import { DrawingNavigationAid, DrawingNavigationCanvas, MapMode } from "../../ui-components/navigationaids/DrawingNavigationAid";
-import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
-import { TestUtils } from "../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, wait } = tlr;
+import { DrawingNavigationAid, DrawingNavigationCanvas, MapMode } from "../../ui-components/navigationaids/DrawingNavigationAid.js";
+import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents.js";
+import { TestUtils } from "../TestUtils.js";
 
 // cspell:ignore unrotate
 

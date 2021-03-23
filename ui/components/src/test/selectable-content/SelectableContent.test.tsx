@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import React from "react";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
-import { SelectableContent } from "../../ui-components/selectable-content/SelectableContent";
+import tlr from "@testing-library/react"; const { fireEvent, render, waitForElement } = tlr;
+import { SelectableContent } from "../../ui-components/selectable-content/SelectableContent.js";
 
 /* eslint-disable react/display-name */
 

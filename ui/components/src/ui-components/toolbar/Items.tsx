@@ -15,8 +15,8 @@ import {
   TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
   useWidgetOpacityContext,
 } from "@bentley/ui-core";
-import { ToolbarOpacitySetting, useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
-import { OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
+import { ToolbarOpacitySetting, useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow.js";
+import { OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction.js";
 
 /** Properties of [[ToolbarItems]] component.
  * @internal

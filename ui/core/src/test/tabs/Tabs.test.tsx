@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { HorizontalTabs, Orientation, Tabs, VerticalTabs } from "../../ui-core";
+import { HorizontalTabs, Orientation, Tabs, VerticalTabs } from "../../ui-core.js";
 
 describe("<Tabs />", () => {
   it("labels render correctly", () => {

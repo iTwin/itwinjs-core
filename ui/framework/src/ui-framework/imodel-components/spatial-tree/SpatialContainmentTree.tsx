@@ -13,9 +13,12 @@ import { Ruleset } from "@bentley/presentation-common";
 import { IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
-import { connectIModelConnection } from "../../redux/connectIModel";
-import { ClassGroupingOption } from "../Common";
-
+import { connectIModelConnection } from "../../redux/connectIModel.js";
+import { ClassGroupingOption } from "../Common.js";
+// @ts-ignore
+import { createRequire } from "module";
+// @ts-ignore
+const require = createRequire(import.meta.url);
 const PAGING_SIZE = 20;
 
 /** @internal */

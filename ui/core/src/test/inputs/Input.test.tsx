@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { fireEvent, render } from "@testing-library/react";
-import { Input } from "../../ui-core";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { Input } from "../../ui-core.js";
 import * as sinon from "sinon";
 
 describe("<Input />", () => {

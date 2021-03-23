@@ -7,7 +7,7 @@
  */
 
 import { CommonProps } from "@bentley/ui-core";
-import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
+import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl.js";
 
 /** Properties for a StatusBar field component
  * @public

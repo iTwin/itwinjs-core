@@ -22,13 +22,13 @@ import {
   FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceItem,
   ToolAssistanceSeparator,
 } from "@bentley/ui-ninezone";
-import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
-import { FrontstageManager, ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager";
-import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
-import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
-import { UiFramework } from "../../UiFramework";
-import { StatusFieldProps } from "../StatusFieldProps";
-import { UiSettingsContext } from "../../uisettings/useUiSettings";
+import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt.js";
+import { FrontstageManager, ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager.js";
+import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager.js";
+import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl.js";
+import { UiFramework } from "../../UiFramework.js";
+import { StatusFieldProps } from "../StatusFieldProps.js";
+import { UiSettingsContext } from "../../uisettings/useUiSettings.js";
 
 import acceptPointIcon from "./accept-point.svg?sprite";
 import cursorClickIcon from "./cursor-click.svg?sprite";

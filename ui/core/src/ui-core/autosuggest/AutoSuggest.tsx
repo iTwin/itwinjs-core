@@ -8,11 +8,11 @@
 
 import "./AutoSuggest.scss";
 import * as React from "react";
-import * as ReactAutosuggest from "react-autosuggest";
+import ReactAutosuggest from "react-autosuggest";
 import { Logger } from "@bentley/bentleyjs-core";
 import { SpecialKey } from "@bentley/ui-abstract";
-import { CommonProps } from "../utils/Props";
-import { UiCore } from "../UiCore";
+import { CommonProps } from "../utils/Props.js";
+import { UiCore } from "../UiCore.js";
 
 /** Data for the [[AutoSuggest]] options
  * @beta

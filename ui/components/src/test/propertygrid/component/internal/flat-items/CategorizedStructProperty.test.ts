@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import TestUtils from "../../../../TestUtils";
-import { FlatGridItemType } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableFlatGridItem";
-import { FlatGridTestUtils as GridUtils } from "./FlatGridTestUtils";
+import TestUtils from "../../../../TestUtils.js";
+import { FlatGridItemType } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableFlatGridItem.js";
+import { FlatGridTestUtils as GridUtils } from "./FlatGridTestUtils.js";
 import sinon from "sinon";
-import { MutableCategorizedStructProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedStructProperty";
+import { MutableCategorizedStructProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedStructProperty.js";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { MutableGridItemFactory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
+import { MutableGridItemFactory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory.js";
 
 describe("CategorizedStructProperty", () => {
   let factoryStub: sinon.SinonStubbedInstance<MutableGridItemFactory>;

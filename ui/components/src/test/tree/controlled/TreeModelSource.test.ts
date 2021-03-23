@@ -8,9 +8,9 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { MutableTreeModel, TreeModelNodeInput, VisibleTreeNodes } from "../../../ui-components/tree/controlled/TreeModel";
-import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
-import { ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
+import { MutableTreeModel, TreeModelNodeInput, VisibleTreeNodes } from "../../../ui-components/tree/controlled/TreeModel.js";
+import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource.js";
+import { ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider.js";
 
 describe("TreeModelSource", () => {
 

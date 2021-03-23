@@ -5,7 +5,7 @@
 import * as React from "react";
 
 import { ModalDialogManager } from "@bentley/ui-framework";
-import { TraceUiItemsProvider } from "../NetworkTraceUIProvider";
+import { TraceUiItemsProvider } from "../NetworkTraceUIProvider.js";
 import { Dialog, DialogButtonType } from "@bentley/ui-core";
 
 /**
@@ -13,9 +13,9 @@ import { Dialog, DialogButtonType } from "@bentley/ui-core";
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SampleModalDialog() {
-  const title = React.useRef (TraceUiItemsProvider.translate("Dialogs.SampleModal.title"));
+  const title = React.useRef(TraceUiItemsProvider.translate("Dialogs.SampleModal.title"));
 
-  const closeDialog = React.useCallback (() => {
+  const closeDialog = React.useCallback(() => {
     ModalDialogManager.closeDialog();
   }, []);
 
@@ -44,9 +44,9 @@ export function SampleModalDialog() {
         { type: DialogButtonType.Cancel, onClick: handleCancel },
       ]}
     >
-        Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per.
-        Vel scripta ornatus assentior cu. Duo nonumy equidem te, per ad malis deserunt consetetur.
-        In per invidunt conceptam. Ea pri aeque corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.
+      Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per.
+      Vel scripta ornatus assentior cu. Duo nonumy equidem te, per ad malis deserunt consetetur.
+      In per invidunt conceptam. Ea pri aeque corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.
     </Dialog >
   );
 }

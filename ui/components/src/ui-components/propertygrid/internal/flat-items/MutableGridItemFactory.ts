@@ -6,13 +6,13 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { IMutableCategorizedPropertyItem, IMutableGridCategoryItem } from "./MutableFlatGridItem";
+import { IMutableCategorizedPropertyItem, IMutableGridCategoryItem } from "./MutableFlatGridItem.js";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { MutableCategorizedPrimitiveProperty } from "./MutableCategorizedPrimitiveProperty";
-import { MutableCategorizedArrayProperty } from "./MutableCategorizedArrayProperty";
-import { MutableCategorizedStructProperty } from "./MutableCategorizedStructProperty";
-import { CategoryRecordsDict, MutableGridCategory } from "./MutableGridCategory";
-import { PropertyCategory } from "../../PropertyDataProvider";
+import { MutableCategorizedPrimitiveProperty } from "./MutableCategorizedPrimitiveProperty.js";
+import { MutableCategorizedArrayProperty } from "./MutableCategorizedArrayProperty.js";
+import { MutableCategorizedStructProperty } from "./MutableCategorizedStructProperty.js";
+import { CategoryRecordsDict, MutableGridCategory } from "./MutableGridCategory.js";
+import { PropertyCategory } from "../../PropertyDataProvider.js";
 
 /**
  * IMutableGridItemFactory interface for creating MutableGridItem objects

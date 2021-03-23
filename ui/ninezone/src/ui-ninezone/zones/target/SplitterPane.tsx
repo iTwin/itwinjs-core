@@ -9,9 +9,9 @@
 import "./SplitterPane.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Arrow } from "./Arrow";
-import { MergeTargetProps } from "./Merge";
-import { ZoneTarget } from "./Zone";
+import { Arrow } from "./Arrow.js";
+import { MergeTargetProps } from "./Merge.js";
+import { ZoneTarget } from "./Zone.js";
 
 /** Visual target component used to merge widgets in a splitter pane.
  * @beta

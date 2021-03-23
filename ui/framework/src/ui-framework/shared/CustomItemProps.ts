@@ -6,11 +6,11 @@
  * @module Item
  */
 
-import { ItemProps } from "./ItemProps";
+import { ItemProps } from "./ItemProps.js";
 
 /** Definition for a Custom item that renders a React component.
  * @beta
- */
+ */
 export interface CustomItemProps extends ItemProps {
   customId?: string;
   // @deprecated - use popupPanelNode

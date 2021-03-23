@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
-import { Textarea } from "../../ui-core";
-import { render } from "@testing-library/react";
+import { Textarea } from "../../ui-core.js";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { expect } from "chai";
 
 describe("<Textarea />", () => {

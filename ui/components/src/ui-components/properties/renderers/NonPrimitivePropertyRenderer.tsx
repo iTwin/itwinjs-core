@@ -9,11 +9,11 @@
 import "./NonPrimitivePropertyRenderer.scss";
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { NonPrimitivePropertyLabelRenderer } from "./label/NonPrimitivePropertyLabelRenderer";
-import { PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
-import { PropertyRenderer } from "./PropertyRenderer";
-import { PropertyView } from "./PropertyView";
-import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
+import { NonPrimitivePropertyLabelRenderer } from "./label/NonPrimitivePropertyLabelRenderer.js";
+import { PrimitiveRendererProps } from "./PrimitivePropertyRenderer.js";
+import { PropertyRenderer } from "./PropertyRenderer.js";
+import { PropertyView } from "./PropertyView.js";
+import { CommonPropertyRenderer } from "./CommonPropertyRenderer.js";
 
 /** Properties of [[NonPrimitivePropertyRenderer]] React component
  * @public

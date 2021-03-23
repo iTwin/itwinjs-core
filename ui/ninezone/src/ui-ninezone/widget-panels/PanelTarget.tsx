@@ -10,11 +10,11 @@ import "./PanelTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { assert } from "@bentley/bentleyjs-core";
-import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager";
-import { CursorTypeContext, DraggedTabStateContext, TabsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { isHorizontalPanelState } from "../base/NineZoneState";
-import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { PanelSide, PanelStateContext } from "./Panel";
+import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager.js";
+import { CursorTypeContext, DraggedTabStateContext, TabsStateContext, WidgetsStateContext } from "../base/NineZone.js";
+import { isHorizontalPanelState } from "../base/NineZoneState.js";
+import { getCursorClassName } from "../widget-panels/CursorOverlay.js";
+import { PanelSide, PanelStateContext } from "./Panel.js";
 
 /** @internal */
 export const PanelTarget = React.memo(function PanelTarget() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow

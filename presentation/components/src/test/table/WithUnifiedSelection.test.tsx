@@ -11,8 +11,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey, KeySet } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
+import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import {
   ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler,
   SelectionManager,

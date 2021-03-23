@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { AnalysisStyle } from "@bentley/imodeljs-common";
 import { ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
-import { AnalysisAnimationTimelineDataProvider } from "../../ui-framework/timeline/AnalysisAnimationProvider";
+import { AnalysisAnimationTimelineDataProvider } from "../../ui-framework/timeline/AnalysisAnimationProvider.js";
 
 describe("AnalysisAnimationTimelineDataProvider", () => {
 

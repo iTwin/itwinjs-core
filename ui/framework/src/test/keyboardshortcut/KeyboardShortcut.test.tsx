@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { Point } from "@bentley/ui-core";
 import {
   AccuDrawKeyboardShortcuts, CommandItemDef, ConfigurableUiManager, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
-} from "../../ui-framework";
-import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
-import { KeyboardShortcutMenu } from "../../ui-framework/keyboardshortcut/KeyboardShortcutMenu";
-import TestUtils from "../TestUtils";
+} from "../../ui-framework.js";
+import { CursorInformation } from "../../ui-framework/cursor/CursorInformation.js";
+import { KeyboardShortcutMenu } from "../../ui-framework/keyboardshortcut/KeyboardShortcutMenu.js";
+import TestUtils from "../TestUtils.js";
 import { ConditionalBooleanValue, FunctionKey, SpecialKey } from "@bentley/ui-abstract";
-import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher.js";
 
 describe("KeyboardShortcut", () => {
 

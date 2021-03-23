@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import { ElementSeparator, RatioChangeResult } from "../../ui-core/elementseparator/ElementSeparator";
-import { Orientation } from "../../ui-core/enums/Orientation";
+import { ElementSeparator, RatioChangeResult } from "../../ui-core/elementseparator/ElementSeparator.js";
+import { Orientation } from "../../ui-core/enums/Orientation.js";
 
 describe("ElementSeparator", () => {
   let clock: sinon.SinonFakeTimers;

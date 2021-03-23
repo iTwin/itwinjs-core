@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
-import { createFloatingWidgetState, FloatingWidgetContext, NineZoneDispatch, NineZoneDispatchContext, SendBack } from "../../ui-ninezone";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { createFloatingWidgetState, FloatingWidgetContext, NineZoneDispatch, NineZoneDispatchContext, SendBack } from "../../ui-ninezone.js";
 
 describe("SendBack", () => {
   it("should render", () => {

@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, MockRender, ViewState } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
-import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework } from "../ui-framework";
-import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
-import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
-import TestUtils, { mockUserInfo } from "./TestUtils";
+import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework } from "../ui-framework.js";
+import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices.js";
+import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices.js";
+import TestUtils, { mockUserInfo } from "./TestUtils.js";
 import { UiSettings } from "@bentley/ui-core";
-import { OpenSettingsTool } from "../ui-framework/tools/OpenSettingsTool";
+import { OpenSettingsTool } from "../ui-framework/tools/OpenSettingsTool.js";
 
 describe("UiFramework", () => {
 
@@ -52,12 +52,12 @@ describe("UiFramework", () => {
 
     const spy = sinon.spy();
     const tabName = "page1";
-    const handleOpenSetting = (settingsCategory: string)=> {
-      expect (settingsCategory).to.eql(tabName);
+    const handleOpenSetting = (settingsCategory: string) => {
+      expect(settingsCategory).to.eql(tabName);
       spy();
     };
 
-    const handleOpenSetting2 = (_settingsCategory: string)=> {
+    const handleOpenSetting2 = (_settingsCategory: string) => {
       spy();
     };
 

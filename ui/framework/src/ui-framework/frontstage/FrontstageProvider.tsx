@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { FrontstageProps } from "./Frontstage";
-import { FrontstageDef } from "./FrontstageDef";
+import { FrontstageProps } from "./Frontstage.js";
+import { FrontstageDef } from "./FrontstageDef.js";
 
 /** Provides a Frontstage as a React based definition
  * @public

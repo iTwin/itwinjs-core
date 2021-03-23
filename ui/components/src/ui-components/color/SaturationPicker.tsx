@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../UiComponents.js";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,

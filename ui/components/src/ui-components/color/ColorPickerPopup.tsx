@@ -13,10 +13,10 @@ import classnames from "classnames";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, Popup, useRefs, WebFontIcon } from "@bentley/ui-core";
-import { ColorPickerPanel } from "./ColorPickerPanel";
+import { ColorPickerPanel } from "./ColorPickerPanel.js";
 
 import "./ColorPickerPopup.scss";
-import { getCSSColorFromDef } from "./getCSSColorFromDef";
+import { getCSSColorFromDef } from "./getCSSColorFromDef.js";
 
 /** Properties for the [[ColorPickerPopup]] React component
  * @beta

@@ -6,11 +6,11 @@
  * @module Item
  */
 
-import { ItemDefBase } from "./ItemDefBase";
+import { ItemDefBase } from "./ItemDefBase.js";
 
 /** Contains a map of Items.
  * @public
- */
+ */
 export class ItemMap extends Map<string, ItemDefBase> {
 
   constructor(items?: ItemDefBase[]) {
@@ -33,7 +33,7 @@ export class ItemMap extends Map<string, ItemDefBase> {
 
 /** Contains a list of Items.
  * @public
- */
+ */
 export class ItemList extends Array<ItemDefBase> {
 
   constructor(items?: ItemDefBase[]) {

@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { MessageDiv } from "./MessageSpan";
-import { NotifyMessageType } from "./ReactNotifyMessageDetails";
+import { MessageDiv } from "./MessageSpan.js";
+import { NotifyMessageType } from "./ReactNotifyMessageDetails.js";
 
 /** Message String/Label
  * @internal

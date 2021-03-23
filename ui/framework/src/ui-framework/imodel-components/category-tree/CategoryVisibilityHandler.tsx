@@ -10,7 +10,7 @@ import * as React from "react";
 import { IModelConnection, PerModelCategoryVisibility, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import { TreeNodeItem, useAsyncValue } from "@bentley/ui-components";
-import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
+import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler.js";
 import { BeEvent } from "@bentley/bentleyjs-core";
 
 /**

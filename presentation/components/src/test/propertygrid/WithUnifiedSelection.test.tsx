@@ -14,8 +14,8 @@ import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { KeySet } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
+import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import {
   ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeType, SelectionHandler, SelectionManager,
 } from "@bentley/presentation-frontend";

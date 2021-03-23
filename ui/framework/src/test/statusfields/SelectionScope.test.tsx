@@ -9,12 +9,12 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
 import { WidgetState } from "@bentley/ui-abstract";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, PresentationSelectionScope, SelectionScopeField, SessionStateActionId, StatusBar,
   StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework, WidgetDef,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

@@ -13,9 +13,9 @@ import {
 } from "@bentley/ui-abstract";
 import { BadgeUtilities, Icon } from "@bentley/ui-core";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
-import { useActiveFrontstageId } from "../frontstage/Frontstage";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { useBackstageManager } from "./BackstageManager";
+import { useActiveFrontstageId } from "../frontstage/Frontstage.js";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { useBackstageManager } from "./BackstageManager.js";
 
 /** @internal */
 export interface BackstageComposerActionItemProps {

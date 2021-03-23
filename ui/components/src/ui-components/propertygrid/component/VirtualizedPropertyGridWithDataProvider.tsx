@@ -9,20 +9,20 @@
 
 import React from "react";
 import { SpinnerSize } from "@bentley/ui-core";
-import { DelayedSpinner } from "../../common/DelayedSpinner";
-import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
-import { FilteredType } from "../dataproviders/filterers/PropertyDataFiltererBase";
-import { usePropertyGridEventHandler, usePropertyGridModel, usePropertyGridModelSource } from "../internal/PropertyGridHooks";
-import { IPropertyDataProvider } from "../PropertyDataProvider";
-import { CommonPropertyGridProps } from "./PropertyGridCommons";
-import { VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid";
+import { DelayedSpinner } from "../../common/DelayedSpinner.js";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps.js";
+import { FilteredType } from "../dataproviders/filterers/PropertyDataFiltererBase.js";
+import { usePropertyGridEventHandler, usePropertyGridModel, usePropertyGridModelSource } from "../internal/PropertyGridHooks.js";
+import { IPropertyDataProvider } from "../PropertyDataProvider.js";
+import { CommonPropertyGridProps } from "./PropertyGridCommons.js";
+import { VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid.js";
 
 /** Properties for [[VirtualizedPropertyGridWithDataProvider]] React component
  * @alpha
  */
 export interface VirtualizedPropertyGridWithDataProviderProps extends CommonPropertyGridProps {
   dataProvider: IPropertyDataProvider;
-  highlight?: HighlightingComponentProps & {filteredTypes?: FilteredType[]};
+  highlight?: HighlightingComponentProps & { filteredTypes?: FilteredType[] };
 }
 
 /**

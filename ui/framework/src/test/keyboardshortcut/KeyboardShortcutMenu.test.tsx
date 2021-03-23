@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
-import { CommandItemDef, KeyboardShortcutManager, KeyboardShortcutMenu, KeyboardShortcutProps } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import sinon from "sinon";
+import { CommandItemDef, KeyboardShortcutManager, KeyboardShortcutMenu, KeyboardShortcutProps } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 import { FunctionKey, SpecialKey } from "@bentley/ui-abstract";
-import { UiFramework } from "../../ui-framework/UiFramework";
+import { UiFramework } from "../../ui-framework/UiFramework.js";
 
 describe("KeyboardShortcutMenu", () => {
   const testSpyMethod = sinon.spy();

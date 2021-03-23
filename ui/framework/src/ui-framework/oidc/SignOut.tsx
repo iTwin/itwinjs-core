@@ -13,8 +13,8 @@ import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-c
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { UserInfo } from "@bentley/itwin-client";
 import { getUserColor } from "@bentley/ui-core";
-import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
-import { UiFramework } from "../UiFramework";
+import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager.js";
+import { UiFramework } from "../UiFramework.js";
 
 // cSpell:Ignore userprofile signoutprompt
 

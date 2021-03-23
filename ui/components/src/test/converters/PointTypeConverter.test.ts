@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import { Primitives } from "@bentley/ui-abstract";
 import { isPromiseLike } from "@bentley/ui-core";
-import { ConvertedPrimitives, Point2dTypeConverter, Point3dTypeConverter } from "../../ui-components";
-import { TypeConverter } from "../../ui-components/converters/TypeConverter";
-import { TypeConverterManager } from "../../ui-components/converters/TypeConverterManager";
-import TestUtils from "../TestUtils";
+import { ConvertedPrimitives, Point2dTypeConverter, Point3dTypeConverter } from "../../ui-components.js";
+import { TypeConverter } from "../../ui-components/converters/TypeConverter.js";
+import { TypeConverterManager } from "../../ui-components/converters/TypeConverterManager.js";
+import TestUtils from "../TestUtils.js";
 
 describe("Point2dTypeConverter", () => {
 

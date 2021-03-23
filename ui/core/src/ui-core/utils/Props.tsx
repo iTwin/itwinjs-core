@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Omit } from "./typeUtils";
+import { Omit } from "./typeUtils.js";
 
 /** Props used by components that expect class name to be passed in.
  * @public

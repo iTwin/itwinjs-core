@@ -5,9 +5,9 @@
 import * as React from "react";
 import { ArrayValue } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { render } from "@testing-library/react";
-import { TableArrayValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/ArrayValueRenderer";
-import TestUtils from "../../../../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { TableArrayValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/ArrayValueRenderer.js";
+import TestUtils from "../../../../TestUtils.js";
 
 describe("ArrayValueRenderer", () => {
   it("renders correctly", () => {

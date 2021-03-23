@@ -6,12 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
-import { cleanup, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
 import {
   DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
-} from "../../../ui-components/dragdrop/DragDropDef";
-import { DragDropRow, DragDropRowWrapper } from "../../../ui-components/table/hocs/DragDropRow";
-import { createDnDRenderer } from "../../tree/deprecated/hocs/withDragDrop.test";
+} from "../../../ui-components/dragdrop/DragDropDef.js";
+import { DragDropRow, DragDropRowWrapper } from "../../../ui-components/table/hocs/DragDropRow.js";
+import { createDnDRenderer } from "../../tree/deprecated/hocs/withDragDrop.test.js";
 
 /* eslint-disable deprecation/deprecation */
 

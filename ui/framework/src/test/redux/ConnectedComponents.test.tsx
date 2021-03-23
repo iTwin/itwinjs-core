@@ -6,11 +6,11 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { fireEvent, render } from "@testing-library/react";
-import { connectIModelConnection } from "../../ui-framework/redux/connectIModel";
-import { SessionStateActionsProps, sessionStateMapDispatchToProps } from "../../ui-framework/redux/SessionState";
-import { UiFramework } from "../../ui-framework/UiFramework";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { connectIModelConnection } from "../../ui-framework/redux/connectIModel.js";
+import { SessionStateActionsProps, sessionStateMapDispatchToProps } from "../../ui-framework/redux/SessionState.js";
+import { UiFramework } from "../../ui-framework/UiFramework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("ConnectedContent", () => {
   before(async () => {

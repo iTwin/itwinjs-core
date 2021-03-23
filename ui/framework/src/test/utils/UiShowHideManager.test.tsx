@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
-import { render } from "@testing-library/react";
+import sinon from "sinon";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, FrontstageManager, INACTIVITY_TIME_DEFAULT, UiFramework,
   UiShowHideManager,
-} from "../../ui-framework";
-import { TestFrontstage } from "../frontstage/FrontstageTestUtils";
-import TestUtils from "../TestUtils";
+} from "../../ui-framework.js";
+import { TestFrontstage } from "../frontstage/FrontstageTestUtils.js";
+import TestUtils from "../TestUtils.js";
 
 describe("UiShowHideManager", () => {
 

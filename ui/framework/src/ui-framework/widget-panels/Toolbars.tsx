@@ -8,7 +8,7 @@
 
 import "./Toolbars.scss";
 import * as React from "react";
-import { useActiveFrontstageDef } from "../frontstage/Frontstage";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage.js";
 
 /** @internal */
 export function WidgetPanelsToolbars() {

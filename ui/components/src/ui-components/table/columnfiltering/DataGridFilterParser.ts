@@ -8,14 +8,14 @@
 
 // Matches how react-data-grid is exported
 // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
-import ReactDataGrid = require("react-data-grid");
+import ReactDataGrid from "react-data-grid";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { Timer } from "@bentley/ui-core";
-import { UiComponents } from "../../UiComponents";
-import { TableColumn } from "../component/TableColumn";
-import { ColumnDescription, FilterRenderer, TableDistinctValue } from "../TableDataProvider";
-import { ColumnFilterDescriptor, FilterCompositionLogicalOperator, FilterOperator } from "./ColumnFiltering";
+import { UiComponents } from "../../UiComponents.js";
+import { TableColumn } from "../component/TableColumn.js";
+import { ColumnDescription, FilterRenderer, TableDistinctValue } from "../TableDataProvider.js";
+import { ColumnFilterDescriptor, FilterCompositionLogicalOperator, FilterOperator } from "./ColumnFiltering.js";
 
 /** @internal */
 export interface ReactDataGridFilter extends ReactDataGrid.Filter {

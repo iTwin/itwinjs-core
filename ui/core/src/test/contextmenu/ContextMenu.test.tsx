@@ -5,12 +5,12 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
-import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core";
-import { TildeFinder } from "../../ui-core/contextmenu/TildeFinder";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
+import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core.js";
+import { TildeFinder } from "../../ui-core/contextmenu/TildeFinder.js";
+import TestUtils from "../TestUtils.js";
 
 describe("ContextMenu", () => {
 

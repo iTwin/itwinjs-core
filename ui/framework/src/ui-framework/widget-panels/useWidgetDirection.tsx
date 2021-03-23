@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { findTab, isHorizontalPanelSide, NineZoneContext, TabIdContext } from "@bentley/ui-ninezone";
-import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion.js";
 
 /** Returns widget direction.
  * I.e. "horizontal" when widget is in bottom/top stage panel.

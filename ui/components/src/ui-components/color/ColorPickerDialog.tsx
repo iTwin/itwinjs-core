@@ -11,7 +11,7 @@
 import * as React from "react";
 import { Dialog, DialogButtonType } from "@bentley/ui-core";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { ColorPickerPanel } from "./ColorPickerPanel";
+import { ColorPickerPanel } from "./ColorPickerPanel.js";
 
 /** Properties for the [[ColorPickerDialog]] React component
  * @beta

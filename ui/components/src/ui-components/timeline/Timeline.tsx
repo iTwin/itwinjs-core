@@ -7,7 +7,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { Handles, Rail, Slider, SliderItem, Ticks } from "react-compound-slider";
 import { CommonProps } from "@bentley/ui-core";
-import { Milestone } from "./interfaces";
+import { Milestone } from "./interfaces.js";
 
 // istanbul ignore next - WIP
 const formatDate = (value: number) => {

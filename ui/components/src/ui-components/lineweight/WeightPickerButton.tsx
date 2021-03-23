@@ -9,11 +9,11 @@
 import "./WeightPickerButton.scss";
 import classnames from "classnames";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
+import rrd from "react-resize-detector"; const ReactResizeDetector: typeof rrd = (rrd as any).default;
 import { ColorDef } from "@bentley/imodeljs-common";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, Popup } from "@bentley/ui-core";
-import { LineWeightSwatch } from "./Swatch";
+import { LineWeightSwatch } from "./Swatch.js";
 
 // cSpell:ignore weightpicker lineweight
 

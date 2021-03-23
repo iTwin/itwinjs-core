@@ -10,7 +10,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { Checkbox, CommonProps, Select, SelectOption } from "@bentley/ui-core";
 import { Format, FormatProps, FormatTraits } from "@bentley/imodeljs-quantity";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../UiComponents.js";
 
 interface UomSeparatorSelectorProps extends CommonProps {
   separator: string;

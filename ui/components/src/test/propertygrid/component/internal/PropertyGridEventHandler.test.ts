@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import sinon from "sinon";
-import { FlatGridTestUtils } from "./flat-items/FlatGridTestUtils";
-import { MutablePropertyGridModel } from "../../../../ui-components/propertygrid/internal/PropertyGridModel";
-import { PropertyGridEventHandler } from "../../../../ui-components/propertygrid/internal/PropertyGridEventHandler";
-import { PropertyGridModelChangeEvent } from "../../../../ui-components/propertygrid/internal/PropertyGridModelChangeEvent";
-import { PropertyGridModelSource } from "../../../../ui-components/propertygrid/internal/PropertyGridModelSource";
+import { FlatGridTestUtils } from "./flat-items/FlatGridTestUtils.js";
+import { MutablePropertyGridModel } from "../../../../ui-components/propertygrid/internal/PropertyGridModel.js";
+import { PropertyGridEventHandler } from "../../../../ui-components/propertygrid/internal/PropertyGridEventHandler.js";
+import { PropertyGridModelChangeEvent } from "../../../../ui-components/propertygrid/internal/PropertyGridModelChangeEvent.js";
+import { PropertyGridModelSource } from "../../../../ui-components/propertygrid/internal/PropertyGridModelSource.js";
 
 describe("PropertyGridEventHandler", () => {
   describe("onExpansionToggledFactory", () => {

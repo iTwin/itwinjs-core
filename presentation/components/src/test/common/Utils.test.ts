@@ -11,7 +11,7 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import {
   createRandomDescriptor, createRandomLabelCompositeValue, createRandomLabelDefinition, createRandomNestedContentField, createRandomPropertiesField,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
 import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";

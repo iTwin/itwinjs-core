@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { IModelApp, NoRenderApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { useActiveViewport } from "../../ui-framework";
-import { mount } from "../TestUtils";
+import { useActiveViewport } from "../../ui-framework.js";
+import { mount } from "../TestUtils.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ActiveViewport = (props: { children?: (activeViewport: ReturnType<typeof useActiveViewport>) => React.ReactNode }) => {
@@ -21,7 +21,8 @@ const ActiveViewport = (props: { children?: (activeViewport: ReturnType<typeof u
 
 describe("useActiveViewport", () => {
   before(async () => {
-    (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
+    // @ts-ignore
+    (global as any).XMLHttpRequest = (await import("xmlhttprequest")).XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
     await NoRenderApp.startup();
   });
 

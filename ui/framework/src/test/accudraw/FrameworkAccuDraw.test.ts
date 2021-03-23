@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { expect } from "chai";
 import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, ItemField, MockRender, RotationMode } from "@bentley/imodeljs-frontend";
-import TestUtils from "../TestUtils";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
+import TestUtils from "../TestUtils.js";
+import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw.js";
 import { AccuDrawUiAdmin, ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin.js";
 
 // cspell:ignore dont uiadmin
 

@@ -10,8 +10,8 @@ import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Point, PointProps, RectangleProps, Size, SizeProps, UiEvent } from "@bentley/ui-core";
-import { UiFramework } from "../../UiFramework";
-import { CursorPopup } from "./CursorPopup";
+import { UiFramework } from "../../UiFramework.js";
+import { CursorPopup } from "./CursorPopup.js";
 
 /** Options for the [[CursorPopupManager]] open method
  * @public
@@ -29,26 +29,26 @@ export interface CursorPopupOptions {
 
 /** CursorPopup Update Position Event Args interface.
  * @internal
- */
+ */
 export interface CursorPopupUpdatePositionEventArgs {
   pt: PointProps;
 }
 
 /** CursorPopup Update Position Event class.
  * @internal
- */
+ */
 export class CursorPopupUpdatePositionEvent extends UiEvent<CursorPopupUpdatePositionEventArgs> { }
 
 /** CursorPopup FadeOut Event Args interface.
  * @internal
- */
+ */
 export interface CursorPopupFadeOutEventArgs {
   id: string;
 }
 
 /** CursorPopup FadeOut Event class.
  * @internal
- */
+ */
 export class CursorPopupFadeOutEvent extends UiEvent<CursorPopupFadeOutEventArgs> { }
 
 /** Information maintained by CursorPopupManager about a CursorPopup
@@ -68,7 +68,7 @@ interface CursorPopupInfo {
 
 /** Cursor Popups Changed Event class.
  * @internal
- */
+ */
 class CursorPopupsChangedEvent extends UiEvent<{}> { }
 
 /** CursorPopup component
@@ -289,7 +289,7 @@ interface CursorPopupRendererState {
 
 /** CursorPopupRenderer React component.
  * @public
- */
+ */
 export class CursorPopupRenderer extends React.Component<any, CursorPopupRendererState> {
 
   constructor(props: any) {

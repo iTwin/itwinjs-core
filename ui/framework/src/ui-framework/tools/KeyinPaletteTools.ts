@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { clearKeyinPaletteHistory } from "../popup/KeyinPalettePanel";
+import { clearKeyinPaletteHistory } from "../popup/KeyinPalettePanel.js";
 import { Tool } from "@bentley/imodeljs-frontend";
 
 /**

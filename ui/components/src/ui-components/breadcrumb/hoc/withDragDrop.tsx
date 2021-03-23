@@ -8,11 +8,11 @@
 
 import * as React from "react";
 import { getDisplayName } from "@bentley/ui-core";
-import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../dragdrop/DragDropDef";
-import { TreeDragDropType } from "../../tree/deprecated/hocs/withDragDrop";
-import { TreeNodeItem } from "../../tree/TreeDataProvider";
-import { BreadcrumbNode, BreadcrumbNodeProps, BreadcrumbProps } from "../Breadcrumb";
-import { DragDropBreadcrumbNode } from "./DragDropBreadcrumbNode";
+import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../dragdrop/DragDropDef.js";
+import { TreeDragDropType } from "../../tree/deprecated/hocs/withDragDrop.js";
+import { TreeNodeItem } from "../../tree/TreeDataProvider.js";
+import { BreadcrumbNode, BreadcrumbNodeProps, BreadcrumbProps } from "../Breadcrumb.js";
+import { DragDropBreadcrumbNode } from "./DragDropBreadcrumbNode.js";
 
 /* eslint-disable deprecation/deprecation */
 

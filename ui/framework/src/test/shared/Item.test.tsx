@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { IModelApp, SelectionTool } from "@bentley/imodeljs-frontend";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
 import { Orientation, Size } from "@bentley/ui-core";
-import { ActionButtonItemDef, CommandItemDef, ItemProps, ToolItemDef } from "../../ui-framework";
-import TestUtils from "../TestUtils";
-import { Tool1 } from "../tools/Tool1";
+import { ActionButtonItemDef, CommandItemDef, ItemProps, ToolItemDef } from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
+import { Tool1 } from "../tools/Tool1.js";
 
 describe("Item", () => {
 

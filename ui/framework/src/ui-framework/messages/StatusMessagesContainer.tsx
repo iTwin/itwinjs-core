@@ -9,13 +9,13 @@
 import "./StatusMessagesContainer.scss";
 import * as React from "react";
 import classnames from "classnames";
-import ReactResizeDetector from "react-resize-detector";
-import { StatusMessage } from "./StatusMessageManager";
-import { ActivityMessageEventArgs } from "./MessageManager";
+import rrd from "react-resize-detector"; const ReactResizeDetector: typeof rrd = (rrd as any).default;
+import { StatusMessage } from "./StatusMessageManager.js";
+import { ActivityMessageEventArgs } from "./MessageManager.js";
 import { OutputMessageType } from "@bentley/imodeljs-frontend";
-import { ToastMessage } from "./ToastMessage";
-import { StickyMessage } from "./StickyMessage";
-import { ActivityMessage } from "./ActivityMessage";
+import { ToastMessage } from "./ToastMessage.js";
+import { StickyMessage } from "./StickyMessage.js";
+import { ActivityMessage } from "./ActivityMessage.js";
 
 /** Properties for [[StatusMessagesContainer]] component
  * @internal

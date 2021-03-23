@@ -6,9 +6,9 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { PrimitiveValue, PropertyConverterInfo, PropertyValueFormat } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
-import { ColumnDescription, RowItem, SimpleTableDataProvider } from "../../ui-components";
-import { TableFilterDescriptorCollection } from "../../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
-import { TestUtils } from "../TestUtils";
+import { ColumnDescription, RowItem, SimpleTableDataProvider } from "../../ui-components.js";
+import { TableFilterDescriptorCollection } from "../../ui-components/table/columnfiltering/TableFilterDescriptorCollection.js";
+import { TestUtils } from "../TestUtils.js";
 
 const columns: ColumnDescription[] = [
   {

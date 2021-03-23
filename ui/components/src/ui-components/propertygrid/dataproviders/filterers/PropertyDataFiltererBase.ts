@@ -8,7 +8,7 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory } from "../../PropertyDataProvider";
+import { PropertyCategory } from "../../PropertyDataProvider.js";
 
 /**
  * Enumeration of possible component filtered types

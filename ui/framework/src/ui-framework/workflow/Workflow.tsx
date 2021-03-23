@@ -8,14 +8,14 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
-import { ItemDefBase } from "../shared/ItemDefBase";
-import { ItemProps } from "../shared/ItemProps";
-import { UiFramework } from "../UiFramework";
-import { Task, TaskManager } from "./Task";
+import { ItemDefBase } from "../shared/ItemDefBase.js";
+import { ItemProps } from "../shared/ItemProps.js";
+import { UiFramework } from "../UiFramework.js";
+import { Task, TaskManager } from "./Task.js";
 
 /** Properties for a [[Workflow]].
  * @public
- */
+ */
 export interface WorkflowProps extends ItemProps {
   id: string;
   defaultTaskId: string;
@@ -25,7 +25,7 @@ export interface WorkflowProps extends ItemProps {
 
 /** Workflow Properties List definition.
  * @public
- */
+ */
 export interface WorkflowPropsList {
   defaultWorkflowId: string;
   workflows: WorkflowProps[];
@@ -34,7 +34,7 @@ export interface WorkflowPropsList {
 /** Workflow class.
  * A Workflow is a defined sequence of tasks used to accomplish a goal.
  * @public
- */
+ */
 export class Workflow extends ItemDefBase {
   /** Id of the Workflow */
   public workflowId: string;
@@ -140,7 +140,7 @@ export class Workflow extends ItemDefBase {
 
 /** Workflow Activated Event Args class.
  * @public
- */
+ */
 export interface WorkflowActivatedEventArgs {
   workflowId?: string;
   workflow?: Workflow;
@@ -148,12 +148,12 @@ export interface WorkflowActivatedEventArgs {
 
 /** Workflow Activated Event class.
  * @public
- */
+ */
 export class WorkflowActivatedEvent extends UiEvent<WorkflowActivatedEventArgs> { }
 
 /** Task Activated Event Args class.
  * @public
- */
+ */
 export interface TaskActivatedEventArgs {
   taskId?: string;
   task?: Task;
@@ -164,12 +164,12 @@ export interface TaskActivatedEventArgs {
 
 /** Task Activated Event class.
  * @public
- */
+ */
 export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> { }
 
 /** Workflow Manager class.
  * @public
- */
+ */
 export class WorkflowManager {
   private static _workflows: Map<string, Workflow> = new Map<string, Workflow>();
   private static _activeWorkflow: Workflow | undefined;

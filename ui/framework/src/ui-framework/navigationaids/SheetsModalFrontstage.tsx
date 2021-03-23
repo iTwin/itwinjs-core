@@ -11,9 +11,9 @@ import classnames from "classnames";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { CommonProps, FlexWrapContainer, ScrollView, SearchBox, UiCore, UiEvent } from "@bentley/ui-core";
-import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
-import { UiFramework } from "../UiFramework";
-import { SheetData } from "./SheetNavigationAid";
+import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager.js";
+import { UiFramework } from "../UiFramework.js";
+import { SheetData } from "./SheetNavigationAid.js";
 
 /** Data about a sheet card
  * @alpha

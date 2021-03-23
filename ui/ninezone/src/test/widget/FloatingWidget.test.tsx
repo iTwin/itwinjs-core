@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, fireEvent, render } from "@testing-library/react";
-import { addFloatingWidget, addTab, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import tlr from "@testing-library/react"; const { act, fireEvent, render } = tlr;
+import { addFloatingWidget, addTab, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../ui-ninezone.js";
+import { NineZoneProvider } from "../Providers.js";
 
 describe("FloatingWidget", () => {
   it("should render", () => {

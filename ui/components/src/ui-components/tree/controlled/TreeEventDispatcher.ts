@@ -6,32 +6,32 @@
  * @module Tree
  */
 
-import { Observable } from "rxjs/internal/Observable";
-import { concat } from "rxjs/internal/observable/concat";
-import { defer } from "rxjs/internal/observable/defer";
-import { EMPTY } from "rxjs/internal/observable/empty";
-import { from } from "rxjs/internal/observable/from";
-import { merge } from "rxjs/internal/observable/merge";
-import { of } from "rxjs/internal/observable/of";
-import { concatAll } from "rxjs/internal/operators/concatAll";
-import { concatMap } from "rxjs/internal/operators/concatMap";
-import { distinctUntilChanged } from "rxjs/internal/operators/distinctUntilChanged";
-import { finalize } from "rxjs/internal/operators/finalize";
-import { map } from "rxjs/internal/operators/map";
-import { mergeAll } from "rxjs/internal/operators/mergeAll";
-import { publishReplay } from "rxjs/internal/operators/publishReplay";
-import { refCount } from "rxjs/internal/operators/refCount";
-import { subscribeOn } from "rxjs/internal/operators/subscribeOn";
-import { toArray } from "rxjs/internal/operators/toArray";
-import { asapScheduler } from "rxjs/internal/scheduler/asap";
+import { Observable } from "rxjs/internal/Observable.js";
+import { concat } from "rxjs/internal/observable/concat.js";
+import { defer } from "rxjs/internal/observable/defer.js";
+import { EMPTY } from "rxjs/internal/observable/empty.js";
+import { from } from "rxjs/internal/observable/from.js";
+import { merge } from "rxjs/internal/observable/merge.js";
+import { of } from "rxjs/internal/observable/of.js";
+import { concatAll } from "rxjs/internal/operators/concatAll.js";
+import { concatMap } from "rxjs/internal/operators/concatMap.js";
+import { distinctUntilChanged } from "rxjs/internal/operators/distinctUntilChanged.js";
+import { finalize } from "rxjs/internal/operators/finalize.js";
+import { map } from "rxjs/internal/operators/map.js";
+import { mergeAll } from "rxjs/internal/operators/mergeAll.js";
+import { publishReplay } from "rxjs/internal/operators/publishReplay.js";
+import { refCount } from "rxjs/internal/operators/refCount.js";
+import { subscribeOn } from "rxjs/internal/operators/subscribeOn.js";
+import { toArray } from "rxjs/internal/operators/toArray.js";
+import { asapScheduler } from "rxjs/internal/scheduler/asap.js";
 import { CheckBoxState } from "@bentley/ui-core";
-import { SelectionMode } from "../../common/selection/SelectionModes";
-import { TreeNodeItem } from "../TreeDataProvider";
-import { IndividualSelection, isRangeSelection, RangeSelection, TreeSelectionManager } from "./internal/TreeSelectionManager";
-import { TreeActions } from "./TreeActions";
-import { TreeEvents } from "./TreeEvents";
-import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "./TreeModel";
-import { ITreeNodeLoader } from "./TreeNodeLoader";
+import { SelectionMode } from "../../common/selection/SelectionModes.js";
+import { TreeNodeItem } from "../TreeDataProvider.js";
+import { IndividualSelection, isRangeSelection, RangeSelection, TreeSelectionManager } from "./internal/TreeSelectionManager.js";
+import { TreeActions } from "./TreeActions.js";
+import { TreeEvents } from "./TreeEvents.js";
+import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "./TreeModel.js";
+import { ITreeNodeLoader } from "./TreeNodeLoader.js";
 
 /**
  * Default event dispatcher that emits tree events according performed actions.

@@ -13,14 +13,14 @@ import { viewWithUnifiedSelection } from "@bentley/presentation-components";
 import { ViewportComponent, ViewStateProp } from "@bentley/ui-components";
 import { FillCentered } from "@bentley/ui-core";
 
-import { FrontstageManager } from "../../ui-framework";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { connectIModelConnectionAndViewState } from "../redux/connectIModel";
-import { UiFramework } from "../UiFramework";
-import { DefaultViewOverlay } from "./DefaultViewOverlay";
-import { ViewportContentControl } from "./ViewportContentControl";
-import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
+import { FrontstageManager } from "../../ui-framework.js";
+import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl.js";
+import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager.js";
+import { connectIModelConnectionAndViewState } from "../redux/connectIModel.js";
+import { UiFramework } from "../UiFramework.js";
+import { DefaultViewOverlay } from "./DefaultViewOverlay.js";
+import { ViewportContentControl } from "./ViewportContentControl.js";
+import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid.js";
 import { UiError } from "@bentley/ui-abstract";
 
 // create a HOC viewport component that supports unified selection
@@ -34,7 +34,7 @@ export const IModelConnectedViewport = connectIModelConnectionAndViewState(null,
 
 /** [[IModelViewportControl]] options. These options are set in the applicationData property of the [[ContentProps]].
  * @beta
- */
+ */
 export interface IModelViewportControlOptions {
   /** ViewState or a function to return a ViewState */
   viewState?: ViewStateProp;
@@ -54,7 +54,7 @@ export interface IModelViewportControlOptions {
 
 /** iModel Viewport Control
  * @beta
- */
+ */
 // istanbul ignore next
 export class IModelViewportControl extends ViewportContentControl {
   public static get id() {

@@ -6,9 +6,9 @@
  * @module Notification
  */
 
-import { NotifyMessageDetailsType } from "./ReactNotifyMessageDetails";
+import { NotifyMessageDetailsType } from "./ReactNotifyMessageDetails.js";
 import { MessageSeverity } from "@bentley/ui-core";
-import { MessageManager } from "./MessageManager";
+import { MessageManager } from "./MessageManager.js";
 import { OutputMessageType } from "@bentley/imodeljs-frontend";
 
 /** Interface for Status Message

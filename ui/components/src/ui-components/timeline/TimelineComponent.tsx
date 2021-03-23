@@ -10,13 +10,13 @@ import "./TimelineComponent.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { GenericUiEventArgs, RelativePosition, UiAdmin } from "@bentley/ui-abstract";
-import { UiComponents } from "../UiComponents";
-import { ContextMenu, ContextMenuItem } from "./ContextMenu";
-import { InlineEdit } from "./InlineEdit";
-import { Milestone, PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
-import { PlayButton, PlayerButton } from "./PlayerButton";
-import { Scrubber } from "./Scrubber";
-import { Timeline } from "./Timeline";
+import { UiComponents } from "../UiComponents.js";
+import { ContextMenu, ContextMenuItem } from "./ContextMenu.js";
+import { InlineEdit } from "./InlineEdit.js";
+import { Milestone, PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces.js";
+import { PlayButton, PlayerButton } from "./PlayerButton.js";
+import { Scrubber } from "./Scrubber.js";
+import { Timeline } from "./Timeline.js";
 
 // cspell:ignore millisec
 
@@ -325,7 +325,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     this.setState(
       (prevState) => ({ repeat: !prevState.repeat, isSettingsOpen: false }),
       () => {
-      // istanbul ignore else
+        // istanbul ignore else
         if (this.props.onSettingsChange) {
           this.props.onSettingsChange({ loop: this.state.repeat });
         }

@@ -15,11 +15,11 @@ import {
   ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Descriptor, Field, Item, NestedContentField, NestedContentValue,
   PresentationError, PropertiesField, Property, PropertyValueFormat, RegisteredRuleset, StructTypeDescription, ValuesDictionary,
 } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
 import {
   createRandomCategory, createRandomDescriptor, createRandomECClassInfo, createRandomECInstanceKey, createRandomNestedContentField,
   createRandomPrimitiveField, createRandomPrimitiveTypeDescription, createRandomPropertiesField, createRandomRelationshipPath,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import {
   FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager, RulesetManager,
 } from "@bentley/presentation-frontend";
@@ -27,7 +27,7 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
-import { mockPresentationManager } from "../_helpers/UiComponents";
+import { mockPresentationManager } from "../_helpers/UiComponents.js";
 
 const favoritesCategoryName = "Favorite";
 /**

@@ -6,7 +6,7 @@
  * @module UiSettings
  */
 
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "./UiSettings";
+import { UiSettings, UiSettingsResult, UiSettingsStatus } from "./UiSettings.js";
 
 /** A Ui Setting with namespace and setting name.
  * @beta

@@ -11,8 +11,8 @@ import {
   AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider,
   PagedTreeNodeLoader, TreeModelSource, useDebouncedAsyncValue,
 } from "@bentley/ui-components";
-import { FilteredPresentationTreeDataProvider, IFilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
-import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import { FilteredPresentationTreeDataProvider, IFilteredPresentationTreeDataProvider } from "../FilteredDataProvider.js";
+import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider.js";
 
 const FILTERED_DATA_PAGE_SIZE = 20;
 

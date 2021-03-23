@@ -7,16 +7,16 @@ import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Content, Item, RulesetsFactory } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
 import {
   createRandomContent, createRandomDescriptor, createRandomPrimitiveField, createRandomRuleset,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";
 import {
   DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider,
-} from "../presentation-components";
-import { createRandomPropertyRecord, mockPresentationManager } from "./_helpers/UiComponents";
+} from "../presentation-components.js";
+import { createRandomPropertyRecord, mockPresentationManager } from "./_helpers/UiComponents.js";
 
 describe("DataProvidersFactory", () => {
 

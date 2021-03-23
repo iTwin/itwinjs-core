@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { RelativePosition } from "@bentley/ui-abstract";
-import { PopupContextMenu } from "../../ui-core";
+import { PopupContextMenu } from "../../ui-core.js";
 
 describe("PopupContextMenu", () => {
   it("renders correctly", () => {

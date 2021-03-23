@@ -10,7 +10,7 @@ import "./Content.scss";
 import * as React from "react";
 import { Point } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
-import { useTransientState } from "./ContentRenderer";
+import { useTransientState } from "./ContentRenderer.js";
 
 /** Properties of [[ScrollableWidgetContent]] component.
  * @internal future

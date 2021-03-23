@@ -12,8 +12,8 @@ import * as React from "react";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, Popup, useRefs, WebFontIcon } from "@bentley/ui-core";
-import { ColorSwatch } from "./Swatch";
-import { getCSSColorFromDef } from "./getCSSColorFromDef";
+import { ColorSwatch } from "./Swatch.js";
+import { getCSSColorFromDef } from "./getCSSColorFromDef.js";
 
 // cSpell:ignore colorpicker
 

@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { fireEvent, render, RenderResult } from "@testing-library/react";
-import { Popup, PopupProps } from "../../ui-core";
-import { createBoundingClientRect } from "../Utils";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { Popup, PopupProps } from "../../ui-core.js";
+import { createBoundingClientRect } from "../Utils.js";
 
 function NestedPopup() {
   const [showPopup, setShowPopup] = React.useState(false);
@@ -379,7 +379,7 @@ describe("<Popup />", () => {
   });
 
   describe("positioning", () => {
-    let divWrapper: RenderResult;
+    let divWrapper: tlr.RenderResult;
     let targetElement: HTMLElement | null;
 
     beforeEach(() => {

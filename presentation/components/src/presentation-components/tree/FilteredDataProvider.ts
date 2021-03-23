@@ -12,8 +12,8 @@ import { NodeKey, NodePathElement } from "@bentley/presentation-common";
 import {
   ActiveMatchInfo, DelayLoadedTreeNodeItem, PageOptions, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy, TreeNodeItem,
 } from "@bentley/ui-components";
-import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
-import { createTreeNodeItem } from "./Utils";
+import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider.js";
+import { createTreeNodeItem } from "./Utils.js";
 
 /**
  * Filtered presentation tree data provider.

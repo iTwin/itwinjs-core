@@ -9,8 +9,8 @@ import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import {
   DisabledResizeHandles, DraggedWidgetManager, getClosedWidgetTabIndex, getColumnZones, getZoneCell, HorizontalAnchor, ResizeHandle,
   ResizeStrategy, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManager, ZonesManager, ZonesManagerProps, ZoneTargetType,
-} from "../../../ui-ninezone";
-import { TestProps } from "./TestProps";
+} from "../../../ui-ninezone.js";
+import { TestProps } from "./TestProps.js";
 
 describe("ZonesManager", () => {
   const managerProps = Moq.Mock.ofType<ZonesManagerProps>();

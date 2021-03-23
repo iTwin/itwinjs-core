@@ -12,8 +12,8 @@ import * as React from "react";
 import {
   ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
 import { ImageCheckBox } from "@bentley/ui-core";
 
 // cSpell:ignore imagecheckbox

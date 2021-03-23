@@ -9,9 +9,9 @@
 import "./Table.scss";
 import "../columnfiltering/ColumnFiltering.scss";
 import classnames from "classnames";
-import { memoize } from "lodash";
+import { memoize } from "lodash-es";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
+import rrd from "react-resize-detector"; const ReactResizeDetector: typeof rrd = (rrd as any).default;
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import {
@@ -19,27 +19,27 @@ import {
 } from "@bentley/ui-core";
 import {
   MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
-} from "../../common/selection/SelectionHandler";
-import { SelectionMode } from "../../common/selection/SelectionModes";
-import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
-import { TypeConverterManager } from "../../converters/TypeConverterManager";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { TableRowStyleProvider } from "../../properties/ItemStyle";
-import { PropertyDialogState, PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering";
-import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter";
-import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter";
-import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter";
-import { DataGridFilterParser, ReactDataGridFilter } from "../columnfiltering/DataGridFilterParser";
-import { TableFilterDescriptorCollection } from "../columnfiltering/TableFilterDescriptorCollection";
-import { CellItem, ColumnDescription, FilterRenderer, RowItem, TableDataProvider } from "../TableDataProvider";
-import { DragDropHeaderCell } from "./DragDropHeaderCell";
-import { TableCell, TableCellContent, TableIconCellContent } from "./TableCell";
-import { ReactDataGridColumn, TableColumn } from "./TableColumn";
+} from "../../common/selection/SelectionHandler.js";
+import { SelectionMode } from "../../common/selection/SelectionModes.js";
+import { ShowHideMenu } from "../../common/showhide/ShowHideMenu.js";
+import { TypeConverterManager } from "../../converters/TypeConverterManager.js";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer.js";
+import { TableRowStyleProvider } from "../../properties/ItemStyle.js";
+import { PropertyDialogState, PropertyValueRendererManager } from "../../properties/ValueRendererManager.js";
+import { CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering.js";
+import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter.js";
+import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter.js";
+import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter.js";
+import { DataGridFilterParser, ReactDataGridFilter } from "../columnfiltering/DataGridFilterParser.js";
+import { TableFilterDescriptorCollection } from "../columnfiltering/TableFilterDescriptorCollection.js";
+import { CellItem, ColumnDescription, FilterRenderer, RowItem, TableDataProvider } from "../TableDataProvider.js";
+import { DragDropHeaderCell } from "./DragDropHeaderCell.js";
+import { TableCell, TableCellContent, TableIconCellContent } from "./TableCell.js";
+import { ReactDataGridColumn, TableColumn } from "./TableColumn.js";
 
 // Matches how react-data-grid is exported
 // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
-import ReactDataGrid = require("react-data-grid");
+import ReactDataGrid from "react-data-grid";
 
 // cspell:ignore Overscan columnfiltering
 

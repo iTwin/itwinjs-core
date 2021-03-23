@@ -10,8 +10,8 @@ import { BeEvent, GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { FeatureAppearance, GeometricElementProps } from "@bentley/imodeljs-common";
 import { EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework } from "../UiFramework";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher.js";
+import { UiFramework } from "../UiFramework.js";
 
 /** Supported Hide, Isolate, and Emphasize Actions. These also serve as FeatureTracking Ids.
  * @alpha
@@ -520,7 +520,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
 
     if (vp.view.isSpatialView()) {
       const modelsToTurnOff = [...vp.view.modelSelector.models].filter((modelId: string) => !modelsToKeep.has(modelId));
-      this.updateModelOverride (vp, modelsToTurnOff);
+      this.updateModelOverride(vp, modelsToTurnOff);
     }
 
     await vp.replaceViewedModels(modelsToKeep);
@@ -535,7 +535,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     const categoriesToTurnOff = [...vp.view.categorySelector.categories].filter((categoryId: string) => !categoriesToKeep.has(categoryId));
     vp.changeCategoryDisplay(categoriesToTurnOff, false);
     vp.changeCategoryDisplay(categoriesToKeep, true);
-    this.updateCategoryOverride (vp, categoriesToTurnOff);
+    this.updateCategoryOverride(vp, categoriesToTurnOff);
   }
 
   /**
@@ -563,7 +563,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   public static async hideSelectedElementsModel(vp: Viewport) {
     const modelIds = await HideIsolateEmphasizeManager.getSelectionSetElementModels(vp.iModel);
     vp.changeModelDisplay(modelIds, false);
-    this.updateModelOverride (vp, [...modelIds]);
+    this.updateModelOverride(vp, [...modelIds]);
   }
 
   /**
@@ -603,7 +603,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   public static async hideSelectedElementsCategory(vp: Viewport) {
     const categoryIds = await HideIsolateEmphasizeManager.getSelectionSetElementCategories(vp.iModel);
     vp.changeCategoryDisplay(categoryIds, false);
-    this.updateCategoryOverride (vp, [...categoryIds]);
+    this.updateCategoryOverride(vp, [...categoryIds]);
   }
 
   /**
@@ -801,7 +801,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   private static updateCategoryOverride(vp: Viewport, ids: string[]) {
     const prevIds = this._overrideCategoryIds.get(vp);
     const newIds = [...(prevIds || []), ...ids];
-    this._overrideCategoryIds.set (vp, new Set(newIds));
+    this._overrideCategoryIds.set(vp, new Set(newIds));
   }
 
   /**
@@ -810,20 +810,20 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   private static updateModelOverride(vp: Viewport, ids: string[]) {
     const prevIds = this._overrideModelIds.get(vp);
     const newIds = [...(prevIds || []), ...ids];
-    this._overrideModelIds.set (vp, new Set(newIds));
+    this._overrideModelIds.set(vp, new Set(newIds));
   }
 
   /**
    * Clear the category override cache (hidden or isolated categories)
    */
   private static clearCategoryOverride(vp: Viewport) {
-    this._overrideCategoryIds.delete (vp);
+    this._overrideCategoryIds.delete(vp);
   }
 
   /**
    * Clear the model override cache (hidden or isolated models)
    */
   private static clearModelOverride(vp: Viewport) {
-    this._overrideModelIds.delete (vp);
+    this._overrideModelIds.delete(vp);
   }
 }

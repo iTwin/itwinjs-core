@@ -8,10 +8,10 @@
 
 import * as React from "react";
 import { CommonProps, GlobalContextMenu } from "@bentley/ui-core"; // ContextSubMenu,
-import { SessionStateActionId } from "../../redux/SessionState";
-import { MenuItemHelpers, MenuItemProps } from "../../shared/MenuItem";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
-import { UiFramework } from "../../UiFramework";
+import { SessionStateActionId } from "../../redux/SessionState.js";
+import { MenuItemHelpers, MenuItemProps } from "../../shared/MenuItem.js";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher.js";
+import { UiFramework } from "../../UiFramework.js";
 
 /** State for [[CursorPopupMenu]] component
  * @alpha

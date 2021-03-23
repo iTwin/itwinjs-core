@@ -9,10 +9,10 @@
 import * as React from "react";
 import { AbstractMenuItemProps, ConditionalBooleanValue, UiError } from "@bentley/ui-abstract";
 import { ContextMenuItem, ContextSubMenu, IconSpec } from "@bentley/ui-core";
-import { UiFramework } from "../UiFramework";
-import { ActionButtonItemDef } from "./ActionButtonItemDef";
-import { CommandItemDef } from "./CommandItemDef";
-import { ItemDefBase } from "./ItemDefBase";
+import { UiFramework } from "../UiFramework.js";
+import { ActionButtonItemDef } from "./ActionButtonItemDef.js";
+import { CommandItemDef } from "./CommandItemDef.js";
+import { ItemDefBase } from "./ItemDefBase.js";
 
 /** Menu Item Properties
  * @beta

@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { AppNotificationManager, PointerMessage } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import { AppNotificationManager, PointerMessage } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("PointerMessage", () => {
   before(async () => {

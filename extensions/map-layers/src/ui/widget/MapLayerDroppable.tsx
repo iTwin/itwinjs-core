@@ -12,12 +12,12 @@ import { Draggable, DraggableChildrenFn, Droppable, DroppableProvided, Droppable
 import { MapLayerImageryProviderStatus, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { Button, Icon } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
-import { SubLayersPopupButton } from "./SubLayersPopupButton";
-import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
-import { MapLayerSettingsMenu } from "./MapLayerSettingsMenu";
-import { MapUrlDialog } from "./MapUrlDialog";
+import { SubLayersPopupButton } from "./SubLayersPopupButton.js";
+import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton.js";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider.js";
+import { MapTypesOptions, StyleMapLayerSettings } from "../Interfaces.js";
+import { MapLayerSettingsMenu } from "./MapLayerSettingsMenu.js";
+import { MapUrlDialog } from "./MapUrlDialog.js";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import "./MapLayerManager.scss";
 

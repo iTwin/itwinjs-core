@@ -12,9 +12,9 @@ import { KeySet } from "@bentley/presentation-common";
 import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@bentley/presentation-frontend";
 import { PropertyGridProps } from "@bentley/ui-components";
 import { FillCentered } from "@bentley/ui-core";
-import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
-import { getDisplayName, translate } from "../common/Utils";
-import { IPresentationPropertyDataProvider } from "./DataProvider";
+import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent.js";
+import { getDisplayName, translate } from "../common/Utils.js";
+import { IPresentationPropertyDataProvider } from "./DataProvider.js";
 
 const DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT = 100;
 

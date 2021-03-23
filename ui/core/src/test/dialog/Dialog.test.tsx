@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { cleanup, render } from "@testing-library/react";
-import { Dialog, DialogButtonType } from "../../ui-core";
-import { DialogAlignment, GlobalDialog } from "../../ui-core/dialog/Dialog";
-import { UiCore } from "../../ui-core/UiCore";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
+import { Dialog, DialogButtonType } from "../../ui-core.js";
+import { DialogAlignment, GlobalDialog } from "../../ui-core/dialog/Dialog.js";
+import { UiCore } from "../../ui-core/UiCore.js";
+import TestUtils from "../TestUtils.js";
 
 describe("Dialog", () => {
 

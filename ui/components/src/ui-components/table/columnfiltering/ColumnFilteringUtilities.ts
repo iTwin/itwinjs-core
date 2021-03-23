@@ -7,7 +7,7 @@
  */
 
 import { Primitives, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { CellItem, RowItem } from "../TableDataProvider";
+import { CellItem, RowItem } from "../TableDataProvider.js";
 
 /** Column Filtering utility methods
  * @internal

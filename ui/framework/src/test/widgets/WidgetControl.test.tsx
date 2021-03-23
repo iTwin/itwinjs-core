@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
-import { ConfigurableCreateInfo, ConfigurableUiControlType, WidgetControl, WidgetDef, WidgetProps } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import { ConfigurableCreateInfo, ConfigurableUiControlType, WidgetControl, WidgetDef, WidgetProps } from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("WidgetControl", () => {
 

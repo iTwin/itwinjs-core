@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
 import { ToolbarWithOverflow } from "@bentley/ui-components";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
-import { ActionItemButton, CoreTools, ToolWidget, ToolWidgetComposer } from "../ui-framework";
-import { ToolbarHelper } from "../ui-framework/toolbar/ToolbarHelper";
-import TestUtils, { mount } from "./TestUtils";
+import { ActionItemButton, CoreTools, ToolWidget, ToolWidgetComposer } from "../ui-framework.js";
+import { ToolbarHelper } from "../ui-framework/toolbar/ToolbarHelper.js";
+import TestUtils, { mount } from "./TestUtils.js";
 
 describe("CoreToolDefinitions", () => {
 

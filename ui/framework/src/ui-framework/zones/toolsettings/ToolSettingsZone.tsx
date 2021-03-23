@@ -11,16 +11,16 @@ import { CommonProps, PointProps, RectangleProps } from "@bentley/ui-core";
 import {
   ResizeHandle, TitleBarButton, ToolSettings, ToolSettingsTab, WidgetZoneId, Zone, ZoneManagerProps, ZoneTargetType,
 } from "@bentley/ui-ninezone";
-import { ZoneTargets } from "../../dragdrop/ZoneTargets";
-import { TargetChangeHandler, WidgetChangeHandler } from "../../frontstage/FrontstageComposer";
-import { FrontstageManager } from "../../frontstage/FrontstageManager";
-import { SafeAreaContext } from "../../safearea/SafeAreaContext";
-import { UiFramework } from "../../UiFramework";
-import { UiShowHideManager } from "../../utils/UiShowHideManager";
-import { getFloatingZoneBounds, getFloatingZoneStyle } from "../FrameworkZone";
-import { Outline } from "../Outline";
-import { ToolSettingsManager } from "./ToolSettingsManager";
-import { onEscapeSetFocusToHome } from "../../hooks/useEscapeSetFocusToHome";
+import { ZoneTargets } from "../../dragdrop/ZoneTargets.js";
+import { TargetChangeHandler, WidgetChangeHandler } from "../../frontstage/FrontstageComposer.js";
+import { FrontstageManager } from "../../frontstage/FrontstageManager.js";
+import { SafeAreaContext } from "../../safearea/SafeAreaContext.js";
+import { UiFramework } from "../../UiFramework.js";
+import { UiShowHideManager } from "../../utils/UiShowHideManager.js";
+import { getFloatingZoneBounds, getFloatingZoneStyle } from "../FrameworkZone.js";
+import { Outline } from "../Outline.js";
+import { ToolSettingsManager } from "./ToolSettingsManager.js";
+import { onEscapeSetFocusToHome } from "../../hooks/useEscapeSetFocusToHome.js";
 
 // cSpell:ignore safearea
 

@@ -6,13 +6,13 @@
  * @module PropertyGrid
  */
 import "../../../properties/renderers/NonPrimitivePropertyRenderer.scss";
-import _ from "lodash";
+import _ from "lodash-es";
 import * as React from "react";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
-import { CommonPropertyRenderer } from "../../../properties/renderers/CommonPropertyRenderer";
-import { PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer";
-import { NonPrimitivePropertyLabelRenderer } from "../../../properties/renderers/label/NonPrimitivePropertyLabelRenderer";
-import { PropertyView } from "../../../properties/renderers/PropertyView";
+import { CommonPropertyRenderer } from "../../../properties/renderers/CommonPropertyRenderer.js";
+import { PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer.js";
+import { NonPrimitivePropertyLabelRenderer } from "../../../properties/renderers/label/NonPrimitivePropertyLabelRenderer.js";
+import { PropertyView } from "../../../properties/renderers/PropertyView.js";
 
 /** Properties of [[FlatNonPrimitivePropertyRenderer]] React component
  * @internal

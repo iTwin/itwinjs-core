@@ -11,9 +11,9 @@ import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonDivProps, CommonProps, Div, PointProps, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
 import { TitleBar } from "@bentley/ui-ninezone";
-import { CursorPopupFadeOutEventArgs, CursorPopupManager } from "./CursorPopupManager";
+import { CursorPopupFadeOutEventArgs, CursorPopupManager } from "./CursorPopupManager.js";
 
-import classnames = require("classnames");
+import classnames from "classnames";
 
 /** Properties for the [[CursorPopup]] React component
  * @public

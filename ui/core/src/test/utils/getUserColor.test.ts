@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { getUserColor } from "../../ui-core";
+import { getUserColor } from "../../ui-core.js";
 
 describe("getUserColor", () => {
   it("should return correct color 1", () => {

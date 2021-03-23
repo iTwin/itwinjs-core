@@ -2,7 +2,8 @@
   "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "target": "es2017",
-    "module": "commonjs",
+    "module": "es2020",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "outDir": "./lib",

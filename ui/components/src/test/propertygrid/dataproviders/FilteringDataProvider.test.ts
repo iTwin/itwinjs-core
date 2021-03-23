@@ -7,12 +7,12 @@ import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { ArrayValue, PropertyRecord } from "@bentley/ui-abstract";
-import { FilteredType, IPropertyDataFilterer, PropertyFilterChangeEvent } from "../../../ui-components";
-import { FilteringPropertyDataProvider } from "../../../ui-components/propertygrid/dataproviders/FilteringDataProvider";
+import { FilteredType, IPropertyDataFilterer, PropertyFilterChangeEvent } from "../../../ui-components.js";
+import { FilteringPropertyDataProvider } from "../../../ui-components/propertygrid/dataproviders/FilteringDataProvider.js";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
-} from "../../../ui-components/propertygrid/PropertyDataProvider";
-import { TestUtils } from "../../TestUtils";
+} from "../../../ui-components/propertygrid/PropertyDataProvider.js";
+import { TestUtils } from "../../TestUtils.js";
 
 describe("FilteringDataProvider", () => {
   let dataProvider: IPropertyDataProvider;

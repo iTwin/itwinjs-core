@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import { getClassName } from "@bentley/ui-abstract";
 

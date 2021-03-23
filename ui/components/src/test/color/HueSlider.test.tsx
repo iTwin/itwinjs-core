@@ -7,9 +7,9 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { HSVColor } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render } from "@testing-library/react"; // , waitForElement
-import { HueSlider } from "../../ui-components/color/HueSlider";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr; // , waitForElement
+import { HueSlider } from "../../ui-components/color/HueSlider.js";
+import TestUtils from "../TestUtils.js";
 
 describe("<HueSlider />", () => {
   const hsv = new HSVColor(60, 100, 50);

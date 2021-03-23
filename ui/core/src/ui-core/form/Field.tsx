@@ -7,11 +7,11 @@
  */
 
 import * as React from "react";
-import { Checkbox } from "../checkbox/Checkbox";
-import { Input } from "../inputs/Input";
-import { Textarea } from "../inputs/Textarea";
-import { Select } from "../select/Select";
-import { FieldDef, FormContext, FormContextState } from "./Form";
+import { Checkbox } from "../checkbox/Checkbox.js";
+import { Input } from "../inputs/Input.js";
+import { Textarea } from "../inputs/Textarea.js";
+import { Select } from "../select/Select.js";
+import { FieldDef, FormContext, FormContextState } from "./Form.js";
 
 // cSpell:ignore multilinetextbox
 

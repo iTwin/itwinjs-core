@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { ConditionalBooleanValue, StatusBarSection } from "@bentley/ui-abstract";
-import { StatusBarItemUtilities } from "../../ui-framework";
+import { StatusBarItemUtilities } from "../../ui-framework.js";
 
 describe("StatusBarItemUtilities", () => {
 

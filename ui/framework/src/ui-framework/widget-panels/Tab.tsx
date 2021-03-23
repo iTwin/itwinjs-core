@@ -9,7 +9,7 @@
 import "./Tab.scss";
 import * as React from "react";
 import { WidgetTab } from "@bentley/ui-ninezone";
-import { useWidgetDef } from "./Content";
+import { useWidgetDef } from "./Content.js";
 import { BadgeUtilities } from "@bentley/ui-core";
 import { BadgeType } from "@bentley/ui-abstract";
 

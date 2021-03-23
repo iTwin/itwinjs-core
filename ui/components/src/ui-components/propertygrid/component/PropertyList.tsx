@@ -10,12 +10,12 @@ import classnames from "classnames";
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { CommonProps, Orientation, RatioChangeResult } from "@bentley/ui-core";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
-import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer";
-import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { PropertyGridColumnInfo } from "../../properties/renderers/PropertyGridColumns";
-import { PropertyCategory } from "../PropertyDataProvider";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer.js";
+import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer.js";
+import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer.js";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager.js";
+import { PropertyGridColumnInfo } from "../../properties/renderers/PropertyGridColumns.js";
+import { PropertyCategory } from "../PropertyDataProvider.js";
 
 /** Properties of [[PropertyList]] React component
  * @public

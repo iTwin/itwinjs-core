@@ -8,8 +8,8 @@ import * as React from "react";
 import { RelativePosition, SyncPropertiesChangeEventArgs } from "@bentley/ui-abstract";
 import { Button, ButtonType, Dialog, Input, Popup, Select } from "@bentley/ui-core";
 import { ModelessDialogManager } from "@bentley/ui-framework";
-import { AnimationTypeName } from "../IoTDefinitions";
-import { IotUiProvider } from "./IotUiProvider";
+import { AnimationTypeName } from "../IoTDefinitions.js";
+import { IotUiProvider } from "./IotUiProvider.js";
 
 /** Props for the [[IotSettingsDialog]] component */
 interface IotSettingsDialogProps {
@@ -162,9 +162,9 @@ export class IotSettingsDialog extends React.Component<IotSettingsDialogProps, I
     const { currentTab, sensor, startTime, endTime } = this.state;
 
     const properties = [];
-    properties.push({ value: { value: this.props.dataProvider.getAnimationTypeFromString(sensor)}, propertyName: this.props.dataProvider.currentAnimationTypePropertyName });
+    properties.push({ value: { value: this.props.dataProvider.getAnimationTypeFromString(sensor) }, propertyName: this.props.dataProvider.currentAnimationTypePropertyName });
     properties.push({ value: { value: startTime }, propertyName: this.props.dataProvider.startTimePropertyName });
-    properties.push({ value: { value: endTime}, propertyName: this.props.dataProvider.endTimePropertyName });
+    properties.push({ value: { value: endTime }, propertyName: this.props.dataProvider.endTimePropertyName });
     const monitorModeValue = 1 === currentTab ? true : false;
     properties.push({ value: { value: monitorModeValue }, propertyName: this.props.dataProvider.monitorModePropertyName });
 

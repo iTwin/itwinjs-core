@@ -12,8 +12,8 @@ import * as React from "react";
 import { OnCancelFunc, OnNumberCommitFunc, SpecialKey } from "@bentley/ui-abstract";
 import { Button, ButtonType, CommonProps, Icon, IconInput, Input, Omit, SvgSprite } from "@bentley/ui-core";
 import backspaceIcon from "./backspace.svg?sprite";
-import { CalculatorEngine, CalculatorOperator } from "./CalculatorEngine";
-import { SquareButton, SquareButtonProps } from "./SquareButton";
+import { CalculatorEngine, CalculatorOperator } from "./CalculatorEngine.js";
+import { SquareButton, SquareButtonProps } from "./SquareButton.js";
 
 // cSpell:ignore plusmn
 

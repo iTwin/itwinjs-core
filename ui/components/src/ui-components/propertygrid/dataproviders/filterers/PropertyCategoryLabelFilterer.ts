@@ -6,9 +6,9 @@
  * @module PropertyGrid
  */
 
-import { countMatchesInString } from "../../../common/countMatchesInString";
-import { PropertyCategory } from "../../PropertyDataProvider";
-import { FilteredType, PropertyCategoryDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
+import { countMatchesInString } from "../../../common/countMatchesInString.js";
+import { PropertyCategory } from "../../PropertyDataProvider.js";
+import { FilteredType, PropertyCategoryDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase.js";
 
 /**
  * PropertyData filterer which matches on PropertyCategory's label.

@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as enzyme from "enzyme";
+import enzyme from "enzyme";
 import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import * as moq from "typemoq";
 
 import { BeDuration } from "@bentley/bentleyjs-core";
@@ -18,12 +18,12 @@ import { HorizontalAlignment, LocalUiSettings } from "@bentley/ui-core";
 import {
   CellItem, ColumnDescription, PropertyUpdatedArgs, PropertyValueRendererManager, RowItem, SelectionMode, Table, TableDataChangeEvent,
   TableDataChangesListener, TableDataProvider, TableProps, TableSelectionTarget,
-} from "../../../ui-components";
-import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
-import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
-import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
-import TestUtils from "../../TestUtils";
+} from "../../../ui-components.js";
+import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell.js";
+import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider.js";
+import { FilterRenderer } from "../../../ui-components/table/TableDataProvider.js";
+import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc.js";
+import TestUtils from "../../TestUtils.js";
 
 describe("Table", () => {
 

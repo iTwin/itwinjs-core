@@ -7,12 +7,12 @@ import * as React from "react";
 import { Provider } from "react-redux";
 import { MockRender } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
-import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework/configurableui/ConfigurableUiControl";
-import { StatusBar } from "../../ui-framework/statusbar/StatusBar";
-import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../ui-framework/statusbar/StatusBarWidgetControl";
-import { SectionsStatusField } from "../../ui-framework/statusfields/SectionsField";
-import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
-import TestUtils, { mount } from "../TestUtils";
+import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework/configurableui/ConfigurableUiControl.js";
+import { StatusBar } from "../../ui-framework/statusbar/StatusBar.js";
+import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../ui-framework/statusbar/StatusBarWidgetControl.js";
+import { SectionsStatusField } from "../../ui-framework/statusfields/SectionsField.js";
+import { WidgetDef } from "../../ui-framework/widgets/WidgetDef.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("SectionsField", () => {
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {

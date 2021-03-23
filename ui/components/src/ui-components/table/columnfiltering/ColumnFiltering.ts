@@ -7,7 +7,7 @@
  * @module Table
  */
 
-import { RowItem } from "../TableDataProvider";
+import { RowItem } from "../TableDataProvider.js";
 
 /** Operator used in FilterDescriptor
  * @beta

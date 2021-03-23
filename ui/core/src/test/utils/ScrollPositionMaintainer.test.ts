@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { using } from "@bentley/bentleyjs-core";
-import { ScrollPositionMaintainer } from "../../ui-core";
+import { ScrollPositionMaintainer } from "../../ui-core.js";
 
 describe("ScrollPositionMaintainer", () => {
 

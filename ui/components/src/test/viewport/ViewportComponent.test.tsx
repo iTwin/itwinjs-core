@@ -15,10 +15,10 @@ import {
   SpatialViewState, StandardViewId, TentativePoint, ViewManager, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { Face } from "@bentley/ui-core";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { ViewportComponent } from "../../ui-components";
-import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
+import { ViewportComponent } from "../../ui-components.js";
+import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents.js";
+import TestUtils from "../TestUtils.js";
 
 describe("ViewportComponent", () => {
   // set up descriptors to restore SpatialViewState behavior after testing is complete

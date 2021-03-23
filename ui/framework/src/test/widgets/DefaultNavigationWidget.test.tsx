@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
-import { ItemList } from "../../ui-framework/shared/ItemMap";
-import { DefaultNavigationWidget } from "../../ui-framework/widgets/DefaultNavigationWidget";
-import TestUtils, { mount } from "../TestUtils";
+import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef.js";
+import { ItemList } from "../../ui-framework/shared/ItemMap.js";
+import { DefaultNavigationWidget } from "../../ui-framework/widgets/DefaultNavigationWidget.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("DefaultNavigationWidget", () => {
 

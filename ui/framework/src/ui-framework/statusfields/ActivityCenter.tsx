@@ -10,10 +10,10 @@ import classnames from "classnames";
 import * as React from "react";
 import { Centered } from "@bentley/ui-core";
 import { MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
-import { ActivityMessageEventArgs, MessageManager } from "../messages/MessageManager";
-import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
-import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { ActivityMessageEventArgs, MessageManager } from "../messages/MessageManager.js";
+import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails.js";
+import { UiFramework } from "../UiFramework.js";
+import { StatusFieldProps } from "./StatusFieldProps.js";
 
 /** State for the [[ActivityCenterField]] component
  * @internal
@@ -26,7 +26,7 @@ interface ActivityCenterState {
 
 /** Activity Center Field React component.
  * @public
- */
+ */
 export class ActivityCenterField extends React.Component<StatusFieldProps, ActivityCenterState> {
   constructor(p: StatusFieldProps) {
     super(p);

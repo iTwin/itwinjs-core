@@ -10,8 +10,8 @@ import * as React from "react";
 import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, OnItemExecutedFunc } from "@bentley/ui-abstract";
 import { BadgeUtilities } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
-import { ToolbarHelper } from "./ToolbarHelper";
-import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
+import { ToolbarHelper } from "./ToolbarHelper.js";
+import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome.js";
 
 /** Action button props
  *  @internal

@@ -2,7 +2,8 @@
   "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "target": "es2017",
-    "module": "commonjs",
+    "module": "es2020",
+    "moduleResolution": "node",
     "outDir": "./lib",
     "skipLibCheck": true,
     "jsx": "react",
@@ -12,7 +13,8 @@
       "mocha",
       "chai-jest-snapshot",
       "@bentley/react-scripts"
-    ]
+    ],
+    "esModuleInterop": true
   },
   "include": [
     "./src/**/*.ts*"

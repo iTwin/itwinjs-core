@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupManager, ContentGroupProps, ContentProps,
   NavigationAidControl,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("ContentGroup", () => {
 

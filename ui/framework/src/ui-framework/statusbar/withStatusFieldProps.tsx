@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { StatusFieldProps } from "../statusfields/StatusFieldProps";
-import { StatusBarContext } from "./StatusBar";
+import { StatusFieldProps } from "../statusfields/StatusFieldProps.js";
+import { StatusBarContext } from "./StatusBar.js";
 
 /** HOC that injects values for [[StatusFieldProps]].
  * @beta

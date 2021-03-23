@@ -7,8 +7,8 @@
 import * as React from "react";
 import { Dialog, DialogButtonType, Icon, Input, InputStatus, LabeledInput, ProgressBar, Radio, Select } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { MapTypesOptions } from "../Interfaces";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider.js";
+import { MapTypesOptions } from "../Interfaces.js";
 import {
   IModelApp, MapLayerImageryProviderStatus, MapLayerSettingsService, MapLayerSource,
   MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
@@ -219,7 +219,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
                 IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
               } else {
                 const msgError = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerLayerSettingsConversionError");
-                const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", {error: msgError, sourceUrl: source.url} );
+                const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", { error: msgError, sourceUrl: source.url });
                 IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
               }
             }
@@ -240,7 +240,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         }
         resolve(false);
       }).catch((error) => {
-        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", {error, sourceUrl: source.url} );
+        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", { error, sourceUrl: source.url });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
         resolve(true);
       });
@@ -260,7 +260,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [setMapUrl]);
 
   const handleOk = React.useCallback(() => {
-    let source: MapLayerSource|undefined;
+    let source: MapLayerSource | undefined;
     if (mapUrl && mapName) {
       source = MapLayerSource.fromJSON({
         url: mapUrl,
@@ -274,7 +274,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         // Close the dialog and inform end user something went wrong.
         ModalDialogManager.closeDialog();
         const msgError = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerLayerSourceCreationFailed");
-        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", {error: msgError, sourceUrl: mapUrl} );
+        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", { error: msgError, sourceUrl: mapUrl });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
         return;
       }

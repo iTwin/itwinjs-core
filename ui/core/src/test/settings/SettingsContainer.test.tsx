@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { fireEvent, render, wait } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render, wait } = tlr;
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer";
-import { SettingsManager, SettingsTabEntry } from "../../ui-core/settings/SettingsManager";
-import TestUtils from "../TestUtils";
+import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer.js";
+import { SettingsManager, SettingsTabEntry } from "../../ui-core/settings/SettingsManager.js";
+import TestUtils from "../TestUtils.js";
 
 // cSpell:ignore sublabel
 

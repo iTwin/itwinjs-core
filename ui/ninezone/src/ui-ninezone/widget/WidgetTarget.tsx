@@ -10,10 +10,10 @@ import "./WidgetTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { assert } from "@bentley/bentleyjs-core";
-import { DraggedWidgetIdContext, useWidgetTarget } from "../base/DragManager";
-import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
-import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { PanelSideContext } from "../widget-panels/Panel";
+import { DraggedWidgetIdContext, useWidgetTarget } from "../base/DragManager.js";
+import { CursorTypeContext, DraggedTabContext } from "../base/NineZone.js";
+import { getCursorClassName } from "../widget-panels/CursorOverlay.js";
+import { PanelSideContext } from "../widget-panels/Panel.js";
 
 /** @internal */
 export interface WidgetTargetProps {

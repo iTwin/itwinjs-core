@@ -7,8 +7,8 @@
  */
 
 import { Geometry } from "@bentley/geometry-core";
-import { Point, PointProps } from "./Point";
-import { Size, SizeProps } from "./Size";
+import { Point, PointProps } from "./Point.js";
+import { Size, SizeProps } from "./Size.js";
 
 /** Describes 2d bounds.
  * @public

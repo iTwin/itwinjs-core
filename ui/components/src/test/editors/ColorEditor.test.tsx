@@ -6,14 +6,14 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, waitForElement } = tlr;
 import { ColorByName } from "@bentley/imodeljs-common";
 import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { ColorEditor } from "../../ui-components/editors/ColorEditor";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { ColorEditor } from "../../ui-components/editors/ColorEditor.js";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer.js";
+import TestUtils from "../TestUtils.js";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager.js";
 
 // cspell:ignore colorpicker
 

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { WidgetDef, ZoneDef, ZoneLocation, ZoneState } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import { WidgetDef, ZoneDef, ZoneLocation, ZoneState } from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("ZoneDef", () => {
 

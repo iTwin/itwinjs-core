@@ -13,8 +13,8 @@ import * as ReactDOM from "react-dom";
 import { Constant, Geometry, Matrix3d, Point2d, Point3d, Point4d, Vector3d } from "@bentley/geometry-core";
 import { IModelApp, IModelConnection, ScreenViewport, ViewManager, Viewport, ViewState } from "@bentley/imodeljs-frontend";
 import { CommonProps } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
-import { ViewportComponentEvents, ViewRotationChangeEventArgs } from "../viewport/ViewportComponentEvents";
+import { UiComponents } from "../UiComponents.js";
+import { ViewportComponentEvents, ViewRotationChangeEventArgs } from "../viewport/ViewportComponentEvents.js";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 // cSpell:ignore Quaternion Quaternions unrotate

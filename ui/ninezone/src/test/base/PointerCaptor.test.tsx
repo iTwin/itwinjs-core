@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, fireEvent } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { act, fireEvent } = tlr;
 import { renderHook } from "@testing-library/react-hooks";
-import { PointerCaptor, usePointerCaptor } from "../../ui-ninezone";
-import { DragManagerProvider } from "../Providers";
-import { mount } from "../Utils";
+import { PointerCaptor, usePointerCaptor } from "../../ui-ninezone.js";
+import { DragManagerProvider } from "../Providers.js";
+import { mount } from "../Utils.js";
 
 describe("<PointerCaptor />", () => {
   it("should render", () => {

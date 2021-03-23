@@ -11,14 +11,14 @@ import classnames from "classnames";
 import * as React from "react";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { StagePanelState } from "./StagePanelDef";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { StagePanelState } from "./StagePanelDef.js";
 
 // cspell:ignore stagepanelheader
 
 /** Properties of a [[StagePanelHeader]] component
  * @alpha
- */
+ */
 export interface StagePanelHeaderProps extends CommonProps {
   /** Describes if the collapse button is visible. */
   collapseButton?: boolean;

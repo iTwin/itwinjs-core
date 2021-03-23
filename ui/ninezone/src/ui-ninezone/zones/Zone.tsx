@@ -10,9 +10,9 @@ import "./Zone.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
-import { CssProperties } from "../utilities/Css";
-import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
-import { WidgetZoneId } from "./manager/Zones";
+import { CssProperties } from "../utilities/Css.js";
+import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets.js";
+import { WidgetZoneId } from "./manager/Zones.js";
 
 /** Properties of [[Zone]] component.
  * @beta

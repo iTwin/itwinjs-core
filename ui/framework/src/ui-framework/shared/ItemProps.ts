@@ -8,11 +8,11 @@
 
 import { BadgeType, CommandHandler, ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
 import { IconProps } from "@bentley/ui-core";
-import { BaseItemState } from "./ItemDefBase";
+import { BaseItemState } from "./ItemDefBase.js";
 
 /** Definition that specifies properties shared between many ConfigurableUi components.
  * @public
- */
+ */
 export interface ItemProps extends IconProps {
   /** if set, component will be visible - defaults to true
    * @deprecated use isHidden
@@ -63,7 +63,7 @@ export interface ItemProps extends IconProps {
 
 /** Properties for a Tool item with a tool id.
  * @public
- */
+ */
 export interface ToolItemProps extends ItemProps, CommandHandler {
   toolId: string;
 }

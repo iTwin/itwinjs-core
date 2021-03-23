@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { StagePanelManager, StagePanelManagerProps } from "../../../ui-ninezone";
+import { StagePanelManager, StagePanelManagerProps } from "../../../ui-ninezone.js";
 
 describe("StagePanelManager", () => {
   describe("resize", () => {

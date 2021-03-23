@@ -6,27 +6,27 @@
  * @module Tree
  */
 
-import { Observable as RxjsObservable } from "rxjs/internal/Observable";
-import { defer } from "rxjs/internal/observable/defer";
-import { from } from "rxjs/internal/observable/from";
-import { of } from "rxjs/internal/observable/of";
-import { concatMap } from "rxjs/internal/operators/concatMap";
-import { finalize } from "rxjs/internal/operators/finalize";
-import { map } from "rxjs/internal/operators/map";
-import { publish } from "rxjs/internal/operators/publish";
-import { refCount } from "rxjs/internal/operators/refCount";
-import { toArray } from "rxjs/internal/operators/toArray";
+import { Observable as RxjsObservable } from "rxjs/internal/Observable.js";
+import { defer } from "rxjs/internal/observable/defer.js";
+import { from } from "rxjs/internal/observable/from.js";
+import { of } from "rxjs/internal/observable/of.js";
+import { concatMap } from "rxjs/internal/operators/concatMap.js";
+import { finalize } from "rxjs/internal/operators/finalize.js";
+import { map } from "rxjs/internal/operators/map.js";
+import { publish } from "rxjs/internal/operators/publish.js";
+import { refCount } from "rxjs/internal/operators/refCount.js";
+import { toArray } from "rxjs/internal/operators/toArray.js";
 import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
-import { scheduleSubscription, SubscriptionScheduler } from "../../common/SubscriptionScheduler";
-import { UiComponents } from "../../UiComponents";
+import { scheduleSubscription, SubscriptionScheduler } from "../../common/SubscriptionScheduler.js";
+import { UiComponents } from "../../UiComponents.js";
 import {
   ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw,
   TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
-} from "../TreeDataProvider";
-import { Observable } from "./Observable";
-import { isTreeModelNode, MutableTreeModel, TreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "./TreeModel";
-import { TreeModelSource } from "./TreeModelSource";
+} from "../TreeDataProvider.js";
+import { Observable } from "./Observable.js";
+import { isTreeModelNode, MutableTreeModel, TreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "./TreeModel.js";
+import { TreeModelSource } from "./TreeModelSource.js";
 
 /**
  * Data structure that describes node load result

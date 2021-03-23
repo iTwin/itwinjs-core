@@ -10,8 +10,8 @@ import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
-import { Ellipsis } from "../base/Ellipsis";
-import { useLabel } from "../base/NineZone";
+import { Ellipsis } from "../base/Ellipsis.js";
+import { useLabel } from "../base/NineZone.js";
 
 /** Properties of [[ToolSettingsOverflow]] component.
  * @internal

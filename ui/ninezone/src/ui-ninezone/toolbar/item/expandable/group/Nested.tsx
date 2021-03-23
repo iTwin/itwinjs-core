@@ -9,11 +9,11 @@
 import "./Nested.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { BackArrow } from "./BackArrow";
-import { Columns } from "./Columns";
-import { GroupProps } from "./Group";
-import { Panel } from "./Panel";
-import { Title } from "./Title";
+import { BackArrow } from "./BackArrow.js";
+import { Columns } from "./Columns.js";
+import { GroupProps } from "./Group.js";
+import { Panel } from "./Panel.js";
+import { Title } from "./Title.js";
 
 /** Properties of [[NestedGroup]] component.
  * @alpha

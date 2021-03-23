@@ -11,10 +11,10 @@
 import "./NumericInput.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../utils/Props";
-import { Omit } from "../../utils/typeUtils";
-import { ReactNumericInput, ReactNumericInputProps } from "./ReactNumericInput";
-import { StepFunctionProp } from "../numberinput/NumberInput";
+import { CommonProps } from "../../utils/Props.js";
+import { Omit } from "../../utils/typeUtils.js";
+import { ReactNumericInput, ReactNumericInputProps } from "./ReactNumericInput.js";
+import { StepFunctionProp } from "../numberinput/NumberInput.js";
 
 // cSpell:ignore nostyle
 

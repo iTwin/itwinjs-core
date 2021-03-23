@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Widget
@@ -11,10 +11,10 @@ import widgetIconSvg from "@bentley/icons-generic/icons/home.svg?sprite";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import { CommonProps, Icon, useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext } from "@bentley/ui-core";
 import { AppButton, ToolsArea } from "@bentley/ui-ninezone";
-import { BackstageManager } from "../backstage/BackstageManager";
-import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
-import { UiFramework } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { BackstageManager } from "../backstage/BackstageManager.js";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion.js";
+import { UiFramework } from "../UiFramework.js";
+import { UiShowHideManager } from "../utils/UiShowHideManager.js";
 
 /** Properties for the [[BackstageAppButton]] React component
  * @beta

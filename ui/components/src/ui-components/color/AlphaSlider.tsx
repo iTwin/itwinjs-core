@@ -10,7 +10,7 @@ import "./AlphaSlider.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../UiComponents.js";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Properties for the [[AlphaSlider]] React component

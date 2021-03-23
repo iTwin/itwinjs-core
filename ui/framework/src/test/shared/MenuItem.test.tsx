@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { BadgeType } from "@bentley/ui-abstract";
 import { ContextMenuItem, ContextSubMenu } from "@bentley/ui-core";
-import { render } from "@testing-library/react";
-import { MenuItem, MenuItemHelpers, MenuItemProps } from "../../ui-framework/shared/MenuItem";
-import TestUtils, { mount } from "../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { MenuItem, MenuItemHelpers, MenuItemProps } from "../../ui-framework/shared/MenuItem.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("MenuItem", () => {
 

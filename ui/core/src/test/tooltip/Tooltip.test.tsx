@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import { RelativePosition } from "@bentley/ui-abstract";
-import { placementToPosition, Tooltip } from "../../ui-core";
+import { placementToPosition, Tooltip } from "../../ui-core.js";
 
 describe("<Tooltip />", () => {
   it("should not render", () => {

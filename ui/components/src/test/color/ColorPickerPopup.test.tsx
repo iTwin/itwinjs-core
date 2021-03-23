@@ -7,9 +7,9 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
-import { ColorPickerPopup } from "../../ui-components/color/ColorPickerPopup";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, waitForElement } = tlr;
+import { ColorPickerPopup } from "../../ui-components/color/ColorPickerPopup.js";
+import TestUtils from "../TestUtils.js";
 import { RelativePosition } from "@bentley/ui-abstract";
 
 describe("<ColorPickerPopup/>", () => {

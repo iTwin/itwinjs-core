@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { getDefaultZonesManagerProps, WidgetZoneId, ZonesManagerProps } from "../../ui-ninezone";
-import { getDefaultProps as getDefaultNestedStagePanelsProps } from "./NestedStagePanels.test";
+import { getDefaultZonesManagerProps, WidgetZoneId, ZonesManagerProps } from "../../ui-ninezone.js";
+import { getDefaultProps as getDefaultNestedStagePanelsProps } from "./NestedStagePanels.test.js";
 
 export namespace NineZoneManagerTestProps {
   export const defaultProps = {

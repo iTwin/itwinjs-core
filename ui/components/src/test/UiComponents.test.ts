@@ -6,8 +6,8 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
-import { UiComponents } from "../ui-components";
-import TestUtils from "./TestUtils";
+import { UiComponents } from "../ui-components.js";
+import TestUtils from "./TestUtils.js";
 
 describe("UiComponents", () => {
 

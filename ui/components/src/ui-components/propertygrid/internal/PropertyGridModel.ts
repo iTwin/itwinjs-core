@@ -6,10 +6,10 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { PropertyCategory, PropertyData } from "../PropertyDataProvider";
-import { IMutableFlatGridItem, IMutableGridCategoryItem } from "./flat-items/MutableFlatGridItem";
-import { FlatGridItem, GridCategoryItem } from "./flat-items/FlatGridItem";
-import { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
+import { PropertyCategory, PropertyData } from "../PropertyDataProvider.js";
+import { IMutableFlatGridItem, IMutableGridCategoryItem } from "./flat-items/MutableFlatGridItem.js";
+import { FlatGridItem, GridCategoryItem } from "./flat-items/FlatGridItem.js";
+import { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory.js";
 import { immerable } from "immer";
 
 /**

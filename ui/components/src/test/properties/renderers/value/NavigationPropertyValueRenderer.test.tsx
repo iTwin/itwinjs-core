@@ -6,10 +6,10 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { render } from "@testing-library/react";
-import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
-import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
-import TestUtils from "../../../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer.js";
+import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager.js";
+import TestUtils from "../../../TestUtils.js";
 import { PropertyConverterInfo } from "@bentley/ui-abstract";
 
 describe("NavigationPropertyValueRenderer", () => {

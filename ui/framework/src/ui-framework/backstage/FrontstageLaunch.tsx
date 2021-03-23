@@ -9,14 +9,14 @@
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
-import { FrontstageActivatedEventArgs, FrontstageManager } from "../frontstage/FrontstageManager";
-import { withSafeArea } from "../safearea/SafeAreaContext";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework } from "../UiFramework";
-import { PropsHelper } from "../utils/PropsHelper";
-import { Backstage } from "./Backstage";
-import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
-import { BackstageItemUtilities } from "./BackstageItemUtilities";
+import { FrontstageActivatedEventArgs, FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { withSafeArea } from "../safearea/SafeAreaContext.js";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher.js";
+import { UiFramework } from "../UiFramework.js";
+import { PropsHelper } from "../utils/PropsHelper.js";
+import { Backstage } from "./Backstage.js";
+import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps.js";
+import { BackstageItemUtilities } from "./BackstageItemUtilities.js";
 
 // cspell:ignore safearea
 
@@ -25,7 +25,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[FrontstageLaunchBackstageItem]] component
  * @public
- */
+ */
 export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps { // eslint-disable-line deprecation/deprecation
   /** id of the frontstage */
   frontstageId: string;

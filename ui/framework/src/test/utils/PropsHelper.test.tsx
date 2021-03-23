@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
-import { PropsHelper } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import { PropsHelper } from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("PropsHelper", () => {
   before(async () => {

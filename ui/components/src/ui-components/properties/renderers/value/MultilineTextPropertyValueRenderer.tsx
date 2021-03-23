@@ -12,11 +12,11 @@ import * as React from "react";
 import { useLayoutEffect, useRef } from "react";
 import { assert } from "@bentley/bentleyjs-core";
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
-import { useRerender } from "../../../common/UseRerender";
-import { TypeConverterManager } from "../../../converters/TypeConverterManager";
-import { UiComponents } from "../../../UiComponents";
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { useRenderedStringValue } from "./PrimitivePropertyValueRenderer";
+import { useRerender } from "../../../common/UseRerender.js";
+import { TypeConverterManager } from "../../../converters/TypeConverterManager.js";
+import { UiComponents } from "../../../UiComponents.js";
+import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager.js";
+import { useRenderedStringValue } from "./PrimitivePropertyValueRenderer.js";
 
 /** @internal */
 export class MultilineTextPropertyValueRenderer implements IPropertyValueRenderer {

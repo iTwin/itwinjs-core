@@ -7,10 +7,10 @@
  */
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
-import { HighlightInfo } from "../../common/HighlightingComponentProps";
-import { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory";
-import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "../PropertyDataProvider";
-import { FilteredType, IPropertyDataFilterer, PropertyDataFilterResult } from "./filterers/PropertyDataFiltererBase";
+import { HighlightInfo } from "../../common/HighlightingComponentProps.js";
+import { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory.js";
+import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "../PropertyDataProvider.js";
+import { FilteredType, IPropertyDataFilterer, PropertyDataFilterResult } from "./filterers/PropertyDataFiltererBase.js";
 
 interface FilteredRecords {
   filteredRecords: PropertyRecord[];

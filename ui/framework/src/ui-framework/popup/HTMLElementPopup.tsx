@@ -9,10 +9,10 @@
 import * as React from "react";
 import { OnCancelFunc, RelativePosition } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
-import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
-import { PopupManager, PopupPropsBase } from "./PopupManager";
-import { PositionPopup } from "./PositionPopup";
-import { MessageDiv } from "../messages/MessageSpan";
+import { CursorPopup } from "../cursor/cursorpopup/CursorPopup.js";
+import { PopupManager, PopupPropsBase } from "./PopupManager.js";
+import { PositionPopup } from "./PositionPopup.js";
+import { MessageDiv } from "../messages/MessageSpan.js";
 
 /** @alpha */
 export interface HTMLElementPopupProps extends PopupPropsBase {

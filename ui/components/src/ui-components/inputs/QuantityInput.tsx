@@ -12,8 +12,8 @@ import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@bentley
 import { Parser } from "@bentley/imodeljs-quantity";
 import { ParseResults } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
-import { ParsedInput } from "./ParsedInput";
-import { UiComponents } from "../UiComponents";
+import { ParsedInput } from "./ParsedInput.js";
+import { UiComponents } from "../UiComponents.js";
 
 /** Props for [[QuantityInput]] control
  * @beta

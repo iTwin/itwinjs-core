@@ -7,9 +7,9 @@
  */
 
 import * as React from "react";
-import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
-import { ConditionalField } from "./ConditionalField";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { withStatusFieldProps } from "../statusbar/withStatusFieldProps.js";
+import { ConditionalField } from "./ConditionalField.js";
+import { StatusFieldProps } from "./StatusFieldProps.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ConditionalFieldWithProps = withStatusFieldProps(ConditionalField);

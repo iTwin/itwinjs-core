@@ -14,16 +14,16 @@ import {
   Content, DefaultContentDisplayTypes, Descriptor, FieldDescriptorType, Item, KeySet, PresentationError, SortDirection as PresentationSortDirection,
   ValuesDictionary,
 } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomDescriptor, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
+import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises.js";
+import { createRandomDescriptor, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { RowItem } from "@bentley/ui-components";
 import { SortDirection } from "@bentley/ui-core";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { PresentationTableDataProvider, TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE } from "../../presentation-components/table/DataProvider";
-import { mockPresentationManager } from "../_helpers/UiComponents";
+import { mockPresentationManager } from "../_helpers/UiComponents.js";
 
 /**
  * This is just a helper class to provide public access to

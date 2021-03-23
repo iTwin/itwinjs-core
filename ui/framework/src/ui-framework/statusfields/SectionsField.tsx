@@ -12,10 +12,10 @@ import * as React from "react";
 import { ClipEventType, IModelApp, ViewClipClearTool, ViewClipDecoration, ViewClipDecorationProvider, Viewport } from "@bentley/imodeljs-frontend";
 import { Button, ButtonType, Toggle } from "@bentley/ui-core";
 import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
-import { useActiveViewport } from "../hooks/useActiveViewport";
-import { UiFramework } from "../UiFramework";
-import { Indicator } from "./Indicator";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { useActiveViewport } from "../hooks/useActiveViewport.js";
+import { UiFramework } from "../UiFramework.js";
+import { Indicator } from "./Indicator.js";
+import { StatusFieldProps } from "./StatusFieldProps.js";
 
 /** Sections Status Field Props
  * @beta

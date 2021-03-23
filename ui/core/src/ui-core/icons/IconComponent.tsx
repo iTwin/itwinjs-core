@@ -10,8 +10,8 @@ import "./IconComponent.scss";
 import * as React from "react";
 import classnames from "classnames";
 import { ConditionalStringValue, IconSpecUtilities } from "@bentley/ui-abstract";
-import { SvgSprite } from "./SvgSprite";
-import { CommonProps } from "../utils/Props";
+import { SvgSprite } from "./SvgSprite.js";
+import { CommonProps } from "../utils/Props.js";
 
 /** Prototype for an IconSpec which can be a string, ReactNode or ConditionalStringValue.
  * @public

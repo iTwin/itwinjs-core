@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { UiFramework } from "../../ui-framework";
-import { ColorTheme, ThemeManager } from "../../ui-framework/theme/ThemeManager";
-import TestUtils, { mount } from "../TestUtils";
+import { UiFramework } from "../../ui-framework.js";
+import { ColorTheme, ThemeManager } from "../../ui-framework/theme/ThemeManager.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("ThemeManager", () => {
 

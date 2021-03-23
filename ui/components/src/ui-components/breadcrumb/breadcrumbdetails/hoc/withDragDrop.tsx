@@ -8,12 +8,12 @@
 
 import * as React from "react";
 import { getDisplayName } from "@bentley/ui-core";
-import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../../dragdrop/DragDropDef";
-import { Table, TableProps } from "../../../table/component/Table";
-import { TableDropTargetProps, withTableDragDrop } from "../../../table/hocs/withDragDrop";
-import { TableDataProvider } from "../../../table/TableDataProvider";
-import { TreeNodeItem } from "../../../tree/TreeDataProvider";
-import { BreadcrumbDetailsProps } from "../BreadcrumbDetails";
+import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../../dragdrop/DragDropDef.js";
+import { Table, TableProps } from "../../../table/component/Table.js";
+import { TableDropTargetProps, withTableDragDrop } from "../../../table/hocs/withDragDrop.js";
+import { TableDataProvider } from "../../../table/TableDataProvider.js";
+import { TreeNodeItem } from "../../../tree/TreeDataProvider.js";
+import { BreadcrumbDetailsProps } from "../BreadcrumbDetails.js";
 
 /* eslint-disable deprecation/deprecation */
 

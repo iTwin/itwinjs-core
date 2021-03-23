@@ -10,10 +10,10 @@ import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { UiError } from "@bentley/ui-abstract";
-import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { UiFramework } from "../UiFramework";
-import { ContentControl } from "./ContentControl";
+import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl.js";
+import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager.js";
+import { UiFramework } from "../UiFramework.js";
+import { ContentControl } from "./ContentControl.js";
 
 /** Properties for content displayed in a content view
  * @public
@@ -44,7 +44,7 @@ export type ContentCallback = (content: ContentProps) => void;
 
 /** ContentGroup class. Content Groups define content displayed in content views that are laid out using a [[ContentLayout]].
  * @public
- */
+ */
 export class ContentGroup {
   private static _sId = 0;
 
@@ -217,7 +217,7 @@ export class ContentGroup {
 
 /** ContentGroup Manager class.
  * @public
- */
+ */
 export class ContentGroupManager {
   private static _groups: Map<string, ContentGroup> = new Map<string, ContentGroup>();
 

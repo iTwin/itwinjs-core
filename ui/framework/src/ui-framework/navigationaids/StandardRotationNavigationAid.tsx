@@ -17,16 +17,16 @@ import {
   containHorizontally, GroupColumn as NZ_Column, ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupTool as NZ_Item, Group as NZ_Tray,
   withContainIn,
 } from "@bentley/ui-ninezone";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { UiFramework } from "../UiFramework";
-import { NavigationAidControl } from "./NavigationAidControl";
+import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl.js";
+import { UiFramework } from "../UiFramework.js";
+import { NavigationAidControl } from "./NavigationAidControl.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const NZ_ContainedTray = withContainIn(NZ_Tray);
 
 /** A 3D Standard Rotation Navigation Aid control.
  * @alpha
- */
+ */
 export class StandardRotationNavigationAidControl extends NavigationAidControl {
   public static navigationAidId = "StandardRotationNavigationAid";
 
@@ -52,7 +52,7 @@ interface StandardRotationNavigationAidState {
 
 /** A 3D Standard Rotation Navigation Aid.
  * @alpha
- */
+ */
 export class StandardRotationNavigationAid extends React.Component<CommonProps, StandardRotationNavigationAidState> {
   private _title = UiFramework.translate("standardRotationNavigationAid.title");
 

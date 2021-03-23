@@ -4,18 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import * as React from "react";
-import { IconEditorParams, InputEditorSizeParams, PropertyConverterInfo, PropertyEditorInfo, PropertyEditorParamTypes,
+import {
+  IconEditorParams, InputEditorSizeParams, PropertyConverterInfo, PropertyEditorInfo, PropertyEditorParamTypes,
   PropertyRecord, PropertyValue, SpecialKey,
 } from "@bentley/ui-abstract";
 import { MockRender, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { TextEditor } from "../../ui-components/editors/TextEditor";
-import TestUtils from "../TestUtils";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { TextEditor } from "../../ui-components/editors/TextEditor.js";
+import TestUtils from "../TestUtils.js";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer.js";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager.js";
 
 describe("<TextEditor />", () => {
   it("should render", () => {
@@ -165,7 +166,7 @@ describe("<TextEditor />", () => {
 
     class MineDataController extends DataControllerBase {
       public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-        return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+        return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test" } };
       }
     }
 
@@ -190,7 +191,7 @@ describe("<TextEditor />", () => {
 
     class MineDataController2 extends DataControllerBase {
       public async commitValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-        return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+        return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test" } };
       }
     }
 

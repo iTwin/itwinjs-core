@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import {
   MultilineTextPropertyValueRenderer, MultilineTextRenderer,
-} from "../../../ui-components/properties/renderers/value/MultilineTextPropertyValueRenderer";
-import TestUtils from "../../TestUtils";
+} from "../../../ui-components/properties/renderers/value/MultilineTextPropertyValueRenderer.js";
+import TestUtils from "../../TestUtils.js";
 
 describe("MultilineTextPropertyValueRenderer", () => {
   const renderer = new MultilineTextPropertyValueRenderer();

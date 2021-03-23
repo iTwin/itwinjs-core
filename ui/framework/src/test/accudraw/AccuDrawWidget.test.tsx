@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme";
+const { mount } = enzyme;
 import * as React from "react";
 import { IModelAppOptions, MockRender } from "@bentley/imodeljs-frontend";
-import { ConfigurableUiControlType } from "../../ui-framework/configurableui/ConfigurableUiControl";
-import { WidgetProps } from "../../ui-framework/widgets/WidgetProps";
-import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { AccuDrawWidget, AccuDrawWidgetControl } from "../../ui-framework/accudraw/AccuDrawWidget";
-import { AccuDrawFieldContainer } from "../../ui-framework/accudraw/AccuDrawFieldContainer";
-import { TestUtils } from "../TestUtils";
+import { ConfigurableUiControlType } from "../../ui-framework/configurableui/ConfigurableUiControl.js";
+import { WidgetProps } from "../../ui-framework/widgets/WidgetProps.js";
+import { WidgetDef } from "../../ui-framework/widgets/WidgetDef.js";
+import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw.js";
+import { AccuDrawWidget, AccuDrawWidgetControl } from "../../ui-framework/accudraw/AccuDrawWidget.js";
+import { AccuDrawFieldContainer } from "../../ui-framework/accudraw/AccuDrawFieldContainer.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("AccuDrawWidget", () => {
   before(async () => {

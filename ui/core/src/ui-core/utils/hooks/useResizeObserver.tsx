@@ -6,9 +6,9 @@
  * @module Utilities
  */
 import * as React from "react";
-import { ResizeObserver } from "./ResizeObserverPolyfill";
-import { useRefEffect } from "./useRefEffect";
-import { useRefs } from "./useRefs";
+import { ResizeObserver } from "./ResizeObserverPolyfill.js";
+import { useRefEffect } from "./useRefEffect.js";
+import { useRefs } from "./useRefs.js";
 
 /** Uses ResizeObserver API to notify about element bound changes.
  * @internal

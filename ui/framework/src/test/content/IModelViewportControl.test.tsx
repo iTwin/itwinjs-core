@@ -5,14 +5,14 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentViewManager,
   CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, IModelViewportControl, IModelViewportControlOptions,
   NavigationWidget, SupportsViewSelectorChange, Widget, Zone,
-} from "../../ui-framework";
-import TestUtils, { storageMock } from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils, { storageMock } from "../TestUtils.js";
 
 const mySessionStorage = storageMock();
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;

@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyCategory, SimplePropertyDataProvider } from "../../ui-components";
-import TestUtils from "../TestUtils";
+import { PropertyCategory, SimplePropertyDataProvider } from "../../ui-components.js";
+import TestUtils from "../TestUtils.js";
 
 class SamplePropertyDataProvider extends SimplePropertyDataProvider {
   public category2: PropertyCategory;

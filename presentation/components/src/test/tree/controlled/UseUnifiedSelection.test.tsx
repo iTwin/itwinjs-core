@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { from } from "rxjs/internal/observable/from";
-import { finalize } from "rxjs/internal/operators/finalize";
-import { ObservableInput } from "rxjs/internal/types";
+import { from } from "rxjs/internal/observable/from.js";
+import { finalize } from "rxjs/internal/operators/finalize.js";
+import { ObservableInput } from "rxjs/internal/types.js";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises.js";
+import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import {
   ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager,
 } from "@bentley/presentation-frontend";

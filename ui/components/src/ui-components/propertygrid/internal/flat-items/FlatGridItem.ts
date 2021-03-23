@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { CategorizedPropertyTypes, FlatGridItemType } from "./MutableFlatGridItem";
+import { CategorizedPropertyTypes, FlatGridItemType } from "./MutableFlatGridItem.js";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory } from "../../PropertyDataProvider";
+import { PropertyCategory } from "../../PropertyDataProvider.js";
 
 /**
  * Base immutable data structure defining common methods and properties for both CategorizedProperties and GridCategories

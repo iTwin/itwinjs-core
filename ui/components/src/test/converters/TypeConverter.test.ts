@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { PrimitiveValue, PropertyConverterInfo, PropertyDescription } from "@bentley/ui-abstract";
-import { TypeConverter } from "../../ui-components";
-import TestUtils from "../TestUtils";
+import { TypeConverter } from "../../ui-components.js";
+import TestUtils from "../TestUtils.js";
 
 describe("TypeConverter", () => {
 

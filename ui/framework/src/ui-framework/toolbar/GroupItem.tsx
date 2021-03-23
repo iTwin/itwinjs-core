@@ -14,20 +14,20 @@ import {
   Direction, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
   Group as ToolGroupComponent, withDragInteraction,
 } from "@bentley/ui-ninezone";
-import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
-import { AnyItemDef } from "../shared/AnyItemDef";
-import { GroupItemProps } from "../shared/GroupItemProps";
-import { BaseItemState, ItemDefBase } from "../shared/ItemDefBase";
-import { ItemList, ItemMap } from "../shared/ItemMap";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework } from "../UiFramework";
-import { PropsHelper } from "../utils/PropsHelper";
-import { ToolbarDragInteractionContext } from "./DragInteraction";
+import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer.js";
+import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager.js";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut.js";
+import { ActionButtonItemDef } from "../shared/ActionButtonItemDef.js";
+import { AnyItemDef } from "../shared/AnyItemDef.js";
+import { GroupItemProps } from "../shared/GroupItemProps.js";
+import { BaseItemState, ItemDefBase } from "../shared/ItemDefBase.js";
+import { ItemList, ItemMap } from "../shared/ItemMap.js";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher.js";
+import { UiFramework } from "../UiFramework.js";
+import { PropsHelper } from "../utils/PropsHelper.js";
+import { ToolbarDragInteractionContext } from "./DragInteraction.js";
 
-import classnames = require("classnames");
+import classnames from "classnames";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);

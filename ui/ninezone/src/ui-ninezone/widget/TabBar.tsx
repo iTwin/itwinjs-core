@@ -11,14 +11,14 @@ import classnames from "classnames";
 import * as React from "react";
 import { Point, Timer } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
-import { isTabTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
-import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
-import { WidgetTargetState } from "../base/NineZoneState";
-import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
-import { TabBarButtons } from "./Buttons";
-import { FloatingWidgetIdContext } from "./FloatingWidget";
-import { WidgetTabs } from "./Tabs";
-import { WidgetIdContext } from "./Widget";
+import { isTabTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager.js";
+import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone.js";
+import { WidgetTargetState } from "../base/NineZoneState.js";
+import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor.js";
+import { TabBarButtons } from "./Buttons.js";
+import { FloatingWidgetIdContext } from "./FloatingWidget.js";
+import { WidgetTabs } from "./Tabs.js";
+import { WidgetIdContext } from "./Widget.js";
 
 /** @internal */
 export interface WidgetTabBarProps {

@@ -9,16 +9,16 @@
 import * as React from "react";
 import { v4 } from "uuid";
 import { Rectangle, useRefs, useResizeObserver } from "@bentley/ui-core";
-import { CursorType } from "../widget-panels/CursorOverlay";
-import { PanelSide } from "../widget-panels/Panel";
-import { WidgetContentManager } from "../widget/ContentManager";
-import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
-import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdContext, DragProvider } from "./DragManager";
+import { CursorType } from "../widget-panels/CursorOverlay.js";
+import { PanelSide } from "../widget-panels/Panel.js";
+import { WidgetContentManager } from "../widget/ContentManager.js";
+import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget.js";
+import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdContext, DragProvider } from "./DragManager.js";
 import {
   DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
-} from "./NineZoneState";
+} from "./NineZoneState.js";
 import { assert } from "@bentley/bentleyjs-core";
-import { WidgetTab } from "../widget/Tab";
+import { WidgetTab } from "../widget/Tab.js";
 
 /** @internal future */
 export type NineZoneDispatch = (action: NineZoneActionTypes) => void;

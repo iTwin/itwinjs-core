@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
+import sinon from "sinon";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import { UnitSystemKey } from "@bentley/imodeljs-frontend";
-import { UnitSystemSelector } from "../../ui-framework/settings/quantityformatting/UnitSystemSelector";
-import TestUtils from "../TestUtils";
+import { UnitSystemSelector } from "../../ui-framework/settings/quantityformatting/UnitSystemSelector.js";
+import TestUtils from "../TestUtils.js";
 
 describe("UnitSystemSelector", () => {
   before(async () => {

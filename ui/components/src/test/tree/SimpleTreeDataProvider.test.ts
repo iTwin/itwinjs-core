@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "../../ui-components/tree/SimpleTreeDataProvider";
-import { DelayLoadedTreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
+import { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "../../ui-components/tree/SimpleTreeDataProvider.js";
+import { DelayLoadedTreeNodeItem } from "../../ui-components/tree/TreeDataProvider.js";
 
 describe("SimpleTreeDataProvider", () => {
 

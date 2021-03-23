@@ -6,9 +6,9 @@
  * @module Tools
  */
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@bentley/imodeljs-frontend";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { FrontstageDef } from "../frontstage/FrontstageDef";
-import { UiFramework } from "../UiFramework";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { FrontstageDef } from "../frontstage/FrontstageDef.js";
+import { UiFramework } from "../UiFramework.js";
 
 /**
  * Immediate tool that will reset the layout to that specified in the stage definition. A stage Id

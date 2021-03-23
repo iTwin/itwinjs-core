@@ -16,18 +16,18 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
 import { ToolbarPopupContext } from "@bentley/ui-components";
-import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../../ui-framework";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { KeyinBrowser } from "../keyinbrowser/KeyinBrowser";
-import { getIsHiddenIfSelectionNotActive, getSelectionContextSyncEventIds, selectionContextStateFunc } from "../selection/SelectionContextItemDef";
-import { CommandItemDef } from "../shared/CommandItemDef";
-import { CustomItemDef } from "../shared/CustomItemDef";
-import { BaseItemState } from "../shared/ItemDefBase";
-import { ToolItemDef } from "../shared/ToolItemDef";
-import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { GroupItemDef } from "../toolbar/GroupItem";
-import { RestoreFrontstageLayoutTool } from "./RestoreLayoutTool";
-import { UiFramework } from "../UiFramework";
+import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../../ui-framework.js";
+import { ContentViewManager } from "../content/ContentViewManager.js";
+import { KeyinBrowser } from "../keyinbrowser/KeyinBrowser.js";
+import { getIsHiddenIfSelectionNotActive, getSelectionContextSyncEventIds, selectionContextStateFunc } from "../selection/SelectionContextItemDef.js";
+import { CommandItemDef } from "../shared/CommandItemDef.js";
+import { CustomItemDef } from "../shared/CustomItemDef.js";
+import { BaseItemState } from "../shared/ItemDefBase.js";
+import { ToolItemDef } from "../shared/ToolItemDef.js";
+import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher.js";
+import { GroupItemDef } from "../toolbar/GroupItem.js";
+import { RestoreFrontstageLayoutTool } from "./RestoreLayoutTool.js";
+import { UiFramework } from "../UiFramework.js";
 
 /* eslint-disable deprecation/deprecation */
 

@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { DndProvider } from "react-dnd";
+import react_dnd from "react-dnd";
+const { DndProvider } = react_dnd;
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 /**

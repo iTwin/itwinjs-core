@@ -8,7 +8,7 @@
 
 import { Patch, produce } from "immer";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { MutableTreeModel, TreeModel, VisibleTreeNodes } from "./TreeModel";
+import { MutableTreeModel, TreeModel, VisibleTreeNodes } from "./TreeModel.js";
 
 /**
  * Data structure that describes changes which happened to the tree model

@@ -9,7 +9,7 @@
 import "./MenuButton.scss";
 import * as React from "react";
 import { ContextMenu, Icon, PointProps, Size, SizeProps } from "@bentley/ui-core";
-import { SquareButton, SquareButtonProps } from "./SquareButton";
+import { SquareButton, SquareButtonProps } from "./SquareButton.js";
 
 /** @alpha */
 export interface MenuButtonProps extends SquareButtonProps {

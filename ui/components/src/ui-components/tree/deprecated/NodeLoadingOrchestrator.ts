@@ -6,24 +6,24 @@
  * @module Tree
  */
 
-import { Observable } from "rxjs/internal/Observable";
-import { concat } from "rxjs/internal/observable/concat";
-import { ConnectableObservable } from "rxjs/internal/observable/ConnectableObservable";
-import { merge } from "rxjs/internal/observable/merge";
-import { of } from "rxjs/internal/observable/of";
-import { filter } from "rxjs/internal/operators/filter";
-import { finalize } from "rxjs/internal/operators/finalize";
-import { map } from "rxjs/internal/operators/map";
-import { mergeAll } from "rxjs/internal/operators/mergeAll";
-import { publish } from "rxjs/internal/operators/publish";
-import { share } from "rxjs/internal/operators/share";
-import { takeUntil } from "rxjs/internal/operators/takeUntil";
-import { takeWhile } from "rxjs/internal/operators/takeWhile";
-import { tap } from "rxjs/internal/operators/tap";
-import { Subject } from "rxjs/internal/Subject";
-import { Subscriber } from "rxjs/internal/Subscriber";
-import { TreeNodeItem } from "../TreeDataProvider";
-import { BeInspireTree, BeInspireTreeNode, toNode, toNodes } from "./component/BeInspireTree";
+import { Observable } from "rxjs/internal/Observable.js";
+import { concat } from "rxjs/internal/observable/concat.js";
+import { ConnectableObservable } from "rxjs/internal/observable/ConnectableObservable.js";
+import { merge } from "rxjs/internal/observable/merge.js";
+import { of } from "rxjs/internal/observable/of.js";
+import { filter } from "rxjs/internal/operators/filter.js";
+import { finalize } from "rxjs/internal/operators/finalize.js";
+import { map } from "rxjs/internal/operators/map.js";
+import { mergeAll } from "rxjs/internal/operators/mergeAll.js";
+import { publish } from "rxjs/internal/operators/publish.js";
+import { share } from "rxjs/internal/operators/share.js";
+import { takeUntil } from "rxjs/internal/operators/takeUntil.js";
+import { takeWhile } from "rxjs/internal/operators/takeWhile.js";
+import { tap } from "rxjs/internal/operators/tap.js";
+import { Subject } from "rxjs/internal/Subject.js";
+import { Subscriber } from "rxjs/internal/Subscriber.js";
+import { TreeNodeItem } from "../TreeDataProvider.js";
+import { BeInspireTree, BeInspireTreeNode, toNode, toNodes } from "./component/BeInspireTree.js";
 
 /* eslint-disable deprecation/deprecation */
 

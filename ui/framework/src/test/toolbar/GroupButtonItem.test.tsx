@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ReactWrapper, shallow } from "enzyme";
+import type { ReactWrapper } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { ActionButton, BadgeType, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
 import { GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@bentley/ui-ninezone";
-import { GroupButtonItem, KeyboardShortcutManager, ToolbarDragInteractionContext, ToolbarGroupItem, ToolGroupPanelContext } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import { GroupButtonItem, KeyboardShortcutManager, ToolbarDragInteractionContext, ToolbarGroupItem, ToolGroupPanelContext } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 const tool1 = ToolbarItemUtilities.createActionButton("childButton1", 10, "icon-button", "label", () => { }, { badgeType: BadgeType.New });
 const tool2 = ToolbarItemUtilities.createActionButton("childButton2", 20, "icon-button", "label", () => { });

@@ -11,10 +11,10 @@ import * as React from "react";
 import classnames from "classnames";
 import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, PropertyRecord, RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, FocusTrap, LeadingText, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
-import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
-import { isReactContent, PopupContentType, PopupManager, PopupPropsBase } from "./PopupManager";
-import { PositionPopup } from "./PositionPopup";
-import { MessageDiv } from "../messages/MessageSpan";
+import { CursorPopup } from "../cursor/cursorpopup/CursorPopup.js";
+import { isReactContent, PopupContentType, PopupManager, PopupPropsBase } from "./PopupManager.js";
+import { PositionPopup } from "./PositionPopup.js";
+import { MessageDiv } from "../messages/MessageSpan.js";
 import { Direction, PropertyValueRendererManager, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarWithOverflow } from "@bentley/ui-components";
 
 /** @alpha */

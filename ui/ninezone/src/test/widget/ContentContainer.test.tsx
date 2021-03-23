@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import {
   createWidgetState, EventEmitter, TabState, WidgetContentContainer, WidgetContentManagerContext, WidgetContentManagerContextArgs,
   WidgetStateContext,
-} from "../../ui-ninezone";
+} from "../../ui-ninezone.js";
 
 describe("WidgetContentContainer ", () => {
   it("should render minimized", () => {

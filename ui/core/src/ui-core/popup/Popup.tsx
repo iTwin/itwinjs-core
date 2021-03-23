@@ -11,8 +11,8 @@ import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
-import { FocusTrap } from "../focustrap/FocusTrap";
-import { CommonProps } from "../utils/Props";
+import { FocusTrap } from "../focustrap/FocusTrap.js";
+import { CommonProps } from "../utils/Props.js";
 
 // cSpell:ignore focustrap focusable alertdialog
 

@@ -5,8 +5,8 @@
 import * as faker from "faker";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { MutableTreeModelNode, TreeNodeItemData } from "../../../ui-components";
-import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
+import { MutableTreeModelNode, TreeNodeItemData } from "../../../ui-components.js";
+import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider.js";
 
 /** Returns random MutableTreeModelNode. */
 export const createRandomMutableTreeModelNode = (parentNodeId?: string, selected?: boolean, label?: string): MutableTreeModelNode => {

@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { ArrayValue } from "@bentley/ui-abstract";
-import { NonPrimitivePropertyRenderer } from "../../NonPrimitivePropertyRenderer";
-import { TableSpecificValueRendererProps, TableNonPrimitiveValueRenderer as TableValueRenderer } from "./NonPrimitiveValueRenderer";
+import { NonPrimitivePropertyRenderer } from "../../NonPrimitivePropertyRenderer.js";
+import { TableSpecificValueRendererProps, TableNonPrimitiveValueRenderer as TableValueRenderer } from "./NonPrimitiveValueRenderer.js";
 
 /** A react component which renders array property value as a button with text
  * @public

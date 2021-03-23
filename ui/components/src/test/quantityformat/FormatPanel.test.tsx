@@ -5,12 +5,12 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
-import TestUtils from "../TestUtils";
+import TestUtils from "../TestUtils.js";
 import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { Checkbox } from "@bentley/ui-core";
-import { FormatPanel, FormatPrecision, FormatSample } from "../../ui-components";
+import { FormatPanel, FormatPrecision, FormatSample } from "../../ui-components.js";
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
   const traitStr = Format.getTraitString(trait);

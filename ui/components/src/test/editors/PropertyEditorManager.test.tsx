@@ -8,8 +8,8 @@ import * as React from "react";
 import {
   IconEditorParams, PropertyDescription, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
 } from "@bentley/ui-abstract";
-import { AsyncValueProcessingResult, BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
-import { TextEditor } from "../../ui-components/editors/TextEditor";
+import { AsyncValueProcessingResult, BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager.js";
+import { TextEditor } from "../../ui-components/editors/TextEditor.js";
 
 // cspell:ignore badeditor newvalue
 

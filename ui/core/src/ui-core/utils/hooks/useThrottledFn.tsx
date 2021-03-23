@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { throttle } from "lodash";
+import { throttle } from "lodash-es";
 
 /** lodash throttle options
  * @internal

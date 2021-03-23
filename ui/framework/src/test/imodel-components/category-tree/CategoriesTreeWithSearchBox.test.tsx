@@ -4,21 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent, BeUiEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, KeySet, LabelDefinition, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
+import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents.js";
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
-import { CategoryTreeWithSearchBox } from "../../../ui-framework/imodel-components/category-tree/CategoriesTreeWithSearchBox";
-import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
-import TestUtils from "../../TestUtils";
-import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
+import tlr from "@testing-library/react"; const { fireEvent, render, waitForElement } = tlr;
+import { CategoryTreeWithSearchBox } from "../../../ui-framework/imodel-components/category-tree/CategoriesTreeWithSearchBox.js";
+import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler.js";
+import TestUtils from "../../TestUtils.js";
+import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler.js";
 
 describe("CategoryTreeWithSearchBox", () => {
 

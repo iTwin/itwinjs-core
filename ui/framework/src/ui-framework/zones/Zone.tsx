@@ -13,17 +13,17 @@ import {
   DisabledResizeHandles, DraggedWidgetManagerProps, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps, WidgetZoneId,
   ZoneManagerProps, ZoneTargetType,
 } from "@bentley/ui-ninezone";
-import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { TargetChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
-import { WidgetDef, WidgetStateChangedEventArgs, WidgetType } from "../widgets/WidgetDef";
-import { WidgetProps } from "../widgets/WidgetProps";
-import { WidgetTabs } from "../widgets/WidgetStack";
-import { FrameworkZone } from "./FrameworkZone";
-import { StatusBarZone } from "./StatusBarZone";
-import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
-import { ZoneDef, ZoneState } from "./ZoneDef";
+import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl.js";
+import { TargetChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer.js";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl.js";
+import { WidgetDef, WidgetStateChangedEventArgs, WidgetType } from "../widgets/WidgetDef.js";
+import { WidgetProps } from "../widgets/WidgetProps.js";
+import { WidgetTabs } from "../widgets/WidgetStack.js";
+import { FrameworkZone } from "./FrameworkZone.js";
+import { StatusBarZone } from "./StatusBarZone.js";
+import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone.js";
+import { ZoneDef, ZoneState } from "./ZoneDef.js";
 
 /** Enum for [[Zone]] Location.
  * @public
@@ -41,7 +41,7 @@ export enum ZoneLocation {
 
 /** Properties of a [[Zone]] component
  * @public
- */
+ */
 export interface ZoneProps extends CommonProps {
   /** Default Zone state. Controls how the Zone is initially displayed. Defaults to ZoneState.Open. */
   defaultState?: ZoneState;
@@ -66,7 +66,7 @@ export interface ZoneProps extends CommonProps {
 
 /** Runtime Properties for the [[Zone]] component.
  * @internal
- */
+ */
 export interface ZoneRuntimeProps {
   activeTabIndex: number;
   disabledResizeHandles: DisabledResizeHandles | undefined;
@@ -100,7 +100,7 @@ export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string)
 /** Zone React component.
  * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
  * @public
- */
+ */
 export class Zone extends React.Component<ZoneProps> {
   constructor(props: ZoneProps) {
     super(props);

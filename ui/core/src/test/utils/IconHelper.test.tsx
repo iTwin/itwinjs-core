@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
-import { IconHelper } from "../../ui-core/utils/IconHelper";
+import { IconHelper } from "../../ui-core/utils/IconHelper.js";
 
 describe("IconHelper", () => {
 

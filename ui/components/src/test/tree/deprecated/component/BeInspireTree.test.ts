@@ -8,11 +8,11 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { using } from "@bentley/bentleyjs-core";
 import { CheckBoxInfo, CheckBoxState } from "@bentley/ui-core";
-import { PageOptions } from "../../../../ui-components/common/PageOptions";
+import { PageOptions } from "../../../../ui-components/common/PageOptions.js";
 import {
   BeInspireTree, BeInspireTreeDataProvider, BeInspireTreeDataProviderInterface, BeInspireTreeDataProviderMethod, BeInspireTreeDataProviderPromise,
   BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNode,
-} from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
+} from "../../../../ui-components/tree/deprecated/component/BeInspireTree.js";
 
 /* eslint-disable deprecation/deprecation */
 

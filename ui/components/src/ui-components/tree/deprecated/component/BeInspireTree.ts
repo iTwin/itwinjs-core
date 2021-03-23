@@ -6,14 +6,14 @@
  * @module Tree
  */
 
-import { CallableInstance } from "callable-instance2/import";
+import { CallableInstance } from "callable-instance2/import.js";
 import InspireTree, * as Inspire from "inspire-tree";
-import { isArrayLike } from "lodash";
+import { isArrayLike } from "lodash-es";
 import { IDisposable, using } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
 import { CheckBoxInfo, CheckBoxState, isPromiseLike } from "@bentley/ui-core";
-import { PageOptions } from "../../../common/PageOptions";
-import { UiComponents } from "../../../UiComponents";
+import { PageOptions } from "../../../common/PageOptions.js";
+import { UiComponents } from "../../../UiComponents.js";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -448,7 +448,7 @@ export class BeInspireTree<TNodePayload> {
       this._tree.removeAllListeners(undefined);
       return;
     }
-    const events = Array.isArray(event) ? event : /* istanbul ignore next */ [event];
+    const events = Array.isArray(event) ? event : /* istanbul ignore next */[event];
     events.forEach((e) => this._tree.removeAllListeners(e));
   }
 

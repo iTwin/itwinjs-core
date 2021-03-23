@@ -12,7 +12,7 @@ import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@ben
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { SignIn as SignInBase } from "@bentley/ui-components";
 import { CommonProps } from "@bentley/ui-core";
-import { UiFramework } from "../UiFramework";
+import { UiFramework } from "../UiFramework.js";
 
 /** Properties for the [[SignIn]] component
  * @public

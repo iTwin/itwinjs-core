@@ -6,9 +6,9 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import TestUtils from "../TestUtils";
-import { adjustDateToTimezone, DatePicker } from "../../ui-components/datepicker/DatePicker";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
+import TestUtils from "../TestUtils.js";
+import { adjustDateToTimezone, DatePicker } from "../../ui-components/datepicker/DatePicker.js";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 describe("<DatePicker />", () => {

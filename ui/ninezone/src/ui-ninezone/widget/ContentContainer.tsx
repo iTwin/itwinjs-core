@@ -10,8 +10,8 @@ import "./ContentContainer.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { assert } from "@bentley/bentleyjs-core";
-import { WidgetContentManagerContext } from "./ContentManager";
-import { WidgetStateContext } from "./Widget";
+import { WidgetContentManagerContext } from "./ContentManager.js";
+import { WidgetStateContext } from "./Widget.js";
 
 /** @internal */
 export const WidgetContentContainer = React.memo(function WidgetContentContainer() { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention

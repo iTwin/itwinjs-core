@@ -15,7 +15,7 @@ import {
 } from "@bentley/ui-components";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, FrameworkVersionSwitch, UiFramework, WidgetControl } from "@bentley/ui-framework";
-import { ExtensionUiItemsProvider } from "../ExtensionUiItemsProvider";
+import { ExtensionUiItemsProvider } from "../ExtensionUiItemsProvider.js";
 
 interface PresentationPropertyGridWidgetProps {
   iModelConnection: IModelConnection | (() => IModelConnection | undefined);

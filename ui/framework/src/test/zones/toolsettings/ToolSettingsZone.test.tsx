@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { WidgetState } from "@bentley/ui-abstract";
 import { Rectangle } from "@bentley/ui-core";
 import { getDefaultZoneManagerProps, ResizeHandle, ToolSettings } from "@bentley/ui-ninezone";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider,
   ToolSettingsZone, ToolSettingsZoneProps, ToolUiProvider, Widget, Zone,
-} from "../../../ui-framework";
-import TestUtils, { mount, ReactWrapper } from "../../TestUtils";
-import { Tool1 } from "../../tools/Tool1";
+} from "../../../ui-framework.js";
+import TestUtils, { mount, ReactWrapper } from "../../TestUtils.js";
+import { Tool1 } from "../../tools/Tool1.js";
 
 describe("ToolSettingsZone", () => {
   const widgetChangeHandler: ToolSettingsZoneProps["widgetChangeHandler"] = {

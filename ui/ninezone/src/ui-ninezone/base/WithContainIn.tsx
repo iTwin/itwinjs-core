@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Rectangle, RectangleProps } from "@bentley/ui-core";
-import { Css } from "../utilities/Css";
+import { Css } from "../utilities/Css.js";
 
 /** Properties of [[withContainIn]] HOC.
  * @alpha

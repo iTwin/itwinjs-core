@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as sinon from "sinon";
+import sinon from "sinon";
 
 /** @internal */
 export const createRect = (left: number, top: number, right: number, bottom: number): ClientRect => ({

@@ -10,8 +10,8 @@ import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentGroupManager, ContentGroupProps, ContentLayoutManager, ContentLayoutProps, CoreTools,
   Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
   TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("ConfigurableUiManager", () => {
 

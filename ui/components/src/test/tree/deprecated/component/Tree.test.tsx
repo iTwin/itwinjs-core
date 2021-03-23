@@ -9,25 +9,25 @@ import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { cleanup, fireEvent, render, RenderResult, wait, waitForElement, within } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, RenderResult, wait, waitForElement, within } = tlr;
 import {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, PageOptions, SelectionMode, TreeCellUpdatedArgs, TreeDataChangesListener,
   TreeDataProviderMethod, TreeDataProviderRaw, TreeNodeItem,
-} from "../../../../ui-components";
-import { getPropertyRecordAsString } from "../../../../ui-components/common/getPropertyRecordAsString";
-import { LoadedImage } from "../../../../ui-components/common/IImageLoader";
-import { BeInspireTreeNode, BeInspireTreeNodeConfig } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
-import { TreeNodeProps } from "../../../../ui-components/tree/deprecated/component/Node";
+} from "../../../../ui-components.js";
+import { getPropertyRecordAsString } from "../../../../ui-components/common/getPropertyRecordAsString.js";
+import { LoadedImage } from "../../../../ui-components/common/IImageLoader.js";
+import { BeInspireTreeNode, BeInspireTreeNodeConfig } from "../../../../ui-components/tree/deprecated/component/BeInspireTree.js";
+import { TreeNodeProps } from "../../../../ui-components/tree/deprecated/component/Node.js";
 import {
   NodesDeselectedCallback, NodesSelectedCallback, DEPRECATED_Tree as Tree, TreeProps,
-} from "../../../../ui-components/tree/deprecated/component/Tree";
-import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
-import { ITreeImageLoader } from "../../../../ui-components/tree/ImageLoader";
-import { TreeComponentTestId } from "../../../../ui-components/tree/TreeComponentTestId";
-import { ResolvablePromise, waitForUpdate } from "../../../test-helpers/misc";
-import TestUtils from "../../../TestUtils";
-import { TestTreeDataProvider } from "../../TestDataFactories";
-import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
+} from "../../../../ui-components/tree/deprecated/component/Tree.js";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine.js";
+import { ITreeImageLoader } from "../../../../ui-components/tree/ImageLoader.js";
+import { TreeComponentTestId } from "../../../../ui-components/tree/TreeComponentTestId.js";
+import { ResolvablePromise, waitForUpdate } from "../../../test-helpers/misc.js";
+import TestUtils from "../../../TestUtils.js";
+import { TestTreeDataProvider } from "../../TestDataFactories.js";
+import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager.js";
 
 /* eslint-disable deprecation/deprecation */
 

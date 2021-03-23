@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
-import { SignOutModalFrontstage } from "../../ui-framework";
-import TestUtils, { mockUserInfo, mount } from "../TestUtils";
+import { SignOutModalFrontstage } from "../../ui-framework.js";
+import TestUtils, { mockUserInfo, mount } from "../TestUtils.js";
 
 describe("SignOutModalFrontstage", () => {
 

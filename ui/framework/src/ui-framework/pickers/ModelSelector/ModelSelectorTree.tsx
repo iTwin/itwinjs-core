@@ -16,9 +16,9 @@ import { DEPRECATED_Tree, FilteringInput, SelectionMode, TreeNodeItem } from "@b
 import {
   CheckBoxInfo, CheckBoxState, ContextMenuItem, GlobalContextMenu, ImageCheckBox, isPromiseLike, LoadingSpinner, NodeCheckboxRenderProps, SpinnerSize, UiCore,
 } from "@bentley/ui-core";
-import { UiFramework } from "../../UiFramework";
-import { ListItem, ListItemType } from "../ListPicker";
-import { CategoryModelTreeProps, CategoryModelTreeState, Groups } from "./ModelSelectorDefinitions";
+import { UiFramework } from "../../UiFramework.js";
+import { ListItem, ListItemType } from "../ListPicker.js";
+import { CategoryModelTreeProps, CategoryModelTreeState, Groups } from "./ModelSelectorDefinitions.js";
 
 /**
  * Tree which displays and manages models or categories contained in an iModel.

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
-import { DragSourceArguments, DropEffects, DropStatus } from "../../../ui-components/dragdrop/DragDropDef";
-import { ColumnDragLayer } from "../../../ui-components/table/component/ColumnDragLayer";
+import { DragSourceArguments, DropEffects, DropStatus } from "../../../ui-components/dragdrop/DragDropDef.js";
+import { ColumnDragLayer } from "../../../ui-components/table/component/ColumnDragLayer.js";
 
 /* eslint-disable deprecation/deprecation */
 

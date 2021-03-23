@@ -6,7 +6,7 @@
  * @module Common
  */
 import { Range2d } from "@bentley/geometry-core";
-import { hasSelectionModeFlag, SelectionMode, SelectionModeFlags } from "./SelectionModes";
+import { hasSelectionModeFlag, SelectionMode, SelectionModeFlags } from "./SelectionModes.js";
 
 /** Prototype for a Selection Changed handler
  * @public

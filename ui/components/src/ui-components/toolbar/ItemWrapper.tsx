@@ -10,8 +10,8 @@ import "./ItemWrapper.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useResizeObserver } from "@bentley/ui-core";
-import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
-import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
+import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow.js";
+import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction.js";
 
 /** Properties of [[ItemWrapper]] component.
  * @internal future

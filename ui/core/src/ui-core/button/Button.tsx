@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
+import { CommonProps } from "../utils/Props.js";
 
 /** Sizes for [[Button]] component
  * @public

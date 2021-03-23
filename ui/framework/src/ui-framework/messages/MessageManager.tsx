@@ -7,7 +7,7 @@
  */
 
 import classnames from "classnames";
-import * as _ from "lodash";
+import * as _ from "lodash-es";
 import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
 import {
@@ -15,15 +15,15 @@ import {
   OutputMessageType, ToolAssistanceInstructions, ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
 import { MessageContainer, MessageSeverity, UiEvent } from "@bentley/ui-core";
-import { ConfigurableUiActionId } from "../configurableui/state";
-import { ModalDialogManager } from "../dialog/ModalDialogManager";
-import { StandardMessageBox } from "../dialog/StandardMessageBox";
-import { ElementTooltip } from "../feedback/ElementTooltip";
-import { UiFramework } from "../UiFramework";
-import { MessageSpan } from "./MessageSpan";
-import { PointerMessage } from "./Pointer";
-import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
-import { StatusMessageManager } from "./StatusMessageManager";
+import { ConfigurableUiActionId } from "../configurableui/state.js";
+import { ModalDialogManager } from "../dialog/ModalDialogManager.js";
+import { StandardMessageBox } from "../dialog/StandardMessageBox.js";
+import { ElementTooltip } from "../feedback/ElementTooltip.js";
+import { UiFramework } from "../UiFramework.js";
+import { MessageSpan } from "./MessageSpan.js";
+import { PointerMessage } from "./Pointer.js";
+import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails.js";
+import { StatusMessageManager } from "./StatusMessageManager.js";
 
 class MessageBoxCallbacks {
   constructor(
@@ -38,7 +38,7 @@ class MessageBoxCallbacks {
 
 /** [[MessageAddedEvent]] arguments.
  * @public
- */
+ */
 export interface MessageAddedEventArgs {
   /** Message details for the message added */
   message: NotifyMessageDetailsType;
@@ -46,7 +46,7 @@ export interface MessageAddedEventArgs {
 
 /** Activity Message Event arguments.
  * @public
- */
+ */
 export interface ActivityMessageEventArgs {
   /** Current message for the activity */
   message: NotifyMessageType;
@@ -60,7 +60,7 @@ export interface ActivityMessageEventArgs {
 
 /** Input Field Message Event arguments.
  * @public
- */
+ */
 export interface InputFieldMessageEventArgs {
   /** Target HTML element for the Input Field message */
   target: Element;
@@ -82,22 +82,22 @@ export interface ToolAssistanceChangedEventArgs {
 
 /** Message Added Event class.
  * @public
- */
+ */
 export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> { }
 
 /** Messages Updated Event class.
  * @public
- */
+ */
 export class MessagesUpdatedEvent extends UiEvent<{}> { }
 
 /** Activity Message Added Event class.
  * @public
- */
+ */
 export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArgs> { }
 
 /** Activity Message Cancelled Event class.
  * @public
- */
+ */
 export class ActivityMessageCancelledEvent extends UiEvent<{}> { }
 
 /** Input Field Message Added Event class
@@ -107,7 +107,7 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
 
 /** Input Field Message Removed Event class.
  * @public
- */
+ */
 export class InputFieldMessageRemovedEvent extends UiEvent<{}> { }
 
 /** Tool Assistance Changed event class
@@ -120,7 +120,7 @@ export class ToolAssistanceChangedEvent extends UiEvent<ToolAssistanceChangedEve
  * setupActivityMessageDetails() or setupActivityMessageValues()
  * is called.
  * Used to display tracked progress in ActivityMessage.
- */
+ */
 class OngoingActivityMessage {
   public message: NotifyMessageType = "";
   public percentage: number = 0;
@@ -130,7 +130,7 @@ class OngoingActivityMessage {
 
 /** The MessageManager class manages messages and prompts. It is used by the [[AppNotificationManager]] class.
  * @public
- */
+ */
 export class MessageManager {
   private static _maxCachedMessages = 500;
   private static _maxDisplayedStickyMessages = 3;
@@ -249,7 +249,7 @@ export class MessageManager {
    * Sets details for setting up an Activity message.
    * @param details    Details for setup of ActivityMessage
    * @returns true if details is valid and can be used to display ActivityMessage
-   */
+   */
   public static setupActivityMessageDetails(details: ActivityMessageDetails): boolean {
     this._ongoingActivityMessage.details = details;
     this._ongoingActivityMessage.isRestored = details.showDialogInitially;
@@ -274,7 +274,7 @@ export class MessageManager {
    * @param restored    True if original ActivityMessage has been closed and
    *                    is now being restored from the status bar.
    * @returns true if details is valid and can be used to display ActivityMessage
-   */
+   */
   public static setupActivityMessageValues(message: NotifyMessageType, percentage: number, restored?: boolean): boolean {
     this._ongoingActivityMessage.message = message;
     this._ongoingActivityMessage.percentage = percentage;
@@ -295,7 +295,7 @@ export class MessageManager {
    * Dismisses current ActivityMessage and ends activity if canceled.
    * @param isCompleted   True if the activity was completed, false if it was canceled
    * @returns True if both ActivityMessage and activity process are ended.
-   */
+   */
   public static endActivityMessage(isCompleted: boolean): boolean {
     this.endActivityProcessing(isCompleted);
     this.onActivityMessageCancelledEvent.emit({});
@@ -305,7 +305,7 @@ export class MessageManager {
   /**
    * Ends processing for activity according to message definition.
    * @param isCompleted   True if the activity was completed, false if it was canceled
-   */
+   */
   private static endActivityProcessing(isCompleted: boolean): void {
     if (isCompleted)
       this._ongoingActivityMessage.details.onActivityCompleted();

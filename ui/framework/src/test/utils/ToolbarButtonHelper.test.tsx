@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
-import { render } from "@testing-library/react";
-import { CommandItemDef, GroupButton, ToolbarButtonHelper, ToolButton, ToolWidget } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { CommandItemDef, GroupButton, ToolbarButtonHelper, ToolButton, ToolWidget } from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("Locate Toolbar items", () => {
   const tool1 = new CommandItemDef({

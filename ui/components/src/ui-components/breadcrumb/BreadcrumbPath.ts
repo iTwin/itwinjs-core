@@ -7,11 +7,11 @@
  */
 
 import { UiEvent } from "@bentley/ui-core";
-import { TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
+import { TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider.js";
 
 /** BreadcrumbChangeEvent Event Args class.
  * @beta
- */
+ */
 export interface BreadcrumbUpdateEventArgs {
   dataProvider: TreeDataProvider;
   oldDataProvider: TreeDataProvider;
@@ -20,12 +20,12 @@ export interface BreadcrumbUpdateEventArgs {
 
 /** BreadcrumbChangeEvent Event class.
  * @beta
- */
+ */
 export class BreadcrumbUpdateEvent extends UiEvent<BreadcrumbUpdateEventArgs> { }
 
 /** Breadcrumb Path class.
  * @beta
- */
+ */
 export class BreadcrumbPath {
   private _dataProvider: TreeDataProvider;
   private _currentNode: TreeNodeItem | undefined = undefined;

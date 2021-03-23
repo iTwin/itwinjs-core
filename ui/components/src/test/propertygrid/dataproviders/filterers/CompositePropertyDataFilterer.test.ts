@@ -8,12 +8,12 @@ import * as moq from "typemoq";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   CompositeFilterType, CompositePropertyDataFilterer,
-} from "../../../../ui-components/propertygrid/dataproviders/filterers/CompositePropertyDataFilterer";
+} from "../../../../ui-components/propertygrid/dataproviders/filterers/CompositePropertyDataFilterer.js";
 import {
   FilteredType, IPropertyDataFilterer, PropertyFilterChangeEvent,
-} from "../../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
-import { PropertyCategory } from "../../../../ui-components/propertygrid/PropertyDataProvider";
-import { TestUtils } from "../../../TestUtils";
+} from "../../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase.js";
+import { PropertyCategory } from "../../../../ui-components/propertygrid/PropertyDataProvider.js";
+import { TestUtils } from "../../../TestUtils.js";
 
 describe("CompositePropertyDataFilterer", () => {
 

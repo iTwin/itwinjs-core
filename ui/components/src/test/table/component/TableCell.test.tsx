@@ -6,11 +6,11 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
-import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
-import { TableCell, TableCellContent, TableIconCellContent } from "../../../ui-components/table/component/TableCell";
-import { CellItem } from "../../../ui-components/table/TableDataProvider";
-import TestUtils from "../../TestUtils";
+import tlr from "@testing-library/react"; const { fireEvent, render, waitForElement } = tlr;
+import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager.js";
+import { TableCell, TableCellContent, TableIconCellContent } from "../../../ui-components/table/component/TableCell.js";
+import { CellItem } from "../../../ui-components/table/TableDataProvider.js";
+import TestUtils from "../../TestUtils.js";
 
 describe("TableCell", () => {
   it("renders content", () => {

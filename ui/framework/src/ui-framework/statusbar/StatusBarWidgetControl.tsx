@@ -6,12 +6,12 @@
  * @module StatusBar
  */
 
-import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { WidgetControl } from "../widgets/WidgetControl";
+import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl.js";
+import { WidgetControl } from "../widgets/WidgetControl.js";
 
 /** Status Bar Field type.
  * @public
- */
+ */
 export type StatusBarFieldId = string | null;
 
 /** Status Bar Widget Control render prop arguments.
@@ -30,7 +30,7 @@ export interface StatusBarWidgetControlArgs {
 
 /** Status Bar Widget Control.
  * @public
- */
+ */
 export abstract class StatusBarWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);

@@ -7,11 +7,11 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { WeightEditor } from "../../ui-components/editors/WeightEditor";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, waitForElement } = tlr;
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer.js";
+import { WeightEditor } from "../../ui-components/editors/WeightEditor.js";
+import TestUtils from "../TestUtils.js";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager.js";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 describe("<WeightEditor />", () => {

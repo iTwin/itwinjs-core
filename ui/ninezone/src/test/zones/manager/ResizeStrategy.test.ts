@@ -8,9 +8,9 @@ import { Rectangle, RectangleProps } from "@bentley/ui-core";
 import {
   GrowBottom, GrowLeft, GrowRight, GrowStrategy, GrowTop, HorizontalAnchor, ResizeStrategy, ShrinkBottom, ShrinkHorizontalStrategy, ShrinkLeft, ShrinkRight,
   ShrinkStrategy, ShrinkTop, ShrinkVerticalStrategy, UpdateWindowResizeSettings, WidgetZoneId, ZonesManager, ZonesManagerProps,
-} from "../../../ui-ninezone";
-import { BottomZones, LeftZones, RightZones, TopZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
-import TestProps from "./TestProps";
+} from "../../../ui-ninezone.js";
+import { BottomZones, LeftZones, RightZones, TopZones } from "../../../ui-ninezone/zones/manager/AdjacentZones.js";
+import TestProps from "./TestProps.js";
 
 const zonesManagerMock = Moq.Mock.ofType<ZonesManager>();
 const zonesManagerPropsMock = Moq.Mock.ofType<ZonesManagerProps>();

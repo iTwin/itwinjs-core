@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import {
   BackstageActionItem, BackstageComposerActionItem, BackstageComposerItem, BackstageComposerStageLauncher, BackstageItemType, BackstageManager,
   BackstageStageLauncher, FrontstageDef, FrontstageManager, UiFramework,
-} from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 import { BadgeType } from "@bentley/ui-abstract";
 
 /** @internal */

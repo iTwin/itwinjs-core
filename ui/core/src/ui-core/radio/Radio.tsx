@@ -8,8 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { LabeledComponentProps } from "../inputs/LabeledComponentProps";
-import { CommonProps } from "../utils/Props";
+import { LabeledComponentProps } from "../inputs/LabeledComponentProps.js";
+import { CommonProps } from "../utils/Props.js";
 
 /** Properties for [[Radio]] component
  * @public

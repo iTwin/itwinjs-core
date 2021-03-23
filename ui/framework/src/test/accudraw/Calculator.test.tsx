@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ReactWrapper, shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { Icon } from "@bentley/ui-core";
-import { Calculator } from "../../ui-framework/accudraw/Calculator";
-import { CalculatorEngine, CalculatorOperator } from "../../ui-framework/accudraw/CalculatorEngine";
-import { mount } from "../TestUtils";
+import { Calculator } from "../../ui-framework/accudraw/Calculator.js";
+import { CalculatorEngine, CalculatorOperator } from "../../ui-framework/accudraw/CalculatorEngine.js";
+import { mount } from "../TestUtils.js";
 
 describe("Calculator", () => {
 
-  const simulateButtonClick = (w: ReactWrapper) => {
+  const simulateButtonClick = (w: enzyme.ReactWrapper) => {
     expect(w.length).to.eq(1);
     const button = w.find("button");
     button.simulate("click");
@@ -40,7 +40,7 @@ describe("Calculator", () => {
   it("clicking on 1 button should put it in display", () => {
     const wrapper = mount(<Calculator engine={new CalculatorEngine()} />);
     const keyChar = "1";
-    const calculatorButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
+    const calculatorButton = wrapper.findWhere((n: enzyme.ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
     simulateButtonClick(calculatorButton);
 
     expect(wrapper.state("displayValue")).to.eq(keyChar);
@@ -50,25 +50,25 @@ describe("Calculator", () => {
     const wrapper = mount(<Calculator engine={new CalculatorEngine()} />);
 
     let keyChar = "1";
-    const oneButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
+    const oneButton = wrapper.findWhere((n: enzyme.ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
     simulateButtonClick(oneButton);
     expect(wrapper.state("displayValue")).to.eq("1");
 
     keyChar = "0";
-    const zeroButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
+    const zeroButton = wrapper.findWhere((n: enzyme.ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
     simulateButtonClick(zeroButton);
     expect(wrapper.state("displayValue")).to.eq("10");
 
-    const multiplyButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "OperatorButton" && n.prop("operator") === CalculatorOperator.Multiply);
+    const multiplyButton = wrapper.findWhere((n: enzyme.ReactWrapper) => n.name() === "OperatorButton" && n.prop("operator") === CalculatorOperator.Multiply);
     simulateButtonClick(multiplyButton);
     expect(wrapper.state("displayValue")).to.eq("10");
 
     keyChar = "2";
-    const twoButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
+    const twoButton = wrapper.findWhere((n: enzyme.ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
     simulateButtonClick(twoButton);
     expect(wrapper.state("displayValue")).to.eq("2");
 
-    const equalsButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "OperatorButton" && n.prop("operator") === CalculatorOperator.Equals);
+    const equalsButton = wrapper.findWhere((n: enzyme.ReactWrapper) => n.name() === "OperatorButton" && n.prop("operator") === CalculatorOperator.Equals);
     simulateButtonClick(equalsButton);
     expect(wrapper.state("displayValue")).to.eq("20");
   });
@@ -79,7 +79,7 @@ describe("Calculator", () => {
     const handleOk = (v: number) => { spyMethod(); value = v; };
     const wrapper = mount(<Calculator engine={new CalculatorEngine()} onOk={handleOk} />);
     const keyChar = "5";
-    const calculatorButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
+    const calculatorButton = wrapper.findWhere((n: enzyme.ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
     simulateButtonClick(calculatorButton);
 
     expect(wrapper.state("displayValue")).to.eq(keyChar);
@@ -95,7 +95,7 @@ describe("Calculator", () => {
     const spyMethod = sinon.spy();
     const wrapper = mount(<Calculator engine={new CalculatorEngine()} onCancel={spyMethod} />);
     const keyChar = "5";
-    const calculatorButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
+    const calculatorButton = wrapper.findWhere((n: enzyme.ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
     simulateButtonClick(calculatorButton);
 
     expect(wrapper.state("displayValue")).to.eq(keyChar);

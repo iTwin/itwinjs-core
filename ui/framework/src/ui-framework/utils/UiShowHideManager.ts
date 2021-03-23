@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { UiFramework } from "../UiFramework";
+import { UiFramework } from "../UiFramework.js";
 
 /** The default inactivity time.
  * @internal

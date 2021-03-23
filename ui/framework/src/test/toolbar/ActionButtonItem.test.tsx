@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { ActionButton, BadgeType, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import { ActionButtonItem, CommandItemDef, KeyboardShortcutManager, ToolbarHelper } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import { ActionButtonItem, CommandItemDef, KeyboardShortcutManager, ToolbarHelper } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("ActionButtonItem", () => {
 

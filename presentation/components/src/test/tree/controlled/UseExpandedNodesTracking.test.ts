@@ -13,7 +13,7 @@ import { IPresentationTreeDataProvider } from "../../../presentation-components"
 import { NodeKey } from "@bentley/presentation-common";
 import { mockPresentationManager } from "../../_helpers/UiComponents";
 import { Presentation, StateTracker } from "@bentley/presentation-frontend";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import { createLabelRecord } from "../../../presentation-components/common/Utils";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 

@@ -9,10 +9,10 @@
 import * as React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { countMatchesInString } from "../../common/countMatchesInString";
-import { HighlightedText } from "../../common/HighlightedText";
-import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
-import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../ValueRendererManager";
+import { countMatchesInString } from "../../common/countMatchesInString.js";
+import { HighlightedText } from "../../common/HighlightedText.js";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps.js";
+import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../ValueRendererManager.js";
 
 /**
  * @internal

@@ -6,9 +6,9 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory, PropertyData } from "../../ui-components";
-import { FavoritePropertiesRenderer } from "../../ui-components/favorite/FavoritePropertiesRenderer";
-import TestUtils from "../TestUtils";
+import { PropertyCategory, PropertyData } from "../../ui-components.js";
+import { FavoritePropertiesRenderer } from "../../ui-components/favorite/FavoritePropertiesRenderer.js";
+import TestUtils from "../TestUtils.js";
 
 describe("FavoritePropertiesRenderer", () => {
 

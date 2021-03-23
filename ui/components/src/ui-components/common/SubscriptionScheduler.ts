@@ -6,21 +6,21 @@
  * @module Common
  */
 
-import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
-import { Observable } from "rxjs/internal/Observable";
-import { ConnectableObservable } from "rxjs/internal/observable/ConnectableObservable";
-import { defer } from "rxjs/internal/observable/defer";
-import { finalize } from "rxjs/internal/operators/finalize";
-import { mergeMap } from "rxjs/internal/operators/mergeMap";
-import { observeOn } from "rxjs/internal/operators/observeOn";
-import { onErrorResumeNext } from "rxjs/internal/operators/onErrorResumeNext";
-import { publish } from "rxjs/internal/operators/publish";
-import { refCount } from "rxjs/internal/operators/refCount";
-import { subscribeOn } from "rxjs/internal/operators/subscribeOn";
-import { switchAll } from "rxjs/internal/operators/switchAll";
-import { asapScheduler } from "rxjs/internal/scheduler/asap";
-import { queueScheduler } from "rxjs/internal/scheduler/queue";
-import { Subject } from "rxjs/internal/Subject";
+import { BehaviorSubject } from "rxjs/internal/BehaviorSubject.js";
+import { Observable } from "rxjs/internal/Observable.js";
+import { ConnectableObservable } from "rxjs/internal/observable/ConnectableObservable.js";
+import { defer } from "rxjs/internal/observable/defer.js";
+import { finalize } from "rxjs/internal/operators/finalize.js";
+import { mergeMap } from "rxjs/internal/operators/mergeMap.js";
+import { observeOn } from "rxjs/internal/operators/observeOn.js";
+import { onErrorResumeNext } from "rxjs/internal/operators/onErrorResumeNext.js";
+import { publish } from "rxjs/internal/operators/publish.js";
+import { refCount } from "rxjs/internal/operators/refCount.js";
+import { subscribeOn } from "rxjs/internal/operators/subscribeOn.js";
+import { switchAll } from "rxjs/internal/operators/switchAll.js";
+import { asapScheduler } from "rxjs/internal/scheduler/asap.js";
+import { queueScheduler } from "rxjs/internal/scheduler/queue.js";
+import { Subject } from "rxjs/internal/Subject.js";
 
 const MAX_CONCURRENT_SUBSCRIPTIONS = 1;
 

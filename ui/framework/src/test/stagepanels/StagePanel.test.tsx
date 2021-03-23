@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import * as moq from "typemoq";
 import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { SplitterPaneTarget as NZ_SplitterPaneTarget } from "@bentley/ui-ninezone";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, FrameworkStagePanel, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps,
   FrontstageProvider, SplitterPaneTarget, StagePanel, Widget, WidgetControl, WidgetDef,
-} from "../../ui-framework";
-import { StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePanel";
-import { StagePanelDef, StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
-import { UiFramework } from "../../ui-framework/UiFramework";
-import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
-import TestUtils, { mount } from "../TestUtils";
+} from "../../ui-framework.js";
+import { StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePanel.js";
+import { StagePanelDef, StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef.js";
+import { UiFramework } from "../../ui-framework/UiFramework.js";
+import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 /* eslint-disable react/jsx-key */
 

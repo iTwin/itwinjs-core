@@ -6,9 +6,9 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
-import { fireEvent, render } from "@testing-library/react";
-import { hasLinks, LinksRenderer, renderLinks, withLinks } from "../../ui-components/properties/LinkHandler";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { hasLinks, LinksRenderer, renderLinks, withLinks } from "../../ui-components/properties/LinkHandler.js";
+import TestUtils from "../TestUtils.js";
 
 describe("LinkHandler", () => {
   const onClickSpy = sinon.spy();

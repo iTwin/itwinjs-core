@@ -9,10 +9,10 @@
 import * as React from "react";
 import { DateFormatter, RelativePosition, SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
 import { BodyText, CommonProps, Popup } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
-import { DatePicker } from "./DatePicker";
-import { DateField } from "./DateField";
-import { TimeField, TimeSpec } from "./TimeField";
+import { UiComponents } from "../UiComponents.js";
+import { DatePicker } from "./DatePicker.js";
+import { DateField } from "./DateField.js";
+import { TimeField, TimeSpec } from "./TimeField.js";
 import "./DatePickerPopupButton.scss";
 
 /** Props used by [[DatePickerPopupButton]] component.

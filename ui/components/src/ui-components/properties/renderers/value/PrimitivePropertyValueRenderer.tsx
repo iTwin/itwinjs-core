@@ -7,13 +7,13 @@
  */
 
 import * as React from "react";
-import { useAsyncValue } from "../../../common/UseAsyncValue";
-import { TypeConverterManager } from "../../../converters/TypeConverterManager";
-import { LinksRenderer } from "../../LinkHandler";
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { withContextStyle } from "./WithContextStyle";
+import { useAsyncValue } from "../../../common/UseAsyncValue.js";
+import { TypeConverterManager } from "../../../converters/TypeConverterManager.js";
+import { LinksRenderer } from "../../LinkHandler.js";
+import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager.js";
+import { withContextStyle } from "./WithContextStyle.js";
 import { LinkElementsInfo, PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyGridCommons } from "../../../propertygrid/component/PropertyGridCommons";
+import { PropertyGridCommons } from "../../../propertygrid/component/PropertyGridCommons.js";
 
 /** Default Primitive Property Renderer
  * @public

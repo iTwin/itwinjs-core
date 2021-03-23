@@ -8,11 +8,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDisposable } from "@bentley/ui-core";
-import { TreeDataProvider } from "../TreeDataProvider";
-import { TreeEventHandler, TreeEventHandlerParams } from "./TreeEventHandler";
-import { VisibleTreeNodes } from "./TreeModel";
-import { TreeModelSource } from "./TreeModelSource";
-import { PagedTreeNodeLoader, TreeNodeLoader } from "./TreeNodeLoader";
+import { TreeDataProvider } from "../TreeDataProvider.js";
+import { TreeEventHandler, TreeEventHandlerParams } from "./TreeEventHandler.js";
+import { VisibleTreeNodes } from "./TreeModel.js";
+import { TreeModelSource } from "./TreeModelSource.js";
+import { PagedTreeNodeLoader, TreeNodeLoader } from "./TreeNodeLoader.js";
 
 /**
  * Custom hook which returns a flat list of visible nodes from given `TreeModelSource` and subscribes

@@ -7,11 +7,11 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { SortDirection } from "@bentley/ui-core";
 import { StandardTypeNames } from "@bentley/ui-abstract";
-import { FilterCompositionLogicalOperator, FilterOperator } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
-import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
-import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider";
-import { TestFilterableTable, TestUtils } from "../../TestUtils";
+import { FilterCompositionLogicalOperator, FilterOperator } from "../../../ui-components/table/columnfiltering/ColumnFiltering.js";
+import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn.js";
+import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider.js";
+import { ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider.js";
+import { TestFilterableTable, TestUtils } from "../../TestUtils.js";
 
 const columns: ColumnDescription[] = [
   {

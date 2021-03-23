@@ -14,13 +14,16 @@ import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@b
 import { Presentation } from "@bentley/presentation-frontend";
 import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
-import { connectIModelConnection } from "../../redux/connectIModel";
-import { UiFramework } from "../../UiFramework";
-import { VisibilityTreeFilterInfo } from "../Common";
-import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
-import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
-import { Category, CategoryVisibilityHandler, loadCategoriesFromViewport, useCategories } from "./CategoryVisibilityHandler";
-
+import { connectIModelConnection } from "../../redux/connectIModel.js";
+import { UiFramework } from "../../UiFramework.js";
+import { VisibilityTreeFilterInfo } from "../Common.js";
+import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler.js";
+import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer.js";
+import { Category, CategoryVisibilityHandler, loadCategoriesFromViewport, useCategories } from "./CategoryVisibilityHandler.js";
+// @ts-ignore
+import { createRequire } from "module";
+// @ts-ignore
+const require = createRequire(import.meta.url);
 const PAGING_SIZE = 20;
 
 /**

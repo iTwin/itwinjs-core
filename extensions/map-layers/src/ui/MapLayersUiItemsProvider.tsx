@@ -6,10 +6,10 @@
 import * as React from "react";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@bentley/ui-abstract";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { MapLayersWidget } from "./widget/MapLayersWidget";
+import { MapLayersWidget } from "./widget/MapLayersWidget.js";
 import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { MapLayerOptions } from "./Interfaces";
+import { MapLayerOptions } from "./Interfaces.js";
 
 export class MapLayersUiItemsProvider implements UiItemsProvider {
   public readonly id = "MapLayersUiItemsProvider";

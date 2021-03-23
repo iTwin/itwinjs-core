@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Rectangle, RectangleProps } from "@bentley/ui-core";
-import { getDefaultZoneManagerProps, ZoneManager, ZoneManagerFloatingProps, ZoneManagerProps } from "../../../ui-ninezone";
+import { getDefaultZoneManagerProps, ZoneManager, ZoneManagerFloatingProps, ZoneManagerProps } from "../../../ui-ninezone.js";
 
 describe("ZoneManager", () => {
   describe("setAllowsMerging", () => {

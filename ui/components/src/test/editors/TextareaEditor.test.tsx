@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, waitForElement } = tlr;
 import sinon from "sinon";
 import * as React from "react";
 import { InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo,
   PropertyEditorParamTypes, SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
-import { TextareaEditor } from "../../ui-components/editors/TextareaEditor";
-import { EditorContainer } from "../../ui-components/editors/EditorContainer";
-import TestUtils from "../TestUtils";
+import { TextareaEditor } from "../../ui-components/editors/TextareaEditor.js";
+import { EditorContainer } from "../../ui-components/editors/EditorContainer.js";
+import TestUtils from "../TestUtils.js";
 
 describe("<TextareaEditor />", () => {
   before(async () => {

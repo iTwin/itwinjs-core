@@ -9,8 +9,8 @@
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { PageOptions } from "../common/PageOptions";
-import { ItemStyle } from "../properties/ItemStyle";
+import { PageOptions } from "../common/PageOptions.js";
+import { ItemStyle } from "../properties/ItemStyle.js";
 
 /**
  * A node item which can be displayed in a tree.

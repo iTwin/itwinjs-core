@@ -8,8 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { LabeledComponentProps, MessagedComponentProps } from "../inputs/LabeledComponentProps";
-import { Select, SelectProps } from "./Select";
+import { LabeledComponentProps, MessagedComponentProps } from "../inputs/LabeledComponentProps.js";
+import { Select, SelectProps } from "./Select.js";
 
 /** Properties for [[LabeledSelect]] components
  * @public

@@ -9,7 +9,7 @@
 import "./ExpandableBlock.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
+import { CommonProps } from "../utils/Props.js";
 
 /** Properties for the [[ExpandableBlock]] React component
  * @public

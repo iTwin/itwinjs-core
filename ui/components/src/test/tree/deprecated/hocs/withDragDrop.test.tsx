@@ -8,14 +8,14 @@ import ReactTestUtils from "react-dom/test-utils";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
-import { DEPRECATED_Tree as Tree } from "../../../../ui-components";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
+import { DEPRECATED_Tree as Tree } from "../../../../ui-components.js";
 import {
   DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
-} from "../../../../ui-components/dragdrop/DragDropDef";
-import { BeInspireTree } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
-import { DEPRECATED_withTreeDragDrop } from "../../../../ui-components/tree/deprecated/hocs/withDragDrop";
-import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
+} from "../../../../ui-components/dragdrop/DragDropDef.js";
+import { BeInspireTree } from "../../../../ui-components/tree/deprecated/component/BeInspireTree.js";
+import { DEPRECATED_withTreeDragDrop } from "../../../../ui-components/tree/deprecated/hocs/withDragDrop.js";
+import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider.js";
 
 /* eslint-disable deprecation/deprecation */
 

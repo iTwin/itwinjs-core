@@ -9,15 +9,15 @@
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { CommonProps, getCssVariableAsNumber } from "@bentley/ui-core";
-import { UiFramework } from "../UiFramework";
-import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
+import { UiFramework } from "../UiFramework.js";
+import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase.js";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 
 // cSpell:ignore ZINDEX modeless
 
 /** Modeless Dialog Changed Event class.
  * @public
- */
+ */
 export class ModelessDialogChangedEvent extends DialogChangedEvent { }
 
 /** @internal */
@@ -31,7 +31,7 @@ const ZINDEX_DEFAULT = 12000;
 
 /** Modeless Dialog Manager class displays and manages multiple modeless dialogs
  * @public
- */
+ */
 export class ModelessDialogManager {
   /** Modeless Dialog Changed Event */
   public static readonly onModelessDialogChangedEvent = new ModelessDialogChangedEvent();
@@ -162,7 +162,7 @@ export class ModelessDialogManager {
 
 /** ModelessDialogRenderer React component renders modeless dialogs.
  * @public
- */
+ */
 export class ModelessDialogRenderer extends React.PureComponent<CommonProps> {
 
   constructor(props: CommonProps) {

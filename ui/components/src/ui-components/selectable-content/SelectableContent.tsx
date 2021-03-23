@@ -8,7 +8,7 @@
 
 import "./SelectableContent.scss";
 import * as React from "react";
-import { ActionMeta, ValueType } from "react-select/src/types";
+import { ActionMeta, ValueType } from "react-select/src/types.js";
 import { OptionType, ThemedSelect } from "@bentley/ui-core";
 
 /**

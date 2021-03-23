@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { BreadcrumbTreeUtils } from "../../ui-components/breadcrumb/BreadcrumbTreeUtils";
-import { CellItem, RowItem } from "../../ui-components/table/TableDataProvider";
-import { ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "../../ui-components/tree/TreeDataProvider";
-import TestUtils from "../TestUtils";
-import { mockInterfaceTreeDataProvider } from "./mockTreeDataProvider";
+import { BreadcrumbTreeUtils } from "../../ui-components/breadcrumb/BreadcrumbTreeUtils.js";
+import { CellItem, RowItem } from "../../ui-components/table/TableDataProvider.js";
+import { ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "../../ui-components/tree/TreeDataProvider.js";
+import TestUtils from "../TestUtils.js";
+import { mockInterfaceTreeDataProvider } from "./mockTreeDataProvider.js";
 
 describe("BreadcrumbTreeUtils", () => {
   before(async () => {
@@ -147,7 +147,7 @@ describe("BreadcrumbTreeUtils", () => {
           testNum: 0,
         },
         style: {
-          colorOverrides: {color: 0xfffff},
+          colorOverrides: { color: 0xfffff },
         },
       },
     ];

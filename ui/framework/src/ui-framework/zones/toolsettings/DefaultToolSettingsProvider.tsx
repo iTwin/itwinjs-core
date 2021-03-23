@@ -10,13 +10,13 @@ import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 // cSpell:Ignore configurableui Fronstage
 import { DialogItem, DialogPropertySyncItem, UiLayoutDataProvider } from "@bentley/ui-abstract";
-import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
-import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
-import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer";
-import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager } from "./ToolSettingsManager";
-import { ToolUiProvider } from "./ToolUiProvider";
-import { FrontstageManager } from "../../frontstage/FrontstageManager";
+import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl.js";
+import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager.js";
+import { ComponentGenerator } from "../../uiprovider/ComponentGenerator.js";
+import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer.js";
+import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager } from "./ToolSettingsManager.js";
+import { ToolUiProvider } from "./ToolUiProvider.js";
+import { FrontstageManager } from "../../frontstage/FrontstageManager.js";
 
 /** @internal */
 

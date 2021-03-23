@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, fireEvent, render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, CursorTypeContext, DragManager, PanelSideContext, WidgetTarget } from "../../ui-ninezone";
-import { createDragStartArgs, NineZoneProvider } from "../Providers";
+import tlr from "@testing-library/react"; const { act, fireEvent, render } = tlr;
+import { addPanelWidget, createNineZoneState, CursorTypeContext, DragManager, PanelSideContext, WidgetTarget } from "../../ui-ninezone.js";
+import { createDragStartArgs, NineZoneProvider } from "../Providers.js";
 
 describe("WidgetTarget", () => {
   it("should render with cursor type", () => {

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { AbstractTreeNodeLoaderWithProvider, ControlledTreeProps, useVisibleTreeNodes } from "@bentley/ui-components";
-import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider.js";
 
 /**
  * Props that are injected to the ControlledTreeWithModelSource HOC component.

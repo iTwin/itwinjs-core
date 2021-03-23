@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { PrimitiveValue } from "@bentley/ui-abstract";
 import { expect } from "chai";
-import { NavigationPropertyTypeConverter } from "../../ui-components/converters/NavigationPropertyTypeConverter";
-import { TestUtils } from "../TestUtils";
+import { NavigationPropertyTypeConverter } from "../../ui-components/converters/NavigationPropertyTypeConverter.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("NavigationPropertyTypeConverter", () => {
   const converter = new NavigationPropertyTypeConverter();

@@ -9,9 +9,9 @@
 import "../WithFilteringSupport.scss";
 import * as React from "react";
 import { AbstractTreeNodeLoaderWithProvider } from "@bentley/ui-components";
-import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
-import { useFilteredNodeLoader, useNodeHighlightingProps } from "./UseControlledTreeFiltering";
-import { ControlledTreeWithVisibleNodesProps } from "./WithVisibleNodes";
+import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider.js";
+import { useFilteredNodeLoader, useNodeHighlightingProps } from "./UseControlledTreeFiltering.js";
+import { ControlledTreeWithVisibleNodesProps } from "./WithVisibleNodes.js";
 
 /**
  * Props that are injected to the ControlledTreeWithFilteringSupport HOC component.

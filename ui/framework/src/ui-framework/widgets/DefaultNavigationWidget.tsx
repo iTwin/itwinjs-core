@@ -7,11 +7,11 @@
  */
 
 import * as React from "react";
-import { CoreTools } from "../tools/CoreToolDefinitions";
-import { connectIModelConnection } from "../redux/connectIModel";
-import { ItemList } from "../shared/ItemMap";
-import { UiFramework } from "../UiFramework";
-import { NavigationWidget } from "./NavigationWidget";
+import { CoreTools } from "../tools/CoreToolDefinitions.js";
+import { connectIModelConnection } from "../redux/connectIModel.js";
+import { ItemList } from "../shared/ItemMap.js";
+import { UiFramework } from "../UiFramework.js";
+import { NavigationWidget } from "./NavigationWidget.js";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[DefaultNavigationWidget]].
  * @beta @deprecated use BasicNavigationWidget instead

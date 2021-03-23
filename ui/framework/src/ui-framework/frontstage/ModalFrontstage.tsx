@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { BackButton } from "@bentley/ui-ninezone";
-import { UiFramework } from "../UiFramework";
+import { UiFramework } from "../UiFramework.js";
 
 /**
  * Properties for the [[ModalFrontstage]] React component

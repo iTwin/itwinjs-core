@@ -11,13 +11,13 @@ import classnames from "classnames";
 import * as React from "react";
 import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { CommonProps, shallowDiffers, TreeNodePlaceholder } from "@bentley/ui-core";
-import { ItemStyle, ItemStyleProvider } from "../../../properties/ItemStyle";
-import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { UiComponents } from "../../../UiComponents";
-import { HighlightableTreeNodeProps, HighlightingEngine } from "../../HighlightingEngine";
-import { TreeNodeItem } from "../../TreeDataProvider";
-import { CellEditingEngine } from "../CellEditingEngine";
-import { BeInspireTreeNode } from "./BeInspireTree";
+import { ItemStyle, ItemStyleProvider } from "../../../properties/ItemStyle.js";
+import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../../../properties/ValueRendererManager.js";
+import { UiComponents } from "../../../UiComponents.js";
+import { HighlightableTreeNodeProps, HighlightingEngine } from "../../HighlightingEngine.js";
+import { TreeNodeItem } from "../../TreeDataProvider.js";
+import { CellEditingEngine } from "../CellEditingEngine.js";
+import { BeInspireTreeNode } from "./BeInspireTree.js";
 
 /* eslint-disable deprecation/deprecation */
 

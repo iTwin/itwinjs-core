@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
+import rrd from "react-resize-detector"; const ReactResizeDetector: typeof rrd = (rrd as any).default;
 import { HorizontalAnchor, ToolSettingsWidgetMode } from "@bentley/ui-ninezone";
-import { ToolSettingsContent } from "../../ui-framework/widgets/ToolSettingsContent";
-import { mount } from "../TestUtils";
+import { ToolSettingsContent } from "../../ui-framework/widgets/ToolSettingsContent.js";
+import { mount } from "../TestUtils.js";
 
 describe("ToolSettingsContent", () => {
   it("should render in tab mode", () => {

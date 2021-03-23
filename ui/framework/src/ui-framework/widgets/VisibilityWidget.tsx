@@ -14,15 +14,15 @@ import { IModelApp, IModelConnection, SelectedViewportChangedArgs, Viewport } fr
 import { IconSpecUtilities, RelativePosition } from "@bentley/ui-abstract";
 import { ContextMenu, ContextMenuItem, SelectionMode } from "@bentley/ui-components";
 import { ScrollPositionMaintainer } from "@bentley/ui-core";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { CategoryTreeWithSearchBox } from "../imodel-components/category-tree/CategoriesTreeWithSearchBox";
-import { ClassGroupingOption } from "../imodel-components/Common";
-import { ModelsTree } from "../imodel-components/models-tree/ModelsTree";
-import { ModelsTreeSelectionPredicate } from "../imodel-components/models-tree/ModelsVisibilityHandler";
-import { SpatialContainmentTree } from "../imodel-components/spatial-tree/SpatialContainmentTree";
-import { connectIModelConnection } from "../redux/connectIModel";
-import { UiFramework } from "../UiFramework";
-import { WidgetControl } from "../widgets/WidgetControl";
+import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl.js";
+import { CategoryTreeWithSearchBox } from "../imodel-components/category-tree/CategoriesTreeWithSearchBox.js";
+import { ClassGroupingOption } from "../imodel-components/Common.js";
+import { ModelsTree } from "../imodel-components/models-tree/ModelsTree.js";
+import { ModelsTreeSelectionPredicate } from "../imodel-components/models-tree/ModelsVisibilityHandler.js";
+import { SpatialContainmentTree } from "../imodel-components/spatial-tree/SpatialContainmentTree.js";
+import { connectIModelConnection } from "../redux/connectIModel.js";
+import { UiFramework } from "../UiFramework.js";
+import { WidgetControl } from "../widgets/WidgetControl.js";
 
 // cspell:ignore modeltree
 

@@ -13,9 +13,9 @@ import {
   IconListEditorParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
-import { IconPickerButton } from "../iconpicker/IconPickerButton";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { IconPickerButton } from "../iconpicker/IconPickerButton.js";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
 
 // cspell:ignore iconpicker
 

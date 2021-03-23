@@ -8,11 +8,11 @@ import React from "react";
 import sinon from "sinon";
 import { AlternateDateFormats, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat,
   SpecialKey, StandardTypeNames, TimeDisplay } from "@bentley/ui-abstract";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
-import { EditorContainer /* PropertyUpdatedArgs */ } from "../../ui-components/editors/EditorContainer";
-import { DateTimeEditor } from "../../ui-components/editors/DateTimeEditor";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, waitForElement } = tlr;
+import { EditorContainer /* PropertyUpdatedArgs */ } from "../../ui-components/editors/EditorContainer.js";
+import { DateTimeEditor } from "../../ui-components/editors/DateTimeEditor.js";
+import TestUtils from "../TestUtils.js";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager.js";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 function createDateProperty(propertyName: string, value: Date, option: number) {

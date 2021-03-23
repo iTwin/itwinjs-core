@@ -11,8 +11,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { Key } from "ts-key-enum";
 import { CommonProps, UiCore } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
-import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
+import { UiComponents } from "../UiComponents.js";
+import { ResultSelector, ResultSelectorProps } from "./ResultSelector.js";
 
 /** [[FilteringInput]] React Component state
  * @internal

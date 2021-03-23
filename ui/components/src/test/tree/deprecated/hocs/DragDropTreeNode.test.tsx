@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
-import { cleanup, render } from "@testing-library/react";
-import { DragSourceProps, DropTargetProps } from "../../../../ui-components/dragdrop/DragDropDef";
-import { DragDropTreeNode, DragDropTreeNodeComponent } from "../../../../ui-components/tree/deprecated/hocs/DragDropTreeNode";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
+import { DragSourceProps, DropTargetProps } from "../../../../ui-components/dragdrop/DragDropDef.js";
+import { DragDropTreeNode, DragDropTreeNodeComponent } from "../../../../ui-components/tree/deprecated/hocs/DragDropTreeNode.js";
 
 /* eslint-disable deprecation/deprecation */
 

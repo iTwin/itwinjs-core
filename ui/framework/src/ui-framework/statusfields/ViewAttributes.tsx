@@ -12,10 +12,10 @@ import { ViewFlagProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Checkbox } from "@bentley/ui-core";
 import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
-import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
-import { UiFramework } from "../UiFramework";
-import { Indicator } from "./Indicator";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl.js";
+import { UiFramework } from "../UiFramework.js";
+import { Indicator } from "./Indicator.js";
+import { StatusFieldProps } from "./StatusFieldProps.js";
 
 interface ViewAttributesStatusFieldState {
   viewFlags: ViewFlagProps;

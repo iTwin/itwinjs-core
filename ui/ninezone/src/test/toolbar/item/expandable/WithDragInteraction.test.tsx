@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
 import { Point } from "@bentley/ui-core";
-import { Direction, getDragDistance, withDragInteraction } from "../../../../ui-ninezone";
-import { mount } from "../../../Utils";
+import { Direction, getDragDistance, withDragInteraction } from "../../../../ui-ninezone.js";
+import { mount } from "../../../Utils.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const WithDragInteraction = withDragInteraction(() => <div></div>);

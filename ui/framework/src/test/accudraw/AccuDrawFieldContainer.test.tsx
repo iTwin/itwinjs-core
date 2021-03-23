@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import * as React from "react";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { CompassMode, IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
 import { AccuDrawUiAdmin, SpecialKey } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import TestUtils from "../TestUtils";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { AccuDrawFieldContainer } from "../../ui-framework/accudraw/AccuDrawFieldContainer";
-import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
-import { AccuDrawUiSettings } from "../../ui-framework/accudraw/AccuDrawUiSettings";
+import TestUtils from "../TestUtils.js";
+import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw.js";
+import { AccuDrawFieldContainer } from "../../ui-framework/accudraw/AccuDrawFieldContainer.js";
+import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut.js";
+import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin.js";
+import { AccuDrawUiSettings } from "../../ui-framework/accudraw/AccuDrawUiSettings.js";
 
 // cspell:ignore uiadmin
 
@@ -297,11 +297,11 @@ describe("AccuDrawFieldContainer", () => {
     const iconTest = "icon-test";
 
     const fullSettings: AccuDrawUiSettings = {
-      xStyle: {display: "inline"},
-      yStyle: {display: "inline"},
-      zStyle: {display: "inline"},
-      angleStyle: {display: "inline"},
-      distanceStyle: {display: "inline"},
+      xStyle: { display: "inline" },
+      yStyle: { display: "inline" },
+      zStyle: { display: "inline" },
+      angleStyle: { display: "inline" },
+      distanceStyle: { display: "inline" },
       xBackgroundColor: ColorDef.create(bgColorTest),
       yBackgroundColor: ColorDef.create(bgColorTest),
       zBackgroundColor: ColorDef.create(bgColorTest),

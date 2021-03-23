@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { ShowHideMenu } from "../../../ui-components";
-import TestUtils from "../../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
+import { ShowHideMenu } from "../../../ui-components.js";
+import TestUtils from "../../TestUtils.js";
 
 describe("ShowHideMenu", () => {
   before(async () => {

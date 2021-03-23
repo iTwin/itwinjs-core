@@ -20,7 +20,7 @@ import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageTy
 import upstreamIcon from "./icons/upstream-query.svg?sprite";
 import downstreamIcon from "./icons/downstream-query.svg?sprite";
 import traceIcon from "./icons/query-multi.svg?sprite";
-import { OpenTraceDialogTool } from "./tools/OpenTraceDialogTool";
+import { OpenTraceDialogTool } from "./tools/OpenTraceDialogTool.js";
 
 export class TraceUiItemsProvider implements UiItemsProvider {
   public static syncEventIdTraceAvailable = "ui-test:trace-available-changed";

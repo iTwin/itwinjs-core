@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { CommonDivProps } from "../utils/Props";
-import { Div } from "./Div";
+import { CommonDivProps } from "../utils/Props.js";
+import { Div } from "./Div.js";
 
 /** Scroll View React functional component.
  * Scrolls content vertically and

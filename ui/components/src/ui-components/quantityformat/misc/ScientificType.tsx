@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
-import { UiComponents } from "../../UiComponents";
+import { UiComponents } from "../../UiComponents.js";
 import { ScientificType } from "@bentley/imodeljs-quantity";
 
 /** Properties of [[ScientificTypeSelector]] component.

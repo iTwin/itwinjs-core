@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, waitForElement } = tlr;
 import sinon from "sinon";
 import * as React from "react";
 import { BasePropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue,
   SliderEditorParams, SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
-import { SliderEditor } from "../../ui-components/editors/SliderEditor";
-import TestUtils from "../TestUtils";
-import { EditorContainer } from "../../ui-components/editors/EditorContainer";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { SliderEditor } from "../../ui-components/editors/SliderEditor.js";
+import TestUtils from "../TestUtils.js";
+import { EditorContainer } from "../../ui-components/editors/EditorContainer.js";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager.js";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 describe("<SliderEditor />", () => {

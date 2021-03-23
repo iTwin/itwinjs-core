@@ -9,7 +9,7 @@
 // cSpell:ignore valuetypes shortdate
 
 import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
-import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
+import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes.js";
 
 /** Sort compare method for types that support sorting
  * @public

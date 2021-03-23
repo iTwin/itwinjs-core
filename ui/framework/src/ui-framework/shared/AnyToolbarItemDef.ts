@@ -6,8 +6,8 @@
  * @module Item
  */
 
-import { AnyItemDef } from "./AnyItemDef";
-import { CustomItemDef } from "./CustomItemDef";
+import { AnyItemDef } from "./AnyItemDef.js";
+import { CustomItemDef } from "./CustomItemDef.js";
 
 /** Union of all Item definitions that can be specified in a Toolbar
  * @public

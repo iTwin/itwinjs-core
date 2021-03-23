@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import produce from "immer";
+import { produce } from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Rectangle } from "@bentley/ui-core";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import { renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, createNineZoneState, createPanelsState, createVerticalPanelState, DragManager,
   NineZoneDispatch, PanelSide, PanelStateContext, useResizeGrip, WidgetPanelContext, WidgetPanelGrip,
-} from "../../ui-ninezone";
-import { createDragItemInfo, NineZoneProvider, NineZoneProviderProps } from "../Providers";
+} from "../../ui-ninezone.js";
+import { createDragItemInfo, NineZoneProvider, NineZoneProviderProps } from "../Providers.js";
 
 describe("WidgetPanelGrip", () => {
   const wrapper = (props: any) => <WidgetPanelContext.Provider

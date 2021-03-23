@@ -9,7 +9,7 @@
 import { useCallback } from "react";
 import { Ruleset } from "@bentley/presentation-common";
 import { useDisposable } from "@bentley/ui-core";
-import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
+import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper.js";
 
 /**
  * Custom hook which registers supplied Ruleset on mount and removes on unmount.

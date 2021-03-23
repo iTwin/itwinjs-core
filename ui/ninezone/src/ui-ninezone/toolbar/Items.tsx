@@ -10,7 +10,7 @@ import "./Items.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
+import { OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction.js";
 
 /** Properties of [[Items]] component.
  * @alpha

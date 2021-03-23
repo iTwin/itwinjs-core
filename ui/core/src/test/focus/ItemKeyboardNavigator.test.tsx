@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
-import { isNavigationKey, ItemKeyboardNavigator, Orientation } from "../../ui-core";
+import { isNavigationKey, ItemKeyboardNavigator, Orientation } from "../../ui-core.js";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 describe("ItemKeyboardNavigator", () => {

@@ -10,17 +10,17 @@ import "./PropertyGrid.scss";
 import classnames from "classnames";
 import { produce } from "immer";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
+import rrd from "react-resize-detector"; const ReactResizeDetector: typeof rrd = (rrd as any).default;
 import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, SpinnerSize } from "@bentley/ui-core";
-import { DelayedSpinner } from "../../common/DelayedSpinner";
-import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
-import { ColumnResizeRelatedPropertyListProps, ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier";
-import { PropertyCategoryBlock } from "./PropertyCategoryBlock";
-import { CommonPropertyGridProps, PropertyGridCommons } from "./PropertyGridCommons";
-import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRelatedPropsSupplier";
-import { PropertyList, PropertyListProps } from "./PropertyList";
+import { DelayedSpinner } from "../../common/DelayedSpinner.js";
+import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider.js";
+import { ColumnResizeRelatedPropertyListProps, ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier.js";
+import { PropertyCategoryBlock } from "./PropertyCategoryBlock.js";
+import { CommonPropertyGridProps, PropertyGridCommons } from "./PropertyGridCommons.js";
+import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRelatedPropsSupplier.js";
+import { PropertyList, PropertyListProps } from "./PropertyList.js";
 
 /** Properties for [[PropertyGrid]] React component
  * @public

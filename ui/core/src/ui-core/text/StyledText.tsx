@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { TextProps } from "./TextProps";
+import { TextProps } from "./TextProps.js";
 
 /** Properties for [[StyledText]] component
  * @public

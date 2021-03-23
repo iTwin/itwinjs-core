@@ -7,8 +7,8 @@ import * as sinon from "sinon";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point3d } from "@bentley/geometry-core";
 import { IModelApp, SelectedViewportChangedArgs, StandardViewId, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
-import { ViewportComponentEvents } from "../../ui-components";
-import TestUtils from "../TestUtils";
+import { ViewportComponentEvents } from "../../ui-components.js";
+import TestUtils from "../TestUtils.js";
 
 describe("ViewportComponentEvents", () => {
   const onSelectedViewportChanged = new BeUiEvent();

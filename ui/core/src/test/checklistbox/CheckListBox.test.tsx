@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import { Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator } from "../../ui-core";
+import { Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator } from "../../ui-core.js";
 
 describe("<CheckListBox />", () => {
   it("should render", () => {

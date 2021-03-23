@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { fireEvent, render } from "@testing-library/react";
-import * as sinon from "sinon";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import sinon from "sinon";
 import * as React from "react";
 import { CompassMode, IModelApp, IModelAppOptions, MockRender } from "@bentley/imodeljs-frontend";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { TestUtils } from "../TestUtils";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { AccuDrawDialog } from "../../ui-framework/accudraw/AccuDrawDialog";
-import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
+import { TestUtils } from "../TestUtils.js";
+import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw.js";
+import { AccuDrawDialog } from "../../ui-framework/accudraw/AccuDrawDialog.js";
+import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut.js";
 
 describe("AccuDrawDialog", () => {
   before(async () => {

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { act, fireEvent, render } from "@testing-library/react";
-import { WidgetOverflow, WidgetTabsEntryContext } from "../../ui-ninezone";
+import tlr from "@testing-library/react"; const { act, fireEvent, render } = tlr;
+import { WidgetOverflow, WidgetTabsEntryContext } from "../../ui-ninezone.js";
 
 describe("WidgetOverflow", () => {
   it("should render", () => {

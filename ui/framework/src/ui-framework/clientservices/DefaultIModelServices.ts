@@ -10,12 +10,12 @@ import { GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import {
   ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery,
 } from "@bentley/imodelhub-client";
-// import GatewayProxyApi from "./gatewayProxy";
+// import GatewayProxyApi from "./gatewayProxy.js";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
-import { UiFramework } from "../UiFramework";
-import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo } from "./IModelServices";
-import { ProjectInfo } from "./ProjectServices";
+import { UiFramework } from "../UiFramework.js";
+import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo } from "./IModelServices.js";
+import { ProjectInfo } from "./ProjectServices.js";
 
 // istanbul ignore next
 class IModelInfoImpl implements IModelInfo {

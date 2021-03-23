@@ -11,8 +11,8 @@ import * as React from "react";
 import { Primitives, PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { IPropertyValueRenderer, PropertyValueRendererContext, TypeConverterManager, useAsyncValue } from "@bentley/ui-components";
 import { UnderlinedButton } from "@bentley/ui-core";
-import { translate } from "../common/Utils";
-import { useUnifiedSelectionContext } from "../unified-selection/UnifiedSelectionContext";
+import { translate } from "../common/Utils.js";
+import { useUnifiedSelectionContext } from "../unified-selection/UnifiedSelectionContext.js";
 
 /**
  * Property value renderer for instance keys. If application provides a [[UnifiedSelectionContext]] and this value is

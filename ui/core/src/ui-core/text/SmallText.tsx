@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { StyledText } from "./StyledText";
-import { TextProps } from "./TextProps";
+import { StyledText } from "./StyledText.js";
+import { TextProps } from "./TextProps.js";
 
 /** Styled small text React functional component
  * @public

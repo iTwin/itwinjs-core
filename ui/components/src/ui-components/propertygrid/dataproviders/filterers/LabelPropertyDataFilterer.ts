@@ -7,8 +7,8 @@
  */
 
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { countMatchesInString } from "../../../common/countMatchesInString";
-import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
+import { countMatchesInString } from "../../../common/countMatchesInString.js";
+import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase.js";
 
 /**
  * PropertyData filter which matches on any record type label and includes descendant nodes on match

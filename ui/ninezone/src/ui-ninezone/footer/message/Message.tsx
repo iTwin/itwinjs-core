@@ -10,7 +10,7 @@ import "./Message.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { Status, StatusHelpers } from "./Status";
+import { Status, StatusHelpers } from "./Status.js";
 
 /** Properties of [[Message]] component.
  * @beta

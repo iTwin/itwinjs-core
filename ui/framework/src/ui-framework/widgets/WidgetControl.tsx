@@ -8,12 +8,12 @@
 
 import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
-import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { WidgetDef } from "./WidgetDef";
+import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl.js";
+import { WidgetDef } from "./WidgetDef.js";
 
 /** The base class for Widget controls.
  * @public
- */
+ */
 export class WidgetControl extends ConfigurableUiControl {
   private _widgetDef!: WidgetDef;
   private _reactNode: React.ReactNode;

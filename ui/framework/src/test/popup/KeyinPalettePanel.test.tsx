@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 
 import { IModelApp, IModelAppOptions, MockRender, Tool } from "@bentley/imodeljs-frontend";
 import { SpecialKey } from "@bentley/ui-abstract";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
-import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, UiFramework } from "../../ui-framework";
-import TestUtils, { storageMock } from "../TestUtils";
+import tlr from "@testing-library/react"; const { fireEvent, render, waitForElement } = tlr;
+import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, UiFramework } from "../../ui-framework.js";
+import TestUtils, { storageMock } from "../TestUtils.js";
 import { UiSettingsStatus } from "@bentley/ui-core";
 
 const myLocalStorage = storageMock();
@@ -188,7 +188,7 @@ describe("<KeyinPalettePanel>", () => {
       sinon.stub(IModelApp.tools, "parseKeyin").callsFake((keyin: string) => {
         if (keyin === "bogus")
           return { ok: false, error: 1 };
-        return { ok: true, args:[], tool: TestImmediate};
+        return { ok: true, args: [], tool: TestImmediate };
       });
     });
 

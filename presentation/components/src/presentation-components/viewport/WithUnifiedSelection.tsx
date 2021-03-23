@@ -12,8 +12,8 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { AsyncTasksTracker, KeySet, SelectionInfo } from "@bentley/presentation-common";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionHandler } from "@bentley/presentation-frontend";
 import { ViewportProps } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
-import { getDisplayName } from "../common/Utils";
+import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent.js";
+import { getDisplayName } from "../common/Utils.js";
 
 /**
  * Props that are injected to the ViewWithUnifiedSelection HOC component.

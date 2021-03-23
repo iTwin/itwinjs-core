@@ -14,10 +14,10 @@ import {
   MutableTreeModel, PagedTreeNodeLoader, Subscription, TreeModel, TreeModelNodeInput, TreeModelSource, TreeNodeItemData, usePagedTreeNodeLoader,
 } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
-import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
-import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
-import { createPartialTreeNodeItem, createTreeNodeId, createTreeNodeItem, CreateTreeNodeItemProps } from "../Utils";
-import { getExpandedNodeItems, useExpandedNodesTracking } from "./UseExpandedNodesTracking";
+import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider.js";
+import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider.js";
+import { createPartialTreeNodeItem, createTreeNodeId, createTreeNodeItem, CreateTreeNodeItemProps } from "../Utils.js";
+import { getExpandedNodeItems, useExpandedNodesTracking } from "./UseExpandedNodesTracking.js";
 
 /**
  * Properties for [[usePresentationTreeNodeLoader]] hook.

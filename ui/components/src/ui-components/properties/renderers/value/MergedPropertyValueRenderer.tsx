@@ -7,9 +7,9 @@
  */
 
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { UiComponents } from "../../../UiComponents";
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { withContextStyle } from "./WithContextStyle";
+import { UiComponents } from "../../../UiComponents.js";
+import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager.js";
+import { withContextStyle } from "./WithContextStyle.js";
 
 /** Default Merged Property Renderer
  * @public

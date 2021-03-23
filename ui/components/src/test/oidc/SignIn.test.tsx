@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import { SignIn } from "../../ui-components/oidc/SignIn";
-import TestUtils from "../TestUtils";
+import { SignIn } from "../../ui-components/oidc/SignIn.js";
+import TestUtils from "../TestUtils.js";
 
 describe("SignIn", () => {
 

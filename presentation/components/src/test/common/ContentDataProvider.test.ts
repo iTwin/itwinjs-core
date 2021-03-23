@@ -13,17 +13,17 @@ import {
   Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, Item, KeySet, NestedContentField,
   Paged, RegisteredRuleset, SelectionInfo,
 } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
+import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises.js";
 import {
   createRandomCategory, createRandomContent, createRandomDescriptor, createRandomECClassInfo, createRandomECInstanceKey, createRandomPrimitiveField,
   createRandomPrimitiveTypeDescription, createRandomPropertiesField, createRandomRelationshipPath, createRandomRuleset,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import { FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
-import { mockPresentationManager } from "../_helpers/UiComponents";
+import { mockPresentationManager } from "../_helpers/UiComponents.js";
 
 /**
  * The Provider class is used to make protected ContentDataProvider

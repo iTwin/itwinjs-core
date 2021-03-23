@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { EMPTY } from "rxjs/internal/observable/empty";
+import { EMPTY } from "rxjs/internal/observable/empty.js";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { CheckBoxState } from "@bentley/ui-core";
-import { TreeModelMutator } from "../../../../ui-components/tree/controlled/internal/TreeModelMutator";
-import { CheckboxStateChange } from "../../../../ui-components/tree/controlled/TreeEvents";
-import { MutableTreeModel, MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
-import { TreeModelSource } from "../../../../ui-components/tree/controlled/TreeModelSource";
-import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
-import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
+import { TreeModelMutator } from "../../../../ui-components/tree/controlled/internal/TreeModelMutator.js";
+import { CheckboxStateChange } from "../../../../ui-components/tree/controlled/TreeEvents.js";
+import { MutableTreeModel, MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel.js";
+import { TreeModelSource } from "../../../../ui-components/tree/controlled/TreeModelSource.js";
+import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader.js";
+import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers.js";
 
 describe("TreeModelMutator", () => {
 

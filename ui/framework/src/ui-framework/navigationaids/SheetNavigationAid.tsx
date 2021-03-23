@@ -12,12 +12,12 @@ import * as React from "react";
 import { IModelApp, IModelConnection, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { UiComponents, ViewIdChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { CommonProps, Spinner, SpinnerSize } from "@bentley/ui-core";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
-import { UiFramework } from "../UiFramework";
-import { ViewUtilities } from "../utils/ViewUtilities";
-import { NavigationAidControl } from "./NavigationAidControl";
-import { CardContainer, CardSelectedEventArgs, SheetsModalFrontstage } from "./SheetsModalFrontstage";
+import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl.js";
+import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager.js";
+import { UiFramework } from "../UiFramework.js";
+import { ViewUtilities } from "../utils/ViewUtilities.js";
+import { NavigationAidControl } from "./NavigationAidControl.js";
+import { CardContainer, CardSelectedEventArgs, SheetsModalFrontstage } from "./SheetsModalFrontstage.js";
 
 /** A Sheet Navigation Aid control.
  * @alpha

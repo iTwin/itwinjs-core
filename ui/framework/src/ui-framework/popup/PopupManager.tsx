@@ -15,14 +15,14 @@ import {
 } from "@bentley/ui-abstract";
 import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
 import { offsetAndContainInContainer } from "@bentley/ui-ninezone";
-import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
-import { UiFramework } from "../UiFramework";
-import { CardPopup } from "./CardPopup";
-import { HTMLElementPopup } from "./HTMLElementPopup";
-import { InputEditorCommitHandler, InputEditorPopup } from "./InputEditorPopup";
-import { KeyinPalettePopup } from "./KeyinPalettePopup";
-import { ToolbarPopup } from "./ToolbarPopup";
-import { ToolSettingsPopup } from "./ToolSettingsPopup";
+import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin.js";
+import { UiFramework } from "../UiFramework.js";
+import { CardPopup } from "./CardPopup.js";
+import { HTMLElementPopup } from "./HTMLElementPopup.js";
+import { InputEditorCommitHandler, InputEditorPopup } from "./InputEditorPopup.js";
+import { KeyinPalettePopup } from "./KeyinPalettePopup.js";
+import { ToolbarPopup } from "./ToolbarPopup.js";
+import { ToolSettingsPopup } from "./ToolSettingsPopup.js";
 
 // cSpell:ignore uiadmin
 

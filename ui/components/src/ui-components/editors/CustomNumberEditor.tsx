@@ -19,9 +19,9 @@ import {
   PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Icon, IconInput, Input, InputProps } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { UiComponents } from "../UiComponents.js";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
 
 /** @internal */
 interface CustomNumberEditorState {

@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
-import produce from "immer";
-import * as sinon from "sinon";
-import { FrontstageManager, setPanelSize, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef, toPanelSide, UiFramework, Widget, WidgetDef } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import { produce } from "immer";
+import sinon from "sinon";
+import { FrontstageManager, setPanelSize, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef, toPanelSide, UiFramework, Widget, WidgetDef } from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { createNineZoneState } from "@bentley/ui-ninezone";
-import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
+import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef.js";
 
 describe("StagePanelDef", () => {
 

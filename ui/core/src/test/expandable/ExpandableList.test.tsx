@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import { ExpandableBlock, ExpandableList } from "../../ui-core";
-import TestUtils from "../TestUtils";
+import { ExpandableBlock, ExpandableList } from "../../ui-core.js";
+import TestUtils from "../TestUtils.js";
 
 describe("ExpandableList", () => {
 

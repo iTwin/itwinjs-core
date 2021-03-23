@@ -8,10 +8,10 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
-import { Orientation } from "../enums/Orientation";
-import { ItemKeyboardNavigator } from "../focus/ItemKeyboardNavigator";
-import { IconHelper } from "../utils/IconHelper";
+import { CommonProps } from "../utils/Props.js";
+import { Orientation } from "../enums/Orientation.js";
+import { ItemKeyboardNavigator } from "../focus/ItemKeyboardNavigator.js";
+import { IconHelper } from "../utils/IconHelper.js";
 
 /** TabLabel provides ability to define label, icon, and tooltip for a tab entry. The tooltip can be defined as JSX|Element
  *  to support react-tooltip component or a string that will be use to set the title property.

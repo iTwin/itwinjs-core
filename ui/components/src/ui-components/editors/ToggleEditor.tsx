@@ -11,8 +11,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
 import { Toggle } from "@bentley/ui-core";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
 
 /** @internal */
 interface ToggleEditorState {

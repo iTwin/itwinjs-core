@@ -8,8 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
-import { Textarea, TextareaProps } from "./Textarea";
+import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps.js";
+import { Textarea, TextareaProps } from "./Textarea.js";
 
 /** Properties for [[LabeledTextarea]] component
  * @public

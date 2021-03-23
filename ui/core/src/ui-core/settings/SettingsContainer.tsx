@@ -8,8 +8,8 @@
 
 import "./SettingsContainer.scss";
 import * as React from "react";
-import { ActivateSettingsTabEventArgs, ProcessSettingsContainerCloseEventArgs, ProcessSettingsTabActivationEventArgs, SettingsManager, SettingsTabEntry } from "./SettingsManager";
-import { VerticalTabs } from "../tabs/VerticalTabs";
+import { ActivateSettingsTabEventArgs, ProcessSettingsContainerCloseEventArgs, ProcessSettingsTabActivationEventArgs, SettingsManager, SettingsTabEntry } from "./SettingsManager.js";
+import { VerticalTabs } from "../tabs/VerticalTabs.js";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 
 /*  ---------------------------------------------------------------------------------------------------
@@ -29,9 +29,9 @@ const saveChanges = React.useCallback((afterSaveFunction: (args: any) => void, a
  * @beta
  */
 export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void) {
-  React.useEffect (()=>{
-    const handleProcessSettingsContainerClose = ({closeFunc, closeFuncArgs}: ProcessSettingsContainerCloseEventArgs) => {
-      saveFunction (closeFunc, closeFuncArgs);
+  React.useEffect(() => {
+    const handleProcessSettingsContainerClose = ({ closeFunc, closeFuncArgs }: ProcessSettingsContainerCloseEventArgs) => {
+      saveFunction(closeFunc, closeFuncArgs);
     };
     return settingsManager.onProcessSettingsContainerClose.addListener(handleProcessSettingsContainerClose);
   }, [saveFunction, settingsManager]);
@@ -41,9 +41,9 @@ export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsM
  * @beta
  */
 export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void) {
-  React.useEffect (()=>{
-    const handleProcessSettingsTabActivation = ({tabSelectionFunc, requestedSettingsTabId}: ProcessSettingsTabActivationEventArgs) => {
-      saveFunction (tabSelectionFunc, requestedSettingsTabId);
+  React.useEffect(() => {
+    const handleProcessSettingsTabActivation = ({ tabSelectionFunc, requestedSettingsTabId }: ProcessSettingsTabActivationEventArgs) => {
+      saveFunction(tabSelectionFunc, requestedSettingsTabId);
     };
     return settingsManager.onProcessSettingsTabActivation.addListener(handleProcessSettingsTabActivation);
   }, [saveFunction, settingsManager]);
@@ -69,11 +69,11 @@ export interface SettingsContainerProps {
  * Note: that SettingsContainer is not rendered if tabs array is empty
  * @beta
  */
-export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader}: SettingsContainerProps) => {
+export const SettingsContainer = ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => {
   // sort the tabs based on itemPriority
-  tabs = tabs.sort((a, b)=> a.itemPriority - b.itemPriority);
+  tabs = tabs.sort((a, b) => a.itemPriority - b.itemPriority);
 
-  const [openTab, setOpenTab] = React.useState(()=>{
+  const [openTab, setOpenTab] = React.useState(() => {
     if (currentSettingsTab && !ConditionalBooleanValue.getValue(currentSettingsTab.isDisabled))
       return currentSettingsTab;
     else
@@ -88,28 +88,28 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
   }, [onSettingsTabSelected]);
 
   const processTabSelectionById = React.useCallback((tabId: string) => {
-    const tabToActivate = tabs.find((tab)=>tab.tabId === tabId);
-    tabToActivate && processTabSelection (tabToActivate);
+    const tabToActivate = tabs.find((tab) => tab.tabId === tabId);
+    tabToActivate && processTabSelection(tabToActivate);
   }, [processTabSelection, tabs]);
 
-  const onActivateTab =  React.useCallback((tabIndex: number) => {
+  const onActivateTab = React.useCallback((tabIndex: number) => {
     const selectedTab = tabs[tabIndex];
     if (openTab && openTab.pageWillHandleCloseRequest)
-      settingsManager.onProcessSettingsTabActivation.emit({ requestedSettingsTabId:selectedTab.tabId, tabSelectionFunc: processTabSelectionById});
+      settingsManager.onProcessSettingsTabActivation.emit({ requestedSettingsTabId: selectedTab.tabId, tabSelectionFunc: processTabSelectionById });
     else
       processTabSelection(selectedTab);
   }, [openTab, processTabSelection, processTabSelectionById, settingsManager, tabs]);
 
-  React.useEffect (()=>{
-    const handleActivateSettingsTab = ({settingsTabId}: ActivateSettingsTabEventArgs) => {
+  React.useEffect(() => {
+    const handleActivateSettingsTab = ({ settingsTabId }: ActivateSettingsTabEventArgs) => {
       const idToFind = settingsTabId.toLowerCase();
-      let tabToActivate = tabs.find((tab)=>tab.tabId.toLowerCase() === idToFind);
+      let tabToActivate = tabs.find((tab) => tab.tabId.toLowerCase() === idToFind);
       if (!tabToActivate)
-        tabToActivate = tabs.find((tab)=>tab.label.toLowerCase() === idToFind);
+        tabToActivate = tabs.find((tab) => tab.label.toLowerCase() === idToFind);
       // istanbul ignore else
       if (tabToActivate) {
         if (openTab && openTab.pageWillHandleCloseRequest)
-          settingsManager.onProcessSettingsTabActivation.emit({ requestedSettingsTabId:tabToActivate.tabId, tabSelectionFunc: processTabSelectionById});
+          settingsManager.onProcessSettingsTabActivation.emit({ requestedSettingsTabId: tabToActivate.tabId, tabSelectionFunc: processTabSelectionById });
         else
           processTabSelection(tabToActivate);
       }
@@ -118,8 +118,8 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
     return settingsManager.onActivateSettingsTab.addListener(handleActivateSettingsTab);
   }, [openTab, processTabSelection, processTabSelectionById, settingsManager, settingsManager.onActivateSettingsTab, tabs]);
 
-  React.useEffect (()=>{
-    const handleSettingsContainerClose = ({closeFunc, closeFuncArgs}: ProcessSettingsContainerCloseEventArgs) => {
+  React.useEffect(() => {
+    const handleSettingsContainerClose = ({ closeFunc, closeFuncArgs }: ProcessSettingsContainerCloseEventArgs) => {
       if (openTab && openTab.pageWillHandleCloseRequest)
         settingsManager.onProcessSettingsContainerClose.emit({ closeFunc, closeFuncArgs });
       else
@@ -128,11 +128,13 @@ export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsT
     return settingsManager.onCloseSettingsContainer.addListener(handleSettingsContainerClose);
   }, [openTab, processTabSelection, settingsManager, settingsManager.onActivateSettingsTab, tabs]);
 
-  const labels=tabs.map((tab)=> {
-    return {label:tab.label, subLabel: tab.subLabel, icon: tab.icon,
-      tooltip: tab.tooltip, tabId: tab.tabId, disabled: ConditionalBooleanValue.getValue(tab.isDisabled)};
+  const labels = tabs.map((tab) => {
+    return {
+      label: tab.label, subLabel: tab.subLabel, icon: tab.icon,
+      tooltip: tab.tooltip, tabId: tab.tabId, disabled: ConditionalBooleanValue.getValue(tab.isDisabled)
+    };
   });
-  const activeIndex = tabs.findIndex((tab)=>tab.tabId === openTab.tabId);
+  const activeIndex = tabs.findIndex((tab) => tab.tabId === openTab.tabId);
   return (
     <div className="core-settings-container">
       <div className="core-settings-container-left">

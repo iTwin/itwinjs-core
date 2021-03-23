@@ -13,9 +13,9 @@ import {
   IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat,
 } from "@bentley/ui-abstract";
 import { Icon, IconInput, Input, InputProps } from "@bentley/ui-core";
-import { TypeConverterManager } from "../converters/TypeConverterManager";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { UiComponents } from "../UiComponents";
+import { TypeConverterManager } from "../converters/TypeConverterManager.js";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { UiComponents } from "../UiComponents.js";
 
 /** @internal */
 interface TextEditorState {

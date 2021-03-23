@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UiCore } from "../ui-core/UiCore";
+import { UiCore } from "../ui-core/UiCore.js";
 
 /** @internal */
 export class TestUtils {

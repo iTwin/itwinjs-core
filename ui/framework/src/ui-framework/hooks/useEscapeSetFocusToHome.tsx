@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { SpecialKey } from "@bentley/ui-abstract";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut.js";
 
 /** Keyboard Event handler to set focus to Home on Escape key
  * @internal

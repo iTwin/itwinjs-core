@@ -7,14 +7,14 @@ import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
-import { Table } from "../../../ui-components";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
+import { Table } from "../../../ui-components.js";
 import {
   DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
-} from "../../../ui-components/dragdrop/DragDropDef";
-import { withTableDragDrop } from "../../../ui-components/table/hocs/withDragDrop";
-import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataProvider } from "../../../ui-components/table/TableDataProvider";
-import { createDnDRenderer } from "../../tree/deprecated/hocs/withDragDrop.test";
+} from "../../../ui-components/dragdrop/DragDropDef.js";
+import { withTableDragDrop } from "../../../ui-components/table/hocs/withDragDrop.js";
+import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataProvider } from "../../../ui-components/table/TableDataProvider.js";
+import { createDnDRenderer } from "../../tree/deprecated/hocs/withDragDrop.test.js";
 
 /* eslint-disable deprecation/deprecation */
 

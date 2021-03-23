@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import { NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone";
-import { WidgetPanelsContent } from "./Content";
-import { ContentNodeContext } from "./Panels";
-import { panelSides } from "./Panel";
+import { NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone.js";
+import { WidgetPanelsContent } from "./Content.js";
+import { ContentNodeContext } from "./Panels.js";
+import { panelSides } from "./Panel.js";
 import { useRefEffect } from "@bentley/ui-core";
 
 /** Main app content (i.e. viewport) that will change bounds based on panel pinned settings.

@@ -6,7 +6,7 @@
  * @module Tools
  */
 import { Tool } from "@bentley/imodeljs-frontend";
-import { SettingsModalFrontstage } from "../frontstage/ModalSettingsStage";
+import { SettingsModalFrontstage } from "../frontstage/ModalSettingsStage.js";
 
 /**
  * Immediate tool that will open the Settings modal stage.

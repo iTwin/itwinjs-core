@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import {
   useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext,
-} from "../../../ui-core";
+} from "../../../ui-core.js";
 
 function WidgetOpacityChild() {
   const isInitialMount = React.useRef(true);

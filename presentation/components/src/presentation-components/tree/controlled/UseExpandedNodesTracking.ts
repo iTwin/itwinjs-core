@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 import { Guid } from "@bentley/bentleyjs-core";
 import { isTreeModelNode, TreeModelSource, TreeNodeItem } from "@bentley/ui-components";
 import { Presentation } from "@bentley/presentation-frontend";
-import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider.js";
 
 /** @internal */
 export interface UseExpandedNodesTrackingProps {

@@ -11,10 +11,10 @@ import * as React from "react";
 import classnames from "classnames";
 import { Icon, MessageContainer, MessageSeverity } from "@bentley/ui-core";
 import { Message, MessageButton, MessageLayout } from "@bentley/ui-ninezone";
-import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
-import { StatusBar } from "../statusbar/StatusBar";
-import { MessageLabel } from "./MessageLabel";
-import { HollowIcon } from "./HollowIcon";
+import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails.js";
+import { StatusBar } from "../statusbar/StatusBar.js";
+import { MessageLabel } from "./MessageLabel.js";
+import { HollowIcon } from "./HollowIcon.js";
 
 /** Properties for a [[StickyMessage]]
  * @beta

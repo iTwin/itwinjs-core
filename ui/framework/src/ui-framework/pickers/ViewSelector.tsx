@@ -10,12 +10,12 @@ import * as React from "react";
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
-import { SupportsViewSelectorChange } from "../content/ContentControl";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { connectIModelConnection } from "../redux/connectIModel";
-import { UiFramework } from "../UiFramework";
-import { ViewUtilities } from "../utils/ViewUtilities";
-import { ListItem, ListItemType, ListPicker } from "./ListPicker";
+import { SupportsViewSelectorChange } from "../content/ContentControl.js";
+import { ContentViewManager } from "../content/ContentViewManager.js";
+import { connectIModelConnection } from "../redux/connectIModel.js";
+import { UiFramework } from "../UiFramework.js";
+import { ViewUtilities } from "../utils/ViewUtilities.js";
+import { ListItem, ListItemType, ListPicker } from "./ListPicker.js";
 
 // cSpell:ignore Spatials
 

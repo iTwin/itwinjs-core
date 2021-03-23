@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { StagePanelLocation, StagePanelSection, WidgetState } from "@bentley/ui-abstract";
 import { getDefaultZonesManagerProps } from "@bentley/ui-ninezone";
 import {
   CoreTools, Frontstage, FrontstageComposer, FrontstageManager, getExtendedZone, UiFramework, WidgetDef, WidgetProvider, ZoneDef, ZoneDefProvider,
   ZoneLocation,
-} from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
-import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
+} from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
+import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils.js";
 
 describe("Frontstage", () => {
   before(async () => {

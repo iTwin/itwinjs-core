@@ -11,22 +11,22 @@ import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon } from "@bentley/ui-core";
 import { getToolbarItemProps, Item } from "@bentley/ui-ninezone";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { BaseItemState } from "../shared/ItemDefBase";
-import { ToolItemProps } from "../shared/ItemProps";
-import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework } from "../UiFramework";
-import { PropsHelper } from "../utils/PropsHelper";
-import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { BaseItemState } from "../shared/ItemDefBase.js";
+import { ToolItemProps } from "../shared/ItemProps.js";
+import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher.js";
+import { UiFramework } from "../UiFramework.js";
+import { PropsHelper } from "../utils/PropsHelper.js";
+import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome.js";
 
 /** Properties for the [[ToolButton]] React Component.
  * @public
- */
+ */
 export interface ToolButtonProps extends ToolItemProps, CommonProps { }
 
 /** Tool Button React Component.
  * @public
- */
+ */
 export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> {
   private _componentUnmounting = false;
   private _label: string | StringGetter | ConditionalStringValue = "";

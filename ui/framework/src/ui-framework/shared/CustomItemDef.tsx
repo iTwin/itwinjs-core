@@ -9,8 +9,8 @@
 import * as React from "react";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { SizeProps } from "@bentley/ui-core";
-import { ActionButtonItemDef } from "./ActionButtonItemDef";
-import { CustomItemProps } from "./CustomItemProps";
+import { ActionButtonItemDef } from "./ActionButtonItemDef.js";
+import { CustomItemProps } from "./CustomItemProps.js";
 
 /** @internal */
 interface CloneProps {
@@ -20,7 +20,7 @@ interface CloneProps {
 
 /** An Item that renders a React component.
  * @beta
- */
+ */
 export class CustomItemDef extends ActionButtonItemDef {
   private static _sId = 0;
   public static customIdPrefix = "Custom-";

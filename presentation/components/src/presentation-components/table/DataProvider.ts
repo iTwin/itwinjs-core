@@ -14,10 +14,10 @@ import {
 } from "@bentley/presentation-common";
 import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent} from "@bentley/ui-components";
 import { SortDirection as UiSortDirection } from "@bentley/ui-core";
-import { ContentBuilder } from "../common/ContentBuilder";
-import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
-import { Page, PageContainer } from "../common/PageContainer";
-import { createLabelRecord, priorityAndNameSortFunction, translate } from "../common/Utils";
+import { ContentBuilder } from "../common/ContentBuilder.js";
+import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider.js";
+import { Page, PageContainer } from "../common/PageContainer.js";
+import { createLabelRecord, priorityAndNameSortFunction, translate } from "../common/Utils.js";
 
 interface PromisedPage<TItem> extends Page<TItem> {
   promise?: Promise<void>;

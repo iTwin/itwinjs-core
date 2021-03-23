@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import TestUtils from "../../TestUtils";
-import { PropertyList } from "../../../ui-components/propertygrid/component/PropertyList";
+import TestUtils from "../../TestUtils.js";
+import { PropertyList } from "../../../ui-components/propertygrid/component/PropertyList.js";
 import * as sinon from "sinon";
 
 describe("PropertyList", () => {

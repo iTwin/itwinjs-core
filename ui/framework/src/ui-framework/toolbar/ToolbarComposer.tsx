@@ -14,15 +14,15 @@ import {
 import { Orientation } from "@bentley/ui-core";
 import { ToolbarItem, ToolbarOpacitySetting, ToolbarWithOverflow } from "@bentley/ui-components";
 import { Direction, Toolbar, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
-import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { ToolbarDragInteractionContext } from "./DragInteraction";
-import { ToolbarHelper } from "./ToolbarHelper";
-import { useDefaultToolbarItems } from "./useDefaultToolbarItems";
-import { useUiItemsProviderToolbarItems } from "./useUiItemsProviderToolbarItems";
+import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager.js";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion.js";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher.js";
+import { UiFramework } from "../UiFramework.js";
+import { UiShowHideManager } from "../utils/UiShowHideManager.js";
+import { ToolbarDragInteractionContext } from "./DragInteraction.js";
+import { ToolbarHelper } from "./ToolbarHelper.js";
+import { useDefaultToolbarItems } from "./useDefaultToolbarItems.js";
+import { useUiItemsProviderToolbarItems } from "./useUiItemsProviderToolbarItems.js";
 
 /** Private function to set up sync event monitoring of toolbar items */
 function useToolbarItemSyncEffect(uiDataProvider: ToolbarItemsManager, syncIdsOfInterest: string[]) {

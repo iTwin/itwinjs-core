@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
-import TestUtils from "../TestUtils";
-import { ParsedInput } from "../../ui-components/inputs/ParsedInput";
+import TestUtils from "../TestUtils.js";
+import { ParsedInput } from "../../ui-components/inputs/ParsedInput.js";
 import { ParseResults, SpecialKey } from "@bentley/ui-abstract";
 
 function fahrenheitToCelsius(f: number) {

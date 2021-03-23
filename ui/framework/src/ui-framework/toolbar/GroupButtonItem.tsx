@@ -16,15 +16,15 @@ import {
   ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
   Group as ToolGroupComponent, withDragInteraction,
 } from "@bentley/ui-ninezone";
-import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
-import { UiFramework } from "../UiFramework";
-import { PropsHelper } from "../utils/PropsHelper";
-import { ToolbarDragInteractionContext } from "./DragInteraction";
-import { ToolbarHelper } from "./ToolbarHelper";
+import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer.js";
+import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager.js";
+import { UiFramework } from "../UiFramework.js";
+import { PropsHelper } from "../utils/PropsHelper.js";
+import { ToolbarDragInteractionContext } from "./DragInteraction.js";
+import { ToolbarHelper } from "./ToolbarHelper.js";
 
-import classnames = require("classnames");
-import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
+import classnames from "classnames";
+import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);

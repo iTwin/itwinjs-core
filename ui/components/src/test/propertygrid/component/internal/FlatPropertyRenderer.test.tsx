@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { fireEvent, render } from "@testing-library/react";
-import { LinksRenderer } from "../../../../ui-components/properties/LinkHandler";
-import { PrimitivePropertyRenderer } from "../../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
-import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
-import { FlatNonPrimitivePropertyRenderer } from "../../../../ui-components/propertygrid/internal/flat-properties/FlatNonPrimitivePropertyRenderer";
-import { FlatPropertyRenderer } from "../../../../ui-components/propertygrid/internal/flat-properties/FlatPropertyRenderer";
-import TestUtils from "../../../TestUtils";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { LinksRenderer } from "../../../../ui-components/properties/LinkHandler.js";
+import { PrimitivePropertyRenderer } from "../../../../ui-components/properties/renderers/PrimitivePropertyRenderer.js";
+import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager.js";
+import { FlatNonPrimitivePropertyRenderer } from "../../../../ui-components/propertygrid/internal/flat-properties/FlatNonPrimitivePropertyRenderer.js";
+import { FlatPropertyRenderer } from "../../../../ui-components/propertygrid/internal/flat-properties/FlatPropertyRenderer.js";
+import TestUtils from "../../../TestUtils.js";
 
 describe("FlatPropertyRenderer", () => {
   let propertyRecord: PropertyRecord;

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { StatusBarSection } from "@bentley/ui-abstract";
-import { StatusBarItem } from "./StatusBarItem";
+import { StatusBarItem } from "./StatusBarItem.js";
 
 /** Utility methods for creating and maintaining StatusBar items.
  * @beta

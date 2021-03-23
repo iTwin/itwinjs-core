@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { CategorizedPropertyTypes, FlatGridItemType, IMutableCategorizedPropertyItem, IMutableFlatGridItem, IMutableGridCategoryItem } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableFlatGridItem";
-import { CategoryRecordsDict, MutableGridCategory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridCategory";
+import { CategorizedPropertyTypes, FlatGridItemType, IMutableCategorizedPropertyItem, IMutableFlatGridItem, IMutableGridCategoryItem } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableFlatGridItem.js";
+import { CategoryRecordsDict, MutableGridCategory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridCategory.js";
 import { AssertionError, expect } from "chai";
 import sinon from "sinon";
-import { MutableCategorizedPrimitiveProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedPrimitiveProperty";
-import { MutableCategorizedArrayProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedArrayProperty";
-import { MutableCategorizedStructProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedStructProperty";
+import { MutableCategorizedPrimitiveProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedPrimitiveProperty.js";
+import { MutableCategorizedArrayProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedArrayProperty.js";
+import { MutableCategorizedStructProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedStructProperty.js";
 import shortid from "shortid";
-import { MutableGridItemFactory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
-import { CategorizedPropertyItem, FlatGridItem, GridCategoryItem } from "../../../../../ui-components/propertygrid/internal/flat-items/FlatGridItem";
-import { PropertyCategory, PropertyData } from "../../../../../ui-components/propertygrid/PropertyDataProvider";
+import { MutableGridItemFactory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory.js";
+import { CategorizedPropertyItem, FlatGridItem, GridCategoryItem } from "../../../../../ui-components/propertygrid/internal/flat-items/FlatGridItem.js";
+import { PropertyCategory, PropertyData } from "../../../../../ui-components/propertygrid/PropertyDataProvider.js";
 import * as faker from "faker";
-import { IPropertyGridModel } from "../../../../../ui-components/propertygrid/internal/PropertyGridModel";
+import { IPropertyGridModel } from "../../../../../ui-components/propertygrid/internal/PropertyGridModel.js";
 
 /** @internal */
 export interface GridModelLastItemData {

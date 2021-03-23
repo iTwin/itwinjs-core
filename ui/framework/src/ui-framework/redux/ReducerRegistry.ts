@@ -7,7 +7,7 @@
  */
 
 import { UiError } from "@bentley/ui-abstract";
-import { UiFramework } from "../UiFramework";
+import { UiFramework } from "../UiFramework.js";
 
 /** NameToReducerMap used by Reducer Registry
  * @beta

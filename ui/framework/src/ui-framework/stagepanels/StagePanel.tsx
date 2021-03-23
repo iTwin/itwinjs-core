@@ -12,14 +12,14 @@ import {
   NestedStagePanelKey, NestedStagePanelsManagerProps, NineZoneStagePanelManagerProps, StagePanelType as NZ_StagePanelType, WidgetZoneId,
   ZonesManagerWidgetsProps,
 } from "@bentley/ui-ninezone";
-import { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { WidgetProps } from "../widgets/WidgetProps";
-import { WidgetTabs } from "../widgets/WidgetStack";
-import { ZoneLocation } from "../zones/Zone";
-import { FrameworkStagePanel } from "./FrameworkStagePanel";
-import { PanelStateChangedEventArgs, StagePanelDef, StagePanelState as StagePanelState } from "./StagePanelDef";
-import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
+import { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer.js";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { WidgetProps } from "../widgets/WidgetProps.js";
+import { WidgetTabs } from "../widgets/WidgetStack.js";
+import { ZoneLocation } from "../zones/Zone.js";
+import { FrameworkStagePanel } from "./FrameworkStagePanel.js";
+import { PanelStateChangedEventArgs, StagePanelDef, StagePanelState as StagePanelState } from "./StagePanelDef.js";
+import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef.js";
 
 /** Available StagePanel locations.
  * ------------------------------------------------------------------------------------

@@ -9,12 +9,12 @@ import { ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@bentley
 import { DisplayStyleState } from "@bentley/imodeljs-frontend";
 import { ColorPickerDialog, ColorSwatch } from "@bentley/ui-components";
 import { OptionType, ThemedSelect, WebFontIcon } from "@bentley/ui-core";
-import { ActionMeta, ValueType } from "react-select/src/types";
+import { ActionMeta, ValueType } from "react-select/src/types.js";
 import { ModalDialogManager } from "@bentley/ui-framework";
-import { TransparencyPopupButton } from "./TransparencyPopupButton";
-import { useSourceMapContext } from "./MapLayerManager";
+import { TransparencyPopupButton } from "./TransparencyPopupButton.js";
+import { useSourceMapContext } from "./MapLayerManager.js";
 import "./BasemapPanel.scss";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider.js";
 
 function getBaseMapFromStyle(displayStyle: DisplayStyleState | undefined) {
   if (!displayStyle)

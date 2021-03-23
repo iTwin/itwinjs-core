@@ -8,9 +8,9 @@
 
 import * as React from "react";
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { TypeConverterManager } from "../../../converters/TypeConverterManager";
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { PrimitivePropertyValueRendererImpl } from "./PrimitivePropertyValueRenderer";
+import { TypeConverterManager } from "../../../converters/TypeConverterManager.js";
+import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager.js";
+import { PrimitivePropertyValueRendererImpl } from "./PrimitivePropertyValueRenderer.js";
 
 /** Default Double Property Renderer
  * @public

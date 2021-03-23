@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { render } from "@testing-library/react";
-import { WidgetPanelsContent } from "../../ui-ninezone";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { WidgetPanelsContent } from "../../ui-ninezone.js";
 
 describe("WidgetPanelsContent", () => {
   it("should render", () => {

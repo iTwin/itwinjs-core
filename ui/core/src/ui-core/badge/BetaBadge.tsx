@@ -9,8 +9,8 @@
 import "./BetaBadge.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
-import { Badge } from "./Badge";
+import { CommonProps } from "../utils/Props.js";
+import { Badge } from "./Badge.js";
 import betaBadgeIcon from "./technical-preview-badge.svg?sprite";
 
 /** Beta Badge React component

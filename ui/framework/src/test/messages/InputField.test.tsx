@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
-import { InputFieldMessage, KeyboardShortcutManager, MessageManager } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import { InputFieldMessage, KeyboardShortcutManager, MessageManager } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("InputFieldMessage", () => {
   before(async () => {

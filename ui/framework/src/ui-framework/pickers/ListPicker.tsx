@@ -13,10 +13,10 @@ import * as React from "react";
 import { PopupItem } from "@bentley/ui-components";
 import { CommonProps, Icon, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import { containHorizontally, ExpandableItem, Group, GroupColumn, Item, Panel, withContainIn } from "@bentley/ui-ninezone";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
-import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
-import { UiFramework } from "../UiFramework";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion.js";
+import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction.js";
+import { UiFramework } from "../UiFramework.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);

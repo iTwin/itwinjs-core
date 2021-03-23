@@ -9,9 +9,9 @@
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { IPropertyValueRenderer, PropertyContainerType, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { TableStructValueRenderer } from "./table/StructValueRenderer";
-import { withContextStyle } from "./WithContextStyle";
+import { IPropertyValueRenderer, PropertyContainerType, PropertyValueRendererContext } from "../../ValueRendererManager.js";
+import { TableStructValueRenderer } from "./table/StructValueRenderer.js";
+import { withContextStyle } from "./WithContextStyle.js";
 
 /** Default Struct Property Renderer
  * @public

@@ -9,9 +9,9 @@
 import { Omit, PrimitivePropertyValue, RulesetsFactory } from "@bentley/presentation-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TypeConverterManager } from "@bentley/ui-components";
-import { findField } from "./common/Utils";
-import { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider";
-import { IPresentationTableDataProvider, PresentationTableDataProvider, PresentationTableDataProviderProps } from "./table/DataProvider";
+import { findField } from "./common/Utils.js";
+import { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider.js";
+import { IPresentationTableDataProvider, PresentationTableDataProvider, PresentationTableDataProviderProps } from "./table/DataProvider.js";
 
 /**
  * Data structure holding initialization properties for [[DataProvidersFactory]]

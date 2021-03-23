@@ -7,7 +7,9 @@
  * @module Frontstage
  */
 import "./Frontstage.scss";
-import produce, { castDraft, Draft } from "immer";
+import * as immer from "immer";
+const produce = immer.produce;
+const castDraft = immer.castDraft;
 import * as React from "react";
 import { assert, Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
@@ -17,23 +19,23 @@ import {
   FloatingWidgets, getUniqueId, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
-import { useActiveFrontstageDef } from "../frontstage/Frontstage";
-import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
-import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
-import { UiFramework } from "../UiFramework";
-import { useUiSettingsContext } from "../uisettings/useUiSettings";
-import { WidgetDef, WidgetEventArgs, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
-import { ZoneState } from "../zones/ZoneDef";
-import { WidgetContent } from "./Content";
-import { WidgetPanelsFrontstageContent } from "./FrontstageContent";
-import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "./ModalFrontstageComposer";
-import { WidgetPanelsStatusBar } from "./StatusBar";
-import { WidgetPanelsTab } from "./Tab";
-import { WidgetPanelsToolbars } from "./Toolbars";
-import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
-import { useEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage.js";
+import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef.js";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel.js";
+import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef.js";
+import { UiFramework } from "../UiFramework.js";
+import { useUiSettingsContext } from "../uisettings/useUiSettings.js";
+import { WidgetDef, WidgetEventArgs, WidgetStateChangedEventArgs } from "../widgets/WidgetDef.js";
+import { ZoneState } from "../zones/ZoneDef.js";
+import { WidgetContent } from "./Content.js";
+import { WidgetPanelsFrontstageContent } from "./FrontstageContent.js";
+import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "./ModalFrontstageComposer.js";
+import { WidgetPanelsStatusBar } from "./StatusBar.js";
+import { WidgetPanelsTab } from "./Tab.js";
+import { WidgetPanelsToolbars } from "./Toolbars.js";
+import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings.js";
+import { useEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome.js";
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -663,7 +665,7 @@ interface SavedNineZoneState extends Omit<NineZoneState, "tabs"> {
   readonly tabs: SavedTabsState;
 }
 
-function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
+function addRemovedTab(nineZone: immer.Draft<NineZoneState>, widgetDef: WidgetDef) {
   const newTab = createTabState(widgetDef.id, {
     label: getWidgetLabel(widgetDef.label),
     preferredPanelWidgetSize: widgetDef.preferredPanelSize,
@@ -693,7 +695,7 @@ function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
 
 /** @internal */
 export const setWidgetState = produce((
-  nineZone: Draft<NineZoneState>,
+  nineZone: immer.Draft<NineZoneState>,
   widgetDef: WidgetDef,
   state: WidgetState,
 ) => {
@@ -747,7 +749,7 @@ export const setWidgetState = produce((
 });
 
 /** @internal */
-export const showWidget = produce((nineZone: Draft<NineZoneState>, id: TabState["id"]) => {
+export const showWidget = produce((nineZone: immer.Draft<NineZoneState>, id: TabState["id"]) => {
   const location = findTab(nineZone, id);
   if (!location)
     return;
@@ -765,7 +767,7 @@ export const showWidget = produce((nineZone: Draft<NineZoneState>, id: TabState[
 });
 
 /** @internal */
-export const expandWidget = produce((nineZone: Draft<NineZoneState>, id: TabState["id"]) => {
+export const expandWidget = produce((nineZone: immer.Draft<NineZoneState>, id: TabState["id"]) => {
   const location = findTab(nineZone, id);
   if (!location)
     return;
@@ -784,7 +786,7 @@ export const expandWidget = produce((nineZone: Draft<NineZoneState>, id: TabStat
 });
 
 /** @internal */
-export const setWidgetLabel = produce((nineZone: Draft<NineZoneState>, id: TabState["id"], label: string) => {
+export const setWidgetLabel = produce((nineZone: immer.Draft<NineZoneState>, id: TabState["id"], label: string) => {
   if (!(id in nineZone.tabs))
     return;
 

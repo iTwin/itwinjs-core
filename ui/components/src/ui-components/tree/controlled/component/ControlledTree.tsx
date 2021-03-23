@@ -7,19 +7,19 @@
  */
 
 import * as React from "react";
-import { from } from "rxjs/internal/observable/from";
+import { from } from "rxjs/internal/observable/from.js";
 import { CommonProps, FillCentered, SpinnerSize } from "@bentley/ui-core";
-import { SelectionMode } from "../../../common/selection/SelectionModes";
-import { UiComponents } from "../../../UiComponents";
-import { HighlightableTreeProps } from "../../HighlightingEngine";
-import { TreeImageLoader } from "../../ImageLoader";
-import { TreeEventDispatcher } from "../TreeEventDispatcher";
-import { TreeEvents } from "../TreeEvents";
-import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../TreeModel";
-import { ITreeNodeLoader } from "../TreeNodeLoader";
-import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
-import { TreeRenderer, TreeRendererProps } from "./TreeRenderer";
-import { DelayedSpinner } from "../../../common/DelayedSpinner";
+import { SelectionMode } from "../../../common/selection/SelectionModes.js";
+import { UiComponents } from "../../../UiComponents.js";
+import { HighlightableTreeProps } from "../../HighlightingEngine.js";
+import { TreeImageLoader } from "../../ImageLoader.js";
+import { TreeEventDispatcher } from "../TreeEventDispatcher.js";
+import { TreeEvents } from "../TreeEvents.js";
+import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../TreeModel.js";
+import { ITreeNodeLoader } from "../TreeNodeLoader.js";
+import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer.js";
+import { TreeRenderer, TreeRendererProps } from "./TreeRenderer.js";
+import { DelayedSpinner } from "../../../common/DelayedSpinner.js";
 
 /**
  * Properties for [[ControlledTree]]

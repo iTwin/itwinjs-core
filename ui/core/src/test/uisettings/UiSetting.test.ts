@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { LocalUiSettings, UiSetting, UiSettingsStatus } from "../../ui-core";
-import { storageMock } from "../TestUtils";
+import { LocalUiSettings, UiSetting, UiSettingsStatus } from "../../ui-core.js";
+import { storageMock } from "../TestUtils.js";
 
 function getBoolean(): boolean { return true; }
 function getString(): string { return "Hello"; }

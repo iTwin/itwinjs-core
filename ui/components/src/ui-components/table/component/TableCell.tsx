@@ -10,12 +10,12 @@ import "./TableCell.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Icon, Omit } from "@bentley/ui-core";
-import { EditorContainer, EditorContainerProps } from "../../editors/EditorContainer";
-import { ItemStyleProvider } from "../../properties/ItemStyle";
+import { EditorContainer, EditorContainerProps } from "../../editors/EditorContainer.js";
+import { ItemStyleProvider } from "../../properties/ItemStyle.js";
 import {
   PropertyContainerType, PropertyDialogState, PropertyValueRendererContext, PropertyValueRendererManager,
-} from "../../properties/ValueRendererManager";
-import { CellItem } from "../TableDataProvider";
+} from "../../properties/ValueRendererManager.js";
+import { CellItem } from "../TableDataProvider.js";
 
 /**
  * Properties of the [[TableCell]] React component

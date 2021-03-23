@@ -8,7 +8,7 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodePathElement } from "@bentley/presentation-common";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises.js";
 import { AbstractTreeNodeLoaderWithProvider, TreeModelSource } from "@bentley/ui-components";
 import { renderHook } from "@testing-library/react-hooks";
 import { ControlledTreeFilteringProps, IPresentationTreeDataProvider, useControlledTreeFiltering } from "../../../presentation-components";

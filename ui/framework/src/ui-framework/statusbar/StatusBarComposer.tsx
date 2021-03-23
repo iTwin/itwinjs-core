@@ -14,14 +14,14 @@ import {
 } from "@bentley/ui-abstract";
 import { CommonProps, Icon, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { eqlOverflown, FooterIndicator } from "@bentley/ui-ninezone";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../ui-framework";
-import { Indicator } from "../statusfields/Indicator";
-import { StatusBarOverflow } from "./Overflow";
-import { StatusBarOverflowPanel } from "./OverflowPanel";
-import { StatusBarCenterSection, StatusBarContext, StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween } from "./StatusBar";
-import { isStatusBarItem } from "./StatusBarItem";
-import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems";
-import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../ui-framework.js";
+import { Indicator } from "../statusfields/Indicator.js";
+import { StatusBarOverflow } from "./Overflow.js";
+import { StatusBarOverflowPanel } from "./OverflowPanel.js";
+import { StatusBarCenterSection, StatusBarContext, StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween } from "./StatusBar.js";
+import { isStatusBarItem } from "./StatusBarItem.js";
+import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems.js";
+import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems.js";
 
 /** Private  function to generate a value that will allow the proper order to be maintained when items are placed in overflow panel */
 function getCombinedSectionItemPriority(item: CommonStatusBarItem) {

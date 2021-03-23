@@ -6,13 +6,13 @@
  * @module Zone
  */
 
-import { WidgetDef } from "../widgets/WidgetDef";
-import { WidgetHost } from "../widgets/WidgetHost";
-import { ZoneLocation, ZoneProps } from "./Zone";
+import { WidgetDef } from "../widgets/WidgetDef.js";
+import { WidgetHost } from "../widgets/WidgetHost.js";
+import { ZoneLocation, ZoneProps } from "./Zone.js";
 
 /** Zone State enum.
  * @public
- */
+ */
 export enum ZoneState {
   Off,
   Minimized,
@@ -24,7 +24,7 @@ export enum ZoneState {
 /**
  * A ZoneDef represents each zone within a Frontstage.
  * @public
- */
+ */
 export class ZoneDef extends WidgetHost {
   private _initialWidth: number | undefined = undefined;
   private _zoneState: ZoneState = ZoneState.Open;

@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import {
   ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, NestedFrontstage,
   ToolWidget, Widget, Zone, ZoneState,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
-import { AppStatusBarWidgetControl, TestContentControl, TestFrontstage } from "./FrontstageTestUtils";
+} from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
+import { AppStatusBarWidgetControl, TestContentControl, TestFrontstage } from "./FrontstageTestUtils.js";
 
 class TestNestedFrontstage extends FrontstageProvider {
 

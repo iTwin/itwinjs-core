@@ -15,10 +15,10 @@ import {
 } from "@bentley/presentation-common";
 import { IModelContentChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
-import { IPresentationDataProvider } from "./IPresentationDataProvider";
-import { RulesetRegistrationHelper } from "./RulesetRegistrationHelper";
-import { findField } from "./Utils";
+import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory.js";
+import { IPresentationDataProvider } from "./IPresentationDataProvider.js";
+import { RulesetRegistrationHelper } from "./RulesetRegistrationHelper.js";
+import { findField } from "./Utils.js";
 
 /**
  * Properties for invalidating content cache.

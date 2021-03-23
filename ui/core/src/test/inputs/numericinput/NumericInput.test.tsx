@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import { NumericInput } from "../../../ui-core/inputs/numericinput/NumericInput";
+import { NumericInput } from "../../../ui-core/inputs/numericinput/NumericInput.js";
 
 describe("NumericInput", () => {
   it("should render", () => {

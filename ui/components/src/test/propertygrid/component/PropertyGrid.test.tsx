@@ -3,23 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as faker from "faker";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
+import rrd from "react-resize-detector"; const ReactResizeDetector: typeof rrd = (rrd as any).default;
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyCategoryBlock } from "../../../ui-components/propertygrid/component/PropertyCategoryBlock";
-import { PropertyGrid } from "../../../ui-components/propertygrid/component/PropertyGrid";
+import { PropertyCategoryBlock } from "../../../ui-components/propertygrid/component/PropertyCategoryBlock.js";
+import { PropertyGrid } from "../../../ui-components/propertygrid/component/PropertyGrid.js";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
-} from "../../../ui-components/propertygrid/PropertyDataProvider";
-import { ResolvablePromise } from "../../test-helpers/misc";
-import TestUtils from "../../TestUtils";
-import { fireEvent, render } from "@testing-library/react";
-import { PropertyGridCommons } from "../../../ui-components/propertygrid/component/PropertyGridCommons";
+} from "../../../ui-components/propertygrid/PropertyDataProvider.js";
+import { ResolvablePromise } from "../../test-helpers/misc.js";
+import TestUtils from "../../TestUtils.js";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { PropertyGridCommons } from "../../../ui-components/propertygrid/component/PropertyGridCommons.js";
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("PropertyGrid", () => {

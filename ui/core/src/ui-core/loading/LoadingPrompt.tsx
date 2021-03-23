@@ -9,11 +9,11 @@
 import "./LoadingPrompt.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { LoadingBar } from "./LoadingBar";
-import { LoadingSpinner } from "./LoadingSpinner";
-import { LoadingStatus } from "./LoadingStatus";
-import { ProgressBar } from "../progress-indicators/ProgressBar";
-import { CommonProps } from "../utils/Props";
+import { LoadingBar } from "./LoadingBar.js";
+import { LoadingSpinner } from "./LoadingSpinner.js";
+import { LoadingStatus } from "./LoadingStatus.js";
+import { ProgressBar } from "../progress-indicators/ProgressBar.js";
+import { CommonProps } from "../utils/Props.js";
 
 // cspell:ignore loadingprompt
 

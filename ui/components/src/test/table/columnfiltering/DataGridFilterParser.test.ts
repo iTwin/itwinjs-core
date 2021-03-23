@@ -9,11 +9,11 @@ import { Logger } from "@bentley/bentleyjs-core";
 import {
   DataGridFilterParser, FILTER_PARSER_TIMER_TIMEOUT, NumericExactMatchData, NumericFilterData, NumericFilterType, NumericGreaterThanData,
   NumericLessThanData, NumericRangeData, ReactDataGridFilter,
-} from "../../../ui-components/table/columnfiltering/DataGridFilterParser";
-import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
-import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { ColumnDescription, FilterRenderer, RowItem, TableDistinctValue } from "../../../ui-components/table/TableDataProvider";
-import { TestFilterableTable, TestUtils } from "../../TestUtils";
+} from "../../../ui-components/table/columnfiltering/DataGridFilterParser.js";
+import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn.js";
+import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider.js";
+import { ColumnDescription, FilterRenderer, RowItem, TableDistinctValue } from "../../../ui-components/table/TableDataProvider.js";
+import { TestFilterableTable, TestUtils } from "../../TestUtils.js";
 
 const columns: ColumnDescription[] = [
   {

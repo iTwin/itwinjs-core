@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import {
   Backstage, CommandLaunchBackstageItem, FrontstageLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher, TaskLaunchBackstageItem,
-} from "../../ui-framework";
-import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator";
-import TestUtils, { mockUserInfo, mount } from "../TestUtils";
+} from "../../ui-framework.js";
+import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator.js";
+import TestUtils, { mockUserInfo, mount } from "../TestUtils.js";
 
 describe("Backstage", () => {
 

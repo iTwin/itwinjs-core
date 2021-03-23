@@ -8,9 +8,9 @@ import * as React from "react";
 import { ConnectDragSource } from "react-dnd";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
-import { cleanup, render } from "@testing-library/react";
-import { DragSourceArguments, DragSourceProps, withDragSource } from "../../ui-components";
-import { createDnDRenderer } from "../tree/deprecated/hocs/withDragDrop.test";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
+import { DragSourceArguments, DragSourceProps, withDragSource } from "../../ui-components.js";
+import { createDnDRenderer } from "../tree/deprecated/hocs/withDragDrop.test.js";
 
 describe("withDragSource", () => {
   class TestComponent extends React.Component<{

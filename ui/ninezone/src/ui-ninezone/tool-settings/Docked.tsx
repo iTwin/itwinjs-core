@@ -11,9 +11,9 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
-import { DockedToolSettingsHandle } from "./Handle";
-import { DockedToolSettingsOverflow } from "./Overflow";
-import { ToolSettingsOverflowPanel } from "./Panel";
+import { DockedToolSettingsHandle } from "./Handle.js";
+import { DockedToolSettingsOverflow } from "./Overflow.js";
+import { ToolSettingsOverflowPanel } from "./Panel.js";
 
 /** @internal */
 export function onOverflowLabelAndEditorResize() {

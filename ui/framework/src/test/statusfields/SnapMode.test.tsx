@@ -5,15 +5,15 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { SnapMode } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { FooterPopup } from "@bentley/ui-ninezone";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, SnapModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework,
   WidgetDef,
-} from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("SnapModeField", () => {
 

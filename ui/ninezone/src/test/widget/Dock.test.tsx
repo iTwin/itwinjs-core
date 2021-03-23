@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
-import { Dock, NineZoneDispatch, NineZoneDispatchContext } from "../../ui-ninezone";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { Dock, NineZoneDispatch, NineZoneDispatchContext } from "../../ui-ninezone.js";
 
 describe("Dock", () => {
   it("should render", () => {

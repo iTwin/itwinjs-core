@@ -8,10 +8,10 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { InputStatus } from "../inputs/InputStatus";
-import { CommonProps } from "../utils/Props";
-import { Omit } from "../utils/typeUtils";
-import { mergeRefs } from "../utils/hooks/useRefs";
+import { InputStatus } from "../inputs/InputStatus.js";
+import { CommonProps } from "../utils/Props.js";
+import { Omit } from "../utils/typeUtils.js";
+import { mergeRefs } from "../utils/hooks/useRefs.js";
 
 /** Properties for [[Checkbox]] React component
  * @public

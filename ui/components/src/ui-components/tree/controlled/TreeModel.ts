@@ -7,12 +7,12 @@
  */
 
 import { immerable } from "immer";
-import _ from "lodash";
+import _ from "lodash-es";
 import { assert } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../TreeDataProvider";
-import { SparseArray, SparseTree } from "./internal/SparseTree";
+import { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../TreeDataProvider.js";
+import { SparseArray, SparseTree } from "./internal/SparseTree.js";
 
 /**
  * Immutable data structure that describes tree node.

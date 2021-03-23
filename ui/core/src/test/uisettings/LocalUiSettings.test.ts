@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { LocalUiSettings, UiSettingsStatus } from "../../ui-core";
+import { LocalUiSettings, UiSettingsStatus } from "../../ui-core.js";
 
-import { storageMock } from "../TestUtils";
+import { storageMock } from "../TestUtils.js";
 
 describe("LocalUiSettings", () => {
   it("default constructor executes successfully", () => {

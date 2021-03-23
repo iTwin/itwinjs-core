@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import {
   ConfigurableUiManager, CoreTools, Frontstage, FrontstageActivatedEventArgs, FrontstageManager, FrontstageProps, FrontstageProvider, TaskPropsList,
   WorkflowManager, WorkflowPropsList,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("Task", () => {
 

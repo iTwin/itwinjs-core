@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { Rectangle } from "@bentley/ui-core";
@@ -14,9 +14,9 @@ import {
 import {
   ContentGroup, ContentLayoutDef, CoreTools, FrontstageComposer, FrontstageDef, FrontstageManager, getNestedStagePanelKey, isCollapsedToPanelState,
   ModalFrontstageInfo, StagePanelDef, StagePanelState,
-} from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
-import { TestContentControl, TestFrontstage } from "./FrontstageTestUtils";
+} from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
+import { TestContentControl, TestFrontstage } from "./FrontstageTestUtils.js";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";

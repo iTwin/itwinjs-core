@@ -8,12 +8,12 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { render } from "@testing-library/react";
-import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
-import { TreeNodeContent } from "../../../../ui-components/tree/controlled/component/NodeContent";
-import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
-import { HighlightableTreeNodeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
-import { TestUtils } from "../../../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager.js";
+import { TreeNodeContent } from "../../../../ui-components/tree/controlled/component/NodeContent.js";
+import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel.js";
+import { HighlightableTreeNodeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine.js";
+import { TestUtils } from "../../../TestUtils.js";
 
 describe("NodeContent", () => {
   const rendererManagerMock = moq.Mock.ofType<PropertyValueRendererManager>();

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
-import { Widget } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import { Widget } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("Widget", () => {
 

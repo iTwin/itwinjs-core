@@ -11,13 +11,13 @@ import classnames from "classnames";
 import * as React from "react";
 import { useRefs } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
-import { PanelsStateContext, TabsStateContext, ToolSettingsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { isHorizontalPanelState, TabsState, WidgetsState, WidgetState } from "../base/NineZoneState";
-import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel";
-import { WidgetContentContainer } from "./ContentContainer";
-import { useTabTransientState } from "./ContentRenderer";
-import { WidgetTabBar } from "./TabBar";
-import { Widget, WidgetComponent, WidgetProvider } from "./Widget";
+import { PanelsStateContext, TabsStateContext, ToolSettingsStateContext, WidgetsStateContext } from "../base/NineZone.js";
+import { isHorizontalPanelState, TabsState, WidgetsState, WidgetState } from "../base/NineZoneState.js";
+import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel.js";
+import { WidgetContentContainer } from "./ContentContainer.js";
+import { useTabTransientState } from "./ContentRenderer.js";
+import { WidgetTabBar } from "./TabBar.js";
+import { Widget, WidgetComponent, WidgetProvider } from "./Widget.js";
 
 /** @internal */
 export interface PanelWidgetProps {

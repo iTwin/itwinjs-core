@@ -6,8 +6,8 @@
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Popup, WebFontIcon } from "@bentley/ui-core";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { MapManagerSettings } from "./MapManagerSettings";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider.js";
+import { MapManagerSettings } from "./MapManagerSettings.js";
 
 import "./MapLayerSettingsPopupButton.scss";
 

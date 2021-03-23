@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { renderHook } from "@testing-library/react-hooks";
-import { CursorTypeContext, useCursor } from "../../ui-ninezone";
+import { CursorTypeContext, useCursor } from "../../ui-ninezone.js";
 
 describe("useCursor", () => {
   const wrapper = (props: {}) => <CursorTypeContext.Provider value="grabbing" {...props} />;

@@ -7,13 +7,13 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { render } from "@testing-library/react";
-import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
-import { BeInspireTree, BeInspireTreeNode } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
-import { TreeNodeContent } from "../../../../ui-components/tree/deprecated/component/NodeContent";
-import { DEPRECATED_Tree as Tree } from "../../../../ui-components/tree/deprecated/component/Tree";
-import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
-import TestUtils from "../../../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager.js";
+import { BeInspireTree, BeInspireTreeNode } from "../../../../ui-components/tree/deprecated/component/BeInspireTree.js";
+import { TreeNodeContent } from "../../../../ui-components/tree/deprecated/component/NodeContent.js";
+import { DEPRECATED_Tree as Tree } from "../../../../ui-components/tree/deprecated/component/Tree.js";
+import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider.js";
+import TestUtils from "../../../TestUtils.js";
 
 /* eslint-disable deprecation/deprecation */
 

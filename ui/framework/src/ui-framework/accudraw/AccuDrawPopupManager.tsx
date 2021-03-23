@@ -10,13 +10,13 @@ import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
 import { AngleDescription, LengthDescription } from "@bentley/imodeljs-frontend";
 import { AbstractMenuItemProps, IconSpecUtilities, OnCancelFunc, OnNumberCommitFunc, OnValueCommitFunc } from "@bentley/ui-abstract";
-import { PopupInfo, PopupManager } from "../popup/PopupManager";
-import { MenuItemHelpers } from "../shared/MenuItem";
+import { PopupInfo, PopupManager } from "../popup/PopupManager.js";
+import { MenuItemHelpers } from "../shared/MenuItem.js";
 import angleIcon from "./angle.svg?sprite";
-import { CalculatorPopup } from "./CalculatorPopup";
+import { CalculatorPopup } from "./CalculatorPopup.js";
 import lengthIcon from "./distance.svg?sprite";
 import heightIcon from "./height-2.svg?sprite";
-import { MenuButtonPopup } from "./MenuButtonPopup";
+import { MenuButtonPopup } from "./MenuButtonPopup.js";
 
 /** AccuDraw Popup Manager class
  * @alpha

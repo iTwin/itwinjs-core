@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ReactWrapper, shallow, ShallowWrapper } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { ToolbarItemContext } from "@bentley/ui-components";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
 import { Group, Item } from "@bentley/ui-ninezone";
 import {
   ExpandableSection, FrameworkVersion, ListItem, ListItemType, ListPicker, ListPickerBase, ListPickerItem, ListPickerPropsExtended,
-} from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 const title = "Test";
 const listItems = new Array<ListItem>();
@@ -141,7 +141,7 @@ describe("ListPicker", () => {
   });
 
   describe("isSpecialItem", () => {
-    let listPickerWrapper: ShallowWrapper<any>;
+    let listPickerWrapper: enzyme.ShallowWrapper<any>;
     let listPickerInstance: ListPicker;
 
     beforeEach(() => {
@@ -262,7 +262,7 @@ describe("ListPicker", () => {
   });
 
   describe("ListPickerBase", () => {
-    let listPickerBaseWrapper: ShallowWrapper<any>;
+    let listPickerBaseWrapper: enzyme.ShallowWrapper<any>;
     let listPickerBaseInstance: ListPickerBase;
 
     beforeEach(() => {
@@ -358,7 +358,7 @@ describe("ListPicker", () => {
   });
 
   describe("setEnabled", () => {
-    let listPickerWrapper: ReactWrapper<ListPickerPropsExtended>;
+    let listPickerWrapper: enzyme.ReactWrapper<ListPickerPropsExtended>;
     const localSetEnabled = sinon.fake();
     const localListItems = new Array<ListItem>();
     const allSpyMethod = sinon.fake();
@@ -486,7 +486,7 @@ describe("ListPicker", () => {
       sut.setState({ expanded: true });
       const containedGroup = sut.findWhere((w) => {
         return w.name() === "WithOnOutsideClick";
-      }) as ReactWrapper<WithOnOutsideClickProps>;
+      }) as enzyme.ReactWrapper<WithOnOutsideClickProps>;
 
       const event = new MouseEvent("");
       sinon.stub(event, "target").get(() => document.createElement("div"));
@@ -507,7 +507,7 @@ describe("ListPicker", () => {
     sut.setState({ expanded: true });
     const containedGroup = sut.findWhere((w) => {
       return w.name() === "WithOnOutsideClick";
-    }) as ReactWrapper<WithOnOutsideClickProps>;
+    }) as enzyme.ReactWrapper<WithOnOutsideClickProps>;
 
     const event = new MouseEvent("");
     containedGroup.prop("onOutsideClick")!(event);

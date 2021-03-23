@@ -6,7 +6,7 @@ import "./PlayerButton.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../UiComponents.js";
 
 /** Player button used by buttons on timeline control
  * @internal

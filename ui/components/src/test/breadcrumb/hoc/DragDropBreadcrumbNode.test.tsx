@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { cleanup, render } from "@testing-library/react";
-import { DragDropBreadcrumbNodeComponent } from "../../../ui-components/breadcrumb/hoc/DragDropBreadcrumbNode";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
+import { DragDropBreadcrumbNodeComponent } from "../../../ui-components/breadcrumb/hoc/DragDropBreadcrumbNode.js";
 
 describe("DragDropBreadcrumbNode", () => {
 

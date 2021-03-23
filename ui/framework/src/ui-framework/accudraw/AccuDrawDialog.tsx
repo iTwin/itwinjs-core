@@ -10,10 +10,10 @@ import "./AccuDrawDialog.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Orientation } from "@bentley/ui-core";
-import { UiFramework } from "../UiFramework";
-import { ModelessDialog } from "../dialog/ModelessDialog";
-import { AccuDrawFieldContainer } from "./AccuDrawFieldContainer";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { UiFramework } from "../UiFramework.js";
+import { ModelessDialog } from "../dialog/ModelessDialog.js";
+import { AccuDrawFieldContainer } from "./AccuDrawFieldContainer.js";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut.js";
 
 /** @alpha */
 export interface AccuDrawDialogProps extends CommonProps {

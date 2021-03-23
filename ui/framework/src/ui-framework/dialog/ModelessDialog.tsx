@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Dialog, DialogProps } from "@bentley/ui-core";
-import { ModelessDialogManager } from "./ModelessDialogManager";
+import { ModelessDialogManager } from "./ModelessDialogManager.js";
 
 /** Properties for the [[ModelessDialog]] component
  * @public

@@ -8,12 +8,12 @@
 
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { OnItemExecutedFunc } from "@bentley/ui-abstract";
-import { ActionButtonItemDef } from "./ActionButtonItemDef";
-import { ToolItemProps } from "./ItemProps";
+import { ActionButtonItemDef } from "./ActionButtonItemDef.js";
+import { ToolItemProps } from "./ItemProps.js";
 
 /** An Item that starts the execution of a Tool.
  * @public
- */
+ */
 export class ToolItemDef extends ActionButtonItemDef {
   public toolId: string = "";
 

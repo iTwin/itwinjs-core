@@ -6,9 +6,9 @@
  * @module AccuDraw
  */
 
-import { KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
-import { AccuDrawCommandItems } from "./AccuDrawCommandItems";
-import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
+import { KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut.js";
+import { AccuDrawCommandItems } from "./AccuDrawCommandItems.js";
+import { FrameworkAccuDraw } from "./FrameworkAccuDraw.js";
 
 /** Default AccuDraw Keyboard Shortcuts
  * @alpha

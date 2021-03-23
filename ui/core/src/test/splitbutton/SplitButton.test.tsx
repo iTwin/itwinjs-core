@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { SplitButton } from "../../ui-core";
+import { SplitButton } from "../../ui-core.js";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
-import { ButtonType } from "../../ui-core/button/Button";
+import { ButtonType } from "../../ui-core/button/Button.js";
 
 describe("<SplitButton />", () => {
   it("should render", () => {

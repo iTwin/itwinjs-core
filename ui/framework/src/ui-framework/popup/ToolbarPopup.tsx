@@ -10,9 +10,9 @@ import * as React from "react";
 import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
 import { Direction, Toolbar, ToolbarOpacitySetting, ToolbarPanelAlignment } from "@bentley/ui-components";
-import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
-import { PopupManager, PopupPropsBase } from "./PopupManager";
-import { PositionPopup } from "./PositionPopup";
+import { CursorPopup } from "../cursor/cursorpopup/CursorPopup.js";
+import { PopupManager, PopupPropsBase } from "./PopupManager.js";
+import { PositionPopup } from "./PositionPopup.js";
 
 /** @alpha */
 export interface ToolbarPopupProps extends PopupPropsBase {

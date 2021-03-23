@@ -8,8 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Input, InputProps } from "./Input";
-import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
+import { Input, InputProps } from "./Input.js";
+import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps.js";
 
 /** Properties for [[LabeledInput]] components
  * @public

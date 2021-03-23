@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
-import { ConfigurableUiManager, TaskPropsList, Workflow, WorkflowManager, WorkflowProps, WorkflowPropsList } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import { ConfigurableUiManager, TaskPropsList, Workflow, WorkflowManager, WorkflowProps, WorkflowPropsList } from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("Workflow & WorkflowManager", () => {
 

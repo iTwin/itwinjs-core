@@ -5,26 +5,26 @@
 import { expect } from "chai";
 import * as path from "path";
 import * as React from "react";
-import * as sinon from "sinon";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
+import sinon from "sinon";
+import tlr from "@testing-library/react"; const { fireEvent, render, waitForElement } = tlr;
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
+import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
+import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents.js";
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import {
   HierarchyBuilder, HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
 } from "@bentley/presentation-testing";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { SelectionMode, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
-import TestUtils from "../../TestUtils";
-import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
-import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
-import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
-import { createCategoryNode, createElementClassGroupingNode, createElementNode, createKey, createModelNode, createSubjectNode } from "./Common";
+import TestUtils from "../../TestUtils.js";
+import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler.js";
+import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler.js";
+import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../ui-framework/imodel-components/models-tree/ModelsTree.js";
+import { createCategoryNode, createElementClassGroupingNode, createElementNode, createKey, createModelNode, createSubjectNode } from "./Common.js";
 
 describe("ModelsTree", () => {
 

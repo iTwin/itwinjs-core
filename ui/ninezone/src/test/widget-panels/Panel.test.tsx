@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { should } from "chai";
-import produce from "immer";
+import { produce } from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Size } from "@bentley/ui-core";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, DraggedPanelSideContext, DragManager, NineZoneDispatch,
   NineZoneState, PanelSide, PanelStateContext, useAnimatePanelWidgets, WidgetPanelProvider,
-} from "../../ui-ninezone";
-import { createDOMRect } from "../Utils";
-import { createDragItemInfo, NineZoneProvider, setRefValue } from "../Providers";
+} from "../../ui-ninezone.js";
+import { createDOMRect } from "../Utils.js";
+import { createDragItemInfo, NineZoneProvider, setRefValue } from "../Providers.js";
 
 describe("WidgetPanelProvider", () => {
   it("should render vertical", () => {

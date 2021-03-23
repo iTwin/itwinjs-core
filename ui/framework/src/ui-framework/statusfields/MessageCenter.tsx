@@ -9,12 +9,12 @@
 import * as React from "react";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { FooterPopup, MessageCenter, MessageCenterDialog, MessageCenterMessage, MessageCenterTab } from "@bentley/ui-ninezone";
-import { MessageManager } from "../messages/MessageManager";
-import { MessageSpan } from "../messages/MessageSpan";
-import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
-import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
-import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { MessageManager } from "../messages/MessageManager.js";
+import { MessageSpan } from "../messages/MessageSpan.js";
+import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails.js";
+import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl.js";
+import { UiFramework } from "../UiFramework.js";
+import { StatusFieldProps } from "./StatusFieldProps.js";
 
 /** Enum for the [[MessageCenterField]] active tab
  * @internal
@@ -43,7 +43,7 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
 
 /** Message Center Field React component.
  * @public
- */
+ */
 export class MessageCenterField extends React.Component<MessageCenterFieldProps, MessageCenterState> {
   private _className: string;
   private _indicator = React.createRef<HTMLDivElement>();

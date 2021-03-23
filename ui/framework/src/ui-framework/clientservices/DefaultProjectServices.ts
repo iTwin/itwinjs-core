@@ -9,8 +9,8 @@
 import { Logger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project } from "@bentley/context-registry-client";
 import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
-import { UiFramework } from "../UiFramework";
-import { ProjectInfo, ProjectReadStatus, ProjectScope, ProjectServices } from "./ProjectServices";
+import { UiFramework } from "../UiFramework.js";
+import { ProjectInfo, ProjectReadStatus, ProjectScope, ProjectServices } from "./ProjectServices.js";
 
 // istanbul ignore next
 class ProjectInfoImpl implements ProjectInfo {

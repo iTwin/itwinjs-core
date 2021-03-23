@@ -8,8 +8,8 @@ import { WidgetState } from "@bentley/ui-abstract";
 import {
   ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageManager, StatusBar, StatusBarWidgetControl,
   StatusBarWidgetControlArgs, WidgetDef,
-} from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("ActivityCenter", () => {
 

@@ -10,7 +10,7 @@ import * as React from "react";
 import classnames from "classnames";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { WebFontIcon } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../UiComponents.js";
 
 import "./DatePicker.scss";
 

@@ -7,15 +7,15 @@
  */
 
 import { UiError } from "@bentley/ui-abstract";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { UiFramework } from "../UiFramework";
-import { ContentGroup } from "./ContentGroup";
-import { ContentLayoutDef } from "./ContentLayout";
-import { ContentLayoutProps } from "./ContentLayoutProps";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { UiFramework } from "../UiFramework.js";
+import { ContentGroup } from "./ContentGroup.js";
+import { ContentLayoutDef } from "./ContentLayout.js";
+import { ContentLayoutProps } from "./ContentLayoutProps.js";
 
 /** ContentLayout Manager class.
  * @public
- */
+ */
 export class ContentLayoutManager {
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();
 

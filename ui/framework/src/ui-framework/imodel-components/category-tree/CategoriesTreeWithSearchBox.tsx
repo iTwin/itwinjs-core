@@ -12,7 +12,7 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { FilteringInput } from "@bentley/ui-components";
-import { CategoryTree, CategoryTreeProps, toggleAllCategories } from "./CategoriesTree";
+import { CategoryTree, CategoryTreeProps, toggleAllCategories } from "./CategoriesTree.js";
 
 /** @internal @deprecated */
 export interface CategoryTreeWithSearchBoxProps extends CategoryTreeProps {

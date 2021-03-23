@@ -13,13 +13,16 @@ import { NodeKey, Ruleset } from "@bentley/presentation-common";
 import { IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { ControlledTree, SelectionMode, TreeNodeItem, useVisibleTreeNodes } from "@bentley/ui-components";
 import { useDisposable, useOptionalDisposable } from "@bentley/ui-core";
-import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
-import { UiFramework } from "../../../ui-framework/UiFramework";
-import { ClassGroupingOption, VisibilityTreeFilterInfo } from "../Common";
-import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
-import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
-import { ModelsTreeSelectionPredicate, ModelsVisibilityHandler } from "./ModelsVisibilityHandler";
-
+import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel.js";
+import { UiFramework } from "../../../ui-framework/UiFramework.js";
+import { ClassGroupingOption, VisibilityTreeFilterInfo } from "../Common.js";
+import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler.js";
+import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer.js";
+import { ModelsTreeSelectionPredicate, ModelsVisibilityHandler } from "./ModelsVisibilityHandler.js";
+// @ts-ignore
+import { createRequire } from "module";
+// @ts-ignore
+const require = createRequire(import.meta.url);
 const PAGING_SIZE = 20;
 
 /** @internal */

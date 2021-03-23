@@ -6,10 +6,10 @@
  * @module Table
  */
 
-import { ColumnDescription } from "../TableDataProvider";
-import { ColumnFilterDescriptor, DistinctValueCollection, FilterableColumn, FilterableTable, FilterOperator } from "./ColumnFiltering";
-import { TableColumnFilterDescriptor } from "./TableColumnFilterDescriptor";
-import { TableFilterDescriptor } from "./TableFilterDescriptor";
+import { ColumnDescription } from "../TableDataProvider.js";
+import { ColumnFilterDescriptor, DistinctValueCollection, FilterableColumn, FilterableTable, FilterOperator } from "./ColumnFiltering.js";
+import { TableColumnFilterDescriptor } from "./TableColumnFilterDescriptor.js";
+import { TableFilterDescriptor } from "./TableFilterDescriptor.js";
 
 /** Filterable Column base class.
  * @internal

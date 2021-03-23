@@ -9,7 +9,7 @@
 import "./ToolSettingsContent.scss";
 import classnames from "classnames";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
+import rrd from "react-resize-detector"; const ReactResizeDetector: typeof rrd = (rrd as any).default;
 import { HorizontalAnchor, ToolSettingsWidgetMode, WidgetContent } from "@bentley/ui-ninezone";
 
 /** @internal */

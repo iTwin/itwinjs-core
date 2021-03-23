@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
 import sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { EnumEditor } from "../../ui-components/editors/EnumEditor";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer.js";
+import { EnumEditor } from "../../ui-components/editors/EnumEditor.js";
+import TestUtils from "../TestUtils.js";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager.js";
 import { PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 

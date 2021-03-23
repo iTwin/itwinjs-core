@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
-import { MergedPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/MergedPropertyValueRenderer";
-import { UiComponents } from "../../../../ui-components/UiComponents";
-import TestUtils from "../../../TestUtils";
+import { MergedPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/MergedPropertyValueRenderer.js";
+import { UiComponents } from "../../../../ui-components/UiComponents.js";
+import TestUtils from "../../../TestUtils.js";
 
 describe("MergedPropertyValueRenderer", () => {
   before(async () => {

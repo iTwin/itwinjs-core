@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
-import { SignIn } from "../../ui-framework/oidc/SignIn";
-import TestUtils, { mount } from "../TestUtils";
+import sinon from "sinon";
+import { SignIn } from "../../ui-framework/oidc/SignIn.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("SignIn", () => {
 

@@ -9,10 +9,10 @@
 import * as React from "react";
 import { Icon, SmallText, UiCore } from "@bentley/ui-core";
 import { Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
-import { UiFramework } from "../UiFramework";
-import { ActivityMessageEventArgs } from "../messages/MessageManager";
-import { HollowIcon } from "./HollowIcon";
-import { MessageLabel } from "./MessageLabel";
+import { UiFramework } from "../UiFramework.js";
+import { ActivityMessageEventArgs } from "../messages/MessageManager.js";
+import { HollowIcon } from "./HollowIcon.js";
+import { MessageLabel } from "./MessageLabel.js";
 
 /** Properties for a [[ActivityMessage]]
  * @beta

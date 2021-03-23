@@ -7,8 +7,8 @@
  * @module PropertyGrid
  */
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { FlatGridItemType, IMutableCategorizedPropertyItem, MutableCategorizedProperty } from "./MutableFlatGridItem";
-import { IMutableGridItemFactory } from "./MutableGridItemFactory";
+import { FlatGridItemType, IMutableCategorizedPropertyItem, MutableCategorizedProperty } from "./MutableFlatGridItem.js";
+import { IMutableGridItemFactory } from "./MutableGridItemFactory.js";
 
 /**
  * Mutable wrapper object for PropertyRecord with struct valueFormat which provides methods for working with and managing record children hierarchies.

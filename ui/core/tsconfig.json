@@ -3,7 +3,9 @@
   "compilerOptions": {
     "target": "es2017",
     "skipLibCheck": true,
-    "module": "commonjs",
+    "esModuleInterop": true,
+    "module": "es2020",
+    "moduleResolution": "node",
     "outDir": "./lib",
     "jsx": "react",
     "types": [

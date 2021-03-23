@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as React from "react";
 import { BeDragDropContext } from "@bentley/ui-components";
-import { DragDropLayerManager, DragDropLayerRenderer } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import { DragDropLayerManager, DragDropLayerRenderer } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("DragDropLayerManager", () => {
 

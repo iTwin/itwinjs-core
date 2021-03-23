@@ -6,9 +6,9 @@
 import * as React from "react";
 import { expect } from "chai";
 import sinon from "sinon";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { SpinnerSize } from "@bentley/ui-core";
-import { DelayedSpinner } from "../../ui-components/common/DelayedSpinner";
+import { DelayedSpinner } from "../../ui-components/common/DelayedSpinner.js";
 
 describe("<DelayedSpinner />", () => {
 

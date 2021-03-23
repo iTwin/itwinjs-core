@@ -7,12 +7,12 @@
  */
 
 import { OnItemExecutedFunc } from "@bentley/ui-abstract";
-import { ActionButtonItemDef } from "./ActionButtonItemDef";
-import { CommandItemProps } from "./ItemProps";
+import { ActionButtonItemDef } from "./ActionButtonItemDef.js";
+import { CommandItemProps } from "./ItemProps.js";
 
 /** An Item that executes a Command.
  * @public
- */
+ */
 export class CommandItemDef extends ActionButtonItemDef {
   private static _sId = 0;
   public static commandIdPrefix = "Command-";

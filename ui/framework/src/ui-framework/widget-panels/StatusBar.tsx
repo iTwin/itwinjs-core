@@ -10,10 +10,10 @@ import "./StatusBar.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { useActiveFrontstageDef } from "../frontstage/Frontstage";
-import { StatusBar } from "../statusbar/StatusBar";
-import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
+import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl.js";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage.js";
+import { StatusBar } from "../statusbar/StatusBar.js";
+import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl.js";
 
 /** @internal */
 export function WidgetPanelsStatusBar(props: CommonProps) {

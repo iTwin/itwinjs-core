@@ -10,7 +10,7 @@ import "./Tree.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Range2d } from "@bentley/geometry-core";
-import { CommonProps } from "../utils/Props";
+import { CommonProps } from "../utils/Props.js";
 
 /** Properties for the [[Tree]] presentational React component
  * @public

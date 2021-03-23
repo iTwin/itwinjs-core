@@ -7,8 +7,8 @@
  */
 
 import { SnapMode } from "@bentley/imodeljs-frontend";
-import { ActionsUnion, createAction } from "../redux/redux-ts";
-import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
+import { ActionsUnion, createAction } from "../redux/redux-ts.js";
+import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager.js";
 
 // cSpell:ignore configurableui snapmode toolprompt
 

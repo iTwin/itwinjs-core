@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { act, renderHook } from "@testing-library/react-hooks";
-import { EventEmitter, TabIdContext, TabState, useTransientState, WidgetContentManager, WidgetContentManagerContext, WidgetContentManagerContextArgs, WidgetContentRenderer } from "../../ui-ninezone";
+import { EventEmitter, TabIdContext, TabState, useTransientState, WidgetContentManager, WidgetContentManagerContext, WidgetContentManagerContextArgs, WidgetContentRenderer } from "../../ui-ninezone.js";
 
 describe("WidgetContentRenderer", () => {
   const wrapper = WidgetContentManager;

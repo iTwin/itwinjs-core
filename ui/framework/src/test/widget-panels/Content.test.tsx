@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as sinon from "sinon";
-import { render } from "@testing-library/react";
+import sinon from "sinon";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { addPanelWidget, createNineZoneState, NineZoneProvider, WidgetStateContext } from "@bentley/ui-ninezone";
 import { Rectangle } from "@bentley/ui-core";
-import { FrontstageDef, FrontstageManager, WidgetContent, WidgetDef } from "../../ui-framework";
+import { FrontstageDef, FrontstageManager, WidgetContent, WidgetDef } from "../../ui-framework.js";
 
 describe("WidgetContent", () => {
   it("should render", () => {

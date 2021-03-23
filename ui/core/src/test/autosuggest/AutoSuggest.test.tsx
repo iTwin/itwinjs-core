@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, ReactWrapper } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
 import * as ReactAutosuggest from "react-autosuggest";
 import { Logger } from "@bentley/bentleyjs-core";
 import { SpecialKey } from "@bentley/ui-abstract";
-import { AutoSuggest, AutoSuggestData } from "../../ui-core";
-import TestUtils from "../TestUtils";
+import { AutoSuggest, AutoSuggestData } from "../../ui-core.js";
+import TestUtils from "../TestUtils.js";
 
 describe("AutoSuggest", () => {
   const options: AutoSuggestData[] = [
@@ -19,7 +19,7 @@ describe("AutoSuggest", () => {
     { value: "ghi", label: "label3" },
   ];
 
-  const getInputElement = (wrapper: ReactWrapper): HTMLInputElement => {
+  const getInputElement = (wrapper: enzyme.ReactWrapper): HTMLInputElement => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     return wrapper.getDOMNode() as HTMLInputElement;
   };

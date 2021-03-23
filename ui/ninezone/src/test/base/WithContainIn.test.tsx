@@ -5,8 +5,8 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { Rectangle, RectangleProps } from "@bentley/ui-core";
-import { containHorizontally, containVertically, withContainIn } from "../../ui-ninezone";
-import { createBoundingClientRect, mount } from "../Utils";
+import { containHorizontally, containVertically, withContainIn } from "../../ui-ninezone.js";
+import { createBoundingClientRect, mount } from "../Utils.js";
 
 const component = () => <div></div>;
 // eslint-disable-next-line @typescript-eslint/naming-convention

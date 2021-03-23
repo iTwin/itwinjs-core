@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { Size, SizeProps } from "@bentley/ui-core";
-import { PopupManager, PopupPropsBase } from "../popup/PopupManager";
-import { MenuButton } from "./MenuButton";
+import { PopupManager, PopupPropsBase } from "../popup/PopupManager.js";
+import { MenuButton } from "./MenuButton.js";
 
 /** @alpha */
 export interface MenuButtonPopupProps extends PopupPropsBase {

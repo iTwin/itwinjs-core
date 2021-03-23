@@ -10,7 +10,7 @@ import "./Setting.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useResizeObserver } from "@bentley/ui-core";
-import { useToolSettingsEntry } from "./Docked";
+import { useToolSettingsEntry } from "./Docked.js";
 
 /** Properties of [[ToolSetting]] component.
  * @internal future

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { TreeImageLoader } from "../../ui-components/tree/ImageLoader";
+import { TreeImageLoader } from "../../ui-components/tree/ImageLoader.js";
 
 describe("TreeImageLoader", () => {
   const imageLoader = new TreeImageLoader();

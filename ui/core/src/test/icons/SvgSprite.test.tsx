@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
-import { SvgSprite } from "../../ui-core";
+import { SvgSprite } from "../../ui-core.js";
 
 describe("<SvgSprite />", () => {
   it("should render", () => {

@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentLayoutDef, ContentViewManager, CoreTools, Frontstage,
   FrontstageManager, FrontstageProps, FrontstageProvider,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("ContentControl", () => {
 

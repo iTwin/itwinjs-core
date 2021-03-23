@@ -7,7 +7,7 @@ import * as React from "react";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { isReactNotifyMessageDetails, ReactNotifyMessageDetails } from "../../ui-framework";
+import { isReactNotifyMessageDetails, ReactNotifyMessageDetails } from "../../ui-framework.js";
 import { isReactMessage } from "@bentley/ui-core";
 
 describe("ReactNotifyMessageDetails", () => {

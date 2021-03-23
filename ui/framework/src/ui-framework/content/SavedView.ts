@@ -10,11 +10,11 @@ import { ViewStateProps } from "@bentley/imodeljs-common";
 import {
   DrawingViewState, EmphasizeElements, EmphasizeElementsProps, IModelConnection, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
 } from "@bentley/imodeljs-frontend";
-import { ViewUtilities } from "../utils/ViewUtilities";
+import { ViewUtilities } from "../utils/ViewUtilities.js";
 
 /** SavedViewProps interface for sharing ViewState and EmphasizeElements information.
  * @public
- */
+ */
 export interface SavedViewProps extends ViewStateProps {
   bisBaseClass: string;
   emphasizeElementsProps?: EmphasizeElementsProps;
@@ -22,7 +22,7 @@ export interface SavedViewProps extends ViewStateProps {
 
 /** SavedView class. Used to serialize/deserialize a ViewState.
  * @public
- */
+ */
 export class SavedView {
 
   /** Create a ViewState from the SavedView */

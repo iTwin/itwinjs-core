@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { expect } from "chai";
 import { AuthorizedFrontendRequestContext, IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import { SettingsAdmin, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { UiSettingsStatus } from "@bentley/ui-core";
-import { IModelAppUiSettings, settingsStatusToUiSettingsStatus } from "../../ui-framework";
-import { TestUtils } from "../TestUtils";
+import { IModelAppUiSettings, settingsStatusToUiSettingsStatus } from "../../ui-framework.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("IModelAppUiSettings", () => {
   before(async () => {

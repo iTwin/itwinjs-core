@@ -9,8 +9,8 @@
 import "./Placeholder.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
-import { LEVEL_OFFSET } from "./Node";
+import { CommonProps } from "../utils/Props.js";
+import { LEVEL_OFFSET } from "./Node.js";
 
 /** Properties for the [[TreeNodePlaceholder]] React component
  * @public

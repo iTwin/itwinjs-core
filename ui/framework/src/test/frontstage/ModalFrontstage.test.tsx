@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
-import { FrontstageManager, ModalFrontstage, ModalFrontstageInfo } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import sinon from "sinon";
+import { FrontstageManager, ModalFrontstage, ModalFrontstageInfo } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 const navigationBackSpy = sinon.spy();
 const closeModalSpy = sinon.spy();

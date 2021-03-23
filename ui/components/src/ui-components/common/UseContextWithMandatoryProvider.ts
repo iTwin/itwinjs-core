@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { getClassName, UiError } from "@bentley/ui-abstract";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../UiComponents.js";
 import React from "react";
 
 /** @internal */

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
-import { ActionItemButton, MarkupTools, ToolWidget } from "../ui-framework";
-import TestUtils, { mount } from "./TestUtils";
+import { ActionItemButton, MarkupTools, ToolWidget } from "../ui-framework.js";
+import TestUtils, { mount } from "./TestUtils.js";
 
 describe("MarkupToolDefinitions", () => {
 

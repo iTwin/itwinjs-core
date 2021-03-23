@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
-import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "../../../ui-ninezone";
-import { AdjacentZonesStrategy, BottomZones, LeftZones, RightZones, TopZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
+import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "../../../ui-ninezone.js";
+import { AdjacentZonesStrategy, BottomZones, LeftZones, RightZones, TopZones } from "../../../ui-ninezone/zones/manager/AdjacentZones.js";
 
 describe("AdjacentZonesStrategy", () => {
   class AdjacentZones extends AdjacentZonesStrategy {

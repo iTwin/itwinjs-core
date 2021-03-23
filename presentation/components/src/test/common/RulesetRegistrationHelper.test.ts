@@ -7,11 +7,11 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { BeDuration, using } from "@bentley/bentleyjs-core";
 import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises.js";
 import { Presentation, RulesetManager } from "@bentley/presentation-frontend";
 import { RulesetRegistrationHelper } from "../../presentation-components/common/RulesetRegistrationHelper";
-import { mockPresentationManager } from "../_helpers/UiComponents";
+import { mockPresentationManager } from "../_helpers/UiComponents.js";
 
 describe("RulesetRegistrationHelper", () => {
 

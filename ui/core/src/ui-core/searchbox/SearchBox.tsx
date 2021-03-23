@@ -9,8 +9,8 @@
 import "./SearchBox.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { UiCore } from "../UiCore";
-import { CommonProps } from "../utils/Props";
+import { UiCore } from "../UiCore.js";
+import { CommonProps } from "../utils/Props.js";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Properties for [[SearchBox]] component

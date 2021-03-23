@@ -9,11 +9,11 @@
 import * as React from "react";
 import { DialogLayoutDataProvider, OnCancelFunc, RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
-import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
-import { PopupManager, PopupPropsBase } from "./PopupManager";
-import { PositionPopup, PositionPopupContent } from "./PositionPopup";
-import { ComponentGenerator } from "../uiprovider/ComponentGenerator";
-import { DialogGridContainer } from "../uiprovider/DefaultDialogGridContainer";
+import { CursorPopup } from "../cursor/cursorpopup/CursorPopup.js";
+import { PopupManager, PopupPropsBase } from "./PopupManager.js";
+import { PositionPopup, PositionPopupContent } from "./PositionPopup.js";
+import { ComponentGenerator } from "../uiprovider/ComponentGenerator.js";
+import { DialogGridContainer } from "../uiprovider/DefaultDialogGridContainer.js";
 
 /** @alpha */
 export interface ToolSettingsPopupProps extends PopupPropsBase {

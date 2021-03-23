@@ -10,7 +10,7 @@ import "./Tooltip.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, PointProps, Rectangle, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
-import { CssProperties } from "../utilities/Css";
+import { CssProperties } from "../utilities/Css.js";
 
 /** Properties of [[Tooltip]] component.
  * @beta

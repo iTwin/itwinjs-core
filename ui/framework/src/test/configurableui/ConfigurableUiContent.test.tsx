@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { SpecialKey } from "@bentley/ui-abstract";
-import TestUtils, { mount } from "../TestUtils";
-import { ConfigurableUiContent } from "../../ui-framework/configurableui/ConfigurableUiContent";
-import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
-import { FrameworkToolAdmin } from "../../ui-framework/tools/FrameworkToolAdmin";
+import TestUtils, { mount } from "../TestUtils.js";
+import { ConfigurableUiContent } from "../../ui-framework/configurableui/ConfigurableUiContent.js";
+import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut.js";
+import { FrameworkToolAdmin } from "../../ui-framework/tools/FrameworkToolAdmin.js";
 
 describe("ConfigurableUiContent", () => {
   before(async () => {

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
-import { FrontstageDef, FrontstageManager, WidgetDef, WidgetPanelsStatusBar, ZoneDef } from "../../ui-framework";
+import sinon from "sinon";
+import { FrontstageDef, FrontstageManager, WidgetDef, WidgetPanelsStatusBar, ZoneDef } from "../../ui-framework.js";
 
 describe("WidgetPanelsStatusBar", () => {
   it("should render", () => {

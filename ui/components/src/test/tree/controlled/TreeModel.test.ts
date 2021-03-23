@@ -7,12 +7,12 @@ import * as faker from "faker";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { SparseArray, SparseTree } from "../../../ui-components/tree/controlled/internal/SparseTree";
+import { SparseArray, SparseTree } from "../../../ui-components/tree/controlled/internal/SparseTree.js";
 import {
   isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, MutableTreeModel, MutableTreeModelNode, TreeModelNode, TreeModelNodeInput,
   TreeModelNodePlaceholder, TreeModelRootNode,
-} from "../../../ui-components/tree/controlled/TreeModel";
-import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
+} from "../../../ui-components/tree/controlled/TreeModel.js";
+import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers.js";
 
 const createTreeModelNode = (parentNode: TreeModelNode | TreeModelRootNode, input: TreeModelNodeInput): MutableTreeModelNode => {
   return {

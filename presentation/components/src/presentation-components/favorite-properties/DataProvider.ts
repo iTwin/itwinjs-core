@@ -11,8 +11,8 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { CategoryDescription, KeySet, Ruleset } from "@bentley/presentation-common";
 import { getScopeId, Presentation } from "@bentley/presentation-frontend";
 import { PropertyData } from "@bentley/ui-components";
-import { translate } from "../common/Utils";
-import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider";
+import { translate } from "../common/Utils.js";
+import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider.js";
 
 /** @internal */
 export const FAVORITES_CATEGORY_NAME = "Favorite";

@@ -8,7 +8,7 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field } from "@bentley/presentation-common";
-import { createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import {
   ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames, StructValue,

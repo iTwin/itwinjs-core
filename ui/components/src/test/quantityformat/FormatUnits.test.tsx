@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
-import TestUtils from "../TestUtils";
+import TestUtils from "../TestUtils.js";
 import { FormatProps } from "@bentley/imodeljs-quantity";
-import { FormatUnits } from "../../ui-components";
+import { FormatUnits } from "../../ui-components.js";
 
 describe("FormatUnits", () => {
   const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;

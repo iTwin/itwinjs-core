@@ -13,10 +13,10 @@ import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { Code, ElementProps } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp, SelectionSet, ViewState3d } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomECInstanceKey, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
+import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper.js";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises.js";
+import { createRandomECInstanceKey, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import {
   HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
 } from "@bentley/presentation-frontend";

@@ -7,8 +7,8 @@
  */
 
 import { Rectangle, RectangleProps } from "@bentley/ui-core";
-import { HorizontalAnchor } from "../../widget/Stacked";
-import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "./Zones";
+import { HorizontalAnchor } from "../../widget/Stacked.js";
+import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "./Zones.js";
 
 /** @internal */
 export const RECTANGULAR_DEFAULT_MIN_HEIGHT = 220;

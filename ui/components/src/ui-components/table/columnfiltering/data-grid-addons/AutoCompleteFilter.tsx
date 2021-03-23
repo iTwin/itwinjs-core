@@ -8,12 +8,12 @@
 * [react-data-grid-addons](https://github.com/adazzle/react-data-grid/tree/master/packages/react-data-grid-addons).
 *--------------------------------------------------------------------------------------------*/
 
-import * as _ from "lodash";
+import * as _ from "lodash-es";
 import React from "react";
 import { ThemedSelect } from "@bentley/ui-core";
-import { UiComponents } from "../../../UiComponents";
-import { ReactDataGridColumn } from "../../component/TableColumn";
-import { TableDistinctValue } from "../../TableDataProvider";
+import { UiComponents } from "../../../UiComponents.js";
+import { ReactDataGridColumn } from "../../component/TableColumn.js";
+import { TableDistinctValue } from "../../TableDataProvider.js";
 
 // cspell:ignore autosize
 

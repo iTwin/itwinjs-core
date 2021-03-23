@@ -6,8 +6,8 @@
  * @module StagePanels
  */
 
-import { StagePanelType } from "../StagePanel";
-import { StagePanelsManager, StagePanelsManagerProps } from "./StagePanels";
+import { StagePanelType } from "../StagePanel.js";
+import { StagePanelsManager, StagePanelsManagerProps } from "./StagePanels.js";
 
 /** Properties used by [[NestedStagePanelsManager]].
  * @beta

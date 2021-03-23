@@ -7,8 +7,8 @@ import { expect } from "chai";
 import * as faker from "faker";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
+import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PresentationLabelsProvider } from "../../presentation-components/labels/LabelsProvider";
 

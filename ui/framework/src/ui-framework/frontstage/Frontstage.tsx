@@ -15,21 +15,21 @@ import {
   HorizontalAnchor, Zones as NZ_Zones, StagePanels, StagePanelsManager, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManagerProps,
   ZonesManagerProps,
 } from "@bentley/ui-ninezone";
-import { ContentGroup } from "../content/ContentGroup";
-import { ContentLayout, ContentLayoutDef } from "../content/ContentLayout";
-import { ToolItemDef } from "../shared/ToolItemDef";
-import { getNestedStagePanelKey, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
-import { StagePanelDef } from "../stagepanels/StagePanelDef";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { ToolSettingsContent } from "../widgets/ToolSettingsContent";
-import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
-import { WidgetProvidersChangedEventArgs, WidgetsChangedEventArgs } from "../widgets/WidgetManager";
-import { isToolSettingsWidgetManagerProps, Zone, ZoneLocation, ZoneProps, ZoneRuntimeProps } from "../zones/Zone";
-import { ZoneDef } from "../zones/ZoneDef";
-import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
-import { FrontstageDef } from "./FrontstageDef";
-import { FrontstageActivatedEventArgs, FrontstageManager } from "./FrontstageManager";
+import { ContentGroup } from "../content/ContentGroup.js";
+import { ContentLayout, ContentLayoutDef } from "../content/ContentLayout.js";
+import { ToolItemDef } from "../shared/ToolItemDef.js";
+import { getNestedStagePanelKey, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel.js";
+import { StagePanelDef } from "../stagepanels/StagePanelDef.js";
+import { UiFramework, UiVisibilityEventArgs } from "../UiFramework.js";
+import { UiShowHideManager } from "../utils/UiShowHideManager.js";
+import { ToolSettingsContent } from "../widgets/ToolSettingsContent.js";
+import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef.js";
+import { WidgetProvidersChangedEventArgs, WidgetsChangedEventArgs } from "../widgets/WidgetManager.js";
+import { isToolSettingsWidgetManagerProps, Zone, ZoneLocation, ZoneProps, ZoneRuntimeProps } from "../zones/Zone.js";
+import { ZoneDef } from "../zones/ZoneDef.js";
+import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer.js";
+import { FrontstageDef } from "./FrontstageDef.js";
+import { FrontstageActivatedEventArgs, FrontstageManager } from "./FrontstageManager.js";
 
 /** Properties for a [[Frontstage]] component.
  * @public

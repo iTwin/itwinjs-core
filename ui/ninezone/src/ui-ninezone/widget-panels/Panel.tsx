@@ -9,17 +9,17 @@
 import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
-import produce from "immer";
-import { DraggedPanelSideContext } from "../base/DragManager";
-import { NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState";
-import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
-import { WidgetTarget } from "../widget/WidgetTarget";
-import { WidgetPanelGrip } from "./Grip";
-import { PanelTarget } from "./PanelTarget";
+import { produce } from "immer";
+import { DraggedPanelSideContext } from "../base/DragManager.js";
+import { NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone.js";
+import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState.js";
+import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget.js";
+import { WidgetTarget } from "../widget/WidgetTarget.js";
+import { WidgetPanelGrip } from "./Grip.js";
+import { PanelTarget } from "./PanelTarget.js";
 import { RectangleProps, SizeProps } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
-import { WidgetComponent } from "../widget/Widget";
+import { WidgetComponent } from "../widget/Widget.js";
 
 /** @internal */
 export type TopPanelSide = "top";

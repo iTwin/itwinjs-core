@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { AccuDrawField, SpecialKey } from "@bentley/ui-abstract";
-import { AccuDrawInputField } from "../../ui-framework/accudraw/AccuDrawInputField";
-import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
-import { TestUtils } from "../TestUtils";
+import { AccuDrawInputField } from "../../ui-framework/accudraw/AccuDrawInputField.js";
+import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut.js";
+import { TestUtils } from "../TestUtils.js";
 import { IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw.js";
+import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin.js";
 
 // cspell:ignore uiadmin
 

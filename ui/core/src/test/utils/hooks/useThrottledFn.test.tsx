@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
-import { useThrottledFn } from "../../../ui-core/utils/hooks/useThrottledFn";
+import { useThrottledFn } from "../../../ui-core/utils/hooks/useThrottledFn.js";
 
 interface CallInfo {
   calls: number;

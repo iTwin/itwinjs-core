@@ -12,10 +12,10 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ExtendedHierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@bentley/ui-components";
-import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
-import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
-import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
-import { CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY } from "./Utils";
+import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper.js";
+import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory.js";
+import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider.js";
+import { CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY } from "./Utils.js";
 
 /**
  * Properties for creating a `PresentationTreeDataProvider` instance.

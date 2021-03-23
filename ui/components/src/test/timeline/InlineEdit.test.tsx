@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { cleanup, render } from "@testing-library/react";
-import { InlineEdit } from "../../ui-components/timeline/InlineEdit";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
+import { InlineEdit } from "../../ui-components/timeline/InlineEdit.js";
 
 describe("<InlineEdit />", () => {
   afterEach(() => {

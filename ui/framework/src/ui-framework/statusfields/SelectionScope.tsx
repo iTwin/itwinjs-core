@@ -11,9 +11,9 @@ import classnames from "classnames";
 import * as React from "react";
 import { connect } from "react-redux";
 import { FooterIndicator } from "@bentley/ui-ninezone";
-import { PresentationSelectionScope } from "../redux/SessionState";
-import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { PresentationSelectionScope } from "../redux/SessionState.js";
+import { UiFramework } from "../UiFramework.js";
+import { StatusFieldProps } from "./StatusFieldProps.js";
 
 /** Defines properties supported by the SelectionScopeField Component.
  * @public
@@ -30,7 +30,7 @@ interface SelectionScopeFieldProps extends StatusFieldProps {
  * The IModelApp should call SyncUiEventDispatcher.initializeConnectionEvents with the active iModelConnection each time a new iModel is
  * opened so the selection scope data is properly updated in the Redux state.
  * @public
- */
+ */
 class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldProps> {
   private _label = UiFramework.translate("selectionScopeField.label");
   private _toolTip = UiFramework.translate("selectionScopeField.toolTip");

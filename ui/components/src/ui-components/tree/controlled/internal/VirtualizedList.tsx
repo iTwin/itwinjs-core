@@ -5,8 +5,8 @@
 import * as React from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeList, VariableSizeListProps } from "react-window";
-import { Observable } from "rxjs/internal/Observable";
-import { ReplaySubject } from "rxjs/internal/ReplaySubject";
+import { Observable } from "rxjs/internal/Observable.js";
+import { ReplaySubject } from "rxjs/internal/ReplaySubject.js";
 import { assert } from "@bentley/bentleyjs-core";
 
 /** @internal */

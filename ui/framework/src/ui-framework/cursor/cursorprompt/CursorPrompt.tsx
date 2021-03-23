@@ -11,8 +11,8 @@ import * as React from "react";
 import { ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { BodyText, Icon, Point, PointProps, Timer } from "@bentley/ui-core";
-import { CursorInformation, CursorUpdatedEventArgs } from "../CursorInformation";
-import { CursorPopupManager } from "../cursorpopup/CursorPopupManager";
+import { CursorInformation, CursorUpdatedEventArgs } from "../CursorInformation.js";
+import { CursorPopupManager } from "../cursorpopup/CursorPopupManager.js";
 
 /** @internal */
 export class CursorPrompt {

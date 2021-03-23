@@ -6,11 +6,11 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { act, cleanup, fireEvent, render } from "@testing-library/react";
-import { BaseTimelineDataProvider } from "../../ui-components/timeline/BaseTimelineDataProvider";
-import { Milestone, PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../ui-components/timeline/interfaces";
-import { TimelineComponent } from "../../ui-components/timeline/TimelineComponent";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { act, cleanup, fireEvent, render } = tlr;
+import { BaseTimelineDataProvider } from "../../ui-components/timeline/BaseTimelineDataProvider.js";
+import { Milestone, PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../ui-components/timeline/interfaces.js";
+import { TimelineComponent } from "../../ui-components/timeline/TimelineComponent.js";
+import TestUtils from "../TestUtils.js";
 import { UiAdmin } from "@bentley/ui-abstract";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {

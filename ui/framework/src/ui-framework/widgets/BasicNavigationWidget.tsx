@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Widget
@@ -9,11 +9,11 @@
 import classnames from "classnames";
 import * as React from "react";
 import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "@bentley/ui-abstract";
-import { CoreTools } from "../tools/CoreToolDefinitions";
-import { ToolbarComposer } from "../toolbar/ToolbarComposer";
-import { ToolbarHelper } from "../toolbar/ToolbarHelper";
-import { useUiVisibility } from "./BasicToolWidget";
-import { NavigationWidgetComposer } from "./NavigationWidgetComposer";
+import { CoreTools } from "../tools/CoreToolDefinitions.js";
+import { ToolbarComposer } from "../toolbar/ToolbarComposer.js";
+import { ToolbarHelper } from "../toolbar/ToolbarHelper.js";
+import { useUiVisibility } from "./BasicToolWidget.js";
+import { NavigationWidgetComposer } from "./NavigationWidgetComposer.js";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[DefaultNavigationWidget]].
  * @beta

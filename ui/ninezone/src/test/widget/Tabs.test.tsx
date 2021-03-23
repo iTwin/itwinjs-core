@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import {
   addPanelWidget, addTab, createNineZoneState, PanelSideContext, WidgetIdContext, WidgetStateContext, WidgetTabs,
-} from "../../ui-ninezone";
-import { createDOMRect } from "../Utils";
-import { NineZoneProvider } from "../Providers";
+} from "../../ui-ninezone.js";
+import { createDOMRect } from "../Utils.js";
+import { NineZoneProvider } from "../Providers.js";
 
 describe("WidgetTabs", () => {
   it("should render", () => {

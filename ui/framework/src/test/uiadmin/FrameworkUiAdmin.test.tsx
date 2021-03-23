@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { AbstractMenuItemProps, AbstractToolbarProps, DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames } from "@bentley/ui-abstract";
 import { Button, Point } from "@bentley/ui-core";
-import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../../ui-framework";
-import { ClearKeyinPaletteHistoryTool } from "../../ui-framework/tools/KeyinPaletteTools";
-import * as keyinExports from "../../ui-framework/popup/KeyinPalettePanel";
-import TestUtils from "../TestUtils";
+import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../../ui-framework.js";
+import { ClearKeyinPaletteHistoryTool } from "../../ui-framework/tools/KeyinPaletteTools.js";
+import * as keyinExports from "../../ui-framework/popup/KeyinPalettePanel.js";
+import TestUtils from "../TestUtils.js";
 
 // cSpell:ignore uiadmin
 
@@ -109,10 +109,10 @@ class TestDialogUiDataProvider extends DialogLayoutDataProvider {
       buttons.push({ type: DialogButtonType.Next, onClick: this.handleNext });
 
     if (this.currentPageIndex === this.numberOfPages - 1) {
-      buttons.push({ type: DialogButtonType.OK, onClick: ()=>{}, disabled: (this.user === "unknown" || this.city === "unknown") });
+      buttons.push({ type: DialogButtonType.OK, onClick: () => { }, disabled: (this.user === "unknown" || this.city === "unknown") });
     }
 
-    buttons.push({ type: DialogButtonType.Cancel, onClick: ()=>{} });
+    buttons.push({ type: DialogButtonType.Cancel, onClick: () => { } });
     return buttons;
   }
 }

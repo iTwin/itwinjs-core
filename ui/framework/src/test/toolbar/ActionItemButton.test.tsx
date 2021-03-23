@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { BadgeType } from "@bentley/ui-abstract";
-import { ActionItemButton, BaseItemState, CommandItemDef, KeyboardShortcutManager, SyncUiEventDispatcher } from "../../ui-framework";
-import { SyncUiEventId } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import TestUtils, { mount } from "../TestUtils";
+import { ActionItemButton, BaseItemState, CommandItemDef, KeyboardShortcutManager, SyncUiEventDispatcher } from "../../ui-framework.js";
+import { SyncUiEventId } from "../../ui-framework/syncui/SyncUiEventDispatcher.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("ActionItemButton", () => {
 

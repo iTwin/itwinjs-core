@@ -13,8 +13,8 @@ import { SelectionMode } from "@bentley/ui-components";
 import { CommonToolbarItem, StageUsage, WidgetState } from "@bentley/ui-abstract";
 import { NodeKey } from "@bentley/presentation-common";
 
-import { ExtensionStatusBarWidgetControl } from "./statusbar/StatusBar";
-import { GenericTool } from "./tools/GenericTool";
+import { ExtensionStatusBarWidgetControl } from "./statusbar/StatusBar.js";
+import { GenericTool } from "./tools/GenericTool.js";
 
 /* eslint-disable react/jsx-key */
 

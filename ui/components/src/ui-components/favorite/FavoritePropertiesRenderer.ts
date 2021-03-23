@@ -9,8 +9,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyData } from "../propertygrid/PropertyDataProvider";
-import { FavoritePropertyList } from "./FavoritePropertyList";
+import { PropertyData } from "../propertygrid/PropertyDataProvider.js";
+import { FavoritePropertyList } from "./FavoritePropertyList.js";
 
 /** Renderer for Favorite Property List
  * @beta

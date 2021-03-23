@@ -5,185 +5,185 @@
 
 // cSpell:ignore focustrap imagecheckbox iconinput hocs numberinput numericinput
 
-export * from "./ui-core/UiCore";
+export * from "./ui-core/UiCore.js";
 
-export * from "./ui-core/badge/Badge";
-export * from "./ui-core/badge/BadgeUtilities";
-export * from "./ui-core/badge/BetaBadge";
-export * from "./ui-core/badge/NewBadge";
+export * from "./ui-core/badge/Badge.js";
+export * from "./ui-core/badge/BadgeUtilities.js";
+export * from "./ui-core/badge/BetaBadge.js";
+export * from "./ui-core/badge/NewBadge.js";
 
-export * from "./ui-core/base/Div";
-export * from "./ui-core/base/DivWithOutsideClick";
-export * from "./ui-core/base/Centered";
-export * from "./ui-core/base/FillCentered";
-export * from "./ui-core/base/FlexWrapContainer";
-export * from "./ui-core/base/PointerEvents";
-export * from "./ui-core/base/ScrollView";
+export * from "./ui-core/base/Div.js";
+export * from "./ui-core/base/DivWithOutsideClick.js";
+export * from "./ui-core/base/Centered.js";
+export * from "./ui-core/base/FillCentered.js";
+export * from "./ui-core/base/FlexWrapContainer.js";
+export * from "./ui-core/base/PointerEvents.js";
+export * from "./ui-core/base/ScrollView.js";
 
-export * from "./ui-core/button/Button";
-export * from "./ui-core/button/UnderlinedButton";
+export * from "./ui-core/button/Button.js";
+export * from "./ui-core/button/UnderlinedButton.js";
 
-export * from "./ui-core/checklistbox/CheckListBox";
+export * from "./ui-core/checklistbox/CheckListBox.js";
 
-export * from "./ui-core/contextmenu/ContextMenu";
-export * from "./ui-core/contextmenu/ContextMenuDirection";
-export * from "./ui-core/contextmenu/ContextMenuDivider";
-export * from "./ui-core/contextmenu/ContextMenuItem";
-export * from "./ui-core/contextmenu/ContextSubMenu";
-export * from "./ui-core/contextmenu/GlobalContextMenu";
-export * from "./ui-core/contextmenu/PopupContextMenu";
+export * from "./ui-core/contextmenu/ContextMenu.js";
+export * from "./ui-core/contextmenu/ContextMenuDirection.js";
+export * from "./ui-core/contextmenu/ContextMenuDivider.js";
+export * from "./ui-core/contextmenu/ContextMenuItem.js";
+export * from "./ui-core/contextmenu/ContextSubMenu.js";
+export * from "./ui-core/contextmenu/GlobalContextMenu.js";
+export * from "./ui-core/contextmenu/PopupContextMenu.js";
 
-export * from "./ui-core/cube/Cube";
+export * from "./ui-core/cube/Cube.js";
 
-export * from "./ui-core/dialog/Dialog";
+export * from "./ui-core/dialog/Dialog.js";
 
-export * from "./ui-core/elementseparator/ElementSeparator";
+export * from "./ui-core/elementseparator/ElementSeparator.js";
 
-export * from "./ui-core/enums/Alignment";
-export * from "./ui-core/enums/CheckBoxState";
-export * from "./ui-core/enums/Orientation";
-export * from "./ui-core/enums/SortDirection";
-export * from "./ui-core/enums/TimeFormat";
+export * from "./ui-core/enums/Alignment.js";
+export * from "./ui-core/enums/CheckBoxState.js";
+export * from "./ui-core/enums/Orientation.js";
+export * from "./ui-core/enums/SortDirection.js";
+export * from "./ui-core/enums/TimeFormat.js";
 
-export * from "./ui-core/expandable/ExpandableList";
-export * from "./ui-core/expandable/ExpandableBlock";
+export * from "./ui-core/expandable/ExpandableList.js";
+export * from "./ui-core/expandable/ExpandableBlock.js";
 
-export * from "./ui-core/focus/ItemKeyboardNavigator";
-export * from "./ui-core/focustrap/FocusTrap";
+export * from "./ui-core/focus/ItemKeyboardNavigator.js";
+export * from "./ui-core/focustrap/FocusTrap.js";
 
-export * from "./ui-core/form/Field";
-export * from "./ui-core/form/Form";
+export * from "./ui-core/form/Field.js";
+export * from "./ui-core/form/Form.js";
 
-export * from "./ui-core/hocs/withIsPressed";
-export * from "./ui-core/hocs/withOnOutsideClick";
-export * from "./ui-core/hocs/withTimeout";
+export * from "./ui-core/hocs/withIsPressed.js";
+export * from "./ui-core/hocs/withOnOutsideClick.js";
+export * from "./ui-core/hocs/withTimeout.js";
 
-export * from "./ui-core/icons/IconComponent";
-export * from "./ui-core/icons/SvgPath";
-export * from "./ui-core/icons/SvgSprite";
-export * from "./ui-core/icons/WebFontIcon";
+export * from "./ui-core/icons/IconComponent.js";
+export * from "./ui-core/icons/SvgPath.js";
+export * from "./ui-core/icons/SvgSprite.js";
+export * from "./ui-core/icons/WebFontIcon.js";
 
-export * from "./ui-core/autosuggest/AutoSuggest";
+export * from "./ui-core/autosuggest/AutoSuggest.js";
 
-export * from "./ui-core/checkbox/Checkbox";
+export * from "./ui-core/checkbox/Checkbox.js";
 
-export * from "./ui-core/imagecheckbox/ImageCheckBox";
+export * from "./ui-core/imagecheckbox/ImageCheckBox.js";
 
-export * from "./ui-core/inputs/Input";
-export * from "./ui-core/inputs/InputLabel";
-export * from "./ui-core/inputs/InputStatus";
-export * from "./ui-core/inputs/iconinput/IconInput";
-export * from "./ui-core/inputs/LabeledComponentProps";
-export * from "./ui-core/inputs/LabeledInput";
-export * from "./ui-core/inputs/LabeledTextarea";
-export * from "./ui-core/inputs/numberinput/NumberInput";
-export * from "./ui-core/inputs/numericinput/NumericInput";
-export * from "./ui-core/inputs/numericinput/ReactNumericInput";
-export * from "./ui-core/inputs/Textarea";
+export * from "./ui-core/inputs/Input.js";
+export * from "./ui-core/inputs/InputLabel.js";
+export * from "./ui-core/inputs/InputStatus.js";
+export * from "./ui-core/inputs/iconinput/IconInput.js";
+export * from "./ui-core/inputs/LabeledComponentProps.js";
+export * from "./ui-core/inputs/LabeledInput.js";
+export * from "./ui-core/inputs/LabeledTextarea.js";
+export * from "./ui-core/inputs/numberinput/NumberInput.js";
+export * from "./ui-core/inputs/numericinput/NumericInput.js";
+export * from "./ui-core/inputs/numericinput/ReactNumericInput.js";
+export * from "./ui-core/inputs/Textarea.js";
 
-export * from "./ui-core/listbox/Listbox";
+export * from "./ui-core/listbox/Listbox.js";
 
-export * from "./ui-core/loading/LoadingBar";
-export * from "./ui-core/loading/LoadingPrompt";
-export * from "./ui-core/loading/LoadingSpinner";
-export * from "./ui-core/loading/LoadingStatus";
-export * from "./ui-core/loading/Spinner";
+export * from "./ui-core/loading/LoadingBar.js";
+export * from "./ui-core/loading/LoadingPrompt.js";
+export * from "./ui-core/loading/LoadingSpinner.js";
+export * from "./ui-core/loading/LoadingStatus.js";
+export * from "./ui-core/loading/Spinner.js";
 
-export * from "./ui-core/messagebox/MessageBox";
+export * from "./ui-core/messagebox/MessageBox.js";
 
-export * from "./ui-core/notification/MessageRenderer";
-export * from "./ui-core/notification/MessageType";
+export * from "./ui-core/notification/MessageRenderer.js";
+export * from "./ui-core/notification/MessageType.js";
 
-export * from "./ui-core/popup/Popup";
+export * from "./ui-core/popup/Popup.js";
 
-export * from "./ui-core/progress-indicators/ProgressBar";
-export * from "./ui-core/progress-indicators/ProgressSpinner";
+export * from "./ui-core/progress-indicators/ProgressBar.js";
+export * from "./ui-core/progress-indicators/ProgressSpinner.js";
 
-export * from "./ui-core/radialmenu/RadialMenu";
-export * from "./ui-core/radialmenu/Annulus";
-export * from "./ui-core/radio/Radio";
+export * from "./ui-core/radialmenu/RadialMenu.js";
+export * from "./ui-core/radialmenu/Annulus.js";
+export * from "./ui-core/radio/Radio.js";
 
-export * from "./ui-core/select/LabeledSelect";
-export * from "./ui-core/select/Select";
-export * from "./ui-core/select/ThemedSelect";
-export * from "./ui-core/select/LabeledThemedSelect";
-export * from "./ui-core/searchbox/SearchBox";
+export * from "./ui-core/select/LabeledSelect.js";
+export * from "./ui-core/select/Select.js";
+export * from "./ui-core/select/ThemedSelect.js";
+export * from "./ui-core/select/LabeledThemedSelect.js";
+export * from "./ui-core/searchbox/SearchBox.js";
 
-export * from "./ui-core/settings/SettingsManager";
-export * from "./ui-core/settings/SettingsContainer";
+export * from "./ui-core/settings/SettingsManager.js";
+export * from "./ui-core/settings/SettingsContainer.js";
 
-export * from "./ui-core/slider/Slider";
+export * from "./ui-core/slider/Slider.js";
 
-export * from "./ui-core/splitbutton/SplitButton";
+export * from "./ui-core/splitbutton/SplitButton.js";
 
-export * from "./ui-core/tabs/HorizontalTabs";
-export * from "./ui-core/tabs/VerticalTabs";
-export * from "./ui-core/tabs/Tabs";
+export * from "./ui-core/tabs/HorizontalTabs.js";
+export * from "./ui-core/tabs/VerticalTabs.js";
+export * from "./ui-core/tabs/Tabs.js";
 
-export * from "./ui-core/text/BodyText";
-export * from "./ui-core/text/BlockText";
-export * from "./ui-core/text/DisabledText";
-export * from "./ui-core/text/FilteredText";
-export * from "./ui-core/text/Headline";
-export * from "./ui-core/text/LeadingText";
-export * from "./ui-core/text/LeadingText2";
-export * from "./ui-core/text/MutedText";
-export * from "./ui-core/text/SmallText";
-export * from "./ui-core/text/Subheading";
-export * from "./ui-core/text/Subheading2";
-export * from "./ui-core/text/StyledText";
-export * from "./ui-core/text/TextProps";
-export * from "./ui-core/text/Title";
-export * from "./ui-core/text/Title2";
+export * from "./ui-core/text/BodyText.js";
+export * from "./ui-core/text/BlockText.js";
+export * from "./ui-core/text/DisabledText.js";
+export * from "./ui-core/text/FilteredText.js";
+export * from "./ui-core/text/Headline.js";
+export * from "./ui-core/text/LeadingText.js";
+export * from "./ui-core/text/LeadingText2.js";
+export * from "./ui-core/text/MutedText.js";
+export * from "./ui-core/text/SmallText.js";
+export * from "./ui-core/text/Subheading.js";
+export * from "./ui-core/text/Subheading2.js";
+export * from "./ui-core/text/StyledText.js";
+export * from "./ui-core/text/TextProps.js";
+export * from "./ui-core/text/Title.js";
+export * from "./ui-core/text/Title2.js";
 
-export * from "./ui-core/tiles/FeaturedTile";
-export * from "./ui-core/tiles/MinimalFeaturedTile";
-export * from "./ui-core/tiles/MinimalTile";
-export * from "./ui-core/tiles/Tile";
+export * from "./ui-core/tiles/FeaturedTile.js";
+export * from "./ui-core/tiles/MinimalFeaturedTile.js";
+export * from "./ui-core/tiles/MinimalTile.js";
+export * from "./ui-core/tiles/Tile.js";
 
-export * from "./ui-core/toggle/Toggle";
-export * from "./ui-core/toggle/LabeledToggle";
+export * from "./ui-core/toggle/Toggle.js";
+export * from "./ui-core/toggle/LabeledToggle.js";
 
-export * from "./ui-core/tooltip/Tooltip";
+export * from "./ui-core/tooltip/Tooltip.js";
 
-export { ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle";
-export { TreeBranch, TreeBranchProps } from "./ui-core/tree/Branch";
-export { TreeNode, TreeNodeProps, NodeCheckboxProps, NodeCheckboxRenderer, NodeCheckboxRenderProps } from "./ui-core/tree/Node";
-export { Tree, TreeProps } from "./ui-core/tree/Tree";
-export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder";
+export { ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle.js";
+export { TreeBranch, TreeBranchProps } from "./ui-core/tree/Branch.js";
+export { TreeNode, TreeNodeProps, NodeCheckboxProps, NodeCheckboxRenderer, NodeCheckboxRenderProps } from "./ui-core/tree/Node.js";
+export { Tree, TreeProps } from "./ui-core/tree/Tree.js";
+export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder.js";
 
-export * from "./ui-core/uisettings/UiSetting";
-export * from "./ui-core/uisettings/UiSettings";
-export * from "./ui-core/uisettings/LocalUiSettings";
-export * from "./ui-core/uisettings/SessionUiSettings";
+export * from "./ui-core/uisettings/UiSetting.js";
+export * from "./ui-core/uisettings/UiSettings.js";
+export * from "./ui-core/uisettings/LocalUiSettings.js";
+export * from "./ui-core/uisettings/SessionUiSettings.js";
 
-export * from "./ui-core/utils/IconHelper";
-export * from "./ui-core/utils/Point";
-export * from "./ui-core/utils/Props";
-export * from "./ui-core/utils/Rectangle";
-export * from "./ui-core/utils/Size";
-export * from "./ui-core/utils/Timer";
-export * from "./ui-core/utils/UiEvent";
-export * from "./ui-core/utils/flattenChildren";
-export * from "./ui-core/utils/getBestBWContrastColor";
-export * from "./ui-core/utils/getCssVariable";
-export * from "./ui-core/utils/getDisplayName";
-export * from "./ui-core/utils/getUserColor";
-export * from "./ui-core/utils/shallowDiffers";
-export * from "./ui-core/utils/typeUtils";
-export * from "./ui-core/utils/isPromiseLike";
-export * from "./ui-core/utils/ScrollPositionMaintainer";
-export * from "./ui-core/utils/hooks/useDisposable";
-export * from "./ui-core/utils/hooks/useEffectSkipFirst";
-export * from "./ui-core/utils/hooks/ResizeObserverPolyfill";
-export * from "./ui-core/utils/hooks/useOnOutsideClick";
-export * from "./ui-core/utils/hooks/useProximityToMouse";
-export * from "./ui-core/utils/hooks/useRefEffect";
-export * from "./ui-core/utils/hooks/useRefs";
-export * from "./ui-core/utils/hooks/useRefState";
-export * from "./ui-core/utils/hooks/useResizeObserver";
-export * from "./ui-core/utils/hooks/useTargeted";
-export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
+export * from "./ui-core/utils/IconHelper.js";
+export * from "./ui-core/utils/Point.js";
+export * from "./ui-core/utils/Props.js";
+export * from "./ui-core/utils/Rectangle.js";
+export * from "./ui-core/utils/Size.js";
+export * from "./ui-core/utils/Timer.js";
+export * from "./ui-core/utils/UiEvent.js";
+export * from "./ui-core/utils/flattenChildren.js";
+export * from "./ui-core/utils/getBestBWContrastColor.js";
+export * from "./ui-core/utils/getCssVariable.js";
+export * from "./ui-core/utils/getDisplayName.js";
+export * from "./ui-core/utils/getUserColor.js";
+export * from "./ui-core/utils/shallowDiffers.js";
+export * from "./ui-core/utils/typeUtils.js";
+export * from "./ui-core/utils/isPromiseLike.js";
+export * from "./ui-core/utils/ScrollPositionMaintainer.js";
+export * from "./ui-core/utils/hooks/useDisposable.js";
+export * from "./ui-core/utils/hooks/useEffectSkipFirst.js";
+export * from "./ui-core/utils/hooks/ResizeObserverPolyfill.js";
+export * from "./ui-core/utils/hooks/useOnOutsideClick.js";
+export * from "./ui-core/utils/hooks/useProximityToMouse.js";
+export * from "./ui-core/utils/hooks/useRefEffect.js";
+export * from "./ui-core/utils/hooks/useRefs.js";
+export * from "./ui-core/utils/hooks/useRefState.js";
+export * from "./ui-core/utils/hooks/useResizeObserver.js";
+export * from "./ui-core/utils/hooks/useTargeted.js";
+export * from "./ui-core/utils/hooks/useWidgetOpacityContext.js";
 
 /** @docs-package-description
  * The ui-core package contains general purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.

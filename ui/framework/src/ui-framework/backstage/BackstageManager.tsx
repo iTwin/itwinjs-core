@@ -9,13 +9,13 @@
 import * as React from "react";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IconSpec } from "@bentley/ui-core";
-import { CommandItemDef } from "../../ui-framework";
-import { UiFramework } from "../UiFramework";
-import { Backstage } from "./Backstage";
+import { CommandItemDef } from "../../ui-framework.js";
+import { UiFramework } from "../UiFramework.js";
+import { Backstage } from "./Backstage.js";
 
 /** Arguments of [[BackstageManager.onToggled]].
  * @beta
- */
+ */
 export interface BackstageToggledArgs {
   readonly isOpen: boolean;
 }

@@ -10,10 +10,10 @@ import "./ElementSeparator.scss";
 import * as React from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"; // eslint-disable-line no-duplicate-imports
 import classnames from "classnames";
-import { Orientation } from "../enums/Orientation";
-import { CommonProps } from "../utils/Props";
-import { useThrottledFn } from "../utils/hooks/useThrottledFn";
-import { UiCore } from "../UiCore";
+import { Orientation } from "../enums/Orientation.js";
+import { CommonProps } from "../utils/Props.js";
+import { useThrottledFn } from "../utils/hooks/useThrottledFn.js";
+import { UiCore } from "../UiCore.js";
 
 /**
  * Results returned by onRatioChanged callback for determining new ratio and whether the ratio was updated.

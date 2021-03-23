@@ -9,7 +9,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
-import { AutoCompleteFilter, AutoCompleteFilterProps } from "./AutoCompleteFilter";
+import { AutoCompleteFilter, AutoCompleteFilterProps } from "./AutoCompleteFilter.js";
 
 /* istanbul ignore next */
 /** @internal */

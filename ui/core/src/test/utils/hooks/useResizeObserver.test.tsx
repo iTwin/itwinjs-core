@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { act, renderHook } from "@testing-library/react-hooks";
-import * as ResizeObserverModule from "../../../ui-core/utils/hooks/ResizeObserverPolyfill";
-import { useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver";
-import { createDOMRect } from "../../Utils";
+import * as ResizeObserverModule from "../../../ui-core/utils/hooks/ResizeObserverPolyfill.js";
+import { useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver.js";
+import { createDOMRect } from "../../Utils.js";
 
 describe("useResizeObserver", () => {
   const sandbox = sinon.createSandbox();

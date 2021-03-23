@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { renderHook } from "@testing-library/react-hooks";
 import { Rectangle } from "@bentley/ui-core";
-import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
-import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
-import { createBoundingClientRect, createDOMRect, ResizeObserverMock } from "../Utils";
+import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill.js";
+import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../ui-ninezone.js";
+import { NineZoneProvider } from "../Providers.js";
+import { createBoundingClientRect, createDOMRect, ResizeObserverMock } from "../Utils.js";
 
 describe("<NineZone />", () => {
   it("renders correctly", () => {

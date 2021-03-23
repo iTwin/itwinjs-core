@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
-import { CommonDivProps } from "../utils/Props";
+import { withOnOutsideClick } from "../hocs/withOnOutsideClick.js";
+import { CommonDivProps } from "../utils/Props.js";
 
 /** Div element with Outside Click behavior
  * @public

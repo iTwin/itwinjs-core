@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { act, renderHook } from "@testing-library/react-hooks";
-import { useRefEffect } from "../../../ui-core/utils/hooks/useRefEffect";
+import { useRefEffect } from "../../../ui-core/utils/hooks/useRefEffect.js";
 
 describe("useRefEffect", () => {
   it("should invoke callback", () => {

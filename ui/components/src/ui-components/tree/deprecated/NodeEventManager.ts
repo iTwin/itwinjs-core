@@ -6,11 +6,11 @@
  * @module Tree
  */
 
-import { concat } from "rxjs/internal/observable/concat";
+import { concat } from "rxjs/internal/observable/concat.js";
 import { CheckBoxState } from "@bentley/ui-core";
-import { TreeNodeItem } from "../TreeDataProvider";
-import { BeInspireTreeNode } from "./component/BeInspireTree";
-import { NodeKey, NodeLoadingOrchestrator, NodeSet } from "./NodeLoadingOrchestrator";
+import { TreeNodeItem } from "../TreeDataProvider.js";
+import { BeInspireTreeNode } from "./component/BeInspireTree.js";
+import { NodeKey, NodeLoadingOrchestrator, NodeSet } from "./NodeLoadingOrchestrator.js";
 
 /* eslint-disable deprecation/deprecation */
 

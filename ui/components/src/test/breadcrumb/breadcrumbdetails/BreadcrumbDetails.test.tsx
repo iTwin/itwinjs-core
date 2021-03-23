@@ -5,14 +5,14 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { cleanup, render, RenderResult, wait, waitForElement } from "@testing-library/react";
-import { BreadcrumbDetails, BreadcrumbPath } from "../../../ui-components";
-import { getPropertyRecordAsString } from "../../../ui-components/common/getPropertyRecordAsString";
-import { Table, TableProps } from "../../../ui-components/table/component/Table";
-import { ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
-import { waitForUpdate } from "../../test-helpers/misc";
-import TestUtils from "../../TestUtils";
-import { mockInterfaceTreeDataProvider, mockRawTreeDataProvider } from "../mockTreeDataProvider";
+import tlr from "@testing-library/react"; const { cleanup, render, RenderResult, wait, waitForElement } = tlr;
+import { BreadcrumbDetails, BreadcrumbPath } from "../../../ui-components.js";
+import { getPropertyRecordAsString } from "../../../ui-components/common/getPropertyRecordAsString.js";
+import { Table, TableProps } from "../../../ui-components/table/component/Table.js";
+import { ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider.js";
+import { waitForUpdate } from "../../test-helpers/misc.js";
+import TestUtils from "../../TestUtils.js";
+import { mockInterfaceTreeDataProvider, mockRawTreeDataProvider } from "../mockTreeDataProvider.js";
 
 /* eslint-disable deprecation/deprecation */
 

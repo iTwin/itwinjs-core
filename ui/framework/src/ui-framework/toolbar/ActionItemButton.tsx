@@ -9,12 +9,12 @@
 import * as React from "react";
 import { BadgeUtilities, CommonProps, Icon, SizeProps } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
-import { BaseItemState } from "../shared/ItemDefBase";
-import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { PropsHelper } from "../utils/PropsHelper";
-import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { ActionButtonItemDef } from "../shared/ActionButtonItemDef.js";
+import { BaseItemState } from "../shared/ItemDefBase.js";
+import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher.js";
+import { PropsHelper } from "../utils/PropsHelper.js";
+import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome.js";
 
 /** Properties that must be specified for an [[ActionItemButton]] component
  * @public
@@ -41,7 +41,7 @@ const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
 
 /** A Toolbar button React Component that executes an action defined by a CommandItemDef or a ToolItemDef.
  * @public
- */
+ */
 export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> {
   private _componentUnmounting = false;
 

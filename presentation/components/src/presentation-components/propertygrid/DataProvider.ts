@@ -6,7 +6,7 @@
  * @module PropertyGrid
  */
 
-import { once } from "lodash";
+import { once } from "lodash-es";
 import memoize from "micro-memoize";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
@@ -16,10 +16,14 @@ import {
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
-import { applyOptionalPrefix, ContentBuilder, filterMatchingFieldPaths } from "../common/ContentBuilder";
-import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
-import { createLabelRecord, priorityAndNameSortFunction } from "../common/Utils";
-import { FAVORITES_CATEGORY_NAME, getFavoritesCategory } from "../favorite-properties/DataProvider";
+import { applyOptionalPrefix, ContentBuilder, filterMatchingFieldPaths } from "../common/ContentBuilder.js";
+import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider.js";
+import { createLabelRecord, priorityAndNameSortFunction } from "../common/Utils.js";
+import { FAVORITES_CATEGORY_NAME, getFavoritesCategory } from "../favorite-properties/DataProvider.js";
+// @ts-ignore
+import { createRequire } from "module";
+// @ts-ignore
+const require = createRequire(import.meta.url);
 
 /**
  * Default presentation ruleset used by [[PresentationPropertyDataProvider]]. The ruleset just gets properties

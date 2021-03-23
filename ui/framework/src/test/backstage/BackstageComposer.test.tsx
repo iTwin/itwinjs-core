@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import {
   BackstageItem, BackstageItemsManager, BackstageItemUtilities, ConditionalBooleanValue, UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
 import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
-import { BackstageComposer, BackstageComposerActionItem, BackstageComposerStageLauncher, BackstageManager, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
-import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
-import { act } from "@testing-library/react";
+import { BackstageComposer, BackstageComposerActionItem, BackstageComposerStageLauncher, BackstageManager, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
+import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test.js";
+import tlr from "@testing-library/react"; const { act } = tlr;
 
 const uiSyncEventId = "appuiprovider:backstage-item-visibility-changed";
 

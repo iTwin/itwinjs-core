@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Timer } from "../utils/Timer";
+import { Timer } from "../utils/Timer.js";
 
 /** Properties for [[withTimeout]] React higher-order component
  * @public

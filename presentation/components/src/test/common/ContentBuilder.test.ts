@@ -11,7 +11,7 @@ import {
 import {
   createRandomCategory, createRandomECClassInfo, createRandomECInstanceKey, createRandomPrimitiveField, createRandomPrimitiveTypeDescription,
   createRandomRelationshipPath,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import { PrimitiveValue } from "@bentley/ui-abstract";
 import { ContentBuilder, FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
 

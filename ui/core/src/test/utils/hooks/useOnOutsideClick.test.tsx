@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { fireEvent } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent } = tlr;
 import { act, renderHook } from "@testing-library/react-hooks";
-import { useOnOutsideClick } from "../../../ui-core";
+import { useOnOutsideClick } from "../../../ui-core.js";
 
 /* eslint-disable @typescript-eslint/no-floating-promises */
 

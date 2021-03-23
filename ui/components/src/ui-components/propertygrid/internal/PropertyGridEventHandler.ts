@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { IPropertyGridModelSource } from "./PropertyGridModelSource";
+import { IPropertyGridModelSource } from "./PropertyGridModelSource.js";
 
 /**
  * Handles events and changes on PropertyGridModel data.

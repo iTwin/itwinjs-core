@@ -9,12 +9,12 @@
 import "./Node.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Checkbox, CheckboxProps } from "../checkbox/Checkbox";
-import { CheckBoxState } from "../enums/CheckBoxState";
-import { Spinner, SpinnerSize } from "../loading/Spinner";
-import { CommonProps } from "../utils/Props";
-import { Omit } from "../utils/typeUtils";
-import { ExpansionToggle } from "./ExpansionToggle";
+import { Checkbox, CheckboxProps } from "../checkbox/Checkbox.js";
+import { CheckBoxState } from "../enums/CheckBoxState.js";
+import { Spinner, SpinnerSize } from "../loading/Spinner.js";
+import { CommonProps } from "../utils/Props.js";
+import { Omit } from "../utils/typeUtils.js";
+import { ExpansionToggle } from "./ExpansionToggle.js";
 
 /** Props for node Checkbox renderer
  * @beta

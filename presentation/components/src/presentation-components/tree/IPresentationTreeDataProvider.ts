@@ -8,7 +8,7 @@
 
 import { NodeKey, NodePathElement } from "@bentley/presentation-common";
 import { ITreeDataProvider, TreeNodeItem } from "@bentley/ui-components";
-import { IPresentationDataProvider } from "../common/IPresentationDataProvider";
+import { IPresentationDataProvider } from "../common/IPresentationDataProvider.js";
 
 /**
  * Presentation tree data provider.

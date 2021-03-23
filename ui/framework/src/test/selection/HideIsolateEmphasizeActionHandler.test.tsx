@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import { MockRender, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 import * as moq from "typemoq";
-import { HideIsolateEmphasizeActionHandler } from "../../ui-framework/selection/HideIsolateEmphasizeManager";
-import TestUtils from "../TestUtils";
-import { UiFramework } from "../../ui-framework/UiFramework";
+import { HideIsolateEmphasizeActionHandler } from "../../ui-framework/selection/HideIsolateEmphasizeManager.js";
+import TestUtils from "../TestUtils.js";
+import { UiFramework } from "../../ui-framework/UiFramework.js";
 
 class TestHideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
   public featureOverridesActive = false;

@@ -8,7 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { DndComponentClass, DragLayer, DragLayerMonitor } from "react-dnd";
+import { DndComponentClass, DragLayerMonitor, default as reactDnd } from "react-dnd";
+const { DragLayer } = reactDnd;
 import { DragLayerProps, DragSourceArguments } from "@bentley/ui-components";
 import { CommonProps, UiEvent } from "@bentley/ui-core";
 

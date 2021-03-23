@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import { PointerCaptor, ResizeDirection, ResizeDirectionHelpers, ResizeGrip, ResizeGripResizeArgs } from "../../../ui-ninezone";
-import { createBoundingClientRect, createPointerEvent, mount } from "../../Utils";
+import { PointerCaptor, ResizeDirection, ResizeDirectionHelpers, ResizeGrip, ResizeGripResizeArgs } from "../../../ui-ninezone.js";
+import { createBoundingClientRect, createPointerEvent, mount } from "../../Utils.js";
 
 describe("<ResizeGrip />", () => {
   it("should render", () => {

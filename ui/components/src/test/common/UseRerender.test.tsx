@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { useLayoutEffect } from "react";
-import { useRerender } from "../../ui-components/common/UseRerender";
-import { act } from "@testing-library/react";
+import { useRerender } from "../../ui-components/common/UseRerender.js";
+import tlr from "@testing-library/react"; const { act } = tlr;
 import { renderHook } from "@testing-library/react-hooks";
 import { expect } from "chai";
 

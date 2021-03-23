@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
-import { act, fireEvent, render, wait } from "@testing-library/react";
-import { TreeNodeEditor } from "../../../../ui-components/tree/controlled/component/TreeNodeEditor";
-import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
-import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
+import tlr from "@testing-library/react"; const { act, fireEvent, render, wait } = tlr;
+import { TreeNodeEditor } from "../../../../ui-components/tree/controlled/component/TreeNodeEditor.js";
+import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel.js";
+import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers.js";
 
 describe("TreeNodeEditor", () => {
   let testNode: MutableTreeModelNode;

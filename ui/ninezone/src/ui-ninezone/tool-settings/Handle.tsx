@@ -10,9 +10,9 @@ import "./Handle.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, useRefs, useResizeObserver } from "@bentley/ui-core";
-import { useDragToolSettings } from "../base/DragManager";
-import { getUniqueId, NineZoneDispatchContext, useLabel } from "../base/NineZone";
-import { useDrag } from "../widget/TabBar";
+import { useDragToolSettings } from "../base/DragManager.js";
+import { getUniqueId, NineZoneDispatchContext, useLabel } from "../base/NineZone.js";
+import { useDrag } from "../widget/TabBar.js";
 
 /** Properties of [[DockedToolSettingsHandle]] component.
  * @internal

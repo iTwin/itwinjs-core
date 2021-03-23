@@ -16,9 +16,9 @@ import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentProps, CoreTools, Frontstage,
   FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SavedViewLayout, SavedViewLayoutProps, ViewportContentControl, Widget,
   Zone,
-} from "../../ui-framework";
-import { ViewUtilities } from "../../ui-framework/utils/ViewUtilities";
-import TestUtils from "../TestUtils";
+} from "../../ui-framework.js";
+import { ViewUtilities } from "../../ui-framework/utils/ViewUtilities.js";
+import TestUtils from "../TestUtils.js";
 
 describe("SavedViewLayout", () => {
 

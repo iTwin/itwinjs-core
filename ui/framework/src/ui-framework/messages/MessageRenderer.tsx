@@ -9,10 +9,10 @@
 import "./MessageRenderer.scss";
 import * as React from "react";
 import classnames from "classnames";
-import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "./MessageManager";
+import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "./MessageManager.js";
 import { CommonProps } from "@bentley/ui-core";
-import { StatusMessage } from "./StatusMessageManager";
-import { StatusMessagesContainer } from "./StatusMessagesContainer";
+import { StatusMessage } from "./StatusMessageManager.js";
+import { StatusMessagesContainer } from "./StatusMessagesContainer.js";
 
 /** Properties for [[MessageRenderer]] component
  * @beta

@@ -7,13 +7,13 @@
  */
 
 import * as React from "react";
-import { SendBack } from "./SendBack";
-import { ActiveTabIdContext, WidgetIdContext } from "./Widget";
-import { toolSettingsTabId } from "../base/NineZoneState";
-import { Dock } from "./Dock";
-import { FloatingWidgetIdContext } from "./FloatingWidget";
-import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel";
-import { PinToggle } from "./PinToggle";
+import { SendBack } from "./SendBack.js";
+import { ActiveTabIdContext, WidgetIdContext } from "./Widget.js";
+import { toolSettingsTabId } from "../base/NineZoneState.js";
+import { Dock } from "./Dock.js";
+import { FloatingWidgetIdContext } from "./FloatingWidget.js";
+import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel.js";
+import { PinToggle } from "./PinToggle.js";
 
 /** @internal */
 export const TabBarButtons = React.memo(function TabBarButtons() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow

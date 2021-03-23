@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../ui-components";
-import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
-import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer";
-import TestUtils from "../../TestUtils";
+import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../ui-components.js";
+import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer.js";
+import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer.js";
+import TestUtils from "../../TestUtils.js";
 
 describe("NonPrimitivePropertyRenderer", () => {
   before(async () => {

@@ -11,7 +11,7 @@ import * as React from "react";
 import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
 import { PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
-import { AsyncErrorMessage, PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { AsyncErrorMessage, PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
 
 /** Arguments for the Property Updated event callback
  * @beta

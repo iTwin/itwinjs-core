@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
 } from "@bentley/imodeljs-frontend";
@@ -13,10 +13,10 @@ import { Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgres
 import {
   AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarCenterSection,
   StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
-} from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
-import { MessageManager } from "../../ui-framework/messages/MessageManager";
-import { StatusMessagesContainer } from "../../ui-framework/messages/StatusMessagesContainer";
+} from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
+import { MessageManager } from "../../ui-framework/messages/MessageManager.js";
+import { StatusMessagesContainer } from "../../ui-framework/messages/StatusMessagesContainer.js";
 
 describe("StatusBar", () => {
 

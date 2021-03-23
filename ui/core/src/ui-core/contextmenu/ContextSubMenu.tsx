@@ -9,12 +9,12 @@
 import * as React from "react";
 import classnames from "classnames";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { ContextMenuItemProps } from "./ContextMenuItem";
-import { ContextMenu, ContextMenuProps } from "./ContextMenu";
-import { CommonProps } from "../utils/Props";
-import { ContextMenuDirection } from "./ContextMenuDirection";
-import { TildeFinder } from "./TildeFinder";
-import { BadgeUtilities } from "../badge/BadgeUtilities";
+import { ContextMenuItemProps } from "./ContextMenuItem.js";
+import { ContextMenu, ContextMenuProps } from "./ContextMenu.js";
+import { CommonProps } from "../utils/Props.js";
+import { ContextMenuDirection } from "./ContextMenuDirection.js";
+import { TildeFinder } from "./TildeFinder.js";
+import { BadgeUtilities } from "../badge/BadgeUtilities.js";
 
 /** Properties for the [[ContextSubMenu]] component
  * @public

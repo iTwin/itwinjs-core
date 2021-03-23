@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { TextEditor } from "./TextEditor";
+import { TextEditor } from "./TextEditor.js";
 import { PropertyDescription, PropertyRecord, PropertyValue, StandardTypeNames } from "@bentley/ui-abstract";
 import { OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 

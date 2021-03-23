@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@bentley/imodeljs-frontend";
-import { ViewUtilities } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import { ViewUtilities } from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("ViewUtilities", () => {
   before(async () => {

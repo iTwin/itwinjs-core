@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { HTMLAttributes, ReactWrapper, shallow } from "enzyme";
+import type { HTMLAttributes, ReactWrapper } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
-import { MessageManager, ValidationTextbox } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import sinon from "sinon";
+import { MessageManager, ValidationTextbox } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("ValidationTextbox", () => {
   before(async () => {

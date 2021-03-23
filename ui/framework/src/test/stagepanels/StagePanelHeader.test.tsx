@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { StagePanelLocation } from "@bentley/ui-abstract";
-import { FrontstageManager, StagePanelDef, StagePanelHeader, StagePanelState } from "../../ui-framework";
-import { mount } from "../TestUtils";
+import { FrontstageManager, StagePanelDef, StagePanelHeader, StagePanelState } from "../../ui-framework.js";
+import { mount } from "../TestUtils.js";
 
 describe("StagePanelHeader", () => {
   it("should mount", () => {

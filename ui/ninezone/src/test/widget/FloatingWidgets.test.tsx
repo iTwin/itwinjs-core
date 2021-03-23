@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { render } from "@testing-library/react";
-import { addFloatingWidget, addTab, createNineZoneState, FloatingWidgets } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { addFloatingWidget, addTab, createNineZoneState, FloatingWidgets } from "../../ui-ninezone.js";
+import { NineZoneProvider } from "../Providers.js";
 
 describe("FloatingWidgets", () => {
   it("should render", () => {

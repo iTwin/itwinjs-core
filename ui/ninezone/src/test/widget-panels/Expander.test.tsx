@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import {
   createHorizontalPanelState, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, WidgetPanelExpander, WidgetPanelExpanders,
-} from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+} from "../../ui-ninezone.js";
+import { NineZoneProvider } from "../Providers.js";
 
 describe("WidgetPanelExpanders", () => {
   it("should render", () => {

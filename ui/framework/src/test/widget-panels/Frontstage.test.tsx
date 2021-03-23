@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import * as moq from "typemoq";
-import produce from "immer";
-import { render } from "@testing-library/react";
+import { produce } from "immer";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { act, renderHook } from "@testing-library/react-hooks";
 import { Logger } from "@bentley/bentleyjs-core";
 import { AbstractWidgetProps, StagePanelLocation, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
@@ -19,8 +19,8 @@ import {
   packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelSection, StagePanelState, StagePanelZoneDef, StagePanelZonesDef,
   UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState,
   useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetPanelsFrontstageState, WidgetState, Zone, ZoneDef,
-} from "../../ui-framework";
-import TestUtils, { mount, storageMock, stubRaf, UiSettingsStub } from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils, { mount, storageMock, stubRaf, UiSettingsStub } from "../TestUtils.js";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { should } from "chai";
 

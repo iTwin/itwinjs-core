@@ -12,20 +12,20 @@ import { UiError } from "@bentley/ui-abstract";
 import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { CommonProps } from "@bentley/ui-core";
 import { Direction, Tools as NZ_ToolsWidget, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
-import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { ContentControlActivatedEventArgs } from "../content/ContentControl";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { NavigationAidActivatedEventArgs, NavigationAidControl } from "../navigationaids/NavigationAidControl";
-import { UiFramework } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
-import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
+import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl.js";
+import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager.js";
+import { ContentControlActivatedEventArgs } from "../content/ContentControl.js";
+import { ContentViewManager } from "../content/ContentViewManager.js";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { NavigationAidActivatedEventArgs, NavigationAidControl } from "../navigationaids/NavigationAidControl.js";
+import { UiFramework } from "../UiFramework.js";
+import { UiShowHideManager } from "../utils/UiShowHideManager.js";
+import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase.js";
+import { NavigationWidgetProps, WidgetType } from "./WidgetDef.js";
 
 /** Definition of a Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  *  @public @deprecated use NavigationWidgetComposer instead
- */
+ */
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {
   private _navigationAidId: string;
   private _imodel: IModelConnection | undefined;
@@ -103,7 +103,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 
 /** Properties for the [[NavigationWidget]] React component.
  *  @public @deprecated use NavigationWidgetComposer instead
- */
+ */
 export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
   iModelConnection?: IModelConnection;
   horizontalToolbar?: React.ReactNode;
@@ -112,14 +112,14 @@ export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonPr
 
 /** State for the Navigation Widget React component.
  * @internal
- */
+ */
 interface NavigationWidgetState {
   navigationWidgetDef: NavigationWidgetDef; // eslint-disable-line deprecation/deprecation
 }
 
 /** Navigation Widget React component.
  *  @public @deprecated use NavigationWidgetComposer instead
- */
+ */
 export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> { // eslint-disable-line deprecation/deprecation
 
   /** @internal */
@@ -182,7 +182,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 }
 
 /** Properties for the [[NavigationWidgetWithDef]] component.
- */
+ */
 interface Props extends CommonProps {
   navigationWidgetDef: NavigationWidgetDef; // eslint-disable-line deprecation/deprecation
   horizontalToolbar?: React.ReactNode;
@@ -196,7 +196,7 @@ interface NavigationWidgetWithDefState {
 }
 
 /** Navigation Widget React component that's passed a NavigationWidgetDef.
- */
+ */
 class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWithDefState> {
 
   constructor(props: Props) {

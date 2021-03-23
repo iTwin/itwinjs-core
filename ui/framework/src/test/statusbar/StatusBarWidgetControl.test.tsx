@@ -7,8 +7,8 @@ import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
-} from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("StatusBarWidgetControl", () => {
 

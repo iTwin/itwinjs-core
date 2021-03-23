@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Widget
@@ -8,10 +8,10 @@
 
 import { BeUiEvent, Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, StagePanelSection, UiItemsArbiter, UiItemsManager } from "@bentley/ui-abstract";
-import { UiFramework } from "../UiFramework";
-import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
-import { WidgetDef } from "./WidgetDef";
-import { createStableWidgetDef } from "./StableWidgetDef";
+import { UiFramework } from "../UiFramework.js";
+import { getStableWidgetProps, ZoneLocation } from "../zones/Zone.js";
+import { WidgetDef } from "./WidgetDef.js";
+import { createStableWidgetDef } from "./StableWidgetDef.js";
 
 /** Information about WidgetDefs in the WidgetManager
  * @internal
@@ -50,7 +50,7 @@ export class WidgetsChangedEvent extends BeUiEvent<WidgetsChangedEventArgs> { }
 
 /** Widget Provider interface.
  * @beta
- */
+ */
 export interface WidgetProvider {
   /** Id of provider */
   readonly id: string;
@@ -86,7 +86,7 @@ function getAddonStableWidgetId(stageUsage: string, location: StagePanelLocation
 
 /** Widget Manager class.
  * @beta
- */
+ */
 export class WidgetManager {
   private _widgets: ReadonlyArray<WidgetInfo> = [];
   private _providers: ReadonlyArray<WidgetProvider> = [];

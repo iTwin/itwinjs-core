@@ -10,9 +10,9 @@ import "./DefaultDialogGridContainer.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { DialogRow } from "@bentley/ui-abstract";
-import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
-import { ToolSettingsContentContext } from "../widgets/ToolSettingsContent";
-import { ComponentGenerator } from "./ComponentGenerator";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion.js";
+import { ToolSettingsContentContext } from "../widgets/ToolSettingsContent.js";
+import { ComponentGenerator } from "./ComponentGenerator.js";
 
 enum LayoutMode {
   Wide = 0,

@@ -7,8 +7,8 @@
  */
 
 import { Primitives, StandardTypeNames } from "@bentley/ui-abstract";
-import { TypeConverter } from "./TypeConverter";
-import { TypeConverterManager } from "./TypeConverterManager";
+import { TypeConverter } from "./TypeConverter.js";
+import { TypeConverterManager } from "./TypeConverterManager.js";
 
 /**
  * Composite type converter

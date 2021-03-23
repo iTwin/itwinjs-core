@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PointProps } from "@bentley/ui-core";
-import { DraggedWidgetManager, DraggedWidgetManagerProps } from "../../../ui-ninezone";
+import { DraggedWidgetManager, DraggedWidgetManagerProps } from "../../../ui-ninezone.js";
 
 const props: DraggedWidgetManagerProps = {
   id: 6,

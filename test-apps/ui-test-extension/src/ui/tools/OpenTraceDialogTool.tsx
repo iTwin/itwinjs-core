@@ -7,11 +7,11 @@
  */
 
 import * as React from "react";
-import {  IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { ModalDialogManager } from "@bentley/ui-framework";
-import { SampleModalDialog } from "../dialogs/SampleModalDialog";
+import { SampleModalDialog } from "../dialogs/SampleModalDialog.js";
 import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import { TraceUiItemsProvider } from "../NetworkTraceUIProvider";
+import { TraceUiItemsProvider } from "../NetworkTraceUIProvider.js";
 import connectedIcon from "../icons/connected-query.svg?sprite";
 
 /**

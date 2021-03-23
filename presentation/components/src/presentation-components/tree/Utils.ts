@@ -10,8 +10,8 @@ import { LabelDefinition, Node, NodeKey, PartialNode, PageOptions as Presentatio
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";
-import { StyleHelper } from "../common/StyleHelper";
-import { createLabelRecord } from "../common/Utils";
+import { StyleHelper } from "../common/StyleHelper.js";
+import { createLabelRecord } from "../common/Utils.js";
 
 /** @internal */
 export const PRESENTATION_TREE_NODE_KEY = "__presentation-components/key";

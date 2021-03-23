@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import produce from "immer";
-import { render } from "@testing-library/react";
+import { produce } from "immer";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, EventEmitter, HorizontalPanelSide, NineZoneState, PanelSide, PanelStateContext, PanelWidget, TabState, useBorders, useMode, VerticalPanelSide, WidgetContentManagerContext, WidgetContentManagerContextArgs,
-} from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+} from "../../ui-ninezone.js";
+import { NineZoneProvider } from "../Providers.js";
 
 export const defaultProps = {
   onBeforeTransition: () => { },

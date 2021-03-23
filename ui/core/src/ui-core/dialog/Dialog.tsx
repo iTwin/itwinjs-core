@@ -11,11 +11,11 @@ import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { SpecialKey } from "@bentley/ui-abstract";
-import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
-import { UiCore } from "../UiCore";
-import { CommonProps } from "../utils/Props";
-import { Omit } from "../utils/typeUtils";
-import { FocusTrap } from "../focustrap/FocusTrap";
+import { DivWithOutsideClick } from "../base/DivWithOutsideClick.js";
+import { UiCore } from "../UiCore.js";
+import { CommonProps } from "../utils/Props.js";
+import { Omit } from "../utils/typeUtils.js";
+import { FocusTrap } from "../focustrap/FocusTrap.js";
 
 // cspell:ignore focustrap
 

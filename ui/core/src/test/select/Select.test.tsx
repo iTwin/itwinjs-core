@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
-import { cleanup, render } from "@testing-library/react";
-import { Select } from "../../ui-core";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
+import { Select } from "../../ui-core.js";
 
 describe("<Select />", () => {
   it("should render", () => {

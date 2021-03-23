@@ -9,11 +9,11 @@
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { BackTarget, MergeTarget, WidgetZoneId, ZoneTargetType } from "@bentley/ui-ninezone";
-import { TargetChangeHandler } from "../frontstage/FrontstageComposer";
+import { TargetChangeHandler } from "../frontstage/FrontstageComposer.js";
 
 /** Properties for the [[ZoneTargets]] component.
  * @internal
- */
+ */
 export interface ZoneTargetsProps extends CommonProps {
   zoneId: WidgetZoneId;
   dropTarget: ZoneTargetType | undefined;
@@ -22,7 +22,7 @@ export interface ZoneTargetsProps extends CommonProps {
 
 /** Zone Targets React component.
  * @internal
- */
+ */
 export class ZoneTargets extends React.Component<ZoneTargetsProps> {
   public render(): React.ReactNode {
     switch (this.props.dropTarget) {

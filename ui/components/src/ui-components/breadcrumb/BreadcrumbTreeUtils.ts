@@ -6,10 +6,10 @@
  * @module Breadcrumb
  */
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { getPropertyRecordAsString } from "../common/getPropertyRecordAsString";
-import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataProvider } from "../table/TableDataProvider";
-import { DelayLoadedTreeNodeItem, hasChildren, ImmediatelyLoadedTreeNodeItem, TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
-import { UiComponents } from "../UiComponents";
+import { getPropertyRecordAsString } from "../common/getPropertyRecordAsString.js";
+import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataProvider } from "../table/TableDataProvider.js";
+import { DelayLoadedTreeNodeItem, hasChildren, ImmediatelyLoadedTreeNodeItem, TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider.js";
+import { UiComponents } from "../UiComponents.js";
 
 /* eslint-disable deprecation/deprecation */
 

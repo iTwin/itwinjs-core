@@ -13,14 +13,14 @@ import * as React from "react";
 import { ConditionalBooleanValue, ConditionalStringValue, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import { ExpandableItem, Item } from "@bentley/ui-ninezone";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { BaseItemState } from "../shared/ItemDefBase";
-import { ItemProps } from "../shared/ItemProps";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework } from "../UiFramework";
-import { PropsHelper } from "../utils/PropsHelper";
-import { ToolbarDragInteractionContext } from "./DragInteraction";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut.js";
+import { BaseItemState } from "../shared/ItemDefBase.js";
+import { ItemProps } from "../shared/ItemProps.js";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher.js";
+import { UiFramework } from "../UiFramework.js";
+import { PropsHelper } from "../utils/PropsHelper.js";
+import { ToolbarDragInteractionContext } from "./DragInteraction.js";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -32,7 +32,7 @@ const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDiv
 /** Arguments of [[PopupButtonChildrenRenderProp]].
  * @public
  * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
- */
+ */
 export interface PopupButtonChildrenRenderPropArgs {
   closePanel: () => void;
 }
@@ -40,13 +40,13 @@ export interface PopupButtonChildrenRenderPropArgs {
 /** Type of [[PopupButtonProps.children]] when used as render prop.
  * @public
  * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
- */
+ */
 export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode;
 
 /** Properties for the [[PopupButton]] React component
  * @public
  * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
- */
+ */
 export interface PopupButtonProps extends ItemProps, CommonProps {
   children?: React.ReactNode | PopupButtonChildrenRenderProp;
   onExpanded?: (expand: boolean) => void;

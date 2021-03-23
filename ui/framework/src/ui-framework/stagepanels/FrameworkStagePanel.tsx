@@ -14,14 +14,14 @@ import {
   NineZoneStagePanelManagerProps, SplitterPaneTarget as NZ_SplitterPaneTarget, StagePanel as NZ_StagePanel, SafeAreaInsets, Splitter, SplitterTarget,
   StagePanelTarget, StagePanelTypeHelpers, WidgetZoneId, ZonesManagerWidgetsProps,
 } from "@bentley/ui-ninezone";
-import { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
-import { ZoneLocation } from "../zones/Zone";
-import { getNestedStagePanelKey, getStagePanelType } from "./StagePanel";
-import { StagePanelState } from "./StagePanelDef";
-import { WidgetDef } from "../widgets/WidgetDef";
+import { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer.js";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { SafeAreaContext } from "../safearea/SafeAreaContext.js";
+import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack.js";
+import { ZoneLocation } from "../zones/Zone.js";
+import { getNestedStagePanelKey, getStagePanelType } from "./StagePanel.js";
+import { StagePanelState } from "./StagePanelDef.js";
+import { WidgetDef } from "../widgets/WidgetDef.js";
 
 /** Properties of a [[FrameworkStagePanel]] component
  * @internal

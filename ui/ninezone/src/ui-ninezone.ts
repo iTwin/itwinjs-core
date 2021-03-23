@@ -2,167 +2,167 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-export * from "./ui-ninezone/backstage/Backstage";
-export * from "./ui-ninezone/backstage/Item";
-export * from "./ui-ninezone/backstage/Separator";
-export * from "./ui-ninezone/backstage/UserProfile";
+export * from "./ui-ninezone/backstage/Backstage.js";
+export * from "./ui-ninezone/backstage/Item.js";
+export * from "./ui-ninezone/backstage/Separator.js";
+export * from "./ui-ninezone/backstage/UserProfile.js";
 
-export * from "./ui-ninezone/base/DragHandle";
-export * from "./ui-ninezone/base/DragManager";
-export * from "./ui-ninezone/base/Ellipsis";
-export * from "./ui-ninezone/base/Event";
-export * from "./ui-ninezone/base/NineZone";
-export * from "./ui-ninezone/base/NineZoneState";
-export * from "./ui-ninezone/base/PointerCaptor";
-export * from "./ui-ninezone/base/WithContainIn";
+export * from "./ui-ninezone/base/DragHandle.js";
+export * from "./ui-ninezone/base/DragManager.js";
+export * from "./ui-ninezone/base/Ellipsis.js";
+export * from "./ui-ninezone/base/Event.js";
+export * from "./ui-ninezone/base/NineZone.js";
+export * from "./ui-ninezone/base/NineZoneState.js";
+export * from "./ui-ninezone/base/PointerCaptor.js";
+export * from "./ui-ninezone/base/WithContainIn.js";
 
-export * from "./ui-ninezone/footer/dialog/Button";
-export * from "./ui-ninezone/footer/dialog/Dialog";
-export * from "./ui-ninezone/footer/dialog/TitleBar";
+export * from "./ui-ninezone/footer/dialog/Button.js";
+export * from "./ui-ninezone/footer/dialog/Dialog.js";
+export * from "./ui-ninezone/footer/dialog/TitleBar.js";
 
-export * from "./ui-ninezone/footer/message/Button";
-export * from "./ui-ninezone/footer/message/Hyperlink";
-export * from "./ui-ninezone/footer/message/Layout";
-export * from "./ui-ninezone/footer/message/Message";
-export * from "./ui-ninezone/footer/message/Progress";
-export * from "./ui-ninezone/footer/message/Status";
-export * from "./ui-ninezone/footer/message/Toast";
+export * from "./ui-ninezone/footer/message/Button.js";
+export * from "./ui-ninezone/footer/message/Hyperlink.js";
+export * from "./ui-ninezone/footer/message/Layout.js";
+export * from "./ui-ninezone/footer/message/Message.js";
+export * from "./ui-ninezone/footer/message/Progress.js";
+export * from "./ui-ninezone/footer/message/Status.js";
+export * from "./ui-ninezone/footer/message/Toast.js";
 
-export * from "./ui-ninezone/footer/message-center/Dialog";
-export * from "./ui-ninezone/footer/message-center/Indicator";
-export * from "./ui-ninezone/footer/message-center/Message";
-export * from "./ui-ninezone/footer/message-center/Tab";
+export * from "./ui-ninezone/footer/message-center/Dialog.js";
+export * from "./ui-ninezone/footer/message-center/Indicator.js";
+export * from "./ui-ninezone/footer/message-center/Message.js";
+export * from "./ui-ninezone/footer/message-center/Tab.js";
 
-export * from "./ui-ninezone/footer/snap-mode/Indicator";
-export * from "./ui-ninezone/footer/snap-mode/Panel";
-export * from "./ui-ninezone/footer/snap-mode/Snap";
+export * from "./ui-ninezone/footer/snap-mode/Indicator.js";
+export * from "./ui-ninezone/footer/snap-mode/Panel.js";
+export * from "./ui-ninezone/footer/snap-mode/Snap.js";
 
-export * from "./ui-ninezone/footer/tool-assistance/Dialog";
-export * from "./ui-ninezone/footer/tool-assistance/Indicator";
-export * from "./ui-ninezone/footer/tool-assistance/Instruction";
-export * from "./ui-ninezone/footer/tool-assistance/Item";
-export * from "./ui-ninezone/footer/tool-assistance/Separator";
+export * from "./ui-ninezone/footer/tool-assistance/Dialog.js";
+export * from "./ui-ninezone/footer/tool-assistance/Indicator.js";
+export * from "./ui-ninezone/footer/tool-assistance/Instruction.js";
+export * from "./ui-ninezone/footer/tool-assistance/Item.js";
+export * from "./ui-ninezone/footer/tool-assistance/Separator.js";
 
-export * from "./ui-ninezone/footer/Footer";
-export * from "./ui-ninezone/footer/Indicator";
-export * from "./ui-ninezone/footer/Popup";
-export * from "./ui-ninezone/footer/Separator";
+export * from "./ui-ninezone/footer/Footer.js";
+export * from "./ui-ninezone/footer/Indicator.js";
+export * from "./ui-ninezone/footer/Popup.js";
+export * from "./ui-ninezone/footer/Separator.js";
 
-export * from "./ui-ninezone/manager/NestedStagePanels";
-export * from "./ui-ninezone/manager/NineZone";
-export * from "./ui-ninezone/manager/StagePanel";
-export * from "./ui-ninezone/manager/StagePanelPane";
-export * from "./ui-ninezone/manager/StagePanels";
+export * from "./ui-ninezone/manager/NestedStagePanels.js";
+export * from "./ui-ninezone/manager/NineZone.js";
+export * from "./ui-ninezone/manager/StagePanel.js";
+export * from "./ui-ninezone/manager/StagePanelPane.js";
+export * from "./ui-ninezone/manager/StagePanels.js";
 
-export * from "./ui-ninezone/popup/Tooltip";
+export * from "./ui-ninezone/popup/Tooltip.js";
 
-export * from "./ui-ninezone/stage-panels/Splitter";
-export * from "./ui-ninezone/stage-panels/StagePanel";
-export * from "./ui-ninezone/stage-panels/StagePanels";
+export * from "./ui-ninezone/stage-panels/Splitter.js";
+export * from "./ui-ninezone/stage-panels/StagePanel.js";
+export * from "./ui-ninezone/stage-panels/StagePanels.js";
 
-export * from "./ui-ninezone/stage-panels/manager/NestedStagePanels";
-export * from "./ui-ninezone/stage-panels/manager/StagePanel";
-export * from "./ui-ninezone/stage-panels/manager/StagePanels";
+export * from "./ui-ninezone/stage-panels/manager/NestedStagePanels.js";
+export * from "./ui-ninezone/stage-panels/manager/StagePanel.js";
+export * from "./ui-ninezone/stage-panels/manager/StagePanels.js";
 
-export * from "./ui-ninezone/tool-settings/Docked";
-export * from "./ui-ninezone/tool-settings/Handle";
-export * from "./ui-ninezone/tool-settings/Overflow";
-export * from "./ui-ninezone/tool-settings/Panel";
-export * from "./ui-ninezone/tool-settings/Setting";
+export * from "./ui-ninezone/tool-settings/Docked.js";
+export * from "./ui-ninezone/tool-settings/Handle.js";
+export * from "./ui-ninezone/tool-settings/Overflow.js";
+export * from "./ui-ninezone/tool-settings/Panel.js";
+export * from "./ui-ninezone/tool-settings/Setting.js";
 
-export * from "./ui-ninezone/toolbar/item/Item";
-export * from "./ui-ninezone/toolbar/item/Overflow";
-export * from "./ui-ninezone/toolbar/item/expandable/Expandable";
-export * from "./ui-ninezone/toolbar/item/expandable/WithDragInteraction";
+export * from "./ui-ninezone/toolbar/item/Item.js";
+export * from "./ui-ninezone/toolbar/item/Overflow.js";
+export * from "./ui-ninezone/toolbar/item/expandable/Expandable.js";
+export * from "./ui-ninezone/toolbar/item/expandable/WithDragInteraction.js";
 
-export * from "./ui-ninezone/toolbar/item/expandable/group/BackArrow";
-export * from "./ui-ninezone/toolbar/item/expandable/group/Column";
-export * from "./ui-ninezone/toolbar/item/expandable/group/Columns";
-export * from "./ui-ninezone/toolbar/item/expandable/group/Group";
-export * from "./ui-ninezone/toolbar/item/expandable/group/Nested";
-export * from "./ui-ninezone/toolbar/item/expandable/group/Panel";
-export * from "./ui-ninezone/toolbar/item/expandable/group/Title";
+export * from "./ui-ninezone/toolbar/item/expandable/group/BackArrow.js";
+export * from "./ui-ninezone/toolbar/item/expandable/group/Column.js";
+export * from "./ui-ninezone/toolbar/item/expandable/group/Columns.js";
+export * from "./ui-ninezone/toolbar/item/expandable/group/Group.js";
+export * from "./ui-ninezone/toolbar/item/expandable/group/Nested.js";
+export * from "./ui-ninezone/toolbar/item/expandable/group/Panel.js";
+export * from "./ui-ninezone/toolbar/item/expandable/group/Title.js";
 
-export * from "./ui-ninezone/toolbar/item/expandable/group/tool/Expander";
-export * from "./ui-ninezone/toolbar/item/expandable/group/tool/Tool";
+export * from "./ui-ninezone/toolbar/item/expandable/group/tool/Expander.js";
+export * from "./ui-ninezone/toolbar/item/expandable/group/tool/Tool.js";
 
-export * from "./ui-ninezone/toolbar/Items";
-export * from "./ui-ninezone/toolbar/Toolbar";
+export * from "./ui-ninezone/toolbar/Items.js";
+export * from "./ui-ninezone/toolbar/Toolbar.js";
 
-export * from "./ui-ninezone/utilities/Cell";
-export * from "./ui-ninezone/utilities/Css";
-export * from "./ui-ninezone/utilities/Direction";
-export * from "./ui-ninezone/utilities/DisabledResizeHandles";
-export * from "./ui-ninezone/utilities/SafeAreaInsets";
+export * from "./ui-ninezone/utilities/Cell.js";
+export * from "./ui-ninezone/utilities/Css.js";
+export * from "./ui-ninezone/utilities/Direction.js";
+export * from "./ui-ninezone/utilities/DisabledResizeHandles.js";
+export * from "./ui-ninezone/utilities/SafeAreaInsets.js";
 
-export * from "./ui-ninezone/widget/Buttons";
-export * from "./ui-ninezone/widget/Content";
-export * from "./ui-ninezone/widget/ContentContainer";
-export * from "./ui-ninezone/widget/ContentManager";
-export * from "./ui-ninezone/widget/ContentRenderer";
-export * from "./ui-ninezone/widget/Dock";
-export * from "./ui-ninezone/widget/FloatingTab";
-export * from "./ui-ninezone/widget/FloatingWidget";
-export * from "./ui-ninezone/widget/FloatingWidgets";
-export * from "./ui-ninezone/widget/Menu";
-export * from "./ui-ninezone/widget/NavigationArea";
-export * from "./ui-ninezone/widget/Overflow";
-export * from "./ui-ninezone/widget/PanelWidget";
-export * from "./ui-ninezone/widget/PinToggle";
-export * from "./ui-ninezone/widget/SendBack";
-export * from "./ui-ninezone/widget/Stacked";
-export * from "./ui-ninezone/widget/Tab";
-export * from "./ui-ninezone/widget/TabBar";
-export * from "./ui-ninezone/widget/Tabs";
-export * from "./ui-ninezone/widget/TabTarget";
-export * from "./ui-ninezone/widget/Tools";
-export * from "./ui-ninezone/widget/ToolsArea";
-export * from "./ui-ninezone/widget/ToolSettings";
-export * from "./ui-ninezone/widget/Widget";
-export * from "./ui-ninezone/widget/WidgetTarget";
+export * from "./ui-ninezone/widget/Buttons.js";
+export * from "./ui-ninezone/widget/Content.js";
+export * from "./ui-ninezone/widget/ContentContainer.js";
+export * from "./ui-ninezone/widget/ContentManager.js";
+export * from "./ui-ninezone/widget/ContentRenderer.js";
+export * from "./ui-ninezone/widget/Dock.js";
+export * from "./ui-ninezone/widget/FloatingTab.js";
+export * from "./ui-ninezone/widget/FloatingWidget.js";
+export * from "./ui-ninezone/widget/FloatingWidgets.js";
+export * from "./ui-ninezone/widget/Menu.js";
+export * from "./ui-ninezone/widget/NavigationArea.js";
+export * from "./ui-ninezone/widget/Overflow.js";
+export * from "./ui-ninezone/widget/PanelWidget.js";
+export * from "./ui-ninezone/widget/PinToggle.js";
+export * from "./ui-ninezone/widget/SendBack.js";
+export * from "./ui-ninezone/widget/Stacked.js";
+export * from "./ui-ninezone/widget/Tab.js";
+export * from "./ui-ninezone/widget/TabBar.js";
+export * from "./ui-ninezone/widget/Tabs.js";
+export * from "./ui-ninezone/widget/TabTarget.js";
+export * from "./ui-ninezone/widget/Tools.js";
+export * from "./ui-ninezone/widget/ToolsArea.js";
+export * from "./ui-ninezone/widget/ToolSettings.js";
+export * from "./ui-ninezone/widget/Widget.js";
+export * from "./ui-ninezone/widget/WidgetTarget.js";
 
-export * from "./ui-ninezone/widget/tools/button/App";
-export * from "./ui-ninezone/widget/tools/button/Back";
-export * from "./ui-ninezone/widget/tools/button/Button";
-export * from "./ui-ninezone/widget/tools/button/Expandable";
-export * from "./ui-ninezone/widget/tools/button/Icon";
+export * from "./ui-ninezone/widget/tools/button/App.js";
+export * from "./ui-ninezone/widget/tools/button/Back.js";
+export * from "./ui-ninezone/widget/tools/button/Button.js";
+export * from "./ui-ninezone/widget/tools/button/Expandable.js";
+export * from "./ui-ninezone/widget/tools/button/Icon.js";
 
-export * from "./ui-ninezone/widget/rectangular/Content";
-export * from "./ui-ninezone/widget/rectangular/ResizeGrip";
+export * from "./ui-ninezone/widget/rectangular/Content.js";
+export * from "./ui-ninezone/widget/rectangular/ResizeGrip.js";
 
-export * from "./ui-ninezone/widget/rectangular/tab/Group";
-export * from "./ui-ninezone/widget/rectangular/tab/Separator";
-export * from "./ui-ninezone/widget/rectangular/tab/Tab";
+export * from "./ui-ninezone/widget/rectangular/tab/Group.js";
+export * from "./ui-ninezone/widget/rectangular/tab/Separator.js";
+export * from "./ui-ninezone/widget/rectangular/tab/Tab.js";
 
-export * from "./ui-ninezone/widget/tool-settings/Nested";
-export * from "./ui-ninezone/widget/tool-settings/Popup";
-export * from "./ui-ninezone/widget/tool-settings/Scrollable";
-export * from "./ui-ninezone/widget/tool-settings/Tab";
+export * from "./ui-ninezone/widget/tool-settings/Nested.js";
+export * from "./ui-ninezone/widget/tool-settings/Popup.js";
+export * from "./ui-ninezone/widget/tool-settings/Scrollable.js";
+export * from "./ui-ninezone/widget/tool-settings/Tab.js";
 
-export * from "./ui-ninezone/widget-panels/AppContent";
-export * from "./ui-ninezone/widget-panels/CenterContent";
-export * from "./ui-ninezone/widget-panels/Content";
-export * from "./ui-ninezone/widget-panels/CursorOverlay";
-export * from "./ui-ninezone/widget-panels/Expander";
-export * from "./ui-ninezone/widget-panels/Grip";
-export * from "./ui-ninezone/widget-panels/Panel";
-export * from "./ui-ninezone/widget-panels/Panels";
-export * from "./ui-ninezone/widget-panels/PanelTarget";
+export * from "./ui-ninezone/widget-panels/AppContent.js";
+export * from "./ui-ninezone/widget-panels/CenterContent.js";
+export * from "./ui-ninezone/widget-panels/Content.js";
+export * from "./ui-ninezone/widget-panels/CursorOverlay.js";
+export * from "./ui-ninezone/widget-panels/Expander.js";
+export * from "./ui-ninezone/widget-panels/Grip.js";
+export * from "./ui-ninezone/widget-panels/Panel.js";
+export * from "./ui-ninezone/widget-panels/Panels.js";
+export * from "./ui-ninezone/widget-panels/PanelTarget.js";
 
-export * from "./ui-ninezone/zones/Outline";
-export * from "./ui-ninezone/zones/Zone";
-export * from "./ui-ninezone/zones/Zones";
+export * from "./ui-ninezone/zones/Outline.js";
+export * from "./ui-ninezone/zones/Zone.js";
+export * from "./ui-ninezone/zones/Zones.js";
 
-export * from "./ui-ninezone/zones/manager/ResizeStrategy";
-export * from "./ui-ninezone/zones/manager/Widget";
-export * from "./ui-ninezone/zones/manager/Zone";
-export * from "./ui-ninezone/zones/manager/Zones";
+export * from "./ui-ninezone/zones/manager/ResizeStrategy.js";
+export * from "./ui-ninezone/zones/manager/Widget.js";
+export * from "./ui-ninezone/zones/manager/Zone.js";
+export * from "./ui-ninezone/zones/manager/Zones.js";
 
-export * from "./ui-ninezone/zones/target/Back";
-export * from "./ui-ninezone/zones/target/Merge";
-export * from "./ui-ninezone/zones/target/Splitter";
-export * from "./ui-ninezone/zones/target/SplitterPane";
-export * from "./ui-ninezone/zones/target/StagePanel";
+export * from "./ui-ninezone/zones/target/Back.js";
+export * from "./ui-ninezone/zones/target/Merge.js";
+export * from "./ui-ninezone/zones/target/Splitter.js";
+export * from "./ui-ninezone/zones/target/SplitterPane.js";
+export * from "./ui-ninezone/zones/target/StagePanel.js";
 
 /** @docs-package-description
  * The ui-ninezone package contains React components for application user interface layouts following the Bentley 9-Zone pattern.

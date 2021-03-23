@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ReactWrapper, shallow } from "enzyme";
+import type { ReactWrapper } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { BadgeType } from "@bentley/ui-abstract";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
-import { fireEvent, render } from "@testing-library/react";
-import { BaseItemState, PopupButton, SyncUiEventDispatcher } from "../../ui-framework";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { BaseItemState, PopupButton, SyncUiEventDispatcher } from "../../ui-framework.js";
 /* eslint-disable deprecation/deprecation */
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils.js";
 
 // cSpell:ignore buttonstate
 

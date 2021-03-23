@@ -10,7 +10,7 @@ import * as React from "react";
 import { KeySet } from "@bentley/presentation-common";
 import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@bentley/presentation-frontend";
 import { useDisposable } from "@bentley/ui-core";
-import { IPresentationPropertyDataProvider } from "./DataProvider";
+import { IPresentationPropertyDataProvider } from "./DataProvider.js";
 
 const DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT = 100;
 

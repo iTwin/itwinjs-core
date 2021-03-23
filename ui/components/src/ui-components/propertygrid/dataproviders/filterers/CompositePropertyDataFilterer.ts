@@ -7,8 +7,8 @@
  */
 
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory } from "../../PropertyDataProvider";
-import { FilteredType, IPropertyDataFilterer, PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
+import { PropertyCategory } from "../../PropertyDataProvider.js";
+import { FilteredType, IPropertyDataFilterer, PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase.js";
 
 /**
  * Logical operator for composite filterer.

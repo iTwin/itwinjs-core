@@ -639,6 +639,10 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
+      "name": "lodash-es",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "lolex",
       "allowedCategories": [ "backend" ]
     },

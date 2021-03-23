@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
-import { DialogButtonStyle, DialogButtonType, MessageBox, MessageSeverity } from "../../ui-core";
-import { MessageContainer } from "../../ui-core/messagebox/MessageBox";
-import TestUtils from "../TestUtils";
+import { DialogButtonStyle, DialogButtonType, MessageBox, MessageSeverity } from "../../ui-core.js";
+import { MessageContainer } from "../../ui-core/messagebox/MessageBox.js";
+import TestUtils from "../TestUtils.js";
 
 describe("MessageBox", () => {
 

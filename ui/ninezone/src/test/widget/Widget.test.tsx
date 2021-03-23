@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { act, fireEvent, render } = tlr;
 import {
   addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext,
   PanelStateContext, PanelWidget, PanelWidgetDragStartAction, Widget, WidgetIdContext, WidgetStateContext,
-} from "../../ui-ninezone";
-import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
-import { NineZoneProvider } from "../Providers";
-import { defaultProps } from "./PanelWidget.test";
+} from "../../ui-ninezone.js";
+import * as NineZoneModule from "../../ui-ninezone/base/NineZone.js";
+import { NineZoneProvider } from "../Providers.js";
+import { defaultProps } from "./PanelWidget.test.js";
 
 describe("PanelWidget", () => {
   describe("PANEL_WIDGET_DRAG_START", () => {

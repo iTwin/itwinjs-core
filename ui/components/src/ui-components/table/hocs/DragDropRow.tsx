@@ -9,11 +9,11 @@
 import "./DragDropRow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { BreadcrumbDetailsDragDropType } from "../../breadcrumb/breadcrumbdetails/hoc/withDragDrop";
-import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../dragdrop/DragDropDef";
-import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
-import { withDropTarget } from "../../dragdrop/withDropTarget";
-import { TableDropTargetProps } from "./withDragDrop";
+import { BreadcrumbDetailsDragDropType } from "../../breadcrumb/breadcrumbdetails/hoc/withDragDrop.js";
+import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../dragdrop/DragDropDef.js";
+import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource.js";
+import { withDropTarget } from "../../dragdrop/withDropTarget.js";
+import { TableDropTargetProps } from "./withDragDrop.js";
 
 /** @internal */
 export interface DragDropRowProps<DragDropObject = any> {

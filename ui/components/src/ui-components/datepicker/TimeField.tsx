@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Input } from "@bentley/ui-core";
 import { SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../UiComponents.js";
 import "./TimeField.scss";
 
 /** Interface used to hold 24 hour time in

@@ -5,9 +5,9 @@
 import * as React from "react";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ContextMenu, ContextMenuItem, Slider } from "@bentley/ui-core";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider.js";
 import "./MapLayerManager.scss";
-import { StyleMapLayerSettings } from "../Interfaces";
+import { StyleMapLayerSettings } from "../Interfaces.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeViewport }: { mapLayerSettings: StyleMapLayerSettings, onMenuItemSelection: (action: string, mapLayerSettings: StyleMapLayerSettings) => void, activeViewport: ScreenViewport }) {

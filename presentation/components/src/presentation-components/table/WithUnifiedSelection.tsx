@@ -10,9 +10,9 @@ import * as React from "react";
 import { InstanceKey, KeySet } from "@bentley/presentation-common";
 import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@bentley/presentation-frontend";
 import { Table as BaseTable, RowItem, TableProps } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
-import { getDisplayName } from "../common/Utils";
-import { IPresentationTableDataProvider } from "./DataProvider";
+import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent.js";
+import { getDisplayName } from "../common/Utils.js";
+import { IPresentationTableDataProvider } from "./DataProvider.js";
 
 /**
  * Props that are injected to the TableWithUnifiedSelection HOC component.

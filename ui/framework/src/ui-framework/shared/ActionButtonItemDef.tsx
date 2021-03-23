@@ -9,9 +9,9 @@
 import * as React from "react";
 import { CommandHandler, OnItemExecutedFunc } from "@bentley/ui-abstract";
 import { Orientation, SizeProps } from "@bentley/ui-core";
-import { ActionItemButton } from "../toolbar/ActionItemButton";
-import { ItemDefBase } from "./ItemDefBase";
-import { ItemProps } from "./ItemProps";
+import { ActionItemButton } from "../toolbar/ActionItemButton.js";
+import { ItemDefBase } from "./ItemDefBase.js";
+import { ItemProps } from "./ItemProps.js";
 
 /** Abstract base class that is used by classes to execute an action when pressed.
  * @public

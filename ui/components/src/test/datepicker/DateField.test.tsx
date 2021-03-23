@@ -6,12 +6,12 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
 import { DateFormatter, SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
 
-import { DateField } from "../../ui-components/datepicker/DateField";
-import TestUtils from "../TestUtils";
-import { IntlFormatter } from "../../ui-components/datepicker/IntlFormatter";
+import { DateField } from "../../ui-components/datepicker/DateField.js";
+import TestUtils from "../TestUtils.js";
+import { IntlFormatter } from "../../ui-components/datepicker/IntlFormatter.js";
 
 // Note many test do not test exact time because it may yield different results depending on time zone of machine running test.
 

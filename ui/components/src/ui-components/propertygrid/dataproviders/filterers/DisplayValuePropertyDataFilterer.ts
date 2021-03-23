@@ -7,8 +7,8 @@
  */
 
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { countMatchesInString } from "../../../common/countMatchesInString";
-import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
+import { countMatchesInString } from "../../../common/countMatchesInString.js";
+import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase.js";
 
 /**
  * PropertyData filterer which matches on Primitive Property Record display value text.

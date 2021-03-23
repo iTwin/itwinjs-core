@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { fireEvent, render } from "@testing-library/react";
-import { /* ModelessDialogManager, */ UiDataProvidedDialog } from "../../ui-framework";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { /* ModelessDialogManager, */ UiDataProvidedDialog } from "../../ui-framework.js";
 import { DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames } from "@bentley/ui-abstract";
-import TestUtils from "../TestUtils";
+import TestUtils from "../TestUtils.js";
 import { expect } from "chai";
-import sinon = require("sinon");
+import sinon from "sinon";
 
 const spyCancel = sinon.spy();
 const spyOK = sinon.spy();

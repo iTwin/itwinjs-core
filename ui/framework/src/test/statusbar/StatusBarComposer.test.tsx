@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import {
   AbstractStatusBarItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, StageUsage, StatusBarLabelSide, StatusBarSection, UiItemsManager,
   UiItemsProvider,
 } from "@bentley/ui-abstract";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import {
   ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarComposer, StatusBarItem,
   StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, WidgetState, withMessageCenterFieldProps, withStatusFieldProps,
-} from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
-import { createDOMRect } from "../Utils";
+} from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
+import { createDOMRect } from "../Utils.js";
 
 describe("StatusBarComposer", () => {
   class TestUiProvider implements UiItemsProvider {

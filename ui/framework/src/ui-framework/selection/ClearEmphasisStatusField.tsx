@@ -9,11 +9,11 @@
 // cSpell:ignore statusfields
 
 import * as React from "react";
-import { useActiveViewport } from "../hooks/useActiveViewport";
-import { Indicator } from "../statusfields/Indicator";
-import { StatusFieldProps } from "../statusfields/StatusFieldProps";
-import { UiFramework } from "../UiFramework";
-import { HideIsolateEmphasizeActionHandler } from "./HideIsolateEmphasizeManager";
+import { useActiveViewport } from "../hooks/useActiveViewport.js";
+import { Indicator } from "../statusfields/Indicator.js";
+import { StatusFieldProps } from "../statusfields/StatusFieldProps.js";
+import { UiFramework } from "../UiFramework.js";
+import { HideIsolateEmphasizeActionHandler } from "./HideIsolateEmphasizeManager.js";
 
 /** Clear Emphasis StatusField Props
  * @beta

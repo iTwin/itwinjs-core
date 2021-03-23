@@ -8,9 +8,9 @@
 
 import {
   NestedStagePanelKey, NestedStagePanelsId, NestedStagePanelsManager, NestedStagePanelsManagerProps,
-} from "../stage-panels/manager/NestedStagePanels";
-import { WidgetZoneId } from "../zones/manager/Zones";
-import { NineZoneStagePanelsManager, NineZoneStagePanelsManagerProps } from "./StagePanels";
+} from "../stage-panels/manager/NestedStagePanels.js";
+import { WidgetZoneId } from "../zones/manager/Zones.js";
+import { NineZoneStagePanelsManager, NineZoneStagePanelsManagerProps } from "./StagePanels.js";
 
 /** Properties used by [[NineZoneNestedStagePanelsManager]].
  * @alpha

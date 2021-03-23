@@ -6,13 +6,13 @@
  * @module Tree
  */
 
-import { EMPTY } from "rxjs/internal/observable/empty";
-import { TreeNodeItem } from "../../TreeDataProvider";
-import { Observable } from "../Observable";
-import { CheckboxStateChange } from "../TreeEvents";
-import { TreeModelNode, TreeModelNodeEditingInfo } from "../TreeModel";
-import { TreeModelSource } from "../TreeModelSource";
-import { ITreeNodeLoader, TreeNodeLoadResult } from "../TreeNodeLoader";
+import { EMPTY } from "rxjs/internal/observable/empty.js";
+import { TreeNodeItem } from "../../TreeDataProvider.js";
+import { Observable } from "../Observable.js";
+import { CheckboxStateChange } from "../TreeEvents.js";
+import { TreeModelNode, TreeModelNodeEditingInfo } from "../TreeModel.js";
+import { TreeModelSource } from "../TreeModelSource.js";
+import { ITreeNodeLoader, TreeNodeLoadResult } from "../TreeNodeLoader.js";
 
 /**
  * Provides basic tree manipulation implementation for various cases like

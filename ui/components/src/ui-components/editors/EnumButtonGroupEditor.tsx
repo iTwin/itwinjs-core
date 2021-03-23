@@ -14,8 +14,8 @@ import {
   PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
 
 // cspell:ignore buttongroup enumbuttongroup
 

@@ -8,7 +8,7 @@
 
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ProjectInfo } from "./ProjectServices";
+import { ProjectInfo } from "./ProjectServices.js";
 
 /** Enumeration for iModel scope
  * @internal

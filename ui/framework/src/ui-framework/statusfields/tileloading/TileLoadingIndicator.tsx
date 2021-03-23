@@ -12,8 +12,8 @@ import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { LoadingBar } from "@bentley/ui-core";
-import { UiFramework } from "../../UiFramework";
-import { StatusFieldProps } from "../StatusFieldProps";
+import { UiFramework } from "../../UiFramework.js";
+import { StatusFieldProps } from "../StatusFieldProps.js";
 
 let onViewOpen: (vp: ScreenViewport) => void;
 let onRenderUpdate: () => void;

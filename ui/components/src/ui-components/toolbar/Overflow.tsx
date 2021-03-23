@@ -10,9 +10,9 @@ import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps, Popup, useRefState } from "@bentley/ui-core";
-import { useToolItemEntryContext } from "./ToolbarWithOverflow";
-import { useResizeObserverSingleDimension } from "./ItemWrapper";
-import { Direction } from "./utilities/Direction";
+import { useToolItemEntryContext } from "./ToolbarWithOverflow.js";
+import { useResizeObserverSingleDimension } from "./ItemWrapper.js";
+import { Direction } from "./utilities/Direction.js";
 import { RelativePosition } from "@bentley/ui-abstract";
 
 /** Properties of [[ToolbarOverflowButton]] component.

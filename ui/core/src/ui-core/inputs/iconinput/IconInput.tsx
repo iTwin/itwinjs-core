@@ -9,7 +9,7 @@
 import "./IconInput.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Input, InputProps } from "../Input";
+import { Input, InputProps } from "../Input.js";
 
 /** Properties for the [[IconInput]] component
  * @public

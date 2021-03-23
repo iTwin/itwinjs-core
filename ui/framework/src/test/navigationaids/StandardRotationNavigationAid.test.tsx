@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import { StandardRotationNavigationAid } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import { StandardRotationNavigationAid } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("StandardRotationNavigationAid", () => {
 

@@ -12,20 +12,20 @@ import { IModelApp, IModelConnection, InteractiveTool, SelectedViewportChangedAr
 import { WidgetState } from "@bentley/ui-abstract";
 import { Size, UiEvent } from "@bentley/ui-core";
 import { NineZoneManager } from "@bentley/ui-ninezone";
-import { ContentControlActivatedEvent } from "../content/ContentControl";
-import { ContentGroup } from "../content/ContentGroup";
-import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout";
-import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
-import { PanelSizeChangedEvent, PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
-import { UiFramework } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { WidgetChangedEventArgs, WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
-import { ToolInformation } from "../zones/toolsettings/ToolInformation";
-import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager";
-import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
-import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "./FrontstageDef";
-import { FrontstageProvider } from "./FrontstageProvider";
-import { TimeTracker } from "../configurableui/TimeTracker";
+import { ContentControlActivatedEvent } from "../content/ContentControl.js";
+import { ContentGroup } from "../content/ContentGroup.js";
+import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout.js";
+import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl.js";
+import { PanelSizeChangedEvent, PanelStateChangedEvent } from "../stagepanels/StagePanelDef.js";
+import { UiFramework } from "../UiFramework.js";
+import { UiShowHideManager } from "../utils/UiShowHideManager.js";
+import { WidgetChangedEventArgs, WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef.js";
+import { ToolInformation } from "../zones/toolsettings/ToolInformation.js";
+import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager.js";
+import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider.js";
+import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "./FrontstageDef.js";
+import { FrontstageProvider } from "./FrontstageProvider.js";
+import { TimeTracker } from "../configurableui/TimeTracker.js";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -538,10 +538,10 @@ export class FrontstageManager {
    */
   public static closeModalFrontstage(): void {
     // istanbul ignore else
-    if (FrontstageManager._modalFrontstages.length > 0){
+    if (FrontstageManager._modalFrontstages.length > 0) {
       const topMostStageItem = FrontstageManager._modalFrontstages[FrontstageManager._modalFrontstages.length - 1];
       if (topMostStageItem.modalFrontstage.notifyCloseRequest)
-        FrontstageManager.onCloseModalFrontstageRequestedEvent.emit (
+        FrontstageManager.onCloseModalFrontstageRequestedEvent.emit(
           {
             modalFrontstage: topMostStageItem.modalFrontstage,
             stageCloseFunc: FrontstageManager.popModalFrontstage,

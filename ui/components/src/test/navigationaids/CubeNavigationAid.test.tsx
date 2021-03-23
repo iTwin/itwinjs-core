@@ -9,10 +9,10 @@ import * as moq from "typemoq";
 import { AxisIndex, Matrix3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { DrawingViewState, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { Face } from "@bentley/ui-core";
-import { cleanup, fireEvent, render, wait } from "@testing-library/react";
-import { CubeHover, CubeNavigationAid, FaceCell, HitBoxX, HitBoxY, HitBoxZ, NavCubeFace } from "../../ui-components/navigationaids/CubeNavigationAid";
-import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, wait } = tlr;
+import { CubeHover, CubeNavigationAid, FaceCell, HitBoxX, HitBoxY, HitBoxZ, NavCubeFace } from "../../ui-components/navigationaids/CubeNavigationAid.js";
+import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents.js";
+import TestUtils from "../TestUtils.js";
 
 describe("CubeNavigationAid", () => {
 

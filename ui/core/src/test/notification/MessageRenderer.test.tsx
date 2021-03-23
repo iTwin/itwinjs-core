@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import { MessageRenderer } from "../../ui-core/notification/MessageRenderer";
-import { UnderlinedButton } from "../../ui-core/button/UnderlinedButton";
+import { MessageRenderer } from "../../ui-core/notification/MessageRenderer.js";
+import { UnderlinedButton } from "../../ui-core/button/UnderlinedButton.js";
 
 describe("MessageRenderer", () => {
 

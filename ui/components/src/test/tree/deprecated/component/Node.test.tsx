@@ -7,15 +7,15 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { fireEvent, render } from "@testing-library/react";
-import { LoadedImage } from "../../../../ui-components/common/IImageLoader";
-import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
-import { BeInspireTree, BeInspireTreeNode } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
-import { TreeNode, TreeNodeIcon } from "../../../../ui-components/tree/deprecated/component/Node";
-import { DEPRECATED_Tree as Tree } from "../../../../ui-components/tree/deprecated/component/Tree";
-import { ITreeImageLoader, TreeImageLoader } from "../../../../ui-components/tree/ImageLoader";
-import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
-import TestUtils from "../../../TestUtils";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { LoadedImage } from "../../../../ui-components/common/IImageLoader.js";
+import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager.js";
+import { BeInspireTree, BeInspireTreeNode } from "../../../../ui-components/tree/deprecated/component/BeInspireTree.js";
+import { TreeNode, TreeNodeIcon } from "../../../../ui-components/tree/deprecated/component/Node.js";
+import { DEPRECATED_Tree as Tree } from "../../../../ui-components/tree/deprecated/component/Tree.js";
+import { ITreeImageLoader, TreeImageLoader } from "../../../../ui-components/tree/ImageLoader.js";
+import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider.js";
+import TestUtils from "../../../TestUtils.js";
 
 /* eslint-disable deprecation/deprecation */
 

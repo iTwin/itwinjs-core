@@ -8,7 +8,7 @@
 
 import "./Dock.scss";
 import * as React from "react";
-import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
+import { NineZoneDispatchContext, useLabel } from "../base/NineZone.js";
 
 /** @internal */
 export const Dock = React.memo(function Dock() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow

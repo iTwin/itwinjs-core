@@ -9,14 +9,14 @@
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { HighlightingComponentProps } from "../../../common/HighlightingComponentProps";
-import { EditorContainer, PropertyUpdatedArgs } from "../../../editors/EditorContainer";
-import { CommonPropertyRenderer } from "../../../properties/renderers/CommonPropertyRenderer";
-import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer";
-import { SharedRendererProps } from "../../../properties/renderers/PropertyRenderer";
-import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { PropertyCategory } from "../../PropertyDataProvider";
-import { FlatNonPrimitivePropertyRenderer } from "./FlatNonPrimitivePropertyRenderer";
+import { HighlightingComponentProps } from "../../../common/HighlightingComponentProps.js";
+import { EditorContainer, PropertyUpdatedArgs } from "../../../editors/EditorContainer.js";
+import { CommonPropertyRenderer } from "../../../properties/renderers/CommonPropertyRenderer.js";
+import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer.js";
+import { SharedRendererProps } from "../../../properties/renderers/PropertyRenderer.js";
+import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager.js";
+import { PropertyCategory } from "../../PropertyDataProvider.js";
+import { FlatNonPrimitivePropertyRenderer } from "./FlatNonPrimitivePropertyRenderer.js";
 
 /** Properties of [[FlatPropertyRenderer]] React component
  * @internal

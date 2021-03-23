@@ -16,8 +16,8 @@ import {
   useWidgetOpacityContext,
 } from "@bentley/ui-core";
 
-import { ToolbarOpacitySetting, useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
-import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
+import { ToolbarOpacitySetting, useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow.js";
+import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction.js";
 
 /** Properties of [[ToolbarOverflowPanel]] component.
  * @internal

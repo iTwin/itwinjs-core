@@ -7,9 +7,9 @@
  */
 
 import * as React from "react";
-import { FloatingWidgetsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { FloatingWidget } from "./FloatingWidget";
-import { FloatingTab } from "./FloatingTab";
+import { FloatingWidgetsStateContext, WidgetsStateContext } from "../base/NineZone.js";
+import { FloatingWidget } from "./FloatingWidget.js";
+import { FloatingTab } from "./FloatingTab.js";
 
 /** This component renders all floating widgets.
  * @internal

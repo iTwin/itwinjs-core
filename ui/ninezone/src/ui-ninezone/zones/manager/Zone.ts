@@ -7,8 +7,8 @@
  */
 
 import { Rectangle, RectangleProps } from "@bentley/ui-core";
-import { RECTANGULAR_DEFAULT_MIN_HEIGHT, RECTANGULAR_DEFAULT_MIN_WIDTH } from "./ResizeStrategy";
-import { getZoneCell, WidgetZoneId } from "./Zones";
+import { RECTANGULAR_DEFAULT_MIN_HEIGHT, RECTANGULAR_DEFAULT_MIN_WIDTH } from "./ResizeStrategy.js";
+import { getZoneCell, WidgetZoneId } from "./Zones.js";
 
 /** Zone properties used in [[ZonesManagerProps]].
  * @beta

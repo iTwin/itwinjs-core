@@ -7,15 +7,15 @@
  */
 
 import "./WithFilteringSupport.scss";
-import { isEqual } from "lodash";
+import { isEqual } from "lodash-es";
 import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { AsyncTasksTracker } from "@bentley/presentation-common";
 import { ActiveMatchInfo, HighlightableTreeProps, TreeProps } from "@bentley/ui-components";
-import { getDisplayName } from "../common/Utils";
-import { FilteredPresentationTreeDataProvider } from "./FilteredDataProvider";
-import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
+import { getDisplayName } from "../common/Utils.js";
+import { FilteredPresentationTreeDataProvider } from "./FilteredDataProvider.js";
+import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider.js";
 
 /**
  * Props that are injected to the TreeWithFilteringSupport HOC component.

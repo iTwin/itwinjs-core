@@ -7,9 +7,9 @@
  */
 
 import * as React from "react";
-import * as DOMPurify from "dompurify";
-import { isHTMLElement, isReactMessage, MessageType } from "./MessageType";
-import { ClassNameProps } from "../utils/Props";
+import DOMPurify from "dompurify";
+import { isHTMLElement, isReactMessage, MessageType } from "./MessageType.js";
+import { ClassNameProps } from "../utils/Props.js";
 
 // cSpell:ignore dompurify
 
@@ -46,7 +46,7 @@ export function MessageRenderer(props: MessageRendererProps) {
     // recursively check child elements for valid anchor tags
     const checkChildAnchors = (parent: Element) => {
       const children = Array.from(parent.children);
-      for (const child of children){
+      for (const child of children) {
         if (child.hasAttribute("target") && (child as HTMLAnchorElement).target === "_blank") {
           hasAnchors = true;
           validAnchors = isAnchorValid(child as HTMLAnchorElement);
@@ -75,7 +75,7 @@ export function MessageRenderer(props: MessageRendererProps) {
     let sanitizedHtml;
     if (hasAnchors && validAnchors) {
       // all anchors are valid. do not remove the target attr
-      sanitizedHtml = sanitizer(props.message.outerHTML, {ADD_ATTR: ["target"]});
+      sanitizedHtml = sanitizer(props.message.outerHTML, { ADD_ATTR: ["target"] });
     } else {
       sanitizedHtml = sanitizer(props.message.outerHTML);
     }

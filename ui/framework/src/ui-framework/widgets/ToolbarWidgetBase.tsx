@@ -9,13 +9,13 @@
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
-import { ItemList } from "../shared/ItemMap";
-import { Toolbar } from "../toolbar/Toolbar";
-import { ToolbarWidgetProps, WidgetDef } from "./WidgetDef";
+import { ItemList } from "../shared/ItemMap.js";
+import { Toolbar } from "../toolbar/Toolbar.js";
+import { ToolbarWidgetProps, WidgetDef } from "./WidgetDef.js";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
  * @public
- */
+ */
 export class ToolbarWidgetDefBase extends WidgetDef {
   public horizontalDirection: Direction;
   public verticalDirection: Direction;

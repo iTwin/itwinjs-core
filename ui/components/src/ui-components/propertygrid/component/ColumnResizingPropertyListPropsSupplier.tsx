@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import _ from "lodash";
+import _ from "lodash-es";
 import * as React from "react";
 import { Geometry } from "@bentley/geometry-core";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
-import { PropertyListProps } from "./PropertyList";
+import { PropertyListProps } from "./PropertyList.js";
 
 /** @internal */
 export type ColumnResizeRelatedPropertyListProps = Pick<PropertyListProps, "onColumnChanged" | "columnRatio" | "isResizeHandleHovered" | "onResizeHandleHoverChanged" | "isResizeHandleBeingDragged" | "onResizeHandleDragChanged" | "columnInfo" | "onListWidthChanged" | "orientation">;

@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent } = tlr;
 import { renderHook } from "@testing-library/react-hooks";
-import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, usePanelsAutoCollapse } from "../../ui-ninezone";
-import { NineZoneProvider, setRefValue } from "../Providers";
+import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, usePanelsAutoCollapse } from "../../ui-ninezone.js";
+import { NineZoneProvider, setRefValue } from "../Providers.js";
 
 describe("usePanelsAutoCollapse", () => {
   it("should collapse unpinned panels", () => {

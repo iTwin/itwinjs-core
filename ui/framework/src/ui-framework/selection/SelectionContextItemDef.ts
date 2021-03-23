@@ -7,14 +7,14 @@
  */
 
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { SessionStateActionId } from "../redux/SessionState";
-import { CommandItemDef } from "../shared/CommandItemDef";
-import { BaseItemState } from "../shared/ItemDefBase";
-import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { GroupItemDef } from "../toolbar/GroupItem";
-import { UiFramework } from "../UiFramework";
-import { HideIsolateEmphasizeActionHandler } from "./HideIsolateEmphasizeManager";
+import { ContentViewManager } from "../content/ContentViewManager.js";
+import { SessionStateActionId } from "../redux/SessionState.js";
+import { CommandItemDef } from "../shared/CommandItemDef.js";
+import { BaseItemState } from "../shared/ItemDefBase.js";
+import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher.js";
+import { GroupItemDef } from "../toolbar/GroupItem.js";
+import { UiFramework } from "../UiFramework.js";
+import { HideIsolateEmphasizeActionHandler } from "./HideIsolateEmphasizeManager.js";
 
 /** return SyncEventIds that trigger selection state function refresh.
  * @beta

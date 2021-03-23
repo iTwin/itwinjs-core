@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
-import { UnderlinedButton } from "../../ui-core/button/UnderlinedButton";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { UnderlinedButton } from "../../ui-core/button/UnderlinedButton.js";
 
 describe("<UnderlinedButton />", () => {
   it("renders content", () => {

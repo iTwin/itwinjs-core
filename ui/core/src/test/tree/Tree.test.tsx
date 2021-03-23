@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import { Tree } from "../../ui-core";
+import { Tree } from "../../ui-core.js";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 

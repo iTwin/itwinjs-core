@@ -10,7 +10,7 @@ import "./ActionButtonList.scss";
 import * as React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { ActionButtonRenderer, ActionButtonRendererProps } from "./ActionButtonRenderer";
+import { ActionButtonRenderer, ActionButtonRendererProps } from "./ActionButtonRenderer.js";
 
 /** Properties of [[ActionButtonList]] React component
  * @beta

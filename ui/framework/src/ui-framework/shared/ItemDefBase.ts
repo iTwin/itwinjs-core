@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { BadgeType, ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
-import { PropsHelper } from "../utils/PropsHelper";
-import { ItemProps } from "./ItemProps";
+import { PropsHelper } from "../utils/PropsHelper.js";
+import { ItemProps } from "./ItemProps.js";
 import { IconSpec } from "@bentley/ui-core";
 
 /** Base state for any 'stateful' React component

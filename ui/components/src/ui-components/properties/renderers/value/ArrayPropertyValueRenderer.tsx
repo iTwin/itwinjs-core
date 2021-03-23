@@ -9,9 +9,9 @@
 import * as React from "react";
 import { ArrayValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { IPropertyValueRenderer, PropertyContainerType, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { TableArrayValueRenderer } from "./table/ArrayValueRenderer";
-import { withContextStyle } from "./WithContextStyle";
+import { IPropertyValueRenderer, PropertyContainerType, PropertyValueRendererContext } from "../../ValueRendererManager.js";
+import { TableArrayValueRenderer } from "./table/ArrayValueRenderer.js";
+import { withContextStyle } from "./WithContextStyle.js";
 
 /** Default Array Property Renderer
  * @public

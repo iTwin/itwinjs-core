@@ -9,8 +9,8 @@
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { Primitives, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
-import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
-import { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering";
+import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle.js";
+import { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering.js";
 
 /** Filter Renderer for a Table column
  * @beta

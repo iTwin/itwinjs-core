@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelAppOptions, LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
 import {
@@ -13,14 +13,14 @@ import {
   PropertyChangeResult, PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Button, Point } from "@bentley/ui-core";
-import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
-import { Calculator } from "../../ui-framework/accudraw/Calculator";
-import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
-import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
-import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
-import TestUtils, { mount, storageMock } from "../TestUtils";
-import { FrameworkUiAdmin, KeyinEntry } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
-import { fireEvent, render } from "@testing-library/react";
+import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager.js";
+import { Calculator } from "../../ui-framework/accudraw/Calculator.js";
+import { MenuButton } from "../../ui-framework/accudraw/MenuButton.js";
+import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager.js";
+import { MenuItemProps } from "../../ui-framework/shared/MenuItem.js";
+import TestUtils, { mount, storageMock } from "../TestUtils.js";
+import { FrameworkUiAdmin, KeyinEntry } from "../../ui-framework/uiadmin/FrameworkUiAdmin.js";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 const myLocalStorage = storageMock();
 function requestNextAnimation() { }
 

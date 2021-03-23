@@ -7,7 +7,7 @@ import { MapSubLayerProps, SubLayerId } from "@bentley/imodeljs-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";
-import { StyleMapLayerSettings } from "../Interfaces";
+import { StyleMapLayerSettings } from "../Interfaces.js";
 
 /**
  * Data provider that returns some fake nodes to show in tree.

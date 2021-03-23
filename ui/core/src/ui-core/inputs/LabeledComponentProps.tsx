@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { InputStatus } from "./InputStatus";
+import { InputStatus } from "./InputStatus.js";
 
 /** Properties for labeled components
  * @public

@@ -9,10 +9,14 @@ import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { HierarchyBuilder, HierarchyCacheMode, initialize, terminate } from "@bentley/presentation-testing";
-import { render } from "@testing-library/react";
-import { ConfigurableUiControlType, ModelSelectorWidget, ModelSelectorWidgetControl, WidgetDef, WidgetProps } from "../../ui-framework";
-import { ModelSelectorDataProvider } from "../../ui-framework/pickers/ModelSelector/ModelSelectorDefinitions";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { ConfigurableUiControlType, ModelSelectorWidget, ModelSelectorWidgetControl, WidgetDef, WidgetProps } from "../../ui-framework.js";
+import { ModelSelectorDataProvider } from "../../ui-framework/pickers/ModelSelector/ModelSelectorDefinitions.js";
+import TestUtils from "../TestUtils.js";
+// @ts-ignore
+import { createRequire } from "module";
+// @ts-ignore
+const require = createRequire(import.meta.url);
 
 describe("ModelSelector", () => {
 
@@ -42,7 +46,7 @@ describe("ModelSelector", () => {
     let ruleset: Ruleset;
 
     beforeEach(() => {
-      ruleset = require("../../../rulesets/Models");
+      ruleset = require("../../../rulesets/Models.json");
     });
 
     it("generates correct models' hierarchy", async () => {
@@ -58,7 +62,7 @@ describe("ModelSelector", () => {
     let ruleset: Ruleset;
 
     beforeEach(() => {
-      ruleset = require("../../../rulesets/Categories");
+      ruleset = require("../../../rulesets/Categories.json");
     });
 
     it("generates empty hierarchy when 'ViewType' ruleset variable is not set", async () => {

@@ -9,10 +9,10 @@
 import "./FloatingTab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { isTabTarget, useDragTab, UseDragTabArgs } from "../base/DragManager";
-import { DraggedTabStateContext, getUniqueId, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
-import { TabTargetState } from "../base/NineZoneState";
-import { CssProperties } from "../utilities/Css";
+import { isTabTarget, useDragTab, UseDragTabArgs } from "../base/DragManager.js";
+import { DraggedTabStateContext, getUniqueId, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone.js";
+import { TabTargetState } from "../base/NineZoneState.js";
+import { CssProperties } from "../utilities/Css.js";
 
 /** Component that displays a floating tab.
  * @internal

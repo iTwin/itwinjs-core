@@ -10,9 +10,9 @@ import "./PropertyView.scss";
 import * as React from "react";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import { ElementSeparator, Orientation } from "@bentley/ui-core";
-import { ActionButtonList } from "./ActionButtonList";
-import { SharedRendererProps } from "./PropertyRenderer";
-import { PropertyGridColumnStyleProvider } from "./PropertyGridColumns";
+import { ActionButtonList } from "./ActionButtonList.js";
+import { SharedRendererProps } from "./PropertyRenderer.js";
+import { PropertyGridColumnStyleProvider } from "./PropertyGridColumns.js";
 
 /** Properties of [[PropertyView]] React component
  * @public

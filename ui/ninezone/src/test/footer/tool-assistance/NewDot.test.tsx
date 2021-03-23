@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import { NewDot } from "../../../ui-ninezone/footer/tool-assistance/NewDot";
-import { mount } from "../../Utils";
+import { NewDot } from "../../../ui-ninezone/footer/tool-assistance/NewDot.js";
+import { mount } from "../../Utils.js";
 
 describe("<NewDot />", () => {
   it("should render", () => {

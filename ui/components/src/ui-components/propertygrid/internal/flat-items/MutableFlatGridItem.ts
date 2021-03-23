@@ -9,7 +9,7 @@
 import shortid from "shortid";
 import { immerable } from "immer";
 import { PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyCategory } from "../../PropertyDataProvider";
+import { PropertyCategory } from "../../PropertyDataProvider.js";
 
 /**
  * Types of FlatGridItems for differentiating what property FlatGridItem is wrapping.

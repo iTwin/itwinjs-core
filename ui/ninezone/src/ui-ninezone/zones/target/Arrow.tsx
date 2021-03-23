@@ -10,7 +10,7 @@ import "./Arrow.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { WidgetZoneId } from "../manager/Zones";
+import { WidgetZoneId } from "../manager/Zones.js";
 
 /** Properties of [[Arrow]] component.
  * @internal

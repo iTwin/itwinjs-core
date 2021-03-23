@@ -11,10 +11,10 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, Rectangle, Timer } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
-import { useDragPanelGrip, UseDragPanelGripArgs } from "../base/DragManager";
-import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
-import { isHorizontalPanelSide, PanelStateContext, WidgetPanelContext } from "./Panel";
-import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
+import { useDragPanelGrip, UseDragPanelGripArgs } from "../base/DragManager.js";
+import { NineZoneDispatchContext, useLabel } from "../base/NineZone.js";
+import { isHorizontalPanelSide, PanelStateContext, WidgetPanelContext } from "./Panel.js";
+import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor.js";
 
 /** Resize grip of [[WidgetPanel]] component.
  * @internal

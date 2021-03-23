@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import produce from "immer";
+import { produce } from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Point } from "@bentley/ui-core";
-import { act, fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { act, fireEvent, render } = tlr;
 import {
   addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch,
-} from "../../ui-ninezone";
-import { createDragItemInfo, NineZoneProvider } from "../Providers";
+} from "../../ui-ninezone.js";
+import { createDragItemInfo, NineZoneProvider } from "../Providers.js";
 
 describe("FloatingTab", () => {
   it("should render", () => {

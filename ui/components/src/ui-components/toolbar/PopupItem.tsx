@@ -11,9 +11,9 @@ import classnames from "classnames";
 import * as React from "react";
 import { ActionButton, RelativePosition } from "@bentley/ui-abstract";
 import { Popup, useRefState } from "@bentley/ui-core";
-import { ToolbarButtonItemProps } from "./Item";
-import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
-import { toToolbarPopupRelativePosition } from "./PopupItemWithDrag";
+import { ToolbarButtonItemProps } from "./Item.js";
+import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow.js";
+import { toToolbarPopupRelativePosition } from "./PopupItemWithDrag.js";
 
 /** @internal */
 export interface ToolbarPopupContextProps {

@@ -8,10 +8,10 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { WidgetZoneId } from "../manager/Zones";
-import { Arrow } from "./Arrow";
-import { MergeTargetProps } from "./Merge";
-import { ZoneTarget } from "./Zone";
+import { WidgetZoneId } from "../manager/Zones.js";
+import { Arrow } from "./Arrow.js";
+import { MergeTargetProps } from "./Merge.js";
+import { ZoneTarget } from "./Zone.js";
 
 /** Properties of [[BackTarget]] component.
  * @alpha

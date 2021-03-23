@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "@testing-library/react";
-import { Toggle, ToggleButtonType } from "../../ui-core";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { Toggle, ToggleButtonType } from "../../ui-core.js";
 
 describe("<Toggle />", () => {
   it("should render", () => {

@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, PerModelCategoryVisibility, SpatialViewState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { FilteredPresentationTreeDataProvider } from "@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
+import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
+import { FilteredPresentationTreeDataProvider } from "@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider.js";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { isPromiseLike } from "@bentley/ui-core";
-import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
-import { TestUtils } from "../../TestUtils";
-import { createCategoryNode, createElementClassGroupingNode, createElementNode, createModelNode, createSubjectNode } from "./Common";
+import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler.js";
+import { TestUtils } from "../../TestUtils.js";
+import { createCategoryNode, createElementClassGroupingNode, createElementNode, createModelNode, createSubjectNode } from "./Common.js";
 
 describe("ModelsVisibilityHandler", () => {
 

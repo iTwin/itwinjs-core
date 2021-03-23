@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as enzyme from "enzyme";
 import { createStore, Store } from "redux";
-import * as sinon from "sinon";
+import sinon from "sinon";
 
 import { I18N } from "@bentley/imodeljs-i18n";
 import { UserInfo } from "@bentley/itwin-client";
@@ -14,8 +14,8 @@ import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core
 import {
   ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, createAction, DeepReadonly, FrameworkReducer,
   FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
-} from "../ui-framework";
-import { TestContentControl } from "./frontstage/FrontstageTestUtils";
+} from "../ui-framework.js";
+import { TestContentControl } from "./frontstage/FrontstageTestUtils.js";
 
 interface SampleAppState {
   placeHolder?: boolean;
@@ -67,7 +67,8 @@ export class TestUtils {
   public static async initializeUiFramework(testAlternateKey = false) {
     if (!TestUtils._uiFrameworkInitialized) {
       // This is required by our I18n module (specifically the i18next package).
-      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
+      // @ts-ignore
+      (global as any).XMLHttpRequest = (await import("xmlhttprequest")).XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
       if (testAlternateKey) {
         // this is the rootReducer for the test application.

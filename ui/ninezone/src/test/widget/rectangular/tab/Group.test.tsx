@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import { HandleMode, HandleModeHelpers, HorizontalAnchor, TabGroup, VerticalAnchor } from "../../../../ui-ninezone";
-import { mount } from "../../../Utils";
+import { HandleMode, HandleModeHelpers, HorizontalAnchor, TabGroup, VerticalAnchor } from "../../../../ui-ninezone.js";
+import { mount } from "../../../Utils.js";
 
 describe("<TabGroup />", () => {
   it("should render", () => {

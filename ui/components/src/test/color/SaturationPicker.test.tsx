@@ -7,9 +7,9 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { HSVColor } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { SaturationPicker } from "../../ui-components/color/SaturationPicker";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
+import { SaturationPicker } from "../../ui-components/color/SaturationPicker.js";
+import TestUtils from "../TestUtils.js";
 
 describe("<SaturationPicker />", () => {
   const hsv = new HSVColor(30, 30, 30);

@@ -5,8 +5,8 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
-import { DragManager, DragManagerContext, useIsDraggedType, usePanelTarget, useTabTarget, useWidgetTarget } from "../../ui-ninezone";
-import { createDragItemInfo, createDragStartArgs, setRefValue } from "../Providers";
+import { DragManager, DragManagerContext, useIsDraggedType, usePanelTarget, useTabTarget, useWidgetTarget } from "../../ui-ninezone.js";
+import { createDragItemInfo, createDragStartArgs, setRefValue } from "../Providers.js";
 
 describe("DragManager", () => {
   describe("isDraggedType", () => {

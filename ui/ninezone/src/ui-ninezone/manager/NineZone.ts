@@ -7,13 +7,13 @@
  */
 
 import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
-import { NestedStagePanelKey, NestedStagePanelsManagerProps } from "../stage-panels/manager/NestedStagePanels";
-import { StagePanelsManager } from "../stage-panels/manager/StagePanels";
-import { StagePanelType } from "../stage-panels/StagePanel";
-import { ToolSettingsWidgetMode } from "../zones/manager/Widget";
-import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "../zones/manager/Zones";
-import { NineZoneNestedStagePanelsManager, NineZoneNestedStagePanelsManagerProps } from "./NestedStagePanels";
-import { NineZoneStagePanelManager } from "./StagePanel";
+import { NestedStagePanelKey, NestedStagePanelsManagerProps } from "../stage-panels/manager/NestedStagePanels.js";
+import { StagePanelsManager } from "../stage-panels/manager/StagePanels.js";
+import { StagePanelType } from "../stage-panels/StagePanel.js";
+import { ToolSettingsWidgetMode } from "../zones/manager/Widget.js";
+import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "../zones/manager/Zones.js";
+import { NineZoneNestedStagePanelsManager, NineZoneNestedStagePanelsManagerProps } from "./NestedStagePanels.js";
+import { NineZoneStagePanelManager } from "./StagePanel.js";
 
 /** Properties used by [[NineZoneManager]].
  * @alpha

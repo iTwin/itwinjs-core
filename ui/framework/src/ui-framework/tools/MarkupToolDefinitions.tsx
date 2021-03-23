@@ -9,7 +9,7 @@
 import {
   ArrowTool, CloudTool, DistanceTool, EllipseTool, LineTool, PlaceTextTool, PolygonTool, RectangleTool, SelectTool, SketchTool, SymbolTool,
 } from "@bentley/imodeljs-markup";
-import { ToolItemDef } from "../shared/ToolItemDef";
+import { ToolItemDef } from "../shared/ToolItemDef.js";
 
 /** Utility Class that provides definitions of tools provided by imodeljs-markup package. These definitions can be used to populate the UI.
  *  Note: Application must call 'MarkupApp.initialize()' or 'MarkupApp.start()' before using these definitions.

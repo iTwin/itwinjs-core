@@ -7,8 +7,8 @@ import { WidgetState } from "@bentley/ui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
   MessageCenterField, StatusBarWidgetControl, StatusBarWidgetControlArgs, Widget, WidgetControl, Zone, ZoneLocation, ZoneState,
-} from "../../ui-framework";
-import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
+} from "../../ui-framework.js";
+import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef.js";
 
 /* eslint-disable react/jsx-key */
 

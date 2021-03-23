@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Helpers
  */
-import * as rimraf from "rimraf";
+import rimraf from "rimraf";
 // common includes
 import { Guid } from "@bentley/bentleyjs-core";
 // backend includes

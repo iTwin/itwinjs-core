@@ -9,8 +9,8 @@
 import "./Zone.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { MergeTargetProps } from "./Merge";
-import { WidgetTarget } from "./Target";
+import { MergeTargetProps } from "./Merge.js";
+import { WidgetTarget } from "./Target.js";
 
 /** Zone target component used by [[BackTarget]] and [[MergeTarget]] components.
  * @internal

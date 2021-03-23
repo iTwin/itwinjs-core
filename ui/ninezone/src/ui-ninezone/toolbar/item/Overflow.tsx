@@ -9,8 +9,8 @@
 import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ExpandableItem, ExpandableItemProps } from "./expandable/Expandable";
-import { Item } from "./Item";
+import { ExpandableItem, ExpandableItemProps } from "./expandable/Expandable.js";
+import { Item } from "./Item.js";
 
 /** Properties of [[Overflow]] component.
  * @beta

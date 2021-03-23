@@ -10,9 +10,9 @@ import * as React from "react";
 import { Keys, NodeKey } from "@bentley/presentation-common";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionHandler, SelectionHelper } from "@bentley/presentation-frontend";
 import { TreeNodeItem, TreeProps } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
-import { getDisplayName } from "../common/Utils";
-import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
+import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent.js";
+import { getDisplayName } from "../common/Utils.js";
+import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider.js";
 
 /**
  * Props that are injected to the TreeWithUnifiedSelection HOC component.

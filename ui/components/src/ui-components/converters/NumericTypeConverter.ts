@@ -7,8 +7,8 @@
  */
 
 import { Primitives, StandardTypeNames } from "@bentley/ui-abstract";
-import { LessGreaterOperatorProcessor, TypeConverter } from "./TypeConverter";
-import { TypeConverterManager } from "./TypeConverterManager";
+import { LessGreaterOperatorProcessor, TypeConverter } from "./TypeConverter.js";
+import { TypeConverterManager } from "./TypeConverterManager.js";
 
 /**
  * Base Numeric Type Converter.

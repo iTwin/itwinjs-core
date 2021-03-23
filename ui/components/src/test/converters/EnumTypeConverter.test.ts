@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { PropertyDescription } from "@bentley/ui-abstract";
-import { EnumTypeConverter } from "../../ui-components";
-import TestUtils from "../TestUtils";
+import { EnumTypeConverter } from "../../ui-components.js";
+import TestUtils from "../TestUtils.js";
 
 describe("EnumTypeConverter", () => {
 

@@ -7,13 +7,13 @@ import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
 import {
   BreadcrumbDetails, BreadcrumbPath, DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments,
   DropTargetProps, withBreadcrumbDetailsDragDrop,
-} from "../../../../ui-components";
-import { mockRawTreeDataProvider } from "../../mockTreeDataProvider";
-import { createDnDRenderer } from "../../../tree/deprecated/hocs/withDragDrop.test";
+} from "../../../../ui-components.js";
+import { mockRawTreeDataProvider } from "../../mockTreeDataProvider.js";
+import { createDnDRenderer } from "../../../tree/deprecated/hocs/withDragDrop.test.js";
 
 /* eslint-disable deprecation/deprecation */
 

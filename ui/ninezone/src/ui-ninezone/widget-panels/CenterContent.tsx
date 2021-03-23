@@ -8,8 +8,8 @@
 
 import "./CenterContent.scss";
 import * as React from "react";
-import { WidgetPanelsContent } from "./Content";
-import { CenterContentNodeContext } from "./Panels";
+import { WidgetPanelsContent } from "./Content.js";
+import { CenterContentNodeContext } from "./Panels.js";
 
 /** Component that displays center content (i.e. toolbars). Content is allways bound by widget panels (panel pinned setting is ignored).
  * @internal

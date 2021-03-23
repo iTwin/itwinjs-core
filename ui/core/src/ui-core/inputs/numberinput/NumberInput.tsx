@@ -9,8 +9,8 @@
 import "./NumberInput.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Input, InputProps } from "../Input";
-import { WebFontIcon } from "../../icons/WebFontIcon";
+import { Input, InputProps } from "../Input.js";
+import { WebFontIcon } from "../../icons/WebFontIcon.js";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Step function prototype for [[NumberInput]] component

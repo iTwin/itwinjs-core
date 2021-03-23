@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import { Panel } from "../../../../../ui-ninezone";
-import { mount } from "../../../../Utils";
+import { Panel } from "../../../../../ui-ninezone.js";
+import { mount } from "../../../../Utils.js";
 
 describe("<Panel />", () => {
   it("should render", () => {

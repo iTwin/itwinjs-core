@@ -6,9 +6,9 @@
 import * as React from "react";
 import { useActiveViewport } from "@bentley/ui-framework";
 import { FillCentered } from "@bentley/ui-core";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { MapLayerOptions } from "../Interfaces";
-import { MapLayerManager } from "./MapLayerManager";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider.js";
+import { MapLayerOptions } from "../Interfaces.js";
+import { MapLayerManager } from "./MapLayerManager.js";
 
 /**
  * Widget to Manage Map Layers

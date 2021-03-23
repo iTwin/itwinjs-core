@@ -13,9 +13,9 @@ import {
   CommonToolbarItem, OnItemExecutedFunc,
 } from "@bentley/ui-abstract";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import { ToolbarItems } from "./Items";
-import { Direction, OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
-import { getToolbarDirection, ToolbarItemComponent, ToolbarItemContext, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
+import { ToolbarItems } from "./Items.js";
+import { Direction, OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction.js";
+import { getToolbarDirection, ToolbarItemComponent, ToolbarItemContext, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow.js";
 
 /** Properties of [[Toolbar]] component.
  * @beta

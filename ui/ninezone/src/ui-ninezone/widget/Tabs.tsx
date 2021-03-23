@@ -10,13 +10,13 @@ import "./Tabs.scss";
 import * as React from "react";
 import { useResizeObserver } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
-import { TabsStateContext } from "../base/NineZone";
-import { getChildKey, useOverflow } from "../tool-settings/Docked";
-import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
-import { WidgetOverflow } from "./Overflow";
-import { WidgetTabProvider } from "./Tab";
-import { WidgetTabTarget } from "./TabTarget";
-import { WidgetStateContext } from "./Widget";
+import { TabsStateContext } from "../base/NineZone.js";
+import { getChildKey, useOverflow } from "../tool-settings/Docked.js";
+import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel.js";
+import { WidgetOverflow } from "./Overflow.js";
+import { WidgetTabProvider } from "./Tab.js";
+import { WidgetTabTarget } from "./TabTarget.js";
+import { WidgetStateContext } from "./Widget.js";
 
 /** @internal */
 export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow

@@ -5,8 +5,8 @@
 
 import * as React from "react";
 import { expect } from "chai";
-import { cleanup, render } from "@testing-library/react";
-import { FilteredText } from "../../ui-core";
+import tlr from "@testing-library/react"; const { cleanup, render } = tlr;
+import { FilteredText } from "../../ui-core.js";
 
 const value = "That he's mad, tis true, tis true tis pity, And pity tis, tis true";
 const matches = [

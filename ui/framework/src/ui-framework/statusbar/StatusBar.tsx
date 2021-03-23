@@ -10,12 +10,12 @@ import "./StatusBar.scss";
 import * as React from "react";
 import { CommonDivProps, CommonProps, Div, MessageSeverity } from "@bentley/ui-core";
 import { Footer, Status } from "@bentley/ui-ninezone";
-import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
-import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
-import { StatusMessage } from "../messages/StatusMessageManager";
-import { StatusMessagesContainer } from "../messages/StatusMessagesContainer";
+import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager.js";
+import { SafeAreaContext } from "../safearea/SafeAreaContext.js";
+import { UiShowHideManager } from "../utils/UiShowHideManager.js";
+import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl.js";
+import { StatusMessage } from "../messages/StatusMessageManager.js";
+import { StatusMessagesContainer } from "../messages/StatusMessagesContainer.js";
 
 // cspell:ignore safearea
 

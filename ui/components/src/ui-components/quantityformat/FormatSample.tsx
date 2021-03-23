@@ -10,7 +10,7 @@ import * as React from "react";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, Input, WebFontIcon } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../UiComponents.js";
 
 /** Properties of [[FormatSample]] component.
  * @alpha

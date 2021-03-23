@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
 import sinon from "sinon";
 import * as React from "react";
 import { BasePropertyEditorParams, InputEditorSizeParams, PropertyEditorParamTypes,
   PropertyRecord, PropertyValue, RangeEditorParams, SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
-import { NumericInputEditor } from "../../ui-components/editors/NumericInputEditor";
-import TestUtils from "../TestUtils";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { NumericInputEditor } from "../../ui-components/editors/NumericInputEditor.js";
+import TestUtils from "../TestUtils.js";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer.js";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager.js";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 describe("<NumericInputEditor />", () => {

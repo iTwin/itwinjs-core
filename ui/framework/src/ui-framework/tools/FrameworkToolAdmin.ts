@@ -8,8 +8,8 @@
 
 import { ToolAdmin } from "@bentley/imodeljs-frontend";
 import { SpecialKey } from "@bentley/ui-abstract";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { UiFramework } from "../UiFramework";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut.js";
+import { UiFramework } from "../UiFramework.js";
 
 /** UiFramework implementation of ToolAdmin
   * @alpha

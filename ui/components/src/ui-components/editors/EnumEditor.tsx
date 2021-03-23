@@ -11,9 +11,9 @@ import classnames from "classnames";
 import * as React from "react";
 import { EnumerationChoice, PropertyValue, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
 import { Select } from "@bentley/ui-core";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { UiComponents } from "../UiComponents";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
+import { UiComponents } from "../UiComponents.js";
 
 /** @internal */
 interface EnumEditorState {

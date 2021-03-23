@@ -8,9 +8,9 @@
 
 import "./Form.scss";
 import * as React from "react";
-import { Button, ButtonType } from "../button/Button";
-import { UiCore } from "../UiCore";
-import { Field } from "./Field";
+import { Button, ButtonType } from "../button/Button.js";
+import { UiCore } from "../UiCore.js";
+import { Field } from "./Field.js";
 
 // cSpell:ignore multilinetextbox
 

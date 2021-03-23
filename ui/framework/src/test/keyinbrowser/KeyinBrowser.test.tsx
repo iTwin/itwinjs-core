@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import { AutoSuggest, Button, LabeledInput } from "@bentley/ui-core";
-import { fireEvent, render } from "@testing-library/react";
-import { KeyinBrowser } from "../../ui-framework";
-import TestUtils, { mount, storageMock } from "../TestUtils";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { KeyinBrowser } from "../../ui-framework.js";
+import TestUtils, { mount, storageMock } from "../TestUtils.js";
 
 const myLocalStorage = storageMock();
 

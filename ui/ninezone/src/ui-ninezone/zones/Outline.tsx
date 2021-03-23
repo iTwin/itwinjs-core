@@ -10,7 +10,7 @@ import "./Outline.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
-import { CssProperties } from "../utilities/Css";
+import { CssProperties } from "../utilities/Css.js";
 
 /** Properties of [[OutlineProps]] component.
  * @beta

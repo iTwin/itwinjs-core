@@ -9,8 +9,8 @@
 import "./Expander.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PanelSide, panelSides } from "./Panel";
-import { NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone";
+import { PanelSide, panelSides } from "./Panel.js";
+import { NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone.js";
 import { Point, Timer } from "@bentley/ui-core";
 
 /** @internal */

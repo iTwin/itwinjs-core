@@ -7,7 +7,7 @@
  */
 
 import { isArrowKey, SpecialKey } from "@bentley/ui-abstract";
-import { Orientation } from "../enums/Orientation";
+import { Orientation } from "../enums/Orientation.js";
 
 /** Cross-Axis Arrow Key Callback
  * @internal

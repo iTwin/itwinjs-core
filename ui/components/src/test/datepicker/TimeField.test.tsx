@@ -6,9 +6,9 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { TimeField, TimeSpec } from "../../ui-components/datepicker/TimeField";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
+import { TimeField, TimeSpec } from "../../ui-components/datepicker/TimeField.js";
+import TestUtils from "../TestUtils.js";
 import { SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
 
 describe("<TimeField />", () => {

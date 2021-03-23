@@ -11,16 +11,16 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, Rectangle, Timer, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
-import { useDragTab } from "../base/DragManager";
-import { MeasureContext, NineZoneDispatchContext, TabNodeContext } from "../base/NineZone";
-import { TabState } from "../base/NineZoneState";
-import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
-import { PanelSideContext } from "../widget-panels/Panel";
-import { FloatingWidgetIdContext } from "./FloatingWidget";
-import { WidgetTabsEntryContext } from "./Tabs";
-import { restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget";
-import { WidgetOverflowContext } from "./Overflow";
-import { TabIdContext } from "./ContentRenderer";
+import { useDragTab } from "../base/DragManager.js";
+import { MeasureContext, NineZoneDispatchContext, TabNodeContext } from "../base/NineZone.js";
+import { TabState } from "../base/NineZoneState.js";
+import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor.js";
+import { PanelSideContext } from "../widget-panels/Panel.js";
+import { FloatingWidgetIdContext } from "./FloatingWidget.js";
+import { WidgetTabsEntryContext } from "./Tabs.js";
+import { restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget.js";
+import { WidgetOverflowContext } from "./Overflow.js";
+import { TabIdContext } from "./ContentRenderer.js";
 
 /** @internal */
 export interface WidgetTabProviderProps extends TabPositionContextArgs {

@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-// import * as sinon from "sinon";
+// import sinon from "sinon";
 import { Provider } from "react-redux";
 import { WidgetState } from "@bentley/ui-abstract";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, SelectionInfoField, SessionStateActionId, StatusBar, StatusBarWidgetControl,
   StatusBarWidgetControlArgs, UiFramework, WidgetDef,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("SelectionInfoField", () => {
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {

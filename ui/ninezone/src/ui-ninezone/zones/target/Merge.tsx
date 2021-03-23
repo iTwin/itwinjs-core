@@ -9,8 +9,8 @@
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { Arrow } from "./Arrow";
-import { ZoneTarget } from "./Zone";
+import { Arrow } from "./Arrow.js";
+import { ZoneTarget } from "./Zone.js";
 
 /** Properties of [[MergeTarget]] component.
  * @beta

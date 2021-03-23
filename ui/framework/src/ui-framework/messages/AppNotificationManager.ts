@@ -12,10 +12,10 @@ import {
   ToolAssistance, ToolAssistanceInstructions, ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { ElementTooltip } from "../feedback/ElementTooltip";
-import { UiFramework } from "../UiFramework";
-import { MessageManager } from "./MessageManager";
-import { PointerMessage } from "./Pointer";
+import { ElementTooltip } from "../feedback/ElementTooltip.js";
+import { UiFramework } from "../UiFramework.js";
+import { MessageManager } from "./MessageManager.js";
+import { PointerMessage } from "./Pointer.js";
 
 /**
  * The AppNotificationManager class is a subclass of NotificationManager in @bentley/imodeljs-frontend.

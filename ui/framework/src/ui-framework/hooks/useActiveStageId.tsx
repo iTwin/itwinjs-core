@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { FrontstageActivatedEventArgs, FrontstageManager } from "../frontstage/FrontstageManager";
+import { FrontstageActivatedEventArgs, FrontstageManager } from "../frontstage/FrontstageManager.js";
 
 /** React hook that maintains the active stageId.
  * @beta

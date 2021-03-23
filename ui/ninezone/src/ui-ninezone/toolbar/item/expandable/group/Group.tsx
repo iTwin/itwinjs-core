@@ -9,9 +9,9 @@
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import { Columns } from "./Columns";
-import { Panel } from "./Panel";
-import { Title } from "./Title";
+import { Columns } from "./Columns.js";
+import { Panel } from "./Panel.js";
+import { Title } from "./Title.js";
 
 /** Properties of [[Group]] component.
  * @alpha

@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { fireEvent, render } from "@testing-library/react";
-import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
-import TestUtils from "../../../TestUtils";
-import { UrlPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/UrlPropertyValueRenderer";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager.js";
+import TestUtils from "../../../TestUtils.js";
+import { UrlPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/UrlPropertyValueRenderer.js";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import sinon from "sinon";
 import * as moq from "typemoq";

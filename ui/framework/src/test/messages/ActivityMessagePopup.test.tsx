@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import * as React from "react";
 import { ActivityMessageDetails, ActivityMessageEndReason } from "@bentley/imodeljs-frontend";
 import { Message, MessageButton, MessageHyperlink, MessageProgress } from "@bentley/ui-ninezone";
-import { ActivityMessage, ActivityMessagePopup, AppNotificationManager, MessageManager } from "../../ui-framework";
-import { mount, TestUtils } from "../TestUtils";
+import { ActivityMessage, ActivityMessagePopup, AppNotificationManager, MessageManager } from "../../ui-framework.js";
+import { mount, TestUtils } from "../TestUtils.js";
 
 describe("ActivityMessagePopup", () => {
 

@@ -6,10 +6,10 @@
  * @module WorkflowTask
  */
 
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ItemDefBase } from "../shared/ItemDefBase";
-import { ItemProps } from "../shared/ItemProps";
-import { WorkflowManager } from "./Workflow";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { ItemDefBase } from "../shared/ItemDefBase.js";
+import { ItemProps } from "../shared/ItemProps.js";
+import { WorkflowManager } from "./Workflow.js";
 
 /** Properties for a [[Task]]
  * @public
@@ -30,7 +30,7 @@ export interface TaskPropsList {
  * A Task is a specific piece of work to accomplish.
  * A Task refers to a Frontstage to activate.
  * @public
- */
+ */
 export class Task extends ItemDefBase {
   public taskId: string;
   public primaryStageId: string;
@@ -70,7 +70,7 @@ export class Task extends ItemDefBase {
 
 /** Task Manager class.
  * @public
- */
+ */
 export class TaskManager {
   private static _tasks: Map<string, Task> = new Map<string, Task>();
 

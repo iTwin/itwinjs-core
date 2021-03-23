@@ -13,14 +13,14 @@ import {
   AlternateDateFormats, PropertyValue, PropertyValueFormat, StandardTypeNames, TimeDisplay,
 } from "@bentley/ui-abstract";
 import { BodyText } from "@bentley/ui-core";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
-import { TimeField, TimeSpec } from "../datepicker/TimeField";
-import { TypeConverter } from "../converters/TypeConverter";
-import { adjustDateToTimezone, DatePicker } from "../datepicker/DatePicker";
-import { TypeConverterManager } from "../converters/TypeConverterManager";
-import { DateTimeTypeConverterBase } from "../converters/DateTimeTypeConverter";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
+import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton.js";
+import { TimeField, TimeSpec } from "../datepicker/TimeField.js";
+import { TypeConverter } from "../converters/TypeConverter.js";
+import { adjustDateToTimezone, DatePicker } from "../datepicker/DatePicker.js";
+import { TypeConverterManager } from "../converters/TypeConverterManager.js";
+import { DateTimeTypeConverterBase } from "../converters/DateTimeTypeConverter.js";
 
 // cSpell:ignore datepicker
 

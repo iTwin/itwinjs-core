@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
-import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, PanelStateContext, PinToggle } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, PanelStateContext, PinToggle } from "../../ui-ninezone.js";
+import { NineZoneProvider } from "../Providers.js";
 
 describe("PinToggle", () => {
   it("should render", () => {

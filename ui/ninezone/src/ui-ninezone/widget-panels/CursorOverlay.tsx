@@ -8,7 +8,7 @@
 
 import "./CursorOverlay.scss";
 import * as React from "react";
-import { CursorTypeContext } from "../base/NineZone";
+import { CursorTypeContext } from "../base/NineZone.js";
 
 /** @internal */
 export type CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing";

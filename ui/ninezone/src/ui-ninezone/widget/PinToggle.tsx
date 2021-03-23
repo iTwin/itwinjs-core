@@ -9,8 +9,8 @@
 import "./PinToggle.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
-import { PanelSide, PanelStateContext } from "../widget-panels/Panel";
+import { NineZoneDispatchContext, useLabel } from "../base/NineZone.js";
+import { PanelSide, PanelStateContext } from "../widget-panels/Panel.js";
 import { assert } from "@bentley/bentleyjs-core";
 
 /** @internal */

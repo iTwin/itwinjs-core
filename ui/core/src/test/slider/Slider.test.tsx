@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { Icon } from "../../ui-core/icons/IconComponent";
-import { Slider } from "../../ui-core/slider/Slider";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
+import { Icon } from "../../ui-core/icons/IconComponent.js";
+import { Slider } from "../../ui-core/slider/Slider.js";
+import TestUtils from "../TestUtils.js";
 
 describe("Slider", () => {
 

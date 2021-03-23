@@ -10,9 +10,9 @@
 
 import * as React from "react";
 import { ColorDef, HSVColor } from "@bentley/imodeljs-common";
-import { ColorSwatch } from "./Swatch";
-import { HueSlider } from "./HueSlider";
-import { SaturationPicker } from "./SaturationPicker";
+import { ColorSwatch } from "./Swatch.js";
+import { HueSlider } from "./HueSlider.js";
+import { SaturationPicker } from "./SaturationPicker.js";
 import "./ColorPickerPanel.scss";
 
 /** Properties for the [[ColorPickerPanel]] React component

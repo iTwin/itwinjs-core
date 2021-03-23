@@ -6,7 +6,7 @@
  * @module ConfigurableUi
  */
 
-import { ConfigurableUiManager } from "./ConfigurableUiManager";
+import { ConfigurableUiManager } from "./ConfigurableUiManager.js";
 
 // cspell:ignore visibilitychange
 

@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import { UiError } from "@bentley/ui-abstract";
-import { ActionCreatorsObject, ActionsUnion, createAction, FrameworkReducer, ReducerRegistryInstance } from "../../ui-framework";
-import { StateManager } from "../../ui-framework/redux/StateManager";
+import { ActionCreatorsObject, ActionsUnion, createAction, FrameworkReducer, ReducerRegistryInstance } from "../../ui-framework.js";
+import { StateManager } from "../../ui-framework/redux/StateManager.js";
 
 // Fake state for the host app
 interface IAppState {

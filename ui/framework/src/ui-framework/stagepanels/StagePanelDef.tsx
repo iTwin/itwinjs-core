@@ -6,16 +6,17 @@
  * @module Frontstage
  */
 
-import produce, { Draft } from "immer";
+import * as immer from "immer";
+const produce = immer.produce;
 import { StagePanelLocation, StagePanelSection } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { NineZoneState, PanelSide } from "@bentley/ui-ninezone";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { WidgetDef } from "../widgets/WidgetDef";
-import { WidgetHost } from "../widgets/WidgetHost";
-import { StagePanelMaxSizeSpec, StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel";
-import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
-import { UiFramework } from "../UiFramework";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { WidgetDef } from "../widgets/WidgetDef.js";
+import { WidgetHost } from "../widgets/WidgetHost.js";
+import { StagePanelMaxSizeSpec, StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel.js";
+import { getStableWidgetProps, ZoneLocation } from "../zones/Zone.js";
+import { UiFramework } from "../UiFramework.js";
 
 /** Enum for StagePanel state.
  * @beta
@@ -302,7 +303,7 @@ export function toPanelSide(location: StagePanelLocation): PanelSide {
 
 /** @internal */
 export const setPanelSize = produce((
-  nineZone: Draft<NineZoneState>,
+  nineZone: immer.Draft<NineZoneState>,
   side: PanelSide,
   size: number | undefined,
 ) => {

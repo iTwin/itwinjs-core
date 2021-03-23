@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { UiFramework } from "../UiFramework";
+import { UiFramework } from "../UiFramework.js";
 
 /** @internal */
 export function useFrameworkVersion(): FrameworkVersion {

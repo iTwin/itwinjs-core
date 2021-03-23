@@ -11,8 +11,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { connect } from "react-redux";
 import { FooterIndicator } from "@bentley/ui-ninezone";
-import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { UiFramework } from "../UiFramework.js";
+import { StatusFieldProps } from "./StatusFieldProps.js";
 
 /** Defines properties supported by the Prompt Field Component.
  */
@@ -25,7 +25,7 @@ interface PromptFieldProps extends StatusFieldProps {
  * Prompt Field React component. This component is designed to be specified in a status bar definition.
  * It is used to display prompts from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
  * IModelApp.notifications.outputPrompt.
- */
+ */
 class PromptFieldComponent extends React.Component<PromptFieldProps> {
 
   constructor(props: PromptFieldProps) {

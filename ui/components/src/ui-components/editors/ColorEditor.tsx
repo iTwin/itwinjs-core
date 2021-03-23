@@ -14,9 +14,9 @@ import {
   ColorEditorParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
-import { ColorPickerButton } from "../color/ColorPickerButton";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { ColorPickerButton } from "../color/ColorPickerButton.js";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
 
 /** @internal */
 interface ColorEditorState {

@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { createNineZoneState, DragManager, DragManagerContext, ToolSettingsStateContext } from "@bentley/ui-ninezone";
-import { NineZoneProvider } from "@bentley/ui-ninezone/lib/test/Providers";
-import { render } from "@testing-library/react";
+import { NineZoneProvider } from "@bentley/ui-ninezone/lib/test/Providers.js";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
   ConfigurableCreateInfo, FrontstageDef, FrontstageManager, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsEntry, ToolSettingsGrid,
   ToolUiProvider, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef,
-} from "../../ui-framework";
+} from "../../ui-framework.js";
 
 describe("WidgetPanelsToolSettings", () => {
   it("should not render w/o tool settings top center zone", () => {

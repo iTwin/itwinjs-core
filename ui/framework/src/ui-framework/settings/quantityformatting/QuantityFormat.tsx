@@ -19,10 +19,10 @@ import {
   Button, ButtonType, Dialog, Listbox, ListboxItem, SettingsTabEntry,
   useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer,
 } from "@bentley/ui-core";
-import { ModalDialogManager } from "../../dialog/ModalDialogManager";
-import { UiFramework } from "../../UiFramework";
+import { ModalDialogManager } from "../../dialog/ModalDialogManager.js";
+import { UiFramework } from "../../UiFramework.js";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
-import { UnitSystemSelector } from "./UnitSystemSelector";
+import { UnitSystemSelector } from "./UnitSystemSelector.js";
 import { Presentation } from "@bentley/presentation-frontend";
 
 function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
@@ -45,13 +45,13 @@ export interface QuantityFormatterSettingsOptions {
  * @beta
  */
 export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial<QuantityFormatterSettingsOptions>): SettingsTabEntry {
-  const {availableUnitSystems, initialQuantityType} = {...opts};
+  const { availableUnitSystems, initialQuantityType } = { ...opts };
   return {
     itemPriority, tabId: "uifw:Quantity",
     label: UiFramework.translate("settings.quantity-formatting.label"),
     subLabel: UiFramework.translate("settings.quantity-formatting.subLabel"),
-    page: <QuantityFormatSettingsPanel initialQuantityType={initialQuantityType??QuantityType.Length}
-      availableUnitSystems={availableUnitSystems??new Set(["metric","imperial","usCustomary","usSurvey"])} />,
+    page: <QuantityFormatSettingsPanel initialQuantityType={initialQuantityType ?? QuantityType.Length}
+      availableUnitSystems={availableUnitSystems ?? new Set(["metric", "imperial", "usCustomary", "usSurvey"])} />,
     isDisabled: false,
     icon: "icon-measure",
     tooltip: UiFramework.translate("settings.quantity-formatting.tooltip"),
@@ -62,7 +62,7 @@ export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opt
 /** UI Component shown in settings page to set the active Presentation Unit System and to set format overrides.
  * @beta
  */
-export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitSystems}: QuantityFormatterSettingsOptions) {
+export function QuantityFormatSettingsPanel({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions) {
   const [activeUnitSystemKey, setActiveUnitSystemKey] = React.useState(IModelApp.quantityFormatter.activeUnitSystem);
   const [activeQuantityType, setActiveQuantityType] = React.useState(getQuantityTypeKey(initialQuantityType));
   const [activeFormatterSpec, setActiveFormatterSpec] =
@@ -78,7 +78,7 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
     const handleUnitSystemChanged = ((): void => {
       // istanbul ignore else
       if (activeUnitSystemKey !== IModelApp.quantityFormatter.activeUnitSystem) {
-        setActiveUnitSystemKey (IModelApp.quantityFormatter.activeUnitSystem);
+        setActiveUnitSystemKey(IModelApp.quantityFormatter.activeUnitSystem);
         setActiveFormatterSpec(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType));
         setSaveEnabled(false);
         setClearEnabled(IModelApp.quantityFormatter.hasActiveOverride(activeQuantityType, true));
@@ -174,7 +174,7 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
     setClearEnabled(false);
   }, [activeQuantityType]);
 
-  const processNewUnitSystem = React.useCallback(async (unitSystem: UnitSystemKey ) => {
+  const processNewUnitSystem = React.useCallback(async (unitSystem: UnitSystemKey) => {
     switch (unitSystem) {
       case "imperial":
         Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
@@ -193,13 +193,13 @@ export function QuantityFormatSettingsPanel({initialQuantityType, availableUnitS
         await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
         break;
     }
-  },[]);
+  }, []);
 
-  const handleUnitSystemSelected = React.useCallback(async (unitSystem: UnitSystemKey ) => {
+  const handleUnitSystemSelected = React.useCallback(async (unitSystem: UnitSystemKey) => {
     if (unitSystem === activeUnitSystemKey)
       return;
-    saveChanges (processNewUnitSystem, unitSystem);
-  },[activeUnitSystemKey, processNewUnitSystem, saveChanges]);
+    saveChanges(processNewUnitSystem, unitSystem);
+  }, [activeUnitSystemKey, processNewUnitSystem, saveChanges]);
 
   return (
     <div className="quantity-formatting-container">

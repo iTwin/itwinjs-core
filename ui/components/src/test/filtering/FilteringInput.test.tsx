@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import { expect } from "chai";
-import * as enzyme from "enzyme";
+import enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Key } from "ts-key-enum";
-import { FilteringInput, FilteringInputStatus } from "../../ui-components/filtering/FilteringInput";
-import { ResultSelector } from "../../ui-components/filtering/ResultSelector";
-import TestUtils from "../TestUtils";
+import { FilteringInput, FilteringInputStatus } from "../../ui-components/filtering/FilteringInput.js";
+import { ResultSelector } from "../../ui-components/filtering/ResultSelector.js";
+import TestUtils from "../TestUtils.js";
 
 describe("FilteringInput", () => {
   before(async () => {

@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import {
   createNineZoneState,
   DragManager,
   DragManagerContext,
   NineZoneProvider as RealNineZoneProvider,
   NineZoneProviderProps as RealNineZoneProviderProps,
-} from "../ui-ninezone";
+} from "../ui-ninezone.js";
 import { Point, Rectangle, Size } from "@bentley/ui-core";
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

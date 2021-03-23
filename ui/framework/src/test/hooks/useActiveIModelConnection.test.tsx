@@ -7,9 +7,9 @@ import * as React from "react";
 import { Provider } from "react-redux";
 import * as moq from "typemoq";
 import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
-import { render } from "@testing-library/react";
-import { SyncUiEventDispatcher, UiFramework, useActiveIModelConnection } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { SyncUiEventDispatcher, UiFramework, useActiveIModelConnection } from "../../ui-framework.js";
+import TestUtils from "../TestUtils.js";
 
 describe("useActiveIModelConnection", () => {
   before(async () => {

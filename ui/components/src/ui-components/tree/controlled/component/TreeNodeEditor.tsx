@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
-import { EditorContainer, PropertyUpdatedArgs, TreeModelNode } from "../../../../ui-components";
+import { EditorContainer, PropertyUpdatedArgs, TreeModelNode } from "../../../../ui-components.js";
 
 /** Properties for [[TreeNodeEditor]] component
  * @beta

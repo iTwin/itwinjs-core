@@ -11,7 +11,7 @@ import "./KeyinBrowser.scss";
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Tool } from "@bentley/imodeljs-frontend";
 import { AutoSuggest, AutoSuggestData, Button, CommonProps, InputLabel, LabeledInput } from "@bentley/ui-core";
-import { UiFramework } from "../UiFramework";
+import { UiFramework } from "../UiFramework.js";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Data for each key-in.
@@ -34,7 +34,7 @@ interface KeyinBrowserState {
 
 /** Arguments for [[KeyinBrowserProps]] onExecute callback.
  * @beta
- */
+ */
 export interface KeyinBrowserExecuteArgs {
   /** Id of the tool that was run */
   toolId: string | undefined;
@@ -46,7 +46,7 @@ export interface KeyinBrowserExecuteArgs {
 
 /** Properties of the [[KeyinBrowser]] component.
  * @beta
- */
+ */
 export interface KeyinBrowserProps extends CommonProps {
   /** Function called after the key-in is executed */
   onExecute?: (args: KeyinBrowserExecuteArgs) => void;

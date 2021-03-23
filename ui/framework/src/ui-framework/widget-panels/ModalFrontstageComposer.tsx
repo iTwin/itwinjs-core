@@ -6,8 +6,8 @@
  * @module Frontstage
  */
 import * as React from "react";
-import { FrontstageManager, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
-import { ModalFrontstage } from "../frontstage/ModalFrontstage";
+import { FrontstageManager, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "../frontstage/FrontstageManager.js";
+import { ModalFrontstage } from "../frontstage/ModalFrontstage.js";
 
 /** @internal */
 export function useActiveModalFrontstageInfo() {

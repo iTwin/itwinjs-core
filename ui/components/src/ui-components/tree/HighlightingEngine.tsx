@@ -8,7 +8,7 @@
 
 import "./HighlightingEngine.scss";
 import * as React from "react";
-import { HighlightedText } from "../common/HighlightedText";
+import { HighlightedText } from "../common/HighlightedText.js";
 
 /**
  * Active match info for highlightable [[Tree]]

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import { ToolbarHelper } from "../../ui-framework";
-import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
-import { BasicToolWidget } from "../../ui-framework/widgets/BasicToolWidget";
-import TestUtils, { mount } from "../TestUtils";
+import { ToolbarHelper } from "../../ui-framework.js";
+import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef.js";
+import { BasicToolWidget } from "../../ui-framework/widgets/BasicToolWidget.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("BasicToolWidget", () => {
 

@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { CommonProps, Size, SizeProps } from "@bentley/ui-core";
-import { ToolbarItem, ToolbarItemProps } from "../Toolbar";
+import { ToolbarItem, ToolbarItemProps } from "../Toolbar.js";
 
 /** Properties of [[Item]] component.
  * @beta

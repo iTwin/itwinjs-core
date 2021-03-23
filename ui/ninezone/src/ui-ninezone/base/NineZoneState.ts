@@ -8,9 +8,9 @@
 
 import { castDraft, Draft, produce } from "immer";
 import { Point, PointProps, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
-import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
+import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel.js";
 import { assert } from "@bentley/bentleyjs-core";
-import { getUniqueId } from "./NineZone";
+import { getUniqueId } from "./NineZone.js";
 
 /** @internal future */
 export interface TabState {
@@ -1081,8 +1081,8 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
       return undefined; // already floating
 
     const tab = state.tabs[widgetTabId];
-    const preferredSize = size??(tab.preferredFloatingWidgetSize??{height:400, width:400});
-    const preferredPoint = point ?? {x:50, y:100};
+    const preferredSize = size ?? (tab.preferredFloatingWidgetSize ?? { height: 400, width: 400 });
+    const preferredPoint = point ?? { x: 50, y: 100 };
     const preferredBounds = Rectangle.createFromSize(preferredSize).offset(preferredPoint);
     const nzBounds = Rectangle.createFromSize(state.size);
     const containedBounds = preferredBounds.containIn(nzBounds);

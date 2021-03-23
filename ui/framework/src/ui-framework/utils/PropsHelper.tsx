@@ -9,7 +9,7 @@
 import * as React from "react";
 import { ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
-import { UiFramework } from "../UiFramework";
+import { UiFramework } from "../UiFramework.js";
 
 /** A set of helper methods for various props
  * @public

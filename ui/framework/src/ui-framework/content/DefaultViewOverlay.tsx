@@ -10,11 +10,11 @@ import "./DefaultViewOverlay.scss";
 import * as React from "react";
 import { IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 import { SolarDataProvider, SolarTimeline, TimelineComponent, TimelineDataProvider } from "@bentley/ui-components";
-import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { AnalysisAnimationTimelineDataProvider } from "../timeline/AnalysisAnimationProvider";
-import { ScheduleAnimationTimelineDataProvider } from "../timeline/ScheduleAnimationProvider";
-import { SolarTimelineDataProvider } from "../timeline/SolarTimelineDataProvider";
-import { ContentViewManager } from "./ContentViewManager";
+import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher.js";
+import { AnalysisAnimationTimelineDataProvider } from "../timeline/AnalysisAnimationProvider.js";
+import { ScheduleAnimationTimelineDataProvider } from "../timeline/ScheduleAnimationProvider.js";
+import { SolarTimelineDataProvider } from "../timeline/SolarTimelineDataProvider.js";
+import { ContentViewManager } from "./ContentViewManager.js";
 
 /** Props of Viewport Overlay Control that show timelines
  */

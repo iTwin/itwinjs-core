@@ -7,8 +7,8 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { PageOptions } from "../common/PageOptions";
-import { ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "./TreeDataProvider";
+import { PageOptions } from "../common/PageOptions.js";
+import { ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "./TreeDataProvider.js";
 
 /**
  * Used by [[SimpleTreeDataProvider]].

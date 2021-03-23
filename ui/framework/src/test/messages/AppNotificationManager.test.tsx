@@ -5,13 +5,13 @@
 
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert,
   OutputMessagePriority, OutputMessageType,
 } from "@bentley/imodeljs-frontend";
-import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogManager, ModalDialogRenderer } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogManager, ModalDialogRenderer } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("AppNotificationManager", () => {
 

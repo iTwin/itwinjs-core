@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
 import {
@@ -11,8 +11,8 @@ import {
   getToolbarBackdropFilter, getToolbarBackgroundColor, getToolbarBoxShadow,
   TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
   useProximityToMouse, WidgetElementSet,
-} from "../../../ui-core/utils/hooks/useProximityToMouse";
-import { TestUtils } from "../../TestUtils";
+} from "../../../ui-core/utils/hooks/useProximityToMouse.js";
+import { TestUtils } from "../../TestUtils.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ProximityToMouse = (props: { children?: (proximity: number) => React.ReactNode }) => {

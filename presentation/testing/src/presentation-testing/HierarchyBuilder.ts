@@ -9,7 +9,7 @@ import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Omit, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { PRESENTATION_TREE_NODE_KEY } from "@bentley/presentation-components/lib/presentation-components/tree/Utils";
+import { PRESENTATION_TREE_NODE_KEY } from "@bentley/presentation-components/lib/presentation-components/tree/Utils.js";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 

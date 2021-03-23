@@ -11,7 +11,7 @@
 import * as React from "react";
 import classnames from "classnames";
 import { IMatch } from "@bentley/ui-abstract";
-import { CommonProps } from "../utils/Props";
+import { CommonProps } from "../utils/Props.js";
 import "./FilteredText.scss";
 
 /** Props supported by [FilteredText] component

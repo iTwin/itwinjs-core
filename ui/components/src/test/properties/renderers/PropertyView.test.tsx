@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { ElementSeparator, Orientation } from "@bentley/ui-core";
-import { PropertyView } from "../../../ui-components";
-import TestUtils from "../../TestUtils";
+import { PropertyView } from "../../../ui-components.js";
+import TestUtils from "../../TestUtils.js";
 
 describe("PropertyView", () => {
   let propertyRecord: PropertyRecord;

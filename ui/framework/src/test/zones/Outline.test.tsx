@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import { Outline } from "../../ui-framework/zones/Outline";
-import { mount } from "../TestUtils";
+import { Outline } from "../../ui-framework/zones/Outline.js";
+import { mount } from "../TestUtils.js";
 
 describe("Outline", () => {
   it("should mount", () => {

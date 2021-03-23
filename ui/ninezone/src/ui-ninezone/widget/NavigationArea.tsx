@@ -10,7 +10,7 @@ import "./NavigationArea.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import { ToolbarPanelAlignment } from "../toolbar/Toolbar";
+import { ToolbarPanelAlignment } from "../toolbar/Toolbar.js";
 
 /** Properties of [[NavigationArea]] component.
  * @alpha

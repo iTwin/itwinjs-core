@@ -11,11 +11,11 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Rectangle, SizeProps } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
-import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
-import { getUniqueId, MeasureContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
-import { TabState, WidgetState } from "../base/NineZoneState";
-import { PanelSideContext } from "../widget-panels/Panel";
-import { FloatingWidgetIdContext } from "./FloatingWidget";
+import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager.js";
+import { getUniqueId, MeasureContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone.js";
+import { TabState, WidgetState } from "../base/NineZoneState.js";
+import { PanelSideContext } from "../widget-panels/Panel.js";
+import { FloatingWidgetIdContext } from "./FloatingWidget.js";
 
 /** @internal */
 export interface WidgetProviderProps {

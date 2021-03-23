@@ -9,9 +9,9 @@ import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
   SyncToolSettingsPropertiesEventArgs,
   ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider, Widget, Zone,
-} from "../../../ui-framework";
-import { ToolInformation } from "../../../ui-framework/zones/toolsettings/ToolInformation";
-import TestUtils from "../../TestUtils";
+} from "../../../ui-framework.js";
+import { ToolInformation } from "../../../ui-framework/zones/toolsettings/ToolInformation.js";
+import TestUtils from "../../TestUtils.js";
 import { DialogItemValue, DialogPropertySyncItem, UiLayoutDataProvider } from "@bentley/ui-abstract";
 
 describe("ToolUiProvider", () => {

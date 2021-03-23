@@ -8,9 +8,9 @@ import * as React from "react";
 import { NumberInput, Select, Slider, Toggle } from "@bentley/ui-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, ViewState3d } from "@bentley/imodeljs-frontend";
 import { BackgroundMapProps, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
-import { useSourceMapContext } from "./MapLayerManager";
+import { useSourceMapContext } from "./MapLayerManager.js";
 import "./MapManagerSettings.scss";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider.js";
 
 function getHeightOriginModeKey(mode: TerrainHeightOriginMode): string {
   if (TerrainHeightOriginMode.Geodetic === mode)

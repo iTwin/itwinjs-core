@@ -9,11 +9,11 @@
 import * as React from "react";
 import { AbstractWidgetProps } from "@bentley/ui-abstract";
 import { IconProps } from "@bentley/ui-core";
-import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
+import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl.js";
 
 /** Properties for a [Widget]($ui-framework) component.
  * @public
- */
+ */
 // export interface WidgetProps extends IconProps {
 export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps {
   /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */

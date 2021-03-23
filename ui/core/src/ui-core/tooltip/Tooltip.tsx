@@ -9,8 +9,8 @@
 import "./Tooltip.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
-import { Popup } from "../popup/Popup";
+import { CommonProps } from "../utils/Props.js";
+import { Popup } from "../popup/Popup.js";
 import { RelativePosition } from "@bentley/ui-abstract";
 
 /** Available tooltip placements.

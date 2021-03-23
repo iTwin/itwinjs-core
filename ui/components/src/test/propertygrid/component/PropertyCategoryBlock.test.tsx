@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
-import { PropertyCategoryBlock } from "../../../ui-components/propertygrid/component/PropertyCategoryBlock";
-import { PropertyCategory } from "../../../ui-components/propertygrid/PropertyDataProvider";
+import { PropertyCategoryBlock } from "../../../ui-components/propertygrid/component/PropertyCategoryBlock.js";
+import { PropertyCategory } from "../../../ui-components/propertygrid/PropertyDataProvider.js";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 describe("PropertyCategoryBlock", () => {

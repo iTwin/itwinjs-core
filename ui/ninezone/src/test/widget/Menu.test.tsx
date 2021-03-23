@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "@testing-library/react";
-import { WidgetMenu } from "../../ui-ninezone";
-import { createDOMRect } from "../Utils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { WidgetMenu } from "../../ui-ninezone.js";
+import { createDOMRect } from "../Utils.js";
 
 describe("WidgetMenu ", () => {
   it("should render", () => {

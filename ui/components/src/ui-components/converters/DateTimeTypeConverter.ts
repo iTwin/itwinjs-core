@@ -9,12 +9,12 @@ import { Logger } from "@bentley/bentleyjs-core";
 
 import { AlternateDateFormats, Primitives, StandardTypeNames, TimeDisplay } from "@bentley/ui-abstract";
 import { TimeFormat } from "@bentley/ui-core";
-import { formatInputDate } from "../datepicker/DateField";
-import { adjustDateToTimezone } from "../datepicker/DatePicker";
-import { UiComponents } from "../UiComponents";
-import { LessGreaterOperatorProcessor, TypeConverter } from "./TypeConverter";
-import { TypeConverterManager } from "./TypeConverterManager";
-import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
+import { formatInputDate } from "../datepicker/DateField.js";
+import { adjustDateToTimezone } from "../datepicker/DatePicker.js";
+import { UiComponents } from "../UiComponents.js";
+import { LessGreaterOperatorProcessor, TypeConverter } from "./TypeConverter.js";
+import { TypeConverterManager } from "./TypeConverterManager.js";
+import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes.js";
 
 // cSpell:ignore datepicker valuetypes
 

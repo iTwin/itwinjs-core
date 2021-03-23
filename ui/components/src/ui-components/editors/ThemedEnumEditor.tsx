@@ -11,9 +11,9 @@ import classnames from "classnames";
 import * as React from "react";
 import { EnumerationChoice, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
 import { OptionType, ThemedSelect } from "@bentley/ui-core";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { ActionMeta, ValueType } from "react-select/src/types";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
+import { ActionMeta, ValueType } from "react-select/src/types.js";
 
 /** Properties for [[EnumEditor]] component
  * @beta

@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
-import { Button, ButtonSize, ButtonType } from "../../ui-core/button/Button";
+import { Button, ButtonSize, ButtonType } from "../../ui-core/button/Button.js";
 
 describe("<Button />", () => {
   it("should render", () => {

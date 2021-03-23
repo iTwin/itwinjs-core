@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Toolbar
@@ -10,9 +10,9 @@ import * as React from "react";
 import {
   CommonToolbarItem, StageUsage, ToolbarItemsChangedArgs, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage, UiItemsArbiter, UiItemsManager,
 } from "@bentley/ui-abstract";
-import { useActiveStageId } from "../hooks/useActiveStageId";
-import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { useActiveStageId } from "../hooks/useActiveStageId.js";
+import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders.js";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
 
 /** Hook that returns items from [[ToolbarItemsManager]].
  * @beta

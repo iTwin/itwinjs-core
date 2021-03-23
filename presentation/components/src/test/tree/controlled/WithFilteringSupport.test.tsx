@@ -12,7 +12,7 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { NodePathElement } from "@bentley/presentation-common";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises.js";
 import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, MutableTreeModel, SelectionMode, TreeEvents, TreeModel, TreeModelChanges, TreeModelSource,
   UiComponents, VisibleTreeNodes,

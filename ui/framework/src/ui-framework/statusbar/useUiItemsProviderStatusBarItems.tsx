@@ -10,9 +10,9 @@ import * as React from "react";
 import {
   CommonStatusBarItem, StageUsage, StatusBarItemsChangedArgs, StatusBarItemsManager, UiItemsArbiter, UiItemsManager,
 } from "@bentley/ui-abstract";
-import { useActiveStageId } from "../hooks/useActiveStageId";
-import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { useActiveStageId } from "../hooks/useActiveStageId.js";
+import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders.js";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
 
 // cspell:ignore setxxx
 

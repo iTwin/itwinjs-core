@@ -24,8 +24,8 @@ import {
   AccuDrawSetOriginTool,
   DefineACSByPointsTool,
 } from "@bentley/imodeljs-frontend";
-import { ToolItemDef } from "../../ui-framework";
-import { BumpToolSetting, FocusToolSettings } from "../tools/ToolSettingsTools";
+import { ToolItemDef } from "../../ui-framework.js";
+import { BumpToolSetting, FocusToolSettings } from "../tools/ToolSettingsTools.js";
 
 /** AccuDraw Command Items - useful in Keyboard Shortcuts
  * @alpha

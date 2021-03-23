@@ -9,8 +9,8 @@
 import "./SendBack.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
-import { FloatingWidgetContext } from "./FloatingWidget";
+import { NineZoneDispatchContext, useLabel } from "../base/NineZone.js";
+import { FloatingWidgetContext } from "./FloatingWidget.js";
 import { assert } from "@bentley/bentleyjs-core";
 
 /** @internal */

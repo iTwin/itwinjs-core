@@ -10,20 +10,20 @@ import "./ControlledTree.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { areEqual, ListChildComponentProps } from "react-window";
-import { concat } from "rxjs/internal/observable/concat";
-import { EMPTY } from "rxjs/internal/observable/empty";
-import { timer } from "rxjs/internal/observable/timer";
+import { concat } from "rxjs/internal/observable/concat.js";
+import { EMPTY } from "rxjs/internal/observable/empty.js";
+import { timer } from "rxjs/internal/observable/timer.js";
 import { assert } from "@bentley/bentleyjs-core";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
-import { createContextWithMandatoryProvider } from "../../../common/UseContextWithMandatoryProvider";
-import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
-import { VirtualizedList, VirtualizedListAttributes } from "../internal/VirtualizedList";
-import { TreeActions } from "../TreeActions";
+import { createContextWithMandatoryProvider } from "../../../common/UseContextWithMandatoryProvider.js";
+import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine.js";
+import { VirtualizedList, VirtualizedListAttributes } from "../internal/VirtualizedList.js";
+import { TreeActions } from "../TreeActions.js";
 import {
   isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes,
-} from "../TreeModel";
-import { ITreeNodeLoader } from "../TreeNodeLoader";
-import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
+} from "../TreeModel.js";
+import { ITreeNodeLoader } from "../TreeNodeLoader.js";
+import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer.js";
 
 const NODE_LOAD_DELAY = 500;
 

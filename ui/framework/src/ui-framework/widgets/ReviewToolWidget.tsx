@@ -8,11 +8,11 @@
 
 import * as React from "react";
 import { IconSpec } from "@bentley/ui-core";
-import { Backstage } from "../backstage/Backstage";
-import { CoreTools } from "../tools/CoreToolDefinitions";
-import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
-import { ItemList } from "../shared/ItemMap";
-import { ToolWidget } from "./ToolWidget";
+import { Backstage } from "../backstage/Backstage.js";
+import { CoreTools } from "../tools/CoreToolDefinitions.js";
+import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef.js";
+import { ItemList } from "../shared/ItemMap.js";
+import { ToolWidget } from "./ToolWidget.js";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
  * @beta

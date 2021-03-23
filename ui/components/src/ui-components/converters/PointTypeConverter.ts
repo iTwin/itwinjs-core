@@ -8,9 +8,9 @@
 
 import { Primitives, StandardTypeNames } from "@bentley/ui-abstract";
 import { isPromiseLike } from "@bentley/ui-core";
-import { TypeConverter } from "./TypeConverter";
-import { TypeConverterManager } from "./TypeConverterManager";
-import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
+import { TypeConverter } from "./TypeConverter.js";
+import { TypeConverterManager } from "./TypeConverterManager.js";
+import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes.js";
 
 // cSpell:ignore valuetypes
 

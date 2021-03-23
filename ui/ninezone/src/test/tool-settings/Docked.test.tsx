@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
-import { act, fireEvent, queryByText, render } from "@testing-library/react";
+import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill.js";
+import tlr from "@testing-library/react"; const { act, fireEvent, queryByText, render } = tlr;
 import {
   DockedToolSetting, DockedToolSettings, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
-} from "../../ui-ninezone";
-import { createDOMRect, ResizeObserverMock } from "../Utils";
-import { DragManagerProvider } from "../Providers";
+} from "../../ui-ninezone.js";
+import { createDOMRect, ResizeObserverMock } from "../Utils.js";
+import { DragManagerProvider } from "../Providers.js";
 
 describe("DockedToolSettings", () => {
   it("should render w/o entries", () => {

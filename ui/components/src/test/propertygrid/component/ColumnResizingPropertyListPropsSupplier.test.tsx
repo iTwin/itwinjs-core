@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { ColumnResizingPropertyListPropsSupplier } from "../../../ui-components/propertygrid/component/ColumnResizingPropertyListPropsSupplier";
-import { PropertyList } from "../../../ui-components/propertygrid/component/PropertyList";
-import TestUtils from "../../TestUtils";
+import { ColumnResizingPropertyListPropsSupplier } from "../../../ui-components/propertygrid/component/ColumnResizingPropertyListPropsSupplier.js";
+import { PropertyList } from "../../../ui-components/propertygrid/component/PropertyList.js";
+import TestUtils from "../../TestUtils.js";
 
 describe("ColumnResizingPropertyListPropsSupplier", () => {
 

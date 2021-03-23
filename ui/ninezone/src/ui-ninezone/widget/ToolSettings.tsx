@@ -10,10 +10,10 @@ import "./ToolSettings.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
-import { DragHandle } from "../base/DragHandle";
-import { TitleBar } from "../footer/dialog/TitleBar";
-import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
-import { ResizeHandle } from "./Stacked";
+import { DragHandle } from "../base/DragHandle.js";
+import { TitleBar } from "../footer/dialog/TitleBar.js";
+import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "./rectangular/ResizeGrip.js";
+import { ResizeHandle } from "./Stacked.js";
 
 /** Properties of [[ToolSettings]] component.
  * @beta

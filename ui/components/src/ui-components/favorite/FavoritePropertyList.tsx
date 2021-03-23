@@ -9,9 +9,9 @@
 import "./FavoritePropertyList.scss";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
-import { PropertyList } from "../propertygrid/component/PropertyList";
-import { PropertyData } from "../propertygrid/PropertyDataProvider";
+import { PropertyValueRendererManager } from "../properties/ValueRendererManager.js";
+import { PropertyList } from "../propertygrid/component/PropertyList.js";
+import { PropertyData } from "../propertygrid/PropertyDataProvider.js";
 
 /** Properties for [[FavoritePropertyList]] React component
  * @alpha

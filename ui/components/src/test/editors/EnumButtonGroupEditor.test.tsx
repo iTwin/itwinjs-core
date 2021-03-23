@@ -6,12 +6,12 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, waitForElement } = tlr;
 import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer.js";
+import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor.js";
+import TestUtils from "../TestUtils.js";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager.js";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 // cSpell:ignore enumbuttongroup

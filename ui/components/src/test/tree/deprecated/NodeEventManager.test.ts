@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { of } from "rxjs/internal/observable/of";
+import { of } from "rxjs/internal/observable/of.js";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { CheckBoxState } from "@bentley/ui-core";
-import { TreeNodeItem } from "../../../ui-components";
-import { BeInspireTree, BeInspireTreeNode } from "../../../ui-components/tree/deprecated/component/BeInspireTree";
-import { NodeEventManager } from "../../../ui-components/tree/deprecated/NodeEventManager";
-import { NodeLoadingOrchestrator } from "../../../ui-components/tree/deprecated/NodeLoadingOrchestrator";
-import { initializeTree } from "../TestDataFactories";
+import { TreeNodeItem } from "../../../ui-components.js";
+import { BeInspireTree, BeInspireTreeNode } from "../../../ui-components/tree/deprecated/component/BeInspireTree.js";
+import { NodeEventManager } from "../../../ui-components/tree/deprecated/NodeEventManager.js";
+import { NodeLoadingOrchestrator } from "../../../ui-components/tree/deprecated/NodeLoadingOrchestrator.js";
+import { initializeTree } from "../TestDataFactories.js";
 
 /* eslint-disable deprecation/deprecation */
 

@@ -8,20 +8,20 @@
 
 import "./ModelSelector.scss";
 import classnames from "classnames";
-import * as _ from "lodash";
+import * as _ from "lodash-es";
 import * as React from "react";
 import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
 import { IModelApp, SpatialModelState, SpatialViewState, Viewport } from "@bentley/imodeljs-frontend";
 import { RegisteredRuleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { LoadingSpinner, SpinnerSize } from "@bentley/ui-core";
-import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
-import { UiFramework } from "../../UiFramework";
-import { WidgetControl } from "../../widgets/WidgetControl";
-import { ListItem, ListItemType } from "../ListPicker";
-import { Groups, ModelGroup, ModelSelectorDataProvider, ModelSelectorWidgetProps, ModelSelectorWidgetState } from "./ModelSelectorDefinitions";
-import { CategoryModelTree } from "./ModelSelectorTree";
+import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl.js";
+import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager.js";
+import { UiFramework } from "../../UiFramework.js";
+import { WidgetControl } from "../../widgets/WidgetControl.js";
+import { ListItem, ListItemType } from "../ListPicker.js";
+import { Groups, ModelGroup, ModelSelectorDataProvider, ModelSelectorWidgetProps, ModelSelectorWidgetState } from "./ModelSelectorDefinitions.js";
+import { CategoryModelTree } from "./ModelSelectorTree.js";
 
 /**
  * Model Selector [[WidgetControl]]

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const {  mount, shallow } = enzyme;
 import * as React from "react";
 import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -12,13 +12,13 @@ import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import {
   AnyWidgetProps, ConfigurableCreateInfo, ContentControl, FrontstageManager, ItemList, NavigationAidHost, NavigationWidget, NavigationWidgetDef,
   ToolButton,
-} from "../../ui-framework";
-import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager";
-import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
-import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
-import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
-import TestUtils from "../TestUtils";
-import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
+} from "../../ui-framework.js";
+import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager.js";
+import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions.js";
+import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion.js";
+import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl.js";
+import TestUtils from "../TestUtils.js";
+import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager.js";
 
 describe("NavigationWidget", () => {
 

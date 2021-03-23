@@ -3,24 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, MockRender, ScreenViewport, SelectionSet } from "@bentley/imodeljs-frontend";
 import { InstanceKey, RpcRequestsHandler } from "@bentley/presentation-common";
-import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
 import {
   ContentControlActivatedEventArgs, ContentLayoutActivatedEventArgs, NavigationAidActivatedEventArgs, SyncUiEventArgs, SyncUiEventDispatcher,
   UiFramework, WidgetStateChangedEventArgs,
-} from "../../ui-framework";
-import { Backstage, BackstageEventArgs } from "../../ui-framework/backstage/Backstage";
-import { ActiveContentChangedEventArgs, ContentViewManager } from "../../ui-framework/content/ContentViewManager";
+} from "../../ui-framework.js";
+import { Backstage, BackstageEventArgs } from "../../ui-framework/backstage/Backstage.js";
+import { ActiveContentChangedEventArgs, ContentViewManager } from "../../ui-framework/content/ContentViewManager.js";
 import {
   FrontstageActivatedEventArgs, FrontstageManager, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, ToolActivatedEventArgs,
-} from "../../ui-framework/frontstage/FrontstageManager";
-import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../ui-framework/workflow/Workflow";
-import TestUtils from "../TestUtils";
+} from "../../ui-framework/frontstage/FrontstageManager.js";
+import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../ui-framework/workflow/Workflow.js";
+import TestUtils from "../TestUtils.js";
 
 const timeToWaitForUiSyncCallback = 60;
 

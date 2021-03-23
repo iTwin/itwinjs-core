@@ -7,13 +7,13 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { StandardTypeNames } from "@bentley/ui-abstract";
-import { BooleanTypeConverter } from "../../../ui-components/converters/BooleanTypeConverter";
-import { FilterOperator, OperatorValueFilterDescriptorCollection } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
-import { ColumnFilteringUtilities } from "../../../ui-components/table/columnfiltering/ColumnFilteringUtilities";
-import { NumericFilterType, NumericRangeData } from "../../../ui-components/table/columnfiltering/DataGridFilterParser";
-import { TableFilterDescriptor } from "../../../ui-components/table/columnfiltering/TableFilterDescriptor";
-import { CellItem, ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider";
-import { TestFilterableTable, TestUtils } from "../../TestUtils";
+import { BooleanTypeConverter } from "../../../ui-components/converters/BooleanTypeConverter.js";
+import { FilterOperator, OperatorValueFilterDescriptorCollection } from "../../../ui-components/table/columnfiltering/ColumnFiltering.js";
+import { ColumnFilteringUtilities } from "../../../ui-components/table/columnfiltering/ColumnFilteringUtilities.js";
+import { NumericFilterType, NumericRangeData } from "../../../ui-components/table/columnfiltering/DataGridFilterParser.js";
+import { TableFilterDescriptor } from "../../../ui-components/table/columnfiltering/TableFilterDescriptor.js";
+import { CellItem, ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider.js";
+import { TestFilterableTable, TestUtils } from "../../TestUtils.js";
 
 const columns: ColumnDescription[] = [
   {

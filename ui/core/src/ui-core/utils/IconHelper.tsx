@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
-import { Icon } from "../icons/IconComponent";
+import { Icon } from "../icons/IconComponent.js";
 
 /** Icon Helper Class used to store the data needed to generate an <Icon> for use in any control that shows an icon.
  * @public

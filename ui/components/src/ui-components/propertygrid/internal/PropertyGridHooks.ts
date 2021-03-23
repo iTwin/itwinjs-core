@@ -8,13 +8,13 @@
 
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { useDebouncedAsyncValue } from "../../common/UseDebouncedAsyncValue";
-import { PropertyGridCommons } from "../component/PropertyGridCommons";
-import { IPropertyDataProvider } from "../PropertyDataProvider";
-import { MutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
-import { PropertyGridEventHandler } from "./PropertyGridEventHandler";
-import { IPropertyGridModel } from "./PropertyGridModel";
-import { IPropertyGridModelSource, PropertyGridModelSource } from "./PropertyGridModelSource";
+import { useDebouncedAsyncValue } from "../../common/UseDebouncedAsyncValue.js";
+import { PropertyGridCommons } from "../component/PropertyGridCommons.js";
+import { IPropertyDataProvider } from "../PropertyDataProvider.js";
+import { MutableGridItemFactory } from "./flat-items/MutableGridItemFactory.js";
+import { PropertyGridEventHandler } from "./PropertyGridEventHandler.js";
+import { IPropertyGridModel } from "./PropertyGridModel.js";
+import { IPropertyGridModelSource, PropertyGridModelSource } from "./PropertyGridModelSource.js";
 
 /**
  * Custom hook that gets propertyData from data provider and subscribes to further data changes.

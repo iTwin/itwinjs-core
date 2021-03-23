@@ -11,8 +11,8 @@ import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@bentley
 import { ContentFlags, DescriptorOverrides, ECClassGroupingNodeKey, GroupingNodeKey, Keys, KeySet, NodeKey } from "@bentley/presentation-common";
 import { ContentDataProvider, IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { TreeNodeItem } from "@bentley/ui-components";
-import { UiFramework } from "../../UiFramework";
-import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
+import { UiFramework } from "../../UiFramework.js";
+import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler.js";
 
 /**
  * Visibility tree node types.

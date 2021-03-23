@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { UiCore } from "../UiCore";
+import { UiCore } from "../UiCore.js";
 
 // cSpell:ignore focusable
 

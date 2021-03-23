@@ -10,13 +10,13 @@ import "./themed-select.scss";
 import classnames from "classnames";
 import * as React from "react";
 import Component, { components } from "react-select";
-import { formatGroupLabel, getOptionLabel, getOptionValue } from "react-select/src/builtins";
-import { SelectComponentsConfig } from "react-select/src/components/index";
-import { MenuProps } from "react-select/src/components/Menu";
-import { ActionMeta, FocusEventHandler, InputActionMeta, KeyboardEventHandler, ValueType } from "react-select/src/types";
-import { UiCore } from "../UiCore";
-import { getCssVariableAsNumber } from "../utils/getCssVariable";
-import { getParentSelector } from "./modalHelper";
+import { formatGroupLabel, getOptionLabel, getOptionValue } from "react-select/src/builtins.js";
+import { SelectComponentsConfig } from "react-select/src/components/index.js";
+import { MenuProps } from "react-select/src/components/Menu.js";
+import { ActionMeta, FocusEventHandler, InputActionMeta, KeyboardEventHandler, ValueType } from "react-select/src/types.js";
+import { UiCore } from "../UiCore.js";
+import { getCssVariableAsNumber } from "../utils/getCssVariable.js";
+import { getParentSelector } from "./modalHelper.js";
 
 // cspell:ignore reactselect builtins
 

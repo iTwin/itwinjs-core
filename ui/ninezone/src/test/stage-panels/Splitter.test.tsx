@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import { Splitter } from "../../ui-ninezone";
-import { createBoundingClientRect, mount } from "../Utils";
+import { Splitter } from "../../ui-ninezone.js";
+import { createBoundingClientRect, mount } from "../Utils.js";
 
 describe("<Splitter />", () => {
   it("should render", () => {

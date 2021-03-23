@@ -7,13 +7,13 @@
  */
 
 import { ConditionalBooleanValue, FunctionKey, SpecialKey, UiError } from "@bentley/ui-abstract";
-import { CursorInformation } from "../cursor/CursorInformation";
-import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
-import { ItemDefBase } from "../shared/ItemDefBase";
-import { ItemProps } from "../shared/ItemProps";
-import { UiFramework } from "../UiFramework";
-import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { CursorInformation } from "../cursor/CursorInformation.js";
+import { ActionButtonItemDef } from "../shared/ActionButtonItemDef.js";
+import { ItemDefBase } from "../shared/ItemDefBase.js";
+import { ItemProps } from "../shared/ItemProps.js";
+import { UiFramework } from "../UiFramework.js";
+import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu.js";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher.js";
 
 /** Properties for a Keyboard Shortcut
  * @public

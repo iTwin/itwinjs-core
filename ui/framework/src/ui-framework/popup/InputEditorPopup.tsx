@@ -10,8 +10,8 @@ import * as React from "react";
 import { OnCancelFunc, OnValueCommitFunc, Primitives, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
 import { DivWithOutsideClick, Size, SizeProps } from "@bentley/ui-core";
-import { PopupManager, PopupPropsBase } from "./PopupManager";
-import { PositionPopup, PositionPopupContent } from "./PositionPopup";
+import { PopupManager, PopupPropsBase } from "./PopupManager.js";
+import { PositionPopup, PositionPopupContent } from "./PositionPopup.js";
 
 /** @alpha */
 export class InputEditorCommitHandler {

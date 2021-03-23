@@ -8,8 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Icon } from "../icons/IconComponent";
-import { CommonDivProps } from "../utils/Props";
+import { Icon } from "../icons/IconComponent.js";
+import { CommonDivProps } from "../utils/Props.js";
 
 /** Properties for the [[Tile]] component
  * @beta

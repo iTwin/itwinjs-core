@@ -15,13 +15,13 @@ import {
   MapLayerSources, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, TileTreeOwner, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { Toggle } from "@bentley/ui-core";
-import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
-import { BasemapPanel } from "./BasemapPanel";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
-import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
+import { AttachLayerPopupButton } from "./AttachLayerPopupButton.js";
+import { BasemapPanel } from "./BasemapPanel.js";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider.js";
+import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces.js";
+import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton.js";
 import "./MapLayerManager.scss";
-import { MapLayerDroppable } from "./MapLayerDroppable";
+import { MapLayerDroppable } from "./MapLayerDroppable.js";
 
 /** @internal */
 export interface SourceMapContextProps {
@@ -188,19 +188,19 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       // This is where the list of layers first gets populated.. I need to update it
       // MapUrlDialog gets around knowing MapLayerManager exists and vice versa by affecting the viewports displayStyle which MapLayerManager is listening for
       // We know when displayStyle changes we've added a layer, this layer may not be a custom layer
-      sourceLayers?.layers.forEach((source: MapLayerSource) => {sources.push(source);});
+      sourceLayers?.layers.forEach((source: MapLayerSource) => { sources.push(source); });
       setMapSources(sources);
-      sourceLayers?.bases.forEach((source: MapLayerSource) => {bases.push(source);});
+      sourceLayers?.bases.forEach((source: MapLayerSource) => { bases.push(source); });
       setBaseSources(bases);
     }
 
     setLoadingSources(true);
-    fetchWmsMapData().then(()=>{
+    fetchWmsMapData().then(() => {
       if (isMounted.current) {
         setLoadingSources(false);
       }
 
-    }).catch(()=>{
+    }).catch(() => {
       if (isMounted.current) {
         setLoadingSources(false);
       }

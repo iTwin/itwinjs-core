@@ -14,16 +14,16 @@ import {
   OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc,
   Primitives, PropertyDescription, PropertyRecord, RelativePosition, UiAdmin,
 } from "@bentley/ui-abstract";
-import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { CursorInformation } from "../cursor/CursorInformation";
-import { PopupManager } from "../popup/PopupManager";
-import { CursorMenuData } from "../redux/SessionState";
-import { UiFramework } from "../UiFramework";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { ModalDialogManager } from "../dialog/ModalDialogManager";
-import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
-import { UiDataProvidedDialog } from "../dialog/UiDataProvidedDialog";
+import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager.js";
+import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager.js";
+import { CursorInformation } from "../cursor/CursorInformation.js";
+import { PopupManager } from "../popup/PopupManager.js";
+import { CursorMenuData } from "../redux/SessionState.js";
+import { UiFramework } from "../UiFramework.js";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut.js";
+import { ModalDialogManager } from "../dialog/ModalDialogManager.js";
+import { ModelessDialogManager } from "../dialog/ModelessDialogManager.js";
+import { UiDataProvidedDialog } from "../dialog/UiDataProvidedDialog.js";
 
 /** Controls whether localized and/or non-localized key-in strings appear in a KeyinField's auto-completion list.
  * @beta

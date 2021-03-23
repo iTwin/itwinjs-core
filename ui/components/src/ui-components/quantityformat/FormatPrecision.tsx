@@ -9,9 +9,9 @@
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { Format, FormatProps, FormatType } from "@bentley/imodeljs-quantity";
-import { DecimalPrecisionSelector } from "./misc/DecimalPrecision";
-import { FractionPrecisionSelector } from "./misc/FractionPrecision";
-import { UiComponents } from "../UiComponents";
+import { DecimalPrecisionSelector } from "./misc/DecimalPrecision.js";
+import { FractionPrecisionSelector } from "./misc/FractionPrecision.js";
+import { UiComponents } from "../UiComponents.js";
 
 /** Properties of [[FormatPrecision]] component.
  * @alpha
@@ -34,13 +34,13 @@ export function FormatPrecision(props: FormatPrecisionProps) {
 
   const formatType = Format.parseFormatType(formatProps.type, "format");
 
-  const label = React.useRef (UiComponents.translate("QuantityFormat.labels.precision"));
+  const label = React.useRef(UiComponents.translate("QuantityFormat.labels.precision"));
   return (
     <>
       <span className={"uicore-label"}>{label.current}</span>
       {formatType === FormatType.Fractional ?
         <FractionPrecisionSelector data-testid="fraction-precision-selector" precision={formatProps.precision ?? 0} onChange={handlePrecisionChange} /> :
-        <DecimalPrecisionSelector data-testid="decimal-precision-selector"  precision={formatProps.precision ?? 0} onChange={handlePrecisionChange} />
+        <DecimalPrecisionSelector data-testid="decimal-precision-selector" precision={formatProps.precision ?? 0} onChange={handlePrecisionChange} />
       }
     </>
   );

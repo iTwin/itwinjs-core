@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "./SyncUiEventDispatcher";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "./SyncUiEventDispatcher.js";
 
 /**
  * Properties supported by [[BooleanSyncUiListener]] component.

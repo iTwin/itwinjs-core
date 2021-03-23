@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { SpecialKey } from "@bentley/ui-abstract";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { NumberInput } from "../../../ui-core/inputs/numberinput/NumberInput";
+import { NumberInput } from "../../../ui-core/inputs/numberinput/NumberInput.js";
 
 // cSpell:ignore decrementor numberinput
 

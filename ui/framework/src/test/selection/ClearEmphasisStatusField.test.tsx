@@ -6,11 +6,11 @@ import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
 import { IModelApp, MockRender, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
-import { render } from "@testing-library/react";
-import { ClearEmphasisStatusField } from "../../ui-framework/selection/ClearEmphasisStatusField";
-import { HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "../../ui-framework/selection/HideIsolateEmphasizeManager";
-import { StatusBarFieldId } from "../../ui-framework/statusbar/StatusBarWidgetControl";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { ClearEmphasisStatusField } from "../../ui-framework/selection/ClearEmphasisStatusField.js";
+import { HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "../../ui-framework/selection/HideIsolateEmphasizeManager.js";
+import { StatusBarFieldId } from "../../ui-framework/statusbar/StatusBarWidgetControl.js";
+import TestUtils from "../TestUtils.js";
 
 describe("ClearEmphasisStatusField", () => {
   const viewportMock = moq.Mock.ofType<ScreenViewport>();

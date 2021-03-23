@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
-import { InputStatus, LabeledThemedSelect } from "../../ui-core";
+import { InputStatus, LabeledThemedSelect } from "../../ui-core.js";
 
 describe("<LabeledThemedSelect />", () => {
   enum ColorOptions {

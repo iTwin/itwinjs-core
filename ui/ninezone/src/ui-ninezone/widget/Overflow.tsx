@@ -10,8 +10,8 @@ import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { useRefs, useRefState, useResizeObserver } from "@bentley/ui-core";
-import { WidgetMenu } from "./Menu";
-import { useLabel } from "../base/NineZone";
+import { WidgetMenu } from "./Menu.js";
+import { useLabel } from "../base/NineZone.js";
 
 /** @internal */
 export interface WidgetOverflowProps {

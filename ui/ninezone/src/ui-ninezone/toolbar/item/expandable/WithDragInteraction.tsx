@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Point, Timer } from "@bentley/ui-core";
-import { Direction } from "../../../utilities/Direction";
+import { Direction } from "../../../utilities/Direction.js";
 
 /** Properties of [[withDragInteraction]] HOC.
  * @beta

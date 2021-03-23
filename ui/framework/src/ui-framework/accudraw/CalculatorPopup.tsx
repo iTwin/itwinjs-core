@@ -9,9 +9,9 @@
 import * as React from "react";
 import { OnCancelFunc, OnNumberCommitFunc } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, Icon, Size, SizeProps } from "@bentley/ui-core";
-import { PopupManager, PopupPropsBase } from "../popup/PopupManager";
-import { PositionPopup, PositionPopupContent } from "../popup/PositionPopup";
-import { Calculator } from "./Calculator";
+import { PopupManager, PopupPropsBase } from "../popup/PopupManager.js";
+import { PositionPopup, PositionPopupContent } from "../popup/PositionPopup.js";
+import { Calculator } from "./Calculator.js";
 
 /** @alpha */
 export interface CalculatorPopupProps extends PopupPropsBase {

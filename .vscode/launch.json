@@ -570,12 +570,9 @@
       "cwd": "${workspaceFolder}/ui/framework",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/framework/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--opts",
-        "../mocha.opts",
-        "--no-timeouts",
-        "lib/test/**/*.test.js"
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test",
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { CustomItemDef } from "../../ui-framework/shared/CustomItemDef";
-import TestUtils from "../TestUtils";
+import { CustomItemDef } from "../../ui-framework/shared/CustomItemDef.js";
+import TestUtils from "../TestUtils.js";
 
 describe("CustomItemDef", () => {
 

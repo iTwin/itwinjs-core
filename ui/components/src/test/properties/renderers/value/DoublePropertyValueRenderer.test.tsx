@@ -6,10 +6,10 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { PrimitiveValue, PropertyConverterInfo } from "@bentley/ui-abstract";
-import { render } from "@testing-library/react";
-import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer";
-import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
-import TestUtils from "../../../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer.js";
+import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager.js";
+import TestUtils from "../../../TestUtils.js";
 
 function createDoubleProperty(value: number, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Length", "", displayValue);

@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
-import SplitPane from "react-split-pane";
+import sinon from "sinon";
+import rsp from "react-split-pane"; const SplitPane: typeof rsp = (rsp as any).default;
 import { MockRender } from "@bentley/imodeljs-frontend";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
   ContentLayoutProps, ContentViewManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
-} from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("ContentLayout", () => {
 
@@ -175,7 +175,7 @@ describe("ContentLayout", () => {
         <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />
       </div>);
 
-    const splitPanel = wrapper.find(SplitPane);
+    const splitPanel: any = wrapper.find(SplitPane);
     expect(splitPanel.length).to.eq(1);
 
     splitPanel.prop("onChange")!(50);
@@ -189,7 +189,7 @@ describe("ContentLayout", () => {
         <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout3} isInFooterMode={true} />
       </div>);
 
-    const splitPanel = wrapper.find(SplitPane);
+    const splitPanel: any = wrapper.find(SplitPane);
     expect(splitPanel.length).to.eq(1);
 
     splitPanel.prop("onChange")!(50);

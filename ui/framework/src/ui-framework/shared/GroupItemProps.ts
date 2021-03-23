@@ -8,12 +8,12 @@
 
 import { StringGetter } from "@bentley/ui-abstract";
 import { Direction } from "@bentley/ui-ninezone";
-import { AnyItemDef } from "./AnyItemDef";
-import { ItemProps } from "./ItemProps";
+import { AnyItemDef } from "./AnyItemDef.js";
+import { ItemProps } from "./ItemProps.js";
 
 /** Definition for a Group item that opens a group of items.
  * @public
- */
+ */
 export interface GroupItemProps extends ItemProps {
   defaultActiveItemId?: string;
   groupId?: string;

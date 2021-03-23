@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Observable } from "rxjs/internal/Observable";
-import { from } from "rxjs/internal/observable/from";
-import { throwError } from "rxjs/internal/observable/throwError";
-import { timer } from "rxjs/internal/observable/timer";
-import { takeUntil } from "rxjs/internal/operators/takeUntil";
-import { tap } from "rxjs/internal/operators/tap";
-import { scheduled } from "rxjs/internal/scheduled/scheduled";
-import { asapScheduler } from "rxjs/internal/scheduler/asap";
-import { asyncScheduler } from "rxjs/internal/scheduler/async";
-import { queueScheduler } from "rxjs/internal/scheduler/queue";
-import { ObservableInput, SchedulerLike } from "rxjs/internal/types";
+import { Observable } from "rxjs/internal/Observable.js";
+import { from } from "rxjs/internal/observable/from.js";
+import { throwError } from "rxjs/internal/observable/throwError.js";
+import { timer } from "rxjs/internal/observable/timer.js";
+import { takeUntil } from "rxjs/internal/operators/takeUntil.js";
+import { tap } from "rxjs/internal/operators/tap.js";
+import { scheduled } from "rxjs/internal/scheduled/scheduled.js";
+import { asapScheduler } from "rxjs/internal/scheduler/asap.js";
+import { asyncScheduler } from "rxjs/internal/scheduler/async.js";
+import { queueScheduler } from "rxjs/internal/scheduler/queue.js";
+import { ObservableInput, SchedulerLike } from "rxjs/internal/types.js";
 import sinon from "sinon";
-import { scheduleSubscription, SubscriptionScheduler } from "../../ui-components/common/SubscriptionScheduler";
-import { extractSequence, waitForUnsubscription } from "./ObservableTestHelpers";
-import { ResolvablePromise } from "../test-helpers/misc";
+import { scheduleSubscription, SubscriptionScheduler } from "../../ui-components/common/SubscriptionScheduler.js";
+import { extractSequence, waitForUnsubscription } from "./ObservableTestHelpers.js";
+import { ResolvablePromise } from "../test-helpers/misc.js";
 
 async function expectSequence<T>(expectedSequence: T[], observable: Observable<T>): Promise<void> {
   const actualSequence = await extractSequence(observable);

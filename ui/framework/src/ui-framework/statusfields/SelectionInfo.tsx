@@ -12,8 +12,8 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { Icon } from "@bentley/ui-core";
 import { FooterIndicator } from "@bentley/ui-ninezone";
-import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { UiFramework } from "../UiFramework.js";
+import { StatusFieldProps } from "./StatusFieldProps.js";
 
 /** Defines properties supported by the SelectionInfo Field Component.
  */
@@ -24,7 +24,7 @@ interface SelectionInfoFieldProps extends StatusFieldProps {
 /**
  * Status Field React component. This component is designed to be specified in a status bar definition.
  * It is used to display the number of selected items based on the Presentation Rules Selection Manager.
- */
+ */
 class SelectionInfoFieldComponent extends React.Component<SelectionInfoFieldProps> {
 
   constructor(props: SelectionInfoFieldProps) {

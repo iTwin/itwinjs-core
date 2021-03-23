@@ -10,7 +10,7 @@ import "./ResizeGrip.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
-import { PointerCaptor } from "../../base/PointerCaptor";
+import { PointerCaptor } from "../../base/PointerCaptor.js";
 
 /** Available resize directions of resize grip.
  * @alpha

@@ -7,11 +7,11 @@
  */
 
 import { produce } from "immer";
-import { PropertyData } from "../PropertyDataProvider";
-import { IMutableFlatGridItem } from "./flat-items/MutableFlatGridItem";
-import { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
-import { IMutablePropertyGridModel, IPropertyGridModel, MutablePropertyGridModel } from "./PropertyGridModel";
-import { PropertyGridModelChangeEvent } from "./PropertyGridModelChangeEvent";
+import { PropertyData } from "../PropertyDataProvider.js";
+import { IMutableFlatGridItem } from "./flat-items/MutableFlatGridItem.js";
+import { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory.js";
+import { IMutablePropertyGridModel, IPropertyGridModel, MutablePropertyGridModel } from "./PropertyGridModel.js";
+import { PropertyGridModelChangeEvent } from "./PropertyGridModelChangeEvent.js";
 
 /** @alpha */
 export interface IPropertyGridModelSource {

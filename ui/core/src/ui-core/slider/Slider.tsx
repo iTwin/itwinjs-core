@@ -12,10 +12,10 @@ import * as React from "react";
 import {
   Slider as CompoundSlider, GetRailProps, GetTrackProps, Handles, Rail, SliderItem, SliderModeFunction, Ticks, Tracks,
 } from "react-compound-slider";
-import { BodyText } from "../text/BodyText";
-import { CommonProps } from "../utils/Props";
-import { useRefState } from "../utils/hooks/useRefState";
-import { Tooltip } from "../tooltip/Tooltip";
+import { BodyText } from "../text/BodyText.js";
+import { CommonProps } from "../utils/Props.js";
+import { useRefState } from "../utils/hooks/useRefState.js";
+import { Tooltip } from "../tooltip/Tooltip.js";
 
 // cspell:ignore pushable
 

@@ -8,12 +8,12 @@
 
 import { StringGetter } from "@bentley/ui-abstract";
 import { IconProps, IconSpec } from "@bentley/ui-core";
-import { BackstageItemUtilities } from "./BackstageItemUtilities";
+import { BackstageItemUtilities } from "./BackstageItemUtilities.js";
 
 /** Base properties for a [[Backstage]] item.
  * @public
  * @deprecated - use BackstageItem in bentley/ui-abstract instead
- */
+ */
 export interface BackstageItemProps extends IconProps {
   /** if set, component will be enabled - defaults to true */
   isEnabled?: boolean;
@@ -41,7 +41,7 @@ export interface BackstageItemProps extends IconProps {
  *  * Deprecated - Use [[BackstageItem]($ui-abstract) in bentley/ui-abstract instead.
  * @public
  * @deprecated - use BackstageItem in bentley/ui-abstract instead
- */
+ */
 export interface BackstageItemState {
   isEnabled: boolean;
   label: string;

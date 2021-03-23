@@ -9,7 +9,7 @@
 import "./Branch.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
+import { CommonProps } from "../utils/Props.js";
 
 /** Properties for [[TreeBranch]] React component
  * @public

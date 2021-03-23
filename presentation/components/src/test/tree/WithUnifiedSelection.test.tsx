@@ -12,8 +12,8 @@ import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { BaseNodeKey, KeySet } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random/index.js";
 import {
   ISelectionProvider, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper,
   SelectionManager,
@@ -25,7 +25,7 @@ import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/U
 import {
   DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection, TreeWithUnifiedSelectionProps,
 } from "../../presentation-components/tree/WithUnifiedSelection";
-import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
+import { createRandomTreeNodeItem } from "../_helpers/UiComponents.js";
 
 /* eslint-disable deprecation/deprecation */
 

@@ -8,10 +8,10 @@
 
 import { Primitives, PrimitiveValue, PropertyRecord, PropertyValueFormat, UiError } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
-import { TypeConverterManager } from "../converters/TypeConverterManager";
-import { UiComponents } from "../UiComponents";
-import { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering";
-import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEvent, TableDistinctValue } from "./TableDataProvider";
+import { TypeConverterManager } from "../converters/TypeConverterManager.js";
+import { UiComponents } from "../UiComponents.js";
+import { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering.js";
+import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEvent, TableDistinctValue } from "./TableDataProvider.js";
 
 /**
  * A Table Data Provider using an array of items.

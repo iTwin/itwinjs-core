@@ -8,8 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
-import { useRefs } from "../utils/hooks/useRefs";
+import { CommonProps } from "../utils/Props.js";
+import { useRefs } from "../utils/hooks/useRefs.js";
 
 /** Properties for a Select option
  * @public

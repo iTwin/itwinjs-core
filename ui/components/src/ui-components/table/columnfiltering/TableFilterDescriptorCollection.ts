@@ -6,10 +6,10 @@
  * @module Table
  */
 
-import { RowItem } from "../TableDataProvider";
+import { RowItem } from "../TableDataProvider.js";
 import {
   ColumnFilterDescriptor, CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator, FilterDescriptorCollection,
-} from "./ColumnFiltering";
+} from "./ColumnFiltering.js";
 
 /** Represents collection of FilterDescriptor objects composed together by a logical operator.
  * @internal

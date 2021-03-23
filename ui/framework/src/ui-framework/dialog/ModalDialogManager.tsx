@@ -8,16 +8,16 @@
 
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
+import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase.js";
 
 /** Modal Dialog Changed Event class.
  * @public
- */
+ */
 export class ModalDialogChangedEvent extends DialogChangedEvent { }
 
 /** Modal Dialog Manager class displays and manages multiple modal dialogs
  * @public
- */
+ */
 export class ModalDialogManager {
   /** Modal Dialog Changed Event */
   public static readonly onModalDialogChangedEvent = new ModalDialogChangedEvent();
@@ -66,7 +66,7 @@ export class ModalDialogManager {
 
 /** ModalDialogRenderer React component renders modal dialogs
  * @public
- */
+ */
 export class ModalDialogRenderer extends React.PureComponent<CommonProps> {
 
   constructor(props: CommonProps) {

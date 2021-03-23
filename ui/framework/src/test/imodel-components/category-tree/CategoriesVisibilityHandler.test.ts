@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
 import {
   IModelConnection, PerModelCategoryVisibility, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, StandardNodeTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks.js";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeNodeItem } from "@bentley/ui-components";
 import {
   Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams,
-} from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
+} from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler.js";
 
 const createKey = (id: Id64String): ECInstancesNodeKey => {
   return {

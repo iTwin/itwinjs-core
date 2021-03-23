@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import produce from "immer";
+import { produce } from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Rectangle } from "@bentley/ui-core";
-import { act, fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { act, fireEvent, render } = tlr;
 import { renderHook } from "@testing-library/react-hooks";
 import {
   addFloatingWidget, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext,
   PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
-} from "../../ui-ninezone";
-import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
-import { NineZoneProvider } from "../Providers";
+} from "../../ui-ninezone.js";
+import * as NineZoneModule from "../../ui-ninezone/base/NineZone.js";
+import { NineZoneProvider } from "../Providers.js";
 
 describe("WidgetTitleBar", () => {
   it("should dispatch WIDGET_DRAG_END", () => {

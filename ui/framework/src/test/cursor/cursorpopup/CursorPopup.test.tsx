@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
-import { CursorInformation, CursorPopup, CursorPopupContent, CursorPopupManager, CursorPopupOptions, CursorPopupRenderer, CursorPopupShow } from "../../../ui-framework";
-import TestUtils, { mount } from "../../TestUtils";
+import { CursorInformation, CursorPopup, CursorPopupContent, CursorPopupManager, CursorPopupOptions, CursorPopupRenderer, CursorPopupShow } from "../../../ui-framework.js";
+import TestUtils, { mount } from "../../TestUtils.js";
 
 describe("CursorPopup", () => {
   it("should mount", () => {

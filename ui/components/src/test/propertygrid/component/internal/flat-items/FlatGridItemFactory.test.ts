@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import TestUtils from "../../../../TestUtils";
-import { FlatGridItemType } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableFlatGridItem";
-import { FlatGridTestUtils, FlatGridTestUtils as GridUtils } from "./FlatGridTestUtils";
-import { MutableGridItemFactory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
+import TestUtils from "../../../../TestUtils.js";
+import { FlatGridItemType } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableFlatGridItem.js";
+import { FlatGridTestUtils, FlatGridTestUtils as GridUtils } from "./FlatGridTestUtils.js";
+import { MutableGridItemFactory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory.js";
 
 describe("FlatGridItemFactory", () => {
   describe("gridItemToModelGridItem", () => {

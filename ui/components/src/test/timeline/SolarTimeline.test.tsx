@@ -6,11 +6,11 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
-import { BaseSolarDataProvider } from "../../ui-components/timeline/BaseSolarDataProvider";
-import { SolarTimeline } from "../../ui-components/timeline/SolarTimeline";
-import { SpeedTimeline } from "../../ui-components/timeline/SpeedTimeline";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, waitForElement } = tlr;
+import { BaseSolarDataProvider } from "../../ui-components/timeline/BaseSolarDataProvider.js";
+import { SolarTimeline } from "../../ui-components/timeline/SolarTimeline.js";
+import { SpeedTimeline } from "../../ui-components/timeline/SpeedTimeline.js";
+import TestUtils from "../TestUtils.js";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 
 class TestSolarDataProvider extends BaseSolarDataProvider {

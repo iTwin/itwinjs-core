@@ -7,8 +7,8 @@
  */
 
 import { Point, PointProps } from "@bentley/ui-core";
-import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
-import { WidgetZoneId } from "./Zones";
+import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked.js";
+import { WidgetZoneId } from "./Zones.js";
 
 /** Widget properties used in [[ZonesManagerProps]].
  * @beta

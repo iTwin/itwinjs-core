@@ -7,10 +7,10 @@
  */
 
 import { useCallback } from "react";
-import { from } from "rxjs/internal/observable/from";
-import { takeUntil } from "rxjs/internal/operators/takeUntil";
-import { tap } from "rxjs/internal/operators/tap";
-import { Subject } from "rxjs/internal/Subject";
+import { from } from "rxjs/internal/observable/from.js";
+import { takeUntil } from "rxjs/internal/operators/takeUntil.js";
+import { tap } from "rxjs/internal/operators/tap.js";
+import { Subject } from "rxjs/internal/Subject.js";
 import { Guid, IDisposable } from "@bentley/bentleyjs-core";
 import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
 import { Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper } from "@bentley/presentation-frontend";
@@ -19,7 +19,7 @@ import {
   TreeNodeItem, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
-import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider.js";
 
 /**
  * Data structure that describes parameters for UnifiedSelectionTreeEventHandler

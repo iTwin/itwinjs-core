@@ -10,11 +10,11 @@ import "./NodeContent.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, TreeNodePlaceholder } from "@bentley/ui-core";
-import { ItemStyle, ItemStyleProvider } from "../../../properties/ItemStyle";
-import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { HighlightableTreeNodeProps, HighlightingEngine } from "../../HighlightingEngine";
-import { TreeModelNode } from "../TreeModel";
-import { TreeNodeEditor, TreeNodeEditorRenderer } from "./TreeNodeEditor";
+import { ItemStyle, ItemStyleProvider } from "../../../properties/ItemStyle.js";
+import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../../../properties/ValueRendererManager.js";
+import { HighlightableTreeNodeProps, HighlightingEngine } from "../../HighlightingEngine.js";
+import { TreeModelNode } from "../TreeModel.js";
+import { TreeNodeEditor, TreeNodeEditorRenderer } from "./TreeNodeEditor.js";
 
 /** Properties for [[TreeNodeContent]] component
  * @internal

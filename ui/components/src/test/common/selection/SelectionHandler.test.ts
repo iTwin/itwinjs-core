@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { SelectionMode } from "../../../ui-components";
+import { SelectionMode } from "../../../ui-components.js";
 import {
   DragAction, MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, OnSelectionChanged, SelectionHandler, SingleSelectionHandler,
-} from "../../../ui-components/common/selection/SelectionHandler";
+} from "../../../ui-components/common/selection/SelectionHandler.js";
 
 describe("SelectionHandler", () => {
   let handler: SelectionHandler<string>;

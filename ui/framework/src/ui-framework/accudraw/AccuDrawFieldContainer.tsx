@@ -15,14 +15,14 @@ import {
   AccuDrawUiAdmin, IconSpecUtilities,
 } from "@bentley/ui-abstract";
 import { CommonProps, IconSpec, Orientation, UiSettings } from "@bentley/ui-core";
-import { AccuDrawInputField } from "./AccuDrawInputField";
+import { AccuDrawInputField } from "./AccuDrawInputField.js";
 import { CompassMode, IModelApp, ItemField, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut.js";
 
 import angleIconSvg from "./angle.svg?sprite";
 import distanceIconSvg from "./distance.svg?sprite";
-import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
-import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
+import { FrameworkAccuDraw } from "./FrameworkAccuDraw.js";
+import { AccuDrawUiSettings } from "./AccuDrawUiSettings.js";
 import { getCSSColorFromDef } from "@bentley/ui-components";
 import { ColorDef } from "@bentley/imodeljs-common";
 
@@ -204,11 +204,11 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
         fieldStyle = inStyle ? inStyle : {};
         if (backgroundColor) {
           rgbaString = typeof backgroundColor === "string" ? backgroundColor : getCSSColorFromDef(backgroundColor);
-          fieldStyle = {...fieldStyle, backgroundColor: rgbaString};
+          fieldStyle = { ...fieldStyle, backgroundColor: rgbaString };
         }
         if (foregroundColor) {
           rgbaString = typeof foregroundColor === "string" ? foregroundColor : getCSSColorFromDef(foregroundColor);
-          fieldStyle = {...fieldStyle, color: rgbaString};
+          fieldStyle = { ...fieldStyle, color: rgbaString };
         }
       }
       return fieldStyle;

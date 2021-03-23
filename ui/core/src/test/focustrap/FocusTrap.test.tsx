@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import * as sinon from "sinon";
 import * as React from "react";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { focusIntoContainer, FocusTrap } from "../../ui-core/focustrap/FocusTrap";
+import { focusIntoContainer, FocusTrap } from "../../ui-core/focustrap/FocusTrap.js";
 
 // cspell:ignore focustrap
 

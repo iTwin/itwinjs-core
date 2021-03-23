@@ -9,7 +9,7 @@
 import { IModelApp, InteractiveTool } from "@bentley/imodeljs-frontend";
 import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { focusIntoContainer, UiEvent } from "@bentley/ui-core";
-import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher.js";
 
 // -----------------------------------------------------------------------------
 // Events

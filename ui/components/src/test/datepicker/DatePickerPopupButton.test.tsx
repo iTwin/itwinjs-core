@@ -6,9 +6,9 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
-import TestUtils from "../TestUtils";
-import { DatePickerPopupButton } from "../../ui-components/datepicker/DatePickerPopupButton";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, waitForElement } = tlr;
+import TestUtils from "../TestUtils.js";
+import { DatePickerPopupButton } from "../../ui-components/datepicker/DatePickerPopupButton.js";
 import { SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
 
 describe("<DatePickerPopupButton />", () => {

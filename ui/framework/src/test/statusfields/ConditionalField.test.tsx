@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as React from "react";
 import { FooterSeparator } from "@bentley/ui-ninezone";
-import { ConditionalField, StatusFieldProps } from "../../ui-framework";
-import { mount } from "../TestUtils";
+import { ConditionalField, StatusFieldProps } from "../../ui-framework.js";
+import { mount } from "../TestUtils.js";
 
 describe("ConditionalField", () => {
 

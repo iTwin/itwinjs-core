@@ -10,9 +10,9 @@ import "./WeightEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
-import { WeightPickerButton } from "../lineweight/WeightPickerButton";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { WeightPickerButton } from "../lineweight/WeightPickerButton.js";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
 
 // cspell:ignore lineweight
 

@@ -8,15 +8,15 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { StandardTypeNames } from "@bentley/ui-abstract";
-import { StringOperatorProcessor } from "../../../ui-components";
-import { BooleanTypeConverter } from "../../converters/BooleanTypeConverter";
-import { LessGreaterOperatorProcessor, NullableOperatorProcessor } from "../../converters/TypeConverter";
-import { TypeConverterManager } from "../../converters/TypeConverterManager";
-import { UiComponents } from "../../UiComponents";
-import { RowItem } from "../TableDataProvider";
-import { FilterableTable, FilterOperator, OperatorValueFilterDescriptor } from "./ColumnFiltering";
-import { ColumnFilteringUtilities } from "./ColumnFilteringUtilities";
-import { NumericRangeData } from "./DataGridFilterParser";
+import { StringOperatorProcessor } from "../../../ui-components.js";
+import { BooleanTypeConverter } from "../../converters/BooleanTypeConverter.js";
+import { LessGreaterOperatorProcessor, NullableOperatorProcessor } from "../../converters/TypeConverter.js";
+import { TypeConverterManager } from "../../converters/TypeConverterManager.js";
+import { UiComponents } from "../../UiComponents.js";
+import { RowItem } from "../TableDataProvider.js";
+import { FilterableTable, FilterOperator, OperatorValueFilterDescriptor } from "./ColumnFiltering.js";
+import { ColumnFilteringUtilities } from "./ColumnFilteringUtilities.js";
+import { NumericRangeData } from "./DataGridFilterParser.js";
 
 /** Represents a filtering descriptor.
  * @internal

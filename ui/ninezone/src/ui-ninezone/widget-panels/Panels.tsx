@@ -10,12 +10,12 @@ import "./Panels.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { WidgetContentRenderers } from "../widget/ContentRenderer";
-import { AppContent } from "./AppContent";
-import { CenterContent } from "./CenterContent";
-import { useCursor } from "./CursorOverlay";
-import { panelSides, WidgetPanelProvider } from "./Panel";
-import { WidgetPanelExpanders } from "./Expander";
+import { WidgetContentRenderers } from "../widget/ContentRenderer.js";
+import { AppContent } from "./AppContent.js";
+import { CenterContent } from "./CenterContent.js";
+import { useCursor } from "./CursorOverlay.js";
+import { panelSides, WidgetPanelProvider } from "./Panel.js";
+import { WidgetPanelExpanders } from "./Expander.js";
 
 /** Properties of [[WidgetPanels]] component.
  * @internal

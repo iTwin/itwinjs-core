@@ -11,14 +11,14 @@ import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { CommonProps, useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext } from "@bentley/ui-core";
 import { NavigationArea } from "@bentley/ui-ninezone";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { ContentControl, ContentControlActivatedEventArgs } from "../content/ContentControl";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
-import { NavigationAidControl } from "../navigationaids/NavigationAidControl";
-import { UiFramework } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager.js";
+import { ContentControl, ContentControlActivatedEventArgs } from "../content/ContentControl.js";
+import { ContentViewManager } from "../content/ContentViewManager.js";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion.js";
+import { NavigationAidControl } from "../navigationaids/NavigationAidControl.js";
+import { UiFramework } from "../UiFramework.js";
+import { UiShowHideManager } from "../utils/UiShowHideManager.js";
 
 function createNavigationAidControl(activeContentControl: ContentControl | undefined, navigationAidId: string, activeViewport: ScreenViewport | undefined): NavigationAidControl | undefined {
   // istanbul ignore else

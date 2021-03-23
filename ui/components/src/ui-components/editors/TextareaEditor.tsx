@@ -15,11 +15,11 @@ import {
   StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Textarea, TextareaProps } from "@bentley/ui-core";
-import { TypeConverterManager } from "../converters/TypeConverterManager";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
-import { UiComponents } from "../UiComponents";
+import { TypeConverterManager } from "../converters/TypeConverterManager.js";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
+import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton.js";
+import { UiComponents } from "../UiComponents.js";
 
 /** @internal */
 interface TextareaEditorState {

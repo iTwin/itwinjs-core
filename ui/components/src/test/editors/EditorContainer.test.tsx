@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
 import sinon from "sinon";
-import { EditorContainer } from "../../ui-components/editors/EditorContainer";
-import TestUtils from "../TestUtils";
+import { EditorContainer } from "../../ui-components/editors/EditorContainer.js";
+import TestUtils from "../TestUtils.js";
 import { SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
 
 describe("<EditorContainer />", () => {
   before(async () => {

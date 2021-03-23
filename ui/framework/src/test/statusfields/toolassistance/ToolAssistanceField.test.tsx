@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ReactWrapper } from "enzyme";
+import enzyme from "enzyme";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
@@ -14,8 +14,8 @@ import { FooterPopup, TitleBarButton } from "@bentley/ui-ninezone";
 import {
   AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, FrontstageManager, StatusBar, StatusBarWidgetControl,
   StatusBarWidgetControlArgs, ToolAssistanceField, WidgetDef,
-} from "../../../ui-framework";
-import TestUtils, { mount, storageMock } from "../../TestUtils";
+} from "../../../ui-framework.js";
+import TestUtils, { mount, storageMock } from "../../TestUtils.js";
 
 describe("ToolAssistanceField", () => {
   const uiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
@@ -43,7 +43,7 @@ describe("ToolAssistanceField", () => {
 
   let widgetControl: StatusBarWidgetControl | undefined;
 
-  const clickIndicator = (wrapper: ReactWrapper) => {
+  const clickIndicator = (wrapper: enzyme.ReactWrapper) => {
     wrapper.update();
     const indicator = wrapper.find("div.nz-indicator");
     expect(indicator.length).to.eq(1);

@@ -10,7 +10,7 @@ import "./Toast.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps, Rectangle, Timer } from "@bentley/ui-core";
-import { Css } from "../../utilities/Css";
+import { Css } from "../../utilities/Css.js";
 
 /** Properties of [[Toast]] component.
  * @alpha Review naming of: animateOutTo, content, onAnimatedOut

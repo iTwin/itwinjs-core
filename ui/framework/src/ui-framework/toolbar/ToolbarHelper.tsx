@@ -12,17 +12,17 @@ import {
 } from "@bentley/ui-abstract";
 import { CustomToolbarItem } from "@bentley/ui-components";
 import { IconHelper } from "@bentley/ui-core";
-import { AnyItemDef } from "../shared/AnyItemDef";
-import { CommandItemDef } from "../shared/CommandItemDef";
-import { CustomItemDef } from "../shared/CustomItemDef";
-import { ToolItemDef } from "../shared/ToolItemDef";
-import { ActionButtonItem } from "./ActionButtonItem";
-import { GroupButtonItem } from "./GroupButtonItem";
-import { GroupItemDef } from "./GroupItem";
+import { AnyItemDef } from "../shared/AnyItemDef.js";
+import { CommandItemDef } from "../shared/CommandItemDef.js";
+import { CustomItemDef } from "../shared/CustomItemDef.js";
+import { ToolItemDef } from "../shared/ToolItemDef.js";
+import { ActionButtonItem } from "./ActionButtonItem.js";
+import { GroupButtonItem } from "./GroupButtonItem.js";
+import { GroupItemDef } from "./GroupItem.js";
 
 /** Helper functions for defining an ToolbarComposer.
  * @beta
- */
+ */
 export class ToolbarHelper {
   /** Construct CustomToolbarItem definitions given a CustomItemDef. */
   public static createCustomDefinitionToolbarItem(itemPriority: number, itemDef: CustomItemDef, overrides?: Partial<CustomButtonDefinition>): CustomToolbarItem {

@@ -7,7 +7,7 @@ import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, PageOptions, TreeDataChangesListener, TreeNodeItem,
-} from "../../ui-components";
+} from "../../ui-components.js";
 
 /** @internal */
 export enum TreeDragTypes {

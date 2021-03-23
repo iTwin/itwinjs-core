@@ -10,15 +10,15 @@
 import { XAndY } from "@bentley/geometry-core";
 // import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { UserInfo } from "@bentley/itwin-client";
-import { MenuItemProps } from "../shared/MenuItem";
-import { ActionsUnion, createAction, DeepReadonly } from "./redux-ts";
+import { MenuItemProps } from "../shared/MenuItem.js";
+import { ActionsUnion, createAction, DeepReadonly } from "./redux-ts.js";
 
 // cSpell:ignore configurableui snapmode toolprompt sessionstate imodelid viewid viewportid rulesetid
 
 /** PresentationSelectionScope holds the id and the localized label for a selection scope supported for a specific iModel.
  * Added to avoid an api-extract error caused by using SelectionScope.
  * @beta
- */
+ */
 export interface PresentationSelectionScope {
   id: string;
   label: string;

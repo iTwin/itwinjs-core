@@ -10,10 +10,10 @@ import "./RadialMenu.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { SpecialKey } from "@bentley/ui-abstract";
-import { Icon, IconSpec } from "../icons/IconComponent";
-import { Point } from "../utils/Point";
-import { CommonProps } from "../utils/Props";
-import { AnnularSector, Annulus } from "./Annulus";
+import { Icon, IconSpec } from "../icons/IconComponent.js";
+import { Point } from "../utils/Point.js";
+import { CommonProps } from "../utils/Props.js";
+import { AnnularSector, Annulus } from "./Annulus.js";
 
 /** Properties for [[RadialMenu]]
  * @beta

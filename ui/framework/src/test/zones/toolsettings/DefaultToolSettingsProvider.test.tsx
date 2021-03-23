@@ -8,12 +8,12 @@ import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
   SuppressLabelEditorParams,
 } from "@bentley/ui-abstract";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import {
   ConfigurableUiManager, CoreTools, DefaultToolSettingsProvider, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
   SyncToolSettingsPropertiesEventArgs, ToolSettingsManager, Widget, Zone,
-} from "../../../ui-framework";
-import TestUtils from "../../TestUtils";
+} from "../../../ui-framework.js";
+import TestUtils from "../../TestUtils.js";
 
 describe("DefaultToolUiSettingsProvider", () => {
 

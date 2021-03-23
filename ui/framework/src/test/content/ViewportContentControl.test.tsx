@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import * as moq from "typemoq";
 import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 import { ViewportComponentEvents } from "@bentley/ui-components";
@@ -12,8 +12,8 @@ import {
   ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentViewManager,
   CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SupportsViewSelectorChange,
   ViewportContentControl, Widget, Zone,
-} from "../../ui-framework";
-import TestUtils, { mount, storageMock } from "../TestUtils";
+} from "../../ui-framework.js";
+import TestUtils, { mount, storageMock } from "../TestUtils.js";
 
 const mySessionStorage = storageMock();
 

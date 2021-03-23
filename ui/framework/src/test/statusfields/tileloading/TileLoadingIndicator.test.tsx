@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
 import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelApp, MockRender, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
-import { TileLoadingIndicator } from "../../../ui-framework";
-import TestUtils, { mount } from "../../TestUtils";
+import { TileLoadingIndicator } from "../../../ui-framework.js";
+import TestUtils, { mount } from "../../TestUtils.js";
 
 describe("TileLoadingIndicator", () => {
 

@@ -10,16 +10,16 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { act, fireEvent, getByTitle, render, waitForDomChange, waitForElement } from "@testing-library/react";
-import { HighlightingComponentProps } from "../../../ui-components/common/HighlightingComponentProps";
-import { VirtualizedPropertyGridWithDataProvider } from "../../../ui-components/propertygrid/component/VirtualizedPropertyGridWithDataProvider";
-import { FilteredType } from "../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
-import * as FlatPropertyRendererExports from "../../../ui-components/propertygrid/internal/flat-properties/FlatPropertyRenderer";
+import tlr from "@testing-library/react"; const { act, fireEvent, getByTitle, render, waitForDomChange, waitForElement } = tlr;
+import { HighlightingComponentProps } from "../../../ui-components/common/HighlightingComponentProps.js";
+import { VirtualizedPropertyGridWithDataProvider } from "../../../ui-components/propertygrid/component/VirtualizedPropertyGridWithDataProvider.js";
+import { FilteredType } from "../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase.js";
+import * as FlatPropertyRendererExports from "../../../ui-components/propertygrid/internal/flat-properties/FlatPropertyRenderer.js";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
-} from "../../../ui-components/propertygrid/PropertyDataProvider";
-import { ResolvablePromise } from "../../test-helpers/misc";
-import TestUtils from "../../TestUtils";
+} from "../../../ui-components/propertygrid/PropertyDataProvider.js";
+import { ResolvablePromise } from "../../test-helpers/misc.js";
+import TestUtils from "../../TestUtils.js";
 
 describe("VirtualizedPropertyGridWithDataProvider", () => {
 

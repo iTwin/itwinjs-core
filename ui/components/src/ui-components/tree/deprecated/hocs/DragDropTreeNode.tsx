@@ -9,9 +9,9 @@
 import "./DragDropTreeNode.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { withDragSource, WithDragSourceProps } from "../../../dragdrop/withDragSource";
-import { withDropTarget } from "../../../dragdrop/withDropTarget";
-import { TreeDragDropType } from "./withDragDrop";
+import { withDragSource, WithDragSourceProps } from "../../../dragdrop/withDragSource.js";
+import { withDropTarget } from "../../../dragdrop/withDropTarget.js";
+import { TreeDragDropType } from "./withDragDrop.js";
 
 /* eslint-disable deprecation/deprecation */
 

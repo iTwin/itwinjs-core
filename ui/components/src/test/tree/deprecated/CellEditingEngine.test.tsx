@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { render } from "@testing-library/react";
-import { CellEditingEngine, EditableTreeProps } from "../../../ui-components/tree/deprecated/CellEditingEngine";
-import { BeInspireTree, BeInspireTreeNode } from "../../../ui-components/tree/deprecated/component/BeInspireTree";
-import { DEPRECATED_Tree as Tree } from "../../../ui-components/tree/deprecated/component/Tree";
-import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { CellEditingEngine, EditableTreeProps } from "../../../ui-components/tree/deprecated/CellEditingEngine.js";
+import { BeInspireTree, BeInspireTreeNode } from "../../../ui-components/tree/deprecated/component/BeInspireTree.js";
+import { DEPRECATED_Tree as Tree } from "../../../ui-components/tree/deprecated/component/Tree.js";
+import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider.js";
 
 /* eslint-disable deprecation/deprecation */
 

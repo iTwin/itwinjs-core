@@ -6,8 +6,8 @@
  * @module StagePanels
  */
 
-import { StagePanelType } from "../StagePanel";
-import { getDefaultStagePanelManagerProps, StagePanelManager, StagePanelManagerProps } from "./StagePanel";
+import { StagePanelType } from "../StagePanel.js";
+import { getDefaultStagePanelManagerProps, StagePanelManager, StagePanelManagerProps } from "./StagePanel.js";
 
 /** Properties used to manage stage panels.
  * @beta

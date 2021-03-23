@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render } = tlr;
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer";
-import { SettingsManager, SettingsProvider, SettingsTabEntry } from "../../ui-core/settings/SettingsManager";
+import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer.js";
+import { SettingsManager, SettingsProvider, SettingsTabEntry } from "../../ui-core/settings/SettingsManager.js";
 
 function TestModalSettingsPage({ settingsManager, title }: { settingsManager: SettingsManager, title: string }) {
 

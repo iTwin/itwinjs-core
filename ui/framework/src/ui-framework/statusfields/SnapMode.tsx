@@ -10,10 +10,10 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { SnapMode } from "@bentley/imodeljs-frontend";
 import { FooterPopup, FooterPopupContentType, SnapMode as NZ_SnapMode, Snap, SnapModePanel } from "@bentley/ui-ninezone";
-import { ConfigurableUiActions } from "../configurableui/state";
-import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
-import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { ConfigurableUiActions } from "../configurableui/state.js";
+import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl.js";
+import { UiFramework } from "../UiFramework.js";
+import { StatusFieldProps } from "./StatusFieldProps.js";
 
 // cSpell:ignore multione
 /** Defines properties supported by the SnapMode Field Component.
@@ -37,7 +37,7 @@ interface SnapModeFieldState {
 /**
  * Snap Mode Field React component. This component is designed to be specified in a status bar definition. It will
  * display the active snap mode that AccuSnap will use and allow the user to select a new snap mode.
- */
+ */
 class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapModeFieldState> {
   private _className: string;
   private _snapModeFieldArray: SnapModeFieldEntry[] = [

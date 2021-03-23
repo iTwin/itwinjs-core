@@ -6,21 +6,21 @@
  * @module Zone
  */
 
-import produce from "immer";
+import { produce } from "immer";
 import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
-import { Cell, CellProps } from "../../utilities/Cell";
-import { DisabledResizeHandles } from "../../utilities/DisabledResizeHandles";
-import { HorizontalAnchor, ResizeHandle, VerticalAnchor } from "../../widget/Stacked";
-import { BottomZones, LeftZones, RightZones, TopZones } from "./AdjacentZones";
+import { Cell, CellProps } from "../../utilities/Cell.js";
+import { DisabledResizeHandles } from "../../utilities/DisabledResizeHandles.js";
+import { HorizontalAnchor, ResizeHandle, VerticalAnchor } from "../../widget/Stacked.js";
+import { BottomZones, LeftZones, RightZones, TopZones } from "./AdjacentZones.js";
 import {
   GrowBottom, GrowLeft, GrowRight, GrowTop, ResizeStrategy, ShrinkBottom, ShrinkLeft, ShrinkRight, ShrinkTop, UpdateWindowResizeSettings,
-} from "./ResizeStrategy";
+} from "./ResizeStrategy.js";
 import {
   DraggedWidgetManager, DraggedWidgetManagerProps, getDefaultToolSettingsWidgetManagerProps, getDefaultWidgetHorizontalAnchor,
   getDefaultWidgetManagerProps, getDefaultWidgetVerticalAnchor, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps,
-} from "./Widget";
-import { getDefaultZoneManagerProps, getWindowResizeSettings, ZoneManager, ZoneManagerProps } from "./Zone";
-import { setRectangleProps } from "../../base/NineZoneState";
+} from "./Widget.js";
+import { getDefaultZoneManagerProps, getWindowResizeSettings, ZoneManager, ZoneManagerProps } from "./Zone.js";
+import { setRectangleProps } from "../../base/NineZoneState.js";
 
 /** Widget zone id.
  *

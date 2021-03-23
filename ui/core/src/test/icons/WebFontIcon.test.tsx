@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { render } from "@testing-library/react";
-import { WebFontIcon } from "../../ui-core/icons/WebFontIcon";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { WebFontIcon } from "../../ui-core/icons/WebFontIcon.js";
 
 describe("WebFontIcon", () => {
   it("renders", () => {

@@ -9,13 +9,13 @@
 import * as React from "react";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import { Zone, ZoneManagerProps, ZoneTargetType } from "@bentley/ui-ninezone";
-import { ZoneTargets } from "../dragdrop/ZoneTargets";
-import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
-import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { StatusBar } from "../statusbar/StatusBar";
-import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
-import { getFloatingZoneBounds } from "./FrameworkZone";
-import { Outline } from "./Outline";
+import { ZoneTargets } from "../dragdrop/ZoneTargets.js";
+import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer.js";
+import { SafeAreaContext } from "../safearea/SafeAreaContext.js";
+import { StatusBar } from "../statusbar/StatusBar.js";
+import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl.js";
+import { getFloatingZoneBounds } from "./FrameworkZone.js";
+import { Outline } from "./Outline.js";
 
 // cspell:ignore safearea
 
@@ -35,7 +35,7 @@ export interface StatusBarZoneProps extends CommonProps {
 
 /** Status Bar Zone React component.
  * @internal
- */
+ */
 export class StatusBarZone extends React.PureComponent<StatusBarZoneProps> {
   public render(): React.ReactNode {
     const bounds = getFloatingZoneBounds(this.props.zoneProps);

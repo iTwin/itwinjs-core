@@ -14,9 +14,9 @@ import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, MessageContainer, MessageSeverity, Point, PointProps, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
 import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
-import { MessageManager } from "./MessageManager";
-import { MessageDiv, MessageSpan } from "./MessageSpan";
-import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
+import { MessageManager } from "./MessageManager.js";
+import { MessageDiv, MessageSpan } from "./MessageSpan.js";
+import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails.js";
 
 // cSpell:ignore noicon
 
@@ -30,7 +30,7 @@ export interface PointerMessageProps extends CommonProps {
 
 /** [[PointerMessage]] state.
  * @internal
- */
+ */
 interface PointerMessageState {
   isVisible: boolean;
   message: NotifyMessageType;
@@ -41,7 +41,7 @@ interface PointerMessageState {
 
 /** [[PointerMessageChangedEvent]] arguments.
  * @public
- */
+ */
 export interface PointerMessageChangedEventArgs {
   isVisible: boolean;
   priority: OutputMessagePriority;
@@ -60,7 +60,7 @@ export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEve
 
 /** [[PointerMessagePositionChangedEvent]] arguments.
  * @internal
- */
+ */
 interface PointerMessagePositionChangedEventArgs {
   pt: XAndY;
   relativePosition: RelativePosition;

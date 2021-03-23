@@ -9,22 +9,22 @@
 import "./PropertyGrid.scss";
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyCategory } from "../PropertyDataProvider";
-import { CommonPropertyGridProps } from "./PropertyGridCommons";
-import { PropertyListProps } from "./PropertyList";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer.js";
+import { PropertyCategory } from "../PropertyDataProvider.js";
+import { CommonPropertyGridProps } from "./PropertyGridCommons.js";
+import { PropertyListProps } from "./PropertyList.js";
 
 /** @internal */
 export type PropertyGridEventsRelatedProps = Pick<PropertyListProps, "onPropertyClicked" | "onPropertyRightClicked" |
-"onPropertyContextMenu" | "onEditCommit" | "onEditCancel" | "selectedPropertyKey" | "editingPropertyKey"> &
-Pick<CommonPropertyGridProps, "isPropertySelectionEnabled" | "isPropertySelectionOnRightClickEnabled" | "isPropertyHoverEnabled" | "isPropertyEditingEnabled">;
+  "onPropertyContextMenu" | "onEditCommit" | "onEditCancel" | "selectedPropertyKey" | "editingPropertyKey"> &
+  Pick<CommonPropertyGridProps, "isPropertySelectionEnabled" | "isPropertySelectionOnRightClickEnabled" | "isPropertyHoverEnabled" | "isPropertyEditingEnabled">;
 
 /** Properties for [[PropertyGridEventsRelatedPropsSupplier]] React component
  * @internal
  */
 export interface PropertyGridEventsRelatedPropsSupplierProps extends Pick<CommonPropertyGridProps, "onPropertyContextMenu" | "isPropertyHoverEnabled" |
-"isPropertySelectionEnabled" | "isPropertySelectionOnRightClickEnabled" | "isPropertySelectionOnRightClickEnabled" |
-"onPropertySelectionChanged" | "isPropertyEditingEnabled" | "onPropertyUpdated"> {
+  "isPropertySelectionEnabled" | "isPropertySelectionOnRightClickEnabled" | "isPropertySelectionOnRightClickEnabled" |
+  "onPropertySelectionChanged" | "isPropertyEditingEnabled" | "onPropertyUpdated"> {
   children: (context: PropertyGridEventsRelatedProps) => React.ReactNode;
 }
 

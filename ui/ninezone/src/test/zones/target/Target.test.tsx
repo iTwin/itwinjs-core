@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ReactWrapper, shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import * as useTargetedModule from "@bentley/ui-core/lib/ui-core/utils/hooks/useTargeted";
-import { WidgetTarget, WidgetTargetProps } from "../../../ui-ninezone/zones/target/Target";
-import { mount } from "../../Utils";
+import * as useTargetedModule from "@bentley/ui-core/lib/ui-core/utils/hooks/useTargeted.js";
+import { WidgetTarget, WidgetTargetProps } from "../../../ui-ninezone/zones/target/Target.js";
+import { mount } from "../../Utils.js";
 
 describe("<WidgetTarget />", () => {
-  function target(widgetTarget: ReactWrapper) {
+  function target(widgetTarget: enzyme.ReactWrapper) {
     const targetElement = widgetTarget.find(".nz-zones-target-target");
     sinon.stub(targetElement.getDOMNode(), "contains").returns(true);
     const pointerMove = document.createEvent("HTMLEvents");

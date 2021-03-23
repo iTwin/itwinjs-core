@@ -9,10 +9,10 @@
 import * as React from "react";
 import { MessageContainer, MessageSeverity } from "@bentley/ui-core";
 import { Message, MessageLayout, Toast } from "@bentley/ui-ninezone";
-import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
-import { StatusBar } from "../statusbar/StatusBar";
-import { HollowIcon } from "./HollowIcon";
-import { MessageLabel } from "./MessageLabel";
+import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails.js";
+import { StatusBar } from "../statusbar/StatusBar.js";
+import { HollowIcon } from "./HollowIcon.js";
+import { MessageLabel } from "./MessageLabel.js";
 
 /** Properties for a [[ToastMessage]]
  * @beta

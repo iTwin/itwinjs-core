@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, ReactWrapper, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { ThemedSelect } from "../../ui-core";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
+import { ThemedSelect } from "../../ui-core.js";
 
 describe("<ThemedSelect />", () => {
   enum ColorOptions {
@@ -23,7 +23,7 @@ describe("<ThemedSelect />", () => {
   ];
 
   describe("mounted", () => {
-    let sut: ReactWrapper;
+    let sut: enzyme.ReactWrapper;
 
     afterEach(() => {
       sut.unmount();

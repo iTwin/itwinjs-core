@@ -6,7 +6,7 @@
  * @module Tools
  */
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager";
+import { ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager.js";
 
 /**
  * Immediate tool that will focus into the Tool Settings widget.

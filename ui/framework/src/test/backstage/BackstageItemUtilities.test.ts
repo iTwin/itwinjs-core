@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { BackstageItemUtilities } from "../../ui-framework/backstage/BackstageItemUtilities";
+import { BackstageItemUtilities } from "../../ui-framework/backstage/BackstageItemUtilities.js";
 
 describe("BackstageItemUtilities", () => {
   it("createStageLauncher should create a valid launcher", () => {

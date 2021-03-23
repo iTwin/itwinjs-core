@@ -14,16 +14,16 @@ import {
   GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
 } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, IconHelper, NoChildrenProps, useRefs } from "@bentley/ui-core";
-import { ToolbarButtonItem } from "./Item";
-import { ToolbarItems } from "./Items";
-import { ItemWrapper, useResizeObserverSingleDimension } from "./ItemWrapper";
-import { ToolbarOverflowButton } from "./Overflow";
-import { ToolbarOverflowPanel } from "./OverflowPanel";
-import { PopupItem } from "./PopupItem";
-import { PopupItemsPanel } from "./PopupItemsPanel";
-import { PopupItemWithDrag } from "./PopupItemWithDrag";
-import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
-import { UiComponents } from "../UiComponents";
+import { ToolbarButtonItem } from "./Item.js";
+import { ToolbarItems } from "./Items.js";
+import { ItemWrapper, useResizeObserverSingleDimension } from "./ItemWrapper.js";
+import { ToolbarOverflowButton } from "./Overflow.js";
+import { ToolbarOverflowPanel } from "./OverflowPanel.js";
+import { PopupItem } from "./PopupItem.js";
+import { PopupItemsPanel } from "./PopupItemsPanel.js";
+import { PopupItemWithDrag } from "./PopupItemWithDrag.js";
+import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction.js";
+import { UiComponents } from "../UiComponents.js";
 
 /** Describes the data needed to insert a custom framework-specific button into an ToolbarWithOverflow.
  * @beta

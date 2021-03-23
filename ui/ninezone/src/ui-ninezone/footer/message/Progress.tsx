@@ -10,8 +10,8 @@ import "./Progress.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import { Css } from "../../utilities/Css";
-import { Status, StatusHelpers } from "./Status";
+import { Css } from "../../utilities/Css.js";
+import { Status, StatusHelpers } from "./Status.js";
 
 /** Properties of [[MessageProgress]] component.
  * @beta

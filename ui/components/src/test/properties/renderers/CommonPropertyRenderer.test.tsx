@@ -6,9 +6,9 @@ import { expect } from "chai";
 import React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { render } from "@testing-library/react";
-import { HighlightingComponentProps } from "../../../ui-components/common/HighlightingComponentProps";
-import { CommonPropertyRenderer } from "../../../ui-components/properties/renderers/CommonPropertyRenderer";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { HighlightingComponentProps } from "../../../ui-components/common/HighlightingComponentProps.js";
+import { CommonPropertyRenderer } from "../../../ui-components/properties/renderers/CommonPropertyRenderer.js";
 
 describe("CommonPropertyRenderer", () => {
   describe("createNewDisplayValue", () => {

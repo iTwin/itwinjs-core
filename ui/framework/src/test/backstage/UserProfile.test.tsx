@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { UserInfo } from "@bentley/itwin-client";
-import { FrontstageManager } from "../../ui-framework";
-import { UserProfileBackstageItem } from "../../ui-framework/backstage/UserProfile";
-import TestUtils, { mockUserInfo, mount } from "../TestUtils";
+import { FrontstageManager } from "../../ui-framework.js";
+import { UserProfileBackstageItem } from "../../ui-framework/backstage/UserProfile.js";
+import TestUtils, { mockUserInfo, mount } from "../TestUtils.js";
 
 describe("UserProfileBackstageItem", () => {
 

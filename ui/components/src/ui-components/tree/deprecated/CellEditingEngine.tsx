@@ -8,9 +8,9 @@
 
 import * as React from "react";
 import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { TreeNodeItem } from "../TreeDataProvider";
-import { BeInspireTreeNode } from "./component/BeInspireTree";
+import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer.js";
+import { TreeNodeItem } from "../TreeDataProvider.js";
+import { BeInspireTreeNode } from "./component/BeInspireTree.js";
 
 /* eslint-disable deprecation/deprecation */
 

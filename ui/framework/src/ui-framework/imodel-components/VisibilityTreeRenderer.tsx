@@ -12,7 +12,7 @@ import {
   AbstractTreeNodeLoaderWithProvider, TreeImageLoader, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps,
 } from "@bentley/ui-components";
 import { ImageCheckBox, NodeCheckboxRenderProps } from "@bentley/ui-core";
-import { VisibilityTreeFilterInfo } from "./Common";
+import { VisibilityTreeFilterInfo } from "./Common.js";
 
 /**
  * Creates Visibility tree renderer which renders nodes with eye checkbox.

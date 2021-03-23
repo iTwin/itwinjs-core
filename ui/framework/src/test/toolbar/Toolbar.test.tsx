@@ -6,10 +6,10 @@ import { expect } from "chai";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
-import { render } from "@testing-library/react";
-import { BaseItemState, CommandItemDef, CustomItemDef, GroupItemDef, PopupButton, SyncUiEventDispatcher, Toolbar } from "../../ui-framework";
-import { ItemList } from "../../ui-framework/shared/ItemMap";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { BaseItemState, CommandItemDef, CustomItemDef, GroupItemDef, PopupButton, SyncUiEventDispatcher, Toolbar } from "../../ui-framework.js";
+import { ItemList } from "../../ui-framework/shared/ItemMap.js";
+import TestUtils from "../TestUtils.js";
 
 /* eslint-disable deprecation/deprecation */
 

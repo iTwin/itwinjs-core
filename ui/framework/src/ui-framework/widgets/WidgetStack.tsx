@@ -13,14 +13,14 @@ import {
   DisabledResizeHandles, DraggedWidgetManagerProps, HandleMode, HorizontalAnchor, Stacked as NZ_WidgetStack, ResizeHandle, Tab, TabGroup, TabMode,
   TabSeparator, VerticalAnchor, VerticalAnchorHelpers, WidgetZoneId,
 } from "@bentley/ui-ninezone";
-import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { WidgetChangeHandler } from "../frontstage/FrontstageComposer.js";
+import { UiShowHideManager } from "../utils/UiShowHideManager.js";
 
 // cSpell:ignore Timedout
 
 /** Properties for a [[WidgetStack]] Tab.
  * @internal
- */
+ */
 export interface WidgetTab {
   readonly iconSpec?: string | ConditionalStringValue | React.ReactNode;
   readonly title: string;
@@ -29,12 +29,12 @@ export interface WidgetTab {
 
 /** Properties for a Widget in a [[WidgetStack]].
  * @internal
- */
+ */
 export type WidgetTabs = { readonly [id in WidgetZoneId]: ReadonlyArray<WidgetTab> };
 
 /** Properties for the [[WidgetStack]] React component.
  * @internal
- */
+ */
 export interface WidgetStackProps extends CommonProps {
   activeTabIndex: number;
   disabledResizeHandles: DisabledResizeHandles | undefined;
@@ -54,7 +54,7 @@ export interface WidgetStackProps extends CommonProps {
 
 /** Widget stack React component.
  * @internal
- */
+ */
 export class WidgetStack extends React.PureComponent<WidgetStackProps> {
   private _widgetStack = React.createRef<NZ_WidgetStack>();
 
@@ -137,7 +137,7 @@ export class WidgetStack extends React.PureComponent<WidgetStackProps> {
 
 /** Properties for the [[WidgetStackTabs]] component.
  * @internal
- */
+ */
 export interface WidgetStackTabsProps {
   activeTabIndex: number;
   draggedWidget: DraggedWidgetManagerProps | undefined;
@@ -194,7 +194,7 @@ export class WidgetStackTabs extends React.PureComponent<WidgetStackTabsProps> {
 
 /** Properties for the [[WidgetStackTabGroup]] component.
  * @internal
- */
+ */
 export interface WidgetStackTabGroupProps {
   activeTabIndex: number;
   draggedWidget: DraggedWidgetManagerProps | undefined;
@@ -214,7 +214,7 @@ export interface WidgetStackTabGroupProps {
 
 /** Widget tab group used in [[WidgetStackTabs]] component.
  * @internal
- */
+ */
 export class WidgetStackTabGroup extends React.PureComponent<WidgetStackTabGroupProps> {
   private _firstTab = React.createRef<Tab>();
 
@@ -287,7 +287,7 @@ export class WidgetStackTabGroup extends React.PureComponent<WidgetStackTabGroup
 
 /** Properties for the [[WidgetStackTab]] component.
  * @internal
- */
+ */
 export interface WidgetStackTabProps {
   horizontalAnchor: HorizontalAnchor;
   iconSpec?: string | ConditionalStringValue | React.ReactNode;
@@ -308,7 +308,7 @@ export interface WidgetStackTabProps {
 
 /** Tab used in [[WidgetStackTabGroup]] component.
  * @internal
- */
+ */
 export class WidgetStackTab extends React.PureComponent<WidgetStackTabProps> {
   public render(): React.ReactNode {
     return (

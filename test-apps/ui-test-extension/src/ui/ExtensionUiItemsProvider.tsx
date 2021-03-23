@@ -9,14 +9,14 @@ import {
   StagePanelSection,
   StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
 } from "@bentley/ui-abstract";
-import { SampleTool } from "./tools/SampleTool";
-import { UnitsPopupUiDataProvider } from "./UnitsPopup";
+import { SampleTool } from "./tools/SampleTool.js";
+import { UnitsPopupUiDataProvider } from "./UnitsPopup.js";
 import statusBarButtonSvg from "./StatusField.svg?sprite"; // use once svg are working again.
 import { I18N } from "@bentley/imodeljs-i18n";
-import { ExtensionFrontstage } from "./Frontstage";
+import { ExtensionFrontstage } from "./Frontstage.js";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "@bentley/ui-framework";
-import { PresentationPropertyGridWidget } from "./widgets/PresentationPropertyGridWidget";
+import { PresentationPropertyGridWidget } from "./widgets/PresentationPropertyGridWidget.js";
 export class ExtensionUiItemsProvider implements UiItemsProvider {
   public readonly id = "ExtensionUiItemsProvider";
   public static i18n: I18N;

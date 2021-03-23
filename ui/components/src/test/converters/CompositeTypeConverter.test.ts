@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Primitives } from "@bentley/ui-abstract";
-import { CompositeTypeConverter } from "../../ui-components/converters/CompositeTypeConverter";
-import TestUtils from "../TestUtils";
+import { CompositeTypeConverter } from "../../ui-components/converters/CompositeTypeConverter.js";
+import TestUtils from "../TestUtils.js";
 
 describe("CompositeTypeConverter", () => {
 

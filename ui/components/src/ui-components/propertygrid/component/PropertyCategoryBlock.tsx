@@ -9,9 +9,9 @@
 import * as React from "react";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, ExpandableBlock } from "@bentley/ui-core";
-import { HighlightedText } from "../../common/HighlightedText";
-import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
-import { PropertyCategory } from "../PropertyDataProvider";
+import { HighlightedText } from "../../common/HighlightedText.js";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps.js";
+import { PropertyCategory } from "../PropertyDataProvider.js";
 
 /**
  * Properties for the [[PropertyCategoryBlock]] React component

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { CommonProps, ContextMenuItem, ContextSubMenu, GlobalContextMenu, UiEvent } from "@bentley/ui-core";
-import { KeyboardShortcut } from "./KeyboardShortcut";
+import { KeyboardShortcut } from "./KeyboardShortcut.js";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 
 /** State for a [[KeyboardShortcutMenuEvent]] and [[KeyboardShortcutMenu]] component
@@ -23,12 +23,12 @@ export interface KeyboardShortcutMenuState {
 
 /** KeyboardShortcut Menu Event class.
  * @public
- */
+ */
 export class KeyboardShortcutMenuEvent extends UiEvent<KeyboardShortcutMenuState> { }
 
 /** React component that displays a context menu at the cursor containing keyboard shortcuts.
  * @public
- */
+ */
 export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, KeyboardShortcutMenuState> {
 
   /** @internal */

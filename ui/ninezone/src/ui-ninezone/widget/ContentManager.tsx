@@ -6,10 +6,10 @@
  * @module Widget
  */
 
-import produce, { castDraft } from "immer";
+import { produce, castDraft } from "immer";
 import * as React from "react";
-import { EventEmitter } from "../base/Event";
-import { TabState } from "../base/NineZoneState";
+import { EventEmitter } from "../base/Event.js";
+import { TabState } from "../base/NineZoneState.js";
 
 /** @internal */
 export interface WidgetContentManagerProps {

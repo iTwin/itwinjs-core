@@ -9,9 +9,9 @@
 import "./ContentRenderer.scss";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { TabsStateContext, ToolSettingsNodeContext, WidgetContentNodeContext } from "../base/NineZone";
-import { TabState, toolSettingsTabId } from "../base/NineZoneState";
-import { WidgetContentContainersContext, WidgetContentManagerContext } from "./ContentManager";
+import { TabsStateContext, ToolSettingsNodeContext, WidgetContentNodeContext } from "../base/NineZone.js";
+import { TabState, toolSettingsTabId } from "../base/NineZoneState.js";
+import { WidgetContentContainersContext, WidgetContentManagerContext } from "./ContentManager.js";
 
 /** @internal */
 export const WidgetContentRenderers = React.memo(function WidgetContentRenderers() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow

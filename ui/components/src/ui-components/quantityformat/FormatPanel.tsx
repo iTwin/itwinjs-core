@@ -10,12 +10,12 @@ import "./FormatPanel.scss";
 import * as React from "react";
 import { Format, FormatProps, FormatterSpec, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { CommonProps } from "@bentley/ui-core";
-import { FormatPrecision } from "./FormatPrecision";
-import { FormatSample } from "./FormatSample";
-import { FormatTypeOption } from "./FormatType";
-import { FormatUnitLabel } from "./FormatUnitLabel";
-import { FormatUnits } from "./FormatUnits";
-import { MiscFormatOptions } from "./MiscFormatOptions";
+import { FormatPrecision } from "./FormatPrecision.js";
+import { FormatSample } from "./FormatSample.js";
+import { FormatTypeOption } from "./FormatType.js";
+import { FormatUnitLabel } from "./FormatUnitLabel.js";
+import { FormatUnits } from "./FormatUnits.js";
+import { MiscFormatOptions } from "./MiscFormatOptions.js";
 
 /** Properties of [[FormatPanel]] component.
  * @alpha
@@ -63,7 +63,7 @@ export function FormatPanel(props: FormatPanelProps) {
     onFormatChange && onFormatChange(newProps);
   }, [onFormatChange]);
 
-  const isMounted = React.useRef (false);
+  const isMounted = React.useRef(false);
 
   // runs returned function only when component is unmounted.
   React.useEffect(() => {

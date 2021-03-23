@@ -7,11 +7,11 @@ import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
 import { ActionButton, BadgeType, CommonToolbarItem, GroupButton, SpecialKey, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import { fireEvent, render } from "@testing-library/react";
-import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../ui-components/toolbar/ToolbarWithOverflow";
-import { Direction } from "../../ui-components/toolbar/utilities/Direction";
-import { createDOMRect } from "../Utils";
-import TestUtils from "../TestUtils";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
+import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../ui-components/toolbar/ToolbarWithOverflow.js";
+import { Direction } from "../../ui-components/toolbar/utilities/Direction.js";
+import { createDOMRect } from "../Utils.js";
+import TestUtils from "../TestUtils.js";
 
 // cSpell:ignore testid
 

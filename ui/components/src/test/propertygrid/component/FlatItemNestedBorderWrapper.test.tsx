@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { render } from "@testing-library/react";
-import { FlatItemNestedBorderWrapper } from "../../../ui-components/propertygrid/component/FlatItemNestedBorderWrapper";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { FlatItemNestedBorderWrapper } from "../../../ui-components/propertygrid/component/FlatItemNestedBorderWrapper.js";
 
 describe("FlatItemNestedBorderWrapper", () => {
   /**

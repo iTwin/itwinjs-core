@@ -8,7 +8,7 @@
 
 import "./LoadingSpinner.scss";
 import * as React from "react";
-import { Spinner, SpinnerProps } from "./Spinner";
+import { Spinner, SpinnerProps } from "./Spinner.js";
 
 /** Properties for [[LoadingSpinner]] component
  * @public

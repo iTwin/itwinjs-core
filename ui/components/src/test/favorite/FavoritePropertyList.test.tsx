@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as faker from "faker";
 import * as React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory, PropertyData } from "../../ui-components/propertygrid/PropertyDataProvider";
-import { FavoritePropertyList } from "../../ui-components/favorite/FavoritePropertyList";
-import TestUtils from "../TestUtils";
+import { PropertyCategory, PropertyData } from "../../ui-components/propertygrid/PropertyDataProvider.js";
+import { FavoritePropertyList } from "../../ui-components/favorite/FavoritePropertyList.js";
+import TestUtils from "../TestUtils.js";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyValueRendererManager } from "../../ui-components/properties/ValueRendererManager";
+import { PropertyValueRendererManager } from "../../ui-components/properties/ValueRendererManager.js";
 
 describe("FavoritePropertyList", () => {
 

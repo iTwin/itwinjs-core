@@ -10,10 +10,10 @@ import * as React from "react";
 import { Dialog, DialogButtonDef, DialogButtonType } from "@bentley/ui-core";
 import { DialogLayoutDataProvider } from "@bentley/ui-abstract";
 import { getUniqueId } from "@bentley/ui-ninezone";
-import { ModalDialogManager } from "./ModalDialogManager";
-import { ModelessDialogManager } from "./ModelessDialogManager";
-import { DefaultDialogGridContainer } from "../uiprovider/DefaultDialogGridContainer";
-import { ComponentGenerator } from "../uiprovider/ComponentGenerator";
+import { ModalDialogManager } from "./ModalDialogManager.js";
+import { ModelessDialogManager } from "./ModelessDialogManager.js";
+import { DefaultDialogGridContainer } from "../uiprovider/DefaultDialogGridContainer.js";
+import { ComponentGenerator } from "../uiprovider/ComponentGenerator.js";
 
 /** Props for [[UiDataProvidedDialog]] component.
  * @beta

@@ -6,15 +6,15 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { SelectionHandler } from "../../../../ui-components/common/selection/SelectionHandler";
-import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes";
+import { SelectionHandler } from "../../../../ui-components/common/selection/SelectionHandler.js";
+import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes.js";
 import {
   IndividualSelection, isRangeSelection, RangeSelection, TreeSelectionManager,
-} from "../../../../ui-components/tree/controlled/internal/TreeSelectionManager";
-import { MutableTreeModelNode, TreeModel, VisibleTreeNodes } from "../../../../ui-components/tree/controlled/TreeModel";
-import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
+} from "../../../../ui-components/tree/controlled/internal/TreeSelectionManager.js";
+import { MutableTreeModelNode, TreeModel, VisibleTreeNodes } from "../../../../ui-components/tree/controlled/TreeModel.js";
+import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers.js";
 import { SpecialKey } from "@bentley/ui-abstract";
-import { TreeActions } from "../../../../ui-components/tree/controlled/TreeActions";
+import { TreeActions } from "../../../../ui-components/tree/controlled/TreeActions.js";
 
 type Selection = string | RangeSelection;
 

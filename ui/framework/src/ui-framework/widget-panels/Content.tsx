@@ -7,8 +7,8 @@
  */
 import * as React from "react";
 import { ScrollableWidgetContent, TabIdContext } from "@bentley/ui-ninezone";
-import { useActiveFrontstageDef } from "../frontstage/Frontstage";
-import { WidgetDef } from "../widgets/WidgetDef";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage.js";
+import { WidgetDef } from "../widgets/WidgetDef.js";
 
 /** @internal */
 export function WidgetContent() {

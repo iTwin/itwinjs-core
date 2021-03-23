@@ -9,15 +9,15 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { render } from "@testing-library/react";
-import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes";
-import { ControlledTree } from "../../../../ui-components/tree/controlled/component/ControlledTree";
-import { from } from "../../../../ui-components/tree/controlled/Observable";
-import { TreeEvents } from "../../../../ui-components/tree/controlled/TreeEvents";
-import { MutableTreeModelNode, TreeModel, VisibleTreeNodes } from "../../../../ui-components/tree/controlled/TreeModel";
-import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
-import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
-import TestUtils from "../../../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes.js";
+import { ControlledTree } from "../../../../ui-components/tree/controlled/component/ControlledTree.js";
+import { from } from "../../../../ui-components/tree/controlled/Observable.js";
+import { TreeEvents } from "../../../../ui-components/tree/controlled/TreeEvents.js";
+import { MutableTreeModelNode, TreeModel, VisibleTreeNodes } from "../../../../ui-components/tree/controlled/TreeModel.js";
+import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader.js";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine.js";
+import TestUtils from "../../../TestUtils.js";
 
 describe("ControlledTree", () => {
 

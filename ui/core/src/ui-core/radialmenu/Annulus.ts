@@ -6,7 +6,7 @@
  * @module RadialMenu
  */
 
-import { Point } from "../utils/Point";
+import { Point } from "../utils/Point.js";
 
 /**
  * 2D Line consisting of a start point, and an end point

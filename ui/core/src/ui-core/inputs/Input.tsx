@@ -8,8 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { useRefs } from "../utils/hooks/useRefs";
-import { CommonProps } from "../utils/Props";
+import { useRefs } from "../utils/hooks/useRefs.js";
+import { CommonProps } from "../utils/Props.js";
 
 /** Properties for the [[Input]] component
  * @public

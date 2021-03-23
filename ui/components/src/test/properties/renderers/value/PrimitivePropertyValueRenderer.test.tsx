@@ -6,12 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Primitives, PropertyConverterInfo } from "@bentley/ui-abstract";
-import { render, waitForElement } from "@testing-library/react";
-import { PrimitivePropertyValueRenderer } from "../../../../ui-components";
-import { TypeConverter } from "../../../../ui-components/converters/TypeConverter";
-import { TypeConverterManager } from "../../../../ui-components/converters/TypeConverterManager";
-import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
-import TestUtils from "../../../TestUtils";
+import tlr from "@testing-library/react"; const { render, waitForElement } = tlr;
+import { PrimitivePropertyValueRenderer } from "../../../../ui-components.js";
+import { TypeConverter } from "../../../../ui-components/converters/TypeConverter.js";
+import { TypeConverterManager } from "../../../../ui-components/converters/TypeConverterManager.js";
+import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager.js";
+import TestUtils from "../../../TestUtils.js";
 
 class AsyncValuesTypeConverter extends TypeConverter {
   public sortCompare(_lhs: Primitives.Value, _rhs: Primitives.Value, _ignoreCase?: boolean) {

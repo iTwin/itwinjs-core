@@ -12,12 +12,12 @@ import { getInstancesCount, SelectionScope } from "@bentley/presentation-common"
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 // cSpell:ignore configurableui
 import { UiEvent } from "@bentley/ui-core";
-import { Backstage } from "../backstage/Backstage";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { PresentationSelectionScope, SessionStateActionId } from "../redux/SessionState";
-import { UiFramework } from "../UiFramework";
-import { WorkflowManager } from "../workflow/Workflow";
+import { Backstage } from "../backstage/Backstage.js";
+import { ContentViewManager } from "../content/ContentViewManager.js";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { PresentationSelectionScope, SessionStateActionId } from "../redux/SessionState.js";
+import { UiFramework } from "../UiFramework.js";
+import { WorkflowManager } from "../workflow/Workflow.js";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, backstageevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
@@ -77,20 +77,20 @@ export enum SyncUiEventId {
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
  * @public
- */
+ */
 export interface SyncUiEventArgs {
   eventIds: Set<string>;
 }
 
 /** SyncUi Event class.
  * @public
- */
+ */
 export class SyncUiEvent extends UiEvent<SyncUiEventArgs> { }
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
  * @public
- */
+ */
 export class SyncUiEventDispatcher {
   private static _syncEventTimerId: number | undefined;
   private static _eventIds: Set<string>;
@@ -224,7 +224,7 @@ export class SyncUiEventDispatcher {
   /** Initializes the Monitoring of Events that trigger dispatching sync events */
   public static initialize() {
     // clear any registered listeners - this should only be encountered in unit test scenarios
-    this._unregisterListenerFuncs.forEach((unregisterListenerFunc)=>unregisterListenerFunc());
+    this._unregisterListenerFuncs.forEach((unregisterListenerFunc) => unregisterListenerFunc());
 
     this._unregisterListenerFuncs.push(FrontstageManager.onContentControlActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentControlActivated);

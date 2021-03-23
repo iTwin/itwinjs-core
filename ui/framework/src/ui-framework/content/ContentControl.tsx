@@ -10,11 +10,11 @@ import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
+import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl.js";
 
 /** ControlControl Activated Event Args interface.
  * @public
- */
+ */
 export interface ContentControlActivatedEventArgs {
   activeContentControl: ContentControl;
   oldContentControl?: ContentControl;
@@ -22,7 +22,7 @@ export interface ContentControlActivatedEventArgs {
 
 /** ContentControl Activated Event class.
  * @public
- */
+ */
 export class ContentControlActivatedEvent extends UiEvent<ContentControlActivatedEventArgs> { }
 
 /** Interface to be implemented when the ContentControl supports ViewSelector changes

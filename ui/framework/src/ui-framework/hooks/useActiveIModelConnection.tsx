@@ -8,9 +8,9 @@
 
 import { useEffect, useState } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { SessionStateActionId } from "../redux/SessionState";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework } from "../UiFramework";
+import { SessionStateActionId } from "../redux/SessionState.js";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher.js";
+import { UiFramework } from "../UiFramework.js";
 
 /** React hook that maintains the active IModelConnection. For this hook to work properly the
  * IModelConnection must be set using UiFramework.setIModelConnection method. This also requires

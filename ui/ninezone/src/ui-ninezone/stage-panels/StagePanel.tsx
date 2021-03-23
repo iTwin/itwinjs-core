@@ -10,8 +10,8 @@ import "./StagePanel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, Rectangle } from "@bentley/ui-core";
-import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
-import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "../widget/rectangular/ResizeGrip";
+import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets.js";
+import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "../widget/rectangular/ResizeGrip.js";
 
 /** Describes available stage panel types.
  * @beta

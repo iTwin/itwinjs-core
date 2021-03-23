@@ -14,8 +14,8 @@ import {
   AccuDrawField, AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldValueToUiEventArgs,
   AccuDrawUiAdmin, isLetter, SpecialKey,
 } from "@bentley/ui-abstract";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut.js";
+import { FrameworkAccuDraw } from "./FrameworkAccuDraw.js";
 
 /** Properties for [[AccuDrawInputField]] component
  * @internal

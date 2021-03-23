@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import { IModelApp, MockRender, QuantityType } from "@bentley/imodeljs-frontend";
-import TestUtils from "../TestUtils";
-import { QuantityInput } from "../../ui-components/inputs/QuantityInput";
+import TestUtils from "../TestUtils.js";
+import { QuantityInput } from "../../ui-components/inputs/QuantityInput.js";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 describe("QuantityInput", () => {

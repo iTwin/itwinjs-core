@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
-import { WidgetDef, WidgetManager, WidgetProvider, ZoneLocation } from "../../ui-framework";
-import { TestUtils } from "../TestUtils";
+import { WidgetDef, WidgetManager, WidgetProvider, ZoneLocation } from "../../ui-framework.js";
+import { TestUtils } from "../TestUtils.js";
 
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "TestUiProvider-Widget";

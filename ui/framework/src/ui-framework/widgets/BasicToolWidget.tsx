@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Widget
@@ -9,12 +9,12 @@
 import classnames from "classnames";
 import * as React from "react";
 import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "@bentley/ui-abstract";
-import { CoreTools } from "../tools/CoreToolDefinitions";
-import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
-import { ToolbarComposer } from "../toolbar/ToolbarComposer";
-import { ToolbarHelper } from "../toolbar/ToolbarHelper";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
-import { BackstageAppButton, ToolWidgetComposer } from "./ToolWidgetComposer";
+import { CoreTools } from "../tools/CoreToolDefinitions.js";
+import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef.js";
+import { ToolbarComposer } from "../toolbar/ToolbarComposer.js";
+import { ToolbarHelper } from "../toolbar/ToolbarHelper.js";
+import { UiFramework, UiVisibilityEventArgs } from "../UiFramework.js";
+import { BackstageAppButton, ToolWidgetComposer } from "./ToolWidgetComposer.js";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
  * @beta

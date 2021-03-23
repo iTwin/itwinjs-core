@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, CustomButtonDefinition, StageUsage, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
-import { render, waitForElement } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { render, waitForElement } = tlr;
 import {
   CommandItemDef, CustomItemDef, FrameworkVersion, FrontstageActivatedEventArgs, FrontstageDef, FrontstageManager, FrontstageProps, GroupItemDef,
   SyncUiEventDispatcher, ToolbarComposer, ToolbarHelper, ToolItemDef,
-} from "../../ui-framework";
-import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
-import TestUtils from "../TestUtils";
+} from "../../ui-framework.js";
+import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions.js";
+import TestUtils from "../TestUtils.js";
 
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "ToolbarComposer-TestUiProvider";

@@ -7,9 +7,9 @@
  * @module PropertyGrid
  */
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { FlatGridItemType, IMutableFlatGridItem, IMutableGridCategoryItem, MutableFlatPropertyGridItem } from "./MutableFlatGridItem";
-import { IMutableGridItemFactory } from "./MutableGridItemFactory";
-import { PropertyCategory } from "../../PropertyDataProvider";
+import { FlatGridItemType, IMutableFlatGridItem, IMutableGridCategoryItem, MutableFlatPropertyGridItem } from "./MutableFlatGridItem.js";
+import { IMutableGridItemFactory } from "./MutableGridItemFactory.js";
+import { PropertyCategory } from "../../PropertyDataProvider.js";
 
 /**
  * Category name to PropertyRecord[] key pair interface used to describe which records belong to which category.

@@ -10,16 +10,16 @@ import * as React from "react";
 import {
   NodeCheckboxProps as CheckboxProps, CheckBoxState, CommonProps, NodeCheckboxRenderer, Omit, shallowDiffers, TreeNode as TreeNodeBase,
 } from "@bentley/ui-core";
-import { Image } from "../../../common/IImageLoader";
-import { ImageRenderer } from "../../../common/ImageRenderer";
-import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
-import { ITreeImageLoader } from "../../ImageLoader";
-import { TreeComponentTestId } from "../../TreeComponentTestId";
-import { TreeNodeItem } from "../../TreeDataProvider";
-import { CellEditingEngine } from "../CellEditingEngine";
-import { BeInspireTreeNode } from "./BeInspireTree";
-import { TreeNodeContent } from "./NodeContent";
+import { Image } from "../../../common/IImageLoader.js";
+import { ImageRenderer } from "../../../common/ImageRenderer.js";
+import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager.js";
+import { HighlightableTreeNodeProps } from "../../HighlightingEngine.js";
+import { ITreeImageLoader } from "../../ImageLoader.js";
+import { TreeComponentTestId } from "../../TreeComponentTestId.js";
+import { TreeNodeItem } from "../../TreeDataProvider.js";
+import { CellEditingEngine } from "../CellEditingEngine.js";
+import { BeInspireTreeNode } from "./BeInspireTree.js";
+import { TreeNodeContent } from "./NodeContent.js";
 
 /* eslint-disable deprecation/deprecation */
 

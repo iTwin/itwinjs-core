@@ -12,12 +12,12 @@ import { XAndY } from "@bentley/geometry-core";
 import { ToolTipOptions } from "@bentley/imodeljs-frontend";
 import { CommonProps, Point, PointProps, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
 import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
-import { MessageDiv } from "../messages/MessageSpan";
-import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
+import { MessageDiv } from "../messages/MessageSpan.js";
+import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails.js";
 
 /** [[ElementTooltip]] State.
  * @internal
- */
+ */
 interface ElementTooltipState {
   isVisible: boolean;
   message: NotifyMessageType;
@@ -27,7 +27,7 @@ interface ElementTooltipState {
 
 /** [[ElementTooltipChangedEvent]] arguments.
  * @public
- */
+ */
 export interface ElementTooltipChangedEventArgs {
   isTooltipVisible: boolean;
   message: NotifyMessageType;
@@ -38,12 +38,12 @@ export interface ElementTooltipChangedEventArgs {
 
 /** ElementTooltip Changed Event class.
  * @public
- */
+ */
 export class ElementTooltipChangedEvent extends UiEvent<ElementTooltipChangedEventArgs> { }
 
 /** ElementTooltip React component.
  * @public
- */
+ */
 export class ElementTooltip extends React.Component<CommonProps, ElementTooltipState> {
   private static _elementTooltipChangedEvent: ElementTooltipChangedEvent = new ElementTooltipChangedEvent();
   private static _isTooltipVisible: boolean;

@@ -9,11 +9,11 @@
 import "./SplitButton.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PopupContextMenu } from "../contextmenu/PopupContextMenu";
-import { Icon, IconSpec } from "../icons/IconComponent";
-import { CommonProps } from "../utils/Props";
+import { PopupContextMenu } from "../contextmenu/PopupContextMenu.js";
+import { Icon, IconSpec } from "../icons/IconComponent.js";
+import { CommonProps } from "../utils/Props.js";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
-import { ButtonType, getButtonTypeClassName } from "../button/Button";
+import { ButtonType, getButtonTypeClassName } from "../button/Button.js";
 
 // TODO: implement
 /** @internal */

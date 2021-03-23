@@ -7,7 +7,7 @@
  */
 
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { Milestone, PlaybackSettings, TimelineDataProvider } from "./interfaces";
+import { Milestone, PlaybackSettings, TimelineDataProvider } from "./interfaces.js";
 
 /** Base Timeline Data Provider
  * @alpha

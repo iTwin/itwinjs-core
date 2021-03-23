@@ -2,7 +2,6 @@
 {
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
-  "editor.formatOnSave": true,
   "search.exclude": {
     "**/node_modules": true,
     "**/bower_components": true,
@@ -111,9 +110,9 @@
   "debug.internalConsoleOptions": "openOnSessionStart",
   "eslint.format.enable": true,
   "eslint.lintTask.enable": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.markdownlint": true, // first run the markdown linter
-    "editor.action.fixAll": true, // Run the default formatter before eslint, it handles whitespace better
-    "source.fixAll.eslint": true // then run ESLint auto-fix
-  }
+  // "editor.codeActionsOnSave": {
+  //   "source.fixAll.markdownlint": true, // first run the markdown linter
+  //   "editor.action.fixAll": true, // Run the default formatter before eslint, it handles whitespace better
+  //   "source.fixAll.eslint": true // then run ESLint auto-fix
+  // }
 }

@@ -9,8 +9,8 @@
 import "./MessageBox.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Dialog, DialogButtonDef } from "../dialog/Dialog";
-import { CommonProps } from "../utils/Props";
+import { Dialog, DialogButtonDef } from "../dialog/Dialog.js";
+import { CommonProps } from "../utils/Props.js";
 
 /** Message Severity enum.
  * @public

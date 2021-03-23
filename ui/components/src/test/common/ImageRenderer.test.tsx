@@ -6,9 +6,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import { UiError } from "@bentley/ui-abstract";
-import { render } from "@testing-library/react";
-import { LoadedBinaryImage } from "../../ui-components/common/IImageLoader";
-import { ImageRenderer } from "../../ui-components/common/ImageRenderer";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { LoadedBinaryImage } from "../../ui-components/common/IImageLoader.js";
+import { ImageRenderer } from "../../ui-components/common/ImageRenderer.js";
 
 describe("ImageRenderer", () => {
   const imageRenderer = new ImageRenderer();

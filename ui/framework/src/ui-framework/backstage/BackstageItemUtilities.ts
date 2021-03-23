@@ -7,8 +7,8 @@
  */
 
 import { BackstageActionItem as UIA_BackstageActionItem, BackstageStageLauncher as UIA_BackstageStageLauncher } from "@bentley/ui-abstract";
-import { PropsHelper } from "../utils/PropsHelper";
-import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
+import { PropsHelper } from "../utils/PropsHelper.js";
+import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps.js";
 
 /** Used to specify the item type added to the backstage menu.
  * Deprecated - Use [BackstageItemType]($ui-abstract) in bentley/ui-abstract instead.

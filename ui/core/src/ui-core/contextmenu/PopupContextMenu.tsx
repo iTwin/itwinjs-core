@@ -7,11 +7,11 @@
  */
 
 import * as React from "react";
-import { Popup } from "../popup/Popup";
-import { ContextMenu } from "./ContextMenu";
+import { Popup } from "../popup/Popup.js";
+import { ContextMenu } from "./ContextMenu.js";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { CommonProps } from "../utils/Props";
-import { ContextMenuDirection } from "./ContextMenuDirection";
+import { CommonProps } from "../utils/Props.js";
+import { ContextMenuDirection } from "./ContextMenuDirection.js";
 
 /** Properties for [[PopupContextMenu]] component
  * @beta

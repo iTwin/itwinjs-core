@@ -10,7 +10,7 @@
 import "./Tree.scss";
 import classnames from "classnames";
 // third-party imports
-import _ from "lodash";
+import _ from "lodash-es";
 import * as React from "react";
 import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedListRowProps } from "react-virtualized";
 // bentley imports
@@ -18,29 +18,29 @@ import { Guid, using } from "@bentley/bentleyjs-core";
 import {
   CheckBoxInfo, CheckBoxState, CommonProps, NodeCheckboxRenderer, shallowDiffers, Spinner, SpinnerSize, Tree as TreeBase, TreeNodePlaceholder,
 } from "@bentley/ui-core";
-import { getPropertyRecordAsString } from "../../../common/getPropertyRecordAsString";
+import { getPropertyRecordAsString } from "../../../common/getPropertyRecordAsString.js";
 import {
   MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
-} from "../../../common/selection/SelectionHandler";
+} from "../../../common/selection/SelectionHandler.js";
 // selection-related imports
-import { SelectionMode } from "../../../common/selection/SelectionModes";
-import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
+import { SelectionMode } from "../../../common/selection/SelectionModes.js";
+import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager.js";
 // misc
-import { UiComponents } from "../../../UiComponents";
+import { UiComponents } from "../../../UiComponents.js";
 // node highlighting
-import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
-import { ITreeImageLoader, TreeImageLoader } from "../../ImageLoader";
+import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine.js";
+import { ITreeImageLoader, TreeImageLoader } from "../../ImageLoader.js";
 import {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, TreeDataProvider, TreeNodeItem,
-} from "../../TreeDataProvider";
-import { CellEditingEngine, EditableTreeProps } from "../CellEditingEngine";
-import { NodeEventManager } from "../NodeEventManager";
-import { NodeLoadingOrchestrator } from "../NodeLoadingOrchestrator";
+} from "../../TreeDataProvider.js";
+import { CellEditingEngine, EditableTreeProps } from "../CellEditingEngine.js";
+import { NodeEventManager } from "../NodeEventManager.js";
+import { NodeLoadingOrchestrator } from "../NodeLoadingOrchestrator.js";
 // tree-related imports
 import {
   BeInspireTree, BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNode, toNodes,
-} from "./BeInspireTree";
-import { TreeNode, TreeNodeProps } from "./Node";
+} from "./BeInspireTree.js";
+import { TreeNode, TreeNodeProps } from "./Node.js";
 
 /* eslint-disable deprecation/deprecation */
 

@@ -11,11 +11,11 @@ import * as React from "react";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Popup } from "@bentley/ui-core";
-import { InputFieldMessageEventArgs, MessageManager } from "../messages/MessageManager";
-import { MessageDiv } from "./MessageSpan";
-import { NotifyMessageType } from "./ReactNotifyMessageDetails";
+import { InputFieldMessageEventArgs, MessageManager } from "../messages/MessageManager.js";
+import { MessageDiv } from "./MessageSpan.js";
+import { NotifyMessageType } from "./ReactNotifyMessageDetails.js";
 
-import classnames = require("classnames");
+import classnames from "classnames";
 /** Properties of [[InputFieldMessage]] component.
  * @public
  */
@@ -25,7 +25,7 @@ interface InputFieldMessageProps {
 
 /** [[InputFieldMessage]] state.
  * @internal
- */
+ */
 interface InputFieldMessageState {
   isVisible: boolean;
   priority: OutputMessagePriority;

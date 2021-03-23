@@ -6,9 +6,9 @@
  * @module Tree
  */
 
-import { IImageLoader, LoadedImage } from "../common/IImageLoader";
-import { BeInspireTreeNodeITree } from "./deprecated/component/BeInspireTree";
-import { TreeNodeItem } from "./TreeDataProvider";
+import { IImageLoader, LoadedImage } from "../common/IImageLoader.js";
+import { BeInspireTreeNodeITree } from "./deprecated/component/BeInspireTree.js";
+import { TreeNodeItem } from "./TreeDataProvider.js";
 
 /* eslint-disable deprecation/deprecation */
 

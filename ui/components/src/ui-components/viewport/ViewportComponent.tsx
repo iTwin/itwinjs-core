@@ -17,10 +17,10 @@ import {
 } from "@bentley/imodeljs-frontend";
 
 import { CommonProps } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../UiComponents.js";
 import {
   CubeRotationChangeEventArgs, DrawingViewportChangeEventArgs, StandardRotationChangeEventArgs, ViewportComponentEvents,
-} from "./ViewportComponentEvents";
+} from "./ViewportComponentEvents.js";
 
 /** Type for a ViewState prop
  * @public

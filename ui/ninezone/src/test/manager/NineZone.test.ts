@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { Point, Rectangle } from "@bentley/ui-core";
-import { HorizontalAnchor, NineZoneManager, StagePanelType, ToolSettingsWidgetMode, ZonesManager } from "../../ui-ninezone";
-import { NineZoneManagerTestProps } from "./TestProps";
+import { HorizontalAnchor, NineZoneManager, StagePanelType, ToolSettingsWidgetMode, ZonesManager } from "../../ui-ninezone.js";
+import { NineZoneManagerTestProps } from "./TestProps.js";
 
 describe("NineZoneManager", () => {
   describe("getNestedPanelsManager", () => {

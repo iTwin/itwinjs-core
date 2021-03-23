@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { Point } from "../Point";
-import { Rectangle } from "../Rectangle";
+import { Point } from "../Point.js";
+import { Rectangle } from "../Rectangle.js";
 
 /** @internal */
 export class WidgetElementSet extends Set<React.RefObject<Element>> { }

@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { BadgeType } from "@bentley/ui-abstract";
-import { BetaBadge } from "./BetaBadge";
-import { NewBadge } from "./NewBadge";
+import { BetaBadge } from "./BetaBadge.js";
+import { NewBadge } from "./NewBadge.js";
 
 /** Converts BetaType to Badge React component
  * @internal

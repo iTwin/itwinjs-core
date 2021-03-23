@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
 import * as React from "react";
 import { Matrix3d } from "@bentley/geometry-core";
-import { Cube, CubeFace, Face } from "../../ui-core";
+import { Cube, CubeFace, Face } from "../../ui-core.js";
 
 describe("Cube", () => {
   describe("<Cube />", () => {

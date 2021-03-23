@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Observable } from "rxjs/internal/Observable";
-import { from } from "rxjs/internal/observable/from";
-import { of } from "rxjs/internal/observable/of";
-import { throwError } from "rxjs/internal/observable/throwError";
+import { Observable } from "rxjs/internal/Observable.js";
+import { from } from "rxjs/internal/observable/from.js";
+import { of } from "rxjs/internal/observable/of.js";
+import { throwError } from "rxjs/internal/observable/throwError.js";
 import sinon from "sinon";
-import { TreeNodeItem } from "../../../ui-components";
-import { BeInspireTree, BeInspireTreeNode, toNode, toNodes } from "../../../ui-components/tree/deprecated/component/BeInspireTree";
-import { DEPRECATED_Tree as Tree } from "../../../ui-components/tree/deprecated/component/Tree";
+import { TreeNodeItem } from "../../../ui-components.js";
+import { BeInspireTree, BeInspireTreeNode, toNode, toNodes } from "../../../ui-components/tree/deprecated/component/BeInspireTree.js";
+import { DEPRECATED_Tree as Tree } from "../../../ui-components/tree/deprecated/component/Tree.js";
 import {
   makeObservableCallback, NodeKey, NodeLoadingOrchestrator, NodeSet, onCancelation, PendingNodeTracker,
-} from "../../../ui-components/tree/deprecated/NodeLoadingOrchestrator";
-import { ResolvablePromise } from "../../test-helpers/misc";
-import { extractSequence, waitForUnsubscription } from "../../common/ObservableTestHelpers";
-import { initializeTree, TestTreeDataProvider } from "../TestDataFactories";
+} from "../../../ui-components/tree/deprecated/NodeLoadingOrchestrator.js";
+import { ResolvablePromise } from "../../test-helpers/misc.js";
+import { extractSequence, waitForUnsubscription } from "../../common/ObservableTestHelpers.js";
+import { initializeTree, TestTreeDataProvider } from "../TestDataFactories.js";
 
 /* eslint-disable deprecation/deprecation */
 

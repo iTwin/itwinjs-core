@@ -12,8 +12,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { CommonProps } from "../../utils/Props";
-import { Omit } from "../../utils/typeUtils";
+import { CommonProps } from "../../utils/Props.js";
+import { Omit } from "../../utils/typeUtils.js";
 import { SpecialKey } from "@bentley/ui-abstract";
 
 // cSpell:ignore nostyle

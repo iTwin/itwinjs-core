@@ -4,23 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Observable as RxjsObservable } from "rxjs/internal/Observable";
-import { from as rxjsFrom } from "rxjs/internal/observable/from";
+import { Observable as RxjsObservable } from "rxjs/internal/Observable.js";
+import { from as rxjsFrom } from "rxjs/internal/observable/from.js";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { Observable } from "../../../ui-components/tree/controlled/Observable";
-import { MutableTreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "../../../ui-components/tree/controlled/TreeModel";
-import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
+import { Observable } from "../../../ui-components/tree/controlled/Observable.js";
+import { MutableTreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "../../../ui-components/tree/controlled/TreeModel.js";
+import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource.js";
 import {
   handleLoadedNodeHierarchy, LoadedNodeHierarchy, PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, TreeNodeLoadResult,
-} from "../../../ui-components/tree/controlled/TreeNodeLoader";
+} from "../../../ui-components/tree/controlled/TreeNodeLoader.js";
 import {
   ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
-} from "../../../ui-components/tree/TreeDataProvider";
-import { extractSequence } from "../../common/ObservableTestHelpers";
-import { createRandomMutableTreeModelNode, createRandomTreeNodeItem, createRandomTreeNodeItems } from "./RandomTreeNodesHelpers";
+} from "../../../ui-components/tree/TreeDataProvider.js";
+import { extractSequence } from "../../common/ObservableTestHelpers.js";
+import { createRandomMutableTreeModelNode, createRandomTreeNodeItem, createRandomTreeNodeItems } from "./RandomTreeNodesHelpers.js";
 
 /* eslint-disable @typescript-eslint/promise-function-async */
 

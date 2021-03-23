@@ -8,28 +8,28 @@
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
-import { ContentGroupManager, ContentGroupProps } from "../content/ContentGroup";
-import { ContentLayoutManager } from "../content/ContentLayoutManager";
-import { ContentLayoutProps } from "../content/ContentLayoutProps";
-import { FrontstageDef } from "../frontstage/FrontstageDef";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { FrontstageProvider } from "../frontstage/FrontstageProvider";
-import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
-import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
-import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
-import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
-import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework } from "../UiFramework";
-import { TaskManager, TaskPropsList } from "../workflow/Task";
-import { WorkflowManager, WorkflowProps, WorkflowPropsList } from "../workflow/Workflow";
-import { ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager";
-import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiElement } from "./ConfigurableUiControl";
-import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
-import { ModalDialogManager } from "../dialog/ModalDialogManager";
-import { MessageManager } from "../messages/MessageManager";
-import { PopupManager } from "../popup/PopupManager";
-import { ActivityTracker } from "./ActivityTracker";
+import { ContentGroupManager, ContentGroupProps } from "../content/ContentGroup.js";
+import { ContentLayoutManager } from "../content/ContentLayoutManager.js";
+import { ContentLayoutProps } from "../content/ContentLayoutProps.js";
+import { FrontstageDef } from "../frontstage/FrontstageDef.js";
+import { FrontstageManager } from "../frontstage/FrontstageManager.js";
+import { FrontstageProvider } from "../frontstage/FrontstageProvider.js";
+import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut.js";
+import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl.js";
+import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl.js";
+import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid.js";
+import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid.js";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher.js";
+import { UiFramework } from "../UiFramework.js";
+import { TaskManager, TaskPropsList } from "../workflow/Task.js";
+import { WorkflowManager, WorkflowProps, WorkflowPropsList } from "../workflow/Workflow.js";
+import { ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager.js";
+import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiElement } from "./ConfigurableUiControl.js";
+import { ModelessDialogManager } from "../dialog/ModelessDialogManager.js";
+import { ModalDialogManager } from "../dialog/ModalDialogManager.js";
+import { MessageManager } from "../messages/MessageManager.js";
+import { PopupManager } from "../popup/PopupManager.js";
+import { ActivityTracker } from "./ActivityTracker.js";
 
 /** Ui Activity Event Args interface.
  * @internal

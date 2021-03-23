@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { LinkElementsInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { convertPrimitiveRecordToString, PrimitivePropertyValueRendererImpl } from "./PrimitivePropertyValueRenderer";
+import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager.js";
+import { convertPrimitiveRecordToString, PrimitivePropertyValueRendererImpl } from "./PrimitivePropertyValueRenderer.js";
 
 /**
  * URL property value renderer that renders the whole value as a URL without matching it

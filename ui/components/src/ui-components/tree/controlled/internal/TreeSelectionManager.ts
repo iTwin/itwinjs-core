@@ -6,14 +6,14 @@
  * @module Tree
  */
 
-import { take } from "rxjs/internal/operators/take";
-import { Subject } from "rxjs/internal/Subject";
+import { take } from "rxjs/internal/operators/take.js";
+import { Subject } from "rxjs/internal/Subject.js";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { MultiSelectionHandler, SelectionHandler, SingleSelectionHandler } from "../../../common/selection/SelectionHandler";
-import { SelectionMode } from "../../../common/selection/SelectionModes";
-import { Observable } from "../Observable";
-import { TreeActions } from "../TreeActions";
-import { isTreeModelNode, TreeModelNode, VisibleTreeNodes } from "../TreeModel";
+import { MultiSelectionHandler, SelectionHandler, SingleSelectionHandler } from "../../../common/selection/SelectionHandler.js";
+import { SelectionMode } from "../../../common/selection/SelectionModes.js";
+import { Observable } from "../Observable.js";
+import { TreeActions } from "../TreeActions.js";
+import { isTreeModelNode, TreeModelNode, VisibleTreeNodes } from "../TreeModel.js";
 import { isNavigationKey, ItemKeyboardNavigator, Orientation } from "@bentley/ui-core";
 
 /** @internal */

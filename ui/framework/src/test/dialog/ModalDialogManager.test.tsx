@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { MessageBoxIconType, MessageBoxType } from "@bentley/imodeljs-frontend";
-import { DialogChangedEventArgs, ModalDialogManager, ModalDialogRenderer, StandardMessageBox } from "../../ui-framework";
-import TestUtils, { mount } from "../TestUtils";
+import { DialogChangedEventArgs, ModalDialogManager, ModalDialogRenderer, StandardMessageBox } from "../../ui-framework.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 describe("ModalDialogManager", () => {
 

@@ -14,16 +14,16 @@ import {
   getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, ResizeHandle, StagePanelsManager, StagePanelType,
   WidgetZoneId, widgetZoneIds, ZoneTargetType,
 } from "@bentley/ui-ninezone";
-import { getNestedStagePanelKey } from "../stagepanels/StagePanel";
-import { PanelSizeChangedEventArgs, PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef";
-import { UiFramework } from "../UiFramework";
-import { WidgetDef } from "../widgets/WidgetDef";
-import { WidgetTab, WidgetTabs } from "../widgets/WidgetStack";
-import { ZoneDef, ZoneState } from "../zones/ZoneDef";
-import { FrontstageDef } from "./FrontstageDef";
-import { FrontstageActivatedEventArgs, FrontstageManager, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "./FrontstageManager";
-import { ModalFrontstage } from "./ModalFrontstage";
-import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
+import { getNestedStagePanelKey } from "../stagepanels/StagePanel.js";
+import { PanelSizeChangedEventArgs, PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef.js";
+import { UiFramework } from "../UiFramework.js";
+import { WidgetDef } from "../widgets/WidgetDef.js";
+import { WidgetTab, WidgetTabs } from "../widgets/WidgetStack.js";
+import { ZoneDef, ZoneState } from "../zones/ZoneDef.js";
+import { FrontstageDef } from "./FrontstageDef.js";
+import { FrontstageActivatedEventArgs, FrontstageManager, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "./FrontstageManager.js";
+import { ModalFrontstage } from "./ModalFrontstage.js";
+import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome.js";
 
 /** Interface defining callbacks for widget changes
  * @public
@@ -91,7 +91,7 @@ export interface FrontstageRuntimeProps {
 
 /** State for the FrontstageComposer component.
  * @internal
- */
+ */
 interface FrontstageComposerState {
   allowPointerUpSelection: boolean;
   modalFrontstageCount: number;
@@ -121,7 +121,7 @@ const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
 
 /** FrontstageComposer React component.
  * @public
- */
+ */
 export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState>
   implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler {
 

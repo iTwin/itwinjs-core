@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { BackstageItemsManager, isActionItem, isStageLauncher } from "@bentley/ui-abstract";
-import { useDefaultBackstageItems } from "../../ui-framework";
-import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
-import { mount } from "../TestUtils";
+import { useDefaultBackstageItems } from "../../ui-framework.js";
+import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test.js";
+import { mount } from "../TestUtils.js";
 
 describe("isActionItem", () => {
   it("should return true for ActionItem", () => {

@@ -8,11 +8,11 @@
 
 import { CommonProps, Orientation } from "@bentley/ui-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory } from "../PropertyDataProvider";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
-import { matchLinks } from "../../common/Links";
+import { PropertyCategory } from "../PropertyDataProvider.js";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer.js";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager.js";
+import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer.js";
+import { matchLinks } from "../../common/Links.js";
 
 /** Arguments for the Property Editing event callback
  * @public

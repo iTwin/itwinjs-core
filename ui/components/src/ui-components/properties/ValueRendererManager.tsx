@@ -9,14 +9,14 @@
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { ArrayPropertyValueRenderer } from "./renderers/value/ArrayPropertyValueRenderer";
-import { DoublePropertyValueRenderer } from "./renderers/value/DoublePropertyValueRenderer";
-import { MergedPropertyValueRenderer } from "./renderers/value/MergedPropertyValueRenderer";
-import { MultilineTextPropertyValueRenderer } from "./renderers/value/MultilineTextPropertyValueRenderer";
-import { NavigationPropertyValueRenderer } from "./renderers/value/NavigationPropertyValueRenderer";
-import { PrimitivePropertyValueRenderer } from "./renderers/value/PrimitivePropertyValueRenderer";
-import { StructPropertyValueRenderer } from "./renderers/value/StructPropertyValueRenderer";
-import { UrlPropertyValueRenderer } from "./renderers/value/UrlPropertyValueRenderer";
+import { ArrayPropertyValueRenderer } from "./renderers/value/ArrayPropertyValueRenderer.js";
+import { DoublePropertyValueRenderer } from "./renderers/value/DoublePropertyValueRenderer.js";
+import { MergedPropertyValueRenderer } from "./renderers/value/MergedPropertyValueRenderer.js";
+import { MultilineTextPropertyValueRenderer } from "./renderers/value/MultilineTextPropertyValueRenderer.js";
+import { NavigationPropertyValueRenderer } from "./renderers/value/NavigationPropertyValueRenderer.js";
+import { PrimitivePropertyValueRenderer } from "./renderers/value/PrimitivePropertyValueRenderer.js";
+import { StructPropertyValueRenderer } from "./renderers/value/StructPropertyValueRenderer.js";
+import { UrlPropertyValueRenderer } from "./renderers/value/UrlPropertyValueRenderer.js";
 
 /** Types of property containers
  * @public

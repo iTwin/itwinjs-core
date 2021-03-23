@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
-import * as timerModule from "@bentley/ui-core/lib/ui-core/utils/Timer";
-import { Toast } from "../../../ui-ninezone";
-import { createBoundingClientRect, mount } from "../../Utils";
+import * as timerModule from "@bentley/ui-core/lib/ui-core/utils/Timer.js";
+import { Toast } from "../../../ui-ninezone.js";
+import { createBoundingClientRect, mount } from "../../Utils.js";
 
 describe("<Toast />", () => {
   it("should render", () => {

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
-import { mount } from "../TestUtils";
+import { MenuButton } from "../../ui-framework/accudraw/MenuButton.js";
+import { mount } from "../TestUtils.js";
 
 describe("MenuButton", () => {
   it("should render", () => {

@@ -13,7 +13,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { Checkbox, CommonProps, Input, Select } from "@bentley/ui-core";
-import { FormatPanel } from "./FormatPanel";
+import { FormatPanel } from "./FormatPanel.js";
 import { DeepCompare } from "@bentley/geometry-core";
 
 function createTextInputFormatPropEditor(key: string, label: string, inProps: FormatProps,

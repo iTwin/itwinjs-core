@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { useEffect, useMemo, useState } from "react";
-import { publish } from "rxjs/internal/operators/publish";
-import { refCount } from "rxjs/internal/operators/refCount";
-import { defer } from "rxjs/internal/observable/defer";
-import { scheduleSubscription, SubscriptionScheduler } from "./SubscriptionScheduler";
+import { publish } from "rxjs/internal/operators/publish.js";
+import { refCount } from "rxjs/internal/operators/refCount.js";
+import { defer } from "rxjs/internal/observable/defer.js";
+import { scheduleSubscription, SubscriptionScheduler } from "./SubscriptionScheduler.js";
 
 /**
  * Custom hook for working with promise values.

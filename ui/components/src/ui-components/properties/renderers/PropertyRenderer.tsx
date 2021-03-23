@@ -9,15 +9,15 @@
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
-import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
-import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { UiComponents } from "../../UiComponents";
-import { PropertyValueRendererManager } from "../ValueRendererManager";
-import { ActionButtonRenderer } from "./ActionButtonRenderer";
-import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
-import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
-import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
-import { PropertyGridColumnInfo } from "./PropertyGridColumns";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps.js";
+import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer.js";
+import { UiComponents } from "../../UiComponents.js";
+import { PropertyValueRendererManager } from "../ValueRendererManager.js";
+import { ActionButtonRenderer } from "./ActionButtonRenderer.js";
+import { CommonPropertyRenderer } from "./CommonPropertyRenderer.js";
+import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer.js";
+import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "./PrimitivePropertyRenderer.js";
+import { PropertyGridColumnInfo } from "./PropertyGridColumns.js";
 
 /** Properties shared by all renderers and PropertyView
  * @public

@@ -10,10 +10,10 @@ import * as React from "react";
 import { UserInfo } from "@bentley/itwin-client";
 import { CommonProps, IconSpec, UiEvent } from "@bentley/ui-core";
 import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
-import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { UiFramework } from "../UiFramework";
-import { BackstageManager } from "./BackstageManager";
-import { UserProfileBackstageItem } from "./UserProfile";
+import { SafeAreaContext } from "../safearea/SafeAreaContext.js";
+import { UiFramework } from "../UiFramework.js";
+import { BackstageManager } from "./BackstageManager.js";
+import { UserProfileBackstageItem } from "./UserProfile.js";
 
 // cSpell:ignore safearea
 

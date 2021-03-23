@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, render } from "@testing-library/react";
-import { EventEmitter, ScrollableWidgetContent, TabIdContext, TabState, WidgetContentManagerContext } from "../../ui-ninezone";
+import tlr from "@testing-library/react"; const { act, render } = tlr;
+import { EventEmitter, ScrollableWidgetContent, TabIdContext, TabState, WidgetContentManagerContext } from "../../ui-ninezone.js";
 
 describe("ScrollableWidgetContent", () => {
   it("should save and restore scroll position", () => {

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
 import * as sinon from "sinon";
 import { Point, Rectangle } from "@bentley/ui-core";
-import { DisabledResizeHandles, HorizontalAnchor, ResizeGrip, ResizeHandle, Stacked, VerticalAnchor, VerticalAnchorHelpers } from "../../ui-ninezone";
-import { createBoundingClientRect, mount } from "../Utils";
+import { DisabledResizeHandles, HorizontalAnchor, ResizeGrip, ResizeHandle, Stacked, VerticalAnchor, VerticalAnchorHelpers } from "../../ui-ninezone.js";
+import { createBoundingClientRect, mount } from "../Utils.js";
 
 describe("<Stacked />", () => {
   it("should render", () => {

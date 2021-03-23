@@ -9,7 +9,7 @@
 import { Point3d } from "@bentley/geometry-core";
 import { calculateSunriseOrSunset, Cartographic, ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { SolarDataProvider } from "./interfaces";
+import { SolarDataProvider } from "./interfaces.js";
 
 const millisecPerMinute = 1000 * 60;
 const millisecPerHour = millisecPerMinute * 60;
@@ -47,19 +47,19 @@ export class BaseSolarDataProvider implements SolarDataProvider {
       initialTime = new Date(Date.now()); // users local time
 
     this._zoneOffsetMs = projectTimeZoneOffset * millisecPerHour;
-    const year=initialTime.getFullYear();
-    const month=initialTime.getMonth();
-    const date=initialTime.getDate();
-    const hours=initialTime.getHours();
-    const minutes=initialTime.getMinutes();
+    const year = initialTime.getFullYear();
+    const month = initialTime.getMonth();
+    const date = initialTime.getDate();
+    const hours = initialTime.getHours();
+    const minutes = initialTime.getMinutes();
     const initialUtcMs = Date.UTC(year, month, date, hours, minutes, 0, 0);
     const initialProjectMs = initialUtcMs - this._zoneOffsetMs;
-    this._projectDateTime = new Date (initialProjectMs);
+    this._projectDateTime = new Date(initialProjectMs);
 
     const utcDayMs = Date.UTC(year, month, date, 0, 0, 0, 0);
     const utcDay = new Date(utcDayMs);
     this._projectDayStartMS = utcDayMs - this._zoneOffsetMs;
-    this._projectDay = new Date (this._projectDayStartMS);
+    this._projectDay = new Date(this._projectDayStartMS);
     this._projectSunrise = calculateSunriseOrSunset(utcDay, this._cartographicCenter, true);
     this._projectSunset = calculateSunriseOrSunset(utcDay, this._cartographicCenter, false);
     this._projectSunriseMs = this._projectSunrise.getTime();

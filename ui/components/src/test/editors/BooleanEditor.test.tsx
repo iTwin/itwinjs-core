@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
-import { fireEvent, render } from "@testing-library/react";
+import enzyme from "enzyme"; const { mount, shallow } = enzyme;
+import tlr from "@testing-library/react"; const { fireEvent, render } = tlr;
 import * as React from "react";
 import sinon from "sinon";
 import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
-import { BooleanEditor } from "../../ui-components/editors/BooleanEditor";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import TestUtils from "../TestUtils";
+import { BooleanEditor } from "../../ui-components/editors/BooleanEditor.js";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer.js";
+import TestUtils from "../TestUtils.js";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager.js";
 
 describe("<BooleanEditor />", () => {
   it("should render", () => {

@@ -9,21 +9,21 @@
 import "./configurableui.scss";
 import * as React from "react";
 import { CommonProps, Point } from "@bentley/ui-core";
-import { CursorInformation } from "../cursor/CursorInformation";
-import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
-import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager";
-import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
-import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
-import { ElementTooltip } from "../feedback/ElementTooltip";
-import { FrontstageComposer } from "../frontstage/FrontstageComposer";
-import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
-import { InputFieldMessage } from "../messages/InputField";
-import { PointerMessage } from "../messages/Pointer";
-import { PopupRenderer } from "../popup/PopupManager";
-import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
-import { ConfigurableUiManager } from "./ConfigurableUiManager";
+import { CursorInformation } from "../cursor/CursorInformation.js";
+import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu.js";
+import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager.js";
+import { ModalDialogRenderer } from "../dialog/ModalDialogManager.js";
+import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager.js";
+import { ElementTooltip } from "../feedback/ElementTooltip.js";
+import { FrontstageComposer } from "../frontstage/FrontstageComposer.js";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion.js";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut.js";
+import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu.js";
+import { InputFieldMessage } from "../messages/InputField.js";
+import { PointerMessage } from "../messages/Pointer.js";
+import { PopupRenderer } from "../popup/PopupManager.js";
+import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage.js";
+import { ConfigurableUiManager } from "./ConfigurableUiManager.js";
 
 // cSpell:ignore cursormenu cursorpopup
 

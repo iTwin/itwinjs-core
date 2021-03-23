@@ -12,11 +12,11 @@ import * as React from "react";
 import "./KeyinPalettePanel.scss";
 import { FilteredText, Listbox, ListboxItem, UiSettingsStatus } from "@bentley/ui-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, ParseAndRunResult } from "@bentley/imodeljs-frontend";
-import { UiFramework } from "../UiFramework";
+import { UiFramework } from "../UiFramework.js";
 import { matchesWords, OnItemExecutedFunc, SpecialKey } from "@bentley/ui-abstract";
-import { ClearKeyinPaletteHistoryTool } from "../tools/KeyinPaletteTools";
-import { useUiSettingsContext } from "../uisettings/useUiSettings";
-import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
+import { ClearKeyinPaletteHistoryTool } from "../tools/KeyinPaletteTools.js";
+import { useUiSettingsContext } from "../uisettings/useUiSettings.js";
+import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin.js";
 
 const KEYIN_PALETTE_NAMESPACE = "KeyinPalettePanel";
 const KEYIN_HISTORY_KEY = "historyArray";
@@ -53,7 +53,7 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
       const settingsResult = await uiSettings.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
       // istanbul ignore else
       if (UiSettingsStatus.Success === settingsResult.status) {
-        const filteredHistory = (settingsResult.setting as string[]).filter((keyin)=>{
+        const filteredHistory = (settingsResult.setting as string[]).filter((keyin) => {
           const result = IModelApp.tools.parseKeyin(keyin);
           return result.ok;
         });

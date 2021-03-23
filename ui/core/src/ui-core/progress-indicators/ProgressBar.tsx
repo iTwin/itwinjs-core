@@ -8,8 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
-import { percentInRange } from "../loading/LoadingBar";
+import { CommonProps } from "../utils/Props.js";
+import { percentInRange } from "../loading/LoadingBar.js";
 
 /** Properties for [[ProgressBar]] component
  * @beta

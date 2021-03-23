@@ -7,10 +7,10 @@ import { IModelApp, MapLayerSettingsService, MapLayerSourceStatus, NotifyMessage
 import { RelativePosition } from "@bentley/ui-abstract";
 import * as UiCore from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
-import { useSourceMapContext } from "./MapLayerManager";
-import { MapUrlDialog } from "./MapUrlDialog";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { ConfirmMessageDialog } from "./ConfirmMessageDialog";
+import { useSourceMapContext } from "./MapLayerManager.js";
+import { MapUrlDialog } from "./MapUrlDialog.js";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider.js";
+import { ConfirmMessageDialog } from "./ConfirmMessageDialog.js";
 
 // cSpell:ignore droppable Sublayer
 
@@ -195,7 +195,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     ModalDialogManager.closeDialog();
   }, []);
 
-  const handleYesConfirmation = React.useCallback(async (layerName: string)  => {
+  const handleYesConfirmation = React.useCallback(async (layerName: string) => {
 
     if (!!contextId && !!iModelId) {
       if (await MapLayerSettingsService.deleteSharedSettingsByName(layerName, contextId, iModelId)) {
@@ -219,8 +219,8 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     ModalDialogManager.openDialog(
       <ConfirmMessageDialog
         className="map-sources-delete-confirmation"
-        title = {removeLayerDefDialogTitle}
-        message = {msg}
+        title={removeLayerDefDialogTitle}
+        message={msg}
         maxWidth={400}
         onClose={() => handleNoConfirmation(layerName)}
         onEscape={() => handleNoConfirmation(layerName)}
@@ -260,13 +260,13 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 
                 { // Display the delete icon only when the mouse over a specific item
                   // otherwise list feels cluttered.
-                  (!!contextId && !!iModelId && layerNameUnderCursor &&  layerNameUnderCursor === mapName) &&
+                  (!!contextId && !!iModelId && layerNameUnderCursor && layerNameUnderCursor === mapName) &&
                   <UiCore.Button
                     className="map-source-delete-button"
                     title={removeLayerDefButtonTitle}
                     onClick={onItemRemoveButtonClicked}>
                     <UiCore.Icon iconSpec="icon-delete" />
-                  </UiCore.Button> }
+                  </UiCore.Button>}
               </UiCore.ListboxItem>
             )
           }
@@ -296,7 +296,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
   const [addCustomLayerButtonLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AddCustomLayerButtonLabel"));
   const [popupOpen, setPopupOpen] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
-  const panelRef =React.useRef<HTMLDivElement>(null);
+  const panelRef = React.useRef<HTMLDivElement>(null);
 
   // 'isMounted' is used to prevent any async operation once the hook has been
   // unloaded.  Otherwise we get a 'Can't perform a React state update on an unmounted component.' warning in the console.
@@ -316,7 +316,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
     setPopupOpen(false);
   }, []);
 
-  const isInsideCoreDialog =  React.useCallback((element: HTMLElement) => {
+  const isInsideCoreDialog = React.useCallback((element: HTMLElement) => {
     if (element.nodeName === "DIV") {
       if (element.classList && element.classList.contains("core-dialog"))
         return true;
@@ -402,7 +402,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
         closeOnEnter={false}
       >
         <div ref={panelRef} className="map-sources-popup-panel" >
-          <AttachLayerPanel isOverlay={props.isOverlay} onLayerAttached={handleLayerAttached}/>
+          <AttachLayerPanel isOverlay={props.isOverlay} onLayerAttached={handleLayerAttached} />
         </div>
       </UiCore.Popup >
     </>

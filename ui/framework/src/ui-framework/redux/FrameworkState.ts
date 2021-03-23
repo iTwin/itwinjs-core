@@ -6,9 +6,9 @@
  * @module State
  */
 
-import { ConfigurableUiReducer, ConfigurableUiState } from "../configurableui/state";
-import { combineReducers } from "./redux-ts";
-import { SessionState, SessionStateReducer } from "./SessionState";
+import { ConfigurableUiReducer, ConfigurableUiState } from "../configurableui/state.js";
+import { combineReducers } from "./redux-ts.js";
+import { SessionState, SessionStateReducer } from "./SessionState.js";
 
 /** Interface combining all the Framework state interfaces.
  * @beta

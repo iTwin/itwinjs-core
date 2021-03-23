@@ -6,8 +6,8 @@
  * @module Frontstage
  */
 
-import { CommandItemDef } from "../shared/CommandItemDef";
-import { FrontstageManager } from "./FrontstageManager";
+import { CommandItemDef } from "../shared/CommandItemDef.js";
+import { FrontstageManager } from "./FrontstageManager.js";
 
 /**
  * Nested Frontstage related classes and commands

@@ -3,18 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ReactWrapper, shallow } from "enzyme";
+import type { ReactWrapper } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { BadgeType } from "@bentley/ui-abstract";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
 import { Direction, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@bentley/ui-ninezone";
 import {
   BaseItemState, CommandItemDef, getFirstItem, getFirstItemId, GroupButton, GroupItem, GroupItemDef, KeyboardShortcutManager, SyncUiEventDispatcher,
   ToolbarDragInteractionContext, ToolGroupPanelContext,
-} from "../../ui-framework";
-import * as GroupItemModule from "../../ui-framework/toolbar/GroupItem";
-import TestUtils, { mount } from "../TestUtils";
+} from "../../ui-framework.js";
+import * as GroupItemModule from "../../ui-framework/toolbar/GroupItem.js";
+import TestUtils, { mount } from "../TestUtils.js";
 
 const tool1 = new CommandItemDef({
   commandId: "tool1",

@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import enzyme from "enzyme"; const { mount } = enzyme;
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { StructPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/StructPropertyValueRenderer";
-import { TableNonPrimitiveValueRenderer } from "../../../../ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
-import { PropertyContainerType } from "../../../../ui-components/properties/ValueRendererManager";
-import TestUtils from "../../../TestUtils";
+import { StructPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/StructPropertyValueRenderer.js";
+import { TableNonPrimitiveValueRenderer } from "../../../../ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer.js";
+import { PropertyContainerType } from "../../../../ui-components/properties/ValueRendererManager.js";
+import TestUtils from "../../../TestUtils.js";
 
 describe("StructPropertyValueRenderer", () => {
   before(async () => {

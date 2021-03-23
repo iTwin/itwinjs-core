@@ -10,15 +10,15 @@ import classnames from "classnames";
 import * as React from "react";
 import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { BadgeUtilities, IconHelper } from "@bentley/ui-core";
-import { BackArrow } from "./groupPanel/BackArrow";
-import { GroupColumn } from "./groupPanel/Column";
-import { Columns } from "./groupPanel/Columns";
-import { Panel } from "./groupPanel/Panel";
-import { Title } from "./groupPanel/Title";
-import { GroupToolExpander } from "./groupPanel/tool/Expander";
-import { GroupTool } from "./groupPanel/tool/Tool";
-import { useToolbarPopupContext } from "./PopupItem";
-import { useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
+import { BackArrow } from "./groupPanel/BackArrow.js";
+import { GroupColumn } from "./groupPanel/Column.js";
+import { Columns } from "./groupPanel/Columns.js";
+import { Panel } from "./groupPanel/Panel.js";
+import { Title } from "./groupPanel/Title.js";
+import { GroupToolExpander } from "./groupPanel/tool/Expander.js";
+import { GroupTool } from "./groupPanel/tool/Tool.js";
+import { useToolbarPopupContext } from "./PopupItem.js";
+import { useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow.js";
 
 function getNumItemsInColumn(numTotalItems: number): number {
   if (numTotalItems <= 6)

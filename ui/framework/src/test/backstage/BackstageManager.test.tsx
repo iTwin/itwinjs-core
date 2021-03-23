@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+import enzyme from "enzyme"; const { shallow } = enzyme;
 import * as React from "react";
-import * as sinon from "sinon";
-import { BackstageManager, useIsBackstageOpen } from "../../ui-framework/backstage/BackstageManager";
-import { mount } from "../TestUtils";
+import sinon from "sinon";
+import { BackstageManager, useIsBackstageOpen } from "../../ui-framework/backstage/BackstageManager.js";
+import { mount } from "../TestUtils.js";
 
 describe("BackstageManager", () => {
   describe("items", () => {

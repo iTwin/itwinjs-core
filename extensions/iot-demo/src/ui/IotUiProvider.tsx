@@ -8,10 +8,10 @@ import {
   ToolbarUsage, UiDataProvider, UiItemsProvider,
 } from "@bentley/ui-abstract";
 import { ModelessDialogManager } from "@bentley/ui-framework";
-import { AnimationType, AnimationTypeName } from "../IoTDefinitions";
-import { IoTDemoExtension } from "../iotDemo";
+import { AnimationType, AnimationTypeName } from "../IoTDefinitions.js";
+import { IoTDemoExtension } from "../iotDemo.js";
 import iotButtonSvg from "./iot-button.svg?sprite";
-import { IotSettingsDialog } from "./IotSettingsDialog";
+import { IotSettingsDialog } from "./IotSettingsDialog.js";
 
 export class IotUiProvider extends UiDataProvider implements UiItemsProvider {
   public monitorMode = false;

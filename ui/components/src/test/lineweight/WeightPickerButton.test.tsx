@@ -7,8 +7,8 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { WeightPickerButton } from "../../ui-components/lineweight/WeightPickerButton";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
+import { WeightPickerButton } from "../../ui-components/lineweight/WeightPickerButton.js";
 
 describe("<WeightPickerButton/>", () => {
   const colorDef = ColorDef.create(ColorByName.blue);

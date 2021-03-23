@@ -8,9 +8,9 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
-import { Icon } from "../icons/IconComponent";
-import { SpinnerSize } from "../loading/Spinner";
+import { CommonProps } from "../utils/Props.js";
+import { Icon } from "../icons/IconComponent.js";
+import { SpinnerSize } from "../loading/Spinner.js";
 
 /**
  * Properties for [[ProgressSpinner]] component

@@ -13,9 +13,9 @@ import {
   PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, SliderEditorParams, StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Icon, Slider } from "@bentley/ui-core";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer.js";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager.js";
+import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton.js";
 
 /** @internal */
 interface SliderEditorState {

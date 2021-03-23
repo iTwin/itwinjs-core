@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { render } from "@testing-library/react";
-import { VirtualizedList, VirtualizedListAttributes } from "../../../../ui-components/tree/controlled/internal/VirtualizedList";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { VirtualizedList, VirtualizedListAttributes } from "../../../../ui-components/tree/controlled/internal/VirtualizedList.js";
 
 describe("VirtualizedLst", () => {
   describe("resetAfterIndex", () => {

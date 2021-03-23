@@ -8,7 +8,7 @@
  */
 
 import { connect } from "react-redux";
-import { UiFramework } from "../UiFramework";
+import { UiFramework } from "../UiFramework.js";
 
 /** Private function that will map store's iModelConnection to the 'iModelConnection', 'iModel', and 'imodel' properties of props. This
  * is not ideal but it is a result of not having standard prop name for an iModelConnection.

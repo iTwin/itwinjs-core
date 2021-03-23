@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import produce from "immer";
+import { produce } from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, fireEvent, render } from "@testing-library/react";
+import tlr from "@testing-library/react"; const { act, fireEvent, render } = tlr;
 import { renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
   PanelTarget, useAllowedPanelTarget,
-} from "../../ui-ninezone";
-import { createDragItemInfo, createDragStartArgs, NineZoneProvider } from "../Providers";
+} from "../../ui-ninezone.js";
+import { createDragItemInfo, createDragStartArgs, NineZoneProvider } from "../Providers.js";
 
 describe("PanelTarget", () => {
   it("should render targeted", () => {

@@ -9,11 +9,11 @@
 import * as React from "react";
 import classnames from "classnames";
 import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@bentley/ui-abstract";
-import { CommonProps } from "../utils/Props";
-import { ContextMenu } from "./ContextMenu";
-import { BadgeUtilities } from "../badge/BadgeUtilities";
-import { TildeFinder } from "./TildeFinder";
-import { Icon, IconSpec } from "../icons/IconComponent";
+import { CommonProps } from "../utils/Props.js";
+import { ContextMenu } from "./ContextMenu.js";
+import { BadgeUtilities } from "../badge/BadgeUtilities.js";
+import { TildeFinder } from "./TildeFinder.js";
+import { Icon, IconSpec } from "../icons/IconComponent.js";
 
 /** Properties for the [[ContextMenuItem]] component
  * @public

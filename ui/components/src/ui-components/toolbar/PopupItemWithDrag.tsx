@@ -11,12 +11,12 @@ import classnames from "classnames";
 import * as React from "react";
 import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, RelativePosition, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { BadgeUtilities, IconHelper, useRefState } from "@bentley/ui-core";
-import { ToolbarButtonItemProps } from "./Item";
-import { PopupItemPopup, ToolbarPopupContext } from "./PopupItem";
-import { PopupItemsPanel } from "./PopupItemsPanel";
-import { ToolbarPanelAlignment, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
-import { useDragInteraction } from "./useDragInteraction";
-import { Direction } from "./utilities/Direction";
+import { ToolbarButtonItemProps } from "./Item.js";
+import { PopupItemPopup, ToolbarPopupContext } from "./PopupItem.js";
+import { PopupItemsPanel } from "./PopupItemsPanel.js";
+import { ToolbarPanelAlignment, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow.js";
+import { useDragInteraction } from "./useDragInteraction.js";
+import { Direction } from "./utilities/Direction.js";
 
 /** Properties of [[PopupItem]] component.
  * @beta

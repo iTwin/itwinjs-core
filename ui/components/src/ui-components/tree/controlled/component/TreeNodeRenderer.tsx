@@ -8,15 +8,15 @@
 
 import * as React from "react";
 import { CommonProps, NodeCheckboxProps, NodeCheckboxRenderer, TreeNode } from "@bentley/ui-core";
-import { ImageRenderer } from "../../../common/ImageRenderer";
-import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
-import { ITreeImageLoader } from "../../ImageLoader";
-import { TreeComponentTestId } from "../../TreeComponentTestId";
-import { TreeActions } from "../TreeActions";
-import { CheckBoxInfo, TreeModelNode } from "../TreeModel";
-import { TreeNodeContent } from "./NodeContent";
-import { TreeNodeEditorRenderer } from "./TreeNodeEditor";
+import { ImageRenderer } from "../../../common/ImageRenderer.js";
+import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager.js";
+import { HighlightableTreeNodeProps } from "../../HighlightingEngine.js";
+import { ITreeImageLoader } from "../../ImageLoader.js";
+import { TreeComponentTestId } from "../../TreeComponentTestId.js";
+import { TreeActions } from "../TreeActions.js";
+import { CheckBoxInfo, TreeModelNode } from "../TreeModel.js";
+import { TreeNodeContent } from "./NodeContent.js";
+import { TreeNodeEditorRenderer } from "./TreeNodeEditor.js";
 
 /**
  * Properties for [[TreeNodeRenderer]].

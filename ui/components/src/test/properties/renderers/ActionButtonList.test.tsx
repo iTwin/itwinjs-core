@@ -7,9 +7,9 @@ import * as React from "react";
 import sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { render } from "@testing-library/react";
-import { ActionButtonList, ActionButtonRendererProps } from "../../../ui-components";
-import TestUtils from "../../TestUtils";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { ActionButtonList, ActionButtonRendererProps } from "../../../ui-components.js";
+import TestUtils from "../../TestUtils.js";
 
 describe("ActionButtonList", () => {
   let propertyRecord: PropertyRecord;

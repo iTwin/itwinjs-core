@@ -7,11 +7,11 @@
  */
 
 import { UiError } from "@bentley/ui-abstract";
-import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
-import { UiFramework } from "../../UiFramework";
-import { ToolSettingsManager } from "./ToolSettingsManager";
-import { ToolUiProvider } from "./ToolUiProvider";
+import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl.js";
+import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager.js";
+import { UiFramework } from "../../UiFramework.js";
+import { ToolSettingsManager } from "./ToolSettingsManager.js";
+import { ToolUiProvider } from "./ToolUiProvider.js";
 
 /** Provides information about a tool with a given id, including the ToolUiProvider.
  * @public

@@ -11,11 +11,11 @@ import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
   DisabledResizeHandles, DraggedWidgetManagerProps, Zone as NZ_Zone, WidgetManagerProps, WidgetZoneId, ZoneManagerProps, ZoneTargetType,
 } from "@bentley/ui-ninezone";
-import { ZoneTargets } from "../dragdrop/ZoneTargets";
-import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
-import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
-import { Outline } from "./Outline";
+import { ZoneTargets } from "../dragdrop/ZoneTargets.js";
+import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer.js";
+import { SafeAreaContext } from "../safearea/SafeAreaContext.js";
+import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack.js";
+import { Outline } from "./Outline.js";
 
 /** Properties for the [[FrameworkZone]] component.
  * @internal

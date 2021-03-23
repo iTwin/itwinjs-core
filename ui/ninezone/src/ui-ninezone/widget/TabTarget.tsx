@@ -9,10 +9,10 @@
 import "./TabTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { DraggedWidgetIdContext, useTabTarget } from "../base/DragManager";
-import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
-import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { WidgetIdContext } from "./Widget";
+import { DraggedWidgetIdContext, useTabTarget } from "../base/DragManager.js";
+import { CursorTypeContext, DraggedTabContext } from "../base/NineZone.js";
+import { getCursorClassName } from "../widget-panels/CursorOverlay.js";
+import { WidgetIdContext } from "./Widget.js";
 
 /** @internal */
 export interface WidgetTabTargetProps {

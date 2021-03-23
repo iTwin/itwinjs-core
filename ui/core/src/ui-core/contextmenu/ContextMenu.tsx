@@ -10,11 +10,11 @@ import "./ContextMenu.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ConditionalBooleanValue, SpecialKey } from "@bentley/ui-abstract";
-import { CommonProps } from "../utils/Props";
-import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
-import { ContextMenuDirection } from "./ContextMenuDirection";
-import { ContextMenuItem, ContextMenuItemProps } from "./ContextMenuItem";
-import { ContextSubMenu, ContextSubMenuProps } from "./ContextSubMenu";
+import { CommonProps } from "../utils/Props.js";
+import { DivWithOutsideClick } from "../base/DivWithOutsideClick.js";
+import { ContextMenuDirection } from "./ContextMenuDirection.js";
+import { ContextMenuItem, ContextMenuItemProps } from "./ContextMenuItem.js";
+import { ContextSubMenu, ContextSubMenuProps } from "./ContextSubMenu.js";
 
 /** Properties for the [[ContextMenu]] component
  * @public
@@ -356,7 +356,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>): void => {
     if (this.state.ignoreNextKeyUp) {
-      this.setState({ignoreNextKeyUp: false});
+      this.setState({ ignoreNextKeyUp: false });
       return;
     }
 

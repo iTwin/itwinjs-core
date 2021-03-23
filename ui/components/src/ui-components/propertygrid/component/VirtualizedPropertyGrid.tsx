@@ -8,31 +8,31 @@
  */
 import "./VirtualizedPropertyGrid.scss";
 import classnames from "classnames";
-import * as _ from "lodash";
+import * as _ from "lodash-es";
 import * as React from "react";
 import AutoSizer, { Size } from "react-virtualized-auto-sizer";
 import { areEqual, ListChildComponentProps, VariableSizeList } from "react-window";
 import { assert } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
-import { FilteredType, MutableCategorizedPrimitiveProperty, MutableGridCategory } from "../../../ui-components";
-import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
-import { createContextWithMandatoryProvider } from "../../common/UseContextWithMandatoryProvider";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
-import { PropertyGridColumnInfo } from "../../properties/renderers/PropertyGridColumns";
-import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { FlatGridItem, GridCategoryItem } from "../internal/flat-items/FlatGridItem";
-import { FlatGridItemType } from "../internal/flat-items/MutableFlatGridItem";
-import { FlatPropertyRenderer } from "../internal/flat-properties/FlatPropertyRenderer";
-import { IPropertyGridEventHandler } from "../internal/PropertyGridEventHandler";
-import { IPropertyGridModel } from "../internal/PropertyGridModel";
-import { PropertyCategory } from "../PropertyDataProvider";
-import { ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier";
-import { FlatItemNestedBorderWrapper } from "./FlatItemNestedBorderWrapper";
-import { PropertyCategoryBlock } from "./PropertyCategoryBlock";
-import { CommonPropertyGridProps, PropertyGridCommons } from "./PropertyGridCommons";
-import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRelatedPropsSupplier";
+import { FilteredType, MutableCategorizedPrimitiveProperty, MutableGridCategory } from "../../../ui-components.js";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps.js";
+import { createContextWithMandatoryProvider } from "../../common/UseContextWithMandatoryProvider.js";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer.js";
+import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer.js";
+import { PropertyGridColumnInfo } from "../../properties/renderers/PropertyGridColumns.js";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager.js";
+import { FlatGridItem, GridCategoryItem } from "../internal/flat-items/FlatGridItem.js";
+import { FlatGridItemType } from "../internal/flat-items/MutableFlatGridItem.js";
+import { FlatPropertyRenderer } from "../internal/flat-properties/FlatPropertyRenderer.js";
+import { IPropertyGridEventHandler } from "../internal/PropertyGridEventHandler.js";
+import { IPropertyGridModel } from "../internal/PropertyGridModel.js";
+import { PropertyCategory } from "../PropertyDataProvider.js";
+import { ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier.js";
+import { FlatItemNestedBorderWrapper } from "./FlatItemNestedBorderWrapper.js";
+import { PropertyCategoryBlock } from "./PropertyCategoryBlock.js";
+import { CommonPropertyGridProps, PropertyGridCommons } from "./PropertyGridCommons.js";
+import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRelatedPropsSupplier.js";
 
 /** Properties for [[VirtualizedPropertyGrid]] React component
  * @alpha

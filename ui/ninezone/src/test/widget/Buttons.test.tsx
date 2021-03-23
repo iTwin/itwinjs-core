@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { render } from "@testing-library/react";
-import { ActiveTabIdContext, createFloatingWidgetState, FloatingWidgetContext, FloatingWidgetIdContext, TabBarButtons, toolSettingsTabId } from "../../ui-ninezone";
+import tlr from "@testing-library/react"; const { render } = tlr;
+import { ActiveTabIdContext, createFloatingWidgetState, FloatingWidgetContext, FloatingWidgetIdContext, TabBarButtons, toolSettingsTabId } from "../../ui-ninezone.js";
 
 describe("TabBarButtons", () => {
   it("should render SendBack button", () => {

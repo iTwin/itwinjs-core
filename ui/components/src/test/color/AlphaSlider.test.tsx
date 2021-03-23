@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react"; // , waitForElement
-import { AlphaSlider } from "../../ui-components/color/AlphaSlider";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr; // , waitForElement
+import { AlphaSlider } from "../../ui-components/color/AlphaSlider.js";
 
 describe("<AlphaSlider />", () => {
   const alpha = .50;

@@ -7,13 +7,13 @@ import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
 import { ActionButton, BadgeType, CommonToolbarItem, SpecialKey, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import * as useTargetedModule from "@bentley/ui-core/lib/ui-core/utils/hooks/useTargeted";
-import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers } from "../../ui-components/toolbar/ToolbarWithOverflow";
-import { Toolbar } from "../../ui-components/toolbar/Toolbar";
-import { Direction } from "../../ui-components/toolbar/utilities/Direction";
-import { BackArrow } from "../../ui-components/toolbar/groupPanel/BackArrow";
-import { GroupTool } from "../../ui-components/toolbar/groupPanel/tool/Tool";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render } = tlr;
+import * as useTargetedModule from "@bentley/ui-core/lib/ui-core/utils/hooks/useTargeted.js";
+import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers } from "../../ui-components/toolbar/ToolbarWithOverflow.js";
+import { Toolbar } from "../../ui-components/toolbar/Toolbar.js";
+import { Direction } from "../../ui-components/toolbar/utilities/Direction.js";
+import { BackArrow } from "../../ui-components/toolbar/groupPanel/BackArrow.js";
+import { GroupTool } from "../../ui-components/toolbar/groupPanel/tool/Tool.js";
 
 // cSpell:ignore testid
 

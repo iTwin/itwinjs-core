@@ -9,9 +9,9 @@
 import * as React from "react";
 import { OnCancelFunc, OnItemExecutedFunc, SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, FocusTrap, Point, Size, SizeProps } from "@bentley/ui-core";
-import { PositionPopup } from "./PositionPopup";
-import { KeyinPalettePanel } from "./KeyinPalettePanel";
-import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
+import { PositionPopup } from "./PositionPopup.js";
+import { KeyinPalettePanel } from "./KeyinPalettePanel.js";
+import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin.js";
 
 /** @alpha */
 export interface KeyinPalettePopupProps {
@@ -25,16 +25,16 @@ export interface KeyinPalettePopupProps {
 /** Keyin Palette Popup Component
  * @alpha
  */
-export function KeyinPalettePopup({el,id, keyins,onCancel, onItemExecuted }: KeyinPalettePopupProps) {
-  const [popupSize, setPopupSize] = React.useState (new Size(-1, -1));
+export function KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps) {
+  const [popupSize, setPopupSize] = React.useState(new Size(-1, -1));
 
-  const onSizeKnown = React.useCallback ((newSize: SizeProps) => {
+  const onSizeKnown = React.useCallback((newSize: SizeProps) => {
     // istanbul ignore else
     if (!popupSize.equals(newSize))
       setPopupSize(Size.create(newSize));
   }, [popupSize]);
 
-  const cancel = React.useCallback (() => {
+  const cancel = React.useCallback(() => {
     onCancel && onCancel();
   }, [onCancel]);
 

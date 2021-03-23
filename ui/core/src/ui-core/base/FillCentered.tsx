@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { CommonDivProps } from "../utils/Props";
-import { Div } from "./Div";
+import { CommonDivProps } from "../utils/Props.js";
+import { Div } from "./Div.js";
 
 /** Full height & width and centered React functional component.
  * Displays content centered vertically and horizontally and has a height and width of 100%.

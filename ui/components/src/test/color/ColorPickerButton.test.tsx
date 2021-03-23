@@ -7,8 +7,8 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
-import { ColorPickerButton } from "../../ui-components/color/ColorPickerButton";
+import tlr from "@testing-library/react"; const { cleanup, fireEvent, render, waitForElement } = tlr;
+import { ColorPickerButton } from "../../ui-components/color/ColorPickerButton.js";
 
 // cSpell:ignore colorpicker
 
