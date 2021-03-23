@@ -323,6 +323,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "benchmark",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "body-parser",
       "allowedCategories": [ "internal" ]
     },
@@ -577,6 +581,10 @@
     {
       "name": "i18next-browser-languagedetector",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "i18next-node-fs-backend",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "i18next-xhr-backend",
@@ -992,7 +1000,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tsconfig-paths",

@@ -15,12 +15,16 @@ This file contains common tsconfig settings across all iTwin.js packages. Packag
 
 ### tslint
 
+> WARNING: TSLint support will be dropped in the next major release, 3.0. Please switch to ESLint, using `@bentley/eslint-plugin`.
+
 Location: tslint.json\
 Requires build: yes
 
 This file contains common tslint settings across all iTwin.js packages. Packages should extend this file in their own tslint.json file, and then overwrite and set new properties as needed.
 
 ### TSLint Rules
+
+> WARNING: TSLint support will be dropped in the next major release, 3.0. Please switch to ESLint, using `@bentley/eslint-plugin`.
 
 Location: tslint-rules\
 Requires build: yes
@@ -87,6 +91,8 @@ This script runs the javascript output of Mocha tests with a few standard parame
 - debug - adds the "--inspect=9229" and "--debug-brk" parameters to the Mocha command (for debugging with VS Code)
 
 #### test-tsnode.js
+
+> WARNING: The tsnode script will be dropped.  Please switch to using `test.js` or directly using mocha.
 
 This script is similar to the test.js command, but looks for the TypeScript test source in order to run it using ts-node. The arguments for this command are similar to the test command, with the following differences:
 
