@@ -694,6 +694,28 @@ export interface EnumerationInfo {
     isStrict: boolean;
 }
 
+// @alpha (undocumented)
+export interface ExpandedNodeUpdateRecord {
+    // (undocumented)
+    node: Node;
+    // (undocumented)
+    position: number;
+}
+
+// @alpha (undocumented)
+export namespace ExpandedNodeUpdateRecord {
+    export function fromJSON(json: ExpandedNodeUpdateRecordJSON): ExpandedNodeUpdateRecord;
+    export function toJSON(obj: ExpandedNodeUpdateRecord): ExpandedNodeUpdateRecordJSON;
+}
+
+// @alpha (undocumented)
+export interface ExpandedNodeUpdateRecordJSON {
+    // (undocumented)
+    node: NodeJSON;
+    // (undocumented)
+    position: number;
+}
+
 // @beta
 export interface ExtendedContentRequestOptions<TIModel, TDescriptor, TKeySet> extends ContentRequestOptions<TIModel> {
     descriptor: TDescriptor | DescriptorOverrides;
@@ -854,7 +876,7 @@ export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRule
 export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<never>>;
 
 // @alpha (undocumented)
-export type HierarchyUpdateInfo = typeof UPDATE_FULL | PartialHierarchyModification[];
+export type HierarchyUpdateInfo = typeof UPDATE_FULL | HierarchyUpdateRecord[];
 
 // @alpha (undocumented)
 export namespace HierarchyUpdateInfo {
@@ -863,7 +885,33 @@ export namespace HierarchyUpdateInfo {
 }
 
 // @alpha (undocumented)
-export type HierarchyUpdateInfoJSON = typeof UPDATE_FULL | PartialHierarchyModificationJSON[];
+export type HierarchyUpdateInfoJSON = typeof UPDATE_FULL | HierarchyUpdateRecordJSON[];
+
+// @alpha (undocumented)
+export interface HierarchyUpdateRecord {
+    // (undocumented)
+    expandedNodes?: ExpandedNodeUpdateRecord[];
+    // (undocumented)
+    nodesCount: number;
+    // (undocumented)
+    parent?: NodeKey;
+}
+
+// @alpha (undocumented)
+export namespace HierarchyUpdateRecord {
+    export function fromJSON(json: HierarchyUpdateRecordJSON): HierarchyUpdateRecord;
+    export function toJSON(obj: HierarchyUpdateRecord): HierarchyUpdateRecordJSON;
+}
+
+// @alpha (undocumented)
+export interface HierarchyUpdateRecordJSON {
+    // (undocumented)
+    expandedNodes?: ExpandedNodeUpdateRecordJSON[];
+    // (undocumented)
+    nodesCount: number;
+    // (undocumented)
+    parent?: NodeKeyJSON;
+}
 
 // @public
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
