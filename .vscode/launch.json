@@ -899,6 +899,23 @@
       ]
     },
     {
+      "name": "imodel-transformer tests",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/test-apps/imodel-transformer",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "OIDC Signin Tool Tests (Integration)",
       "presentation": {
         "group": "6_Misc"
@@ -1339,6 +1356,52 @@
       ]
     },
     { /* PARTIAL */
+      "name": "[BACKEND] Full Stack NativeApp Tests",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/native-app/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test:electron",
+        "--",
+        "--debug"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/native-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
+      ],
+      "outputCapture": "std",
+      "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/native-app/certa.json
+      "cascadeTerminateToConfigurations": [
+        "[FRONTEND] Full Stack NativeApp Tests"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[FRONTEND] Full Stack NativeApp Tests",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/native-app/certa.json
+      "timeout": 200000,
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/native-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[BACKEND] Full Stack NativeApp Tests"
+      ]
+    },
+    { /* PARTIAL */
       "name": "[BACKEND] Full Stack RPC Tests",
       "presentation": {
         "hidden": true
@@ -1593,6 +1656,17 @@
       ]
     },
     {
+      "name": "Full Stack NativeApp Tests",
+      "presentation": {
+        "group": "2_FullStackTests",
+        "order": 1
+      },
+      "configurations": [
+        "[BACKEND] Full Stack NativeApp Tests",
+        "[FRONTEND] Full Stack NativeApp Tests"
+      ]
+    },
+    {
       "name": "Full Stack RPC Tests",
       "presentation": {
         "group": "2_FullStackTests",
@@ -1665,7 +1739,6 @@
       "description": "Select client library to debug",
       "type": "pickString",
       "options": [
-        "forms-data-management",
         "product-settings",
         "projectshare",
         "rbac"

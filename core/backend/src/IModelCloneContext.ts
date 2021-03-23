@@ -8,6 +8,7 @@
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { SubCategory } from "./Category";
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -90,9 +91,15 @@ export class IModelCloneContext {
     return this._nativeContext.findElementId(sourceElementId);
   }
 
-  /** Filter out the specified SubCategory from GeometryStreams in the target iModel. */
+  /** Filter out geometry entries in the specified SubCategory from GeometryStreams in the target iModel.
+   * @note It is not possible to filter out a *default* SubCategory. A request to do so will be ignored.
+   * @see [SubCategory.isDefaultSubCategory]($backend)
+   */
   public filterSubCategory(sourceSubCategoryId: Id64String): void {
-    this._nativeContext.filterSubCategoryId(sourceSubCategoryId);
+    const sourceSubCategory = this.sourceDb.elements.tryGetElement<SubCategory>(sourceSubCategoryId, SubCategory);
+    if (sourceSubCategory && !sourceSubCategory.isDefaultSubCategory) {
+      this._nativeContext.filterSubCategoryId(sourceSubCategoryId);
+    }
   }
 
   /** Returns `true` if there are any SubCategories being filtered. */

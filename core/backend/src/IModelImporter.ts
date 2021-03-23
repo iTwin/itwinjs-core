@@ -6,9 +6,13 @@
  * @module iModels
  */
 import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AxisAlignedBox3d, ElementAspectProps, ElementProps, IModel, IModelError, ModelProps } from "@bentley/imodeljs-common";
+import {
+  AxisAlignedBox3d, Base64EncodedString, ElementAspectProps, ElementProps, EntityProps, IModel, IModelError, ModelProps, PrimitiveTypeCode,
+  PropertyMetaData, RelatedElement,
+} from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ElementAspect, ElementMultiAspect } from "./ElementAspect";
+import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, SourceAndTarget } from "./Relationship";
@@ -50,6 +54,8 @@ export class IModelImporter {
   public progressInterval: number = 1000;
   /** Tracks the current total number of entity changes. */
   private _progressCounter: number = 0;
+  /** */
+  private _modelPropertiesToIgnore = new Set<string>();
 
   /** Construct a new IModelImporter
    * @param targetDb The target IModelDb
@@ -62,6 +68,7 @@ export class IModelImporter {
     this.doNotUpdateElementIds.add(IModel.rootSubjectId);
     this.doNotUpdateElementIds.add(IModel.dictionaryId);
     this.doNotUpdateElementIds.add("0xe"); // RealityDataSources LinkPartition
+    this._modelPropertiesToIgnore.add("geometryGuid"); // cannot compare GeometricModel.GeometryGuid values across iModels
   }
 
   /** Import the specified ModelProps (either as an insert or an update) into the target iModel. */
@@ -75,7 +82,7 @@ export class IModelImporter {
     }
     try {
       const model: Model = this.targetDb.models.getModel(modelProps.id); // throws IModelError.NotFound if model does not exist
-      if (this.hasModelChanged(model, modelProps)) {
+      if (hasEntityChanged(model, modelProps, this._modelPropertiesToIgnore)) {
         this.onUpdateModel(modelProps);
       }
     } catch (error) {
@@ -86,27 +93,6 @@ export class IModelImporter {
       }
       throw error;
     }
-  }
-
-  /** Returns true if a change within a Model is detected.
-   * @param model The current persistent Model
-   * @param modelProps The new ModelProps to compare against
-   * @returns `true` if a change is detected
-   */
-  private hasModelChanged(model: Model, modelProps: ModelProps): boolean {
-    let changed: boolean = false;
-    model.forEachProperty((propertyName: string) => {
-      if (!changed) {
-        if (propertyName === "geometryGuid") {
-          // skip because GeometricModel.GeometryGuid values cannot be compared across iModels
-        } else if ((propertyName === "jsonProperties") || (propertyName === "modeledElement")) {
-          changed = JSON.stringify(model[propertyName]) !== JSON.stringify(modelProps[propertyName]);
-        } else {
-          changed = model.asAny[propertyName] !== (modelProps as any)[propertyName];
-        }
-      }
-    });
-    return changed;
   }
 
   /** Create a new Model from the specified ModelProps and insert it into the target iModel.
@@ -225,7 +211,7 @@ export class IModelImporter {
     const aspects: ElementAspect[] = this.targetDb.elements.getAspects(aspectProps.element.id, aspectProps.classFullName);
     if (aspects.length === 0) {
       this.onInsertElementAspect(aspectProps);
-    } else if (this.hasElementAspectChanged(aspects[0], aspectProps)) {
+    } else if (hasEntityChanged(aspects[0], aspectProps)) {
       aspectProps.id = aspects[0].id;
       this.onUpdateElementAspect(aspectProps);
     }
@@ -253,7 +239,7 @@ export class IModelImporter {
         proposedAspects.forEach((aspectProps: ElementAspectProps) => {
           if (index < currentAspects.length) {
             aspectProps.id = currentAspects[index].id;
-            if (this.hasElementAspectChanged(currentAspects[index], aspectProps)) {
+            if (hasEntityChanged(currentAspects[index], aspectProps)) {
               this.onUpdateElementAspect(aspectProps);
             }
           } else {
@@ -266,7 +252,7 @@ export class IModelImporter {
         currentAspects.forEach((aspect: ElementMultiAspect) => {
           if (index < proposedAspects.length) {
             proposedAspects[index].id = aspect.id;
-            if (this.hasElementAspectChanged(aspect, proposedAspects[index])) {
+            if (hasEntityChanged(aspect, proposedAspects[index])) {
               this.onUpdateElementAspect(proposedAspects[index]);
             }
           } else {
@@ -276,21 +262,6 @@ export class IModelImporter {
         });
       }
     });
-  }
-
-  /** Returns true if a change within an ElementAspect is detected.
-   * @param aspect The current persistent ElementAspect
-   * @param aspectProps The new ElementAspectProps to compare against
-   * @returns `true` if a change is detected
-   */
-  private hasElementAspectChanged(aspect: ElementAspect, aspectProps: ElementAspectProps): boolean {
-    let changed: boolean = false;
-    aspect.forEachProperty((propertyName: string) => {
-      if (!changed && (propertyName !== "element") && (aspect.asAny[propertyName] !== (aspectProps as any)[propertyName])) {
-        changed = true;
-      }
-    });
-    return changed;
   }
 
   /** Insert the ElementAspect into the target iModel.
@@ -351,28 +322,13 @@ export class IModelImporter {
     const relationship: Relationship | undefined = this.targetDb.relationships.tryGetInstance(relationshipProps.classFullName, relSourceAndTarget);
     if (undefined !== relationship) { // if relationship found, update it
       relationshipProps.id = relationship.id;
-      if (this.hasRelationshipChanged(relationship, relationshipProps)) {
+      if (hasEntityChanged(relationship, relationshipProps)) {
         this.onUpdateRelationship(relationshipProps);
       }
       return relationshipProps.id;
     } else {
       return this.onInsertRelationship(relationshipProps);
     }
-  }
-
-  /** Returns true if a change within a Relationship is detected.
-   * @param relationship The current persistent Relationship
-   * @param relationshipProps The new RelationshipProps to compare against
-   * @returns `true` if a change is detected
-   */
-  private hasRelationshipChanged(relationship: Relationship, relationshipProps: RelationshipProps): boolean {
-    let changed: boolean = false;
-    relationship.forEachProperty((propertyName: string) => {
-      if (!changed && (relationship.asAny[propertyName] !== (relationshipProps as any)[propertyName])) {
-        changed = true;
-      }
-    });
-    return changed;
   }
 
   /** Create a new Relationship from the specified RelationshipProps and insert it into the target iModel.
@@ -465,4 +421,48 @@ export class IModelImporter {
       }
     }
   }
+}
+
+/** Returns true if a change within an Entity is detected.
+ * @param entity The current persistent Entity.
+ * @param entityProps The new EntityProps to compare against
+ * @note This method should only be called if changeset information is not available.
+ */
+function hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set<string>): boolean {
+  let changed: boolean = false;
+  entity.forEachProperty((propertyName: string, propertyMeta: PropertyMetaData) => {
+    if (!changed) {
+      if (namesToIgnore && namesToIgnore.has(propertyName)) {
+        // skip
+      } else if (PrimitiveTypeCode.Binary === propertyMeta.primitiveType) {
+        changed = hasBinaryValueChanged(entity.asAny[propertyName], (entityProps as any)[propertyName]);
+      } else if (propertyMeta.isNavigation) {
+        changed = hasNavigationValueChanged(entity.asAny[propertyName], (entityProps as any)[propertyName]);
+      } else {
+        changed = hasValueChanged(entity.asAny[propertyName], (entityProps as any)[propertyName]);
+      }
+    }
+  });
+  return changed;
+}
+
+/** Returns true if the specified binary values are different. */
+function hasBinaryValueChanged(binaryProperty1: any, binaryProperty2: any): boolean {
+  const jsonString1 = JSON.stringify(binaryProperty1, Base64EncodedString.replacer);
+  const jsonString2 = JSON.stringify(binaryProperty2, Base64EncodedString.replacer);
+  return jsonString1 !== jsonString2;
+}
+
+/** Returns true if the specified navigation property values are different. */
+function hasNavigationValueChanged(navigationProperty1: any, navigationProperty2: any): boolean {
+  const relatedElement1 = RelatedElement.fromJSON(navigationProperty1);
+  const relatedElement2 = RelatedElement.fromJSON(navigationProperty2);
+  const jsonString1 = JSON.stringify(relatedElement1);
+  const jsonString2 = JSON.stringify(relatedElement2);
+  return jsonString1 !== jsonString2;
+}
+
+/** Returns true if the specified navigation property values are different. */
+function hasValueChanged(property1: any, property2: any): boolean {
+  return JSON.stringify(property1) !== JSON.stringify(property2);
 }

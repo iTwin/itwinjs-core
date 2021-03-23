@@ -141,6 +141,12 @@ export class TxnManager {
     IpcHost.notifyIModelChanges(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
   }
 
+  /** ###TODO in progress
+   * @internal
+   */
+  protected _onGeometryGuidsChanged() {
+  }
+
   /** Dependency handlers may call method this to report a validation error.
    * @param error The error. If error.fatal === true, the transaction will cancel rather than commit.
    */
@@ -194,9 +200,9 @@ export class TxnManager {
    */
   public getRedoString(): string { return this._nativeDb.getRedoString(); }
 
-  /** Begin a new multi-Txn operation. This can be used to cause a series of Txns, that would normally
-   * be considered separate actions for undo, to be grouped into a single undoable operation. This means that when reverseTxns(1) is called,
-   * the entire group of changes are undone together. Multi-Txn operations can be nested, and until the outermost operation is closed,
+  /** Begin a new multi-Txn operation. This can be used to cause a series of Txns that would normally
+   * be considered separate actions for undo to be grouped into a single undoable operation. This means that when reverseTxns(1) is called,
+   * the entire group of changes are undone together. Multi-Txn operations can be nested and until the outermost operation is closed
    * all changes constitute a single operation.
    * @note This method must always be paired with a call to endMultiTxnAction.
    */

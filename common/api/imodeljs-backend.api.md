@@ -47,7 +47,6 @@ import { CreateSnapshotIModelProps } from '@bentley/imodeljs-common';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { DefinitionElementProps } from '@bentley/imodeljs-common';
-import { DesktopAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { DisplayStyle3dProps } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
@@ -69,7 +68,6 @@ import { ExternalSourceAspectProps } from '@bentley/imodeljs-common';
 import { FilePropertyProps } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { FontProps } from '@bentley/imodeljs-common';
-import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { FunctionalElementProps } from '@bentley/imodeljs-common';
 import { GeoCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { GeometricElement2dProps } from '@bentley/imodeljs-common';
@@ -106,6 +104,7 @@ import { IndexedPolyface } from '@bentley/geometry-core';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { IntrospectionClient } from '@bentley/backend-itwin-client';
+import { IpcAppNotifications } from '@bentley/imodeljs-common';
 import { IpcListener } from '@bentley/imodeljs-common';
 import { IpcSocketBackend } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
@@ -124,6 +123,7 @@ import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
 import { ModelLoadProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
+import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { NativeAppNotifications } from '@bentley/imodeljs-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
@@ -164,6 +164,7 @@ import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
 import { SectionLocationProps } from '@bentley/imodeljs-common';
 import { SectionType } from '@bentley/imodeljs-common';
+import { SessionProps } from '@bentley/bentleyjs-core';
 import { SheetBorderTemplateProps } from '@bentley/imodeljs-common';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SheetTemplateProps } from '@bentley/imodeljs-common';
@@ -411,7 +412,7 @@ export class BisCoreSchema extends Schema {
 export class BriefcaseDb extends IModelDb {
     // (undocumented)
     abandonChanges(): void;
-    readonly allowLocalChanges: boolean;
+    get allowLocalChanges(): boolean;
     // @internal (undocumented)
     beforeClose(): void;
     // (undocumented)
@@ -1167,19 +1168,6 @@ export abstract class DefinitionSet extends DefinitionElement {
     static get className(): string;
 }
 
-// @alpha
-export class DesktopAuthorizationClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
-    constructor(clientConfiguration: DesktopAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-    }
-
 // @public
 export class DetailCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
@@ -1919,9 +1907,11 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
 export interface ExportGraphicsOptions {
     angleTol?: number;
     chordTol?: number;
+    decimationTol?: number;
     elementIdArray: Id64Array;
     maxEdgeLength?: number;
     minBRepFeatureSize?: number;
+    minLineStyleComponentSize?: number;
     onGraphics: ExportGraphicsFunction;
     onLineGraphics?: ExportLinesFunction;
     partInstanceArray?: ExportPartInstanceInfo[];
@@ -1959,10 +1949,12 @@ export type ExportPartFunction = (info: ExportPartInfo) => void;
 export interface ExportPartGraphicsOptions {
     angleTol?: number;
     chordTol?: number;
+    decimationTol?: number;
     displayProps: ExportPartDisplayInfo;
     elementId: Id64String;
     maxEdgeLength?: number;
     minBRepFeatureSize?: number;
+    minLineStyleComponentSize?: number;
     onPartGraphics: ExportPartFunction;
     onPartLineGraphics?: ExportPartLinesFunction;
 }
@@ -2485,7 +2477,7 @@ export abstract class IModelDb extends IModel {
     static readonly maxLimit = 10000;
     // (undocumented)
     readonly models: IModelDb.Models;
-    // @internal
+    // @internal (undocumented)
     get nativeDb(): IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
@@ -2679,8 +2671,10 @@ export abstract class IModelExportHandler {
 // @public
 export class IModelHost {
     static get appAssetsDir(): string | undefined;
-    static applicationId: string;
-    static applicationVersion: string;
+    static get applicationId(): string;
+    static set applicationId(id: string);
+    static get applicationVersion(): string;
+    static set applicationVersion(version: string);
     // (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
@@ -2692,9 +2686,9 @@ export class IModelHost {
     static get compressCachedTiles(): boolean;
     // (undocumented)
     static configuration?: IModelHostConfiguration;
-    // @internal
-    static elementEditors: Map<string, IElementEditor>;
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    // @internal (undocumented)
+    static getAuthorizedContext(): Promise<AuthorizedClientRequestContext>;
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // (undocumented)
@@ -2703,7 +2697,6 @@ export class IModelHost {
     static get introspectionClient(): IntrospectionClient | undefined;
     // (undocumented)
     static get isUsingIModelBankClient(): boolean;
-    // (undocumented)
     static get isValid(): boolean;
     // @internal (undocumented)
     static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void;
@@ -2717,7 +2710,10 @@ export class IModelHost {
     static removeCrashReportProperty(name: string): void;
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
-    static sessionId: GuidString;
+    // @internal (undocumented)
+    static readonly session: SessionProps;
+    static get sessionId(): GuidString;
+    static set sessionId(id: GuidString);
     // @alpha
     static setCrashReportProperty(name: string, value: string): void;
     static shutdown(): Promise<void>;
@@ -3015,24 +3011,31 @@ export class IpcHost {
     static addListener(channel: string, listener: IpcListener): RemoveFunction;
     static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static get isValid(): boolean;
+    // (undocumented)
+    static noStack: boolean;
     // @internal (undocumented)
     static notifyIModelChanges<T extends keyof IModelChangeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<IModelChangeNotifications[T]>): void;
+    // @internal (undocumented)
+    static notifyIpcFrontend<T extends keyof IpcAppNotifications>(methodName: T, ...args: Parameters<IpcAppNotifications[T]>): void;
     // @internal (undocumented)
     static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>): void;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
-    // (undocumented)
     static shutdown(): Promise<void>;
-    // (undocumented)
-    static startup(opt?: {
-        ipcHost?: IpcHostOptions;
-        iModelHost?: IModelHostConfiguration;
-    }): Promise<void>;
+    static startup(opt?: IpcHostOpts): Promise<void>;
 }
 
 // @beta
-export interface IpcHostOptions {
-    socket?: IpcSocketBackend;
+export interface IpcHostOpts {
+    // (undocumented)
+    iModelHost?: IModelHostConfiguration;
+    // (undocumented)
+    ipcHost?: {
+        socket?: IpcSocketBackend;
+        exceptions?: {
+            noStack?: boolean;
+        };
+    };
 }
 
 // @public
@@ -3317,23 +3320,54 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     toJSON(): ModelSelectorProps;
 }
 
+// @internal (undocumented)
+export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
+    // (undocumented)
+    protected _accessToken?: AccessToken;
+    // (undocumented)
+    get config(): NativeAppAuthorizationConfiguration;
+    // (undocumented)
+    protected _config?: NativeAppAuthorizationConfiguration;
+    // (undocumented)
+    protected _expireSafety: number;
+    // (undocumented)
+    getAccessToken(): Promise<AccessToken>;
+    // (undocumented)
+    getClientRequestContext(): ClientRequestContext;
+    // (undocumented)
+    initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void>;
+    // (undocumented)
+    get isAuthorized(): boolean;
+    // (undocumented)
+    protected abstract refreshToken(): Promise<AccessToken>;
+    // (undocumented)
+    setAccessToken(token?: AccessToken): void;
+    // (undocumented)
+    abstract signIn(): Promise<void>;
+    // (undocumented)
+    abstract signOut(): Promise<void>;
+}
+
 // @beta
 export class NativeHost {
     static get appSettingsCacheDir(): string;
+    // @internal (undocumented)
+    static get authorization(): NativeAppAuthorizationBackend;
     static checkInternetConnectivity(): InternetConnectivityStatus;
     // (undocumented)
     static get isValid(): boolean;
     // (undocumented)
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
     // (undocumented)
-    static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
+    static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
+    static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
     static shutdown(): Promise<void>;
-    static startup(opt?: {
-        ipcHost?: IpcHostOptions;
-        iModelHost?: IModelHostConfiguration;
-    }): Promise<void>;
+    static startup(opt?: NativeHostOpts): Promise<void>;
 }
+
+// @beta (undocumented)
+export type NativeHostOpts = IpcHostOpts;
 
 export { NativeLoggerCategory }
 
@@ -4158,6 +4192,8 @@ export class TxnManager {
     readonly onGeometryChanged: BeEvent<(models: ModelGeometryChangesProps[]) => void>;
     // @internal (undocumented)
     protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]): void;
+    // @internal
+    protected _onGeometryGuidsChanged(): void;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     // @internal (undocumented)

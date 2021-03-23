@@ -11,6 +11,7 @@ import { EditTools } from "./EditTool";
 /** @alpha Delete elements immediately from active selection set or prompt user to identify elements to delete. */
 export class DeleteElementsTool extends ElementSetTool {
   public static toolId = "DeleteElements";
+  public static iconSpec = "icon-delete";
 
   protected get allowSelectionSet(): boolean { return true; }
   protected get allowGroups(): boolean { return true; }
@@ -26,7 +27,7 @@ export class DeleteElementsTool extends ElementSetTool {
     try {
       await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
       if (IModelStatus.Success === await DeleteElementsTool.callCommand("deleteElements", this.agenda.compressIds()))
-        await this.iModel.saveChanges();
+        await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }

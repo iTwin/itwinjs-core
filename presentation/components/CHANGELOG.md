@@ -1,6 +1,25 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Fixed broken double angle bracket link syntax
+- Updated to use TypeScript 4.1
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:53 GMT
+
+_Version update only_
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -14,6 +33,16 @@ Thu, 18 Feb 2021 22:10:13 GMT
 
 - Ignore update records for unrelated iModels.
 - Added IFilteredPresentationTreeDataProvider interface
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
@@ -651,7 +680,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix filtered tree rendering "0 matches found" when there's no filtering applied and data provider returns 0 nodes
 - Updated to TypeScript 3.1
 - React to Tree API changes
