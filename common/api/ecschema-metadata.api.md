@@ -3752,6 +3752,8 @@ export abstract class SuppressionDiagnosticReporter implements IDiagnosticReport
 // @beta
 export class Unit extends SchemaItem {
     constructor(schema: Schema, name: string);
+    // @alpha
+    static areCompatible(unitA: Unit, unitB: Unit): Promise<boolean>;
     // (undocumented)
     get definition(): string;
     // (undocumented)
