@@ -98,10 +98,9 @@ export class UiFramework {
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
   private static _widgetManager?: WidgetManager;
-  // private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
   private static _uiVersion = "";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
-  private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage(); // provide a default
+  private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage(); // this provides a default storage location for settings
   private static _settingsManager?: SettingsManager;
   private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
 
@@ -551,17 +550,6 @@ export class UiFramework {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     UiFramework.postTelemetry(`Ui Version changed to ${args.version} `, "F2772C81-962D-4755-807C-2D675A5FF399");
     UiFramework._uiVersion = args.version;
-
-    /* TODO - Research to see if this is still a problem - likely it is not since Accudraw is set up to use widget opacity
-    // If Ui Version 1, save widget opacity
-    // istanbul ignore if
-    if (args.oldVersion === "1")
-      UiFramework._version1WidgetOpacity = UiFramework.getWidgetOpacity();
-
-    // If Ui Version 1, restore widget opacity; otherwise, set widget opacity to 1.0 to basically turn the feature off.
-    // This fixes use of "backdrop-filter: blur(10px)"" CSS.
-    UiFramework.setWidgetOpacity(args.version === "1" ? UiFramework._version1WidgetOpacity : 1.0);
-    */
   };
 
   // istanbul ignore next
