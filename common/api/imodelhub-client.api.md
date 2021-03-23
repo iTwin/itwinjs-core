@@ -331,6 +331,7 @@ export class CheckpointV2Query extends WsgQuery {
 export enum CheckpointV2State {
     Failed = 2,
     InProgress = 0,
+    NotGenerated = 3,
     Successful = 1
 }
 
