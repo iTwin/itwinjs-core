@@ -10157,6 +10157,8 @@ export class TileDrawArgs {
     // @internal (undocumented)
     parentsAndChildrenExclusive: boolean;
     // @internal (undocumented)
+    readonly pixelSizeScaleFactor: number;
+    // @internal (undocumented)
     planarClassifier?: RenderPlanarClassifier;
     // @internal
     processSelectedTiles(_tiles: Tile[]): void;
