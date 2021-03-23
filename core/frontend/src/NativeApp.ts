@@ -49,7 +49,7 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
  * and then listens for the `onUserStateChanged` event to cache the accessToken. The token is cached
  * here on the frontend because it is used for every RPC operation, even when we're running as a NativeApp.
  * We must therefore check for expiration and request refreshes as/when necessary.
- * @alpha
+ * @beta
  */
 export class NativeAppAuthorization {
   private _config: NativeAppAuthorizationConfiguration;
@@ -101,7 +101,7 @@ export class NativeAppAuthorization {
 
 /**
  * Options for [[NativeApp.startup]]
- * @alpha
+ * @beta
  */
 export interface NativeAppOpts extends IpcAppOptions {
   nativeApp?: {
@@ -113,7 +113,7 @@ export interface NativeAppOpts extends IpcAppOptions {
 /**
  * The frontend of a native application
  * @see [Native Applications]($docs/learning/NativeApps.md)
- * @alpha
+ * @beta
  */
 export class NativeApp {
   public static async callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
@@ -240,9 +240,9 @@ export class NativeApp {
   }
 
   /**
-   * Opens storage. This automatically creates a storage with that name if it does not exist
-   * @param name Should be a local filename without extension.
-   * @returns the [[Storage]].
+   * Open a [[Storage]]. Creates a new Storage with that name if it does not already exist.
+   * @param name Should be a local filename without an extension.
+   * @returns a Promise for the [[Storage]].
    */
   public static async openStorage(name: string): Promise<Storage> {
     if (this._storages.has(name))
@@ -254,14 +254,15 @@ export class NativeApp {
   }
 
   /**
-   * Closes storage cache
+   * Close a Storage and optionally delete it.
    * @param storage normally not call directly instead use Storage.close()
-   * @param deleteId if set attempt is made to delete the storage from disk permanently.
+   * @param deleteStorage if true, delete the storage from disk after closing it.
    */
-  public static async closeStorage(storage: Storage, deleteId: boolean): Promise<void> {
+  public static async closeStorage(storage: Storage, deleteStorage: boolean = false): Promise<void> {
     if (!this._storages.has(storage.id))
-      throw new Error(`Storage [Id=${storage.id}] not found`);
-    await this.callNativeHost("storageMgrClose", storage.id, deleteId);
+      throw new Error(`Storage [Id=${storage.id}] not open`);
+
+    await this.callNativeHost("storageMgrClose", storage.id, deleteStorage);
     this._storages.delete(storage.id);
   }
 
@@ -272,9 +273,9 @@ export class NativeApp {
 }
 
 /**
- *  A local disk-based cache for key value pairs available for NativeApps.
+ *  A local disk-based cache for key value pairs for NativeApps.
  * @note This should be used only for local caching, since its not guaranteed to exist permanently.
- * @alpha
+ * @beta
  */
 export class Storage {
   constructor(public readonly id: string) { }
@@ -290,9 +291,8 @@ export class Storage {
   }
 
   /**
-   * Return all keys.
-   * @note This could be expensive and may block backend depending on size and number of keys
-   * @returns array of all the keys in the storage
+   * Return an array of all keys in this Storage.
+   * @note This can be expensive, depending on the number of keys present.
    */
   public async getKeys(): Promise<string[]> {
     return NativeApp.callNativeHost("storageKeys", this.id);
@@ -303,16 +303,8 @@ export class Storage {
     return NativeApp.callNativeHost("storageRemove", this.id, key);
   }
 
-  /** Remove all keys and data. */
+  /** Remove all keys and their data. */
   public async removeAll(): Promise<void> {
     return NativeApp.callNativeHost("storageRemoveAll", this.id);
-  }
-
-  /**
-   * Close this Storage and optionally delete it
-   * @param deleteIt if set a attempt is made to delete the storage from disk.
-   */
-  public async close(deleteIt: boolean = false): Promise<void> {
-    return NativeApp.closeStorage(this, deleteIt);
   }
 }
