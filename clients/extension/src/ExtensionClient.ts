@@ -7,7 +7,7 @@
  * @module ExtensionService
  */
 
-import { ClientRequestContext, ExtensionStatus } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, ExtensionStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, Client, getArrayBuffer, request, RequestOptions, ResponseError } from "@bentley/itwin-client";
 import { ExtensionFile } from "./ExtensionFile";
@@ -27,9 +27,8 @@ export class ExtensionClient extends Client {
     this.baseUrl = "https://api.bentley.com/iModelExtensionService";
   }
 
-  protected getUrlSearchKey(): string {
-    return "iModelExtensionService.URL";
-  }
+  /** @internal */
+  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   public async getUrl(requestContext: ClientRequestContext): Promise<string> {
     if (this._url !== undefined)

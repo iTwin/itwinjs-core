@@ -15,13 +15,13 @@ import {
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, ProgressInfo, UserInfo, WsgError } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
-import { RequestType, ResponseBuilder, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
+import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { assetsPath } from "./TestConstants";
 import { createFileHandler } from "./FileHandler";
-import { RequestHost } from "@bentley/backend-itwin-client";
+import { HttpRequestHost } from "@bentley/backend-itwin-client";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
@@ -40,10 +40,10 @@ function configMockSettings() {
   if (!TestConfig.enableMocks)
     return;
 
-  Config.App.set("imjs_imodelhub_url", "https://mockimodelhub.com");
-  Config.App.set("imjs_rbac_url", "https://mockrbac.com");
-  Config.App.set("imjs_buddi_url", "https://mockbuddi.com");
+  Config.App.set("imjs_imodelhub_url", "https://api.bentley.com/imodelhub");
+  Config.App.set("imjs_rbac_url", "https://api.bentley.com/rbac");
   Config.App.set("imjs_buddi_resolve_url_using_region", 0);
+  Config.App.set("imjs_url_prefix", "");
   Config.App.set("imjs_test_serviceAccount1_user_name", "test");
   Config.App.set("imjs_test_serviceAccount1_user_password", "test");
   Config.App.set("imjs_test_manager_user_name", "test");
@@ -162,13 +162,6 @@ export class IModelHubUrlMock {
     configMockSettings();
     return Config.App.get("imjs_imodelhub_url", "");
   }
-
-  public static mockGetUrl() {
-    if (!TestConfig.enableMocks)
-      return;
-    const url = IModelHubUrlMock.getUrl();
-    UrlDiscoveryMock.mockGetUrl(IModelBaseHandler.searchKey, Config.App.get("imjs_buddi_resolve_url_using_region"), url);
-  }
 }
 
 export class RbacUrlMock {
@@ -176,17 +169,10 @@ export class RbacUrlMock {
     configMockSettings();
     return Config.App.get("imjs_rbac_url", "");
   }
-
-  public static mockGetUrl() {
-    if (!TestConfig.enableMocks)
-      return;
-    const url = RbacUrlMock.getUrl();
-    UrlDiscoveryMock.mockGetUrl("RBAC.Url.APIM", Config.App.get("imjs_buddi_resolve_url_using_region"), url);
-  }
 }
 
+
 export function getDefaultClient() {
-  IModelHubUrlMock.mockGetUrl();
   return getCloudEnv().isIModelHub ? getIModelHubClient() : imodelBankClient;
 }
 
@@ -977,7 +963,7 @@ export function getCloudEnv(): IModelCloudEnvironment {
 // iModel server to finish starting up.
 
 before(async () => {
-  await RequestHost.initialize();
+  await HttpRequestHost.initialize();
 
   if (!TestConfig.enableIModelBank || TestConfig.enableMocks) {
     cloudEnv = new TestIModelHubCloudEnv();

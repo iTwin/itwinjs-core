@@ -99,11 +99,6 @@ describe("iModelHub PermissionsManager", () => {
     }
   });
 
-  beforeEach(() => {
-    utils.RbacUrlMock.mockGetUrl();
-    utils.IModelHubUrlMock.mockGetUrl();
-  });
-
   afterEach(async () => {
     ResponseBuilder.clearMocks();
   });
