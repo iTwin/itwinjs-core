@@ -4,12 +4,12 @@ exports[`PropertyDataProvider getData with flat categories handles records with 
 Object {
   "categories": Array [
     Object {
-      "expand": true,
-      "label": "sexy Automotive pink",
-      "name": "white",
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
     },
   ],
-  "description": "Guadeloupe",
+  "description": undefined,
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -17,25 +17,18 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Executive",
-      "value": "Executive",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "white": Array [
+    "test-category": Array [
       PropertyRecord {
         "property": Object {
-          "displayLabel": "EXE gold niches",
-          "editor": Object {
-            "name": "virtual",
-            "params": Array [],
-          },
-          "name": "Generic",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "binary",
+          "displayLabel": "Simple Field",
+          "name": "SimpleField",
+          "typename": "string",
         },
         "value": Object {
           "displayValue": "",
@@ -49,13 +42,13 @@ Object {
 }
 `;
 
-exports[`PropertyDataProvider getData with flat categories nested content handling removes nested content record from category when the only nested field is moved into a separate category and nested content record is the only record in category 1`] = `
+exports[`PropertyDataProvider getData with flat categories nested content handling moves all nested fields into separate category and hides nested content field when all nested fields are categorized 1`] = `
 Object {
   "categories": Array [
     Object {
       "expand": false,
-      "label": "custom",
-      "name": "custom",
+      "label": "Test Category",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -66,27 +59,36 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Freeway Jamaica Burundi",
-      "value": "Freeway Jamaica Burundi",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "custom": Array [
+    "Category2": Array [
       PropertyRecord {
-        "description": "Wooden",
-        "isReadonly": true,
+        "description": "display value 1",
         "property": Object {
-          "displayLabel": "nested 1",
-          "name": "nested content field$nested 1",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "time",
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-1",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "Wooden",
-          "value": "open system",
+          "displayValue": "display value 1",
+          "value": "value 1",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "display value 2",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-2",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 2",
+          "value": "value 2",
           "valueFormat": 0,
         },
       },
@@ -96,18 +98,18 @@ Object {
 }
 `;
 
-exports[`PropertyDataProvider getData with flat categories nested content handling removes nested content record from category when the only nested field is moved into a separate category and there are other records in nested content record category 1`] = `
+exports[`PropertyDataProvider getData with flat categories nested content handling moves field into separate category with its grandparent when both are categorized with the same category 1`] = `
 Object {
   "categories": Array [
     Object {
-      "expand": true,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category1",
     },
     Object {
-      "expand": true,
-      "label": "top-1",
-      "name": "top-1",
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -118,94 +120,72 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Front-line",
-      "value": "Front-line",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "nested-1-1": Array [
+    "Category1": Array [
       PropertyRecord {
+        "description": "display value 4",
         "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "withdrawal",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "binary",
+          "displayLabel": "Simple Field",
+          "name": "nested-field-4",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "",
-          "value": undefined,
+          "displayValue": "display value 4",
+          "value": "value 4",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "display value 1",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$middle-field$nested-field-1",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 1",
+          "value": "value 1",
           "valueFormat": 0,
         },
       },
     ],
-    "top-1": Array [
+    "Category2": Array [
       PropertyRecord {
-        "description": "THX Zloty Car",
-        "isReadonly": true,
+        "description": "display value 3",
         "property": Object {
-          "displayLabel": "primitive",
-          "editor": Object {
-            "name": "Keyboard",
-            "params": Array [],
-          },
-          "name": "primitive",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "datetime",
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-3",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "THX Zloty Car",
-          "value": "payment",
+          "displayValue": "display value 3",
+          "value": "value 3",
           "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "autoExpand": true,
         "property": Object {
           "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "tinyint",
+          "name": "root-field$middle-field",
+          "typename": "NestedContentFieldType",
         },
         "value": Object {
           "members": Object {
-            "nested 1": PropertyRecord {
-              "description": "adapter Right-sized Massachusetts",
-              "isReadonly": true,
+            "nested-field-2": PropertyRecord {
+              "description": "display value 2",
               "property": Object {
-                "displayLabel": "nested 1",
-                "name": "nested content field$nested 1",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "time",
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field$nested-field-2",
+                "typename": "string",
               },
               "value": Object {
-                "displayValue": "adapter Right-sized Massachusetts",
-                "value": "GB",
-                "valueFormat": 0,
-              },
-            },
-            "nested 2": PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 2",
-                "name": "nested content field$nested 2",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "double",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
+                "displayValue": "display value 2",
+                "value": "value 2",
                 "valueFormat": 0,
               },
             },
@@ -219,44 +199,18 @@ Object {
 }
 `;
 
-exports[`PropertyDataProvider getData with flat categories nested content handling removes nested content record when the nested field is categorized but there's no content 1`] = `
-Object {
-  "categories": Array [],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "Ouguiya solid state Central",
-      "value": "Ouguiya solid state Central",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {},
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with flat categories nested content handling returns favorite nested content in a separate category when it's categorized 1`] = `
+exports[`PropertyDataProvider getData with flat categories nested content handling moves fields into separate category under common ancestor when both are categorized with the same category 1`] = `
 Object {
   "categories": Array [
     Object {
-      "expand": true,
-      "label": "Favorite",
-      "name": "Favorite",
-    },
-    Object {
       "expand": false,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
+      "label": "Test Category",
+      "name": "Category1",
     },
     Object {
       "expand": true,
-      "label": "top-1",
-      "name": "top-1",
+      "label": "Test Category",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -267,119 +221,174 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Investment Account primary interface",
-      "value": "Investment Account primary interface",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "Favorite": Array [
+    "Category1": Array [
       PropertyRecord {
-        "description": "Sao Tome and Principe Island",
+        "description": "display value",
         "property": Object {
-          "displayLabel": "nested 1",
-          "editor": Object {
-            "name": "generate",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 1",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "serial",
+          "displayLabel": "Simple Field",
+          "name": "root-sibling",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "Sao Tome and Principe Island",
-          "value": "Sausages",
-          "valueFormat": 0,
-        },
-      },
-    ],
-    "nested-1-1": Array [
-      PropertyRecord {
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "Refined Fresh Salad",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "float",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "description": "Berkshire Cotton Factors",
-        "property": Object {
-          "displayLabel": "primitive",
-          "editor": Object {
-            "name": "Virginia",
-            "params": Array [],
-          },
-          "name": "primitive",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "enum",
-        },
-        "value": Object {
-          "displayValue": "Berkshire Cotton Factors",
-          "value": "Upgradable",
+          "displayValue": "display value",
+          "value": "value",
           "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "autoExpand": true,
-        "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "double",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
         },
         "value": Object {
           "members": Object {
-            "nested 1": PropertyRecord {
-              "description": "Sao Tome and Principe Island",
+            "middle-field-1": PropertyRecord {
+              "isReadonly": true,
               "property": Object {
-                "displayLabel": "nested 1",
-                "editor": Object {
-                  "name": "generate",
-                  "params": Array [],
-                },
-                "name": "nested content field$nested 1",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "serial",
+                "displayLabel": "Nested Content",
+                "name": "root-field$middle-field-1",
+                "typename": "NestedContentFieldType[]",
               },
               "value": Object {
-                "displayValue": "Sao Tome and Principe Island",
-                "value": "Sausages",
+                "items": Array [
+                  PropertyRecord {
+                    "property": Object {
+                      "displayLabel": "Nested Content",
+                      "name": "root-field$middle-field-1",
+                      "typename": "NestedContentFieldType",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "nested-field-1": PropertyRecord {
+                          "description": "display value 1",
+                          "property": Object {
+                            "displayLabel": "Simple Field",
+                            "name": "root-field$middle-field-1$nested-field-1",
+                            "typename": "string",
+                          },
+                          "value": Object {
+                            "displayValue": "display value 1",
+                            "value": "value 1",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                ],
+                "itemsTypeName": "NestedContentFieldType",
+                "valueFormat": 1,
+              },
+            },
+            "middle-field-2": PropertyRecord {
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "Nested Content",
+                "name": "root-field$middle-field-2",
+                "typename": "NestedContentFieldType[]",
+              },
+              "value": Object {
+                "items": Array [
+                  PropertyRecord {
+                    "property": Object {
+                      "displayLabel": "Nested Content",
+                      "name": "root-field$middle-field-2",
+                      "typename": "NestedContentFieldType",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "nested-field-3": PropertyRecord {
+                          "description": "display value 3",
+                          "property": Object {
+                            "displayLabel": "Simple Field",
+                            "name": "root-field$middle-field-2$nested-field-3",
+                            "typename": "string",
+                          },
+                          "value": Object {
+                            "displayValue": "display value 3",
+                            "value": "value 3",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                ],
+                "itemsTypeName": "NestedContentFieldType",
+                "valueFormat": 1,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+    ],
+    "Category2": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field$middle-field-1",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "nested-field-2": PropertyRecord {
+              "description": "display value 2",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field-1$nested-field-2",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "display value 2",
+                "value": "value 2",
                 "valueFormat": 0,
               },
             },
-            "nested 2": PropertyRecord {
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field$middle-field-2",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "nested-field-4": PropertyRecord {
+              "description": "display value 4",
               "property": Object {
-                "displayLabel": "nested 2",
-                "name": "nested content field$nested 2",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "float",
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field-2$nested-field-4",
+                "typename": "string",
               },
               "value": Object {
-                "displayValue": "",
-                "value": undefined,
+                "displayValue": "display value 4",
+                "value": "value 4",
+                "valueFormat": 0,
+              },
+            },
+            "nested-field-5": PropertyRecord {
+              "description": "display value 5",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field-2$nested-field-5",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "display value 5",
+                "value": "value 5",
                 "valueFormat": 0,
               },
             },
@@ -393,18 +402,13 @@ Object {
 }
 `;
 
-exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content in a separate category when it's categorized 1`] = `
+exports[`PropertyDataProvider getData with flat categories nested content handling moves nested field into separate category and hides nested content field when there's only 1 nested field 1`] = `
 Object {
   "categories": Array [
     Object {
-      "expand": true,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
-    },
-    Object {
-      "expand": true,
-      "label": "top-1",
-      "name": "top-1",
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -415,95 +419,375 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "digital Representative interface",
-      "value": "digital Representative interface",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "nested-1-1": Array [
+    "Category2": Array [
       PropertyRecord {
-        "isReadonly": true,
+        "description": "display value 1",
         "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "redundant",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "serial",
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-1",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "",
-          "value": undefined,
+          "displayValue": "display value 1",
+          "value": "value 1",
           "valueFormat": 0,
         },
       },
     ],
-    "top-1": Array [
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with flat categories nested content handling moves nested field into separate category and keeps nested content field with remaining nested fields when there are more than 1 nested fields and no sibling fields 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category1",
+    },
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category2",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "Category1": Array [
       PropertyRecord {
-        "description": "RAM Bond Markets Units European Composite Unit (EURCO) Function-based",
-        "isReadonly": true,
+        "description": "display value 1",
         "property": Object {
-          "displayLabel": "primitive",
-          "name": "primitive",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "smallint",
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-1",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "RAM Bond Markets Units European Composite Unit (EURCO) Function-based",
-          "value": "Salad",
+          "displayValue": "display value 1",
+          "value": "value 1",
+          "valueFormat": 0,
+        },
+      },
+    ],
+    "Category2": Array [
+      PropertyRecord {
+        "description": "display value 2",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-2",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 2",
+          "value": "value 2",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with flat categories nested content handling moves nested field into separate category and keeps nested content field with remaining nested fields when there are more than 1 nested fields and sibling fields 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category1",
+    },
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category2",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "Category1": Array [
+      PropertyRecord {
+        "description": "display value 3",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "sibling-root-field",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 3",
+          "value": "value 3",
           "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "autoExpand": true,
-        "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "binary",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
         },
         "value": Object {
           "members": Object {
-            "nested 1": PropertyRecord {
-              "description": "PNG auxiliary Human",
-              "isReadonly": true,
+            "nested-field-1": PropertyRecord {
+              "description": "display value 1",
               "property": Object {
-                "displayLabel": "nested 1",
-                "editor": Object {
-                  "name": "Paradigm",
-                  "params": Array [],
-                },
-                "name": "nested content field$nested 1",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "date",
+                "displayLabel": "Simple Field",
+                "name": "root-field$nested-field-1",
+                "typename": "string",
               },
               "value": Object {
-                "displayValue": "PNG auxiliary Human",
-                "value": "overriding",
+                "displayValue": "display value 1",
+                "value": "value 1",
                 "valueFormat": 0,
               },
             },
-            "nested 2": PropertyRecord {
+          },
+          "valueFormat": 2,
+        },
+      },
+    ],
+    "Category2": Array [
+      PropertyRecord {
+        "description": "display value 2",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-2",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 2",
+          "value": "value 2",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content with multiple nested records as struct array 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field",
+          "typename": "NestedContentFieldType[]",
+        },
+        "value": Object {
+          "items": Array [
+            PropertyRecord {
               "property": Object {
-                "displayLabel": "nested 2",
-                "name": "nested content field$nested 2",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "int",
+                "displayLabel": "Nested Content",
+                "name": "root-field",
+                "typename": "NestedContentFieldType",
               },
               "value": Object {
-                "displayValue": "",
-                "value": undefined,
+                "members": Object {
+                  "nested-field": PropertyRecord {
+                    "description": "display value 1",
+                    "property": Object {
+                      "displayLabel": "Simple Field",
+                      "name": "root-field$nested-field",
+                      "typename": "string",
+                    },
+                    "value": Object {
+                      "displayValue": "display value 1",
+                      "value": "value 1",
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+            PropertyRecord {
+              "property": Object {
+                "displayLabel": "Nested Content",
+                "name": "root-field",
+                "typename": "NestedContentFieldType",
+              },
+              "value": Object {
+                "members": Object {
+                  "nested-field": PropertyRecord {
+                    "description": "display value 2",
+                    "property": Object {
+                      "displayLabel": "Simple Field",
+                      "name": "root-field$nested-field",
+                      "typename": "string",
+                    },
+                    "value": Object {
+                      "displayValue": "display value 2",
+                      "value": "value 2",
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+          ],
+          "itemsTypeName": "NestedContentFieldType",
+          "valueFormat": 1,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content with single nested record as individual properties when are no sibling fields 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "description": "display value 1",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 1",
+          "value": "value 1",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content with single nested record as struct when there're sibling fields 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "description": "display value 3",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "sibling-root-field",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 3",
+          "value": "value 3",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "nested-field": PropertyRecord {
+              "description": "display value 1",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$nested-field",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "display value 1",
+                "value": "value 1",
                 "valueFormat": 0,
               },
             },
@@ -513,952 +797,6 @@ Object {
       },
     ],
   },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content with multiple nested categorized records 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "expand": false,
-      "label": "top-1",
-      "name": "top-1",
-    },
-    Object {
-      "expand": false,
-      "label": "custom",
-      "name": "custom",
-    },
-    Object {
-      "expand": false,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "Ukraine",
-      "value": "Ukraine",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "custom": Array [
-      PropertyRecord {
-        "description": undefined,
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "nested 1",
-          "name": "nested content field$nested 1",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "tinyint[]",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "description": "Director Corporate Metal",
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 1",
-                "name": "nested content field$nested 1",
-                "typename": "tinyint",
-              },
-              "value": Object {
-                "displayValue": "Director Corporate Metal",
-                "value": "Liaison",
-                "valueFormat": 0,
-              },
-            },
-            PropertyRecord {
-              "description": "Planner port",
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 1",
-                "name": "nested content field$nested 1",
-                "typename": "tinyint",
-              },
-              "value": Object {
-                "displayValue": "Planner port",
-                "value": "bricks-and-clicks",
-                "valueFormat": 0,
-              },
-            },
-          ],
-          "itemsTypeName": "tinyint",
-          "valueFormat": 1,
-        },
-      },
-    ],
-    "nested-1-1": Array [
-      PropertyRecord {
-        "description": undefined,
-        "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "grey",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "blob[]",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "blob",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "blob",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-          ],
-          "itemsTypeName": "blob",
-          "valueFormat": 1,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "smallint",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "smallint",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 2": PropertyRecord {
-                    "description": "Internal repurpose back up",
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "set",
-                    },
-                    "value": Object {
-                      "displayValue": "Internal repurpose back up",
-                      "value": "back up",
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "smallint",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 2": PropertyRecord {
-                    "description": "digital 1080p Checking Account",
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "set",
-                    },
-                    "value": Object {
-                      "displayValue": "digital 1080p Checking Account",
-                      "value": "empower",
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-          ],
-          "itemsTypeName": "smallint",
-          "valueFormat": 1,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content with multiple nested records 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "expand": true,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
-    },
-    Object {
-      "expand": true,
-      "label": "top-1",
-      "name": "top-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "Mobility",
-      "value": "Mobility",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "nested-1-1": Array [
-      PropertyRecord {
-        "description": undefined,
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "nested 3",
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "varchar[]",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "varchar",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "varchar",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-          ],
-          "itemsTypeName": "varchar",
-          "valueFormat": 1,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "description": "Branding calculate white",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "primitive",
-          "name": "primitive",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "boolean",
-        },
-        "value": Object {
-          "displayValue": "Branding calculate white",
-          "value": "primary",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "autoExpand": true,
-        "property": Object {
-          "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "serial",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": false,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "serial",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 1": PropertyRecord {
-                    "description": "panel",
-                    "property": Object {
-                      "displayLabel": "nested 1",
-                      "editor": Object {
-                        "name": "Lead",
-                        "params": Array [],
-                      },
-                      "name": "nested content field$nested 1",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "smallint",
-                    },
-                    "value": Object {
-                      "displayValue": "panel",
-                      "value": "Oval",
-                      "valueFormat": 0,
-                    },
-                  },
-                  "nested 2": PropertyRecord {
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "editor": Object {
-                        "name": "Cloned",
-                        "params": Array [],
-                      },
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "bigint",
-                    },
-                    "value": Object {
-                      "displayValue": "",
-                      "value": undefined,
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": false,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "serial",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 1": PropertyRecord {
-                    "description": "invoice Isle",
-                    "property": Object {
-                      "displayLabel": "nested 1",
-                      "editor": Object {
-                        "name": "Lead",
-                        "params": Array [],
-                      },
-                      "name": "nested content field$nested 1",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "smallint",
-                    },
-                    "value": Object {
-                      "displayValue": "invoice Isle",
-                      "value": "synthesize",
-                      "valueFormat": 0,
-                    },
-                  },
-                  "nested 2": PropertyRecord {
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "editor": Object {
-                        "name": "Cloned",
-                        "params": Array [],
-                      },
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "bigint",
-                    },
-                    "value": Object {
-                      "displayValue": "",
-                      "value": undefined,
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-          ],
-          "itemsTypeName": "serial",
-          "valueFormat": 1,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content with multiple nested records when there's only one record in category 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "expand": true,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
-    },
-    Object {
-      "expand": false,
-      "label": "top-1",
-      "name": "top-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "indexing alliance",
-      "value": "indexing alliance",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "nested-1-1": Array [
-      PropertyRecord {
-        "description": undefined,
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "Paradigm",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "enum[]",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "enum",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "enum",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-          ],
-          "itemsTypeName": "enum",
-          "valueFormat": 1,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "text",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "text",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 1": PropertyRecord {
-                    "description": "Pennsylvania",
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 1",
-                      "name": "nested content field$nested 1",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "geometry",
-                    },
-                    "value": Object {
-                      "displayValue": "Pennsylvania",
-                      "value": "Officer",
-                      "valueFormat": 0,
-                    },
-                  },
-                  "nested 2": PropertyRecord {
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "decimal",
-                    },
-                    "value": Object {
-                      "displayValue": "",
-                      "value": undefined,
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "text",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 1": PropertyRecord {
-                    "description": "strategic",
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 1",
-                      "name": "nested content field$nested 1",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "geometry",
-                    },
-                    "value": Object {
-                      "displayValue": "strategic",
-                      "value": "Accountability",
-                      "valueFormat": 0,
-                    },
-                  },
-                  "nested 2": PropertyRecord {
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "decimal",
-                    },
-                    "value": Object {
-                      "displayValue": "",
-                      "value": undefined,
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-          ],
-          "itemsTypeName": "text",
-          "valueFormat": 1,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content with single nested record 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "expand": false,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
-    },
-    Object {
-      "expand": true,
-      "label": "top-1",
-      "name": "top-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "wireless Internal attitude",
-      "value": "wireless Internal attitude",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "nested-1-1": Array [
-      PropertyRecord {
-        "property": Object {
-          "displayLabel": "nested 3",
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "set",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "description": "Burundi visionary",
-        "property": Object {
-          "displayLabel": "primitive",
-          "name": "primitive",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "tinyint",
-        },
-        "value": Object {
-          "displayValue": "Burundi visionary",
-          "value": "Coordinator",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "time",
-        },
-        "value": Object {
-          "members": Object {
-            "nested 1": PropertyRecord {
-              "description": "microchip white Chair",
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 1",
-                "name": "nested content field$nested 1",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "geometry",
-              },
-              "value": Object {
-                "displayValue": "microchip white Chair",
-                "value": "Functionality",
-                "valueFormat": 0,
-              },
-            },
-            "nested 2": PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 2",
-                "name": "nested content field$nested 2",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "boolean",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-          },
-          "valueFormat": 2,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content with single nested record as a list of struct member records when there's only one record in category 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "expand": true,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
-    },
-    Object {
-      "expand": true,
-      "label": "top-1",
-      "name": "top-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "Bedfordshire",
-      "value": "Bedfordshire",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "nested-1-1": Array [
-      PropertyRecord {
-        "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "program",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "set",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "description": "Ohio",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "nested 1",
-          "name": "nested content field$nested 1",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "float",
-        },
-        "value": Object {
-          "displayValue": "Ohio",
-          "value": "Outdoors",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "property": Object {
-          "displayLabel": "nested 2",
-          "name": "nested content field$nested 2",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "double",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with flat categories nested content handling returns nested content with single nested record when there's only one record in category 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "expand": false,
-      "label": "top-1",
-      "name": "top-1",
-    },
-    Object {
-      "expand": true,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "Berkshire Wooden",
-      "value": "Berkshire Wooden",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "nested-1-1": Array [
-      PropertyRecord {
-        "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "experiences",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "datetime",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "description": "Principal payment",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "nested 1",
-          "editor": Object {
-            "name": "synthesize",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 1",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "bigint",
-        },
-        "value": Object {
-          "displayValue": "Principal payment",
-          "value": "Gloves",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "nested 2",
-          "editor": Object {
-            "name": "Tunisia",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 2",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "mediumint",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with flat categories nested content handling returns nothing for nested content with no values when there's only one record in category 1`] = `
-Object {
-  "categories": Array [],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "vertical online interactive",
-      "value": "vertical online interactive",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {},
   "reusePropertyDataState": true,
 }
 `;
@@ -1468,11 +806,11 @@ Object {
   "categories": Array [
     Object {
       "expand": false,
-      "label": "Rustic",
-      "name": "withdrawal",
+      "label": "Test Category",
+      "name": "test-category",
     },
   ],
-  "description": "Gorgeous Interactions",
+  "description": undefined,
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -1480,29 +818,27 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Total",
-      "value": "Total",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "withdrawal": Array [
+    "test-category": Array [
       PropertyRecord {
-        "description": undefined,
         "property": Object {
-          "displayLabel": "olive",
-          "name": "SQL",
-          "typename": "maroon",
+          "displayLabel": "Simple Field",
+          "name": "SimpleField",
+          "typename": "myarray[]",
         },
         "value": Object {
           "items": Array [
             PropertyRecord {
               "description": "some display value 1",
-              "isReadonly": true,
               "property": Object {
-                "displayLabel": "olive",
-                "name": "SQL",
-                "typename": "real",
+                "displayLabel": "Simple Field",
+                "name": "SimpleField",
+                "typename": "MyType",
               },
               "value": Object {
                 "displayValue": "some display value 1",
@@ -1512,11 +848,10 @@ Object {
             },
             PropertyRecord {
               "description": "some display value 2",
-              "isReadonly": true,
               "property": Object {
-                "displayLabel": "olive",
-                "name": "SQL",
-                "typename": "real",
+                "displayLabel": "Simple Field",
+                "name": "SimpleField",
+                "typename": "MyType",
               },
               "value": Object {
                 "displayValue": "some display value 2",
@@ -1525,7 +860,7 @@ Object {
               },
             },
           ],
-          "itemsTypeName": "real",
+          "itemsTypeName": "MyType",
           "valueFormat": 1,
         },
       },
@@ -1539,12 +874,12 @@ exports[`PropertyDataProvider getData with flat categories returns primitive pro
 Object {
   "categories": Array [
     Object {
-      "expand": true,
-      "label": "cross-platform Tennessee",
-      "name": "dedicated",
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
     },
   ],
-  "description": "Concrete Djibouti maroon",
+  "description": undefined,
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -1552,31 +887,23 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "card synergy Skyway",
-      "value": "card synergy Skyway",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "dedicated": Array [
+    "test-category": Array [
       PropertyRecord {
-        "description": "solutions Cambridgeshire Facilitator",
-        "isReadonly": true,
+        "description": "some display value",
         "property": Object {
-          "displayLabel": "De-engineered",
-          "editor": Object {
-            "name": "alarm",
-            "params": Array [],
-          },
-          "name": "tan",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "serial",
+          "displayLabel": "Simple Field",
+          "name": "SimpleField",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "solutions Cambridgeshire Facilitator",
-          "value": "Computer",
+          "displayValue": "some display value",
+          "value": "some value",
           "valueFormat": 0,
         },
       },
@@ -1590,12 +917,12 @@ exports[`PropertyDataProvider getData with flat categories returns struct proper
 Object {
   "categories": Array [
     Object {
-      "expand": true,
-      "label": "heuristic Bond Markets Units European Composite Unit (EURCO) Metal",
-      "name": "functionalities",
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
     },
   ],
-  "description": "solution-oriented United States Minor Outlying Islands",
+  "description": undefined,
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -1603,30 +930,27 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "RAM",
-      "value": "RAM",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "functionalities": Array [
+    "test-category": Array [
       PropertyRecord {
-        "description": undefined,
-        "isReadonly": true,
         "property": Object {
-          "displayLabel": "payment Cotton Handmade",
-          "name": "extend",
-          "typename": "optimization",
+          "displayLabel": "Simple Field",
+          "name": "SimpleField",
+          "typename": "mystruct",
         },
         "value": Object {
           "members": Object {
-            "Borders": PropertyRecord {
+            "MyProperty": PropertyRecord {
               "description": "some display value",
-              "isReadonly": true,
               "property": Object {
-                "displayLabel": "Frozen pricing structure EXE",
-                "name": "Borders",
-                "typename": "tinyint",
+                "displayLabel": "My Property",
+                "name": "MyProperty",
+                "typename": "MyType",
               },
               "value": Object {
                 "displayValue": "some display value",
@@ -1649,12 +973,12 @@ Object {
   "categories": Array [
     Object {
       "childCategories": Array [],
-      "expand": true,
-      "label": "invoice deposit Principal",
-      "name": "invoice",
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
     },
   ],
-  "description": "1080p Avon maroon",
+  "description": undefined,
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -1662,21 +986,18 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "neural Concrete Nakfa",
-      "value": "neural Concrete Nakfa",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "invoice": Array [
+    "test-category": Array [
       PropertyRecord {
         "property": Object {
-          "displayLabel": "Liaison Automotive",
-          "name": "Ohio",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "set",
+          "displayLabel": "Simple Field",
+          "name": "SimpleField",
+          "typename": "string",
         },
         "value": Object {
           "displayValue": "",
@@ -1690,14 +1011,14 @@ Object {
 }
 `;
 
-exports[`PropertyDataProvider getData with nested categories nested content handling removes nested content record from category when the only nested field is moved into a separate category and nested content record is the only record in category 1`] = `
+exports[`PropertyDataProvider getData with nested categories nested content handling moves all nested fields into separate category and hides nested content field when all nested fields are categorized 1`] = `
 Object {
   "categories": Array [
     Object {
       "childCategories": Array [],
-      "expand": true,
-      "label": "custom",
-      "name": "custom",
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -1708,30 +1029,36 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Division District functionalities",
-      "value": "Division District functionalities",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "custom": Array [
+    "Category2": Array [
       PropertyRecord {
-        "description": "Multi-tiered back up bypass",
+        "description": "display value 1",
         "property": Object {
-          "displayLabel": "nested 1",
-          "editor": Object {
-            "name": "e-commerce",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 1",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "real",
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-1",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "Multi-tiered back up bypass",
-          "value": "embrace",
+          "displayValue": "display value 1",
+          "value": "value 1",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "display value 2",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-2",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 2",
+          "value": "value 2",
           "valueFormat": 0,
         },
       },
@@ -1741,21 +1068,20 @@ Object {
 }
 `;
 
-exports[`PropertyDataProvider getData with nested categories nested content handling removes nested content record from category when the only nested field is moved into a separate category and there are other records in nested content record category 1`] = `
+exports[`PropertyDataProvider getData with nested categories nested content handling moves field into separate category with its grandparent when both are categorized with the same category 1`] = `
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [
-        Object {
-          "childCategories": Array [],
-          "expand": false,
-          "label": "nested-1-1",
-          "name": "nested-1-1",
-        },
-      ],
-      "expand": true,
-      "label": "top-1",
-      "name": "top-1",
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category1",
+    },
+    Object {
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -1766,102 +1092,277 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Seamless Compatible",
-      "value": "Seamless Compatible",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "nested-1-1": Array [
+    "Category1": Array [
       PropertyRecord {
-        "isReadonly": true,
+        "description": "display value 1",
         "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "Home Loan Account",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "set",
+          "displayLabel": "Simple Field",
+          "name": "root-field$middle-field$nested-field-1",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "",
-          "value": undefined,
+          "displayValue": "display value 1",
+          "value": "value 1",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "display value 4",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "nested-field-4",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 4",
+          "value": "value 4",
           "valueFormat": 0,
         },
       },
     ],
-    "top-1": Array [
+    "Category2": Array [
       PropertyRecord {
-        "description": "purple protocol",
-        "property": Object {
-          "displayLabel": "primitive",
-          "editor": Object {
-            "name": "Practical Frozen Chips",
-            "params": Array [],
-          },
-          "name": "primitive",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "text",
-        },
-        "value": Object {
-          "displayValue": "purple protocol",
-          "value": "Principal",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "isReadonly": true,
         "property": Object {
           "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "tinyint",
+          "name": "root-field$middle-field",
+          "typename": "NestedContentFieldType",
         },
         "value": Object {
           "members": Object {
-            "nested 1": PropertyRecord {
-              "description": "Car",
-              "isReadonly": true,
+            "nested-field-2": PropertyRecord {
+              "description": "display value 2",
               "property": Object {
-                "displayLabel": "nested 1",
-                "editor": Object {
-                  "name": "Frozen",
-                  "params": Array [],
-                },
-                "name": "nested content field$nested 1",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "boolean",
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field$nested-field-2",
+                "typename": "string",
               },
               "value": Object {
-                "displayValue": "Car",
-                "value": "withdrawal",
+                "displayValue": "display value 2",
+                "value": "value 2",
                 "valueFormat": 0,
               },
             },
-            "nested 2": PropertyRecord {
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "display value 3",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-3",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 3",
+          "value": "value 3",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with nested categories nested content handling moves fields into separate category under common ancestor when both are categorized with the same category 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category1",
+    },
+    Object {
+      "childCategories": Array [],
+      "expand": true,
+      "label": "Test Category",
+      "name": "Category2",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "Category1": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "middle-field-1": PropertyRecord {
               "isReadonly": true,
               "property": Object {
-                "displayLabel": "nested 2",
-                "editor": Object {
-                  "name": "transmitter",
-                  "params": Array [],
-                },
-                "name": "nested content field$nested 2",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "mediumint",
+                "displayLabel": "Nested Content",
+                "name": "root-field$middle-field-1",
+                "typename": "NestedContentFieldType[]",
               },
               "value": Object {
-                "displayValue": "",
-                "value": undefined,
+                "items": Array [
+                  PropertyRecord {
+                    "property": Object {
+                      "displayLabel": "Nested Content",
+                      "name": "root-field$middle-field-1",
+                      "typename": "NestedContentFieldType",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "nested-field-1": PropertyRecord {
+                          "description": "display value 1",
+                          "property": Object {
+                            "displayLabel": "Simple Field",
+                            "name": "root-field$middle-field-1$nested-field-1",
+                            "typename": "string",
+                          },
+                          "value": Object {
+                            "displayValue": "display value 1",
+                            "value": "value 1",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                ],
+                "itemsTypeName": "NestedContentFieldType",
+                "valueFormat": 1,
+              },
+            },
+            "middle-field-2": PropertyRecord {
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "Nested Content",
+                "name": "root-field$middle-field-2",
+                "typename": "NestedContentFieldType[]",
+              },
+              "value": Object {
+                "items": Array [
+                  PropertyRecord {
+                    "property": Object {
+                      "displayLabel": "Nested Content",
+                      "name": "root-field$middle-field-2",
+                      "typename": "NestedContentFieldType",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "nested-field-3": PropertyRecord {
+                          "description": "display value 3",
+                          "property": Object {
+                            "displayLabel": "Simple Field",
+                            "name": "root-field$middle-field-2$nested-field-3",
+                            "typename": "string",
+                          },
+                          "value": Object {
+                            "displayValue": "display value 3",
+                            "value": "value 3",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                ],
+                "itemsTypeName": "NestedContentFieldType",
+                "valueFormat": 1,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "display value",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-sibling",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value",
+          "value": "value",
+          "valueFormat": 0,
+        },
+      },
+    ],
+    "Category2": Array [
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field$middle-field-1",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "nested-field-2": PropertyRecord {
+              "description": "display value 2",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field-1$nested-field-2",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "display value 2",
+                "value": "value 2",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "property": Object {
+          "displayLabel": "Nested Content",
+          "name": "root-field$middle-field-2",
+          "typename": "NestedContentFieldType",
+        },
+        "value": Object {
+          "members": Object {
+            "nested-field-4": PropertyRecord {
+              "description": "display value 4",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field-2$nested-field-4",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "display value 4",
+                "value": "value 4",
+                "valueFormat": 0,
+              },
+            },
+            "nested-field-5": PropertyRecord {
+              "description": "display value 5",
+              "property": Object {
+                "displayLabel": "Simple Field",
+                "name": "root-field$middle-field-2$nested-field-5",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "display value 5",
+                "value": "value 5",
                 "valueFormat": 0,
               },
             },
@@ -1875,42 +1376,14 @@ Object {
 }
 `;
 
-exports[`PropertyDataProvider getData with nested categories nested content handling removes nested content record when the nested field is categorized but there's no content 1`] = `
-Object {
-  "categories": Array [],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "Canadian Dollar Auto Loan Account Assurance",
-      "value": "Canadian Dollar Auto Loan Account Assurance",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {},
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with nested categories nested content handling returns favorite nested content in a separate category when it's categorized 1`] = `
+exports[`PropertyDataProvider getData with nested categories nested content handling moves nested field into separate category and hides nested content field when there's only 1 nested field 1`] = `
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [
-        Object {
-          "childCategories": Array [],
-          "expand": false,
-          "label": "nested-1-1",
-          "name": "nested-1-1",
-        },
-      ],
-      "expand": true,
-      "label": "top-1",
-      "name": "top-1",
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category2",
     },
   ],
   "description": undefined,
@@ -1921,77 +1394,146 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "bottom-line Digitized Washington",
-      "value": "bottom-line Digitized Washington",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "nested-1-1": Array [
+    "Category2": Array [
       PropertyRecord {
-        "isReadonly": true,
+        "description": "display value 1",
         "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "payment",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "set",
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-1",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "",
-          "value": undefined,
+          "displayValue": "display value 1",
+          "value": "value 1",
           "valueFormat": 0,
         },
       },
     ],
-    "top-1": Array [
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with nested categories nested content handling moves nested field into separate category and keeps nested content field with remaining nested fields when there are more than 1 nested fields and no sibling fields 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category1",
+    },
+    Object {
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category2",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "Category1": Array [
       PropertyRecord {
-        "isReadonly": true,
+        "description": "display value 1",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-1",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 1",
+          "value": "value 1",
+          "valueFormat": 0,
+        },
+      },
+    ],
+    "Category2": Array [
+      PropertyRecord {
+        "description": "display value 2",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-2",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 2",
+          "value": "value 2",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with nested categories nested content handling moves nested field into separate category and keeps nested content field with remaining nested fields when there are more than 1 nested fields and sibling fields 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category1",
+    },
+    Object {
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "Category2",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "Category1": Array [
+      PropertyRecord {
         "property": Object {
           "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "decimal",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
         },
         "value": Object {
           "members": Object {
-            "nested 1": PropertyRecord {
-              "description": "Maine Usability",
-              "isReadonly": true,
+            "nested-field-1": PropertyRecord {
+              "description": "display value 1",
               "property": Object {
-                "displayLabel": "nested 1",
-                "name": "nested content field$nested 1",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "datetime",
+                "displayLabel": "Simple Field",
+                "name": "root-field$nested-field-1",
+                "typename": "string",
               },
               "value": Object {
-                "displayValue": "Maine Usability",
-                "value": "Ecuador",
-                "valueFormat": 0,
-              },
-            },
-            "nested 2": PropertyRecord {
-              "property": Object {
-                "displayLabel": "nested 2",
-                "editor": Object {
-                  "name": "PCI",
-                  "params": Array [],
-                },
-                "name": "nested content field$nested 2",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "bit",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
+                "displayValue": "display value 1",
+                "value": "value 1",
                 "valueFormat": 0,
               },
             },
@@ -2000,18 +1542,30 @@ Object {
         },
       },
       PropertyRecord {
-        "description": "Buckinghamshire Health",
+        "description": "display value 3",
         "property": Object {
-          "displayLabel": "primitive",
-          "name": "primitive",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "enum",
+          "displayLabel": "Simple Field",
+          "name": "sibling-root-field",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "Buckinghamshire Health",
-          "value": "Chips",
+          "displayValue": "display value 3",
+          "value": "value 3",
+          "valueFormat": 0,
+        },
+      },
+    ],
+    "Category2": Array [
+      PropertyRecord {
+        "description": "display value 2",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field-2",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 2",
+          "value": "value 2",
           "valueFormat": 0,
         },
       },
@@ -2021,21 +1575,14 @@ Object {
 }
 `;
 
-exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content in a separate category when it's categorized 1`] = `
+exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with multiple nested records as struct array 1`] = `
 Object {
   "categories": Array [
     Object {
-      "childCategories": Array [
-        Object {
-          "childCategories": Array [],
-          "expand": false,
-          "label": "nested-1-1",
-          "name": "nested-1-1",
-        },
-      ],
+      "childCategories": Array [],
       "expand": false,
-      "label": "top-1",
-      "name": "top-1",
+      "label": "Test Category",
+      "name": "test-category",
     },
   ],
   "description": undefined,
@@ -2046,75 +1593,170 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "strategize Brand Keyboard",
-      "value": "strategize Brand Keyboard",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "nested-1-1": Array [
+    "test-category": Array [
       PropertyRecord {
+        "isReadonly": true,
         "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "Buckinghamshire",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "varchar",
+          "displayLabel": "Nested Content",
+          "name": "root-field",
+          "typename": "NestedContentFieldType[]",
         },
         "value": Object {
-          "displayValue": "",
-          "value": undefined,
+          "items": Array [
+            PropertyRecord {
+              "property": Object {
+                "displayLabel": "Nested Content",
+                "name": "root-field",
+                "typename": "NestedContentFieldType",
+              },
+              "value": Object {
+                "members": Object {
+                  "nested-field": PropertyRecord {
+                    "description": "display value 1",
+                    "property": Object {
+                      "displayLabel": "Simple Field",
+                      "name": "root-field$nested-field",
+                      "typename": "string",
+                    },
+                    "value": Object {
+                      "displayValue": "display value 1",
+                      "value": "value 1",
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+            PropertyRecord {
+              "property": Object {
+                "displayLabel": "Nested Content",
+                "name": "root-field",
+                "typename": "NestedContentFieldType",
+              },
+              "value": Object {
+                "members": Object {
+                  "nested-field": PropertyRecord {
+                    "description": "display value 2",
+                    "property": Object {
+                      "displayLabel": "Simple Field",
+                      "name": "root-field$nested-field",
+                      "typename": "string",
+                    },
+                    "value": Object {
+                      "displayValue": "display value 2",
+                      "value": "value 2",
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+          ],
+          "itemsTypeName": "NestedContentFieldType",
+          "valueFormat": 1,
+        },
+      },
+    ],
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with single nested record as individual properties when are no sibling fields 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
+      PropertyRecord {
+        "description": "display value 1",
+        "property": Object {
+          "displayLabel": "Simple Field",
+          "name": "root-field$nested-field",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "display value 1",
+          "value": "value 1",
           "valueFormat": 0,
         },
       },
     ],
-    "top-1": Array [
+  },
+  "reusePropertyDataState": true,
+}
+`;
+
+exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with single nested record as struct when there're sibling fields 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "childCategories": Array [],
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+    },
+  ],
+  "description": undefined,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "test-category": Array [
       PropertyRecord {
         "property": Object {
           "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "boolean",
+          "name": "root-field",
+          "typename": "NestedContentFieldType",
         },
         "value": Object {
           "members": Object {
-            "nested 1": PropertyRecord {
-              "description": "Libyan Arab Jamahiriya",
+            "nested-field": PropertyRecord {
+              "description": "display value 1",
               "property": Object {
-                "displayLabel": "nested 1",
-                "editor": Object {
-                  "name": "Chair",
-                  "params": Array [],
-                },
-                "name": "nested content field$nested 1",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "bit",
+                "displayLabel": "Simple Field",
+                "name": "root-field$nested-field",
+                "typename": "string",
               },
               "value": Object {
-                "displayValue": "Libyan Arab Jamahiriya",
-                "value": "teal",
-                "valueFormat": 0,
-              },
-            },
-            "nested 2": PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 2",
-                "name": "nested content field$nested 2",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "mediumint",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
+                "displayValue": "display value 1",
+                "value": "value 1",
                 "valueFormat": 0,
               },
             },
@@ -2123,979 +1765,20 @@ Object {
         },
       },
       PropertyRecord {
-        "description": "JSON 1080p",
+        "description": "display value 3",
         "property": Object {
-          "displayLabel": "primitive",
-          "editor": Object {
-            "name": "Switzerland",
-            "params": Array [],
-          },
-          "name": "primitive",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "smallint",
+          "displayLabel": "Simple Field",
+          "name": "sibling-root-field",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "JSON 1080p",
-          "value": "Buckinghamshire",
+          "displayValue": "display value 3",
+          "value": "value 3",
           "valueFormat": 0,
         },
       },
     ],
   },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with multiple nested categorized records 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "childCategories": Array [],
-      "expand": true,
-      "label": "custom",
-      "name": "custom",
-    },
-    Object {
-      "childCategories": Array [],
-      "expand": false,
-      "label": "top-1",
-      "name": "top-1",
-    },
-    Object {
-      "childCategories": Array [],
-      "expand": true,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "Global navigate",
-      "value": "Global navigate",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "custom": Array [
-      PropertyRecord {
-        "description": undefined,
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "nested 1",
-          "editor": Object {
-            "name": "Secured",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 1",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "text[]",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "description": "core Functionality",
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 1",
-                "name": "nested content field$nested 1",
-                "typename": "text",
-              },
-              "value": Object {
-                "displayValue": "core Functionality",
-                "value": "Portugal",
-                "valueFormat": 0,
-              },
-            },
-            PropertyRecord {
-              "description": "functionalities",
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 1",
-                "name": "nested content field$nested 1",
-                "typename": "text",
-              },
-              "value": Object {
-                "displayValue": "functionalities",
-                "value": "Tuna",
-                "valueFormat": 0,
-              },
-            },
-          ],
-          "itemsTypeName": "text",
-          "valueFormat": 1,
-        },
-      },
-    ],
-    "nested-1-1": Array [
-      PropertyRecord {
-        "description": undefined,
-        "property": Object {
-          "displayLabel": "nested 3",
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "binary[]",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "binary",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "binary",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-          ],
-          "itemsTypeName": "binary",
-          "valueFormat": 1,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "blob",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "blob",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 2": PropertyRecord {
-                    "description": "Shoes",
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "boolean",
-                    },
-                    "value": Object {
-                      "displayValue": "Shoes",
-                      "value": "Orchestrator",
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "blob",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 2": PropertyRecord {
-                    "description": "Taiwan",
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "boolean",
-                    },
-                    "value": Object {
-                      "displayValue": "Taiwan",
-                      "value": "utilisation",
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-          ],
-          "itemsTypeName": "blob",
-          "valueFormat": 1,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with multiple nested records 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "childCategories": Array [
-        Object {
-          "childCategories": Array [],
-          "expand": false,
-          "label": "nested-1-1",
-          "name": "nested-1-1",
-        },
-      ],
-      "expand": false,
-      "label": "top-1",
-      "name": "top-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "Ball fuchsia Salad",
-      "value": "Ball fuchsia Salad",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "nested-1-1": Array [
-      PropertyRecord {
-        "description": undefined,
-        "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "Personal Loan Account",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "set[]",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "set",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "set",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-          ],
-          "itemsTypeName": "set",
-          "valueFormat": 1,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "autoExpand": true,
-        "property": Object {
-          "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "float",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": false,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "float",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 1": PropertyRecord {
-                    "description": "bypass TCP innovative",
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 1",
-                      "name": "nested content field$nested 1",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "geometry",
-                    },
-                    "value": Object {
-                      "displayValue": "bypass TCP innovative",
-                      "value": "Legacy",
-                      "valueFormat": 0,
-                    },
-                  },
-                  "nested 2": PropertyRecord {
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "editor": Object {
-                        "name": "Run",
-                        "params": Array [],
-                      },
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "datetime",
-                    },
-                    "value": Object {
-                      "displayValue": "",
-                      "value": undefined,
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": false,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "float",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 1": PropertyRecord {
-                    "description": "model Pula",
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 1",
-                      "name": "nested content field$nested 1",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "geometry",
-                    },
-                    "value": Object {
-                      "displayValue": "model Pula",
-                      "value": "Albania",
-                      "valueFormat": 0,
-                    },
-                  },
-                  "nested 2": PropertyRecord {
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "editor": Object {
-                        "name": "Run",
-                        "params": Array [],
-                      },
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "datetime",
-                    },
-                    "value": Object {
-                      "displayValue": "",
-                      "value": undefined,
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-          ],
-          "itemsTypeName": "float",
-          "valueFormat": 1,
-        },
-      },
-      PropertyRecord {
-        "description": "Facilitator TCP input",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "primitive",
-          "editor": Object {
-            "name": "AGP",
-            "params": Array [],
-          },
-          "name": "primitive",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "binary",
-        },
-        "value": Object {
-          "displayValue": "Facilitator TCP input",
-          "value": "grey",
-          "valueFormat": 0,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with multiple nested records when there's only one record in category 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "childCategories": Array [],
-      "expand": false,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
-    },
-    Object {
-      "childCategories": Array [],
-      "expand": true,
-      "label": "top-1",
-      "name": "top-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "solid state",
-      "value": "solid state",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "nested-1-1": Array [
-      PropertyRecord {
-        "description": undefined,
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "nested 3",
-          "editor": Object {
-            "name": "Rwanda Franc",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "date[]",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "date",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-            PropertyRecord {
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 3",
-                "name": "nested content field$nested 3",
-                "typename": "date",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-          ],
-          "itemsTypeName": "date",
-          "valueFormat": 1,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "autoExpand": true,
-        "property": Object {
-          "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "bigint",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": false,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "bigint",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 1": PropertyRecord {
-                    "description": "payment system withdrawal",
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 1",
-                      "editor": Object {
-                        "name": "Tuna",
-                        "params": Array [],
-                      },
-                      "name": "nested content field$nested 1",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "smallint",
-                    },
-                    "value": Object {
-                      "displayValue": "payment system withdrawal",
-                      "value": "generate",
-                      "valueFormat": 0,
-                    },
-                  },
-                  "nested 2": PropertyRecord {
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "bigint",
-                    },
-                    "value": Object {
-                      "displayValue": "",
-                      "value": undefined,
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": false,
-              "property": Object {
-                "displayLabel": "Nested Content",
-                "name": "nested content field",
-                "typename": "bigint",
-              },
-              "value": Object {
-                "members": Object {
-                  "nested 1": PropertyRecord {
-                    "description": "Virginia Interactions Fresh",
-                    "isReadonly": true,
-                    "property": Object {
-                      "displayLabel": "nested 1",
-                      "editor": Object {
-                        "name": "Tuna",
-                        "params": Array [],
-                      },
-                      "name": "nested content field$nested 1",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "smallint",
-                    },
-                    "value": Object {
-                      "displayValue": "Virginia Interactions Fresh",
-                      "value": "Re-engineered",
-                      "valueFormat": 0,
-                    },
-                  },
-                  "nested 2": PropertyRecord {
-                    "property": Object {
-                      "displayLabel": "nested 2",
-                      "name": "nested content field$nested 2",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "bigint",
-                    },
-                    "value": Object {
-                      "displayValue": "",
-                      "value": undefined,
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-          ],
-          "itemsTypeName": "bigint",
-          "valueFormat": 1,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with single nested record 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "childCategories": Array [
-        Object {
-          "childCategories": Array [],
-          "expand": false,
-          "label": "nested-1-1",
-          "name": "nested-1-1",
-        },
-      ],
-      "expand": false,
-      "label": "top-1",
-      "name": "top-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "synergistic card",
-      "value": "synergistic card",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "nested-1-1": Array [
-      PropertyRecord {
-        "property": Object {
-          "displayLabel": "nested 3",
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "set",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "description": "action-items lime",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "primitive",
-          "name": "primitive",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "real",
-        },
-        "value": Object {
-          "displayValue": "action-items lime",
-          "value": "SSL",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "autoExpand": true,
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Nested Content",
-          "name": "nested content field",
-          "typename": "mediumint",
-        },
-        "value": Object {
-          "members": Object {
-            "nested 1": PropertyRecord {
-              "description": "Bypass",
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "nested 1",
-                "name": "nested content field$nested 1",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "boolean",
-              },
-              "value": Object {
-                "displayValue": "Bypass",
-                "value": "paradigms",
-                "valueFormat": 0,
-              },
-            },
-            "nested 2": PropertyRecord {
-              "property": Object {
-                "displayLabel": "nested 2",
-                "name": "nested content field$nested 2",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "double",
-              },
-              "value": Object {
-                "displayValue": "",
-                "value": undefined,
-                "valueFormat": 0,
-              },
-            },
-          },
-          "valueFormat": 2,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with single nested record as a list of struct member records when there's only one record in category 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "childCategories": Array [],
-      "expand": false,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
-    },
-    Object {
-      "childCategories": Array [],
-      "expand": true,
-      "label": "top-1",
-      "name": "top-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "sexy",
-      "value": "sexy",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "nested-1-1": Array [
-      PropertyRecord {
-        "property": Object {
-          "displayLabel": "nested 3",
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "datetime",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "description": "bluetooth",
-        "property": Object {
-          "displayLabel": "nested 1",
-          "name": "nested content field$nested 1",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "text",
-        },
-        "value": Object {
-          "displayValue": "bluetooth",
-          "value": "invoice",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "nested 2",
-          "name": "nested content field$nested 2",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "enum",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with nested categories nested content handling returns nested content with single nested record when there's only one record in category 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "childCategories": Array [],
-      "expand": false,
-      "label": "top-1",
-      "name": "top-1",
-    },
-    Object {
-      "childCategories": Array [],
-      "expand": false,
-      "label": "nested-1-1",
-      "name": "nested-1-1",
-    },
-  ],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "Garden",
-      "value": "Garden",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {
-    "nested-1-1": Array [
-      PropertyRecord {
-        "property": Object {
-          "displayLabel": "nested 3",
-          "name": "nested content field$nested 3",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "set",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-    ],
-    "top-1": Array [
-      PropertyRecord {
-        "description": "Computers Fresh leverage",
-        "property": Object {
-          "displayLabel": "nested 1",
-          "name": "nested content field$nested 1",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "tinyint",
-        },
-        "value": Object {
-          "displayValue": "Computers Fresh leverage",
-          "value": "Vermont",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "nested 2",
-          "editor": Object {
-            "name": "International",
-            "params": Array [],
-          },
-          "name": "nested content field$nested 2",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "mediumint",
-        },
-        "value": Object {
-          "displayValue": "",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
-    ],
-  },
-  "reusePropertyDataState": true,
-}
-`;
-
-exports[`PropertyDataProvider getData with nested categories nested content handling returns nothing for nested content with no values when there's only one record in category 1`] = `
-Object {
-  "categories": Array [],
-  "description": undefined,
-  "label": PropertyRecord {
-    "property": Object {
-      "displayLabel": "Label",
-      "name": "label",
-      "typename": "string",
-    },
-    "value": Object {
-      "displayValue": "Landing Practical Concrete Car deposit",
-      "value": "Landing Practical Concrete Car deposit",
-      "valueFormat": 0,
-    },
-  },
-  "records": Object {},
   "reusePropertyDataState": true,
 }
 `;
@@ -3106,11 +1789,11 @@ Object {
     Object {
       "childCategories": Array [],
       "expand": false,
-      "label": "program tan",
-      "name": "Plastic",
+      "label": "Test Category",
+      "name": "test-category",
     },
   ],
-  "description": "global IB",
+  "description": undefined,
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -3118,30 +1801,27 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "alarm Saint Kitts and Nevis Concrete",
-      "value": "alarm Saint Kitts and Nevis Concrete",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "Plastic": Array [
+    "test-category": Array [
       PropertyRecord {
-        "description": undefined,
-        "isReadonly": true,
         "property": Object {
-          "displayLabel": "Data Developer",
-          "name": "override",
-          "typename": "frozen",
+          "displayLabel": "Simple Field",
+          "name": "SimpleField",
+          "typename": "myarray[]",
         },
         "value": Object {
           "items": Array [
             PropertyRecord {
               "description": "some display value 1",
-              "isReadonly": true,
               "property": Object {
-                "displayLabel": "Data Developer",
-                "name": "override",
-                "typename": "timestamp",
+                "displayLabel": "Simple Field",
+                "name": "SimpleField",
+                "typename": "MyType",
               },
               "value": Object {
                 "displayValue": "some display value 1",
@@ -3151,11 +1831,10 @@ Object {
             },
             PropertyRecord {
               "description": "some display value 2",
-              "isReadonly": true,
               "property": Object {
-                "displayLabel": "Data Developer",
-                "name": "override",
-                "typename": "timestamp",
+                "displayLabel": "Simple Field",
+                "name": "SimpleField",
+                "typename": "MyType",
               },
               "value": Object {
                 "displayValue": "some display value 2",
@@ -3164,7 +1843,7 @@ Object {
               },
             },
           ],
-          "itemsTypeName": "timestamp",
+          "itemsTypeName": "MyType",
           "valueFormat": 1,
         },
       },
@@ -3180,11 +1859,11 @@ Object {
     Object {
       "childCategories": Array [],
       "expand": false,
-      "label": "Identity",
-      "name": "index",
+      "label": "Test Category",
+      "name": "test-category",
     },
   ],
-  "description": "Money Market Account",
+  "description": undefined,
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -3192,31 +1871,23 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "front-end firewall Burgs",
-      "value": "front-end firewall Burgs",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "index": Array [
+    "test-category": Array [
       PropertyRecord {
-        "description": "Computer",
-        "isReadonly": true,
+        "description": "some display value",
         "property": Object {
-          "displayLabel": "Soft",
-          "editor": Object {
-            "name": "quantifying",
-            "params": Array [],
-          },
-          "name": "gold",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "smallint",
+          "displayLabel": "Simple Field",
+          "name": "SimpleField",
+          "typename": "string",
         },
         "value": Object {
-          "displayValue": "Computer",
-          "value": "Colombian Peso Unidad de Valor Real",
+          "displayValue": "some display value",
+          "value": "some value",
           "valueFormat": 0,
         },
       },
@@ -3231,12 +1902,12 @@ Object {
   "categories": Array [
     Object {
       "childCategories": Array [],
-      "expand": true,
-      "label": "Towels Gorgeous Granite Keyboard",
-      "name": "generate",
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
     },
   ],
-  "description": "B2C XML reintermediate",
+  "description": undefined,
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -3244,29 +1915,27 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Sausages",
-      "value": "Sausages",
+      "displayValue": "",
+      "value": "",
       "valueFormat": 0,
     },
   },
   "records": Object {
-    "generate": Array [
+    "test-category": Array [
       PropertyRecord {
-        "description": undefined,
         "property": Object {
-          "displayLabel": "Unbranded Metal Keyboard turquoise",
-          "name": "Inverse",
-          "typename": "soft",
+          "displayLabel": "Simple Field",
+          "name": "SimpleField",
+          "typename": "mystruct",
         },
         "value": Object {
           "members": Object {
-            "Refined": PropertyRecord {
+            "MyProperty": PropertyRecord {
               "description": "some display value",
-              "isReadonly": true,
               "property": Object {
-                "displayLabel": "4th generation Chief",
-                "name": "Refined",
-                "typename": "boolean",
+                "displayLabel": "My Property",
+                "name": "MyProperty",
+                "typename": "MyType",
               },
               "value": Object {
                 "displayValue": "some display value",
