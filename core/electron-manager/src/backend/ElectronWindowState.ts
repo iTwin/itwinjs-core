@@ -32,25 +32,25 @@ export class ElectronWindowState {
   public getPreviousSizeAndPosition = () => {
     let setting: StorageValue | undefined;
     let width = this.defaultWidth;
-    let height = this.defaultHeight;
+    const height = this.defaultHeight;
     let x: number | undefined;
     let y: number | undefined;
 
     const store = NativeAppStorage.open(this.storageName);
 
     setting = store.getData(ElectronWindowState._widthSettingName);
-    if (setting !== undefined)
-      width = setting as number;
+    if (setting !== undefined && typeof setting === "number")
+      width = setting;
     setting = store.getData(ElectronWindowState._heightSettingName);
-    if (setting !== undefined)
-      height = setting as number;
+    if (setting !== undefined && typeof setting === "number")
+      width = setting;
 
     setting = store.getData(ElectronWindowState._xSettingName);
-    if (setting !== undefined)
-      x = setting as number;
+    if (setting !== undefined && typeof setting === "number")
+      width = setting;
     setting = store.getData(ElectronWindowState._ySettingName);
-    if (setting !== undefined)
-      y = setting as number;
+    if (setting !== undefined && typeof setting === "number")
+      width = setting;
 
     const result: any = {width, height};
     if (x !== undefined && y !== undefined) {
@@ -67,8 +67,8 @@ export class ElectronWindowState {
     let maximized = this.defaultMaximized;
     const store = NativeAppStorage.open(this.storageName);
     const setting = store.getData(ElectronWindowState._maximizedSettingName);
-    if (setting !== undefined)
-      maximized = setting as boolean;
+    if (setting !== undefined && typeof setting === "boolean")
+      maximized = setting;
     store.close();
     return maximized;
   };
