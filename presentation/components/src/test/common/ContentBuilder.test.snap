@@ -2,691 +2,778 @@
 
 exports[`ContentBuilder createPropertyDescription creates description with choices 1`] = `
 Object {
-  "displayLabel": "Sleek Metal Keyboard Computers embrace",
-  "editor": Object {
-    "name": "grow",
-    "params": Array [],
-  },
+  "displayLabel": "Simple Field",
   "enum": Object {
     "choices": Array [
       Object {
-        "label": "JBOD",
-        "value": 35723,
+        "label": "Enum 1",
+        "value": 1,
       },
       Object {
-        "label": "withdrawal",
-        "value": 39336,
+        "label": "Enum 2",
+        "value": 2,
       },
     ],
     "isStrict": true,
   },
-  "name": "cross-platform",
-  "renderer": Object {
-    "name": "custom_renderer",
-  },
+  "name": "SimpleField",
   "typename": "enum",
 }
 `;
 
 exports[`ContentBuilder createPropertyDescription creates description with editor 1`] = `
 Object {
-  "displayLabel": "web services",
+  "displayLabel": "Simple Field",
   "editor": Object {
-    "name": "Salad",
+    "name": "EditorName",
     "params": Array [],
   },
-  "name": "Gorgeous",
+  "name": "SimpleField",
+  "typename": "string",
+}
+`;
+
+exports[`ContentBuilder createPropertyDescription creates description with renderer 1`] = `
+Object {
+  "displayLabel": "Simple Field",
+  "name": "SimpleField",
   "renderer": Object {
-    "name": "custom_renderer",
+    "name": "RendererName",
   },
-  "typename": "double",
+  "typename": "string",
 }
 `;
 
 exports[`ContentBuilder createPropertyDescription creates simple description 1`] = `
 Object {
-  "displayLabel": "redefine Principal Licensed Plastic Shoes",
-  "name": "European Unit of Account 17(E.U.A.-17)",
-  "renderer": Object {
-    "name": "custom_renderer",
-  },
-  "typename": "real",
+  "displayLabel": "Simple Field",
+  "name": "SimpleField",
+  "typename": "string",
 }
 `;
 
 exports[`ContentBuilder createPropertyRecord with arrays creates record with array value 1`] = `
-PropertyRecord {
-  "description": undefined,
-  "isReadonly": true,
-  "property": Object {
-    "displayLabel": "platforms deposit",
-    "name": "CFP Franc",
-    "typename": "back-end",
-  },
-  "value": Object {
-    "items": Array [
-      PropertyRecord {
-        "description": "some display value 1",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "platforms deposit",
-          "name": "CFP Franc",
-          "typename": "real",
+Object {
+  "field": "SimpleField",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "SimpleField",
+      "typename": "myarray[]",
+    },
+    "value": Object {
+      "items": Array [
+        PropertyRecord {
+          "description": "some display value 1",
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "name": "SimpleField",
+            "typename": "MyType",
+          },
+          "value": Object {
+            "displayValue": "some display value 1",
+            "value": "some value 1",
+            "valueFormat": 0,
+          },
         },
-        "value": Object {
-          "displayValue": "some display value 1",
-          "value": "some value 1",
-          "valueFormat": 0,
+        PropertyRecord {
+          "description": "some display value 2",
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "name": "SimpleField",
+            "typename": "MyType",
+          },
+          "value": Object {
+            "displayValue": "some display value 2",
+            "value": "some value 2",
+            "valueFormat": 0,
+          },
         },
-      },
-      PropertyRecord {
-        "description": "some display value 2",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "platforms deposit",
-          "name": "CFP Franc",
-          "typename": "real",
-        },
-        "value": Object {
-          "displayValue": "some display value 2",
-          "value": "some value 2",
-          "valueFormat": 0,
-        },
-      },
-    ],
-    "itemsTypeName": "real",
-    "valueFormat": 1,
+      ],
+      "itemsTypeName": "MyType",
+      "valueFormat": 1,
+    },
   },
 }
 `;
 
 exports[`ContentBuilder createPropertyRecord with arrays creates record with merged array value 1`] = `
-PropertyRecord {
-  "description": undefined,
-  "isMerged": true,
-  "isReadonly": true,
-  "property": Object {
-    "displayLabel": "invoice Home generate",
-    "name": "payment",
-    "typename": "deposit",
+Object {
+  "field": "SimpleField",
+  "record": PropertyRecord {
+    "isMerged": true,
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "SimpleField",
+      "typename": "myarray[]",
+    },
+    "value": Object {
+      "displayValue": "merged",
+      "value": undefined,
+      "valueFormat": 0,
+    },
   },
-  "value": Object {
-    "displayValue": "merged",
-    "value": undefined,
-    "valueFormat": 0,
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord with arrays creates record with nested array value 1`] = `
+Object {
+  "field": "nested-array-field",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "root-field$nested-array-field",
+      "typename": "myarray[][]",
+    },
+    "value": Object {
+      "items": Array [
+        PropertyRecord {
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "name": "root-field$nested-array-field",
+            "typename": "MyArray[]",
+          },
+          "value": Object {
+            "items": Array [
+              PropertyRecord {
+                "description": "some display value 1",
+                "property": Object {
+                  "displayLabel": "Simple Field",
+                  "name": "root-field$nested-array-field",
+                  "typename": "MyType",
+                },
+                "value": Object {
+                  "displayValue": "some display value 1",
+                  "value": "some value 1",
+                  "valueFormat": 0,
+                },
+              },
+              PropertyRecord {
+                "description": "some display value 2",
+                "property": Object {
+                  "displayLabel": "Simple Field",
+                  "name": "root-field$nested-array-field",
+                  "typename": "MyType",
+                },
+                "value": Object {
+                  "displayValue": "some display value 2",
+                  "value": "some value 2",
+                  "valueFormat": 0,
+                },
+              },
+            ],
+            "itemsTypeName": "MyType",
+            "valueFormat": 1,
+          },
+        },
+        PropertyRecord {
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "name": "root-field$nested-array-field",
+            "typename": "MyArray[]",
+          },
+          "value": Object {
+            "items": Array [
+              PropertyRecord {
+                "description": "some display value 3",
+                "property": Object {
+                  "displayLabel": "Simple Field",
+                  "name": "root-field$nested-array-field",
+                  "typename": "MyType",
+                },
+                "value": Object {
+                  "displayValue": "some display value 3",
+                  "value": "some value 3",
+                  "valueFormat": 0,
+                },
+              },
+              PropertyRecord {
+                "description": "some display value 4",
+                "property": Object {
+                  "displayLabel": "Simple Field",
+                  "name": "root-field$nested-array-field",
+                  "typename": "MyType",
+                },
+                "value": Object {
+                  "displayValue": "some display value 4",
+                  "value": "some value 4",
+                  "valueFormat": 0,
+                },
+              },
+            ],
+            "itemsTypeName": "MyType",
+            "valueFormat": 1,
+          },
+        },
+      ],
+      "itemsTypeName": "MyArray[]",
+      "valueFormat": 1,
+    },
   },
 }
 `;
 
 exports[`ContentBuilder createPropertyRecord with arrays creates record with undefined array value 1`] = `
-PropertyRecord {
-  "property": Object {
-    "displayLabel": "strategic Lempira",
-    "name": "Puerto Rico",
-    "typename": "grey",
-  },
-  "value": Object {
-    "displayValue": "",
-    "value": undefined,
-    "valueFormat": 0,
+Object {
+  "field": "SimpleField",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "SimpleField",
+      "typename": "myarray[]",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": undefined,
+      "valueFormat": 0,
+    },
   },
 }
 `;
 
-exports[`ContentBuilder createPropertyRecord with nested content creates record with merged nested content value 1`] = `
-PropertyRecord {
-  "autoExpand": true,
-  "property": Object {
-    "displayLabel": "connect",
-    "name": "Savings Account",
-    "typename": "int",
-  },
-  "value": Object {
-    "members": Object {
-      "West Virginia": PropertyRecord {
-        "description": "merged",
-        "isMerged": true,
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "robust Electronics",
-          "name": "Savings Account$West Virginia",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "serial",
-        },
-        "value": Object {
-          "displayValue": "merged",
-          "value": undefined,
-          "valueFormat": 0,
-        },
-      },
+exports[`ContentBuilder createPropertyRecord with nested content creates record with for nested content value without child records 1`] = `
+Object {
+  "field": "root-field",
+  "record": PropertyRecord {
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Nested Content",
+      "name": "root-field",
+      "typename": "NestedContentFieldType[]",
     },
-    "valueFormat": 2,
+    "value": Object {
+      "items": Array [
+        PropertyRecord {
+          "property": Object {
+            "displayLabel": "Nested Content",
+            "name": "root-field",
+            "typename": "NestedContentFieldType",
+          },
+          "value": Object {
+            "members": Object {
+              "nested-field": PropertyRecord {
+                "isReadonly": true,
+                "property": Object {
+                  "displayLabel": "Nested Content",
+                  "name": "root-field$nested-field",
+                  "typename": "NestedContentFieldType[]",
+                },
+                "value": Object {
+                  "items": Array [
+                    PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Nested Content",
+                        "name": "root-field$nested-field",
+                        "typename": "NestedContentFieldType",
+                      },
+                      "value": Object {
+                        "members": Object {},
+                        "valueFormat": 2,
+                      },
+                    },
+                  ],
+                  "itemsTypeName": "NestedContentFieldType",
+                  "valueFormat": 1,
+                },
+              },
+            },
+            "valueFormat": 2,
+          },
+        },
+      ],
+      "itemsTypeName": "NestedContentFieldType",
+      "valueFormat": 1,
+    },
   },
 }
 `;
 
 exports[`ContentBuilder createPropertyRecord with nested content creates record with merged nesting content value 1`] = `
-PropertyRecord {
-  "autoExpand": true,
-  "isMerged": true,
-  "isReadonly": true,
-  "property": Object {
-    "displayLabel": "withdrawal",
-    "name": "redundant",
-    "typename": "binary",
-  },
-  "value": Object {
-    "displayValue": "merged",
-    "value": undefined,
-    "valueFormat": 0,
+Object {
+  "field": "root-field",
+  "record": PropertyRecord {
+    "isMerged": true,
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Nested Content",
+      "name": "root-field",
+      "typename": "NestedContentFieldType",
+    },
+    "value": Object {
+      "displayValue": "merged",
+      "value": undefined,
+      "valueFormat": 0,
+    },
   },
 }
 `;
 
 exports[`ContentBuilder createPropertyRecord with nested content creates record with multiple nested content values 1`] = `
-PropertyRecord {
-  "autoExpand": true,
-  "property": Object {
-    "displayLabel": "Cambridgeshire",
-    "name": "mindshare",
-    "typename": "bit",
-  },
-  "value": Object {
-    "items": Array [
-      PropertyRecord {
-        "isMerged": false,
-        "isReadonly": false,
-        "property": Object {
-          "displayLabel": "Cambridgeshire",
-          "name": "mindshare",
-          "typename": "bit",
-        },
-        "value": Object {
-          "members": Object {
-            "Armenian Dram": PropertyRecord {
-              "description": "some display value 1",
-              "property": Object {
-                "displayLabel": "Bedfordshire",
-                "editor": Object {
-                  "name": "eyeballs",
-                  "params": Array [],
-                },
-                "name": "mindshare$Armenian Dram",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "point",
-              },
-              "value": Object {
-                "displayValue": "some display value 1",
-                "value": "some value 1",
-                "valueFormat": 0,
-              },
-            },
-          },
-          "valueFormat": 2,
-        },
-      },
-      PropertyRecord {
-        "isMerged": false,
-        "isReadonly": false,
-        "property": Object {
-          "displayLabel": "Cambridgeshire",
-          "name": "mindshare",
-          "typename": "bit",
-        },
-        "value": Object {
-          "members": Object {
-            "Armenian Dram": PropertyRecord {
-              "description": "some display value 2",
-              "property": Object {
-                "displayLabel": "Bedfordshire",
-                "editor": Object {
-                  "name": "eyeballs",
-                  "params": Array [],
-                },
-                "name": "mindshare$Armenian Dram",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "point",
-              },
-              "value": Object {
-                "displayValue": "some display value 2",
-                "value": "some value 2",
-                "valueFormat": 0,
-              },
-            },
-          },
-          "valueFormat": 2,
-        },
-      },
-    ],
-    "itemsTypeName": "bit",
-    "valueFormat": 1,
-  },
-}
-`;
-
-exports[`ContentBuilder createPropertyRecord with nested content creates record with multiple nested content values which have links in them 1`] = `
-PropertyRecord {
-  "isReadonly": true,
-  "property": Object {
-    "displayLabel": "Awesome Granite Chips Checking Account Cambridgeshire",
-    "name": "Florida",
-    "typename": "smallint",
-  },
-  "value": Object {
-    "items": Array [
-      PropertyRecord {
-        "isMerged": false,
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Awesome Granite Chips Checking Account Cambridgeshire",
-          "name": "Florida",
-          "typename": "smallint",
-        },
-        "value": Object {
-          "members": Object {
-            "Movies": PropertyRecord {
-              "description": "some display value 1 with link www.testLink.com",
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "SDD",
-                "name": "Florida$Movies",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "float",
-              },
-              "value": Object {
-                "displayValue": "some display value 1 with link www.testLink.com",
-                "value": "some value 1",
-                "valueFormat": 0,
-              },
-            },
-          },
-          "valueFormat": 2,
-        },
-      },
-      PropertyRecord {
-        "isMerged": false,
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Awesome Granite Chips Checking Account Cambridgeshire",
-          "name": "Florida",
-          "typename": "smallint",
-        },
-        "value": Object {
-          "members": Object {
-            "Movies": PropertyRecord {
-              "description": "some display value 2 with link http://www.testLinkTwo.com",
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "SDD",
-                "name": "Florida$Movies",
-                "renderer": Object {
-                  "name": "custom_renderer",
-                },
-                "typename": "float",
-              },
-              "value": Object {
-                "displayValue": "some display value 2 with link http://www.testLinkTwo.com",
-                "value": "some value 2",
-                "valueFormat": 0,
-              },
-            },
-          },
-          "valueFormat": 2,
-        },
-      },
-    ],
-    "itemsTypeName": "smallint",
-    "valueFormat": 1,
-  },
-}
-`;
-
-exports[`ContentBuilder createPropertyRecord with nested content creates record with only properties in exclusive include path 1`] = `
-PropertyRecord {
-  "property": Object {
-    "displayLabel": "Arizona Legacy",
-    "name": "Kip",
-    "typename": "mediumint",
-  },
-  "value": Object {
-    "members": Object {
-      "XSS": PropertyRecord {
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Investor",
-          "name": "Kip$XSS",
-          "typename": "bigint",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "Investor",
-                "name": "Kip$XSS",
-                "typename": "bigint",
-              },
-              "value": Object {
-                "members": Object {
-                  "Ohio": PropertyRecord {
-                    "description": "some display value 1.2",
-                    "property": Object {
-                      "displayLabel": "indigo",
-                      "name": "Kip$XSS$Ohio",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "int",
-                    },
-                    "value": Object {
-                      "displayValue": "some display value 1.2",
-                      "value": "some value 1.2",
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": true,
-              "property": Object {
-                "displayLabel": "Investor",
-                "name": "Kip$XSS",
-                "typename": "bigint",
-              },
-              "value": Object {
-                "members": Object {
-                  "Ohio": PropertyRecord {
-                    "description": "some display value 2.2",
-                    "property": Object {
-                      "displayLabel": "indigo",
-                      "name": "Kip$XSS$Ohio",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "int",
-                    },
-                    "value": Object {
-                      "displayValue": "some display value 2.2",
-                      "value": "some value 2.2",
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-          ],
-          "itemsTypeName": "bigint",
-          "valueFormat": 1,
-        },
-      },
+Object {
+  "field": "root-field",
+  "record": PropertyRecord {
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Nested Content",
+      "name": "root-field",
+      "typename": "NestedContentFieldType[]",
     },
-    "valueFormat": 2,
+    "value": Object {
+      "items": Array [
+        PropertyRecord {
+          "property": Object {
+            "displayLabel": "Nested Content",
+            "name": "root-field",
+            "typename": "NestedContentFieldType",
+          },
+          "value": Object {
+            "members": Object {
+              "nested-field": PropertyRecord {
+                "description": "some display value 1",
+                "property": Object {
+                  "displayLabel": "Simple Field",
+                  "name": "root-field$nested-field",
+                  "typename": "string",
+                },
+                "value": Object {
+                  "displayValue": "some display value 1",
+                  "value": "some value 1",
+                  "valueFormat": 0,
+                },
+              },
+            },
+            "valueFormat": 2,
+          },
+        },
+        PropertyRecord {
+          "property": Object {
+            "displayLabel": "Nested Content",
+            "name": "root-field",
+            "typename": "NestedContentFieldType",
+          },
+          "value": Object {
+            "members": Object {
+              "nested-field": PropertyRecord {
+                "description": "some display value 2",
+                "property": Object {
+                  "displayLabel": "Simple Field",
+                  "name": "root-field$nested-field",
+                  "typename": "string",
+                },
+                "value": Object {
+                  "displayValue": "some display value 2",
+                  "value": "some value 2",
+                  "valueFormat": 0,
+                },
+              },
+            },
+            "valueFormat": 2,
+          },
+        },
+      ],
+      "itemsTypeName": "NestedContentFieldType",
+      "valueFormat": 1,
+    },
   },
 }
 `;
 
-exports[`ContentBuilder createPropertyRecord with nested content creates record with single nested content value 1`] = `
-PropertyRecord {
-  "extendedData": Object {
-    "test": "custom value",
-  },
-  "property": Object {
-    "displayLabel": "architectures exploit Metal",
-    "name": "Riel",
-    "typename": "blob",
-  },
-  "value": Object {
-    "members": Object {
-      "Bacon": PropertyRecord {
-        "description": "some display value",
-        "property": Object {
-          "displayLabel": "Coordinator",
-          "editor": Object {
-            "name": "Salad",
-            "params": Array [],
-          },
-          "name": "Riel$Bacon",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "text",
-        },
-        "value": Object {
-          "displayValue": "some display value",
-          "value": "some value",
-          "valueFormat": 0,
-        },
-      },
+exports[`ContentBuilder createPropertyRecord with nested content creates record with single deeply nested content value 1`] = `
+Object {
+  "field": "root-field",
+  "record": PropertyRecord {
+    "autoExpand": true,
+    "extendedData": Object {
+      "test": "extended-data",
     },
-    "valueFormat": 2,
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Nested Content",
+      "name": "root-field",
+      "typename": "NestedContentFieldType[]",
+    },
+    "value": Object {
+      "items": Array [
+        PropertyRecord {
+          "autoExpand": true,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Nested Content",
+            "name": "root-field",
+            "typename": "NestedContentFieldType",
+          },
+          "value": Object {
+            "members": Object {
+              "nested-field": PropertyRecord {
+                "isReadonly": true,
+                "property": Object {
+                  "displayLabel": "Nested Content",
+                  "name": "root-field$nested-field",
+                  "typename": "NestedContentFieldType[]",
+                },
+                "value": Object {
+                  "items": Array [
+                    PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Nested Content",
+                        "name": "root-field$nested-field",
+                        "typename": "NestedContentFieldType",
+                      },
+                      "value": Object {
+                        "members": Object {
+                          "deeply-nested-field": PropertyRecord {
+                            "description": "some display value",
+                            "property": Object {
+                              "displayLabel": "Simple Field",
+                              "name": "root-field$nested-field$deeply-nested-field",
+                              "typename": "string",
+                            },
+                            "value": Object {
+                              "displayValue": "some display value",
+                              "value": "some value",
+                              "valueFormat": 0,
+                            },
+                          },
+                        },
+                        "valueFormat": 2,
+                      },
+                    },
+                  ],
+                  "itemsTypeName": "NestedContentFieldType",
+                  "valueFormat": 1,
+                },
+              },
+            },
+            "valueFormat": 2,
+          },
+        },
+      ],
+      "itemsTypeName": "NestedContentFieldType",
+      "valueFormat": 1,
+    },
   },
 }
 `;
 
-exports[`ContentBuilder createPropertyRecord with nested content creates record without properties in hidden fields path 1`] = `
-PropertyRecord {
-  "isReadonly": true,
-  "property": Object {
-    "displayLabel": "Licensed Granite Ball Qatar",
-    "name": "bluetooth",
-    "typename": "real",
-  },
-  "value": Object {
-    "members": Object {
-      "Fantastic Steel Hat": PropertyRecord {
-        "property": Object {
-          "displayLabel": "systems",
-          "name": "bluetooth$Fantastic Steel Hat",
-          "typename": "double",
-        },
-        "value": Object {
-          "items": Array [
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": false,
-              "property": Object {
-                "displayLabel": "systems",
-                "name": "bluetooth$Fantastic Steel Hat",
-                "typename": "double",
-              },
-              "value": Object {
-                "members": Object {
-                  "Home Loan Account": PropertyRecord {
-                    "description": "some display value 1.1",
-                    "property": Object {
-                      "displayLabel": "Bacon solution value-added",
-                      "editor": Object {
-                        "name": "virtual",
-                        "params": Array [],
-                      },
-                      "name": "bluetooth$Fantastic Steel Hat$Home Loan Account",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "datetime",
-                    },
-                    "value": Object {
-                      "displayValue": "some display value 1.1",
-                      "value": "some value 1.1",
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-            PropertyRecord {
-              "isMerged": false,
-              "isReadonly": false,
-              "property": Object {
-                "displayLabel": "systems",
-                "name": "bluetooth$Fantastic Steel Hat",
-                "typename": "double",
-              },
-              "value": Object {
-                "members": Object {
-                  "Home Loan Account": PropertyRecord {
-                    "description": "some display value 2.1",
-                    "property": Object {
-                      "displayLabel": "Bacon solution value-added",
-                      "editor": Object {
-                        "name": "virtual",
-                        "params": Array [],
-                      },
-                      "name": "bluetooth$Fantastic Steel Hat$Home Loan Account",
-                      "renderer": Object {
-                        "name": "custom_renderer",
-                      },
-                      "typename": "datetime",
-                    },
-                    "value": Object {
-                      "displayValue": "some display value 2.1",
-                      "value": "some value 2.1",
-                      "valueFormat": 0,
-                    },
-                  },
-                },
-                "valueFormat": 2,
-              },
-            },
-          ],
-          "itemsTypeName": "double",
-          "valueFormat": 1,
-        },
-      },
+exports[`ContentBuilder createPropertyRecord with primitives creates record with deeply nested primitive value 1`] = `
+Object {
+  "field": "deeply-nested-field",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "root-field$nested-field$deeply-nested-field",
+      "typename": "string[]",
     },
-    "valueFormat": 2,
+    "value": Object {
+      "items": Array [
+        PropertyRecord {
+          "description": "some display value 1",
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "name": "root-field$nested-field$deeply-nested-field",
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "some display value 1",
+            "value": "some value 1",
+            "valueFormat": 0,
+          },
+        },
+        PropertyRecord {
+          "description": "some display value 2",
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "name": "root-field$nested-field$deeply-nested-field",
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "some display value 2",
+            "value": "some value 2",
+            "valueFormat": 0,
+          },
+        },
+      ],
+      "itemsTypeName": "string",
+      "valueFormat": 1,
+    },
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord with primitives creates record with deeply nested primitive value when nested value is not set 1`] = `
+Object {
+  "field": "deeply-nested-field",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "root-field$nested-field$deeply-nested-field",
+      "typename": "string[]",
+    },
+    "value": Object {
+      "items": Array [],
+      "itemsTypeName": "string",
+      "valueFormat": 1,
+    },
   },
 }
 `;
 
 exports[`ContentBuilder createPropertyRecord with primitives creates record with merged primitive value 1`] = `
-PropertyRecord {
-  "description": "merged",
-  "isMerged": true,
-  "isReadonly": true,
-  "property": Object {
-    "displayLabel": "Savings Account",
-    "name": "Representative",
-    "typename": "blob",
+Object {
+  "field": "SimpleField",
+  "record": PropertyRecord {
+    "description": "merged",
+    "isMerged": true,
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "SimpleField",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "merged",
+      "value": undefined,
+      "valueFormat": 0,
+    },
   },
-  "value": Object {
-    "displayValue": "merged",
-    "value": undefined,
-    "valueFormat": 0,
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord with primitives creates record with nested primitive value 1`] = `
+Object {
+  "field": "SimpleField",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "root-field$SimpleField",
+      "typename": "string[]",
+    },
+    "value": Object {
+      "items": Array [
+        PropertyRecord {
+          "description": "some display value 1",
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "name": "root-field$SimpleField",
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "some display value 1",
+            "value": "some value 1",
+            "valueFormat": 0,
+          },
+        },
+        PropertyRecord {
+          "description": "some display value 2",
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "name": "root-field$SimpleField",
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "some display value 2",
+            "value": "some value 2",
+            "valueFormat": 0,
+          },
+        },
+      ],
+      "itemsTypeName": "string",
+      "valueFormat": 1,
+    },
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord with primitives creates record with nested primitive value when nested content value is not set 1`] = `
+Object {
+  "field": "nested-field",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "root-field$nested-field",
+      "typename": "string[]",
+    },
+    "value": Object {
+      "items": Array [],
+      "itemsTypeName": "string",
+      "valueFormat": 1,
+    },
   },
 }
 `;
 
 exports[`ContentBuilder createPropertyRecord with primitives creates record with primitive value 1`] = `
-PropertyRecord {
-  "description": "some display value",
-  "extendedData": Object {
-    "test": "custom value",
-  },
-  "property": Object {
-    "displayLabel": "repurpose Toys circuit",
-    "name": "Direct",
-    "typename": "point",
-  },
-  "value": Object {
-    "displayValue": "some display value",
-    "value": "some value",
-    "valueFormat": 0,
+Object {
+  "field": "SimpleField",
+  "record": PropertyRecord {
+    "description": "some display value",
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "SimpleField",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "some display value",
+      "value": "some value",
+      "valueFormat": 0,
+    },
   },
 }
 `;
 
 exports[`ContentBuilder createPropertyRecord with primitives creates record with undefined primitive value 1`] = `
-PropertyRecord {
-  "isReadonly": true,
-  "property": Object {
-    "displayLabel": "Bedfordshire",
-    "name": "haptic",
-    "typename": "enum",
-  },
-  "value": Object {
-    "displayValue": "",
-    "value": undefined,
-    "valueFormat": 0,
+Object {
+  "field": "SimpleField",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "SimpleField",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": undefined,
+      "valueFormat": 0,
+    },
   },
 }
 `;
 
 exports[`ContentBuilder createPropertyRecord with structs creates record with merged struct value 1`] = `
-PropertyRecord {
-  "description": undefined,
-  "isMerged": true,
-  "isReadonly": true,
-  "property": Object {
-    "displayLabel": "infrastructures Hong Kong Dollar Integration",
-    "name": "Down-sized",
-    "typename": "dong",
+Object {
+  "field": "SimpleField",
+  "record": PropertyRecord {
+    "isMerged": true,
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "SimpleField",
+      "typename": "mystruct[]",
+    },
+    "value": Object {
+      "displayValue": "merged",
+      "value": undefined,
+      "valueFormat": 0,
+    },
   },
-  "value": Object {
-    "displayValue": "merged",
-    "value": undefined,
-    "valueFormat": 0,
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord with structs creates record with nested struct value 1`] = `
+Object {
+  "field": "nested-struct-field",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "root-field$nested-struct-field",
+      "typename": "mystruct[][]",
+    },
+    "value": Object {
+      "items": Array [
+        PropertyRecord {
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "name": "root-field$nested-struct-field",
+            "typename": "MyStruct[]",
+          },
+          "value": Object {
+            "members": Object {
+              "MyProperty": PropertyRecord {
+                "description": "some display value 1",
+                "property": Object {
+                  "displayLabel": "My Property",
+                  "name": "MyProperty",
+                  "typename": "MyType",
+                },
+                "value": Object {
+                  "displayValue": "some display value 1",
+                  "value": "some value 1",
+                  "valueFormat": 0,
+                },
+              },
+            },
+            "valueFormat": 2,
+          },
+        },
+        PropertyRecord {
+          "property": Object {
+            "displayLabel": "Simple Field",
+            "name": "root-field$nested-struct-field",
+            "typename": "MyStruct[]",
+          },
+          "value": Object {
+            "members": Object {
+              "MyProperty": PropertyRecord {
+                "description": "some display value 2",
+                "property": Object {
+                  "displayLabel": "My Property",
+                  "name": "MyProperty",
+                  "typename": "MyType",
+                },
+                "value": Object {
+                  "displayValue": "some display value 2",
+                  "value": "some value 2",
+                  "valueFormat": 0,
+                },
+              },
+            },
+            "valueFormat": 2,
+          },
+        },
+      ],
+      "itemsTypeName": "MyStruct[]",
+      "valueFormat": 1,
+    },
   },
 }
 `;
 
 exports[`ContentBuilder createPropertyRecord with structs creates record with struct value 1`] = `
-PropertyRecord {
-  "description": undefined,
-  "isReadonly": true,
-  "property": Object {
-    "displayLabel": "Lane Nakfa",
-    "name": "Orchestrator",
-    "typename": "deploy",
-  },
-  "value": Object {
-    "members": Object {
-      "Concrete": PropertyRecord {
-        "description": "some display value",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Berkshire upward-trending",
-          "name": "Concrete",
-          "typename": "decimal",
-        },
-        "value": Object {
-          "displayValue": "some display value",
-          "value": "some value",
-          "valueFormat": 0,
+Object {
+  "field": "SimpleField",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "SimpleField",
+      "typename": "mystruct[]",
+    },
+    "value": Object {
+      "members": Object {
+        "MyProperty": PropertyRecord {
+          "description": "some display value",
+          "property": Object {
+            "displayLabel": "My Property",
+            "name": "MyProperty",
+            "typename": "MyType",
+          },
+          "value": Object {
+            "displayValue": "some display value",
+            "value": "some value",
+            "valueFormat": 0,
+          },
         },
       },
+      "valueFormat": 2,
     },
-    "valueFormat": 2,
   },
 }
 `;
 
 exports[`ContentBuilder createPropertyRecord with structs creates record with undefined struct value 1`] = `
-PropertyRecord {
-  "isReadonly": true,
-  "property": Object {
-    "displayLabel": "Credit Card Account",
-    "name": "Savings Account",
-    "typename": "lari",
-  },
-  "value": Object {
-    "displayValue": "",
-    "value": undefined,
-    "valueFormat": 0,
+Object {
+  "field": "SimpleField",
+  "record": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Simple Field",
+      "name": "SimpleField",
+      "typename": "mystruct[]",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": undefined,
+      "valueFormat": 0,
+    },
   },
 }
 `;
