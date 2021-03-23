@@ -176,6 +176,7 @@ import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StandaloneOpenOptions } from '@bentley/imodeljs-common';
 import { StandardViewIndex } from '@bentley/geometry-core';
 import { StatusCodeWithMessage } from '@bentley/bentleyjs-core';
+import { StorageValue } from '@bentley/imodeljs-common';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
@@ -3349,6 +3350,32 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     abstract signOut(): Promise<void>;
 }
+
+// @internal
+export class NativeAppStorage {
+    // (undocumented)
+    close(deleteFile?: boolean): void;
+    // (undocumented)
+    static closeAll(): void;
+    // (undocumented)
+    static find(name: string): NativeAppStorage | undefined;
+    // (undocumented)
+    getData(key: string): StorageValue | undefined;
+    // (undocumented)
+    getKeys(): string[];
+    // (undocumented)
+    static getStorageNames(): string[];
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    static open(name: string): NativeAppStorage;
+    // (undocumented)
+    removeAll(): void;
+    // (undocumented)
+    removeData(key: string): void;
+    // (undocumented)
+    setData(key: string, value: StorageValue): void;
+    }
 
 // @beta
 export class NativeHost {

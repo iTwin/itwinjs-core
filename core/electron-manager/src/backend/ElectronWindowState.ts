@@ -19,9 +19,16 @@ export class ElectronWindowState {
   private static _heightSettingName = "electron-window-height";
   private static _maximizedSettingName = "electron-window-maximized";
 
+  /** Constructor for ElectronWindowState.
+   * @param storageName       Name used for NativeAppStorage when saving size, position and maximized state
+   * @param defaultWidth      Default width of window
+   * @param defaultHeight     Default height of window
+   * @param defaultMaximized  Default maximized state of window
+   */
   constructor(public storageName: string, public defaultWidth: number, public defaultHeight: number, public defaultMaximized: boolean = false) {
   }
 
+  /** Gets the saved window size and position */
   public getPreviousSizeAndPosition = () => {
     let setting: StorageValue | undefined;
     let width = this.defaultWidth;
@@ -55,6 +62,7 @@ export class ElectronWindowState {
     return result;
   };
 
+  /** Gets the saved window maximized state */
   public getPreviousMaximizedState = (): boolean => {
     let maximized = this.defaultMaximized;
     const store = NativeAppStorage.open(this.storageName);
@@ -85,6 +93,7 @@ export class ElectronWindowState {
     store.close();
   };
 
+  /** Monitors state changes and saves window size, position and maximized state */
   public monitorWindowStateChanges = (mainWindow: BrowserWindow) => {
     mainWindow.on("resized", () => {
       const resolution = mainWindow.getSize();

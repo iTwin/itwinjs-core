@@ -45,7 +45,7 @@ export async function initializeElectron() {
   });
 
   // Restore previous window size, position and maximized state
-  mainWindowState = ElectronHost.initializeMainWindowState(storageName, defaultWidth, defaultHeight, false);
+  mainWindowState = new ElectronWindowState(storageName, defaultWidth, defaultHeight, false);
   const sizeAndPosition = mainWindowState.getPreviousSizeAndPosition();
   const maximizeWindow = maximizeWindowConfig || mainWindowState.getPreviousMaximizedState();
 
@@ -60,6 +60,6 @@ export async function initializeElectron() {
   if (autoOpenDevTools)
     ElectronHost.mainWindow.webContents.toggleDevTools();
 
-  // Monitor and save window size, position and maximized state changes
+  // Monitor window state changes and save window size, position and maximized
   mainWindowState.monitorWindowStateChanges(ElectronHost.mainWindow);
 }

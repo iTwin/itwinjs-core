@@ -62,7 +62,7 @@ const dtaElectronMain = async () => {
   const maximizeWindowConfig = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
   // Restore previous window size, position and maximized state
-  mainWindowState = ElectronHost.initializeMainWindowState(storageName, defaultWidth, defaultHeight, false);
+  mainWindowState = new ElectronWindowState(storageName, defaultWidth, defaultHeight, false);
   const sizeAndPosition = getWindowSize();
   const maximizeWindow = maximizeWindowConfig || mainWindowState.getPreviousMaximizedState();
 
@@ -78,7 +78,7 @@ const dtaElectronMain = async () => {
   if (autoOpenDevTools)
     ElectronHost.mainWindow.webContents.toggleDevTools();
 
-  // Monitor and save window size, position and maximized state changes
+  // Monitor window state changes and save window size, position and maximized
   mainWindowState.monitorWindowStateChanges(ElectronHost.mainWindow);
 
   // Handle custom keyboard shortcuts
