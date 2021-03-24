@@ -12,12 +12,12 @@ import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelHost, IpcHandler, IpcHost, NativeAppStorage, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
+import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
-// cSpell:ignore signin devserver webcontents copyfile
+// cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
 class ElectronIpc implements IpcSocketBackend {
   public addListener(channel: string, listener: IpcListener): RemoveFunction {
