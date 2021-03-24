@@ -73,12 +73,16 @@ class ChangedEntitiesProc implements TxnChangedEntities {
   }
 
   public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
+    if (mgr.isDisposed) {
+      // The iModel is being closed. Do not prepare new sqlite statements.
+      return;
+    }
+
     this.processChanges(iModel, mgr.onElementsChanged, "notifyElementsChanged");
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
   private static processChanges(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
-
     try {
       const maxSize = this.maxPerEvent;
       const changes = new ChangedEntitiesProc();
@@ -106,7 +110,7 @@ class ChangedEntitiesProc implements TxnChangedEntities {
         }
       });
 
-    changes.sendEvent(iModel, changedEvent, evtName);
+      changes.sendEvent(iModel, changedEvent, evtName);
     } catch (_) {
       // Presumably, the temp txn tables don't exist, because the native TxnManager is not tracking changes.
       // This occurs when the application is using a "pull-only" briefcase - they open the briefcase as read-write temporarily,
@@ -122,7 +126,19 @@ class ChangedEntitiesProc implements TxnChangedEntities {
  */
 export class TxnManager {
   /** @internal */
-  constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
+  private _isDisposed = false;
+
+  /** @internal */
+  public get isDisposed(): boolean {
+    return this._isDisposed;
+  }
+
+  /** @internal */
+  constructor(private _iModel: BriefcaseDb | StandaloneDb) {
+    _iModel.onBeforeClose.addOnce(() => {
+      this._isDisposed = true;
+    });
+  }
 
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];

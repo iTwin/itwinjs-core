@@ -4176,6 +4176,8 @@ export class TxnManager {
     get hasLocalChanges(): boolean;
     get hasPendingTxns(): boolean;
     get hasUnsavedChanges(): boolean;
+    // @internal (undocumented)
+    get isDisposed(): boolean;
     get isRedoPossible(): boolean;
     isTxnIdValid(txnId: TxnIdString): boolean;
     get isUndoPossible(): boolean;
