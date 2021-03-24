@@ -85,12 +85,27 @@ export abstract class Client {
    * @returns URL for the service
    */
   public async getUrl(requestContext: ClientRequestContext): Promise<string> {
-    if (this._url) {
+    if (this._url)
       return this._url;
-    }
 
     if (this.baseUrl) {
-      const prefix = Config.App.query("imjs_url_prefix");
+      let prefix = Config.App.query("imjs_url_prefix");
+
+      // Need to ensure the usage of the previous imjs_buddi_resolve_url_using_region to not break any
+      // existing users relying on the behavior.
+      // This needs to be removed...
+      if (undefined === prefix) {
+        const region = Config.App.query("imjs_buddi_resolve_url_using_region");
+        switch (region) {
+          case 102:
+            prefix = "qa-";
+            break;
+          case 103:
+            prefix = "dev-";
+            break;
+        }
+      }
+
       if (prefix) {
         const baseUrl = new URL(this.baseUrl);
         baseUrl.hostname = prefix + baseUrl.hostname;
@@ -98,7 +113,6 @@ export abstract class Client {
       } else {
         this._url = this.baseUrl;
       }
-
       return this._url;
     }
 
@@ -107,10 +121,11 @@ export abstract class Client {
     try {
       const url = await urlDiscoveryClient.discoverUrl(requestContext, searchKey, undefined);
       this._url = url;
-      return this._url; // TODO: On the server this really needs a lifetime!!
     } catch (error) {
       throw new Error(`Failed to discover URL for service identified by "${searchKey}"`);
     }
+
+    return this._url;
   }
 
   /** used by clients to send delete requests */
