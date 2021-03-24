@@ -3441,17 +3441,13 @@ export class NativeAppStorage {
     // @internal
     static closeAll(): void;
     static find(name: string): NativeAppStorage;
-    // (undocumented)
     getBoolean(key: string): boolean | undefined;
     getData(key: string): StorageValue | undefined;
     getKeys(): string[];
-    // (undocumented)
     getNumber(key: string): number | undefined;
     // @internal (undocumented)
     static getStorageNames(): string[];
-    // (undocumented)
     getString(key: string): string | undefined;
-    // (undocumented)
     getUint8Array(key: string): Uint8Array | undefined;
     // (undocumented)
     readonly id: string;
