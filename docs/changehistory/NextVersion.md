@@ -3,7 +3,15 @@ publish: false
 ---
 # NextVersion
 
-## New Settings UI Features
+## Txn monitoring
+
+[TxnManager]($backend) now has additional events for monitoring changes to the iModel resulting from [Txns]($docs/learning/InteractiveEditing.md), including:
+  * [TxnManager.onModelsChanged]($backend) for changes to the properties of [Model]($backend)s and
+  * [TxnManager.onModelGeometryChanged]($backend) for changes to the geometry contained within [GeometricModel]($backend)s.
+
+[BriefcaseConnection.txns]($frontend) now exposes the same events provided by `TxnManager`, but on the frontend, via [BriefcaseTxns]($frontend).
+
+## New settings UI features
 
 ### Add Settings Tabs and Pages to UI
 
