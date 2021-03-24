@@ -298,15 +298,6 @@ describe("usePresentationNodeLoader", () => {
     });
   });
 
-  it("starts preloading hierarchy", () => {
-    presentationManagerMock.setup(async (x) => x.loadHierarchy(moq.It.isAny())).verifiable(moq.Times.once());
-    renderHook(
-      (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-      { initialProps: { ...initialProps, preloadingEnabled: true } },
-    );
-    presentationManagerMock.verifyAll();
-  });
-
   it("uses supplied dataProvider", () => {
     // dispatch function from useState hook does not work with mocked object because it is function
     const dataProvider: IPresentationTreeDataProvider = {
