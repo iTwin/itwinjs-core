@@ -186,7 +186,7 @@ describe("KindOfQuantity", () => {
       expect(testKoq!.presentationFormats.length).eq(3);
       const defaultFormat = testKoq!.defaultPresentationFormat;
       assert.isDefined(defaultFormat);
-      assert.isTrue(defaultFormat instanceof OverrideFormat);
+      assert.isTrue(OverrideFormat.isOverrideFormat(defaultFormat));
 
       assert.notEqual(defaultFormat, await schema.lookupItem<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
@@ -210,7 +210,7 @@ describe("KindOfQuantity", () => {
       expect(testKoq!.presentationFormats.length).to.eq(3);
       const defaultFormat = testKoq!.defaultPresentationFormat;
       assert.isDefined(defaultFormat);
-      assert.isTrue(defaultFormat instanceof OverrideFormat);
+      assert.isTrue(OverrideFormat.isOverrideFormat(defaultFormat));
 
       assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.fullName), "The format in the KOQ should be different than the one in the schema");
 
