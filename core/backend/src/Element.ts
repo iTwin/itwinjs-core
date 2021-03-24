@@ -605,6 +605,10 @@ export class Subject extends InformationReferenceElement implements SubjectProps
   public description?: string;
   /** @internal */
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
+  /** @internal */
+  public toJSON(): SubjectProps { // This override only specializes the return type
+    return super.toJSON() as SubjectProps; // Entity.toJSON takes care of auto-handled properties
+  }
   /** Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
    * @param iModelDb The IModelDb
    * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child Subjects.
@@ -1286,12 +1290,13 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
   }
 }
 
-/** An information element that links to an embedded file.
- * @public
+/** Represents a folder-like structure that organizes repositories (typically files) in an external system.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.13
+ * @alpha
  */
-export class EmbeddedFileLink extends LinkElement {
+export class FolderLink extends UrlLink {
   /** @internal */
-  public static get className(): string { return "EmbeddedFileLink"; }
+  public static get className(): string { return "FolderLink"; }
 }
 
 /** An information element that links to a repository.
@@ -1301,19 +1306,31 @@ export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
   /** @internal */
   public static get className(): string { return "RepositoryLink"; }
   public repositoryGuid?: GuidString;
+  /** @note This property was added to the BisCore schema in version 1.0.13 */
+  public format?: string;
 
   /** @internal */
   public constructor(props: RepositoryLinkProps, iModel: IModelDb) {
     super(props, iModel);
     this.repositoryGuid = props.repositoryGuid;
+    this.format = props.format;
   }
 
   /** @internal */
   public toJSON(): RepositoryLinkProps {
     const val = super.toJSON() as RepositoryLinkProps;
     val.repositoryGuid = this.repositoryGuid;
+    val.format = this.format;
     return val;
   }
+}
+
+/** An information element that links to an embedded file.
+ * @public
+ */
+export class EmbeddedFileLink extends LinkElement {
+  /** @internal */
+  public static get className(): string { return "EmbeddedFileLink"; }
 }
 
 /** A real world entity is modeled as a Role Element when a set of external circumstances define an important
