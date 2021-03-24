@@ -810,6 +810,13 @@ export interface ChangedElements {
     type: number[];
 }
 
+// @beta
+export interface ChangedEntities {
+    deleted?: CompressedId64Set;
+    inserted?: CompressedId64Set;
+    updated?: CompressedId64Set;
+}
+
 // @internal (undocumented)
 export interface ChangedModels {
     // (undocumented)
@@ -2088,6 +2095,12 @@ export class EdgeArgs {
     get numEdges(): number;
 }
 
+// @internal
+export interface EditingSessionNotifications {
+    // (undocumented)
+    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
+}
+
 // @public
 export type ElementAlignedBox2d = Range2d;
 
@@ -2292,13 +2305,6 @@ export interface ElementProps extends EntityProps {
     model: Id64String;
     parent?: RelatedElementProps;
     userLabel?: string;
-}
-
-// @alpha
-export interface ElementsChanged {
-    deleted?: CompressedId64Set;
-    inserted?: CompressedId64Set;
-    updated?: CompressedId64Set;
 }
 
 // @beta
@@ -3771,14 +3777,6 @@ export abstract class IModel implements IModelProps {
     toJSON(): IModelConnectionProps;
 }
 
-// @internal
-export interface IModelChangeNotifications {
-    // (undocumented)
-    notifyElementsChanged: (changes: ElementsChanged) => void;
-    // (undocumented)
-    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
-}
-
 // @alpha (undocumented)
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
@@ -4061,11 +4059,13 @@ export enum IpcAppChannel {
     // (undocumented)
     AppNotify = "ipcApp-notify",
     // (undocumented)
+    EditingSession = "editing-session",
+    // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
-    IModelChanges = "imodel-changes",
+    PushPull = "push-pull",
     // (undocumented)
-    PushPull = "push-pull"
+    Txns = "txns"
 }
 
 // @internal
@@ -4073,9 +4073,13 @@ export interface IpcAppFunctions {
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     closeIModel: (key: string) => Promise<void>;
+    getRedoString: (key: string) => Promise<string>;
+    getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
     hasPendingTxns: (key: string) => Promise<boolean>;
     // (undocumented)
     isInteractiveEditingSupported: (key: string) => Promise<boolean>;
+    isRedoPossible: (key: string) => Promise<boolean>;
+    isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
@@ -4087,7 +4091,7 @@ export interface IpcAppFunctions {
     // (undocumented)
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
-    reverseSingleTxn: (key: string) => Promise<IModelStatus>;
+    reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
     toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
@@ -4657,6 +4661,12 @@ export interface ModelGeometryChangesProps {
     readonly inserted?: ElementIdsAndRangesProps;
     readonly range: Range3dProps;
     readonly updated?: ElementIdsAndRangesProps;
+}
+
+// @beta
+export interface ModelIdAndGeometryGuid {
+    guid: GuidString;
+    id: Id64String;
 }
 
 // @public
@@ -7693,6 +7703,36 @@ export class Tweens {
     removeAll(): void;
     // (undocumented)
     update(time?: number, preserve?: boolean): boolean;
+}
+
+// @public
+export enum TxnAction {
+    Abandon = 2,
+    Commit = 1,
+    Merge = 5,
+    None = 0,
+    Reinstate = 4,
+    Reverse = 3
+}
+
+// @internal
+export interface TxnNotifications {
+    // (undocumented)
+    notifyAfterUndoRedo: (isUndo: boolean) => void;
+    // (undocumented)
+    notifyBeforeUndoRedo: (isUndo: boolean) => void;
+    // (undocumented)
+    notifyChangesApplied: () => void;
+    // (undocumented)
+    notifyCommit: () => void;
+    // (undocumented)
+    notifyCommitted: () => void;
+    // (undocumented)
+    notifyElementsChanged: (changes: ChangedEntities) => void;
+    // (undocumented)
+    notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
+    // (undocumented)
+    notifyModelsChanged: (changes: ChangedEntities) => void;
 }
 
 // @public
