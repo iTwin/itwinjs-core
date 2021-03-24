@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "`TreeModelSource`: Fix `onModelChanged` event sometimes listing same node id multiple times.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "70327485+roluk@users.noreply.github.com"
+}
