@@ -15,7 +15,7 @@ import { NativeHost } from "./NativeHost";
  * @beta
  */
 export class NativeAppStorage {
-  private static readonly _ext = ".v1.ecdb";
+  private static readonly _ext = ".settings-db";
   private static _storages = new Map<string, NativeAppStorage>();
   private static _init: boolean = false;
   private constructor(private _ecdb: ECDb, public readonly id: string) { }
@@ -41,6 +41,7 @@ export class NativeAppStorage {
     });
     if (rc !== DbResult.BE_SQLITE_DONE)
       throw new IModelError(rc, "SQLite error");
+
     this._ecdb.saveChanges();
   }
 
@@ -64,6 +65,26 @@ export class NativeAppStorage {
       }
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Unsupported type in cache");
     });
+  }
+
+  public getString(key: string): string | undefined {
+    const val = this.getData(key);
+    return typeof val === "string" ? val : undefined;
+  }
+
+  public getNumber(key: string): number | undefined {
+    const val = this.getData(key);
+    return typeof val === "number" ? val : undefined;
+  }
+
+  public getBoolean(key: string): boolean | undefined {
+    const val = this.getData(key);
+    return typeof val === "boolean" ? val : undefined;
+  }
+
+  public getUint8Array(key: string): Uint8Array | undefined {
+    const val = this.getData(key);
+    return val instanceof Uint8Array ? val : undefined;
   }
 
   /** Get all key names in this Storage */

@@ -4,22 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions, ElectronWindowState } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { getSupportedRpcs } from "../../common/rpcs";
 import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
-
-// cSpell:ignore testapp unmaximize
 
 /**
  * Initializes Electron backend
  */
-const autoOpenDevTools = (undefined === process.env.imjs_TESTAPP_NO_DEV_TOOLS);
-const maximizeWindowConfig = (undefined !== process.env.imjs_TESTAPP_MAXIMIZE_WINDOW);
 const windowTitle = "Ui Test App";
-const windowSettingNamespace = "ui-test-app";
-const defaultWidth = 1280;
-const defaultHeight = 1024;
-let mainWindowState: ElectronWindowState;
+const mainWindowName = "mainWindow";
 
 export async function initializeElectron() {
   const electronHost: ElectronHostOptions = {
@@ -28,7 +21,7 @@ export async function initializeElectron() {
     developmentServer: process.env.NODE_ENV === "development",
   };
 
-  await ElectronHost.startup({ electronHost });
+  await ElectronHost.startup({ electronHost, nativeHost: { applicationName: "ui-test-app" } });
   EditCommandAdmin.register(BasicManipulationCommand);
 
   // Handle custom keyboard shortcuts
@@ -45,11 +38,10 @@ export async function initializeElectron() {
   });
 
   // Restore previous window size, position and maximized state
-  mainWindowState = new ElectronWindowState(windowSettingNamespace, defaultWidth, defaultHeight, false);
-  const sizeAndPosition = mainWindowState.getPreviousSizeAndPosition();
-  const maximizeWindow = maximizeWindowConfig || mainWindowState.getPreviousMaximizedState();
+  const sizeAndPosition = ElectronHost.getWindowSizeSetting(mainWindowName);
+  const maximizeWindow = undefined == sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
 
-  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: windowTitle });
+  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: windowTitle, storeWindowName: mainWindowName });
   assert(ElectronHost.mainWindow !== undefined);
 
   if (maximizeWindow) {
@@ -57,9 +49,6 @@ export async function initializeElectron() {
     ElectronHost.mainWindow.show();
   }
 
-  if (autoOpenDevTools)
+  if ((undefined === process.env.imjs_TESTAPP_NO_DEV_TOOLS))
     ElectronHost.mainWindow.webContents.toggleDevTools();
-
-  // Monitor window state changes and save window size, position and maximized
-  mainWindowState.monitorWindowStateChanges(ElectronHost.mainWindow);
 }

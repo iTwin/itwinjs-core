@@ -164,7 +164,12 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 }
 
 /** @beta */
-export type NativeHostOpts = IpcHostOpts;
+export interface NativeHostOpts extends IpcHostOpts {
+  nativeHost?: {
+    applicationName?: string,
+  }
+}
+
 
 /**
  * Used by desktop/mobile native applications
@@ -172,6 +177,7 @@ export type NativeHostOpts = IpcHostOpts;
  */
 export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
+  private static _applicationName: string;
   private constructor() { }
 
   /** @internal */
@@ -199,6 +205,10 @@ export class NativeHost {
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
 
+  public static get settingsStore() {
+    return NativeAppStorage.open(this._applicationName);
+  }
+
   /**
    * Start the backend of a native app.
    * @param opt
@@ -211,7 +221,9 @@ export class NativeHost {
         NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
       this.onUserStateChanged.addListener((token?: AccessToken) =>
         NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
+      this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
     }
+
     await IpcHost.startup(opt);
     if (IpcHost.isValid)  // for tests, we use NativeHost but don't have a frontend
       NativeAppHandler.register();

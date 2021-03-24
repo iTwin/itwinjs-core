@@ -4,5 +4,4 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./backend/ElectronHost";
-export * from "./backend/ElectronWindowState";
 export * from "./backend/ElectronAuthorizationBackend";
