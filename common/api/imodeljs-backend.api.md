@@ -3435,54 +3435,24 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     abstract signOut(): Promise<void>;
 }
 
-// @internal
-export class NativeAppStorage {
-    // (undocumented)
-    close(deleteFile?: boolean): void;
-    // (undocumented)
-    static closeAll(): void;
-    // (undocumented)
-    static find(name: string): NativeAppStorage | undefined;
-    // (undocumented)
-    getData(key: string): StorageValue | undefined;
-    // (undocumented)
-    getKeys(): string[];
-    // (undocumented)
-    static getStorageNames(): string[];
-    // (undocumented)
-    readonly id: string;
-    // (undocumented)
-    isValueBoolean: (value: StorageValue | undefined) => value is boolean;
-    // (undocumented)
-    isValueNull(value: StorageValue | undefined): boolean;
-    // (undocumented)
-    isValueNumber: (value: StorageValue | undefined) => value is number;
-    // (undocumented)
-    isValueString: (value: StorageValue | undefined) => value is string;
-    // (undocumented)
-    isValueUndefined(value: StorageValue | undefined): boolean;
-    // (undocumented)
-    static open(name: string): NativeAppStorage;
-    // (undocumented)
-    removeAll(): void;
-    // (undocumented)
-    removeData(key: string): void;
-    // (undocumented)
-    setData(key: string, value: StorageValue): void;
-    // (undocumented)
-    valueExists(value: StorageValue | undefined): boolean;
-    }
-
 // @beta
 export class NativeAppStorage {
     close(deleteFile?: boolean): void;
     // @internal
     static closeAll(): void;
     static find(name: string): NativeAppStorage;
+    // (undocumented)
+    getBoolean(key: string): boolean | undefined;
     getData(key: string): StorageValue | undefined;
     getKeys(): string[];
+    // (undocumented)
+    getNumber(key: string): number | undefined;
     // @internal (undocumented)
     static getStorageNames(): string[];
+    // (undocumented)
+    getString(key: string): string | undefined;
+    // (undocumented)
+    getUint8Array(key: string): Uint8Array | undefined;
     // (undocumented)
     readonly id: string;
     static open(name: string): NativeAppStorage;
@@ -3505,12 +3475,19 @@ export class NativeHost {
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
+    // (undocumented)
+    static get settingsStore(): NativeAppStorage;
     static shutdown(): Promise<void>;
     static startup(opt?: NativeHostOpts): Promise<void>;
 }
 
 // @beta (undocumented)
-export type NativeHostOpts = IpcHostOpts;
+export interface NativeHostOpts extends IpcHostOpts {
+    // (undocumented)
+    nativeHost?: {
+        applicationName?: string;
+    };
+}
 
 export { NativeLoggerCategory }
 

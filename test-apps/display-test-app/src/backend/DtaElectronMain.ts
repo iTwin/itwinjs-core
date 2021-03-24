@@ -23,7 +23,7 @@ const getWindowSize = () => {
 
       if (Number.isNaN(height))
         height = 1024;
-      return { width, height, x: 100, y: 100 }
+      return { width, height, x: 100, y: 100 };
     }
   }
 
@@ -55,7 +55,7 @@ const dtaElectronMain = async () => {
 
   // Restore previous window size, position and maximized state
   const sizeAndPosition = getWindowSize();
-  const maximizeWindow = undefined == sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
+  const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
 
   // after backend is initialized, start display-test-app frontend process and open the window
   await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: "Display Test App", storeWindowName: mainWindowName });

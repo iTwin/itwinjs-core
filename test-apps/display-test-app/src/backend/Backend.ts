@@ -250,8 +250,8 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
     electronHost,
     nativeHost: {
       applicationName: "display-test-app",
-    }
-  }
+    },
+  };
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
@@ -261,7 +261,7 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
   } else if (ProcessDetector.isIOSAppBackend) {
     await IOSHost.startup(opts);
   } else if (ProcessDetector.isAndroidAppBackend) {
-    await AndroidHost.startup(opts)
+    await AndroidHost.startup(opts);
   } else {
     await LocalhostIpcHost.startup(opts);
   }

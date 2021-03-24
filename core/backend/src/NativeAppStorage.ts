@@ -183,7 +183,7 @@ export class NativeAppStorage {
       }
       const storage = new NativeAppStorage(ecdb, fileName);
       this._storages.set(fileName, storage);
-      return storage
+      return storage;
     }
   }
 }

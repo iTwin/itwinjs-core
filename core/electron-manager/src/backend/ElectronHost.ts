@@ -12,12 +12,12 @@ import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelHost, IpcHandler, IpcHost, NativeAppStorage, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
+import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
-// cSpell:ignore signin devserver webcontents copyfile
+// cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
 class ElectronIpc implements IpcSocketBackend {
   public addListener(channel: string, listener: IpcListener): RemoveFunction {
@@ -71,6 +71,7 @@ export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptio
   storeWindowName?: string;
 }
 
+/** @beta */
 export interface WindowSizeAndPosition {
   width: number;
   height: number;
@@ -159,18 +160,18 @@ export class ElectronHost {
           height: resolution[1],
           x: position[0],
           y: position[1],
-        }
+        };
         NativeHost.settingsStore.setData(`windowPos-${name}`, JSON.stringify(pos));
-      }
+      };
       const saveMaximized = (maximized: boolean) => {
         NativeHost.settingsStore.setData(`windowMaximized-${name}`, maximized);
-      }
+      };
 
       mainWindow.on("resized", () => saveWindowPosition());
       mainWindow.on("moved", () => saveWindowPosition());
       mainWindow.on("maximize", () => saveMaximized(true));
       mainWindow.on("unmaximize", () => saveMaximized(false));
-    };
+    }
   }
 
   /** The "main" BrowserWindow for this application. */
@@ -180,12 +181,12 @@ export class ElectronHost {
   public static getWindowSizeSetting(windowName: string): WindowSizeAndPosition | undefined {
     const saved = NativeHost.settingsStore.getString(`windowPos-${windowName}`);
     return saved ? JSON.parse(saved) as WindowSizeAndPosition : undefined;
-  };
+  }
 
   /** Gets "window maximized" flag for a window, by name, from settings file if present */
   public static getWindowMaximizedSetting(windowName: string): boolean | undefined {
     return NativeHost.settingsStore.getBoolean(`windowMaximized-${windowName}`);
-  };
+  }
 
   /**
    * Open the main Window when the app is ready.

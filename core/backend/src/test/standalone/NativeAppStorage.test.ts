@@ -101,7 +101,6 @@ describe("NativeApp storage backend", () => {
     assert.equal(test1.getUint8Array("key1")!.length, testArray.length);
     assert.equal(test1.getBoolean("key1"), undefined);
     assert.equal(test1.getString("key1"), undefined);
-    assert.equal(test1.getUint8Array("key1"), undefined);
     assert.equal(test1.getNumber("key1"), undefined);
     test1.removeAll();
     assert.equal(test1.getKeys().length, 0);

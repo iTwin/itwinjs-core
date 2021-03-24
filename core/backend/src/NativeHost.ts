@@ -166,10 +166,9 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 /** @beta */
 export interface NativeHostOpts extends IpcHostOpts {
   nativeHost?: {
-    applicationName?: string,
-  }
+    applicationName?: string;
+  };
 }
-
 
 /**
  * Used by desktop/mobile native applications
