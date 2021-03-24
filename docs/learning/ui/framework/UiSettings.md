@@ -76,7 +76,7 @@ The [AppUiSettings]($ui-framework) class, which implements the UserSettingsProvi
 
 ## Settings stage
 
-UI Settings as well as other settings can be present to the user for editing using the stage [SettingsModalFrontstage]($ui-framework). This stage will display all[SettingsTabEntry]($ui-core) entries that are provided via [SettingsProvider]($ui-core) classes. `SettingsProvider` classes can be registered with the [SettingsManager]($ui-core) by the host application, package, or extension loaded into an IModelApp using the App UI user interface. The steps to add a settings stage include.
+UI Settings as well as other settings can be present to the user for editing using the stage [SettingsModalFrontstage]($ui-framework). This stage will display all[SettingsTabEntry]($ui-core) entries that are provided via [SettingsTabsProvider]($ui-core) classes. `SettingsTabsProvider` classes can be registered with the [SettingsManager]($ui-core) by the host application, package, or extension loaded into an IModelApp using the App UI user interface. The steps to add a settings stage include.
 
 ### Adding a backstage item
 
@@ -102,11 +102,11 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
 
 ### Defining a SettingsTabsProvider
 
-Below is an example [SettingsProvider]($ui-core) class that adds two settings pages, one for Units Formatting and the other for UI Settings. In the `AppUiSettings` example above the call to the static method [AppSettingsTabsProvider.initializeAppSettingProvider] is called to add this provider with the SettingsManager instance held by UiFramework.
+Below is an example [SettingsTabsProvider]($ui-core) class that adds two settings pages, one for Units Formatting and the other for UI Settings. In the `AppUiSettings` example above the call to the static method [AppSettingsTabsProvider.initializeAppSettingProvider] is called to add this provider with the SettingsManager instance held by UiFramework.
 
 ```tsx
 export class AppSettingsTabsProvider implements SettingsTabsProvider {
-  public readonly id = "AppSettingsProvider";
+  public readonly id = "AppSettingsTabsProvider";
 
   public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
     return [

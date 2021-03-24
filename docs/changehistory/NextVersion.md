@@ -5,26 +5,36 @@ publish: false
 
 ## New Settings UI Features
 
-### Add Settings Page to set Quantity Formatting Overrides
+### Add Settings Tabs and Pages to UI
 
-The [QuantityFormatSettingsPanel]($ui-framework) component has been added to the @bentley/ui-framework package to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This panel can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core). Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
+#### Quantity Formatting Settings
+
+The [QuantityFormatSettingsPanel]($ui-framework) component has been added to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+
+#### User Interface Settings
+
+The [UiSettingsPage]($ui-framework) component has been to provide the UI to set general UI that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+
+#### Registering Settings
+
+Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
 
 ```ts
 // Sample settings provider that dynamically adds settings into the setting stage
-export class AppSettingsProvider implements SettingsProvider {
-  public readonly id = "AppSettingsProvider";
+export class AppSettingsTabsProvider implements SettingsTabsProvider {
+  public readonly id = "AppSettingsTabsProvider";
 
   public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
     return [
       getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
+      getUiSettingsManagerEntry(30, true),
     ];
   }
 
   public static initializeAppSettingProvider() {
-    UiFramework.settingsManager.addSettingsProvider(new AppSettingsProvider());
+    UiFramework.settingsManager.addSettingsProvider(new AppSettingsTabsProvider());
   }
 }
-
 ```
 
 The `QuantityFormatSettingsPanel` is marked as alpha in this release and is subject to minor modifications in future releases.

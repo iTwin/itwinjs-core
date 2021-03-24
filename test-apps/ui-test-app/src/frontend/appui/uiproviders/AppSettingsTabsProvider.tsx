@@ -10,7 +10,7 @@ import { AccudrawSettingsPageComponent } from "../frontstages/Settings";
 
 // Sample settings provider that dynamically adds settings into the setting stage
 export class AppSettingsTabsProvider implements SettingsTabsProvider {
-  public readonly id = "AppSettingsProvider";
+  public readonly id = "AppSettingsTabsProvider";
 
   public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
     return [
