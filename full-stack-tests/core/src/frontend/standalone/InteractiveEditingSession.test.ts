@@ -5,74 +5,17 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import { BeDuration, compareStrings, CompressedId64Set, DbOpcode, Guid, Id64, Id64String, OpenMode, OrderedId64Array, ProcessDetector } from "@bentley/bentleyjs-core";
-import { LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BatchType, Code, ElementGeometryChange, ElementsChanged, GeometryStreamBuilder, IModelError, PhysicalElementProps } from "@bentley/imodeljs-common";
+import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
 import {
-  BriefcaseConnection, EditingFunctions, GeometricModel3dState, IModelConnection, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, TileLoadPriority,
+  BriefcaseConnection, EditingFunctions, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+import { deleteElements, initializeEditTools, insertLineElement, makeLineSegment, transformElements } from "../Editing";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
-
-async function startCommand(imodel: IModelConnection): Promise<string> {
-  return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, imodel.key);
-}
-
-function callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-  return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
-}
-
-function orderIds(elementIds: string[]): OrderedId64Array {
-  const ids = new OrderedId64Array();
-  elementIds.forEach((id) => ids.insert(id));
-  return ids;
-}
-
-function compressIds(elementIds: string[]): CompressedId64Set {
-  const ids = orderIds(elementIds);
-  return CompressedId64Set.compressIds(ids);
-}
-
-function makeLine(p1?: Point3d, p2?: Point3d): LineSegment3d {
-  return LineSegment3d.create(p1 || new Point3d(0, 0, 0), p2 || new Point3d(0, 0, 0));
-}
-
-async function createLineElement(imodel: IModelConnection, model: Id64String, category: Id64String, line: LineSegment3d): Promise<Id64String> {
-  try {
-    await startCommand(imodel);
-
-    const origin = line.point0Ref;
-    const angles = new YawPitchRollAngles();
-
-    const builder = new GeometryStreamBuilder();
-    builder.setLocalToWorld3d(origin, angles); // Establish world to local transform...
-    if (!builder.appendGeometry(line))
-      return Id64.invalid;
-
-    const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-    return await callCommand("insertGeometricElement", elemProps);
-  } catch (err) {
-    return Id64.invalid;
-  }
-}
-
-async function transformElements(imodel: BriefcaseConnection, ids: string[], transform: Transform) {
-  try {
-    await startCommand(imodel);
-    await callCommand("transformPlacement", compressIds(ids), transform.toJSON());
-  } catch (err) { }
-}
-
-async function deleteElements(imodel: BriefcaseConnection, ids: string[]) {
-  try {
-    await startCommand(imodel);
-    await callCommand("deleteElements", compressIds(ids));
-  } catch (err) { }
-}
 
 const dummyRange = new Range3d();
 function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange { return { id, type: DbOpcode.Insert, range: (range ?? dummyRange) }; }
@@ -96,7 +39,7 @@ describe("InteractiveEditingSession", () => {
 
     before(async () => {
       await ElectronApp.startup();
-      await EditTools.initialize();
+      await initializeEditTools();
     });
 
     after(async () => {
@@ -206,14 +149,15 @@ describe("InteractiveEditingSession", () => {
       // Begin an editing session.
       const session = await imodel.beginEditingSession();
 
-      let changedElements: ElementsChanged;
-      session.onElementChanges.addListener((ch) => changedElements = ch);
+      let changedElements: ChangedEntities;
+      imodel.txns.onElementsChanged.addListener((ch) => {
+        changedElements = ch;
+      });
 
-      async function expectChanges(expected: ElementGeometryChange[], compareRange = false): Promise<void> {
+      function expectChanges(expected: ElementGeometryChange[], compareRange = false): void {
         const changes = session.getGeometryChangesForModel(modelId);
         expect(undefined === changes).to.equal(expected.length === 0);
         if (changes) {
-
           const actual = Array.from(changes).sort((x, y) => compareStrings(x.id, y.id));
           if (compareRange) {
             expect(actual).to.deep.equal(expected);
@@ -229,12 +173,11 @@ describe("InteractiveEditingSession", () => {
 
       // Insert a line element.
       expect(session.getGeometryChangesForModel(modelId)).to.be.undefined;
-      const elem1 = await createLineElement(imodel, modelId, category, makeLine());
+      const elem1 = await insertLineElement(imodel, modelId, category);
       // Events not dispatched until changes saved.
-      await expectChanges([]);
       await imodel.saveChanges();
       const insertElem1 = makeInsert(elem1);
-      await expectChanges([insertElem1]);
+      expectChanges([insertElem1]);
       expect(changedElements!.deleted).to.be.undefined;
       expect(changedElements!.updated).to.be.undefined;
       expect(changedElements!.inserted).to.not.be.undefined;
@@ -242,28 +185,57 @@ describe("InteractiveEditingSession", () => {
       // Modify the line element.
       await transformElements(imodel, [elem1], Transform.createTranslationXYZ(1, 0, 0));
       const updateElem1 = makeUpdate(elem1);
-      await expectChanges([insertElem1]);
       await imodel.saveChanges();
-      await expectChanges([updateElem1]);
+      expectChanges([updateElem1]);
 
       // Modify the line element twice.
       await transformElements(imodel, [elem1], Transform.createTranslationXYZ(0, 1, 0));
       await transformElements(imodel, [elem1], Transform.createTranslationXYZ(-1, 0, 0));
-      await expectChanges([updateElem1]);
       await imodel.saveChanges();
-      await expectChanges([updateElem1]);
+      expectChanges([updateElem1]);
 
       // Insert a new line element, modify both elements, then delete the old line element.
-      const elem2 = await createLineElement(imodel, modelId, category, makeLine());
+      const elem2 = await insertLineElement(imodel, modelId, category);
       await transformElements(imodel, [elem1, elem2], Transform.createTranslationXYZ(0, 0, 1));
       await deleteElements(imodel, [elem1]);
       const deleteElem1 = makeDelete(elem1);
       const insertElem2 = makeInsert(elem2);
-      await expectChanges([updateElem1]);
       await imodel.saveChanges();
-      await expectChanges([deleteElem1, insertElem2]);
+      expectChanges([deleteElem1, insertElem2]);
 
-      // ###TODO: No frontend API for testing undo/redo...
+      // Undo
+      // NOTE: Elements do not get removed from the set returned by getGeometryChangedForModel -
+      // but their state may change (e.g. from "insert" to "delete") as a result of undo/redo/
+      const isUndoPossible = await imodel.txns.isUndoPossible();
+      expect(isUndoPossible).to.be.true;
+
+      const undo = async () => imodel!.txns.reverseSingleTxn();
+      await imodel.txns.reverseSingleTxn();
+      const deleteElem2 = makeDelete(elem2);
+      expectChanges([insertElem1, deleteElem2]);
+
+      await undo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await undo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await undo();
+      expectChanges([deleteElem1, deleteElem2]);
+
+      // Redo
+      const redo = async () => imodel!.txns.reinstateTxn();
+      await redo();
+      expectChanges([insertElem1, deleteElem2]);
+
+      await redo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await redo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await redo();
+      expectChanges([deleteElem1, insertElem2]);
       await session.end();
     });
 
@@ -276,7 +248,7 @@ describe("InteractiveEditingSession", () => {
       const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
       const dictModelId = await imodel.models.getDictionaryModel();
       const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, Guid.createValue(), { color: 0 });
-      const elem1 = await createLineElement(imodel, modelId, category, makeLine(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
+      const elem1 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
       await imodel.saveChanges();
 
       await imodel.models.load([modelId]);
@@ -349,7 +321,7 @@ describe("InteractiveEditingSession", () => {
       await expectTreeState(tree0, "disposed", 0, modelRange);
 
       // Insert a new element.
-      const elem2 = await createLineElement(imodel, modelId, category, makeLine(new Point3d(0, 0, 0), new Point3d(-10, 0, 0)));
+      const elem2 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(-10, 0, 0)));
       await imodel.saveChanges();
 
       // Newly-inserted elements don't exist in tiles, therefore don't need to be hidden.
