@@ -6,7 +6,7 @@
  * @module RbacClient
  */
 
-import { Config, GuidString } from "@bentley/bentleyjs-core";
+import { assert, Config, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, request, Response, WsgClient, WsgInstance } from "@bentley/itwin-client";
 
 /** RBAC permission
@@ -47,20 +47,15 @@ export enum IModelHubPermission {
  * @internal
  */
 export class RbacClient extends WsgClient {
-  public static readonly searchKey: string = "RBAC.Url.APIM";
   public static readonly configRelyingPartyUri = "imjs_rbac_relying_party_uri";
 
   public constructor() {
     super("v2.4");
+    this.baseUrl = "https://api.bentley.com/rbac";
   }
 
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
-  protected getUrlSearchKey(): string {
-    return RbacClient.searchKey;
-  }
+  /** @internal */
+  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   /**
    * Gets theRelyingPartyUrl for the service.
