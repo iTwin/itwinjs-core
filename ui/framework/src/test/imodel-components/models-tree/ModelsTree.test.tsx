@@ -116,13 +116,6 @@ describe("ModelsTree", () => {
         expect(result.baseElement).to.matchSnapshot();
       });
 
-      it("requests data provider to load the hierarchy if `enablePreloading` is set in props", async () => {
-        const spy = sinon.spy(dataProvider, "loadHierarchy");
-        render(<ModelsTree iModel={imodelMock.object} dataProvider={dataProvider}
-          modelsVisibilityHandler={visibilityHandlerMock.object} enablePreloading={true} />);
-        expect(spy).to.be.calledOnce;
-      });
-
       it("renders nodes as unchecked when they're not displayed", async () => {
         setupDataProviderForEachNodeType();
         visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
