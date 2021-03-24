@@ -3879,6 +3879,7 @@ export class GridDisplaySettings {
     static clippingOption: 0 | 1;
     static cullingOption: 0 | 1 | 2;
     static cullingPerspectiveOption: 0 | 1 | 2;
+    static lineLimiter: number;
     static lineTransparency: number;
     static minFadeSeparation: number;
     static minPerspectiveSeparation: number;
@@ -8089,6 +8090,7 @@ export namespace RenderSystem {
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
+        // @public
         doIdleWork?: boolean;
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;

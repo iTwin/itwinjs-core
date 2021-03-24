@@ -36,7 +36,7 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
 
   /**
    * Should node loader initiate loading of the whole hierarchy as soon as it's created.
-   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
+   * @alpha @deprecated Will be removed on 3.0.
    */
   preloadingEnabled?: boolean;
 
@@ -294,11 +294,8 @@ function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentati
     dataProvider = props.dataProvider;
   } else {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { preloadingEnabled, dataProvider: testDataProvider, ...providerProps } = props;
+    const { dataProvider: testDataProvider, ...providerProps } = props;
     dataProvider = new PresentationTreeDataProvider(providerProps);
-  }
-  if (props.preloadingEnabled && dataProvider.loadHierarchy) {
-    dataProvider.loadHierarchy(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
   return dataProvider;
 }

@@ -94,7 +94,7 @@ describe("iModelHub EventHandler", () => {
   let subscription: EventSubscription;
   let briefcaseId: number;
   let sasToken: EventSAS;
-  const imodelHubClient: IModelClient = utils.getDefaultClient();
+  let imodelHubClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
@@ -105,6 +105,7 @@ describe("iModelHub EventHandler", () => {
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    imodelHubClient = utils.getDefaultClient();
     briefcaseId = (await utils.getBriefcases(requestContext, imodelId, 1))[0].briefcaseId!;
   });
 
