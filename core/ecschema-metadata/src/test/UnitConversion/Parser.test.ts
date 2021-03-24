@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { parseDefinition, DefinitionFragment } from "../../src/UnitConversion/Parser";
+import { DefinitionFragment, parseDefinition } from "../../UnitConversion/Parser";
 
 describe("DefinitionParser tests", () => {
   const definitionsToTest: string[] = [
@@ -36,7 +36,7 @@ describe("DefinitionParser tests", () => {
   type KeyValuePair = [string, DefinitionFragment];
 
   const expectedData: { [key: string]: KeyValuePair[] } = {
-    NUMBER: [
+    "NUMBER": [
       [
         "NUMBER",
         {
