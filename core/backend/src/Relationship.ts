@@ -107,6 +107,25 @@ export class GraphicalElement3dRepresentsElement extends ElementRefersToElements
   public static get className(): string { return "GraphicalElement3dRepresentsElement"; }
 }
 
+/** Relates a [[SynchronizationConfigLink]] to N [[ExternalSource]] instances.
+ * Each relationship instance represents an external source processed by the synchronization configuration.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.13
+ * @beta
+ */
+export class SynchronizationConfigProcessesSources extends ElementRefersToElements {
+  /** @internal */
+  public static get className(): string { return "SynchronizationConfigProcessesSources"; }
+}
+
+/** Relates a [[SynchronizationConfigLink]] to *root* [[ExternalSource]] instances.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.13
+ * @beta
+ */
+export class SynchronizationConfigSpecifiesRootSources extends SynchronizationConfigProcessesSources {
+  /** @internal */
+  public static get className(): string { return "SynchronizationConfigSpecifiesRootSources"; }
+}
+
 /** Properties that are common to all types of link table ECRelationships
  * @public
  */
@@ -150,6 +169,15 @@ export class DefinitionGroupGroupsDefinitions extends ElementGroupsMembers {
 export class GroupImpartsToMembers extends ElementGroupsMembers {
   /** @internal */
   public static get className(): string { return "GroupImpartsToMembers"; }
+}
+
+/** Relates an [[ExternalSourceGroup]] to its [[ExternalSource]] members.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.13
+ * @beta
+ */
+export class ExternalSourceGroupGroupsSources extends ElementGroupsMembers {
+  /** @internal */
+  public static get className(): string { return "ExternalSourceGroupGroupsSources"; }
 }
 
 /** Properties that are common to all types of ElementDrivesElements

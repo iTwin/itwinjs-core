@@ -2384,6 +2384,12 @@ describe("iModel", () => {
     assert.equal(subject3.description, ""); // NOTE: different behavior between auto-handled and custom-handled
     assert.isUndefined(subject4.description);
 
+    // Test toJSON
+    assert.equal(subject1.toJSON().description, "Description1");
+    assert.equal(subject2.toJSON().description, "Description2");
+    assert.equal(subject3.toJSON().description, "");
+    assert.isUndefined(subject4.toJSON().description);
+
     // Element.UserLabel is a custom-handled property
     assert.equal(subject1.userLabel, "UserLabel1");
     assert.equal(subject2.userLabel, "UserLabel2");
