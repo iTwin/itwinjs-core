@@ -50,6 +50,7 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** Options for [[IModelDb.Models.updateModel]]
+ * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
  * @public
  */
 export interface UpdateModelOptions extends ModelProps {
@@ -1403,19 +1404,20 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the model.
      */
     public insertModel(props: ModelProps): Id64String {
-      if (props.isPrivate === undefined) // temporarily work around bug in addon
-        props.isPrivate = false;
+      const json = props instanceof Model ? props.toJSON() : props;
+      if (json.isPrivate === undefined) // temporarily work around bug in addon
+        json.isPrivate = false;
 
-      const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onInsert(props, this._iModel);
+      const jsClass = this._iModel.getJsClass<typeof Model>(json.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onInsert(json, this._iModel);
 
-      const val = this._iModel.nativeDb.insertModel(props);
+      const val = this._iModel.nativeDb.insertModel(json);
       if (val.error)
         throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggerCategory);
 
-      props.id = Id64.fromJSON(val.result!.id);
-      jsClass.onInserted(props.id, this._iModel);
-      return props.id;
+      json.id = props.id = Id64.fromJSON(val.result!.id);
+      jsClass.onInserted(json.id, this._iModel);
+      return json.id;
     }
 
     /** Update an existing model.
@@ -1423,14 +1425,30 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the model.
      */
     public updateModel(props: UpdateModelOptions): void {
-      const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onUpdate(props, this._iModel);
+      const json = props instanceof Model ? props.toJSON() : props;
+      const jsClass = this._iModel.getJsClass<typeof Model>(json.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onUpdate(json, this._iModel);
 
-      const error = this._iModel.nativeDb.updateModel(props);
+      const error = this._iModel.nativeDb.updateModel(json);
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, `updating model id=${props.id}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(error, `updating model id=${json.id}`, Logger.logWarning, loggerCategory);
 
-      jsClass.onUpdated(props, this._iModel);
+      jsClass.onUpdated(json, this._iModel);
+    }
+
+    /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
+     * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
+     * explicitly updating it is occassionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
+     * [[GeometricElement]]s that reference those definition elements in their geometry streams.
+     * @note This will throw IModelError with [IModelStatus.VersionTooOld]($bentleyjs-core) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
+     * @throws IModelError if unable to update the geometry guid.
+     * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
+     * @beta
+     */
+    public updateGeometryGuid(modelId: Id64String): void {
+      const error = this._iModel.nativeDb.updateModelGeometryGuid(modelId);
+      if (error !== IModelStatus.Success)
+        throw new IModelError(error, `updating geometry guid for model ${modelId}`, Logger.logWarning, loggerCategory);
     }
 
     /** Delete one or more existing models.
