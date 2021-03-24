@@ -14,15 +14,12 @@ import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { EntityClass } from "../Metadata/EntityClass";
 import { AnyEnumerator, Enumeration } from "../Metadata/Enumeration";
 import { Format } from "../Metadata/Format";
-import { InvertedUnit } from "../Metadata/InvertedUnit";
 import { KindOfQuantity } from "../Metadata/KindOfQuantity";
-import { Mixin } from "../Metadata/Mixin";
 import { OverrideFormat } from "../Metadata/OverrideFormat";
 import { Property } from "../Metadata/Property";
 import { RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
-import { Unit } from "../Metadata/Unit";
 import { AnyDiagnostic } from "./Diagnostic";
 import { SchemaCompareCodes } from "./SchemaCompareDiagnostics";
 
@@ -116,16 +113,15 @@ export abstract class BaseSchemaChange implements ISchemaChange {
    * the specified index. Performs validation based on the given parameters.
    * @param index The index in the args array to find the EC type.
    * @param args  The collection of arguments received in the diagnostics.
-   * @param itemType  The EC type that the object type should be.
    * @param allowUndefined Specifies that undefined values are allowed.
    * @param fullName  Flag indicating that the fullName should be returned rather than the name.
    */
-  protected getNameFromArgument(index: number, itemType: typeof SchemaItem | typeof OverrideFormat | typeof Schema, allowUndefined: boolean = false, fullName: boolean = false): string {
+  protected getNameFromArgument(index: number, allowUndefined: boolean = false, fullName: boolean = false): string {
     if (!this.diagnostic.messageArgs || this.diagnostic.messageArgs.length <= index)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaComparisonArgument, `Schema comparison diagnostic '${this.diagnostic.code}' for SchemaItem '${this.topLevelSchemaItem.fullName}' has invalid arguments`);
 
     const schemaItem = this.getValueFromArgument(index);
-    if (schemaItem instanceof itemType)
+    if (Schema.isSchema(schemaItem) || SchemaItem.isSchemaItem(schemaItem) || OverrideFormat.isOverrideFormat(schemaItem))
       return fullName ? schemaItem.fullName : schemaItem.name;
 
     if (!allowUndefined)
@@ -403,7 +399,8 @@ export class SchemaChanges extends BaseSchemaChanges {
 
   private getSchemaNameFromChange(change: ISchemaChange): string | undefined {
     const type = change.diagnostic.ecDefinition;
-    return (type instanceof Schema) ? type.name : undefined;
+
+    return (Schema.isSchema(type)) ? type.name : undefined;
   }
 
   /** This creates ISchemaChange instances based on the change diagnostic specified. */
@@ -574,7 +571,7 @@ export class SchemaItemChanges extends BaseSchemaChanges {
 
   protected getSchemaItemNameFromChange(change: ISchemaChange): string | undefined {
     const type = change.diagnostic.ecDefinition;
-    return (type instanceof SchemaItem) ? type.name : undefined;
+    return (SchemaItem.isSchemaItem(type)) ? type.name : undefined;
   }
 }
 
@@ -632,12 +629,12 @@ export class ClassChanges extends SchemaItemChanges {
       return;
     }
 
-    if (change.diagnostic.ecDefinition instanceof Property) {
+    if (Property.isProperty(change.diagnostic.ecDefinition)) {
       this.addChangeToMap(this.propertyChanges, PropertyChanges, change, change.diagnostic.ecDefinition.name);
       return;
     }
 
-    if (change.diagnostic.ecDefinition instanceof RelationshipConstraint) {
+    if (RelationshipConstraint.isRelationshipConstraint(change.diagnostic.ecDefinition)) {
       if (change.diagnostic.ecDefinition.isSource)
         this.addChangeToMap(this.sourceConstraintChanges, RelationshipConstraintChanges, change, change.diagnostic.ecDefinition.fullName);
       else
@@ -690,7 +687,7 @@ export class PropertyChanges extends BaseSchemaChanges {
 
   private getPropertyNameFromChange(change: ISchemaChange): string | undefined {
     const type = change.diagnostic.ecDefinition;
-    return (type instanceof Property) ? type.name : undefined;
+    return (Property.isProperty(type)) ? type.name : undefined;
   }
 }
 
@@ -791,7 +788,7 @@ export class RelationshipConstraintChanges extends BaseSchemaChanges {
 
   private getConstraintNameFromChange(change: ISchemaChange): string | undefined {
     const type = change.diagnostic.ecDefinition;
-    if (type instanceof RelationshipConstraint)
+    if (RelationshipConstraint.isRelationshipConstraint(type))
       return type.fullName;
     return undefined;
   }
@@ -984,7 +981,7 @@ export class SchemaReferenceMissing extends BaseSchemaChange {
 
   /** Gets a string representation of the change. */
   public toString(): string {
-    const refSchema = this.getNameFromArgument(0, Schema, false, true);
+    const refSchema = this.getNameFromArgument(0, false, true);
     return `Schema(${refSchema})`;
   }
 }
@@ -1002,7 +999,7 @@ export class SchemaReferenceDelta extends BaseSchemaChange {
 
   /** Gets a string representation of the change. */
   public toString(): string {
-    const refSchema = this.getNameFromArgument(0, Schema, false, true);
+    const refSchema = this.getNameFromArgument(0, false, true);
     const versionA = this.getStringFromArgument(1);
     const versionB = this.getStringFromArgument(2);
     return `Schema(${refSchema}): ${versionA} -> ${versionB}`;
@@ -1020,7 +1017,7 @@ export class SchemaItemMissing extends SchemaItemChange {
   /** Gets a string representation of the change. */
   public toString(): string {
     const item = this.diagnostic.ecDefinition as SchemaItem;
-    const typeName = item instanceof ECClass ? "Class" : schemaItemTypeToString(item.schemaItemType);
+    const typeName = ECClass.isECClass(item) ? "Class" : schemaItemTypeToString(item.schemaItemType);
     return `${typeName}(${item.name})`;
   }
 }
@@ -1033,16 +1030,16 @@ export class PropertyValueChange extends BaseSchemaChange {
 
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
-    if (this.diagnostic.ecDefinition instanceof SchemaItem)
+    if (SchemaItem.isSchemaItem(this.diagnostic.ecDefinition))
       return this.diagnostic.ecDefinition;
 
-    if (this.diagnostic.ecDefinition instanceof Schema)
+    if (Schema.isSchema(this.diagnostic.ecDefinition))
       return this.diagnostic.ecDefinition;
 
-    if (this.diagnostic.ecDefinition instanceof Property)
+    if (Property.isProperty(this.diagnostic.ecDefinition))
       return this.diagnostic.ecDefinition.class;
 
-    if (this.diagnostic.ecDefinition instanceof RelationshipConstraint)
+    if (RelationshipConstraint.isRelationshipConstraint(this.diagnostic.ecDefinition))
       return this.diagnostic.ecDefinition.relationshipClass;
 
     throw new Error();
@@ -1073,16 +1070,16 @@ export class CustomAttributeContainerChange extends BaseSchemaChange {
 
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
-    if (this.diagnostic.ecDefinition instanceof SchemaItem)
+    if (SchemaItem.isSchemaItem(this.diagnostic.ecDefinition))
       return this.diagnostic.ecDefinition;
 
-    if (this.diagnostic.ecDefinition instanceof Property)
+    if (Property.isProperty(this.diagnostic.ecDefinition))
       return this.diagnostic.ecDefinition.class;
 
-    if (this.diagnostic.ecDefinition instanceof Schema)
+    if (Schema.isSchema(this.diagnostic.ecDefinition))
       return this.diagnostic.ecDefinition;
 
-    if (this.diagnostic.ecDefinition instanceof RelationshipConstraint)
+    if (RelationshipConstraint.isRelationshipConstraint(this.diagnostic.ecDefinition))
       return this.diagnostic.ecDefinition.relationshipClass;
 
     throw new Error();
@@ -1109,8 +1106,8 @@ export class BaseClassDelta extends SchemaItemChange {
 
   /** Gets a string representation of the change. */
   public toString(): string {
-    const classA = this.getNameFromArgument(0, ECClass, true, true);
-    const classB = this.getNameFromArgument(1, ECClass, true, true);
+    const classA = this.getNameFromArgument(0, true, true);
+    const classB = this.getNameFromArgument(1, true, true);
     return `BaseClass: ${classA} -> ${classB}`;
   }
 }
@@ -1149,7 +1146,7 @@ export class RelationshipConstraintClassChange extends BaseSchemaChange {
 
   /** Gets a string representation of the change. */
   public toString(): string {
-    const constraintClass = this.getNameFromArgument(0, ECClass, false, true);
+    const constraintClass = this.getNameFromArgument(0, false, true);
     return `ConstraintClass: ${constraintClass}`;
   }
 }
@@ -1223,7 +1220,7 @@ export class EntityMixinChange extends BaseSchemaChange {
 
   /** Gets the key to use in a Map of this type of ISchemaChange. */
   public get changeKey(): string {
-    return this.getNameFromArgument(0, Mixin, false, true);
+    return this.getNameFromArgument(0, false, true);
   }
 
   /** Gets a string representation of the change. */
@@ -1247,8 +1244,7 @@ export class PresentationUnitChange extends BaseSchemaChange {
 
   /** Gets the key to use in a Map of this type of ISchemaChange. */
   public get changeKey(): string {
-    const type = this._isOverrideFormat ? OverrideFormat : Format;
-    return this.getNameFromArgument(0, type, false, true);
+    return this.getNameFromArgument(0, false, true);
   }
 
   /** Gets a string representation of the change. */
@@ -1260,7 +1256,7 @@ export class PresentationUnitChange extends BaseSchemaChange {
     if (!this.diagnostic.messageArgs)
       return false;
 
-    return this.diagnostic.messageArgs[0] instanceof OverrideFormat;
+    return OverrideFormat.isOverrideFormat(this.diagnostic.messageArgs[0]);
   }
 }
 
@@ -1279,8 +1275,7 @@ export class FormatUnitChange extends BaseSchemaChange {
 
   /** Gets the key to use in a Map of this type of ISchemaChange. */
   public get changeKey(): string {
-    const type = this._isInvertedUnit ? InvertedUnit : Unit;
-    return this.getNameFromArgument(0, type, false, true);
+    return this.getNameFromArgument(0, false, true);
   }
 
   /** Gets a string representation of the change. */
@@ -1292,7 +1287,7 @@ export class FormatUnitChange extends BaseSchemaChange {
     if (!this.diagnostic.messageArgs)
       return false;
 
-    return this.diagnostic.messageArgs[0] instanceof InvertedUnit;
+    return this.diagnostic.messageArgs[0].schemaItemType === SchemaItemType.InvertedUnit;
   }
 }
 
@@ -1311,8 +1306,7 @@ export class UnitLabelOverrideDelta extends BaseSchemaChange {
 
   /** Gets the key to use in a Map of this type of ISchemaChange. */
   public get changeKey(): string {
-    const type = this._isInvertedUnit ? InvertedUnit : Unit;
-    return this.getNameFromArgument(0, type, false, true);
+    return this.getNameFromArgument(0, false, true);
   }
 
   /** Gets a string representation of the change. */
@@ -1326,6 +1320,6 @@ export class UnitLabelOverrideDelta extends BaseSchemaChange {
     if (!this.diagnostic.messageArgs)
       return false;
 
-    return this.diagnostic.messageArgs[0] instanceof InvertedUnit;
+    return this.diagnostic.messageArgs[0].schemaItemType === SchemaItemType.InvertedUnit;
   }
 }
