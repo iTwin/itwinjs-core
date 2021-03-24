@@ -19,7 +19,7 @@ export class ExtensionClient extends Client {
     getExtensions(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName?: string): Promise<ExtensionProps[]>;
     // (undocumented)
     getUrl(requestContext: ClientRequestContext): Promise<string>;
-    // (undocumented)
+    // @internal (undocumented)
     protected getUrlSearchKey(): string;
     }
 
