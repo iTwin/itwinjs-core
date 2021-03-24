@@ -372,6 +372,39 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
   checksum?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
   jsonProperties?: any;
+  source?: RelatedElementProps;
+}
+
+/** Properties of an [ExternalSource]($backend)
+ * @beta
+ */
+export interface ExternalSourceProps extends ElementProps {
+  repository?: RelatedElementProps;
+  connectorName?: string;
+  connectorVersion?: string;
+}
+
+/** The role that an attached [ExternalSource]($backend) plays.
+ * @beta
+ */
+export enum ExternalSourceAttachmentRole {
+  /** The attached [ExternalSource]($backend) provides context. */
+  SpecifyContext = 0,
+  /** The attached [ExternalSource]($backend) models a part of the whole. */
+  SpecifyPart = 1,
+}
+
+/** Properties of an [ExternalSourceAttachment]($backend)
+ * @beta
+ */
+export interface ExternalSourceAttachmentProps extends ElementProps {
+  attaches?: RelatedElementProps;
+  role?: ExternalSourceAttachmentRole;
+  translation?: XYZProps;
+  yaw?: number;
+  pitch?: number;
+  roll?: number;
+  scale?: XYZProps;
 }
 
 /** Properties of an [ChannelRootAspect]($backend) that identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
@@ -440,4 +473,12 @@ export interface UrlLinkProps extends ElementProps {
  */
 export interface RepositoryLinkProps extends UrlLinkProps {
   repositoryGuid?: GuidString;
+  format?: string;
+}
+
+/** The properties of a [SynchronizationConfigLink]($backend)
+ * @beta
+ */
+export interface SynchronizationConfigLinkProps extends UrlLinkProps {
+  lastSuccessfulRun?: string;
 }

@@ -107,6 +107,16 @@ export enum BisCodeSpec {
    * @see [DrawingCategory.createCode]($backend)
    */
   drawingCategory = "bis:DrawingCategory",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [ExternalSource]($backend) elements.
+   * @note This CodeSpec is not automatically created, so use [ExternalSource.ensureCodeSpec]($backend) to make sure that it exists.
+   * @see [ExternalSource.createCode]($backend)
+   */
+  externalSource = "bis:ExternalSource",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [ExternalSourceAttachment]($backend) elements.
+   * @note This CodeSpec is not automatically created, so use [ExternalSourceAttachment.ensureCodeSpec]($backend) to make sure that it exists.
+   * @see [ExternalSource.createCode]($backend)
+   */
+  externalSourceAttachment = "bis:ExternalSourceAttachment",
   /** The name of the standard [[CodeSpec]] used when creating codes for [GeometryPart]($backend) elements.
    * @see [GeometryPart.createCode]($backend)
    */
