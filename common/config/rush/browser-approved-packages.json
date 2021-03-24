@@ -7,6 +7,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@azure-tools/azcopy-node",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@azure/storage-blob",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -239,6 +243,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@bentley/units-schema",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "@bentley/usage-logging-client",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -291,6 +299,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "almost-equal",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "applicationinsights",
       "allowedCategories": [ "backend" ]
     },
@@ -313,6 +325,10 @@
     {
       "name": "babel-preset-react-app",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "benchmark",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "body-parser",
@@ -569,6 +585,10 @@
     {
       "name": "i18next-browser-languagedetector",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "i18next-node-fs-backend",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "i18next-xhr-backend",
@@ -984,7 +1004,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tsconfig-paths",
