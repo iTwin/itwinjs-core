@@ -17,6 +17,7 @@ export * from "./Element";
 export * from "./ElementAspect";
 export * from "./Entity";
 export * from "./ExportGraphics";
+export * from "./ExternalSource";
 export * from "./IModelJsFs";
 export * from "./Relationship";
 export * from "./Texture";

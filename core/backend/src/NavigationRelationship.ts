@@ -82,6 +82,28 @@ export class PhysicalElementAssemblesElements extends ElementOwnsChildElements {
   }
 }
 
+/** Relates a parent [[ExternalSource]] to its [[ExternalSourceAttachment]] children.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.13
+ * @beta
+ */
+export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
+  public static classFullName = "BisCore:ExternalSourceOwnsAttachments";
+  public constructor(parentId: Id64String, relClassName: string = ExternalSourceOwnsAttachments.classFullName) {
+    super(parentId, relClassName);
+  }
+}
+
+/** Relates a parent [[FolderLink]] to its [[RepositoryLink]] children.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.13
+ * @beta
+ */
+export class FolderContainsRepositories extends ElementOwnsChildElements {
+  public static classFullName = "BisCore:FolderContainsRepositories";
+  public constructor(parentId: Id64String, relClassName: string = FolderContainsRepositories.classFullName) {
+    super(parentId, relClassName);
+  }
+}
+
 /** Relates a [[GeometricElement2d]] to its [[TypeDefinitionElement]]
  * @public
  */
@@ -157,8 +179,8 @@ export class PhysicalTypeIsOfPhysicalMaterial extends RelatedElement {
  */
 export class ElementOwnsUniqueAspect extends RelatedElement {
   public static classFullName = "BisCore:ElementOwnsUniqueAspect";
-  public constructor(parentId: Id64String, relClassName: string = ElementOwnsUniqueAspect.classFullName) {
-    super({ id: parentId, relClassName });
+  public constructor(elementId: Id64String, relClassName: string = ElementOwnsUniqueAspect.classFullName) {
+    super({ id: elementId, relClassName });
   }
 }
 
@@ -167,8 +189,8 @@ export class ElementOwnsUniqueAspect extends RelatedElement {
  */
 export class ElementOwnsMultiAspects extends RelatedElement {
   public static classFullName = "BisCore:ElementOwnsMultiAspects";
-  public constructor(parentId: Id64String, relClassName: string = ElementOwnsMultiAspects.classFullName) {
-    super({ id: parentId, relClassName });
+  public constructor(elementId: Id64String, relClassName: string = ElementOwnsMultiAspects.classFullName) {
+    super({ id: elementId, relClassName });
   }
 }
 
@@ -177,7 +199,29 @@ export class ElementOwnsMultiAspects extends RelatedElement {
  */
 export class ElementOwnsExternalSourceAspects extends ElementOwnsMultiAspects {
   public static classFullName = "BisCore:ElementOwnsExternalSourceAspects";
-  public constructor(parentId: Id64String, relClassName: string = ElementOwnsExternalSourceAspects.classFullName) {
-    super(parentId, relClassName);
+  public constructor(elementId: Id64String, relClassName: string = ElementOwnsExternalSourceAspects.classFullName) {
+    super(elementId, relClassName);
+  }
+}
+
+/** Relates an [[ExternalSource]] to the [[RepositoryLink]] that it is persisted in.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.13
+ * @beta
+ */
+export class ExternalSourceIsInRepository extends RelatedElement {
+  public static classFullName = "BisCore:ExternalSourceIsInRepository";
+  public constructor(repositoryId: Id64String, relClassName: string = ExternalSourceIsInRepository.classFullName) {
+    super({ id: repositoryId, relClassName });
+  }
+}
+
+/** Relates an [[ExternalSource]] to the [[RepositoryLink]] that it is persisted in.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.13
+ * @beta
+ */
+export class ExternalSourceAttachmentAttachesSource extends RelatedElement {
+  public static classFullName = "BisCore:ExternalSourceAttachmentAttachesSource";
+  public constructor(externalSourceId: Id64String, relClassName: string = ExternalSourceAttachmentAttachesSource.classFullName) {
+    super({ id: externalSourceId, relClassName });
   }
 }
