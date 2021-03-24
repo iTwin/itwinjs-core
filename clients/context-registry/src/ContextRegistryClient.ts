@@ -6,7 +6,7 @@
  * @module ContextRegistry
  */
 import * as deepAssign from "deep-assign";
-import { Config } from "@bentley/bentleyjs-core";
+import { assert, Config } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 
 /** The iTwin context type.
@@ -143,14 +143,11 @@ export class ContextRegistryClient extends WsgClient {
 
   public constructor() {
     super("v2.5");
+    this.baseUrl = "https://api.bentley.com/contextregistry";
   }
 
-  /** Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
-  protected getUrlSearchKey(): string {
-    return ContextRegistryClient.searchKey;
-  }
+  /** @internal */
+  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);

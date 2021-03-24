@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module ProductShareClient
  */
-import { BentleyError, BentleyStatus, Config, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { assert, BentleyError, BentleyStatus, Config, GuidString, Logger } from "@bentley/bentleyjs-core";
 import {
   AuthorizedClientRequestContext, ECJsonTypeMap, ITwinClientLoggerCategory, request, RequestOptions, WsgClient, WsgInstance, WsgQuery,
 } from "@bentley/itwin-client";
@@ -258,6 +258,7 @@ export class ProjectShareClient extends WsgClient {
    */
   public constructor() {
     super("v2.4");
+    this.baseUrl = "https://api.bentley.com/projectshare";
   }
 
   protected getRelyingPartyUrl(): string {
@@ -279,13 +280,8 @@ export class ProjectShareClient extends WsgClient {
     return undefined;
   }
 
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
-  protected getUrlSearchKey(): string {
-    return ProjectShareClient.searchKey;
-  }
+  /** @internal */
+  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   /**
    * Gets the default URL for the service.

@@ -31,6 +31,7 @@ export class ProjectShareClient extends WsgClient {
     // (undocumented)
     protected getRelyingPartyUrl(): string;
     getUrl(requestContext: AuthorizedClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
+    // (undocumented)
     protected getUrlSearchKey(): string;
     readFile(requestContext: AuthorizedClientRequestContext, file: ProjectShareFile, maxByteCount?: number): Promise<Uint8Array>;
     readFileNodeJs(requestContext: AuthorizedClientRequestContext, file: ProjectShareFile): Promise<Uint8Array>;
