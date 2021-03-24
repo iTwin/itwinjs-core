@@ -72,6 +72,7 @@ import { TentativePoint } from '@bentley/imodeljs-frontend';
 import { TimeDisplay } from '@bentley/ui-abstract';
 import { TimeFormat } from '@bentley/ui-core';
 import { UiEvent } from '@bentley/ui-core';
+import { UiSettings } from '@bentley/ui-core';
 import { UiSettingsStorage } from '@bentley/ui-core';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
@@ -4529,6 +4530,8 @@ export interface TableProps extends CommonProps {
     showHideColumns?: boolean;
     stripedRows?: boolean;
     tableSelectionTarget?: TableSelectionTarget;
+    // @deprecated
+    uiSettings?: UiSettings;
 }
 
 // @internal
