@@ -136,11 +136,6 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient.getFilteredNodePaths.bind(this.rpcClient), options, filterText);
   }
 
-  public async loadHierarchy(options: HierarchyRequestOptions<IModelRpcProps>): Promise<void> {
-    return this.request<void, HierarchyRequestOptions<IModelRpcProps>>(
-      this.rpcClient.loadHierarchy.bind(this.rpcClient), options);
-  }
-
   public async getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON>): Promise<DescriptorJSON | undefined> {
     return this.request<DescriptorJSON | undefined, ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON>>(
       this.rpcClient.getContentDescriptor.bind(this.rpcClient), options); // eslint-disable-line deprecation/deprecation

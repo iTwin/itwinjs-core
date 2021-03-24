@@ -24,7 +24,7 @@ import { Point4d } from "../../geometry4d/Point4d";
 /* eslint-disable no-console */
 import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
 import {
-  AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, SmallSystem, SphereImplicit, TorusImplicit, TrigPolynomial,
+  AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, ImplicitLineXY, SmallSystem, SphereImplicit, TorusImplicit, TrigPolynomial,
 } from "../../numerics/Polynomials";
 import { Quadrature } from "../../numerics/Quadrature";
 import { Sphere } from "../../solid/Sphere";
@@ -661,7 +661,21 @@ describe("LinearSystems", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphereImplicit", "RayIntersection");
   });
-
+  it("ImplicitLine", () => {
+    const ck = new Checker();
+    const b = 3.0;
+    for (const degrees of [ 0, 30,90, -225]){
+      const angle = Angle.createDegrees(degrees);
+      const lineA = new ImplicitLineXY(1, angle.cos(), angle.sin());
+      const pointsA = lineA.convertToSegmentPoints(b);
+      if (ck.testDefined(pointsA) && Array.isArray(pointsA)) {
+        ck.testCoordinate(2 * b, pointsA[0].distance(pointsA[1]));
+        ck.testCoordinate(0, lineA.evaluatePoint(pointsA[0]));
+        ck.testCoordinate(0, lineA.evaluatePoint(pointsA[1]));
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 function arraySteps(low: number, high: number, step: number): number[] {
