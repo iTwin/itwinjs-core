@@ -3,21 +3,28 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ElectronBackend, ElectronBackendOptions } from "../ElectronBackend";
+console.log("in electron.ts");
+
+import { ElectronHost, ElectronHostOptions } from "../ElectronBackend";
 import * as electron from "electron";
+import { IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { ClipMaskXYZRangePlanes } from "../../../common/node_modules/@bentley/geometry-core/lib/geometry-core";
 
-let options: ElectronBackendOptions;
-
+let opts: { electronHost?: ElectronHostOptions, iModelConfig?: IModelHostConfiguration }
+opts = {}
 switch (process.env.startupOptions) {
-  case "":
-    break;
+  case "defaultOptions":
+    opts.electronHost = {
+      developmentServer: false,
+      frontendPort: 3000,
+      webResourcesPath: "",
+    }
   default:
-    options = {}
+    opts.electronHost = {}
 }
-
 const init = async () => {
-  const manager = ElectronBackend.initialize(options);
-  await manager.openMainWindow({ height: 800, width: 1200, show: false, title: "test startup" });
+  await ElectronHost.startup();
+  await ElectronHost.openMainWindow({ height: 800, width: 1200, show: false, title: "test startup" });
   electron.app.quit();
 }
 

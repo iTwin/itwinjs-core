@@ -53,8 +53,8 @@ const dtaElectronMain = async () => {
 
   await initializeDtaBackend(opts);
 
-  manager.setSessionPermissionsRequest([]);
-  manager.setSessionPermissionsCheck([]);
+  // manager.setSessionPermissionsRequest([]);
+  // manager.setSessionPermissionsCheck([]);
 
   const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
   const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
@@ -66,10 +66,10 @@ const dtaElectronMain = async () => {
 
   // session.fromPartition("").setPermissionCheckHandler(() => { return false });
   // manager.mainWindow.setFullScreen(true);
-  manager.electron.clipboard.writeText("Check Permission clipboard was read!");
-  const checkText = manager.electron.clipboard.readText();
-  console.log(checkText);
-  console.log(manager.mainWindow.webContents.session);
+  // manager.electron.clipboard.writeText("Check Permission clipboard was read!");
+  // const checkText = manager.electron.clipboard.readText();
+  // console.log(checkText);
+  // console.log(manager.mainWindow.webContents.session);
 
   if (maximizeWindow) {
     ElectronHost.mainWindow.maximize(); // maximize before showing to avoid resize event on startup

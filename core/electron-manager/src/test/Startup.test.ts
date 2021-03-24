@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ElectronBackend } from "../ElectronBackend";
+import { ElectronHost, ElectronHostOptions } from "../ElectronBackend";
 import { assert } from "chai";
 import * as path from "path";
 import { spawn } from "child_process";
@@ -20,19 +20,30 @@ const startElectron = async (expectedExitCode: number, localEnv: any) => {
 
 describe("ElectronBackend", async () => {
   it("fails running under Node", () => {
-    assert.throws(() => ElectronBackend.initialize(), Error, `Not running under Electron`);
+    assert.throws(() => ElectronHost.startup(), Error, `Not running under Electron`);
   });
 
   it("initializes correctly without ElectronBackendOptions", async () => {
     startElectron(0, process.env);
   });
 
-  it("initializes correctly with  ElectronBackendOptions", async () => {
+  it("initializes correctly with  ElectronBackendOptions (empty options)", async () => {
     const localEnv = {
       ...process.env,
-      options: ""
+      startupOptions: ""
     };
-
     startElectron(0, localEnv);
   });
+
+  it("initializes correctly with  ElectronBackendOptions (default options)", async () => {
+    const localEnv = {
+      ...process.env,
+      startupOptions: "defaultOptions"
+
+    }
+    startElectron(0, localEnv);
+  });
+
+
+
 });
