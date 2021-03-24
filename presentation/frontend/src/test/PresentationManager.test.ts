@@ -15,7 +15,7 @@ import {
   FieldDescriptorType, HierarchyCompareInfoJSON, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions, Node,
   NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError,
   PresentationIpcEvents,
-  PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset,
+  PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RpcRequestsHandler, Ruleset,
   RulesetVariable, UpdateInfo, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -605,35 +605,6 @@ describe("PresentationManager", () => {
         .verifiable();
       const result = await manager.getNodePaths(options, keyArray, 1);
       expect(result).to.be.deep.equal(value);
-      rpcRequestsHandlerMock.verifyAll();
-    });
-
-  });
-
-  describe("loadHierarchy", () => {
-
-    it("calls loadHierarchy through proxy with default 'preload' priority", async () => {
-      const options: HierarchyRequestOptions<IModelConnection> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-      };
-      rpcRequestsHandlerMock.setup(async (x) => x.loadHierarchy({ ...prepareOptions(options), priority: RequestPriority.Preload }))
-        .returns(async () => { })
-        .verifiable();
-      await manager.loadHierarchy(options);
-      rpcRequestsHandlerMock.verifyAll();
-    });
-
-    it("calls loadHierarchy through proxy with specified priority", async () => {
-      const options: HierarchyRequestOptions<IModelConnection> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-        priority: 999,
-      };
-      rpcRequestsHandlerMock.setup(async (x) => x.loadHierarchy({ ...prepareOptions(options), priority: 999 }))
-        .returns(async () => { })
-        .verifiable();
-      await manager.loadHierarchy(options);
       rpcRequestsHandlerMock.verifyAll();
     });
 

@@ -483,6 +483,8 @@ export enum BisCodeSpec {
     displayStyle = "bis:DisplayStyle",
     drawing = "bis:Drawing",
     drawingCategory = "bis:DrawingCategory",
+    externalSource = "bis:ExternalSource",
+    externalSourceAttachment = "bis:ExternalSourceAttachment",
     geometryPart = "bis:GeometryPart",
     graphicalType2d = "bis:GraphicalType2d",
     informationPartitionElement = "bis:InformationPartitionElement",
@@ -2381,7 +2383,43 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
     jsonProperties?: any;
     kind: string;
     scope: RelatedElementProps;
+    // (undocumented)
+    source?: RelatedElementProps;
     version?: string;
+}
+
+// @beta
+export interface ExternalSourceAttachmentProps extends ElementProps {
+    // (undocumented)
+    attaches?: RelatedElementProps;
+    // (undocumented)
+    pitch?: number;
+    // (undocumented)
+    role?: ExternalSourceAttachmentRole;
+    // (undocumented)
+    roll?: number;
+    // (undocumented)
+    scale?: XYZProps;
+    // (undocumented)
+    translation?: XYZProps;
+    // (undocumented)
+    yaw?: number;
+}
+
+// @beta
+export enum ExternalSourceAttachmentRole {
+    SpecifyContext = 0,
+    SpecifyPart = 1
+}
+
+// @beta
+export interface ExternalSourceProps extends ElementProps {
+    // (undocumented)
+    connectorName?: string;
+    // (undocumented)
+    connectorVersion?: string;
+    // (undocumented)
+    repository?: RelatedElementProps;
 }
 
 // @public
@@ -5869,6 +5907,8 @@ export namespace RenderTexture {
 // @public
 export interface RepositoryLinkProps extends UrlLinkProps {
     // (undocumented)
+    format?: string;
+    // (undocumented)
     repositoryGuid?: GuidString;
 }
 
@@ -7047,6 +7087,12 @@ export interface SubjectProps extends ElementProps {
 
 // @alpha (undocumented)
 export type SubLayerId = string | number;
+
+// @beta
+export interface SynchronizationConfigLinkProps extends UrlLinkProps {
+    // (undocumented)
+    lastSuccessfulRun?: string;
+}
 
 // @public
 export enum SyncMode {

@@ -131,7 +131,10 @@ public;ECJsNames
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
+<<<<<<< HEAD
 internal;EditingSessionNotifications
+=======
+>>>>>>> master
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
@@ -155,6 +158,9 @@ public;EntityQueryParams
 public;EnvironmentProps
 alpha;ExtantElementGeometryChange
 public;ExternalSourceAspectProps 
+beta;ExternalSourceAttachmentProps 
+beta;ExternalSourceAttachmentRole
+beta;ExternalSourceProps 
 public;Feature
 public;FeatureAppearance 
 public;FeatureAppearanceProps
@@ -519,6 +525,7 @@ public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
 alpha;SubLayerId = string | number
+beta;SynchronizationConfigLinkProps 
 public;SyncMode
 public;TerrainHeightOriginMode
 public;TerrainProps
