@@ -3855,6 +3855,7 @@ export interface ModelsTreeProps {
     enableElementsClassGrouping?: ClassGroupingOption;
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
+    // @deprecated
     enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
