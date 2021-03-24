@@ -60,6 +60,7 @@ public;CategoryProps
 public;CategorySelectorProps 
 internal;ChangeData
 internal;ChangedElements
+beta;ChangedEntities
 internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
@@ -130,6 +131,7 @@ public;ECJsNames
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
+internal;EditingSessionNotifications
 alpha;class Editor3dRpcInterface 
 alpha;Editor3dRpcInterfaceWriteOptions
 alpha;Editor3dRpcInterfaceWriteReturnPropsOptions
@@ -150,7 +152,6 @@ internal;ElementGraphicsRequestProps
 alpha;ElementIdsAndRangesProps
 public;ElementLoadProps
 public;ElementProps 
-alpha;ElementsChanged
 beta;EntityMetaData 
 beta;EntityMetaDataProps
 public;EntityProps
@@ -250,7 +251,6 @@ public;ImageSourceFormat
 internal;ImdlFlags
 internal;ImdlHeader 
 public;class IModel 
-internal;IModelChangeNotifications
 alpha;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
@@ -326,6 +326,7 @@ alpha;ModelClipGroups
 alpha;ModelGeometryChanges
 alpha;ModelGeometryChanges
 alpha;ModelGeometryChangesProps
+beta;ModelIdAndGeometryGuid
 public;ModelLoadProps
 public;ModelProps 
 public;ModelQueryParams 
@@ -571,6 +572,8 @@ internal;TreeFlags
 beta;Tween
 beta;TweenCallback = (obj: any) => void
 beta;Tweens
+public;TxnAction
+internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
 internal;TypeOfChange

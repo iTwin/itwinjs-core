@@ -7,9 +7,10 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BatchType, Code, ElementGeometryChange, ElementsChanged, IModelError, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import { BatchType, ChangedEntities, Code, ElementGeometryChange, IModelError, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import {
-  BriefcaseConnection, EditingFunctions, ElementEditor3d, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, TileLoadPriority,
+  BriefcaseConnection, EditingFunctions, ElementEditor3d, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession,
+  TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
@@ -174,14 +175,15 @@ describe("InteractiveEditingSession", () => {
       // Begin an editing session.
       const session = await imodel.beginEditingSession();
 
-      let changedElements: ElementsChanged;
-      session.onElementChanges.addListener((ch) => changedElements = ch);
+      let changedElements: ChangedEntities;
+      imodel.txns.onElementsChanged.addListener((ch) => {
+        changedElements = ch;
+      });
 
-      async function expectChanges(expected: ElementGeometryChange[], compareRange = false): Promise<void> {
+      function expectChanges(expected: ElementGeometryChange[], compareRange = false): void {
         const changes = session.getGeometryChangesForModel(modelId);
         expect(undefined === changes).to.equal(expected.length === 0);
         if (changes) {
-
           const actual = Array.from(changes).sort((x, y) => compareStrings(x.id, y.id));
           if (compareRange) {
             expect(actual).to.deep.equal(expected);
@@ -199,10 +201,9 @@ describe("InteractiveEditingSession", () => {
       expect(session.getGeometryChangesForModel(modelId)).to.be.undefined;
       const elem1 = await createLineElement(editor, modelId, category, makeLine());
       // Events not dispatched until changes saved.
-      await expectChanges([]);
       await imodel.saveChanges();
       const insertElem1 = makeInsert(elem1);
-      await expectChanges([insertElem1]);
+      expectChanges([insertElem1]);
       expect(changedElements!.deleted).to.be.undefined;
       expect(changedElements!.updated).to.be.undefined;
       expect(changedElements!.inserted).to.not.be.undefined;
@@ -212,9 +213,8 @@ describe("InteractiveEditingSession", () => {
       await editor.applyTransform(Transform.createTranslationXYZ(1, 0, 0).toJSON());
       await editor.write();
       const updateElem1 = makeUpdate(elem1);
-      await expectChanges([insertElem1]);
       await imodel.saveChanges();
-      await expectChanges([updateElem1]);
+      expectChanges([updateElem1]);
 
       // Modify the line element twice.
       await editor.startModifyingElements([elem1]);
@@ -223,9 +223,8 @@ describe("InteractiveEditingSession", () => {
       await editor.startModifyingElements([elem1]);
       await editor.applyTransform(Transform.createTranslationXYZ(-1, 0, 0).toJSON());
       await editor.write();
-      await expectChanges([updateElem1]);
       await imodel.saveChanges();
-      await expectChanges([updateElem1]);
+      expectChanges([updateElem1]);
 
       // Insert a new line element, modify both elements, then delete the old line element.
       const elem2 = await createLineElement(editor, modelId, category, makeLine());
@@ -235,11 +234,42 @@ describe("InteractiveEditingSession", () => {
       await deleteElements(imodel, [elem1]);
       const deleteElem1 = makeDelete(elem1);
       const insertElem2 = makeInsert(elem2);
-      await expectChanges([updateElem1]);
       await imodel.saveChanges();
-      await expectChanges([deleteElem1, insertElem2]);
+      expectChanges([deleteElem1, insertElem2]);
 
-      // ###TODO: No frontend API for testing undo/redo...
+      // Undo
+      // NOTE: Elements do not get removed from the set returned by getGeometryChangedForModel -
+      // but their state may change (e.g. from "insert" to "delete") as a result of undo/redo/
+      const isUndoPossible = await imodel.txns.isUndoPossible();
+      expect(isUndoPossible).to.be.true;
+
+      const undo = async () => imodel!.txns.reverseSingleTxn();
+      await imodel.txns.reverseSingleTxn();
+      const deleteElem2 = makeDelete(elem2);
+      expectChanges([insertElem1, deleteElem2]);
+
+      await undo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await undo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await undo();
+      expectChanges([deleteElem1, deleteElem2]);
+
+      // Redo
+      const redo = async () => imodel!.txns.reinstateTxn();
+      await redo();
+      expectChanges([insertElem1, deleteElem2]);
+
+      await redo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await redo();
+      expectChanges([updateElem1, deleteElem2]);
+
+      await redo();
+      expectChanges([deleteElem1, insertElem2]);
 
       await session.end();
       await editor.end();
