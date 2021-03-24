@@ -86,7 +86,7 @@ The [AppUiSettings]($ui-framework) class, which implements the UserSettingsProvi
 
 ### Settings stage
 
-UI and Quantity Settings as well as other settings can be present to the user for editing using the stage [SettingsModalFrontstage]($ui-framework). This stage will display all[SettingsTabEntry]($ui-core) entries that are provided via [SettingsTabsProvider]($ui-core) classes. `SettingsTabsProvider` classes can be registered with the [SettingsManager]($ui-core) by the host application, package, or extension loaded into an IModelApp using the App UI user interface. The steps to add a settings stage include.
+UI and Quantity Settings as well as other settings can be present to the user for editing using the stage [SettingsModalFrontstage]($ui-framework). This stage will display all [SettingsTabEntry]($ui-core) entries that are provided via [SettingsTabsProvider]($ui-core) classes. `SettingsTabsProvider` classes can be registered with the [SettingsManager]($ui-core) by the host application, package, or extension loaded into an IModelApp using the App UI user interface. The steps to add a settings stage include.
 
 #### Adding a backstage item
 
