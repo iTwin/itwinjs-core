@@ -123,6 +123,7 @@ export interface ClassKeyMapInfo {
 export abstract class Client {
     protected constructor();
     protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void;
+    protected baseUrl?: string;
     protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void>;
     getUrl(requestContext: ClientRequestContext): Promise<string>;
     protected abstract getUrlSearchKey(): string;
