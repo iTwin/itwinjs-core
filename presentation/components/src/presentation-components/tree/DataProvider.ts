@@ -181,13 +181,11 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   };
 
   /**
-   * Loads the hierarchy so on-demand requests and filtering works quicker
-   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
+   * A no-op that used to request the whole hierarchy to be loaded on the backend.
+   * @alpha @deprecated Will be removed on 3.0
    */
-  public async loadHierarchy() {
-    return Presentation.presentation.loadHierarchy(this.createRequestOptions(undefined));
-  }
-
+  // istanbul ignore next
+  public async loadHierarchy() {}
 }
 
 class MemoizationHelpers {

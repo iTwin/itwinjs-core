@@ -35,9 +35,9 @@ export interface IpcHostOpts {
 }
 
 /**
-  * Used by applications that have a dedicated backend. IpcHosts may send messages to their corresponding IpcApp.
-  * @note if either end terminates, the other must too.
-  * @beta
+ * Used by applications that have a dedicated backend. IpcHosts may send messages to their corresponding IpcApp.
+ * @note if either end terminates, the other must too.
+ * @beta
  */
 export class IpcHost {
   public static noStack = false;
@@ -108,6 +108,11 @@ export class IpcHost {
     this.notify(IpcAppChannel.PushPull, briefcase, methodName, ...args);
   }
 
+  /**
+   * Start the backend of an Ipc app.
+   * @param opt
+   * @note this method calls [[IModelHost.startup]] internally.
+   */
   public static async startup(opt?: IpcHostOpts): Promise<void> {
     this._ipc = opt?.ipcHost?.socket;
     if (opt?.ipcHost?.exceptions?.noStack)
@@ -120,6 +125,7 @@ export class IpcHost {
     await IModelHost.startup(opt?.iModelHost);
   }
 
+  /** Shutdown IpcHost backend. Also calls [[IModelHost.shutdown]] */
   public static async shutdown(): Promise<void> {
     this._ipc = undefined;
     await IModelHost.shutdown();

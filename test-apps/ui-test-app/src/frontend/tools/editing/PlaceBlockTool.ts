@@ -5,39 +5,37 @@
 // cSpell:ignore picklist
 
 import { assert } from "@bentley/bentleyjs-core";
-import { AxisOrder, IModelJson, LinearSweep, Matrix3d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorDef, LinePixels, PhysicalElementProps } from "@bentley/imodeljs-common";
+import { AxisOrder, LinearSweep, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Code, ColorDef, ElementGeometry, GeometryStreamBuilder, LinePixels, PhysicalElementProps } from "@bentley/imodeljs-common";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, IModelApp, ToolAssistance,
+  AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistance,
   ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { PrimitiveToolEx } from "./PrimitiveToolEx";
 
-function translate(prompt: string) {
-  return IModelApp.i18n.translate(`SampleApp:tools.PlaceBlockTool.${prompt}`);
-}
-
-/* eslint-disable deprecation/deprecation */
-
 export class PlaceBlockTool extends PrimitiveToolEx {
   public static toolId = "PlaceBlock";
   public static iconSpec = "icon-cube-faces-bottom";
+
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
   protected _isComplete = false;
   public height = 2.75;
   public story = "1";
 
-  protected allowView(_vp: Viewport) { return true; } // vp.view.isSpatialView() || vp.view.isDrawingView(); }
-  public isCompatibleViewport(vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return (undefined !== vp && this.allowView(vp)); }
-  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
-  public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
+  public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
   public onUnsuspend(): void { this.showPrompt(); }
 
+  protected translate(prompt: string) { return IModelApp.i18n.translate(`SampleApp:tools.PlaceBlock.${prompt}`); }
   protected showPrompt(): void {
     const mainMsg = (0 === this._points.length) ? "prompts.firstPoint" : (1 === this._points.length) ? "prompts.nextPoint" : "prompts.additionalPoint";
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, translate(mainMsg));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, this.translate(mainMsg));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
@@ -159,36 +157,48 @@ export class PlaceBlockTool extends PrimitiveToolEx {
 
   private async createElement(): Promise<void> {
     assert(this._matrix !== undefined, "should have defined orientation by now");
-
-    // We know that all points lie on a plane.
-    const angles = YawPitchRollAngles.createFromMatrix3d(this._matrix);
-    const origin = this._points[0];
-    const xyPoints = this._points.map((pt: Point3d) => ({ x: pt.x - origin.x, y: pt.y - origin.y }));
-
-    const primitive = LinearSweep.createZSweep(xyPoints, 0.0, this.height, true);
-
-    const geomProps = IModelJson.Writer.toIModelJson(primitive);
+    const vp = this.targetView;
+    if (undefined === vp || this._points.length < 3)
+      return;
 
     const model = this.targetModelId;
     const category = this.targetCategory;
 
-    const props3d: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty() };
+    const origin = this._points[0];
+    const angles = new YawPitchRollAngles();
+    ElementGeometry.Builder.placementAnglesFromPoints(this._points, this._matrix.getRow(2), angles);
 
-    return this.editorConnection.createElement(props3d, origin, angles, geomProps);
+    const localToWorld = Transform.createOriginAndMatrix(origin, angles.toMatrix3d());
+    const xyPoints = localToWorld.multiplyInversePoint3dArray(this._points);
+    if (undefined === xyPoints)
+      return;
+
+    const primitive = LinearSweep.createZSweep(xyPoints, 0.0, this.height, true);
+    if (undefined === primitive)
+      return;
+
+    try {
+      this._startedCmd = await this.startCommand();
+
+      const builder = new GeometryStreamBuilder();
+      if (!builder.appendGeometry(primitive))
+        return;
+
+      const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
+      await PrimitiveToolEx.callCommand("insertGeometricElement", elemProps);
+      await this.saveChanges();
+
+    } catch (err) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+    }
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === this.targetView)
       return EventHandled.No;
 
-    await this.ensureEditorConnection();
-
     if (this._isComplete)
       this.onReinitialize();
-
-    if (this._points.length === 0) {
-      await this.lockTargetModel();
-    }
 
     if (this._points.length > 1 && !ev.isControlKey) {
       const points = this.getShapePoints(ev);
@@ -200,31 +210,27 @@ export class PlaceBlockTool extends PrimitiveToolEx {
       for (const pt of points) this._points.push(pt);
 
       await this.createElement();
-      await this.editorConnection.write();
 
-      // const extents = await this.iModel.models.queryModelRanges([this.targetModelId]);
-      // await this.iModel.editing.updateProjectExtents(Range3d.fromJSON(extents[0]));
-
-      await this.saveChanges();
-
-      this.setupAndPromptForNextAction();
+      this.onReinitialize();
       return EventHandled.No;
     }
 
-    // TODO: Get orientation from AccuDraw
-    // AccuDraw.getCurrentOrientation ...
+    // TODO: Get orientation from AccuDraw.getCurrentOrientation ...
     if (undefined === this._matrix && undefined === (this._matrix = EditManipulator.HandleUtils.getRotation(EditManipulator.RotationType.Top, this.targetView)))
       return EventHandled.No;
 
     const currPt = ev.point.clone();
     if (this._points.length > 0) {
-      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), ev.viewport!, true);
+      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), this.targetView, true);
       if (undefined !== planePt)
         currPt.setFrom(planePt);
     }
 
     this._points.push(currPt);
     this.setupAndPromptForNextAction();
+
+    if (!this.isDynamicsStarted)
+      this.beginDynamics();
 
     return EventHandled.No;
   }

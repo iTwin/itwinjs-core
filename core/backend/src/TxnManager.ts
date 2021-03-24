@@ -73,39 +73,50 @@ class ChangedEntitiesProc implements TxnChangedEntities {
   }
 
   public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
+    if (mgr.isDisposed) {
+      // The iModel is being closed. Do not prepare new sqlite statements.
+      return;
+    }
+
     this.processChanges(iModel, mgr.onElementsChanged, "notifyElementsChanged");
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
   private static processChanges(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
-    const maxSize = this.maxPerEvent;
+    try {
+      const maxSize = this.maxPerEvent;
+      const changes = new ChangedEntitiesProc();
+      const select = "notifyElementsChanged" === evtName
+        ? "SELECT ElementId, ChangeType FROM temp.txn_Elements"
+        : "SELECT ModelId, ChangeType FROM temp.txn_Models";
+      iModel.withPreparedSqliteStatement(select, (sql: SqliteStatement) => {
+        const stmt = sql.stmt!;
+        while (sql.step() === DbResult.BE_SQLITE_ROW) {
+          const id = stmt.getValueId(0);
+          switch (stmt.getValueInteger(1)) {
+            case 0:
+              changes.inserted.insert(id);
+              break;
+            case 1:
+              changes.updated.insert(id);
+              break;
+            case 2:
+              changes.deleted.insert(id);
+              break;
+          }
 
-    const changes = new ChangedEntitiesProc();
-    const select = "notifyElementsChanged" === evtName
-      ? "SELECT ElementId, ChangeType FROM temp.txn_Elements"
-      : "SELECT ModelId, ChangeType FROM temp.txn_Models";
-    iModel.withPreparedSqliteStatement(select, (sql: SqliteStatement) => {
-      const stmt = sql.stmt!;
-      while (sql.step() === DbResult.BE_SQLITE_ROW) {
-        const id = stmt.getValueId(0);
-        switch (stmt.getValueInteger(1)) {
-          case 0:
-            changes.inserted.insert(id);
-            break;
-          case 1:
-            changes.updated.insert(id);
-            break;
-          case 2:
-            changes.deleted.insert(id);
-            break;
+          if (++changes._currSize >= maxSize)
+            changes.sendEvent(iModel, changedEvent, evtName);
         }
+      });
 
-        if (++changes._currSize >= maxSize)
-          changes.sendEvent(iModel, changedEvent, evtName);
-      }
-    });
-
-    changes.sendEvent(iModel, changedEvent, evtName);
+      changes.sendEvent(iModel, changedEvent, evtName);
+    } catch (_) {
+      // Presumably, the temp txn tables don't exist, because the native TxnManager is not tracking changes.
+      // This occurs when the application is using a "pull-only" briefcase - they open the briefcase as read-write temporarily,
+      // apply some pulled changesets, and then reopen in read-only mode.
+      // During the read-write phase, we're not tracking changes, and the application isn't interested in the events we'd otherwise generate here.
+    }
   }
 }
 
@@ -115,7 +126,19 @@ class ChangedEntitiesProc implements TxnChangedEntities {
  */
 export class TxnManager {
   /** @internal */
-  constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
+  private _isDisposed = false;
+
+  /** @internal */
+  public get isDisposed(): boolean {
+    return this._isDisposed;
+  }
+
+  /** @internal */
+  constructor(private _iModel: BriefcaseDb | StandaloneDb) {
+    _iModel.onBeforeClose.addOnce(() => {
+      this._isDisposed = true;
+    });
+  }
 
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];
@@ -228,7 +251,7 @@ export class TxnManager {
    * A model's geometry can change as a result of:
    *  - Insertion or deletion of a geometric element within the model; or
    *  - Modification of an existing element's geometric properties; or
-   *  - An explicit request to flag it as changed via [IModelDb.updateModel]($backend).
+   *  - An explicit request to flag it as changed via [[IModelDb.Models.updateModel]].
    */
   public readonly onModelGeometryChanged = new BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>();
 

@@ -1836,3 +1836,61 @@ export class SineCosinePolynomial {
     return Math.atan2(this.sineCoff, this.cosineCoff);
   }
 }
+/**
+ * Support for an implicit linear equation (half space)
+ * f(x,y) = a0 + x * ax + y * ay
+ * @internal
+ */
+export class ImplicitLineXY {
+  /**
+   * constant coefficient
+   */
+   public a: number;
+   /**
+   * x coefficient
+   */
+  public ax: number;
+  /**
+   * y coefficient
+   */
+  public ay: number;
+  /** construct the ImplicitLineXY from coefficients */
+  public constructor(a: number, ax: number, ay: number) {
+    this.a = a;
+    this.ax = ax;
+    this.ay = ay;
+  }
+  /** Compute 2 points of a line segment with
+   * * the segment is on the zero-line of this ImplicitLineXY
+   * * the start and endpoints are distance `b` from the projection of the origin onto the ImplicitLineXY
+   * @returns undefined if ax,ay are both zero.   Otherwise the two points of the segment.
+   */
+  public convertToSegmentPoints(b: number): Point3d[] | undefined{
+    const q = Math.sqrt (this.ax * this.ax + this.ay * this.ay);
+    const alpha = Geometry.conditionalDivideCoordinate(1.0, q, 1.0e10);
+    if (alpha === undefined)
+      return undefined;
+    const ux = alpha * this.ax;
+    const uy = alpha * this.ay;
+    const px = -alpha * ux;
+    const py = -alpha * uy;
+    return [Point3d.create(px - b * uy, py + b * ux), Point3d.create(px + b * uy, py - b * ux)];
+  }
+  /**
+   * Evaluate the half-space function at an xy point
+   * @param xy xy values for evaluation
+   * @returns evaluation.
+   */
+  public evaluatePoint(xy: XAndY): number {
+    return this.a + xy.x * this.ax + xy.y * this.ay;
+  }
+  /**
+   * add scale * (a,ax,ay) to the respective coefficients.
+   */
+   public addScaledCoefficientsInPlace(a: number, ax: number, ay: number, scale: number) {
+     this.a += scale * a;
+     this.ax += scale * ax;
+     this.ay += scale * ay;
+  }
+
+}

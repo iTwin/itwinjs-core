@@ -85,12 +85,12 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   public readonly geoServices: GeoServices;
-  /** @internal Whether it has already been determined that this iModelConnection does not have a map projection. */
-  protected _noGcsDefined?: boolean;
-  /** @internal Whether it has already been determined that this iModelConnection does not have a map projection. */
-  public get noGcsDefined(): boolean | undefined { return this._noGcsDefined; }
+  /** @internal Whether GCS has been disabled for this iModelConnection. */
+  protected _gcsDisabled = false;
+  /** @internal Return true if a GCS is not defined for this iModelConnection; also returns true if GCS is defined but disabled. */
+  public get noGcsDefined(): boolean { return this._gcsDisabled || undefined === this.geographicCoordinateSystem; }
   /** @internal */
-  public disableGCS(disable: boolean): void { this._noGcsDefined = disable ? true : undefined; }
+  public disableGCS(disable: boolean): void { this._gcsDisabled = disable; }
   /** @internal The displayed extents. Union of the the project extents and all displayed reality models.
    * Don't modify this directly - use [[expandDisplayedExtents]].
    */
@@ -460,16 +460,13 @@ export abstract class IModelConnection extends IModel {
    * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
    */
   public async spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
-    if (undefined === this._noGcsDefined && !this.isGeoLocated)
-      this._noGcsDefined = true;
-
-    if (this._noGcsDefined)
+    if (!this.isGeoLocated && this.noGcsDefined)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     const geoConverter = this.geoServices.getConverter()!;
     const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
 
-    if (this._noGcsDefined = (1 !== coordResponse.geoCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.geoCoords[0].s))
+    if (1 !== coordResponse.geoCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.geoCoords[0].s)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     if (GeoCoordStatus.Success !== coordResponse.geoCoords[0].s) {
@@ -490,15 +487,7 @@ export abstract class IModelConnection extends IModel {
    * @see [[spatialToCartographicFromEcef]]
    */
   public async spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
-    if (undefined === this._noGcsDefined) {
-      try {
-        return await this.spatialToCartographicFromGcs(spatial, result);
-      } catch (error) {
-        if (!this._noGcsDefined)
-          throw error;
-      }
-    }
-    return (this._noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
+    return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
   }
 
   /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection.
@@ -508,17 +497,14 @@ export abstract class IModelConnection extends IModel {
    * @throws IModelError if [[isGeoLocated]] is false or cartographic location could not be converted.
    */
   public async cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
-    if (undefined === this._noGcsDefined && !this.isGeoLocated)
-      this._noGcsDefined = true;
-
-    if (this._noGcsDefined)
+    if (!this.isGeoLocated && this.noGcsDefined)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     const geoConverter = this.geoServices.getConverter()!;
     const geoCoord = Point3d.create(cartographic.longitudeDegrees, cartographic.latitudeDegrees, cartographic.height); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
     const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoCoord]);
 
-    if (this._noGcsDefined = (1 !== coordResponse.iModelCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.iModelCoords[0].s))
+    if (1 !== coordResponse.iModelCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.iModelCoords[0].s)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     if (GeoCoordStatus.Success !== coordResponse.iModelCoords[0].s) {
@@ -540,15 +526,7 @@ export abstract class IModelConnection extends IModel {
    * @see [[cartographicToSpatialFromEcef]]
    */
   public async cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
-    if (undefined === this._noGcsDefined) {
-      try {
-        return await this.cartographicToSpatialFromGcs(cartographic, result);
-      } catch (error) {
-        if (!this._noGcsDefined)
-          throw error;
-      }
-    }
-    return (this._noGcsDefined ? this.cartographicToSpatialFromEcef(cartographic, result) : this.cartographicToSpatialFromGcs(cartographic, result));
+    return (this.noGcsDefined ? this.cartographicToSpatialFromEcef(cartographic, result) : this.cartographicToSpatialFromGcs(cartographic, result));
   }
 
   /** Expand this iModel's [[displayedExtents]] with the specified range.

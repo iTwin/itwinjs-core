@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
 import {
-  DevToolsRpcInterface, Editor3dRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelWriteRpcInterface,
+  DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelWriteRpcInterface,
   RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
@@ -70,7 +70,6 @@ export const rpcInterfaces = [
   IModelReadRpcInterface,
   IModelTileRpcInterface,
   IModelWriteRpcInterface,
-  Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
   SnapshotIModelRpcInterface,
   TestRpcInterface,
   WipRpcInterface,
