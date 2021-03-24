@@ -95,6 +95,7 @@ describe("NativeApp storage backend", () => {
     assert.equal((test1.getData("key1") as Uint8Array).length, testArray.length);
     test1.removeAll();
     assert.equal(test1.getKeys().length, 0);
+    test1.close(true);
   });
 
   it("Storage open/close test", () => {

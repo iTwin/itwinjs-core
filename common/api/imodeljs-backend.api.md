@@ -3388,6 +3388,24 @@ export class NativeAppStorage {
     }
 
 // @beta
+export class NativeAppStorage {
+    close(deleteFile?: boolean): void;
+    // @internal
+    static closeAll(): void;
+    static find(name: string): NativeAppStorage;
+    getData(key: string): StorageValue | undefined;
+    getKeys(): string[];
+    // @internal (undocumented)
+    static getStorageNames(): string[];
+    // (undocumented)
+    readonly id: string;
+    static open(name: string): NativeAppStorage;
+    removeAll(): void;
+    removeData(key: string): void;
+    setData(key: string, value: StorageValue): void;
+    }
+
+// @beta
 export class NativeHost {
     static get appSettingsCacheDir(): string;
     // @internal (undocumented)

@@ -135,7 +135,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 
   public async storageMgrClose(storageId: string, deleteIt: boolean): Promise<void> {
-    NativeAppStorage.find(storageId)?.close(deleteIt);
+    NativeAppStorage.find(storageId).close(deleteIt);
   }
 
   public async storageMgrNames(): Promise<string[]> {
@@ -143,25 +143,23 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 
   public async storageGet(storageId: string, key: string): Promise<StorageValue | undefined> {
-    return NativeAppStorage.find(storageId)?.getData(key);
+    return NativeAppStorage.find(storageId).getData(key);
   }
 
   public async storageSet(storageId: string, key: string, value: StorageValue): Promise<void> {
-    NativeAppStorage.find(storageId)?.setData(key, value);
+    NativeAppStorage.find(storageId).setData(key, value);
   }
 
   public async storageRemove(storageId: string, key: string): Promise<void> {
-    NativeAppStorage.find(storageId)?.removeData(key);
+    NativeAppStorage.find(storageId).removeData(key);
   }
 
   public async storageKeys(storageId: string): Promise<string[]> {
-    const storage = NativeAppStorage.find(storageId)!;
-    return storage.getKeys();
+    return NativeAppStorage.find(storageId).getKeys();
   }
 
   public async storageRemoveAll(storageId: string): Promise<void> {
-    const storage = NativeAppStorage.find(storageId)!;
-    storage.removeAll();
+    NativeAppStorage.find(storageId).removeAll();
   }
 }
 
