@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { CustomAttributeClass, RelationshipClass } from "../../ecschema-metadata";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { ECObjectsError } from "../../Exception";
-import { ECClass, MutableClass } from "../../Metadata/Class";
+import { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
 import { CustomAttributeSet } from "../../Metadata/CustomAttribute";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
@@ -1651,6 +1652,83 @@ describe("ECClass", () => {
       const testClassA = new Mixin(schemaA, "MixinA");
       const testClassB = new Mixin(schemaA, "MixinA");
       expect(SchemaItem.equalByKey(testClassA, testClassB)).to.be.true;
+    });
+  });
+
+  describe("isECClass tests", async () => {
+    const testSchema = createSchemaJsonWithItems({
+      TestMixin: {
+        schemaItemType: "Mixin",
+        baseClass: "TestSchema.BaseMixin",
+        appliesTo: "TestSchema.TestEntity",
+      },
+      BaseMixin: {
+        schemaItemType: "Mixin",
+        appliesTo: "TestSchema.TestEntity",
+      },
+      TestEntity: {
+        schemaItemType: "EntityClass",
+        properties: [
+          {
+            type: "StructProperty",
+            name: "testStructProp",
+            typeName: "TestSchema.TestStruct",
+          },
+        ],
+      },
+      TestStruct: {
+        schemaItemType: "StructClass",
+      },
+      TestCustomAttribute: {
+        schemaItemType: "CustomAttributeClass",
+        appliesTo: "AnyClass",
+      },
+      TestRelationship: {
+        schemaItemType: "RelationshipClass",
+        strength: "Embedding",
+        strengthDirection: "Forward",
+        modifier: "Sealed",
+        source: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Source RoleLabel",
+          constraintClasses: ["TestSchema.TestEntity"],
+        },
+        target: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Target RoleLabel",
+          constraintClasses: ["TestSchema.TestEntity"],
+        },
+      },
+    });
+
+    it("should return false if class is undefined", () => {
+      expect(ECClass.isECClass(undefined)).to.be.false;
+    });
+
+    it("should return true if object is of ECClass type", async () => {
+      const schemaClass = await Schema.fromJson(testSchema, new SchemaContext());
+      expect(schemaClass).to.exist;
+      const testMixin = await schemaClass.getItem<Mixin>("TestMixin");
+      expect(ECClass.isECClass(testMixin)).to.be.true;
+      const testEntity = await schemaClass.getItem<EntityClass>("TestEntity");
+      expect(ECClass.isECClass(testEntity)).to.be.true;
+      const testStruct = await schemaClass.getItem<StructClass>("TestStruct");
+      expect(ECClass.isECClass(testStruct)).to.be.true;
+      const testCustomAttribute = await schemaClass.getItem<CustomAttributeClass>("TestCustomAttribute");
+      expect(ECClass.isECClass(testCustomAttribute)).to.be.true;
+      const testRelationship = await schemaClass.getItem<RelationshipClass>("TestRelationship");
+      expect(ECClass.isECClass(testRelationship)).to.be.true;
+    });
+
+    it("should return false if object is not of ECClass type", async () => {
+      const schemaClass = await Schema.fromJson(testSchema, new SchemaContext());
+      const testEntity = await schemaClass.getItem<EntityClass>("TestEntity");
+      const testStructProp = await testEntity!.getProperty("testStructProp");
+      assert.isDefined(testStructProp);
+      expect(ECClass.isECClass(testSchema)).to.be.false;
+      expect(ECClass.isECClass(testStructProp)).to.be.false;
     });
   });
 });

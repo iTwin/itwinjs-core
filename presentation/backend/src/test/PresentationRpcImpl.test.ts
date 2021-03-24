@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
 import {
@@ -632,64 +632,14 @@ describe("PresentationRpcImpl", () => {
 
     describe("loadHierarchy", () => {
 
-      it("calls manager", async () => {
+      it("returns error status", async () => {
         const rpcOptions: PresentationRpcRequestOptions<HierarchyRequestOptions<never>> = {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
         };
-        const managerOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb>> = {
-          requestContext: ClientRequestContext.current,
-          imodel: testData.imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-        };
-        presentationManagerMock.setup((x) => x.loadHierarchy(managerOptions))
-          .returns(async () => undefined)
-          .verifiable();
+        // eslint-disable-next-line deprecation/deprecation
         const actualResult = await impl.loadHierarchy(testData.imodelToken, rpcOptions);
-        presentationManagerMock.verifyAll();
-        expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
-      });
-
-      it("does not await for load to complete", async () => {
-        const rpcOptions: PresentationRpcRequestOptions<HierarchyRequestOptions<never>> = {
-          ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
-        };
-        const managerOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb>> = {
-          requestContext: ClientRequestContext.current,
-          imodel: testData.imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-        };
-        const result = new ResolvablePromise<void>();
-        presentationManagerMock.setup((x) => x.loadHierarchy(managerOptions))
-          .returns(async () => result)
-          .verifiable();
-        const actualResult = await impl.loadHierarchy(testData.imodelToken, rpcOptions);
-        presentationManagerMock.verifyAll();
-        expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
-        await result.resolve();
-      });
-
-      it("logs warning if load throws", async () => {
-        const loggerSpy = sinon.spy(Logger, "logWarning");
-        const rpcOptions: PresentationRpcRequestOptions<HierarchyRequestOptions<never>> = {
-          ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
-        };
-        const managerOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb>> = {
-          requestContext: ClientRequestContext.current,
-          imodel: testData.imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-        };
-        presentationManagerMock.setup((x) => x.loadHierarchy(managerOptions))
-          .returns(async () => {
-            throw new PresentationError(PresentationStatus.Error, "test error");
-          })
-          .verifiable();
-        const actualResult = await impl.loadHierarchy(testData.imodelToken, rpcOptions);
-        presentationManagerMock.verifyAll();
-        expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
-        expect(loggerSpy).to.be.calledOnce;
+        expect(actualResult.statusCode).to.equal(PresentationStatus.Error);
       });
 
     });
