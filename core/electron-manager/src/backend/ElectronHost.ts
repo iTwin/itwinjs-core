@@ -164,6 +164,8 @@ export class ElectronHost {
         NativeHost.settingsStore.setData(`windowPos-${name}`, JSON.stringify(pos));
       };
       const saveMaximized = (maximized: boolean) => {
+        if (!maximized)
+          saveWindowPosition();
         NativeHost.settingsStore.setData(`windowMaximized-${name}`, maximized);
       };
 
