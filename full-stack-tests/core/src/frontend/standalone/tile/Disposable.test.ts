@@ -129,7 +129,7 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
 describe("Disposal of System", () => {
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ renderSys: { doIdleWork: false } });
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -171,7 +171,7 @@ describe("Disposal of System", () => {
 
 describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ renderSys: { doIdleWork: false } });
 
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel1 = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver

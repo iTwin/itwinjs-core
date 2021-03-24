@@ -43,6 +43,14 @@ The `QuantityFormatSettingsPage` is marked as alpha in this release and is subje
 
 The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
 
+## Incremental Precompilation of Shaders Enabled by Default
+
+To help prevent delays when a user interacts with a [Viewport]($frontend), the WebGL render system now by default precompiles shader programs used by the [RenderSystem]($frontend) before any Viewport is opened.
+
+Shader precompilation will cease once all shader programs have been compiled, or when a [Viewport]($frontend) is opened (registered with the [ViewManager]($frontend)).  As such, applications which do not open a [Viewport]($frontend) immediately upon startup stand to benefit - for example, if the user is first expected to select an iModel and/or a view through the user interface.
+
+To disable this functionality, set the `doIdleWork` property of the `RenderSystem.Options` object passed to `IModelApp.startup` to false.
+
 ## Breaking Api Changes
 
 ### @bentley/ui-core package
