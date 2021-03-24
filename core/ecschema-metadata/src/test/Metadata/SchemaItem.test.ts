@@ -5,6 +5,7 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
+import { SchemaItem } from "../../ecschema-metadata";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
@@ -194,6 +195,26 @@ describe("SchemaItemKey", () => {
 
     it("should return false if name does not match", () => {
       expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.03.MixinB")).to.be.false;
+    });
+  });
+
+  describe("isSchemaItem", () => {
+    it("should return false if schemaItem is undefined", () => {
+      const undefinedSchemaItem = undefined;
+      expect(SchemaItem.isSchemaItem(undefinedSchemaItem)).to.be.false;
+    });
+
+    it("should return true if object is of SchemaItem type", () => {
+      const schema = new Schema(new SchemaContext(), "ExampleSchema", "example", 1, 0, 0);
+      const entityClass = new EntityClass(schema, "ExampleEntity");
+      expect(entityClass).to.exist;
+      expect(SchemaItem.isSchemaItem(entityClass)).to.be.true;
+    });
+
+    it("should return false if object is not of SchemaItem type", () => {
+      const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
+      expect(SchemaItem.isSchemaItem(testSchema)).to.be.false;
+      expect(SchemaItem.isSchemaItem("A")).to.be.false;
     });
   });
 });
