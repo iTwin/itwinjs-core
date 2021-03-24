@@ -8,7 +8,7 @@ import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { MutableTreeModel, TreeModelNodeInput, VisibleTreeNodes } from "../../../ui-components/tree/controlled/TreeModel";
-import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
+import { TreeModelChanges, TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
 import { ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
 import TestUtils from "../../TestUtils";
 
@@ -46,17 +46,20 @@ describe("TreeModelSource", () => {
   });
 
   describe("modifyModel", () => {
-    beforeEach(() => {
-      const root1Input: TreeModelNodeInput = {
-        id: "root1",
+    function createNodeInput(id: string): TreeModelNodeInput {
+      const label = PropertyRecord.fromString(id, id);
+      return {
+        id,
+        item: { id, label },
+        label,
         isExpanded: false,
-        item: { id: "root1_item", label: PropertyRecord.fromString("test_label", "label") },
-        label: PropertyRecord.fromString("test_label", "label"),
         isLoading: false,
         isSelected: false,
       };
+    }
 
-      modelSource.modifyModel((model) => { model.setChildren(undefined, [root1Input], 0); });
+    beforeEach(() => {
+      modelSource.modifyModel((model) => { model.setChildren(undefined, [createNodeInput("root1")], 0); });
     });
 
     it("does not emit onModelChanged event if model did not change", () => {
@@ -66,20 +69,12 @@ describe("TreeModelSource", () => {
     });
 
     it("emits onModelChanged event with added node id", () => {
-      const root2Input: TreeModelNodeInput = {
-        id: "root2",
-        isExpanded: false,
-        item: { id: "root2_item", label: PropertyRecord.fromString("test_label", "label") },
-        label: PropertyRecord.fromString("test_label", "label"),
-        isLoading: false,
-        isSelected: false,
-      };
       const spy = sinon.spy(modelSource.onModelChanged, "emit");
-      modelSource.modifyModel((model) => { model.setChildren(undefined, [root2Input], 1); });
+      modelSource.modifyModel((model) => { model.setChildren(undefined, [createNodeInput("root2")], 1); });
       expect(spy).to.be.called;
       const changes = spy.args[0][0][1];
       expect(changes.addedNodeIds.length).to.be.eq(1);
-      expect(changes.addedNodeIds[0]).to.be.eq(root2Input.id);
+      expect(changes.addedNodeIds[0]).to.be.eq("root2");
     });
 
     it("emits onModelChanged event with removed node id", () => {
@@ -108,36 +103,147 @@ describe("TreeModelSource", () => {
         model.clearChildren(undefined);
       });
       expect(modelSource.getVisibleNodes().getNumNodes()).to.be.eq(0);
-      const newRoot1Input: TreeModelNodeInput = {
-        id: "new_root1",
-        isExpanded: false,
-        item: { id: "root1_item", label: PropertyRecord.fromString("test_label", "label") },
-        label: PropertyRecord.fromString("test_label", "label"),
-        isLoading: false,
-        isSelected: false,
-      };
       modelSource.modifyModel((model) => {
-        model.setChildren(undefined, [newRoot1Input], 0);
+        model.setChildren(undefined, [createNodeInput("new_root1")], 0);
       });
       expect(modelSource.getVisibleNodes().getNumNodes()).to.be.eq(1);
     });
 
     it("overrides existing children multiple times", () => {
-      const newRoot1Input: TreeModelNodeInput = {
-        id: "new_root1",
-        isExpanded: false,
-        item: { id: "root1_item", label: PropertyRecord.fromString("test_label", "label") },
-        label: PropertyRecord.fromString("test_label", "label"),
-        isLoading: false,
-        isSelected: false,
-      };;
       modelSource.modifyModel((model) => {
         model.setNumChildren(undefined, 1);
-        model.setChildren(undefined, [newRoot1Input], 0);
+        model.setChildren(undefined, [createNodeInput("new_root1")], 0);
       });
       modelSource.modifyModel((model) => {
         model.setNumChildren(undefined, 1);
-        model.setChildren(undefined, [{ ...newRoot1Input, id: "root1" }], 0);
+        model.setChildren(undefined, [createNodeInput("root1")], 0);
+      });
+    });
+
+    describe("node change detection", () => {
+      describe("node addition", () => {
+        it("does not duplicate added nodes", () => {
+          const spy = sinon.spy(modelSource.onModelChanged, "emit");
+          modelSource.modifyModel((model) => {
+            // Add added_node twice
+            expect(model.changeNodeId("root1", "added_node")).to.be.true;
+            expect(model.changeNodeId("added_node", "temp")).to.be.true;
+            expect(model.changeNodeId("temp", "added_node")).to.be.true;
+          });
+
+          const expectedChanges: TreeModelChanges = {
+            addedNodeIds: ["added_node"],
+            modifiedNodeIds: [],
+            removedNodeIds: ["root1"],
+          };
+          expect(spy).to.have.been.calledOnceWithExactly([modelSource.getModel(), expectedChanges]);
+        });
+
+        it("does not mistake attribute addition as node addtion", () => {
+          const spy = sinon.spy(modelSource.onModelChanged, "emit");
+          modelSource.modifyModel((model) => {
+            const node = model.getNode("root1")!;
+            node.checkbox.tooltip = "test tooltip";
+          });
+
+          const expectedChanges: TreeModelChanges = {
+            addedNodeIds: [],
+            modifiedNodeIds: ["root1"],
+            removedNodeIds: [],
+          };
+          expect(spy).to.have.been.calledOnceWithExactly([modelSource.getModel(), expectedChanges]);
+        });
+
+        it("only notifies of node addition even when the added node is also modified", () => {
+          const spy = sinon.spy(modelSource.onModelChanged, "emit");
+          modelSource.modifyModel((model) => {
+            model.insertChild(undefined, createNodeInput("root2"), 1);
+            const node = model.getNode("root2")!;
+            node.isSelected = true;
+          });
+
+          const expectedChanges: TreeModelChanges = {
+            addedNodeIds: ["root2"],
+            modifiedNodeIds: [],
+            removedNodeIds: [],
+          };
+          expect(spy).to.have.been.calledOnceWithExactly([modelSource.getModel(), expectedChanges]);
+        });
+      });
+
+      describe("node removal", () => {
+        it("does not duplicate removed nodes", () => {
+          const spy = sinon.spy(modelSource.onModelChanged, "emit");
+          modelSource.modifyModel((model) => {
+            // Remove root1 node twice
+            expect(model.changeNodeId("root1", "another_id")).to.be.true;
+            expect(model.changeNodeId("another_id", "root1")).to.be.true;
+            expect(model.changeNodeId("root1", "another_id")).to.be.true;
+          });
+
+          const expectedChanges: TreeModelChanges = {
+            addedNodeIds: ["another_id"],
+            modifiedNodeIds: [],
+            removedNodeIds: ["root1"],
+          };
+          expect(spy).to.have.been.calledOnceWithExactly([modelSource.getModel(), expectedChanges]);
+        });
+
+        it("does not mistake attribute removal as node removal", () => {
+          modelSource.modifyModel((model) => {
+            const node = model.getNode("root1")!;
+            node.checkbox.tooltip = "test tooltip";
+            node.editingInfo = { onCommit: () => { }, onCancel: () => { } };
+          });
+
+          const spy = sinon.spy(modelSource.onModelChanged, "emit");
+          modelSource.modifyModel((model) => {
+            const node = model.getNode("root1")!;
+            delete node.checkbox.tooltip;
+            delete node.editingInfo;
+          });
+
+          const expectedChanges: TreeModelChanges = {
+            addedNodeIds: [],
+            modifiedNodeIds: ["root1"],
+            removedNodeIds: [],
+          };
+          expect(spy).to.have.been.calledOnceWithExactly([modelSource.getModel(), expectedChanges]);
+        });
+      });
+
+      describe("node modification", () => {
+        it("does not duplicate modified nodes when overwriting nodes", () => {
+          const spy = sinon.spy(modelSource.onModelChanged, "emit");
+          modelSource.modifyModel((model) => {
+            // Reassign root1 node twice
+            model.insertChild(undefined, createNodeInput("root1"), 0);
+            model.insertChild(undefined, createNodeInput("root1"), 0);
+          });
+
+          const expectedChanges: TreeModelChanges = {
+            addedNodeIds: [],
+            modifiedNodeIds: ["root1"],
+            removedNodeIds: [],
+          };
+          expect(spy).to.have.been.calledOnceWithExactly([modelSource.getModel(), expectedChanges]);
+        });
+
+        it("does not duplicate modified nodes when adding new properties", () => {
+          const spy = sinon.spy(modelSource.onModelChanged, "emit");
+          modelSource.modifyModel((model) => {
+            const node = model.getNode("root1")!;
+            node.checkbox.tooltip = "test";
+            node.editingInfo = { onCommit: () => { }, onCancel: () => { } };
+          });
+
+          const expectedChanges: TreeModelChanges = {
+            addedNodeIds: [],
+            modifiedNodeIds: ["root1"],
+            removedNodeIds: [],
+          };
+          expect(spy).to.have.been.calledOnceWithExactly([modelSource.getModel(), expectedChanges]);
+        });
       });
     });
   });
