@@ -22,7 +22,7 @@ export class NativeAppStorage {
 
   /** Set the value for a key */
   public setData(key: string, value: StorageValue): void {
-    const rc = this._ecdb.withPreparedSqliteStatement("INSERT INTO app_cache(key,type,val)VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET type=excluded.type,val=excluded.val", (stmt) => {
+    const rc = this._ecdb.withPreparedSqliteStatement("INSERT INTO app_setting(key,type,val)VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET type=excluded.type,val=excluded.val", (stmt) => {
       let type: string | undefined = value === null ? "null" : typeof value;
       if (type === "object") {
         if (value instanceof Uint8Array) {
@@ -47,7 +47,7 @@ export class NativeAppStorage {
 
   /** Get the value for a key from this Storage. If key is not present, return undefined. */
   public getData(key: string): StorageValue | undefined {
-    return this._ecdb.withPreparedSqliteStatement("SELECT type,val FROM app_cache WHERE key=?", (stmt) => {
+    return this._ecdb.withPreparedSqliteStatement("SELECT type,val FROM app_setting WHERE key=?", (stmt) => {
       stmt.bindValue(1, key);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         return undefined;
@@ -67,21 +67,25 @@ export class NativeAppStorage {
     });
   }
 
+  /** Get the value for a key as a string. If it is not present, or not of type string, return undefined */
   public getString(key: string): string | undefined {
     const val = this.getData(key);
     return typeof val === "string" ? val : undefined;
   }
 
+  /** Get the value for a key as a number. If it is not present, or not of type number, return undefined */
   public getNumber(key: string): number | undefined {
     const val = this.getData(key);
     return typeof val === "number" ? val : undefined;
   }
 
+  /** Get the value for a key as a boolean. If it is not present, or not of type boolean, return undefined */
   public getBoolean(key: string): boolean | undefined {
     const val = this.getData(key);
     return typeof val === "boolean" ? val : undefined;
   }
 
+  /** Get the value for a key as a Uint8Array. If it is not present, or not of type Uint8Array, return undefined */
   public getUint8Array(key: string): Uint8Array | undefined {
     const val = this.getData(key);
     return val instanceof Uint8Array ? val : undefined;
@@ -90,7 +94,7 @@ export class NativeAppStorage {
   /** Get all key names in this Storage */
   public getKeys(): string[] {
     const keys = new Array<string>();
-    this._ecdb.withPreparedSqliteStatement("SELECT key FROM app_cache", (stmt) => {
+    this._ecdb.withPreparedSqliteStatement("SELECT key FROM app_setting", (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         keys.push(stmt.getValue(0).getString());
       }
@@ -100,7 +104,7 @@ export class NativeAppStorage {
 
   /** Remove a key/value pair from this Storage */
   public removeData(key: string) {
-    const rc = this._ecdb.withPreparedSqliteStatement("DELETE FROM app_cache WHERE key=?", (stmt) => {
+    const rc = this._ecdb.withPreparedSqliteStatement("DELETE FROM app_setting WHERE key=?", (stmt) => {
       stmt.bindValue(1, key);
       return stmt.step();
     });
@@ -111,7 +115,7 @@ export class NativeAppStorage {
 
   /** Remove all key/value pairs */
   public removeAll() {
-    const rc = this._ecdb.withPreparedSqliteStatement("DELETE FROM app_cache", (stmt) => {
+    const rc = this._ecdb.withPreparedSqliteStatement("DELETE FROM app_setting", (stmt) => {
       return stmt.step();
     });
     if (rc !== DbResult.BE_SQLITE_DONE) {
@@ -129,8 +133,9 @@ export class NativeAppStorage {
       IModelJsFs.removeSync(storageFile);
     NativeAppStorage._storages.delete(this.id);
   }
+
   private static init(ecdb: ECDb): DbResult {
-    return ecdb.withPreparedSqliteStatement("CREATE TABLE app_cache(key PRIMARY KEY,type,val);", (stmt) => {
+    return ecdb.withPreparedSqliteStatement("CREATE TABLE app_setting(key PRIMARY KEY,type,val);", (stmt) => {
       return stmt.step();
     });
   }
@@ -150,6 +155,7 @@ export class NativeAppStorage {
     this._storages.forEach((value) => value.close());
     this._storages.clear();
   }
+
   /** @internal */
   public static getStorageNames(): string[] {
     return IModelJsFs.readdirSync(NativeHost.appSettingsCacheDir).filter((name) => name.endsWith(this._ext));
@@ -158,9 +164,7 @@ export class NativeAppStorage {
   /** Open or find a Storage by name. */
   public static open(name: string): NativeAppStorage {
     if (!this._init) {
-      IModelHost.onBeforeShutdown.addOnce(() => {
-        this.closeAll();
-      });
+      IModelHost.onBeforeShutdown.addOnce(() => this.closeAll());
       this._init = true;
     }
     const fileName = name + this._ext;
@@ -183,7 +187,7 @@ export class NativeAppStorage {
       }
       const storage = new NativeAppStorage(ecdb, fileName);
       this._storages.set(fileName, storage);
-      return storage
+      return storage;
     }
   }
 }

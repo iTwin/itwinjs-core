@@ -159,18 +159,20 @@ export class ElectronHost {
           height: resolution[1],
           x: position[0],
           y: position[1],
-        }
+        };
         NativeHost.settingsStore.setData(`windowPos-${name}`, JSON.stringify(pos));
-      }
+      };
       const saveMaximized = (maximized: boolean) => {
+        if (!maximized)
+          saveWindowPosition();
         NativeHost.settingsStore.setData(`windowMaximized-${name}`, maximized);
-      }
+      };
 
       mainWindow.on("resized", () => saveWindowPosition());
       mainWindow.on("moved", () => saveWindowPosition());
       mainWindow.on("maximize", () => saveMaximized(true));
       mainWindow.on("unmaximize", () => saveMaximized(false));
-    };
+    }
   }
 
   /** The "main" BrowserWindow for this application. */
@@ -180,12 +182,12 @@ export class ElectronHost {
   public static getWindowSizeSetting(windowName: string): WindowSizeAndPosition | undefined {
     const saved = NativeHost.settingsStore.getString(`windowPos-${windowName}`);
     return saved ? JSON.parse(saved) as WindowSizeAndPosition : undefined;
-  };
+  }
 
   /** Gets "window maximized" flag for a window, by name, from settings file if present */
   public static getWindowMaximizedSetting(windowName: string): boolean | undefined {
     return NativeHost.settingsStore.getBoolean(`windowMaximized-${windowName}`);
-  };
+  }
 
   /**
    * Open the main Window when the app is ready.
