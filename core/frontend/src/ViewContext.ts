@@ -8,8 +8,8 @@
 
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
-  ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
-  Point3d, Range1d, Range3d, Segment1d, Transform, Vector2d, Vector3d, ViewGraphicsOps, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY} from "@bentley/geometry-core";
+  ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GridInViewContext, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
+  Point3d, Range1d, Range3d, Segment1d, Transform, Vector2d, Vector3d, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY} from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
@@ -47,6 +47,10 @@ export class GridDisplaySettings {
   public static cullingPerspectiveOption: 0 | 1 | 2 = 1;
   /** Clipping option based on distance to neighbor. 0 for none */
   public static clippingOption: 0 | 1 = 1;
+  /** crude upper limit on lines to draw.
+   * This is applied symmetrically above and below the limits at "frontMost" points of the grid plane intersection with the frustum
+  */
+  public static lineLimiter: number = 1000;
 }
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
@@ -363,8 +367,7 @@ export class DecorateContext extends RenderContext {
       return;
 
     const meterPerPixel = vp.getPixelSizeAtPoint(loopPt);
-    const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef;
-    const refSpacing = Vector2d.create(spacing.x, spacing.y).scale(refScale);
+    const refSpacing = Vector2d.create(spacing.x, spacing.y);
 
     const viewZ = vp.rotation.getRow(2);
     const gridOffset = Point3d.create(viewZ.x * meterPerPixel, viewZ.y * meterPerPixel, viewZ.z * meterPerPixel); // Avoid z fighting with coincident geometry
@@ -419,7 +422,8 @@ export class DecorateContext extends RenderContext {
     const gridOptions = ViewportGraphicsGridSpacingOptions.create(
       (vp.isCameraOn && Math.abs(zVec.dotProduct(vp.rotation.getRow(2))) < 0.9) ? GridDisplaySettings.minPerspectiveSeparation : GridDisplaySettings.minSeparation,
       (vp.isCameraOn ? GridDisplaySettings.cullingPerspectiveOption : GridDisplaySettings.cullingOption),
-      GridDisplaySettings.clippingOption
+      GridDisplaySettings.clippingOption,
+      10      // first pass only gets major block lines !!!
     );
 
     const gridRefXStep = rMatrix.rowX().scale(refSpacing.x);
@@ -433,40 +437,37 @@ export class DecorateContext extends RenderContext {
     let lineTransparency = GridDisplaySettings.refTransparency;
     let lastTransparency: number;
     let thisTransparency: number;
-
-    ViewGraphicsOps.announceGridLinesInView(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, gridOptions,
+    const gridInViewContext = GridInViewContext.create(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
+    gridOptions.gridMultiple = gridsPerRef > 0 ? gridsPerRef: 1;
+    gridInViewContext?.processGrid (gridOptions,
       (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
         startEndDistances: Segment1d | undefined,
         gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
         addGridLine(pointA, pointB, startEndDistances, gridLineIdentifier);
       });
-
     // add first line now if it ended up being the only one in the view due to zoom level...
     if (undefined !== firstLine) {
       builder.setSymbology(color.withTransparency(lineTransparency), planeColor, 1, linePattern);
       builder.addLineString(firstLine);
     }
-
     // might still need grid lines even if no ref lines are visible in the view due to zoom level...
     if (noOutput || undefined !== firstLine)
       drawGridLines = true;
 
     if (drawGridLines) {
-      const gridXStep = gridRefXStep.scale(1 / gridsPerRef);
-      const gridYStep = gridRefYStep.scale(1 / gridsPerRef);
 
       lineTransparency = GridDisplaySettings.lineTransparency;
       linePattern = LinePixels.Solid;
       skipRefLines = true;
-
-      ViewGraphicsOps.announceGridLinesInView(gridOrigin, gridXStep, gridYStep, vp.worldToViewMap, npcRange, gridOptions,
+      gridOptions.gridMultiple = 1;
+      // const gridInViewContext1 = GridInViewContext.create(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
+      gridInViewContext?.processGrid (gridOptions,
         (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
           startEndDistances: Segment1d | undefined,
           gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
           addGridLine(pointA, pointB, startEndDistances, gridLineIdentifier);
         });
     }
-
     this.addDecorationFromBuilder(builder);
   }
 

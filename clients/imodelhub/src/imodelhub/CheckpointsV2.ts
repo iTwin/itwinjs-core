@@ -26,7 +26,9 @@ export enum CheckpointV2State {
   /** CheckpointV2 creation was successful. */
   Successful = 1,
   /** CheckpointV2 creation failed. */
-  Failed = 2
+  Failed = 2,
+  /** CheckpointV2 is not generated. It was never created or was deleted. This state is set by the server. It is possible to recreate CheckpointV2. */
+  NotGenerated = 3
 }
 
 /** [[CheckpointV2]] generation error id.

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "Remove deprecated ElementEditor that was replaced by EditCommands.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "65233531+bbastings@users.noreply.github.com"
+}

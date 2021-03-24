@@ -1665,7 +1665,7 @@ export class PresentationRpcInterface extends RpcInterface {
     getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
     static readonly interfaceName = "PresentationRpcInterface";
     static interfaceVersion: string;
-    // @alpha
+    // @alpha @deprecated (undocumented)
     loadHierarchy(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<void>;
 }
 
@@ -2164,8 +2164,6 @@ export class RpcRequestsHandler implements IDisposable {
     getPagedNodes(options: Paged<ExtendedHierarchyRequestOptions<IModelRpcProps, NodeKeyJSON>>): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps>): Promise<SelectionScope[]>;
-    // (undocumented)
-    loadHierarchy(options: HierarchyRequestOptions<IModelRpcProps>): Promise<void>;
     request<TResult, TOptions extends {
         imodel: IModelRpcProps;
     }, TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<Omit<TOptions, "imodel">>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;
