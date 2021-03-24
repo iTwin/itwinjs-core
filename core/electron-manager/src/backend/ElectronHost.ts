@@ -71,7 +71,10 @@ export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptio
   storeWindowName?: string;
 }
 
-export interface WindowSizeAndPosition {
+/** the size and position of a window as stored in the settings file.
+ * @beta
+ */
+export interface WindowSizeAndPositionProps {
   width: number;
   height: number;
   x: number;
@@ -154,7 +157,7 @@ export class ElectronHost {
       const saveWindowPosition = () => {
         const resolution = mainWindow.getSize();
         const position = mainWindow.getPosition();
-        const pos: WindowSizeAndPosition = {
+        const pos: WindowSizeAndPositionProps = {
           width: resolution[0],
           height: resolution[1],
           x: position[0],
@@ -179,9 +182,9 @@ export class ElectronHost {
   public static get mainWindow() { return this._mainWindow; }
 
   /** Gets window size and position for a window, by name, from settings file, if present */
-  public static getWindowSizeSetting(windowName: string): WindowSizeAndPosition | undefined {
+  public static getWindowSizeSetting(windowName: string): WindowSizeAndPositionProps | undefined {
     const saved = NativeHost.settingsStore.getString(`windowPos-${windowName}`);
-    return saved ? JSON.parse(saved) as WindowSizeAndPosition : undefined;
+    return saved ? JSON.parse(saved) as WindowSizeAndPositionProps : undefined;
   }
 
   /** Gets "window maximized" flag for a window, by name, from settings file if present */
