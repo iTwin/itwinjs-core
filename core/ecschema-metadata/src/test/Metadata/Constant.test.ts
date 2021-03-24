@@ -49,7 +49,7 @@ describe("Constant", () => {
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem<Constant>("TestConstant");
       assert.isDefined(testItem);
-      assert.isTrue(testItem instanceof Constant);
+      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
       assert.isDefined(testConst);
 
@@ -71,7 +71,7 @@ describe("Constant", () => {
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync<Constant>("TestConstant");
       assert.isDefined(testItem);
-      assert.isTrue(testItem instanceof Constant);
+      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
       assert.isDefined(testConst);
 
@@ -189,7 +189,7 @@ describe("Constant", () => {
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem<Constant>("TestConstant");
       assert.isDefined(testItem);
-      assert.isTrue(testItem instanceof Constant);
+      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJSON(true, true);
@@ -214,7 +214,7 @@ describe("Constant", () => {
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync<Constant>("TestConstant");
       assert.isDefined(testItem);
-      assert.isTrue(testItem instanceof Constant);
+      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJSON(true, true);
@@ -239,7 +239,7 @@ describe("Constant", () => {
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem<Constant>("TestConstant");
       assert.isDefined(testItem);
-      assert.isTrue(testItem instanceof Constant);
+      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJSON(false, true);
@@ -259,7 +259,7 @@ describe("Constant", () => {
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem<Constant>("TestConstant");
       assert.isDefined(testItem);
-      assert.isTrue(testItem instanceof Constant);
+      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
       assert.isDefined(testConst);
       const json = JSON.stringify(testConst);
@@ -280,7 +280,7 @@ describe("Constant", () => {
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync<Constant>("TestConstant");
       assert.isDefined(testItem);
-      assert.isTrue(testItem instanceof Constant);
+      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJSON(false, false);
@@ -300,7 +300,7 @@ describe("Constant", () => {
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync<Constant>("TestConstant");
       assert.isDefined(testItem);
-      assert.isTrue(testItem instanceof Constant);
+      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
       assert.isDefined(testConst);
       const json = JSON.stringify(testConst);
