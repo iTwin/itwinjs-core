@@ -1373,7 +1373,7 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
       const testEnum = new Enumeration(testSchema, "TestEnumeration", PrimitiveType.Integer);
       const testStruct = await mutable.createStructClass("TestStruct");
       const testRelationship = await mutable.createRelationshipClass("TestRelationship");
-  
+
       const primitiveProperty = new PrimitiveProperty(testClass, "A");
       expect(Property.isProperty(primitiveProperty)).to.be.true;
       const enumProperty = new EnumerationProperty(testClass, "B", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));

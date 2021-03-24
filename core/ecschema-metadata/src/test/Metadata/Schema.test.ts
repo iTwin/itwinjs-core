@@ -208,7 +208,7 @@ describe("Schema", () => {
         expect(classArray.length).to.eql(3);
 
         expect(schemaClasses.next().value.schemaItemType).to.eql(SchemaItemType.EntityClass);
-        expect(schemaClasses.next().value.schemaItemType).to.eql(SchemaItemType.Mixin)
+        expect(schemaClasses.next().value.schemaItemType).to.eql(SchemaItemType.Mixin);
         expect(schemaClasses.next().value.schemaItemType).to.eql(SchemaItemType.StructClass);
         expect(schemaClasses.next().done).to.eql(true);
       });
