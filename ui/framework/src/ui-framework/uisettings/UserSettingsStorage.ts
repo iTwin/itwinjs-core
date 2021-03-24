@@ -68,7 +68,7 @@ export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSett
 }
 
 /** Alias for [[UserSettingsStorage]]
- * @public @deprecated use UserSettingsStorage
+ * @beta @deprecated use UserSettingsStorage
  */
 export class IModelAppUiSettings extends UserSettingsStorage {
 }

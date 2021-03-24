@@ -74,11 +74,21 @@ The [AppUiSettings]($ui-framework) class, which implements the UserSettingsProvi
   }
 ```
 
-## Settings stage
+## Settings Components
 
-UI Settings as well as other settings can be present to the user for editing using the stage [SettingsModalFrontstage]($ui-framework). This stage will display all[SettingsTabEntry]($ui-core) entries that are provided via [SettingsTabsProvider]($ui-core) classes. `SettingsTabsProvider` classes can be registered with the [SettingsManager]($ui-core) by the host application, package, or extension loaded into an IModelApp using the App UI user interface. The steps to add a settings stage include.
+### Quantity Formatting Settings
 
-### Adding a backstage item
+  The [QuantityFormatSettingsPage]($ui-framework) component provides the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+
+### User Interface Settings
+
+  The [UiSettingsPage]($ui-framework) component provides the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+
+### Settings stage
+
+UI and Quantity Settings as well as other settings can be present to the user for editing using the stage [SettingsModalFrontstage]($ui-framework). This stage will display all[SettingsTabEntry]($ui-core) entries that are provided via [SettingsTabsProvider]($ui-core) classes. `SettingsTabsProvider` classes can be registered with the [SettingsManager]($ui-core) by the host application, package, or extension loaded into an IModelApp using the App UI user interface. The steps to add a settings stage include.
+
+#### Adding a backstage item
 
 The [SettingsModalFrontstage.getBackstageActionItem] method can be used to get a [BackstageActionItem]($ui-abstract) that is used to construct the backstage. Below is an example of how to set up a backstage menu component that will display the 'Settings' entry if `SettingsTabEntry` items are provided.
 
@@ -100,7 +110,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
 }
 ```
 
-### Defining a SettingsTabsProvider
+#### Defining a SettingsTabsProvider
 
 Below is an example [SettingsTabsProvider]($ui-core) class that adds two settings pages, one for Units Formatting and the other for UI Settings. In the `AppUiSettings` example above the call to the static method [AppSettingsTabsProvider.initializeAppSettingProvider] is called to add this provider with the SettingsManager instance held by UiFramework.
 

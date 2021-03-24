@@ -1260,7 +1260,7 @@ export class LocalSettingsStorage implements UiSettingsStorage {
     w: Window;
 }
 
-// @public @deprecated
+// @beta @deprecated
 export class LocalUiSettings extends LocalSettingsStorage {
     constructor(w?: Window);
 }
@@ -1904,7 +1904,7 @@ export class SessionSettingsStorage implements UiSettingsStorage {
     w: Window;
 }
 
-// @public @deprecated
+// @beta @deprecated
 export class SessionUiSettings extends SessionSettingsStorage {
     constructor(w?: Window);
 }

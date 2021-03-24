@@ -24,7 +24,7 @@ import {
   SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
   Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
-import { MessageManager, ModalDialogManager, QuantityFormatSettingsPanel, ReactNotifyMessageDetails, UiFramework } from "@bentley/ui-framework";
+import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../..";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
@@ -38,7 +38,7 @@ function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
     {
       itemPriority: 10, tabId: "Quantity", pageWillHandleCloseRequest: true, label: "Quantity", tooltip: "Quantity Format Settings", icon: "icon-measure",
-      page: <QuantityFormatSettingsPanel initialQuantityType={QuantityType.Length} availableUnitSystems={new Set(["metric","imperial","usCustomary","usSurvey"])} />,
+      page: <QuantityFormatSettingsPage initialQuantityType={QuantityType.Length} availableUnitSystems={new Set(["metric","imperial","usCustomary","usSurvey"])} />,
     },
     {
       itemPriority: 20, tabId: "Accudraw", label: "Accudraw", tooltip: "Accudraw Settings", icon: "icon-paintbrush",

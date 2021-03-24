@@ -488,7 +488,7 @@ export class AppNotificationManager extends NotificationManager {
     updatePointerMessage(displayPoint: XAndY, relativePosition: RelativePosition): void;
 }
 
-// @alpha
+// @beta
 export class AppUiSettings implements UserSettingsProvider {
     constructor(defaults: Partial<InitialAppUiSettings>);
     // (undocumented)
@@ -2946,7 +2946,7 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
     relativePosition: RelativePosition;
 }
 
-// @public @deprecated
+// @beta @deprecated
 export class IModelAppUiSettings extends UserSettingsStorage {
 }
 
@@ -3070,7 +3070,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     render(): JSX.Element;
 }
 
-// @alpha
+// @beta
 export interface InitialAppUiSettings {
     // (undocumented)
     colorTheme: string;
@@ -4372,7 +4372,7 @@ export class PropsHelper {
 }
 
 // @beta
-export function QuantityFormatSettingsPanel({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element;
+export function QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element;
 
 // @beta
 export interface QuantityFormatterSettingsOptions {
@@ -6656,7 +6656,7 @@ export interface UserProfileBackstageItemProps extends CommonProps {
     userInfo: UserInfo;
 }
 
-// @alpha
+// @beta
 export interface UserSettingsProvider {
     loadUserSettings(storage: UiSettingsStorage): Promise<void>;
     providerId: string;

@@ -40,7 +40,7 @@ export class SessionSettingsStorage implements UiSettingsStorage {
 }
 
 /** Alias for [[SessionSettingsStorage]]
- * @public @deprecated use SessionSettingsStorage
+ * @beta @deprecated use SessionSettingsStorage
  */
 export class SessionUiSettings extends SessionSettingsStorage {
   constructor(w: Window = window) { super (w);}

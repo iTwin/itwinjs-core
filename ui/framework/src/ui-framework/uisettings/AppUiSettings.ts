@@ -13,7 +13,7 @@ import { UiFramework, UserSettingsProvider } from "../UiFramework";
 // cSpell:ignore configurableui
 
 /** Default values that may be specified for [[AppUiSettings]].
- * @alpha
+ * @beta
  */
 export interface InitialAppUiSettings {
   colorTheme: string;
@@ -31,7 +31,7 @@ export interface InitialAppUiSettings {
  * UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
  * ```
  *
- * @alpha
+ * @beta
  */
 export class AppUiSettings implements UserSettingsProvider  {
   public readonly providerId = "AppUiSettingsProvider";

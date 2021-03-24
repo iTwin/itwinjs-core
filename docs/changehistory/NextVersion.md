@@ -9,15 +9,15 @@ publish: false
 
 #### Quantity Formatting Settings
 
-The [QuantityFormatSettingsPanel]($ui-framework) component has been added to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+The [QuantityFormatSettingsPage]($ui-framework) component has been added to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
 
 #### User Interface Settings
 
-The [UiSettingsPage]($ui-framework) component has been to provide the UI to set general UI that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+The [UiSettingsPage]($ui-framework) component has been to provide the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
 
 #### Registering Settings
 
-Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
+Below is an example of registering the `QuantityFormatSettingsPage` with the `SettingsManager`.
 
 ```ts
 // Sample settings provider that dynamically adds settings into the setting stage
@@ -37,13 +37,21 @@ export class AppSettingsTabsProvider implements SettingsTabsProvider {
 }
 ```
 
-The `QuantityFormatSettingsPanel` is marked as alpha in this release and is subject to minor modifications in future releases.
+The `QuantityFormatSettingsPage` is marked as alpha in this release and is subject to minor modifications in future releases.
 
 ## @bentley/imodeljs-quantity package
 
 The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
 
 ## Breaking Api Changes
+
+### @bentley/ui-core package
+
+The beta class `SettingsProvider` was renamed to `SettingsTabsProvider`.
+
+### @bentley/ui-framework package
+
+The beta class `QuantityFormatSettingsPanel` was renamed to `QuantityFormatSettingsPage`.
 
 ### @bentley/imodeljs-quantity package
 

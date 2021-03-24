@@ -42,7 +42,7 @@ import { WidgetManager } from "./widgets/WidgetManager";
 // cSpell:ignore Mobi
 
 /** Interface to be implemented but any classes that wants to load their user settings when the UiSetting storage class is set.
- * @alpha
+ * @beta
  */
 export interface UserSettingsProvider {
   /** Unique provider Id */

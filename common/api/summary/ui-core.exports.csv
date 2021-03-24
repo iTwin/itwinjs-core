@@ -156,7 +156,7 @@ public;LoadingSpinnerProps
 public;LoadingStatus 
 public;LoadingStatusProps 
 public;LocalSettingsStorage 
-public;LocalUiSettings 
+beta;LocalUiSettings 
 public;MainTabsProps 
 internal;mergeRefs
 public;MessageBox 
@@ -227,7 +227,7 @@ public;Select: (props: SelectProps) => JSX.Element | null
 public;SelectOption
 public;SelectProps 
 public;SessionSettingsStorage 
-public;SessionUiSettings 
+beta;SessionUiSettings 
 beta;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element
 beta;SettingsContainerProps
 beta;SettingsManager

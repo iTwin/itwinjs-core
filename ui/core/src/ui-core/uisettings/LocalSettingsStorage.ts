@@ -40,7 +40,7 @@ export class LocalSettingsStorage implements UiSettingsStorage {
 }
 
 /** Alias for [[LocalSettingsStorage]]
- * @public @deprecated use LocalSettingsStorage
+ * @beta @deprecated use LocalSettingsStorage
  */
 export class LocalUiSettings extends LocalSettingsStorage {
   constructor(w: Window = window) { super (w);}
