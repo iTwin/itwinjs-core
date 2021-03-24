@@ -11,6 +11,7 @@ import * as categoryMod from "./Category";
 import { ClassRegistry } from "./ClassRegistry";
 import * as elementMod from "./Element";
 import * as aspectMod from "./ElementAspect";
+import * as externalSourceMod from "./ExternalSource";
 import { KnownLocations } from "./IModelHost";
 import * as materialMod from "./Material";
 import * as modelMod from "./Model";
@@ -52,6 +53,7 @@ export class BisCoreSchema extends Schema {
       linkMod,
       textureMod,
       materialMod,
+      externalSourceMod,
     ].forEach((module) => ClassRegistry.registerModule(module, this));
   }
 }
