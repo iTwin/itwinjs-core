@@ -5,9 +5,9 @@
 import { assert, should } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { ClientRequestContext, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelBaseHandler } from "@bentley/imodelhub-client";
-import { ITwinClientLoggerCategory, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 
 export const whitelistRelPath: string = "../assets/whitelist.txt";
 
