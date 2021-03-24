@@ -226,7 +226,8 @@ public;Model
 public;ModelSelector 
 internal;class NativeAppAuthorizationBackend 
 beta;NativeHost
-beta;NativeHostOpts = IpcHostOpts
+beta;NativeHostOptions
+beta;NativeHostOpts 
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 

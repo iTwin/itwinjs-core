@@ -12,7 +12,6 @@ import { NativeAppOpts } from '@bentley/imodeljs-frontend';
 import { NativeHostOpts } from '@bentley/imodeljs-backend';
 import { PromiseReturnType } from '@bentley/imodeljs-frontend';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
-import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
 
 // @beta
 export class ElectronApp {
@@ -59,7 +58,6 @@ export interface ElectronHostOptions {
     frontendURL?: string;
     iconName?: string;
     ipcHandlers?: (typeof IpcHandler)[];
-    rpcInterfaces?: RpcInterfaceDefinition[];
     webResourcesPath?: string;
 }
 

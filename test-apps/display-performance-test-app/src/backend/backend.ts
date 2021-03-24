@@ -17,7 +17,7 @@ export async function initializeBackend() {
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
-    await ElectronHost.startup({ electronHost: { webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces } });
+    await ElectronHost.startup({ electronHost: { webResourcesPath: path.join(__dirname, "..", "..", "build") }, nativeHost: { rpcInterfaces } });
   } else
     await IModelHost.startup();
 }

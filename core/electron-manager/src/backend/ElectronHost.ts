@@ -13,7 +13,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
-import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration } from "@bentley/imodeljs-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
@@ -53,8 +53,6 @@ export interface ElectronHostOptions {
   developmentServer?: boolean;
   /** port number for development server. Default is 3000 */
   frontendPort?: number;
-  /** list of RPC interface definitions to register */
-  rpcInterfaces?: RpcInterfaceDefinition[];
   /** list of [IpcHandler]($common) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
 }
@@ -205,7 +203,7 @@ export class ElectronHost {
       this.webResourcesPath = eopt?.webResourcesPath ?? "";
       this.frontendURL = eopt?.frontendURL ?? (this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`);
       this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
-      this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
+      this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, opts?.nativeHost?.rpcInterfaces);
     }
     opts = opts ?? {};
     opts.ipcHost = opts.ipcHost ?? {};

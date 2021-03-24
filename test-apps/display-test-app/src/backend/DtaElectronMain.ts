@@ -6,7 +6,7 @@ import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
-import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
+import { initializeDtaBackend } from "./Backend";
 import { IpcHandler } from "@bentley/imodeljs-backend";
 
 const getWindowSize = () => {
@@ -42,15 +42,14 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
  * that starts from the file "index.ts". That launches the iModel.js frontend (IModelApp).
  */
 const dtaElectronMain = async () => {
-  const opts: ElectronHostOptions = {
+  const electronHost: ElectronHostOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
-    rpcInterfaces: getRpcInterfaces(),
     ipcHandlers: [DtaHandler],
     developmentServer: process.env.NODE_ENV === "development",
   };
 
-  await initializeDtaBackend(opts);
+  await initializeDtaBackend(electronHost);
 
   const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
   const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);

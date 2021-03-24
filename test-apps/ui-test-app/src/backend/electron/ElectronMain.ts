@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
-import { getSupportedRpcs } from "../../common/rpcs";
+import { NativeHostOptions } from "@bentley/imodeljs-backend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import * as path from "path";
+import { getSupportedRpcs } from "../../common/rpcs";
 
 /**
  * Initializes Electron backend
@@ -17,11 +18,14 @@ const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 export async function initializeElectron() {
   const electronHost: ElectronHostOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
-    rpcInterfaces: getSupportedRpcs(),
     developmentServer: process.env.NODE_ENV === "development",
   };
 
-  await ElectronHost.startup({ electronHost });
+  const nativeHost: NativeHostOptions = {
+    rpcInterfaces: getSupportedRpcs(),
+  };
+
+  await ElectronHost.startup({ electronHost, nativeHost });
   EditCommandAdmin.register(BasicManipulationCommand);
 
   // Handle custom keyboard shortcuts

@@ -7,11 +7,14 @@ import { IpcWebSocketBackend } from "@bentley/imodeljs-common";
 import { MobileDevice, MobileHost, MobileHostOpts } from "./MobileHost";
 
 /** @beta */
+export type IOSHostOpts = MobileHostOpts;
+
+/** @beta */
 export class IOSHost extends MobileHost {
   /**
    * Start the backend of an IOS app.
    */
-  public static async startup(opt?: MobileHostOpts): Promise<void> {
+  public static async startup(opt?: IOSHostOpts): Promise<void> {
     const device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
     // The abstract functions of MobileDevice are implemented at runtime in native code.
     (global as any).__iTwinJsNativeBridge = device; // for native side

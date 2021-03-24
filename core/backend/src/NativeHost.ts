@@ -6,13 +6,13 @@
  * @module NativeApp
  */
 
-import * as path from "path";
 import { BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
-  NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
+  NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, RpcInterfaceDefinition, StorageValue,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
+import * as path from "path";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
@@ -33,6 +33,8 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety);
   }
   public setAccessToken(token?: AccessToken) {
+    if (this._accessToken === token)
+      return;
     this._accessToken = token;
     NativeHost.onUserStateChanged.raiseEvent(this._accessToken);
   }
@@ -165,8 +167,19 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 }
 
+/**
+ * Options for  [[NativeHost.startup]]
+ * @beta
+ */
+export interface NativeHostOptions {
+  /** list of RPC interface definitions to register */
+  rpcInterfaces?: RpcInterfaceDefinition[];
+}
+
 /** @beta */
-export type NativeHostOpts = IpcHostOpts;
+export interface NativeHostOpts extends IpcHostOpts {
+  nativeHost?: NativeHostOptions;
+}
 
 /**
  * Used by desktop/mobile native applications

@@ -162,6 +162,7 @@ import { RenderMaterialProps } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { RequestNewBriefcaseProps } from '@bentley/imodeljs-common';
+import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
 import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
 import { SchemaState } from '@bentley/imodeljs-common';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
@@ -3458,8 +3459,16 @@ export class NativeHost {
     static startup(opt?: NativeHostOpts): Promise<void>;
 }
 
+// @beta
+export interface NativeHostOptions {
+    rpcInterfaces?: RpcInterfaceDefinition[];
+}
+
 // @beta (undocumented)
-export type NativeHostOpts = IpcHostOpts;
+export interface NativeHostOpts extends IpcHostOpts {
+    // (undocumented)
+    nativeHost?: NativeHostOptions;
+}
 
 export { NativeLoggerCategory }
 

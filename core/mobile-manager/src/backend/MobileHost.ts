@@ -8,6 +8,7 @@ import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@be
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
+import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationBackend } from "../MobileBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
 
@@ -146,5 +147,8 @@ export class MobileHost {
     if (IpcHost.isValid)
       MobileAppHandler.register();
     IModelHost.authorizationClient = new MobileAuthorizationBackend();
+
+    const rpcInterfaces = opt?.nativeHost?.rpcInterfaces ?? [];
+    MobileRpcManager.initializeImpl(rpcInterfaces);
   }
 }

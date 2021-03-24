@@ -36,7 +36,7 @@ async function init() {
   iModelHost.concurrentQuery.pollInterval = 5;
   iModelHost.imodelClient = new IModelHubClient(new AzureFileHandler());
   if (ProcessDetector.isElectronAppBackend) {
-    await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
+    await ElectronHost.startup({ nativeHost: { rpcInterfaces }, iModelHost });
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
   } else {

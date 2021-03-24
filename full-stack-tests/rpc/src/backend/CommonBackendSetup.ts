@@ -16,7 +16,7 @@ export async function commonSetup(): Promise<void> {
 
   // Start the backend
   if (ProcessDetector.isElectronAppBackend)
-    await ElectronHost.startup({ electronHost: { rpcInterfaces } });
+    await ElectronHost.startup({ nativeHost: { rpcInterfaces } });
   else
     await IModelHost.startup();
 
