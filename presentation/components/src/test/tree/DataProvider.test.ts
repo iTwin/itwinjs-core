@@ -288,17 +288,4 @@ describe("TreeDataProvider", () => {
 
   });
 
-  describe("loadHierarchy", () => {
-
-    it("calls presentation manager", async () => {
-      presentationManagerMock
-        .setup(async (x) => x.loadHierarchy({ imodel: imodelMock.object, rulesetOrId: rulesetId }))
-        .returns(async () => { })
-        .verifiable();
-      await provider.loadHierarchy();
-      presentationManagerMock.verifyAll();
-    });
-
-  });
-
 });
