@@ -145,14 +145,6 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options, keys, 1));
     });
 
-    it("forwards loadHierarchy call", async () => {
-      const options: HierarchyRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
-      };
-      await rpcInterface.loadHierarchy(token, options);
-      expect(spy).to.be.calledOnceWith(toArguments(token, options));
-    });
-
     it("[deprecated] forwards getContentDescriptor call", async () => {
       const options: ContentRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
