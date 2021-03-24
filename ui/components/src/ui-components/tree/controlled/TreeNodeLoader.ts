@@ -349,7 +349,7 @@ function updateChildren(
   startIndex: number,
   numChildren?: number,
 ) {
-  // numChildren set to undefined indicates that this is not he first request for children response
+  // numChildren set to undefined indicates that this is not the first request for children
   if (numChildren !== undefined) {
     model.setNumChildren(parentId, numChildren);
   }
