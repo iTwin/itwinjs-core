@@ -595,14 +595,14 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      */
     planProjections?: boolean;
 
-    /** By default, shader programs used by the [[RenderSystem]] are not compiled until the first time they are used. This can produce noticeable delays when the user interacts with a [[Viewport]].
-     * To prevent such delays, set this to `true` to allow the RenderSystem to precompile shader programs before any Viewport is opened.
-     * Applications should consider enabling this feature if they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and a view through the user interface.
+    /** To help prevent delays when a user interacts with a [[Viewport]], the WebGL render system precompiles shader programs before any Viewport is opened.
+     * This particularly helps applications when they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and a view through the user interface.
      * Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [[ViewManager]]).
+     * To disable this feature, set this to `false`.
      *
-     * Default value: false
+     * Default value: true
      *
-     * @beta
+     * @public
      */
     doIdleWork?: boolean;
 
