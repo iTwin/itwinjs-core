@@ -6,7 +6,7 @@ import { SchemaContext } from "../../Context";
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { deserializeXml } from "./DeserializeSchema";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { UnitConverter } from "../../UnitConversion/UnitConverter";
 
 describe("Testing when unit conversion should throw", () => {
@@ -15,19 +15,19 @@ describe("Testing when unit conversion should throw", () => {
   before(() => {
     const siSchemaFile = path.join(__dirname, "..", "assets", "SIUnits.ecschema.xml");
     const siSchemaXml = fs.readFileSync(siSchemaFile, "utf-8");
-    deserializeXml(context, siSchemaXml);
+    deserializeXmlSync(siSchemaXml, context);
 
     const metricSchemaFile = path.join(__dirname, "..", "assets", "MetricUnits.ecschema.xml");
     const metricSchemaXml = fs.readFileSync(metricSchemaFile, "utf-8");
-    deserializeXml(context, metricSchemaXml);
+    deserializeXmlSync(metricSchemaXml, context);
 
     const usSchemaFile = path.join(__dirname, "..", "assets", "USUnits.ecschema.xml");
     const usSchemaXml = fs.readFileSync(usSchemaFile, "utf-8");
-    deserializeXml(context, usSchemaXml);
+    deserializeXmlSync(usSchemaXml, context);
 
-    const auSchemaFile = path.join(__dirname, "..", "assets", "AlteredUnits.ecschema.xml");
+    const auSchemaFile = path.join(__dirname, "..", "assets", "ValidationUnits.ecschema.xml");
     const auSchemaXml = fs.readFileSync(auSchemaFile, "utf-8");
-    deserializeXml(context, auSchemaXml);
+    deserializeXmlSync(auSchemaXml, context);
   });
 
   it("should throw when schema name is not in context", async () => {
@@ -78,11 +78,11 @@ describe("Testing when unit conversion should throw", () => {
     }
   });
 
-  it("should throw when unit in definition is not found in schema (deci is not in AlteredUnits schema)", async () => {
+  it("should throw when unit in definition is not found in schema (deci is not in ValidationUnits schema)", async () => {
     const converter = new UnitConverter(context);
     try {
-      await converter.calculateConversion("AlteredUnits:DM", "AlteredUnits:KM");
-      await converter.calculateConversion("AlteredUnits:KM", "AlteredUnits:DM");
+      await converter.calculateConversion("ValidationUnits:DM", "ValidationUnits:KM");
+      await converter.calculateConversion("ValidationUnits:KM", "ValidationUnits:DM");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema item");
@@ -92,26 +92,26 @@ describe("Testing when unit conversion should throw", () => {
   it("should throw when source and target units do not have the same base units", async () => {
     const converter = new UnitConverter(context);
     try {
-      await converter.calculateConversion("AlteredUnits:FT", "AlteredUnits:KM");
+      await converter.calculateConversion("ValidationUnits:FT", "ValidationUnits:KM");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Source and target units do not have matching base units");
     }
     try {
-      await converter.calculateConversion("AlteredUnits:KM", "AlteredUnits:FT");
+      await converter.calculateConversion("ValidationUnits:KM", "ValidationUnits:FT");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Source and target units do not have matching base units");
     }
 
     try {
-      await converter.calculateConversion("AlteredUnits:YRD", "AlteredUnits:M");
+      await converter.calculateConversion("ValidationUnits:YRD", "ValidationUnits:M");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Source and target units do not have matching base units");
     }
     try {
-      await converter.calculateConversion("AlteredUnits:M", "AlteredUnits:YRD");
+      await converter.calculateConversion("ValidationUnits:M", "ValidationUnits:YRD");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Source and target units do not have matching base units");
@@ -121,26 +121,26 @@ describe("Testing when unit conversion should throw", () => {
   it("should throw when source and target units do not have the same base units", async () => {
     const converter = new UnitConverter(context);
     try {
-      await converter.calculateConversion("AlteredUnits:MM_PER_SEC", "AlteredUnits:FT_PER_DAY");
+      await converter.calculateConversion("ValidationUnits:MM_PER_SEC", "ValidationUnits:FT_PER_DAY");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Source and target units do not have matching base units");
     }
     try {
-      await converter.calculateConversion("AlteredUnits:FT_PER_DAY", "AlteredUnits:MM_PER_SEC");
+      await converter.calculateConversion("ValidationUnits:FT_PER_DAY", "ValidationUnits:MM_PER_SEC");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Source and target units do not have matching base units");
     }
 
     try {
-      await converter.calculateConversion("AlteredUnits:MM_PER_HR", "AlteredUnits:FT_PER_SEC");
+      await converter.calculateConversion("ValidationUnits:MM_PER_HR", "ValidationUnits:FT_PER_SEC");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Source and target units do not have matching base units");
     }
     try {
-      await converter.calculateConversion("AlteredUnits:FT_PER_SEC", "AlteredUnits:MM_PER_HR");
+      await converter.calculateConversion("ValidationUnits:FT_PER_SEC", "ValidationUnits:MM_PER_HR");
     } catch (err) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Source and target units do not have matching base units");

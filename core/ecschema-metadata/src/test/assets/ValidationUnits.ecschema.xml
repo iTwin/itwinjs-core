@@ -1,7 +1,7 @@
 AlteredUnits.ecschema.xml
 
 <?xml version="1.0" encoding="utf-8"?>
-<ECSchema schemaName="AlteredUnits" alias="au" version="01.00.05" description="Altered test schema where inches are defined in inches instead of MM and there's no DECI" displayLabel="Units Testing" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+<ECSchema schemaName="ValidationUnits" alias="VU" version="01.00.05" description="Test schema where inches are defined in inches instead of MM and there's no DECI." displayLabel="Units Testing" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
     <UnitSystem typeName="SI" />
     <UnitSystem typeName="METRIC" />
     <UnitSystem typeName="INTERNATIONAL" />

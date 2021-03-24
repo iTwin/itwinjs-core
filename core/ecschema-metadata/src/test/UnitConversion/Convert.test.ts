@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SchemaContext } from "../../Context";
-import { expect } from "chai";
+import * as almostEqual from "almost-equal";
 import * as fs from "fs";
 import * as path from "path";
-import * as almostEqual from "almost-equal";
-import { deserializeXml } from "./DeserializeSchema";
+import { expect } from "chai";
+import { SchemaContext } from "../../Context";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { UnitConverter } from "../../UnitConversion/UnitConverter";
 
 interface TestData {
@@ -17,7 +17,7 @@ interface TestData {
   expect: number;
 }
 
-describe("A unit tree creator", () => {
+describe("Unit Conversion tests", () => {
   const context = new SchemaContext();
 
   const testData: TestData[] = JSON.parse(
@@ -27,7 +27,7 @@ describe("A unit tree creator", () => {
   before(() => {
     const schemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
-    deserializeXml(context, schemaXml);
+    deserializeXmlSync(schemaXml, context);
   });
 
   testData.forEach((test: TestData) => {
