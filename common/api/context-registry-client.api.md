@@ -48,6 +48,7 @@ export class ContextRegistryClient extends WsgClient {
     getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]>;
     protected getRelyingPartyUrl(): string;
     getTeam(requestContext: AuthorizedClientRequestContext): Promise<Team>;
+    // @internal (undocumented)
     protected getUrlSearchKey(): string;
     // (undocumented)
     static readonly searchKey: string;

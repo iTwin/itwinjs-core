@@ -49,6 +49,12 @@ export abstract class Client {
   private static _defaultRequestOptionsProvider: DefaultRequestOptionsProvider;
   protected _url?: string;
 
+  /**
+   * Sets the default base URL to use with this client.
+   * If not set, BUDDI is used to resolve the URL using key returned by [[getUrlSearchKey]].
+   */
+  protected baseUrl?: string;
+
   /**  Creates an instance of Client. */
   protected constructor() {
   }
@@ -80,6 +86,19 @@ export abstract class Client {
    */
   public async getUrl(requestContext: ClientRequestContext): Promise<string> {
     if (this._url) {
+      return this._url;
+    }
+
+    if (this.baseUrl) {
+      const prefix = Config.App.query("imjs_url_prefix");
+      if (prefix) {
+        const baseUrl = new URL(this.baseUrl);
+        baseUrl.hostname = prefix + baseUrl.hostname;
+        this._url = baseUrl.href;
+      } else {
+        this._url = this.baseUrl;
+      }
+
       return this._url;
     }
 
