@@ -65,6 +65,9 @@ import { EntityMetaData } from '@bentley/imodeljs-common';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { ExternalSourceAspectProps } from '@bentley/imodeljs-common';
+import { ExternalSourceAttachmentProps } from '@bentley/imodeljs-common';
+import { ExternalSourceAttachmentRole } from '@bentley/imodeljs-common';
+import { ExternalSourceProps } from '@bentley/imodeljs-common';
 import { FilePropertyProps } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { FontProps } from '@bentley/imodeljs-common';
@@ -180,6 +183,7 @@ import { StorageValue } from '@bentley/imodeljs-common';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
+import { SynchronizationConfigLinkProps } from '@bentley/imodeljs-common';
 import { TelemetryEvent } from '@bentley/telemetry-client';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TextureFlags } from '@bentley/imodeljs-common';
@@ -1776,21 +1780,21 @@ export class ElementOwnsChildElements extends RelatedElement {
 
 // @public
 export class ElementOwnsExternalSourceAspects extends ElementOwnsMultiAspects {
-    constructor(parentId: Id64String, relClassName?: string);
+    constructor(elementId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
 }
 
 // @public
 export class ElementOwnsMultiAspects extends RelatedElement {
-    constructor(parentId: Id64String, relClassName?: string);
+    constructor(elementId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
 }
 
 // @public
 export class ElementOwnsUniqueAspect extends RelatedElement {
-    constructor(parentId: Id64String, relClassName?: string);
+    constructor(elementId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
 }
@@ -1985,6 +1989,21 @@ export interface ExportPartLinesInfo {
     lines: ExportGraphicsLines;
 }
 
+// @beta
+export class ExternalSource extends InformationReferenceElement {
+    // @internal
+    constructor(props: ExternalSourceProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+    connectorName?: string;
+    connectorVersion?: string;
+    static createCode(iModelDb: IModelDb, codeValue: string): Code;
+    static ensureCodeSpec(iModelDb: IModelDb): Id64String;
+    repository?: ExternalSourceIsInRepository;
+    // @internal (undocumented)
+    toJSON(): ExternalSourceProps;
+}
+
 // @public
 export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
     // @internal
@@ -2014,12 +2033,79 @@ export namespace ExternalSourceAspect {
     }
 }
 
+// @beta
+export class ExternalSourceAttachment extends InformationReferenceElement {
+    // @internal
+    constructor(props: ExternalSourceAttachmentProps, iModel: IModelDb);
+    attaches?: ExternalSourceAttachmentAttachesSource;
+    // @internal (undocumented)
+    static get className(): string;
+    static createCode(iModelDb: IModelDb, scopeElementId: Id64String, codeValue: string): Code;
+    static ensureCodeSpec(iModelDb: IModelDb): Id64String;
+    pitch?: number;
+    role?: ExternalSourceAttachmentRole;
+    roll?: number;
+    scale?: Point3d;
+    // @internal (undocumented)
+    toJSON(): ExternalSourceAttachmentProps;
+    translation?: Point3d;
+    yaw?: number;
+}
+
+// @beta
+export class ExternalSourceAttachmentAttachesSource extends RelatedElement {
+    constructor(externalSourceId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export class ExternalSourceGroup extends ExternalSource {
+    // @internal
+    constructor(props: ExternalSourceProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @beta
+export class ExternalSourceGroupGroupsSources extends ElementGroupsMembers {
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @beta
+export class ExternalSourceIsInRepository extends RelatedElement {
+    constructor(repositoryId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
 // @public
 export abstract class FileNameResolver {
     resolveFileName(inFileName: string): string;
     resolveKey(fileKey: string): string;
     tryResolveFileName(inFileName: string): string | undefined;
     tryResolveKey(_fileKey: string): string | undefined;
+}
+
+// @beta
+export class FolderContainsRepositories extends ElementOwnsChildElements {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @alpha
+export class FolderLink extends UrlLink {
+    // @internal (undocumented)
+    static get className(): string;
 }
 
 // @public
@@ -3628,6 +3714,7 @@ export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
     constructor(props: RepositoryLinkProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    format?: string;
     // (undocumented)
     repositoryGuid?: GuidString;
     // @internal (undocumented)
@@ -4028,6 +4115,8 @@ export class Subject extends InformationReferenceElement implements SubjectProps
     // (undocumented)
     description?: string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String;
+    // @internal (undocumented)
+    toJSON(): SubjectProps;
 }
 
 // @public
@@ -4042,6 +4131,29 @@ export class SubjectOwnsSubjects extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
+}
+
+// @beta
+export class SynchronizationConfigLink extends UrlLink {
+    // @internal
+    constructor(props: SynchronizationConfigLinkProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+    lastSuccessfulRun?: string;
+    // @internal (undocumented)
+    toJSON(): SynchronizationConfigLinkProps;
+}
+
+// @beta
+export class SynchronizationConfigProcessesSources extends ElementRefersToElements {
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @beta
+export class SynchronizationConfigSpecifiesRootSources extends SynchronizationConfigProcessesSources {
+    // @internal (undocumented)
+    static get className(): string;
 }
 
 // @beta
