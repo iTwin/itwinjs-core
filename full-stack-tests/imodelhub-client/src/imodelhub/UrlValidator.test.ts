@@ -5,9 +5,9 @@
 import { assert, should } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { ClientRequestContext, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelBaseHandler } from "@bentley/imodelhub-client";
-import { ITwinClientLoggerCategory, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 
 export const whitelistRelPath: string = "../assets/whitelist.txt";
 
@@ -106,7 +106,7 @@ describe.skip("Validate iModelHub URL Whitelist", () => {
     // filter out duplicate URLs by putting the lines in a set and create an array from it again
     const loggedUrls: string[] = Array.from(new Set(logFileContent.split(/\r?\n/)));
 
-    let baseUrl: string = await new UrlDiscoveryClient().discoverUrl(new ClientRequestContext(), IModelBaseHandler.searchKey, undefined);
+    let baseUrl: string = (IModelBaseHandler as any).baseUrl; //  await new UrlDiscoveryClient().discoverUrl(new ClientRequestContext(), IModelBaseHandler.searchKey, undefined);
     if (baseUrl.endsWith("/") || baseUrl.endsWith("\\"))
       baseUrl = baseUrl.substring(1, baseUrl.length - 1);
 
