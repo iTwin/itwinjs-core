@@ -2,6 +2,12 @@
   "name": "@bentley/imodeljs-editor-backend",
   "entries": [
     {
+      "version": "2.13.2",
+      "tag": "@bentley/imodeljs-editor-backend_v2.13.2",
+      "date": "Wed, 24 Mar 2021 19:09:54 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.13.1",
       "tag": "@bentley/imodeljs-editor-backend_v2.13.1",
       "date": "Mon, 15 Mar 2021 12:44:40 GMT",

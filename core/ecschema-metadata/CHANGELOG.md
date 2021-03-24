@@ -1,6 +1,11 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Mon, 15 Mar 2021 12:44:40 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Mar 2021 19:09:54 GMT and should not be manually modified.
+
+## 2.13.2
+Wed, 24 Mar 2021 19:09:54 GMT
+
+_Version update only_
 
 ## 2.13.1
 Mon, 15 Mar 2021 12:44:40 GMT
