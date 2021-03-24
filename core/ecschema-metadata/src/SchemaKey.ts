@@ -126,7 +126,7 @@ export class SchemaKey {
   constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number);
   constructor(name: string, readOrVersion?: number | ECVersion, writeVersion?: number, minorVersion?: number) {
     this._name = new ECName(name);
-    if (readOrVersion !== undefined && readOrVersion instanceof ECVersion)
+    if (readOrVersion !== undefined && typeof(readOrVersion) !== "number")
       this._version = readOrVersion;
     else
       this._version = new ECVersion(readOrVersion, writeVersion, minorVersion);
