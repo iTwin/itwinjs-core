@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module NativeApp
+ */
+
 import { join } from "path";
 import { DbResult, IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelError, StorageValue } from "@bentley/imodeljs-common";
