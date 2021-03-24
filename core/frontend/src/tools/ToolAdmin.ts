@@ -15,7 +15,6 @@ import { LocateOptions } from "../ElementLocateManager";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { IpcApp } from "../IpcApp";
 import { linePlaneIntersect } from "../LinePlaneIntersect";
 import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
 import { CanvasDecoration } from "../render/CanvasDecoration";
@@ -1268,14 +1267,18 @@ export class ToolAdmin {
       if (await activeTool.undoPreviousStep())
         return true;
     }
+
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
-    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
+    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
-    if (IModelStatus.Success !== await IpcApp.callIpcHost("reverseSingleTxn", imodel.key))
+
+    if (IModelStatus.Success !== await imodel.txns.reverseSingleTxn())
       return false;
+
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== this._primitiveTool)
       this._primitiveTool.onRestartTool();
+
     return true;
   }
 
@@ -1287,14 +1290,18 @@ export class ToolAdmin {
       if (await activeTool.redoPreviousStep())
         return true;
     }
+
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
-    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
+    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
-    if (IModelStatus.Success !== await IpcApp.callIpcHost("reinstateTxn", imodel.key))
+
+    if (IModelStatus.Success !== await imodel.txns.reinstateTxn())
       return false;
+
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== this._primitiveTool)
       this._primitiveTool.onRestartTool();
+
     return true;
   }
 
@@ -1302,6 +1309,7 @@ export class ToolAdmin {
     const tool = this.activeTool;
     if (tool === undefined)
       return;
+
     tool.onUnsuspend();
     this.activeToolChanged.raiseEvent(tool, StartOrResume.Resume);
   }

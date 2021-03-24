@@ -72,6 +72,7 @@ public;BlankConnection
 public;BlankConnectionProps
 public;BriefcaseConnection 
 beta;class BriefcaseNotificationHandler 
+beta;BriefcaseTxns 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
