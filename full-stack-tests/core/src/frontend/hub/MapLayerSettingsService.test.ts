@@ -41,7 +41,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     await IModelApp.shutdown();
   });
 
-  it("should store and retrieve layer", async () => {
+  it.skip("should store and retrieve layer", async () => {
     const layer = MapLayerSource.fromJSON({
       url: "test12345",
       name: testName,
