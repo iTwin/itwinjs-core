@@ -10,6 +10,7 @@ import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@bentley/imodeljs-frontend";
 import { ContentFlags, DescriptorOverrides, ECClassGroupingNodeKey, GroupingNodeKey, Keys, KeySet, NodeKey } from "@bentley/presentation-common";
 import { ContentDataProvider, IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { Presentation } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 import { UiFramework } from "../../UiFramework";
 import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
@@ -40,6 +41,7 @@ export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeTy
 export interface ModelsVisibilityHandlerProps {
   rulesetId: string;
   viewport: Viewport;
+  hierarchyAutoUpdateEnabled?: boolean;
 }
 
 /**
@@ -51,23 +53,25 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   private _pendingVisibilityChange: any | undefined;
   private _subjectModelIdsCache: SubjectModelIdsCache;
   private _filteredDataProvider?: IFilteredPresentationTreeDataProvider;
+  private _elementIdsCache: ElementIdsCache;
+  private _listeners = new Array<() => void>();
 
   constructor(props: ModelsVisibilityHandlerProps) {
     this._props = props;
     this._subjectModelIdsCache = new SubjectModelIdsCache(this._props.viewport.iModel);
-    this._props.viewport.onViewedCategoriesPerModelChanged.addListener(this.onViewChanged);
-    this._props.viewport.onViewedCategoriesChanged.addListener(this.onViewChanged);
-    this._props.viewport.onViewedModelsChanged.addListener(this.onViewChanged);
-    this._props.viewport.onAlwaysDrawnChanged.addListener(this.onElementAlwaysDrawnChanged);
-    this._props.viewport.onNeverDrawnChanged.addListener(this.onElementNeverDrawnChanged);
+    this._elementIdsCache = new ElementIdsCache(this._props.viewport.iModel, this._props.rulesetId);
+    this._listeners.push(this._props.viewport.onViewedCategoriesPerModelChanged.addListener(this.onViewChanged));
+    this._listeners.push(this._props.viewport.onViewedCategoriesChanged.addListener(this.onViewChanged));
+    this._listeners.push(this._props.viewport.onViewedModelsChanged.addListener(this.onViewChanged));
+    this._listeners.push(this._props.viewport.onAlwaysDrawnChanged.addListener(this.onElementAlwaysDrawnChanged));
+    this._listeners.push(this._props.viewport.onNeverDrawnChanged.addListener(this.onElementNeverDrawnChanged));
+    if (this._props.hierarchyAutoUpdateEnabled) {
+      this._listeners.push(Presentation.presentation.onIModelHierarchyChanged.addListener(/* istanbul ignore next */() => this._elementIdsCache.clear()));
+    }
   }
 
   public dispose() {
-    this._props.viewport.onViewedCategoriesPerModelChanged.removeListener(this.onViewChanged);
-    this._props.viewport.onViewedCategoriesChanged.removeListener(this.onViewChanged);
-    this._props.viewport.onViewedModelsChanged.removeListener(this.onViewChanged);
-    this._props.viewport.onAlwaysDrawnChanged.removeListener(this.onElementAlwaysDrawnChanged);
-    this._props.viewport.onNeverDrawnChanged.removeListener(this.onElementNeverDrawnChanged);
+    this._listeners.forEach((remove) => remove());
     clearTimeout(this._pendingVisibilityChange);
   }
 
@@ -201,7 +205,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   }
 
   protected async getElementGroupingNodeDisplayStatus(_id: string, key: ECClassGroupingNodeKey): Promise<VisibilityStatus> {
-    const { modelId, categoryId, elementIds } = await this.getGroupedElementIds(this._props.rulesetId, key);
+    const { modelId, categoryId, elementIds } = await this.getGroupedElementIds(key);
 
     if (!modelId || !this._props.viewport.view.viewsModel(modelId))
       return { isDisabled: true, state: "hidden", tooltip: createTooltip("disabled", "element.modelNotDisplayed") };
@@ -295,12 +299,12 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   }
 
   protected async changeElementGroupingNodeState(key: ECClassGroupingNodeKey, on: boolean) {
-    const { modelId, categoryId, elementIds } = await this.getGroupedElementIds(this._props.rulesetId, key);
+    const { modelId, categoryId, elementIds } = await this.getGroupedElementIds(key);
     this.changeElementsState(modelId, categoryId, elementIds, on);
   }
 
   protected async changeElementState(id: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined, on: boolean) {
-    this.changeElementsState(modelId, categoryId, [id, ...await this.getAssemblyElementIds(this._props.rulesetId, id)], on);
+    this.changeElementsState(modelId, categoryId, [id, ...await this.getAssemblyElementIds(id)], on);
   }
 
   protected changeElementsState(modelId: Id64String | undefined, categoryId: Id64String | undefined, elementIds: Id64String[], on: boolean) {
@@ -369,15 +373,13 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   }
 
   // istanbul ignore next
-  private async getAssemblyElementIds(rulesetId: string, assemblyId: Id64String) {
-    const provider = new AssemblyElementIdsProvider(this._props.viewport.iModel, rulesetId, assemblyId);
-    return provider.getElementIds();
+  private async getAssemblyElementIds(assemblyId: Id64String) {
+    return this._elementIdsCache.getAssemblyElementIds(assemblyId);
   }
 
   // istanbul ignore next
-  private async getGroupedElementIds(rulesetId: string, groupingNodeKey: GroupingNodeKey) {
-    const provider = new GroupedElementIdsProvider(this._props.viewport.iModel, rulesetId, groupingNodeKey);
-    return provider.getElementIds();
+  private async getGroupedElementIds(groupingNodeKey: GroupingNodeKey) {
+    return this._elementIdsCache.getGroupedElementIds(groupingNodeKey);
   }
 }
 
@@ -482,6 +484,48 @@ class RulesetDrivenIdsProvider extends ContentDataProvider {
   }
 }
 
+interface GroupedElementIds {
+  modelId?: string;
+  categoryId?: string;
+  elementIds: string[];
+}
+
+// istanbul ignore next
+class ElementIdsCache {
+  private _assemblyElementIdsCache = new Map<string, string[]>();
+  private _groupedElementIdsCache = new Map<string, GroupedElementIds>();
+
+  constructor(private _imodel: IModelConnection, private _rulesetId: string) {
+  }
+
+  public clear() {
+    this._assemblyElementIdsCache.clear();
+    this._groupedElementIdsCache.clear();
+  }
+
+  public async getAssemblyElementIds(assemblyId: Id64String) {
+    const ids = this._assemblyElementIdsCache.get(assemblyId);
+    if (ids)
+      return ids;
+
+    const idsProvider = new AssemblyElementIdsProvider(this._imodel, this._rulesetId, assemblyId);
+    const newIds = await idsProvider.getElementIds();
+    this._assemblyElementIdsCache.set(assemblyId, newIds);
+    return newIds;
+  }
+
+  public async getGroupedElementIds(groupingNodeKey: GroupingNodeKey) {
+    const keyString = JSON.stringify(groupingNodeKey);
+    const ids = this._groupedElementIdsCache.get(keyString);
+    if (ids)
+      return ids;
+    const idsProvider = new GroupedElementIdsProvider(this._imodel, this._rulesetId, groupingNodeKey);
+    const newIds = await idsProvider.getElementIds();
+    this._groupedElementIdsCache.set(keyString, newIds);
+    return newIds;
+  }
+}
+
 // istanbul ignore next
 class AssemblyElementIdsProvider extends RulesetDrivenIdsProvider {
   constructor(imodel: IModelConnection, rulesetId: string, assemblyId: Id64String) {
@@ -497,7 +541,7 @@ class GroupedElementIdsProvider extends RulesetDrivenIdsProvider {
   constructor(imodel: IModelConnection, rulesetId: string, groupingNodeKey: GroupingNodeKey) {
     super(imodel, rulesetId, "AssemblyElementsRequest", [groupingNodeKey]);
   }
-  public async getElementIds(): Promise<{ modelId?: Id64String, categoryId?: Id64String, elementIds: Id64String[] }> {
+  public async getElementIds(): Promise<GroupedElementIds> {
     const elementIds = await this.getResultIds();
     let modelId, categoryId;
     const query = `SELECT Model.Id AS modelId, Category.Id AS categoryId FROM bis.GeometricElement3d WHERE ECInstanceId = ? LIMIT 1`;
