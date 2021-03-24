@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
-import { CustomAttributeContainerType, ECClassModifier } from "../../ECObjects";
+import { CustomAttributeContainerType, ECClassModifier, SchemaItemType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { Schema } from "../../Metadata/Schema";
@@ -131,7 +131,7 @@ describe("CustomAttributeClass", () => {
 
       const testCustomAttribute = await ecschema.getItem("testCustomAttribute");
       assert.isDefined(testCustomAttribute);
-      assert.isTrue(testCustomAttribute instanceof CustomAttributeClass);
+      assert.isTrue(testCustomAttribute?.schemaItemType === SchemaItemType.CustomAttributeClass);
       const customAttributeClass = testCustomAttribute as CustomAttributeClass;
       const caSerialization = customAttributeClass.toJSON(false, true);
       assert.isDefined(caSerialization);
@@ -159,7 +159,7 @@ describe("CustomAttributeClass", () => {
 
       const testCustomAttribute = ecschema.getItemSync("testCustomAttribute");
       assert.isDefined(testCustomAttribute);
-      assert.isTrue(testCustomAttribute instanceof CustomAttributeClass);
+      assert.isTrue(testCustomAttribute?.schemaItemType === SchemaItemType.CustomAttributeClass);
       const customAttributeClass = testCustomAttribute as CustomAttributeClass;
       const caSerialization = customAttributeClass.toJSON(false, false);
       assert.isDefined(caSerialization);
@@ -188,7 +188,7 @@ describe("CustomAttributeClass", () => {
 
       const testCustomAttribute = await ecschema.getItem("testCustomAttribute");
       assert.isDefined(testCustomAttribute);
-      assert.isTrue(testCustomAttribute instanceof CustomAttributeClass);
+      assert.isTrue(testCustomAttribute?.schemaItemType === SchemaItemType.CustomAttributeClass);
       const customAttributeClass = testCustomAttribute as CustomAttributeClass;
       const json = JSON.stringify(customAttributeClass);
       const caSerialization = JSON.parse(json);
@@ -218,7 +218,7 @@ describe("CustomAttributeClass", () => {
 
       const testCustomAttribute = ecschema.getItemSync("testCustomAttribute");
       assert.isDefined(testCustomAttribute);
-      assert.isTrue(testCustomAttribute instanceof CustomAttributeClass);
+      assert.isTrue(testCustomAttribute?.schemaItemType === SchemaItemType.CustomAttributeClass);
       const customAttributeClass = testCustomAttribute as CustomAttributeClass;
       const json = JSON.stringify(customAttributeClass);
       const caSerialization = JSON.parse(json);
