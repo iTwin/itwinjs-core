@@ -132,7 +132,7 @@ export class TreeSelectionManager implements Pick<TreeActions, "onNodeClicked" |
     return isTreeModelNode(foundNode) ? foundNode : /* istanbul ignore next */ undefined;
   }
 
-  public setVisibleNodes(visibleNodes: () => VisibleTreeNodes) {
+  public setVisibleNodes(visibleNodes: (() => VisibleTreeNodes) | undefined) {
     this._getVisibleNodes = visibleNodes;
   }
 
