@@ -1245,8 +1245,16 @@ class ViewRotate extends HandleWithInertia {
       plane.getNormalRef().setFrom(vp.view.getZVector());
       return true;
     }
-    if (super.adjustDepthPoint(isValid, vp, plane, source))
+    if (super.adjustDepthPoint(isValid, vp, plane, source)) {
+      if (DepthPointSource.Geometry === source && vp instanceof ScreenViewport) {
+        // If we had hit something we might need to undo the model display transform of the hit.
+        const hitDetail = vp.picker.getHit(0);
+        if (undefined !== hitDetail && undefined !== hitDetail.modelId) {
+          vp.view.transformPointByModelDisplayTransform(hitDetail.modelId, plane.getOriginRef(), false);
+        }
+      }
       return true;
+    }
     plane.getOriginRef().setFrom(this.viewTool.targetCenterWorld);
     return false;
   }
