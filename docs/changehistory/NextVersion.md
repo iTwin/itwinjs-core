@@ -49,6 +49,14 @@ Shader precompilation will cease once all shader programs have been compiled, or
 
 To disable this functionality, set the `doIdleWork` property of the `RenderSystem.Options` object passed to `IModelApp.startup` to false.
 
+## Added NativeHost.settingsStore for storing user-level settings for native applications
+
+The @beta class `NativeHost` now has a member [NativeHost.settingsStore]($backend) that may be used by native applications to store user-level data in a file in the [[NativeHost.appSettingsCacheDir]($backend) directory. It uses the [NativeAppStorage]($backend) api to store and load key/value pairs. Note that these settings are stored in a local file that may be deleted by the user, so it should only be used for a local cache of values that may be restored elsewhere.
+
+## NativeApp is now @beta
+
+The class [NativeApp]($frontend) has been promoted from @alpha to @beta. `NativeApp` is relevant for both Electron and mobile applications. Please provide feedback if you have issues or concerns on its use.
+
 ## Breaking Api Changes
 
 ### @bentley/imodeljs-quantity package
