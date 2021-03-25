@@ -91,7 +91,7 @@
   ],
   "dependencies": {
     "classnames": "^2.2.5",
-    "immer": "8.0.1",
+    "immer": "^9.0.1",
     "uuid": "^7.0.3"
   },
   "nyc": {
