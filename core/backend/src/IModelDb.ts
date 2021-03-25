@@ -2605,6 +2605,12 @@ export class SnapshotDb extends IModelDb {
     const filePath = await V2CheckpointManager.attach(checkpoint);
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key: CheckpointManager.getKey(checkpoint) });
     snapshot._contextId = checkpoint.contextId;
+    try {
+      CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
+    } catch (err) {
+      snapshot.close();
+      throw err;
+    }
     return snapshot;
   }
 
