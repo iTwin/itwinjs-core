@@ -126,7 +126,7 @@ dependencies:
   '@types/faker': 4.1.12
   '@types/file-saver': 2.0.1
   '@types/flatbuffers': 1.10.0
-  '@types/formidable': 1.2.0
+  '@types/formidable': 1.2.1
   '@types/fs-extra': 4.0.11
   '@types/glob': 5.0.36
   '@types/i18next': 8.4.6
@@ -387,7 +387,7 @@ dependencies:
   wms-capabilities: 0.4.0
   ws: 7.4.4
   xml-js: 1.6.11
-  xmldom: 0.1.31
+  xmldom: 0.5.0
   xmlhttprequest: 1.8.0
   xpath: 0.0.27
   yargonaut: 1.1.4
@@ -2908,12 +2908,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-7btbphLrKvo5yl/5CC2OCxUSMx1wV1wvGT1qDXkSt7yi00/YW7E8k6qzXqJHsp+WU0eoG7r6MTQQXI9lIvd0qA==
-  /@types/formidable/1.2.0:
+  /@types/formidable/1.2.1:
     dependencies:
       '@types/node': 12.20.6
     dev: false
     resolution:
-      integrity: sha512-Gpj8Jc/M29THMBThhvprrY1eJe2+9E/LhyiLrzwgTT5X/FNkpqxmnH8KuX7SLSSOYnVWsxoZZEspXzc4+UR17Q==
+      integrity: sha512-4sVIjd51AADf4YnpsdqNQh7n3ZRLo16w+w6F7zzKjK6dBsQc9Vrq8GQLpHOOWq0V8Fe2bbp2EpihHx57iVgm5Q==
   /@types/fs-extra/4.0.11:
     dependencies:
       '@types/node': 12.20.6
@@ -2923,14 +2923,14 @@ packages:
   /@types/glob/5.0.36:
     dependencies:
       '@types/events': 3.0.0
-      '@types/minimatch': 3.0.3
+      '@types/minimatch': 3.0.4
       '@types/node': 12.20.6
     dev: false
     resolution:
       integrity: sha512-KEzSKuP2+3oOjYYjujue6Z3Yqis5HKA1BsIC+jZ1v3lrRNdsqyNNtX0rQf6LSuI4DJJ2z5UV//zBZCcvM0xikg==
   /@types/glob/7.1.3:
     dependencies:
-      '@types/minimatch': 3.0.3
+      '@types/minimatch': 3.0.4
       '@types/node': 10.14.1
     dev: false
     resolution:
@@ -3065,6 +3065,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
+  /@types/minimatch/3.0.4:
+    dev: false
+    resolution:
+      integrity: sha512-1z8k4wzFnNjVK/tlxvrWuK5WMt6mydWWP7+zvH5eFep4oj+UkrfiJTRtjCeBXNpwaA/FYqqtb4/QS4ianFpIRA==
   /@types/minipass/2.2.0:
     dependencies:
       '@types/node': 10.14.1
@@ -3956,7 +3960,7 @@ packages:
       request: 2.88.2
       underscore: 1.12.1
       uuid: 3.4.0
-      xmldom: 0.1.31
+      xmldom: 0.5.0
       xpath.js: 1.1.0
     dev: false
     engines:
@@ -5145,8 +5149,6 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-WHVocJYavUwVgVViC0ORikPHQquXwVh939TaelZ4WDqpWgTX/FsGhl/+P4qBUAGcRvtOgDgC+xftNWWp2RUTAQ==
-      caniuse-lite: 1.0.30001197
-      electron-to-chromium: 1.3.683
   /browserslist/4.11.1:
     dependencies:
       caniuse-lite: 1.0.30001204
@@ -8896,7 +8898,7 @@ packages:
       integrity: sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=
   /fork-ts-checker-webpack-plugin/4.1.6:
     dependencies:
-      '@babel/code-frame': 7.12.13
+      '@babel/code-frame': 7.10.4
       chalk: 2.4.2
       micromatch: 3.1.10
       minimatch: 3.0.4
@@ -10155,7 +10157,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==
-      ansi-escapes: 4.3.1
   /inquirer/7.3.3:
     dependencies:
       ansi-escapes: 4.3.2
@@ -19574,13 +19575,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==
-  /xmldom/0.1.31:
-    deprecated: Deprecated due to CVE-2021-21366 resolved in 0.5.0
+  /xmldom/0.5.0:
     dev: false
     engines:
-      node: '>=0.1'
+      node: '>=10.0.0'
     resolution:
-      integrity: sha512-yS2uJflVQs6n+CyjHoaBmVSqIDevTAWrzMmjG1Gc7h1qQ7uVozNhEPJAwZXWyGQ/Gafo3fCwrcaokezLPupVyQ==
+      integrity: sha512-Foaj5FXVzgn7xFzsKeNIde9g6aFBxTPi37iwsno8QvApmtg7KYrr+OPyRHcJF7dud2a5nGRBXK3n0dL62Gf7PA==
   /xmlhttprequest/1.8.0:
     dev: false
     engines:
@@ -20089,11 +20089,11 @@ packages:
       nyc: 14.1.1
       rimraf: 3.0.2
       typescript: 4.1.5
-      xmldom: 0.1.31
+      xmldom: 0.5.0
     dev: false
     name: '@rush-temp/ecschema-locaters'
     resolution:
-      integrity: sha512-RuTH+ml7s7kGaVNDKTQrPql8EUvgZeqlZg+jIJOjGcNgt9ZcsgUPzYIsyMkrkwsQZJ3VPwLNOdtllAlVkL8uAg==
+      integrity: sha512-3lKdUOaNdJZaHgTUXCouq2qe/IIsTnsw+2XjauhhhP1h5ZO5FVESeAHOARC8un2Pnt79bwM0TQ2yiiHTF8eZbg==
       tarball: 'file:projects/ecschema-locaters.tgz'
     version: 0.0.0
   'file:projects/ecschema-metadata.tgz':
@@ -20119,12 +20119,12 @@ packages:
       rimraf: 3.0.2
       sinon: 9.2.4
       typescript: 4.1.5
-      xmldom: 0.1.31
+      xmldom: 0.5.0
       xmlhttprequest: 1.8.0
     dev: false
     name: '@rush-temp/ecschema-metadata'
     resolution:
-      integrity: sha512-OjBRoUyuhfKYLLZx4s/zBm+sdCVnSJ8p7JCxgzGA5GaUewo6ZvPKXq25PROW5RFQSkJoFXrSb/J3vk9xS8pbjw==
+      integrity: sha512-Dte6cjTDZc5yIxXodN6ij2NQNm7MR+82f3mau/6+5O1bLM8FYlgFjmhGtQHs+ZW5xogvkoP3SaBi9W+haUoEvg==
       tarball: 'file:projects/ecschema-metadata.tgz'
     version: 0.0.0
   'file:projects/ecschema2ts.tgz':
@@ -20147,11 +20147,11 @@ packages:
       rimraf: 3.0.2
       source-map-support: 0.5.19
       typescript: 4.1.5
-      xmldom: 0.1.31
+      xmldom: 0.5.0
     dev: false
     name: '@rush-temp/ecschema2ts'
     resolution:
-      integrity: sha512-dajB5yXn33vjWjqE6fTpkcgIkc9gDjbjYm2KelpIxaLRZ/adXUI0fXqxOgXh1Ky9+4pE+UcadVrbkd+lFpATDw==
+      integrity: sha512-wFuGZbaJShnGvuqQYU6a7/2wUEzs923VvPMSavW5dkLygaYRp8ikLBEPvTlm186pzz9Jivo51GGahnoGhsXauQ==
       tarball: 'file:projects/ecschema2ts.tgz'
     version: 0.0.0
   'file:projects/electron-manager.tgz_debug@2.6.9':
@@ -20405,7 +20405,7 @@ packages:
     dev: false
     name: '@rush-temp/extension-webpack-tools'
     resolution:
-      integrity: sha512-XrDtgZsUSR6XEbZgupyki07Fsby8GOwvDQDyBxj2+t5V5CMhWDDOi6YuUFNcsQokQU4qikCls2VWUXkoZpjHDQ==
+      integrity: sha512-H2XQrEaIJA6NITpyQY0Qo+2BSre2mG227w1gwd649rWiVEH7TJwmk8KsfUR/Ca0vGUrsgmJZHRFJsocLHpi/8A==
       tarball: 'file:projects/extension-webpack-tools.tgz'
     version: 0.0.0
   'file:projects/frontend-application-insights-client.tgz':
@@ -20687,7 +20687,7 @@ packages:
       '@types/chai': 4.2.15
       '@types/chai-as-promised': 7.1.3
       '@types/deep-assign': 0.1.1
-      '@types/formidable': 1.2.0
+      '@types/formidable': 1.2.1
       '@types/fs-extra': 4.0.11
       '@types/glob': 5.0.36
       '@types/js-base64': 2.3.2
@@ -20730,7 +20730,7 @@ packages:
     peerDependencies:
       debug: '*'
     resolution:
-      integrity: sha512-1jt3seUZG5drv8EZwIrvHOf9I5+mGXDQHTcLBgYwgAA2jWkW0kZXMwWNVuavV/ZJm9FfONo325R1BMPpuUj1Lg==
+      integrity: sha512-jKhJbVzdiYauKYa2O+HR6kiqEh3//u724jyyVzDfvI/5ui181/FnlkiQVm+9JfTtINiU0dh/3YPpbXTLcLDQUA==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-common.tgz':
@@ -20977,12 +20977,12 @@ packages:
       superagent: 5.3.1
       typescript: 4.1.5
       webpack: 4.42.0_webpack@4.42.0
-      xmldom: 0.1.31
+      xmldom: 0.5.0
       xpath: 0.0.27
     dev: false
     name: '@rush-temp/itwin-client'
     resolution:
-      integrity: sha512-V0iQGM9cGHVEtJGBtSsyBvafLLHySfAMfv4QBpI3yYUUuE13jlV9Duu9l6tscT3p4EzTBMfEP6d3jVeUuYFrjA==
+      integrity: sha512-tzeDWnk50+c057AD0HL/zBawsdW6vh2AGJiWkGOQ86JGXmplhRu3Rxs4FuDZfzs8bDu6ZmPkcEd6igcvRxmrXw==
       tarball: 'file:projects/itwin-client.tgz'
     version: 0.0.0
   'file:projects/linear-referencing-backend.tgz':
@@ -22345,7 +22345,7 @@ specifiers:
   '@types/webpack': ^4.41.2
   '@types/webpack-sources': ^0.1.6
   '@types/ws': ^6.0.4
-  '@types/xmldom': ^0.1.29
+  '@types/xmldom': ^0.1.30
   '@types/yargs': ^12.0.5
   '@typescript-eslint/eslint-plugin': 4.11.1
   '@typescript-eslint/parser': 4.11.1
@@ -22553,7 +22553,7 @@ specifiers:
   wms-capabilities: 0.4.0
   ws: ^7.2.0
   xml-js: ~1.6.11
-  xmldom: ^0.1.27
+  xmldom: ^0.5.0
   xmlhttprequest: ^1.8.0
   xpath: 0.0.27
   yargonaut: ^1.1.2
