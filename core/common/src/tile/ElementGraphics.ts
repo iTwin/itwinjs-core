@@ -21,8 +21,11 @@ export interface GraphicsRequestProps {
   readonly id: string;
   /** Log10 of the chord tolerance with which to stroke the element's geometry. e.g., for a chord tolerance of 0.01 (10^-2) meters, supply -2. */
   readonly toleranceLog10: number;
-  /** The major version of the "iMdl" format to use when producing the iMdl representation of the element's geometry. */
-  readonly formatVersion: number;
+  /** The major version of the "iMdl" format to use when producing the iMdl representation of the element's geometry.
+   * If omitted, the most recent version known to the backend will be used.
+   * @alpha
+   */
+  readonly formatVersion?: number;
   /** Optional flags. [[TreeFlags.UseProjectExtents]] has no effect. [[TreeFlags.EnforceDisplayPriority]] is not yet implemented. @alpha */
   readonly treeFlags?: TreeFlags;
   /** Optional flags. [[ContentFlags.ImprovedElision]] has no effect. @alpha */
