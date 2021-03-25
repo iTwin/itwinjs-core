@@ -704,7 +704,8 @@ export class MapTileTreeReference extends TileTreeReference {
       context.addPlanarClassifier(tree.modelId, undefined, this._planarClipMask);
 
     const nonLocatable = this.settings.locatable ? undefined : true;
-    this._symbologyOverrides.overrideModel(tree.modelId, FeatureAppearance.fromJSON({ transparency: this.settings.transparencyOverride, nonLocatable }));
+    const transparency = this.settings.transparency ? this.settings.transparency : undefined;
+    this._symbologyOverrides.overrideModel(tree.modelId, FeatureAppearance.fromJSON({ transparency, nonLocatable }));
     const args = this.createDrawArgs(context);
     if (undefined !== args)
       tree.draw(args);
