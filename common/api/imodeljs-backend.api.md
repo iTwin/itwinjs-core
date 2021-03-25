@@ -683,6 +683,7 @@ export class CheckpointManager {
     // (undocumented)
     static readonly onDownload: BeEvent<(job: DownloadJob) => void>;
     static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
+    static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb): void;
     // (undocumented)
     static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean;
 }
