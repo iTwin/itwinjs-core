@@ -6,13 +6,13 @@
  * @module NativeApp
  */
 
+import { join } from "path";
 import { BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, RpcInterfaceDefinition, StorageValue,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
-import * as path from "path";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
@@ -35,7 +35,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
   public setAccessToken(token?: AccessToken) {
     const wasToken = this._accessToken !== undefined;
     this._accessToken = token;
-    if (wasToken !== (token === undefined))
+    if (wasToken !== (token === undefined)) // only send event if token goes from undefined to defined or vice versa
       NativeHost.onUserStateChanged.raiseEvent(token);
   }
   public async getAccessToken(): Promise<AccessToken> {
@@ -166,23 +166,15 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 }
 
 /**
- * Options for  [[NativeHost.startup]]
  * @beta
  */
-export interface NativeHostOptions {
-  /** list of RPC interface definitions to register */
-  rpcInterfaces?: RpcInterfaceDefinition[];
-}
-
-/** @beta */
 export interface NativeHostOpts extends IpcHostOpts {
-<<<<<<< HEAD
-  nativeHost?: NativeHostOptions;
-=======
   nativeHost?: {
+    /** Application named. Used to name settings file */
     applicationName?: string;
+    /** list of RPC interface definitions to register */
+    rpcInterfaces?: RpcInterfaceDefinition[];
   };
->>>>>>> master
 }
 
 /**
@@ -206,9 +198,8 @@ export class NativeHost {
 
   /** Get the local cache folder for application settings */
   public static get appSettingsCacheDir(): string {
-    if (this._appSettingsCacheDir === undefined) {
-      this._appSettingsCacheDir = path.join(IModelHost.cacheDir, "appSettings");
-    }
+    if (this._appSettingsCacheDir === undefined)
+      this._appSettingsCacheDir = join(IModelHost.cacheDir, "appSettings");
     return this._appSettingsCacheDir;
   }
 
