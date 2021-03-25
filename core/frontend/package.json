@@ -105,7 +105,6 @@
     "@bentley/usage-logging-client": "2.15.0-dev.7",
     "fuse.js": "^3.3.0",
     "js-base64": "^2.4.5",
-    "ldclient-js": "^2.6.0",
     "oidc-client": "^1.9.1",
     "semver": "^5.5.0",
     "xml-js": "~1.6.11",
