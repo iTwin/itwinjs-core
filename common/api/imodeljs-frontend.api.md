@@ -146,8 +146,6 @@ import { IpcAppChannel } from '@bentley/imodeljs-common';
 import { IpcAppFunctions } from '@bentley/imodeljs-common';
 import { IpcListener } from '@bentley/imodeljs-common';
 import { IpcSocketFrontend } from '@bentley/imodeljs-common';
-import { LDClient } from 'ldclient-js';
-import { LDFlagValue } from 'ldclient-js';
 import { LightSettings } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LocalBriefcaseProps } from '@bentley/imodeljs-common';
@@ -3388,7 +3386,6 @@ export interface FrameRenderData {
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
     EventSource = "imodeljs-frontend.EventSource",
-    FeatureToggle = "imodeljs-frontend.FeatureToggles",
     // @alpha
     FeatureTracking = "imodeljs-frontend.FeatureTracking",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
@@ -4322,8 +4319,6 @@ export class IModelApp {
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @beta
     static get extensionAdmin(): ExtensionAdmin;
-    // @internal
-    static get featureToggles(): FeatureToggleClient;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
     // @internal (undocumented)
@@ -4402,8 +4397,6 @@ export interface IModelAppOptions {
     authorizationClient?: FrontendAuthorizationClient;
     // @beta
     extensionAdmin?: ExtensionAdmin;
-    // @internal
-    featureToggles?: FeatureToggleClient;
     i18n?: I18N | I18NOptions;
     imodelClient?: IModelClient;
     // @internal (undocumented)
