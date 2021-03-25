@@ -418,7 +418,7 @@ export abstract class Tile {
         return TileVisibility.Visible;
     }
 
-    const pixelSize = args.getPixelSize(this);
+    const pixelSize = args.getPixelSize(this) * args.pixelSizeScaleFactor;
     const maxSize = this.maximumSize * args.tileSizeModifier;
 
     return pixelSize > maxSize ? TileVisibility.TooCoarse : TileVisibility.Visible;
