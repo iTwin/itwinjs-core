@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
+import { DbOpcode, DbResult } from "@bentley/bentleyjs-core";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { assert } from "chai";
 import * as path from "path";
 
 // spell-checker: disable
@@ -15,7 +16,6 @@ describe("changeset reader", () => {
     const changesetFile = path.join(KnownTestLocations.assetsDir, "changesets/data.changeset");
     const reader: IModelJsNative.ChangesetReader = new IModelHost.platform.ChangesetReader();
     assert(reader.open(changesetFile, false) === DbResult.BE_SQLITE_OK);
-
     assert(reader.step() === DbResult.BE_SQLITE_ROW);
     const row = reader.getRow()!;
     const opCode = reader.getOpCode();
@@ -80,7 +80,7 @@ describe("changeset reader", () => {
       const tableName = reader.getTableName();
       assert(typeof tableName !== "undefined");
 
-      rows.set(tableName, row);
+      rows.set(tableName!, row!);
     }
 
     assert(reader.close() === DbResult.BE_SQLITE_OK);
@@ -127,7 +127,8 @@ describe("changeset reader", () => {
     assert(rows.get("ec_IndexColumn")?.length === 4);
     assert(rows.get("dgn_Domain")?.length === 3);
 
-    const sqls = ddl?.split(";");
+    const sqls = ddl!.split(";");
+
     assert(sqls.length === 10);
     assert(sqls[0] === "ALTER TABLE [bis_Model] ADD COLUMN [ps4] BLOB");
     assert(sqls[1] === "ALTER TABLE [bis_Model] ADD COLUMN [ps5] BLOB");
@@ -171,7 +172,7 @@ describe("changeset reader", () => {
       const tableName = reader.getTableName();
       assert(typeof tableName !== "undefined");
 
-      rows.set(tableName, row);
+      rows.set(tableName!, row!);
     }
 
     assert(reader.close() === DbResult.BE_SQLITE_OK);
