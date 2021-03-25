@@ -10,7 +10,7 @@ import * as path from "path";
 
 // spell-checker: disable
 
-describe.only("changeset reader", () => {
+describe("changeset reader", () => {
   it("read data using getColumnValue()", () => {
     const changesetFile = path.join(KnownTestLocations.assetsDir, "changesets/data.changeset");
     const reader: IModelJsNative.ChangesetReader = new IModelHost.platform.ChangesetReader()
