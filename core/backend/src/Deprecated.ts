@@ -38,3 +38,7 @@ export enum BriefcaseIdValue {
   DeprecatedStandalone = 1,
 }
 
+/** @public
+ * @deprecated Use TxnAction from imodeljs-common
+ */
+export enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
