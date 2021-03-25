@@ -124,11 +124,7 @@
     "callable-instance2": "1.0.0",
     "classnames": "^2.2.5",
     "eventemitter2": "^5.0.1",
-<<<<<<< HEAD
-    "immer": "^8.0.1",
-=======
     "immer": "^9.0.1",
->>>>>>> 21cdd50377... Update immer to ^9.0.1 (#1027)
     "immutable": "^3.8.2",
     "inspire-tree": "^5.0.1",
     "linkify-it": "~2.2.0",

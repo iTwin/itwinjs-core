@@ -91,11 +91,7 @@
   ],
   "dependencies": {
     "classnames": "^2.2.5",
-<<<<<<< HEAD
-    "immer": "^8.0.1",
-=======
     "immer": "^9.0.1",
->>>>>>> 21cdd50377... Update immer to ^9.0.1 (#1027)
     "uuid": "^7.0.3"
   },
   "nyc": {
