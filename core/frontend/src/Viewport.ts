@@ -2366,9 +2366,12 @@ export abstract class Viewport implements IDisposable {
       this.npcToWorld(npc, npc);
 
       // If this is a plan projection model, invert the elevation applied to its display transform.
+      // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
       const modelId = pixels.getPixel(x, y).featureTable?.modelId;
-      if (undefined !== modelId)
+      if (undefined !== modelId) {
         npc.z -= this.view.getModelElevation(modelId);
+        this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+      }
     }
 
     return npc;
@@ -2765,6 +2768,9 @@ export class ScreenViewport extends Viewport {
     return result;
   }
 
+  /** @internal */
+  public picker = new ElementPicker(); // Picker used in pickDepthPoint below so it hangs around and can be querried later.
+
   /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
    * If no geometry is selected, return the point projected to the most appropriate reference plane.
    * @param pickPoint Point to search about, in world coordinates
@@ -2781,14 +2787,14 @@ export class ScreenViewport extends Viewport {
     if (undefined === radius)
       radius = this.pixelsFromInches(ToolSettings.viewToolPickRadiusInches);
 
-    const picker = new ElementPicker();
+    this.picker.empty();
     const locateOpts = new LocateOptions();
     locateOpts.allowNonLocatable = (undefined === options || !options.excludeNonLocatable);
     locateOpts.allowDecorations = (undefined === options || !options.excludeDecorations);
     locateOpts.allowExternalIModels = (undefined === options || !options.excludeExternalIModels);
 
-    if (0 !== picker.doPick(this, pickPoint, radius, locateOpts)) {
-      const hitDetail = picker.getHit(0)!;
+    if (0 !== this.picker.doPick(this, pickPoint, radius, locateOpts)) {
+      const hitDetail = this.picker.getHit(0)!;
       const hitPoint = hitDetail.getPoint();
       if (hitDetail.isModelHit)
         return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!, source: DepthPointSource.Model, sourceId: hitDetail.sourceId };
