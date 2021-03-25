@@ -5932,15 +5932,7 @@ export class MeasureAreaTool extends MeasureElementTool {
 // @alpha (undocumented)
 export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
-    protected readonly _acceptedSegments: {
-        distance: number;
-        slope: number;
-        start: Point3d;
-        end: Point3d;
-        delta: Vector3d;
-        refAxes: Matrix3d;
-        marker: MeasureMarker;
-    }[];
+    protected readonly _acceptedSegments: Segment[];
     // (undocumented)
     protected acceptNewSegments(): Promise<void>;
     // (undocumented)
@@ -5954,7 +5946,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected displayDelta(context: DecorateContext, seg: any): void;
     // (undocumented)
-    protected displayDynamicDistance(context: DecorateContext, points: Point3d[]): void;
+    protected displayDynamicDistance(context: DecorateContext, points: Point3d[], adjustedPoints: Point3d[]): void;
     // (undocumented)
     getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
     // (undocumented)
@@ -5970,12 +5962,11 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
     // (undocumented)
+    protected _lastMotionAdjustedPt?: Point3d;
+    // (undocumented)
     protected _lastMotionPt?: Point3d;
     // (undocumented)
-    protected readonly _locationData: {
-        point: Point3d;
-        refAxes: Matrix3d;
-    }[];
+    protected readonly _locationData: Location[];
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -8116,6 +8107,8 @@ export abstract class RenderSystem implements IDisposable {
     get supportsInstancing(): boolean;
     // @internal (undocumented)
     get supportsLogZBuffer(): boolean;
+    // @internal (undocumented)
+    get supportsNonuniformScaledInstancing(): boolean;
 }
 
 // @public
@@ -8511,6 +8504,8 @@ export class ScreenViewport extends Viewport {
         source: DepthPointSource;
         sourceId?: string;
     };
+    // @internal (undocumented)
+    picker: ElementPicker;
     pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
     static removeAllChildren(el: HTMLDivElement): void;
@@ -10200,6 +10195,8 @@ export class TileDrawArgs {
     readonly now: BeTimePoint;
     // @internal (undocumented)
     parentsAndChildrenExclusive: boolean;
+    // @internal (undocumented)
+    readonly pixelSizeScaleFactor: number;
     // @internal (undocumented)
     planarClassifier?: RenderPlanarClassifier;
     // @internal
@@ -12679,6 +12676,10 @@ export abstract class ViewState extends ElementState {
     // (undocumented)
     toJSON(): ViewDefinitionProps;
     toProps(): ViewStateProps;
+    // @internal (undocumented)
+    transformNormalByModelDisplayTransform(modelId: string | undefined, normal: Vector3d): void;
+    // @internal (undocumented)
+    transformPointByModelDisplayTransform(modelId: string | undefined, pnt: Point3d, inverse: boolean): void;
     // (undocumented)
     protected _updateMaxGlobalScopeFactor(): void;
     get viewFlags(): ViewFlags;
