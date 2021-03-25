@@ -3106,7 +3106,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // (undocumented)
-    get hasFocus(): boolean;
+    hasFocus: boolean;
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
@@ -3117,6 +3117,8 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
 
 // @beta
 export class NumericInputPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesEnter(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
