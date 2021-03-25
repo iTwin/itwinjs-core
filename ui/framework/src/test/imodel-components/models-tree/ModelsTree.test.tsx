@@ -149,7 +149,7 @@ describe("ModelsTree", () => {
         const node = createModelNode();
         setupDataProvider([node]);
 
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden", isDisabled: false })).verifiable(moq.Times.exactly(3));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden", isDisabled: false })).verifiable(moq.Times.exactly(2));
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => {
           const renderedNode = result.getByTestId("tree-node");
