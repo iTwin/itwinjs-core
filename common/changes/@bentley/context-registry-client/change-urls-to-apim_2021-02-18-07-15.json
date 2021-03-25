@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/context-registry-client",
+      "comment": "Update service URL",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/context-registry-client",
+  "email": "laurynasr@users.noreply.github.com"
+}

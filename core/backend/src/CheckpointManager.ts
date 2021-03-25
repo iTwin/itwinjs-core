@@ -290,6 +290,7 @@ export class V1CheckpointManager {
           requestContext.enter();
         }
       } finally {
+        db.saveChanges();
         db.close();
       }
 

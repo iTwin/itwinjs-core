@@ -72,6 +72,7 @@ public;BlankConnection
 public;BlankConnectionProps
 public;BriefcaseConnection 
 beta;class BriefcaseNotificationHandler 
+beta;BriefcaseTxns 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -132,12 +133,10 @@ public;DynamicsContext
 alpha;EditingFunctions
 alpha;EditingFunctions
 deprecated;CategoryEditor
-deprecated;ConcurrencyControl
 deprecated;ModelEditor
 alpha;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
-alpha;ElementEditor3d
 public;ElementLocateManager
 public;ElementPicker
 alpha;class ElementSetTool 

@@ -388,7 +388,6 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should fail downloading ChangeSets with no file handler", async () => {
-    utils.IModelHubUrlMock.mockGetUrl();
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, `?$select=FileSize&$orderby=Index+desc&$top=1`, mockChangeSets[2]);
     utils.mockGetChangeSet(imodelId, true, "&$orderby=Index+desc&$top=1", mockChangeSets[2]);

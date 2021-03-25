@@ -151,14 +151,14 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
     const shortName = nameParts.length === 1 ? nameParts[0] : nameParts[1];
     let containerB: CustomAttributeContainerProps | undefined;
 
-    if (containerA instanceof Schema) {
+    if (Schema.isSchema(containerA)) {
       containerB = this._schemaB;
-    } else if (containerA instanceof ECClass) {
+    } else if (ECClass.isECClass(containerA)) {
       containerB = await this._schemaB.lookupItem(shortName);
-    } else if (containerA instanceof Property) {
+    } else if (Property.isProperty(containerA)) {
       const parent = await this._schemaB.lookupItem<ECClass>(containerA.class.key);
       containerB = parent ? await parent.getProperty(shortName) : undefined;
-    } else if (containerA instanceof RelationshipConstraint) {
+    } else if (RelationshipConstraint.isRelationshipConstraint(containerA)) {
       const parent = await this._schemaB.lookupItem<RelationshipClass>(containerA.relationshipClass.key);
       containerB = parent ? await parent.getProperty(shortName) : undefined;
     }

@@ -190,14 +190,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     });
   }
 
-  public async loadHierarchy(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
-    return this.makeRequest(token, "loadHierarchy", requestOptions, async (options) => {
-      const manager = this.getManager(requestOptions.clientId);
-      // note: we intentionally don't await here - don't want frontend waiting for this task to complete
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      manager.loadHierarchy(options)
-        .catch((e) => Logger.logWarning(PresentationBackendLoggerCategory.PresentationManager, `Error loading '${manager.getRulesetId(requestOptions.rulesetOrId)}' hierarchy: ${e}`));
-    });
+  /** @deprecated This is a noop now. Keeping just to avoid breaking the RPC interface. */
+  public async loadHierarchy(_token: IModelRpcProps, _requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
+    return { statusCode: PresentationStatus.Error };
   }
 
   public async getContentDescriptor(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions | ContentDescriptorRpcRequestOptions, displayType?: string, keys?: KeySetJSON, selection?: SelectionInfo): PresentationRpcResponse<DescriptorJSON | undefined> {
