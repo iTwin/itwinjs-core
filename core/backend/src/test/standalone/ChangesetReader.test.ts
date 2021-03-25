@@ -13,7 +13,7 @@ import * as path from "path";
 describe("changeset reader", () => {
   it("read data using getColumnValue()", () => {
     const changesetFile = path.join(KnownTestLocations.assetsDir, "changesets/data.changeset");
-    const reader: IModelJsNative.ChangesetReader = new IModelHost.platform.ChangesetReader()
+    const reader: IModelJsNative.ChangesetReader = new IModelHost.platform.ChangesetReader();
     assert(reader.open(changesetFile, false) === DbResult.BE_SQLITE_OK);
 
     assert(reader.step() === DbResult.BE_SQLITE_ROW);
@@ -41,7 +41,7 @@ describe("changeset reader", () => {
   });
   it("invert changeset", () => {
     const changesetFile = path.join(KnownTestLocations.assetsDir, "changesets/data.changeset");
-    const reader: IModelJsNative.ChangesetReader = new IModelHost.platform.ChangesetReader()
+    const reader: IModelJsNative.ChangesetReader = new IModelHost.platform.ChangesetReader();
     assert(reader.open(changesetFile, false) === DbResult.BE_SQLITE_OK);
     assert(reader.step() === DbResult.BE_SQLITE_ROW);
     assert(reader.getOpCode() === DbOpcode.Insert);
@@ -54,7 +54,7 @@ describe("changeset reader", () => {
   });
   it("read schema changeset", () => {
     const changesetFile = path.join(KnownTestLocations.assetsDir, "changesets/schema.changeset");
-    const reader: IModelJsNative.ChangesetReader = new IModelHost.platform.ChangesetReader()
+    const reader: IModelJsNative.ChangesetReader = new IModelHost.platform.ChangesetReader();
     assert(reader.open(changesetFile, false) === DbResult.BE_SQLITE_OK);
     const ddl = reader.getSchemaChanges();
     assert(typeof ddl !== "undefined");
@@ -62,7 +62,7 @@ describe("changeset reader", () => {
     let inserted = 0;
     let updated = 0;
     let deleted = 0;
-    let rows = new Map<string, any[]>();
+    const rows = new Map<string, any[]>();
     while (reader.step() === DbResult.BE_SQLITE_ROW) {
       const opcode = reader.getOpCode();
       assert(typeof opcode !== "undefined");
@@ -80,7 +80,7 @@ describe("changeset reader", () => {
       const tableName = reader.getTableName();
       assert(typeof tableName !== "undefined");
 
-      rows.set(tableName!, row!);
+      rows.set(tableName, row);
     }
 
     assert(reader.close() === DbResult.BE_SQLITE_OK);
@@ -91,7 +91,7 @@ describe("changeset reader", () => {
     assert(deleted === 0);
 
     // check if changed table exist
-    assert(rows.size == 16);
+    assert(rows.size === 16);
     assert(rows.has("ec_Schema"));
     assert(rows.has("ec_SchemaReference"));
     assert(rows.has("ec_Class"));
@@ -142,18 +142,18 @@ describe("changeset reader", () => {
   });
 
   it("read data changeset via getRow()", () => {
-    const changesetFile = path.join(KnownTestLocations.assetsDir, "changesets/data.cs");
-    const reader: IModelJsNative.ChangesetReader = new IModelHost.platform.ChangesetReader()
+    const changesetFile = path.join(KnownTestLocations.assetsDir, "changesets/data.changeset");
+    const reader: IModelJsNative.ChangesetReader = new IModelHost.platform.ChangesetReader();
     assert(reader.open(changesetFile, false) === DbResult.BE_SQLITE_OK);
 
     const fileName = reader.getFileName();
     assert(typeof fileName !== "undefined");
-    assert(fileName! === changesetFile);
+    assert(fileName === changesetFile);
 
     let inserted = 0;
     let updated = 0;
     let deleted = 0;
-    let rows = new Map<string, any[]>();
+    const rows = new Map<string, any[]>();
     while (reader.step() === DbResult.BE_SQLITE_ROW) {
       const opcode = reader.getOpCode();
       assert(typeof opcode !== "undefined");
@@ -171,7 +171,7 @@ describe("changeset reader", () => {
       const tableName = reader.getTableName();
       assert(typeof tableName !== "undefined");
 
-      rows.set(tableName!, row!);
+      rows.set(tableName, row);
     }
 
     assert(reader.close() === DbResult.BE_SQLITE_OK);
@@ -182,7 +182,7 @@ describe("changeset reader", () => {
     assert(deleted === 0);
 
     // check if changed table exist
-    assert(rows.size == 8);
+    assert(rows.size === 8);
     assert(rows.has("bis_Element"));
     assert(rows.has("bis_InformationReferenceElement"));
     assert(rows.has("bis_ElementMultiAspect"));
