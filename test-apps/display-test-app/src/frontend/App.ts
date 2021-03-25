@@ -38,6 +38,7 @@ import {
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -210,6 +211,7 @@ export class DisplayTestApp {
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     [
+      ApplyModelDisplayScaleTool,
       ApplyModelTransformTool,
       CloneViewportTool,
       CloseIModelTool,
