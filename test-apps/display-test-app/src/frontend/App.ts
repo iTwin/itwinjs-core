@@ -25,6 +25,7 @@ import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingSessionTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
+import { ChangeGridSettingsTool } from "./Grid";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { Notifications } from "./Notifications";
@@ -211,6 +212,7 @@ export class DisplayTestApp {
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     [
       ApplyModelTransformTool,
+      ChangeGridSettingsTool,
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,

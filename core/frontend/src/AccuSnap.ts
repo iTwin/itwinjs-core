@@ -15,6 +15,7 @@ import { IModelApp } from "./IModelApp";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { IconSprites, Sprite, SpriteLocation } from "./Sprites";
 import { BeButton, BeButtonEvent, BeTouchEvent, InputSource } from "./tools/Tool";
+import { ToolSettings } from "./tools/ToolSettings";
 import { DecorateContext } from "./ViewContext";
 import { Decorator } from "./ViewManager";
 import { ScreenViewport, Viewport } from "./Viewport";
@@ -125,6 +126,8 @@ export class TouchCursor implements CanvasDecoration {
   }
 
   public doTouchEnd(ev: BeTouchEvent): void {
+    if (this._isDragging && undefined !== ev.viewport)
+      IModelApp.toolAdmin.currentInputState.fromPoint(ev.viewport, this._offsetPosition, InputSource.Touch); // Current location should reflect virtual cursor offset...
     this._isSelected = this._isDragging = false;
     if (undefined !== ev.viewport)
       ev.viewport.invalidateDecorations();
@@ -566,7 +569,7 @@ export class AccuSnap implements Decorator {
     this.toolState.enabled = yesNo;
     if (!yesNo) {
       this.clear();
-      if (undefined !== this.touchCursor) {
+      if (undefined !== this.touchCursor && !this.wantVirtualCursor) {
         this.touchCursor = undefined;
         IModelApp.viewManager.invalidateDecorationsAllViews();
       }
@@ -944,10 +947,15 @@ export class AccuSnap implements Decorator {
   public onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMoveStart(ev, startEv) : false; }
 
   /** @internal */
+  public get wantVirtualCursor(): boolean {
+    return this._doSnapping || (this.isLocateEnabled && ToolSettings.enableVirtualCursorForLocate);
+  }
+
+  /** @internal */
   public async onTouchTap(ev: BeTouchEvent): Promise<boolean> {
     if (undefined !== this.touchCursor)
       return this.touchCursor.doTouchTap(ev);
-    if (!this._doSnapping)
+    if (!this.wantVirtualCursor)
       return false;
     this.touchCursor = TouchCursor.createFromTouchTap(ev);
     if (undefined === this.touchCursor)
@@ -1007,7 +1015,13 @@ export class AccuSnap implements Decorator {
   /** Enable locating elements.
    * @public
    */
-  public enableLocate(yesNo: boolean) { this.toolState.locate = yesNo; }
+  public enableLocate(yesNo: boolean) {
+    this.toolState.locate = yesNo;
+    if (!yesNo && undefined !== this.touchCursor && !this.wantVirtualCursor) {
+      this.touchCursor = undefined;
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+    }
+  }
 
   /** Called whenever a new [[Tool]] is started.
    * @internal

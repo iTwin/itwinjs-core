@@ -941,7 +941,9 @@ export class AccuSnap implements Decorator {
     readonly toolState: AccuSnap.ToolState;
     // @internal (undocumented)
     touchCursor?: TouchCursor;
-    }
+    // @internal (undocumented)
+    get wantVirtualCursor(): boolean;
+}
 
 // @public (undocumented)
 export namespace AccuSnap {
@@ -10855,6 +10857,8 @@ export class ToolSettings {
     static doubleClickTimeout: BeDuration;
     static doubleClickToleranceInches: number;
     static doubleTapTimeout: BeDuration;
+    // @beta
+    static enableVirtualCursorForLocate: boolean;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;
     static startDragDelay: BeDuration;
