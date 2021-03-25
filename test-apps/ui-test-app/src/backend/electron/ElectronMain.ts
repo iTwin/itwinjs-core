@@ -11,17 +11,17 @@ import { getSupportedRpcs } from "../../common/rpcs";
 
 const mainWindowName = "mainWindow";
 
-/**  Initializes Electron backend */
+/** Initializes Electron backend */
 export async function initializeElectron() {
 
   const opt = {
     electronHost: {
       webResourcesPath: join(__dirname, "..", "..", "..", "build"),
       developmentServer: process.env.NODE_ENV === "development",
+      rpcInterfaces: getSupportedRpcs(),
     },
     nativeHost: {
       applicationName: "ui-test-app",
-      rpcInterfaces: getSupportedRpcs(),
     },
   };
 

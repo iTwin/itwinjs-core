@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 /**
@@ -14,17 +14,13 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
 
   // __PUBLISH_EXTRACT_START__ Presentation.Backend.RpcInterface
 
-  const opts = {
-    electronHost: {
-      webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
-      developmentServer: process.env.NODE_ENV === "development",
-    },
-    nativeHost: {
-      rpcInterfaces,
-    },
-  }
+  const electronHost: ElectronHostOptions = {
+    webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
+    rpcInterfaces,
+    developmentServer: process.env.NODE_ENV === "development",
+  };
 
-  await ElectronHost.startup(opts);
+  await ElectronHost.startup({ electronHost });
   await ElectronHost.openMainWindow();
 
   // __PUBLISH_EXTRACT_END__

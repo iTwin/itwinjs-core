@@ -10,7 +10,7 @@ import { join } from "path";
 import { BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
-  NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, RpcInterfaceDefinition, StorageValue,
+  NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -33,10 +33,10 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety);
   }
   public setAccessToken(token?: AccessToken) {
-    const wasToken = this._accessToken !== undefined;
+    if (token === this._accessToken)
+      return;
     this._accessToken = token;
-    if (wasToken !== (token === undefined)) // only send event if token goes from undefined to defined or vice versa
-      NativeHost.onUserStateChanged.raiseEvent(token);
+    NativeHost.onUserStateChanged.raiseEvent(token);
   }
   public async getAccessToken(): Promise<AccessToken> {
     if (!this.isAuthorized)
@@ -165,15 +165,11 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 }
 
-/**
- * @beta
- */
+/** @beta */
 export interface NativeHostOpts extends IpcHostOpts {
   nativeHost?: {
     /** Application named. Used to name settings file */
     applicationName?: string;
-    /** list of RPC interface definitions to register */
-    rpcInterfaces?: RpcInterfaceDefinition[];
   };
 }
 

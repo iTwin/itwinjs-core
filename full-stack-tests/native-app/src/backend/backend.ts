@@ -52,6 +52,6 @@ async function init() {
   iModelHost.concurrentQuery.concurrent = 2;
   iModelHost.concurrentQuery.pollInterval = 5;
   iModelHost.cacheDir = path.join(__dirname, "out");
-  await ElectronHost.startup({ nativeHost: { rpcInterfaces }, iModelHost });
+  await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
 }
 module.exports = init();

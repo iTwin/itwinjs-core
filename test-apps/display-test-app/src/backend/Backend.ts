@@ -250,7 +250,9 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
     electronHost,
     nativeHost: {
       applicationName: "display-test-app",
-      rpcInterfaces: getRpcInterfaces(),
+    },
+    mobileHost: {
+      rpcInterfaces: electronHost?.rpcInterfaces,
     },
   };
 
