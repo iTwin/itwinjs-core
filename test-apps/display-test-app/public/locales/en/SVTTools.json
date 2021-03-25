@@ -106,6 +106,9 @@
     "ApplyModelTransform": {
       "keyin": "dta model transform"
     },
+    "ApplyModelDisplayScale": {
+      "keyin": "dta model scale"
+    },
     "EditingSession": {
       "keyin": "dta edit"
     },
