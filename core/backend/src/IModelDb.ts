@@ -16,7 +16,7 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
   CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,
@@ -29,7 +29,7 @@ import {
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseId, BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseId, BriefcaseManager } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
@@ -50,6 +50,7 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** Options for [[IModelDb.Models.updateModel]]
+ * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
  * @public
  */
 export interface UpdateModelOptions extends ModelProps {
@@ -127,12 +128,12 @@ export abstract class IModelDb extends IModel {
   public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
   private _nativeDb?: IModelJsNative.DgnDb;
-  /** Get the in-memory handle of the native Db
-   * @internal
-   */
+  /** @internal*/
   public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb!; }
 
-  /** Get the full path fileName of this iModelDb */
+  /** Get the full path fileName of this iModelDb
+   * @note this member is only valid while the iModel is opened.
+   */
   public get pathName() { return this.nativeDb.getFilePath(); }
 
   /** @internal */
@@ -604,6 +605,8 @@ export abstract class IModelDb extends IModel {
 
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {
+      if (params.bindings)
+        stmt.bindValues(params.bindings);
       for (const row of stmt) {
         if (row.id !== undefined) {
           ids.add(row.id);
@@ -1401,19 +1404,20 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the model.
      */
     public insertModel(props: ModelProps): Id64String {
-      if (props.isPrivate === undefined) // temporarily work around bug in addon
-        props.isPrivate = false;
+      const json = props instanceof Model ? props.toJSON() : props;
+      if (json.isPrivate === undefined) // temporarily work around bug in addon
+        json.isPrivate = false;
 
-      const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onInsert(props, this._iModel);
+      const jsClass = this._iModel.getJsClass<typeof Model>(json.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onInsert(json, this._iModel);
 
-      const val = this._iModel.nativeDb.insertModel(props);
+      const val = this._iModel.nativeDb.insertModel(json);
       if (val.error)
         throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggerCategory);
 
-      props.id = Id64.fromJSON(val.result!.id);
-      jsClass.onInserted(props.id, this._iModel);
-      return props.id;
+      json.id = props.id = Id64.fromJSON(val.result!.id);
+      jsClass.onInserted(json.id, this._iModel);
+      return json.id;
     }
 
     /** Update an existing model.
@@ -1421,14 +1425,30 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the model.
      */
     public updateModel(props: UpdateModelOptions): void {
-      const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onUpdate(props, this._iModel);
+      const json = props instanceof Model ? props.toJSON() : props;
+      const jsClass = this._iModel.getJsClass<typeof Model>(json.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onUpdate(json, this._iModel);
 
-      const error = this._iModel.nativeDb.updateModel(props);
+      const error = this._iModel.nativeDb.updateModel(json);
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, `updating model id=${props.id}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(error, `updating model id=${json.id}`, Logger.logWarning, loggerCategory);
 
-      jsClass.onUpdated(props, this._iModel);
+      jsClass.onUpdated(json, this._iModel);
+    }
+
+    /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
+     * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
+     * explicitly updating it is occassionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
+     * [[GeometricElement]]s that reference those definition elements in their geometry streams.
+     * @note This will throw IModelError with [IModelStatus.VersionTooOld]($bentleyjs-core) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
+     * @throws IModelError if unable to update the geometry guid.
+     * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
+     * @beta
+     */
+    public updateGeometryGuid(modelId: Id64String): void {
+      const error = this._iModel.nativeDb.updateModelGeometryGuid(modelId);
+      if (error !== IModelStatus.Success)
+        throw new IModelError(error, `updating geometry guid for model ${modelId}`, Logger.logWarning, loggerCategory);
     }
 
     /** Delete one or more existing models.
@@ -2133,10 +2153,11 @@ export class BriefcaseDb extends IModelDb {
   /** override superclass method */
   public get isBriefcase(): boolean { return true; }
 
-  /** Returns `true` if this is a briefcase can be used to make changesets */
-  public readonly allowLocalChanges: boolean;
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: number;
+
+  /** Returns `true` if this is briefcaseDb is opened writable and can be used to make changesets */
+  public get allowLocalChanges(): boolean { return this.openMode === OpenMode.ReadWrite && this.briefcaseId !== 0; }
 
   /** Event raised just before a BriefcaseDb is opened.
    *  * If the open requires authorization [AuthorizedClientRequestContext]($itwin-client) is passed in to the event handler. Otherwise [[ClientRequestContext]] is passed in
@@ -2207,7 +2228,6 @@ export class BriefcaseDb extends IModelDb {
     this.concurrencyControl = new ConcurrencyControl(this);
     this.concurrencyControl.setPolicy(new ConcurrencyControl.PessimisticPolicy());
     this.briefcaseId = this.nativeDb.getBriefcaseId();
-    this.allowLocalChanges = this.openMode === OpenMode.ReadWrite && this.briefcaseId !== 0;
   }
 
   /** Commit pending changes to this iModel.
@@ -2356,17 +2376,30 @@ export class BriefcaseDb extends IModelDb {
       this.concurrencyControl.onClose();
   }
 
+  private closeAndReopen(openMode: OpenMode) {
+    const fileName = this.pathName;
+    this.nativeDb.closeIModel();
+    this.nativeDb.openIModel(fileName, openMode);
+  }
+
   /** Pull and Merge changes from iModelHub
    * @param requestContext Context used for authorization to pull change sets
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
    */
   public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    requestContext.enter();
     if (this.allowLocalChanges)
       this.concurrencyControl.onMergeChanges();
-    await BriefcaseManager.pullAndMergeChanges(requestContext, this, version);
-    requestContext.enter();
+
+    if (this.isReadonly) // we allow pulling changes into a briefcase that is readonly - close and reopen it writeable
+      this.closeAndReopen(OpenMode.ReadWrite);
+    try {
+      await BriefcaseManager.pullAndMergeChanges(requestContext, this, version);
+    } finally {
+      if (this.isReadonly) // if the briefcase was opened readonly - close and reopen it readonly
+        this.closeAndReopen(OpenMode.Readonly);
+    }
+
     if (this.allowLocalChanges)
       this.concurrencyControl.onMergedChanges();
 

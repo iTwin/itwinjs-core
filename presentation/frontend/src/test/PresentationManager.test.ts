@@ -15,7 +15,7 @@ import {
   FieldDescriptorType, HierarchyCompareInfoJSON, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions, Node,
   NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError,
   PresentationIpcEvents,
-  PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset,
+  PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RpcRequestsHandler, Ruleset,
   RulesetVariable, UpdateInfo, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -165,14 +165,6 @@ describe("PresentationManager", () => {
       manager.dispose();
       rpcRequestsHandlerMock.verify((x) => x.dispose(), moq.Times.once());
     });
-
-    // it("stops listening to update events", async () => {
-    //   sinon.stub(IpcApp, "isValid").get(() => true);
-    //   const offSpy = sinon.stub();
-    //   const addListenerSpy = sinon.stub(IpcApp, "addListener").returns(offSpy);
-    //   using(PresentationManager.create(), (_) => { });
-    //   expect(offSpy).to.be.calledOnce;
-    // });
 
   });
 
@@ -618,35 +610,6 @@ describe("PresentationManager", () => {
 
   });
 
-  describe("loadHierarchy", () => {
-
-    it("calls loadHierarchy through proxy with default 'preload' priority", async () => {
-      const options: HierarchyRequestOptions<IModelConnection> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-      };
-      rpcRequestsHandlerMock.setup(async (x) => x.loadHierarchy({ ...prepareOptions(options), priority: RequestPriority.Preload }))
-        .returns(async () => { })
-        .verifiable();
-      await manager.loadHierarchy(options);
-      rpcRequestsHandlerMock.verifyAll();
-    });
-
-    it("calls loadHierarchy through proxy with specified priority", async () => {
-      const options: HierarchyRequestOptions<IModelConnection> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-        priority: 999,
-      };
-      rpcRequestsHandlerMock.setup(async (x) => x.loadHierarchy({ ...prepareOptions(options), priority: 999 }))
-        .returns(async () => { })
-        .verifiable();
-      await manager.loadHierarchy(options);
-      rpcRequestsHandlerMock.verifyAll();
-    });
-
-  });
-
   describe("getContentDescriptor", () => {
 
     it("[deprecated] requests descriptor from proxy", async () => {
@@ -1011,33 +974,6 @@ describe("PresentationManager", () => {
       const actualResult = await manager.getContentAndSize(options);
       expect(actualResult).to.be.undefined;
       rpcRequestsHandlerMock.verifyAll();
-    });
-
-    it("handles case when partial request does not return items", async () => {
-      const keyset = new KeySet();
-      const descriptor = createRandomDescriptor();
-      const options: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-        paging: { start: 0, size: 5 },
-        descriptor: descriptor.createDescriptorOverrides(),
-        keys: keyset,
-      };
-      rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedContent(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), paging: { start: 0, size: 5 } })))
-        .returns(async () => ({ descriptor: descriptor.toJSON(), contentSet: { total: 1, items: [] } }))
-        .verifiable();
-      const loggerSpy = sinon.spy(Logger, "logError");
-      const actualResult = await manager.getContentAndSize(options);
-      expect(actualResult).to.deep.eq({
-        size: 0,
-        content: {
-          descriptor,
-          contentSet: [],
-        },
-      });
-      rpcRequestsHandlerMock.verifyAll();
-      expect(loggerSpy).to.be.calledOnce;
     });
 
   });
@@ -1619,6 +1555,28 @@ describe("PresentationManager", () => {
       expect(getter.firstCall).to.be.calledWith({ start: 1, size: 0 });
       expect(getter.secondCall).to.be.calledWith({ start: 3, size: 0 });
       expect(result).to.deep.eq({ total: 5, items: [2, 3, 4, 5] });
+    });
+
+    it("logs a warning when page start index is larger than total number of items", async () => {
+      const loggerSpy = sinon.spy(Logger, "logWarning");
+      const getter = sinon.stub();
+      getter.resolves({ total: 5, items: [] });
+      const result = await buildPagedResponse({ start: 9 }, getter);
+      expect(getter).to.be.calledOnce;
+      expect(getter).to.be.calledWith({ start: 9, size: 0 });
+      expect(result).to.deep.eq({ total: 0, items: [] });
+      expect(loggerSpy).to.be.calledOnce;
+    });
+
+    it("logs an error when partial request returns no items", async () => {
+      const loggerSpy = sinon.spy(Logger, "logError");
+      const getter = sinon.stub();
+      getter.resolves({ total: 5, items: [] });
+      const result = await buildPagedResponse({ start: 1 }, getter);
+      expect(getter).to.be.calledOnce;
+      expect(getter).to.be.calledWith({ start: 1, size: 0 });
+      expect(result).to.deep.eq({ total: 0, items: [] });
+      expect(loggerSpy).to.be.calledOnce;
     });
 
   });

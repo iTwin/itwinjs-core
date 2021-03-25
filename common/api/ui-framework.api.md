@@ -110,6 +110,7 @@ import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyUpdatedArgs } from '@bentley/ui-components';
 import * as PropTypes from 'prop-types';
+import { QuantityTypeArg } from '@bentley/imodeljs-frontend';
 import * as React from 'react';
 import { ReactMessage as ReactMessage_2 } from '@bentley/ui-core';
 import { RectangleProps } from '@bentley/ui-core';
@@ -122,6 +123,7 @@ import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
 import { SettingsManager } from '@bentley/ui-core';
 import { SettingsStatus } from '@bentley/product-settings-client';
+import { SettingsTabEntry } from '@bentley/ui-core';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
@@ -167,6 +169,7 @@ import { UiSettingsResult } from '@bentley/ui-core';
 import { UiSettingsStatus } from '@bentley/ui-core';
 import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-components';
 import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
+import { UnitSystemKey } from '@bentley/imodeljs-frontend';
 import { UserInfo } from '@bentley/itwin-client';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
@@ -256,6 +259,39 @@ export class AccuDrawPopupManager {
     static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)
     static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
+}
+
+// @alpha
+export interface AccuDrawUiSettings {
+    angleBackgroundColor?: ColorDef | string;
+    angleForegroundColor?: ColorDef | string;
+    angleIcon?: IconSpec;
+    angleLabel?: string;
+    angleStyle?: React_2.CSSProperties;
+    distanceBackgroundColor?: ColorDef | string;
+    distanceForegroundColor?: ColorDef | string;
+    distanceIcon?: IconSpec;
+    distanceLabel?: string;
+    distanceStyle?: React_2.CSSProperties;
+    xBackgroundColor?: ColorDef | string;
+    xForegroundColor?: ColorDef | string;
+    xIcon?: IconSpec;
+    xLabel?: string;
+    xStyle?: React_2.CSSProperties;
+    yBackgroundColor?: ColorDef | string;
+    yForegroundColor?: ColorDef | string;
+    yIcon?: IconSpec;
+    yLabel?: string;
+    yStyle?: React_2.CSSProperties;
+    zBackgroundColor?: ColorDef | string;
+    zForegroundColor?: ColorDef | string;
+    zIcon?: IconSpec;
+    zLabel?: string;
+    zStyle?: React_2.CSSProperties;
+}
+
+// @internal (undocumented)
+export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> {
 }
 
 // @alpha
@@ -1833,7 +1869,7 @@ export interface ExpandableSectionProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export const expandWidget: <Base extends {
+export const expandWidget: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -1946,7 +1982,7 @@ export const expandWidget: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, id: string) => Base;
+}, id: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @beta
 export interface ExtensibleToolbarProps {
@@ -1987,7 +2023,6 @@ export class FrameworkAccuDraw extends AccuDraw {
     // (undocumented)
     static getFieldDisplayValue(index: ItemField): string;
     grabInputFocus(): void;
-    // (undocumented)
     get hasInputFocus(): boolean;
     static readonly isACSRotationConditional: ConditionalBooleanValue;
     static readonly isContextRotationConditional: ConditionalBooleanValue;
@@ -1997,6 +2032,7 @@ export class FrameworkAccuDraw extends AccuDraw {
     static readonly isSideRotationConditional: ConditionalBooleanValue;
     static readonly isTopRotationConditional: ConditionalBooleanValue;
     static readonly isViewRotationConditional: ConditionalBooleanValue;
+    static readonly onAccuDrawUiSettingsChangedEvent: AccuDrawUiSettingsChangedEvent;
     // (undocumented)
     onCompassModeChange(): void;
     // (undocumented)
@@ -2012,7 +2048,9 @@ export class FrameworkAccuDraw extends AccuDraw {
     static translateFromItemField(item: ItemField): AccuDrawField;
     // (undocumented)
     static translateToItemField(field: AccuDrawField): ItemField;
-}
+    static get uiSettings(): AccuDrawUiSettings | undefined;
+    static set uiSettings(v: AccuDrawUiSettings | undefined);
+    }
 
 // @beta
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
@@ -2096,7 +2134,6 @@ export class FrameworkToolAdmin extends ToolAdmin {
 
 // @beta
 export class FrameworkUiAdmin extends UiAdmin {
-    constructor();
     closeDialog(dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     get cursorPosition(): XAndY;
@@ -2673,6 +2710,9 @@ export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedS
 
 // @internal (undocumented)
 export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[];
+
+// @beta
+export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial<QuantityFormatterSettingsOptions>): SettingsTabEntry;
 
 // @beta
 export function getSelectionContextSyncEventIds(): string[];
@@ -3815,6 +3855,7 @@ export interface ModelsTreeProps {
     enableElementsClassGrouping?: ClassGroupingOption;
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
+    // @deprecated
     enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
@@ -3877,6 +3918,8 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
 
 // @alpha
 export interface ModelsVisibilityHandlerProps {
+    // (undocumented)
+    hierarchyAutoUpdateEnabled?: boolean;
     // (undocumented)
     rulesetId: string;
     // (undocumented)
@@ -4284,6 +4327,17 @@ export class PropsHelper {
     static isShallowEqual(newObj: any, prevObj: any): boolean;
 }
 
+// @beta
+export function QuantityFormatSettingsPanel({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element;
+
+// @beta
+export interface QuantityFormatterSettingsOptions {
+    // (undocumented)
+    availableUnitSystems: Set<UnitSystemKey>;
+    // (undocumented)
+    initialQuantityType: QuantityTypeArg;
+}
+
 // @alpha
 export interface ReactContent {
     // (undocumented)
@@ -4605,7 +4659,7 @@ export const sessionStateMapDispatchToProps: {
 export function SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly<SessionState>;
 
 // @internal (undocumented)
-export const setPanelSize: <Base extends {
+export const setPanelSize: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -4718,7 +4772,7 @@ export const setPanelSize: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, side: PanelSide, size: number | undefined) => Base;
+}, side: PanelSide, size: number | undefined) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @beta
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
@@ -4743,7 +4797,7 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
 export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
 
 // @internal (undocumented)
-export const setWidgetLabel: <Base extends {
+export const setWidgetLabel: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -4856,10 +4910,10 @@ export const setWidgetLabel: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, id: string, label: string) => Base;
+}, id: string, label: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @internal (undocumented)
-export const setWidgetState: <Base extends {
+export const setWidgetState: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -4972,7 +5026,7 @@ export const setWidgetState: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, widgetDef: WidgetDef, state: WidgetState_2) => Base;
+}, widgetDef: WidgetDef, state: WidgetState_2) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @alpha
 export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
@@ -5039,7 +5093,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
 }
 
 // @internal (undocumented)
-export const showWidget: <Base extends {
+export const showWidget: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -5152,7 +5206,7 @@ export const showWidget: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, id: string) => Base;
+}, id: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @public
 export class SignIn extends React.PureComponent<SignInProps> {

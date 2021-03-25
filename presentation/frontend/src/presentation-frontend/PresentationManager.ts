@@ -14,7 +14,7 @@ import {
   HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
   isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition,
   LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
-  PresentationDataCompareOptions, PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RequestPriority,
+  PresentationDataCompareOptions, PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem,
   RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -379,18 +379,12 @@ export class PresentationManager implements IDisposable {
   }
 
   /**
-   * Loads the whole hierarchy.
-   * @param requestOptions options for the request. If `requestOptions.priority` is not set, it defaults to `RequestPriority.Preload`.
-   * @return A promise object that resolves as soon as the load request is queued (not when loading finishes)
-   * @alpha Will be removed in 3.0.
+   * A no-op that used to request the whole hierarchy to be loaded on the backend.
+   * @alpha @deprecated Will be removed in 3.0.
    */
-  public async loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void> {
-    await this.onConnection(requestOptions.imodel);
-
-    if (!requestOptions.priority)
-      requestOptions.priority = RequestPriority.Preload;
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    return this._requestsHandler.loadHierarchy(this.toRpcTokenOptions(options));
+  // istanbul ignore next
+  public async loadHierarchy(_requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void> {
+    // This is noop just to avoid breaking the API.
   }
 
   /**
@@ -575,7 +569,10 @@ export const buildPagedResponse = async <TItem>(requestedPage: PageOptions | und
   while (true) {
     const partialResult = await getter({ start: pageStart, size: pageSize }, requestIndex++);
     if (partialResult.total !== 0 && partialResult.items.length === 0) {
-      Logger.logError(PresentationFrontendLoggerCategory.Package, "Paged request returned non zero total count but no items");
+      if (requestedPageStart >= partialResult.total)
+        Logger.logWarning(PresentationFrontendLoggerCategory.Package, `Requested page with start index ${requestedPageStart} is out of bounds. Total number of items: ${partialResult.total}`);
+      else
+        Logger.logError(PresentationFrontendLoggerCategory.Package, "Paged request returned non zero total count but no items");
       return { total: 0, items: [] };
     }
     totalCount = partialResult.total;

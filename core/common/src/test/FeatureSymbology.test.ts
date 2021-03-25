@@ -9,6 +9,8 @@ import { RgbColor } from "../RgbColor";
 import { BatchType, Feature } from "../FeatureTable";
 import { GeometryClass } from "../GeometryParams";
 import { LinePixels } from "../LinePixels";
+import { SubCategoryAppearance } from "../SubCategoryAppearance";
+import { SubCategoryOverride } from "../SubCategoryOverride";
 import {
   FeatureAppearance,
   FeatureAppearanceProps,
@@ -61,6 +63,29 @@ describe("FeatureAppearance", () => {
     expect(clone.rgb!.r).to.equal(0xff);
     expect(clone.rgb!.g).to.equal(0xff);
     expect(clone.rgb!.b).to.equal(0xff);
+  });
+
+  it("creates for subcategory overrides", () => {
+    function test(ovrProps: SubCategoryAppearance.Props, appProps: FeatureAppearanceProps): void {
+      const ovr = SubCategoryOverride.fromJSON(ovrProps);
+      expect(ovr.toJSON()).to.deep.equal(ovrProps);
+      const app = FeatureAppearance.fromJSON(appProps);
+      expect(app.toJSON()).to.deep.equal(appProps);
+
+      expect(app.rgb?.toColorDef().toJSON()).to.equal(ovrProps.color);
+      expect(app.transparency).to.equal(ovrProps.transp);
+      expect(app.weight).to.equal(ovrProps.weight);
+      // NB: Not testing material because unclear that it's implemented properly...
+    }
+
+    test({ }, { });
+    test({ color: ColorDef.from(0, 127, 255).toJSON() }, { rgb: { r: 0, g: 127, b: 255 } });
+    test({ invisible: true }, { });
+    test({ invisible: false }, { });
+    test({ weight: 12 }, { weight: 12 });
+    test({ transp: 0 }, { transparency: 0 });
+    test({ transp: 0.5 }, { transparency: 0.5 });
+    test({ transp: 1.0 }, { transparency: 1.0 });
   });
 });
 

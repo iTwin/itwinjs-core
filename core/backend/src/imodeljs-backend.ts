@@ -9,6 +9,7 @@ export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CodeSpecs";
 export * from "./ConcurrencyControl";
+export * from "./Deprecated";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
@@ -16,6 +17,7 @@ export * from "./Element";
 export * from "./ElementAspect";
 export * from "./Entity";
 export * from "./ExportGraphics";
+export * from "./ExternalSource";
 export * from "./IModelJsFs";
 export * from "./Relationship";
 export * from "./Texture";
@@ -37,18 +39,18 @@ export * from "./domains/GenericElements";
 export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
-export * from "./IpcHost";
-export * from "./NativeHost";
 export * from "./IModelExporter";
 export * from "./IModelImporter";
-export * from "./IModelTransformer";
 export * from "./IModelSchemaLoader";
+export * from "./IModelTransformer";
+export * from "./IpcHost";
+export * from "./NativeAppStorage";
+export * from "./NativeHost";
 export * from "./AutoPush";
 export * from "./BackendRequestContext";
 export * from "./CloudStorageBackend";
 export * from "./AliCloudStorageService";
 export * from "./DevTools";
-export * from "./oidc/DesktopAuthorizationClient";
 export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./LocalhostIpcHost";
 export * from "./IModelDb"; // must be last
@@ -149,3 +151,4 @@ export * from "./IModelDb"; // must be last
  * @docs-group-description Authentication
  * Classes for working with Authentication.
  */
+

@@ -37,6 +37,7 @@ interface NumericInputEditorState {
 export class NumericInputEditor extends React.PureComponent<PropertyEditorProps, NumericInputEditorState> implements TypeEditor {
   private _isMounted = false;
   private _inputElement: React.RefObject<HTMLInputElement> = React.createRef();
+  public hasFocus = false; // hot used since containerHandlesEnter is false
 
   /** @internal */
   public readonly state: Readonly<NumericInputEditorState> = {
@@ -64,9 +65,16 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     return this._inputElement.current;
   }
 
-  public get hasFocus(): boolean {
-    return document.activeElement === this._inputElement.current;
-  }
+  private _handleCommit = async (): Promise<void> => {
+    // istanbul ignore else
+    if (this.props.propertyRecord && this.props.onCommit) {
+      const propertyValue = await this.getPropertyValue();
+      // istanbul ignore else
+      if (propertyValue !== undefined) {
+        this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
+      }
+    }
+  };
 
   private _updateValue = (value: number | undefined, _stringValue: string): void => {
     const newValue = value !== undefined ? value : /* istanbul ignore next */ 0;
@@ -75,6 +83,8 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     if (this._isMounted)
       this.setState({
         value: newValue,
+      }, async ()=>{
+        await this._handleCommit ();
       });
   };
 
@@ -177,6 +187,10 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
 export class NumericInputPropertyEditor extends PropertyEditorBase {
   public get reactNode(): React.ReactNode {
     return <NumericInputEditor />;
+  }
+  // istanbul ignore next
+  public get containerHandlesEnter(): boolean { // let input editor process enter key
+    return false;
   }
 }
 

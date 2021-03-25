@@ -3,80 +3,64 @@ publish: false
 ---
 # NextVersion
 
-## New Settings UI Features
+## Txn monitoring
 
-The @bentley/ui-core package has added the [SettingsManager]($ui-core) class that allows any number of [SettingsProvider]($ui-core) classes to be registered. These providers provide [SettingsTabEntry]($ui-core) definitions used to populate the [SettingsContainer]($ui-core) UI component with setting pages used to manage application settings. These new classes are marked as beta in this release and are subject to minor modifications in future releases.
+[TxnManager]($backend) now has additional events for monitoring changes to the iModel resulting from [Txns]($docs/learning/InteractiveEditing.md), including:
+  * [TxnManager.onModelsChanged]($backend) for changes to the properties of [Model]($backend)s and
+  * [TxnManager.onModelGeometryChanged]($backend) for changes to the geometry contained within [GeometricModel]($backend)s.
+
+[BriefcaseConnection.txns]($frontend) now exposes the same events provided by `TxnManager`, but on the frontend, via [BriefcaseTxns]($frontend).
+
+## New settings UI features
+
+### Add Settings Page to set Quantity Formatting Overrides
+
+The [QuantityFormatSettingsPanel]($ui-framework) component has been added to the @bentley/ui-framework package to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This panel can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core). Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
+
+```ts
+// Sample settings provider that dynamically adds settings into the setting stage
+export class AppSettingsProvider implements SettingsProvider {
+  public readonly id = "AppSettingsProvider";
+
+  public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
+    return [
+      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
+    ];
+  }
+
+  public static initializeAppSettingProvider() {
+    UiFramework.settingsManager.addSettingsProvider(new AppSettingsProvider());
+  }
+}
+
+```
+
+The `QuantityFormatSettingsPanel` is marked as alpha in this release and is subject to minor modifications in future releases.
+
+## @bentley/imodeljs-quantity package
+
+The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
+
+## Incremental Precompilation of Shaders Enabled by Default
+
+To help prevent delays when a user interacts with a [Viewport]($frontend), the WebGL render system now by default precompiles shader programs used by the [RenderSystem]($frontend) before any Viewport is opened.
+
+Shader precompilation will cease once all shader programs have been compiled, or when a [Viewport]($frontend) is opened (registered with the [ViewManager]($frontend)).  As such, applications which do not open a [Viewport]($frontend) immediately upon startup stand to benefit - for example, if the user is first expected to select an iModel and/or a view through the user interface.
+
+To disable this functionality, set the `doIdleWork` property of the `RenderSystem.Options` object passed to `IModelApp.startup` to false.
+
+## Added NativeHost.settingsStore for storing user-level settings for native applications
+
+The @beta class `NativeHost` now has a member [NativeHost.settingsStore]($backend) that may be used by native applications to store user-level data in a file in the [[NativeHost.appSettingsCacheDir]($backend) directory. It uses the [NativeAppStorage]($backend) api to store and load key/value pairs. Note that these settings are stored in a local file that may be deleted by the user, so it should only be used for a local cache of values that may be restored elsewhere.
+
+## NativeApp is now @beta
+
+The class [NativeApp]($frontend) has been promoted from @alpha to @beta. `NativeApp` is relevant for both Electron and mobile applications. Please provide feedback if you have issues or concerns on its use.
 
 ## Breaking Api Changes
 
-### @bentley/ui-abstract package
+### @bentley/imodeljs-quantity package
 
-Property `onClick` in [LinkElementsInfo]($ui-abstract) was changed to be mandatory. Also, the first [PropertyRecord]($ui-abstract) argument was removed from the method. Suggested ways to resolve:
+#### UnitProps property name change
 
-- If you have a function `myFunction(record: PropertyRecord, text: string)` and use the first argument, the issue can be resolved with a lambda:
-
-  ```ts
-  record.links = {
-    onClick: (text) => myFunction(record, text),
-  };
-  ```
-
-- If you were omitting the `onClick` method to get the default behavior, it can still be achieved by not setting `PropertyRecord.links` at all. It's only valid to expect default click behavior when default matcher is used, but if a custom matcher is used, then the click handled can be as simple as this:
-
-  ```ts
-  record.links = {
-    onClick: (text) => { window.open(text, "_blank"); },
-  };
-  ```
-
-### @bentley/imodeljs-frontend package
-
-#### Initializing TileAdmin
-
-The previously-`alpha` [IModelAppOptions.tileAdmin]($frontend) property has been promoted to `beta` and its type has changed from [TileAdmin]($frontend) to [TileAdmin.Props]($frontend). [TileAdmin.create]($frontend) has become `async`. Replace code like the following:
-```ts
-  IModelApp.startup({ tileAdmin: TileAdmin.create(props) });
-```
-with:
-```ts
-  IModelApp.startup({ tileAdmin: props });
-```
-
-#### Tile request channels
-
-[Tile]($frontend)s are now required to report the [TileRequestChannel]($frontend) via which requests for their content should be executed, by implementing the new abstract [Tile.channel]($frontend) property. The channel needs to specify a name and a concurrency. The name must be unique among all registered channels, so choose something unlikely to conflict. The concurrency specifies the maximum number of requests that can be simultaneously active on the channel. For example, when using HTTP 1.1 modern browsers allow no more than 6 simultaneous connections to a given hostname, so 6 is a good concurrency for HTTP 1.1-based channels and the hostname is a decent choice for the channel's name.
-
-Typically all tiles in the same [TileTree]($frontend) use the same channel. Your implementation of `Tile.channel` will depend on the mechanism by which the content is obtained. If it uses HTTP, it's easy:
-```ts
-  public get channel() { return IModelApp.tileAdmin.getForHttp("my-unique-channel-name"); }
-```
-
-If your tile never requests content, you can implement like so:
-```ts
-  public get channel() { throw new Error("This tile never has content so this property should never be invoked"); }
-```
-
-If your tile uses the `alpha` `TileAdmin.requestElementGraphics` API, use the dedicated channel for such requests:
-```ts
-  public get channel() { return IModelApp.tileAdmin.channels.elementGraphicsRpc; }
-```
-
-Otherwise, you must register a channel ahead of time. Choose an appropriate concurrency:
-- If the tile requests content from some custom [RpcInterface]($common), use `IModelApp.tileAdmin.channels.rpcConcurrency`.
-- Otherwise, choose a reasonably small limit to prevent too much work from being done at one time. Remember that tile requests are frequently canceled shortly after they are enqueued as the user navigates the view. A concurrency somewhere around 6-10 is probably reasonable.
-
-To register a channel at startup:
-```ts
-  await IModelApp.startup();
-  const channel = new TileRequestChannel("my-unique-channel-name", IModelApp.tileAdmin.rpcConcurrency);
-  IModelApp.tileAdmin.channels.add(channel);
-```
-
-If you store `channel` from the above snippet in a global variable, you can implement your `channel` property to return it directly; otherwise you must look it up:
-```ts
-  public get channel() {
-    const channel = IModelApp.tileAdmin.channels.get("my-unique-channel-name");
-    assert(undefined !== channel);
-    return channel;
-  }
-```
+The interface [UnitProps]($quantity) property `unitFamily` has been renamed to `phenomenon` to be consistent with naming in `ecschema-metadata` package.

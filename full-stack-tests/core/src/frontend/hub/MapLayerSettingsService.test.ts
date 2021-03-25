@@ -41,7 +41,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     await IModelApp.shutdown();
   });
 
-  it("should store and retrieve layer", async () => {
+  it.skip("should store and retrieve layer", async () => {
     const layer = MapLayerSource.fromJSON({
       url: "test12345",
       name: testName,
@@ -94,4 +94,21 @@ describe("MapLayerSettingsService (#integration)", () => {
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
   });
 
+  it("should be able to delete setting by name for setting stored on project and imodel level", async () => {
+    const layer = MapLayerSource.fromJSON({
+      url: "test12345",
+      name: testName,
+      formatId: "test12345",
+      maxZoom: 1,
+      transparentBackground: true,
+    });
+    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, projectId, iModelId);
+    chai.assert.isTrue(success);
+    success = await MapLayerSettingsService.deleteSharedSettingsByName(testName, projectId, iModelId);
+    chai.assert.isTrue(success);
+    success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, projectId, iModelId);
+    chai.assert.isTrue(success);
+    success = await MapLayerSettingsService.deleteSharedSettingsByName(testName, projectId, iModelId);
+    chai.assert.isTrue(success);
+  });
 });

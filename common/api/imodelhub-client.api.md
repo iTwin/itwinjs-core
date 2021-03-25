@@ -331,6 +331,7 @@ export class CheckpointV2Query extends WsgQuery {
 export enum CheckpointV2State {
     Failed = 2,
     InProgress = 0,
+    NotGenerated = 3,
     Successful = 1
 }
 
@@ -635,7 +636,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 export class IModelBankHandler extends IModelBaseHandler {
     constructor(url: string, handler: FileHandler | undefined, keepAliveDuration?: number);
     // (undocumented)
-    get baseUrl(): string;
+    baseUrl?: string;
     // (undocumented)
     getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
     // (undocumented)
@@ -668,13 +669,11 @@ export class IModelBaseHandler extends WsgClient {
     protected getRelyingPartyUrl(): string;
     // @internal
     getUrl(requestContext: ClientRequestContext): Promise<string>;
-    // @internal
+    // @internal (undocumented)
     protected getUrlSearchKey(): string;
     postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
     postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    // (undocumented)
-    static readonly searchKey: string;
     // @internal
     protected setupHttpOptions(options?: HttpRequestOptions): HttpRequestOptions;
     // @internal

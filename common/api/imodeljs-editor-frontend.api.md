@@ -10,6 +10,7 @@ import { DialogItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DynamicsContext } from '@bentley/imodeljs-frontend';
 import { ElementSetTool } from '@bentley/imodeljs-frontend';
+import { Frustum } from '@bentley/imodeljs-common';
 import { Point3d } from '@bentley/geometry-core';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { Tool } from '@bentley/imodeljs-frontend';
@@ -28,6 +29,8 @@ export class DeleteElementsTool extends ElementSetTool {
     static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
@@ -63,6 +66,8 @@ export class EditTools {
 export class MoveElementsTool extends TransformElementsTool {
     // (undocumented)
     protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
@@ -104,6 +109,8 @@ export class RotateElementsTool extends TransformElementsTool {
     // (undocumented)
     protected havePivotPoint: boolean;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
@@ -133,6 +140,10 @@ export class RotateElementsTool extends TransformElementsTool {
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
+    // (undocumented)
+    protected transformAgenda(transform: Transform): Promise<void>;
+    // (undocumented)
+    protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void;
     // (undocumented)
     protected get wantAdditionalInput(): boolean;
     // (undocumented)
@@ -166,6 +177,10 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected createAgendaGraphics(changed: boolean): Promise<void>;
     // (undocumented)
+    protected _elementAlignedBoxes?: Frustum[];
+    // (undocumented)
+    protected _elementOrigins?: Point3d[];
+    // (undocumented)
     protected initAgendaDynamics(): Promise<boolean>;
     // (undocumented)
     protected onAgendaModified(): Promise<void>;
@@ -177,6 +192,8 @@ export abstract class TransformElementsTool extends ElementSetTool {
     processAgenda(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected _startedCmd?: string;
     // (undocumented)
     protected transformAgenda(transform: Transform): Promise<void>;
     // (undocumented)

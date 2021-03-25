@@ -4,6 +4,7 @@
 
 ```ts
 
+import { AccessTokenProps } from '@bentley/itwin-client';
 import { Angle } from '@bentley/geometry-core';
 import { AngleProps } from '@bentley/geometry-core';
 import { AnyGeometryQuery } from '@bentley/geometry-core';
@@ -16,6 +17,7 @@ import { BriefcaseStatus } from '@bentley/bentleyjs-core';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ClientRequestContextProps } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
@@ -466,67 +468,43 @@ export { BentleyStatus }
 
 // @public
 export enum BisCodeSpec {
-    // (undocumented)
+    // @internal (undocumented)
     annotationFrameStyle = "bis:AnnotationFrameStyle",
-    // (undocumented)
+    // @internal (undocumented)
     annotationLeaderStyle = "bis:AnnotationLeaderStyle",
-    // (undocumented)
+    // @internal (undocumented)
     annotationTextStyle = "bis:AnnotationTextStyle",
-    // (undocumented)
     auxCoordSystem2d = "bis:AuxCoordSystem2d",
-    // (undocumented)
     auxCoordSystem3d = "bis:AuxCoordSystem3d",
-    // (undocumented)
     auxCoordSystemSpatial = "bis:AuxCoordSystemSpatial",
-    // (undocumented)
     categorySelector = "bis:CategorySelector",
-    // (undocumented)
+    // @internal (undocumented)
     colorBook = "bis:ColorBook",
-    // (undocumented)
     displayStyle = "bis:DisplayStyle",
-    // (undocumented)
     drawing = "bis:Drawing",
-    // (undocumented)
     drawingCategory = "bis:DrawingCategory",
-    // (undocumented)
+    externalSource = "bis:ExternalSource",
+    externalSourceAttachment = "bis:ExternalSourceAttachment",
     geometryPart = "bis:GeometryPart",
-    // (undocumented)
     graphicalType2d = "bis:GraphicalType2d",
-    // (undocumented)
     informationPartitionElement = "bis:InformationPartitionElement",
-    // (undocumented)
     lineStyle = "bis:LineStyle",
-    // (undocumented)
     linkElement = "bis:LinkElement",
-    // (undocumented)
     modelSelector = "bis:ModelSelector",
-    // (undocumented)
     nullCodeSpec = "bis:NullCodeSpec",
-    // (undocumented)
     physicalMaterial = "bis:PhysicalMaterial",
-    // (undocumented)
     physicalType = "bis:PhysicalType",
-    // (undocumented)
     renderMaterial = "bis:RenderMaterial",
-    // (undocumented)
     sheet = "bis:Sheet",
-    // (undocumented)
     spatialCategory = "bis:SpatialCategory",
-    // (undocumented)
     spatialLocationType = "bis:SpatialLocationType",
-    // (undocumented)
     subCategory = "bis:SubCategory",
-    // (undocumented)
     subject = "bis:Subject",
-    // (undocumented)
     templateRecipe2d = "bis:TemplateRecipe2d",
-    // (undocumented)
     templateRecipe3d = "bis:TemplateRecipe3d",
-    // (undocumented)
+    // @internal (undocumented)
     textAnnotationSeed = "bis:TextAnnotationSeed",
-    // (undocumented)
     texture = "bis:Texture",
-    // (undocumented)
     viewDefinition = "bis:ViewDefinition"
 }
 
@@ -637,6 +615,17 @@ export interface BriefcaseDownloader {
     downloadPromise: Promise<void>;
     fileName: string;
     requestCancel: () => Promise<boolean>;
+}
+
+// @public
+export enum BriefcaseIdValue {
+    // @internal @deprecated (undocumented)
+    DeprecatedStandalone = 1,
+    FirstValid = 2,
+    Illegal = 4294967295,
+    LastValid = 16777205,
+    Max = 16777216,
+    Standalone = 0
 }
 
 // @beta
@@ -819,6 +808,13 @@ export interface ChangedElements {
     properties?: Id64String[][];
     // (undocumented)
     type: number[];
+}
+
+// @beta
+export interface ChangedEntities {
+    deleted?: CompressedId64Set;
+    inserted?: CompressedId64Set;
+    updated?: CompressedId64Set;
 }
 
 // @internal (undocumented)
@@ -1623,9 +1619,6 @@ export interface DecorationGeometryProps {
     readonly id: Id64String;
 }
 
-// @alpha
-export const defaultDesktopAuthorizationClientExpiryBuffer: number;
-
 // @internal (undocumented)
 export const defaultTileOptions: TileOptions;
 
@@ -1639,38 +1632,6 @@ export interface DefinitionElementProps extends ElementProps {
 export interface DeletedElementGeometryChange {
     readonly id: Id64String;
     readonly type: DbOpcode.Delete;
-}
-
-// @alpha
-export interface DesktopAuthorizationClientConfiguration {
-    clientId: string;
-    expiryBuffer?: number;
-    redirectUri: string;
-    scope: string;
-}
-
-// @internal
-export class DesktopAuthorizationClientMessages {
-    // (undocumented)
-    static readonly getAccessToken: string;
-    // (undocumented)
-    static readonly getAccessTokenComplete: string;
-    // (undocumented)
-    static readonly initialize: string;
-    // (undocumented)
-    static readonly initializeComplete: string;
-    // (undocumented)
-    static readonly onUserStateChanged: string;
-    // (undocumented)
-    static readonly onUserStateChangedComplete: string;
-    // (undocumented)
-    static readonly signIn: string;
-    // (undocumented)
-    static readonly signInComplete: string;
-    // (undocumented)
-    static readonly signOut: string;
-    // (undocumented)
-    static readonly signOutComplete: string;
 }
 
 // @internal
@@ -2134,45 +2095,10 @@ export class EdgeArgs {
     get numEdges(): number;
 }
 
-// @alpha @deprecated
-export abstract class Editor3dRpcInterface extends RpcInterface {
+// @internal
+export interface EditingSessionNotifications {
     // (undocumented)
-    applyTransform(_tokenProps: IModelRpcProps, _editorId: GuidString, _tprops: TransformProps): Promise<any>;
-    // (undocumented)
-    createElement(_tokenProps: IModelRpcProps, _editorId: GuidString, _props: GeometricElement3dProps, _origin?: Point3d, _angles?: YawPitchRollAngles, _geometry?: any): Promise<void>;
-    // (undocumented)
-    end(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    static getClient(): Editor3dRpcInterface;
-    static readonly interfaceName = "Editor3dRpcInterface";
-    static interfaceVersion: string;
-    // (undocumented)
-    popState(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    pushState(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    start(_tokenProps: IModelRpcProps, _editorId: GuidString): Promise<void>;
-    // (undocumented)
-    startModifyingElements(_tokenProps: IModelRpcProps, _editorId: GuidString, _elementIds: Id64Array): Promise<void>;
-    // (undocumented)
-    writeAllChangesToBriefcase(_tokenProps: IModelRpcProps, _editorId: GuidString, _opts: Editor3dRpcInterfaceWriteOptions): Promise<GeometricElement3dProps[] | Id64Array | void>;
-}
-
-// @alpha (undocumented)
-export interface Editor3dRpcInterfaceWriteOptions {
-    returnPropsOptions?: Editor3dRpcInterfaceWriteReturnPropsOptions;
-    returnType?: Editor3dRpcInterfaceWriteReturnType;
-}
-
-// @alpha (undocumented)
-export interface Editor3dRpcInterfaceWriteReturnPropsOptions {
-    geometry?: boolean;
-}
-
-// @alpha (undocumented)
-export enum Editor3dRpcInterfaceWriteReturnType {
-    Ids = 1,
-    None = 0,
-    Props = 2
+    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
 
 // @public
@@ -2189,26 +2115,32 @@ export interface ElementAspectProps extends EntityProps {
 
 // @alpha
 export namespace ElementGeometry {
-    export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
+    export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[], worldToLocal?: Transform): boolean;
     export class Builder {
         appendBRepData(brep: BRepEntity.DataProps): boolean;
         appendGeometryParamsChange(geomParams: GeometryParams): boolean;
-        appendGeometryPart(partId: Id64String, partToElement?: Transform): boolean;
+        appendGeometryPart(partId: Id64String, partTransform?: Transform): boolean;
         appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean;
         appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean;
         appendGeometryQuery(geometry: GeometryQuery): boolean;
         appendGeometryRanges(): boolean;
         appendImageGraphic(image: ImageGraphic): boolean;
         appendTextString(text: TextString): boolean;
-        // (undocumented)
         readonly entries: ElementGeometryDataEntry[];
-    }
-    export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
-    export function fromGeometryPart(partId: Id64String, partToElement?: Transform): ElementGeometryDataEntry | undefined;
-    export function fromGeometryQuery(geom: GeometryQuery): ElementGeometryDataEntry | undefined;
-    export function fromImageGraphic(image: ImageGraphicProps): ElementGeometryDataEntry | undefined;
+        get localToWorld(): Transform | undefined;
+        static placementAngleFromPoints(pts: Point3d[], result?: Angle): Angle;
+        static placementAnglesFromPoints(pts: Point3d[], defaultUp?: Vector3d, result?: YawPitchRollAngles): YawPitchRollAngles;
+        setLocalToWorld(localToWorld?: Transform): void;
+        setLocalToWorld2d(origin: Point2d, angle?: Angle): void;
+        setLocalToWorld3d(origin: Point3d, angles?: YawPitchRollAngles): void;
+        get worldToLocal(): Transform | undefined;
+        }
+    export function fromBRep(brep: BRepEntity.DataProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
+    export function fromGeometryPart(partId: Id64String, partTransform?: Transform, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
+    export function fromGeometryQuery(geom: GeometryQuery, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
+    export function fromImageGraphic(image: ImageGraphicProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
     export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
-    export function fromTextString(text: TextStringProps): ElementGeometryDataEntry | undefined;
+    export function fromTextString(text: TextStringProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
     export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
     export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
     export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
@@ -2220,6 +2152,7 @@ export namespace ElementGeometry {
         readonly entryArray: ElementGeometryDataEntry[];
         next(): IteratorResult<IteratorEntry>;
         readonly placement: Placement3d;
+        requestWorldCoordinates(): void;
         readonly viewIndependent?: boolean;
     }
     export interface IteratorData {
@@ -2230,13 +2163,15 @@ export namespace ElementGeometry {
     }
     // (undocumented)
     export class IteratorEntry implements IteratorData {
-        constructor(geomParams: GeometryParams, localToWorld: Transform);
+        constructor(geomParams: GeometryParams, localToWorld: Transform, applyLocalToWorld?: boolean);
         // (undocumented)
         readonly geomParams: GeometryParams;
         // (undocumented)
         localRange?: Range3d;
         // (undocumented)
         readonly localToWorld?: Transform;
+        // (undocumented)
+        get outputTransform(): Transform | undefined;
         toBRepData(wantBRepData?: boolean): BRepEntity.DataProps | undefined;
         toGeometryPart(partToLocal?: Transform, partToWorld?: Transform): Id64String | undefined;
         toGeometryQuery(): GeometryQuery | undefined;
@@ -2246,15 +2181,16 @@ export namespace ElementGeometry {
         get value(): ElementGeometryDataEntry;
         set value(value: ElementGeometryDataEntry);
         }
-    export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
+    export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean, localToWorld?: Transform): BRepEntity.DataProps | undefined;
     export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;
     export function toGeometryPart(entry: ElementGeometryDataEntry, partToElement?: Transform): Id64String | undefined;
-    export function toGeometryQuery(entry: ElementGeometryDataEntry): GeometryQuery | undefined;
-    export function toImageGraphic(entry: ElementGeometryDataEntry): ImageGraphicProps | undefined;
+    export function toGeometryQuery(entry: ElementGeometryDataEntry, localToWorld?: Transform): GeometryQuery | undefined;
+    export function toImageGraphic(entry: ElementGeometryDataEntry, localToWorld?: Transform): ImageGraphicProps | undefined;
     export function toSubGraphicRange(entry: ElementGeometryDataEntry): ElementAlignedBox3d | undefined;
-    export function toTextString(entry: ElementGeometryDataEntry): TextStringProps | undefined;
+    export function toTextString(entry: ElementGeometryDataEntry, localToWorld?: Transform): TextStringProps | undefined;
     export function toTransform(sourceToWorld: Float64Array): Transform | undefined;
-    export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams): boolean;
+    export function transformBRep(entry: ElementGeometryDataEntry, inputTransform: Transform): boolean;
+    export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
 }
 
 // @alpha
@@ -2371,13 +2307,6 @@ export interface ElementProps extends EntityProps {
     userLabel?: string;
 }
 
-// @alpha
-export interface ElementsChanged {
-    deleted?: CompressedId64Set;
-    inserted?: CompressedId64Set;
-    updated?: CompressedId64Set;
-}
-
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
@@ -2423,6 +2352,7 @@ export interface EntityProps {
 
 // @public
 export interface EntityQueryParams {
+    bindings?: any[] | object;
     from?: string;
     limit?: number;
     offset?: number;
@@ -2453,7 +2383,43 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
     jsonProperties?: any;
     kind: string;
     scope: RelatedElementProps;
+    // (undocumented)
+    source?: RelatedElementProps;
     version?: string;
+}
+
+// @beta
+export interface ExternalSourceAttachmentProps extends ElementProps {
+    // (undocumented)
+    attaches?: RelatedElementProps;
+    // (undocumented)
+    pitch?: number;
+    // (undocumented)
+    role?: ExternalSourceAttachmentRole;
+    // (undocumented)
+    roll?: number;
+    // (undocumented)
+    scale?: XYZProps;
+    // (undocumented)
+    translation?: XYZProps;
+    // (undocumented)
+    yaw?: number;
+}
+
+// @beta
+export enum ExternalSourceAttachmentRole {
+    SpecifyContext = 0,
+    SpecifyPart = 1
+}
+
+// @beta
+export interface ExternalSourceProps extends ElementProps {
+    // (undocumented)
+    connectorName?: string;
+    // (undocumented)
+    connectorVersion?: string;
+    // (undocumented)
+    repository?: RelatedElementProps;
 }
 
 // @public
@@ -3811,14 +3777,6 @@ export abstract class IModel implements IModelProps {
     toJSON(): IModelConnectionProps;
 }
 
-// @internal
-export interface IModelChangeNotifications {
-    // (undocumented)
-    notifyElementsChanged: (changes: ElementsChanged) => void;
-    // (undocumented)
-    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
-}
-
 // @alpha (undocumented)
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
@@ -4099,11 +4057,15 @@ export type InterpolationFunction = (v: any, k: number) => number;
 // @internal (undocumented)
 export enum IpcAppChannel {
     // (undocumented)
+    AppNotify = "ipcApp-notify",
+    // (undocumented)
+    EditingSession = "editing-session",
+    // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
-    IModelChanges = "imodel-changes",
+    PushPull = "push-pull",
     // (undocumented)
-    PushPull = "push-pull"
+    Txns = "txns"
 }
 
 // @internal
@@ -4111,26 +4073,34 @@ export interface IpcAppFunctions {
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     closeIModel: (key: string) => Promise<void>;
+    getRedoString: (key: string) => Promise<string>;
+    getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
     hasPendingTxns: (key: string) => Promise<boolean>;
     // (undocumented)
     isInteractiveEditingSupported: (key: string) => Promise<boolean>;
+    isRedoPossible: (key: string) => Promise<boolean>;
+    isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-    // (undocumented)
-    pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
-    // (undocumented)
-    pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
+    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
+    pushChanges: (key: string, description: string) => Promise<string>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
-    reverseSingleTxn: (key: string) => Promise<IModelStatus>;
+    reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
     toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
+}
+
+// @internal
+export interface IpcAppNotifications {
+    // (undocumented)
+    notifyApp: () => void;
 }
 
 // @internal
@@ -4143,6 +4113,7 @@ export type IpcInvokeReturn = {
         name: string;
         message: string;
         errorNumber: number;
+        stack?: string;
     };
 };
 
@@ -4692,6 +4663,12 @@ export interface ModelGeometryChangesProps {
     readonly updated?: ElementIdsAndRangesProps;
 }
 
+// @beta
+export interface ModelIdAndGeometryGuid {
+    guid: GuidString;
+    id: Id64String;
+}
+
 // @public
 export interface ModelLoadProps {
     // (undocumented)
@@ -4736,6 +4713,16 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
+// @alpha
+export interface NativeAppAuthorizationConfiguration {
+    readonly clientId: string;
+    readonly expiryBuffer?: number;
+    // (undocumented)
+    issuerUrl?: string;
+    readonly redirectUri: string;
+    readonly scope: string;
+}
+
 // @internal (undocumented)
 export const nativeAppChannel = "nativeApp";
 
@@ -4744,12 +4731,20 @@ export interface NativeAppFunctions {
     acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
     checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
     deleteBriefcaseFiles: (_fileName: string) => Promise<void>;
-    downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean) => Promise<LocalBriefcaseProps>;
+    downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number) => Promise<LocalBriefcaseProps>;
+    // (undocumented)
+    getAccessTokenProps: () => Promise<AccessTokenProps>;
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
     getConfig: () => Promise<any>;
+    // (undocumented)
+    initializeAuth: (props: ClientRequestContextProps, config: NativeAppAuthorizationConfiguration) => Promise<void>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
+    signIn: () => Promise<void>;
+    signOut: () => Promise<void>;
+    // (undocumented)
+    silentLogin: (token: AccessTokenProps) => Promise<void>;
     storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
     storageKeys: (_storageId: string) => Promise<string[]>;
     storageMgrClose: (_storageId: string, _deleteOnClose: boolean) => Promise<void>;
@@ -4765,10 +4760,7 @@ export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
     // (undocumented)
-    notifyUserStateChanged: (arg: {
-        accessToken: any;
-        err?: string;
-    }) => void;
+    notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
 }
 
 // @internal (undocumented)
@@ -5915,6 +5907,8 @@ export namespace RenderTexture {
 // @public
 export interface RepositoryLinkProps extends UrlLinkProps {
     // (undocumented)
+    format?: string;
+    // (undocumented)
     repositoryGuid?: GuidString;
 }
 
@@ -6040,6 +6034,7 @@ export abstract class RpcConfiguration {
     // @internal (undocumented)
     static supply(definition: RpcInterface): RpcConfiguration;
     static throwOnTokenMismatch: boolean;
+    transientFaultLimit: number;
 }
 
 // @public (undocumented)
@@ -6448,6 +6443,8 @@ export abstract class RpcRequest<TResponse = any> {
     // (undocumented)
     cancel(): void;
     readonly client: RpcInterface;
+    // (undocumented)
+    protected computeRetryAfter(attempts: number): number;
     get connecting(): boolean;
     static current(context: RpcInterface): RpcRequest;
     // @internal (undocumented)
@@ -6477,12 +6474,17 @@ export abstract class RpcRequest<TResponse = any> {
     protected _rawPromise: Promise<Response | undefined>;
     get rawResponse(): Promise<Response | undefined>;
     // (undocumented)
+    protected recordTransientFault(): void;
+    // (undocumented)
     protected reject(reason: any): void;
+    // (undocumented)
+    protected resetTransientFaultCount(): void;
     // (undocumented)
     protected _resolveRaw: (value?: Response | PromiseLike<Response> | undefined) => void;
     readonly response: Promise<TResponse | undefined>;
     // (undocumented)
     protected _response: Response | undefined;
+    get retryAfter(): number | null;
     retryInterval: number;
     protected abstract send(): Promise<number>;
     protected abstract setHeader(name: string, value: string): void;
@@ -6492,7 +6494,7 @@ export abstract class RpcRequest<TResponse = any> {
     get status(): RpcRequestStatus;
     // (undocumented)
     submit(): Promise<void>;
-}
+    }
 
 // @public
 export type RpcRequestCallback_T = (request: RpcRequest) => void;
@@ -6509,7 +6511,9 @@ export enum RpcRequestEvent {
     // (undocumented)
     PendingUpdateReceived = 1,
     // (undocumented)
-    StatusChanged = 0
+    StatusChanged = 0,
+    // (undocumented)
+    TransientErrorReceived = 2
 }
 
 // @public
@@ -6521,6 +6525,8 @@ export interface RpcRequestFulfillment {
     interfaceName: string;
     rawResult: any;
     result: RpcSerializedValue;
+    // (undocumented)
+    retry?: string;
     status: number;
 }
 
@@ -6539,11 +6545,15 @@ export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFo
 // @public
 export enum RpcRequestStatus {
     // (undocumented)
+    BadGateway = 10,
+    // (undocumented)
     Cancelled = 8,
     // (undocumented)
     Created = 1,
     // (undocumented)
     Disposed = 6,
+    // (undocumented)
+    GatewayTimeout = 12,
     // (undocumented)
     NoContent = 9,
     // (undocumented)
@@ -6555,9 +6565,17 @@ export enum RpcRequestStatus {
     // (undocumented)
     Resolved = 4,
     // (undocumented)
+    ServiceUnavailable = 11,
+    // (undocumented)
     Submitted = 2,
     // (undocumented)
     Unknown = 0
+}
+
+// @public (undocumented)
+export namespace RpcRequestStatus {
+    // (undocumented)
+    export function isTransientError(status: RpcRequestStatus): boolean;
 }
 
 // @public
@@ -7070,13 +7088,16 @@ export interface SubjectProps extends ElementProps {
 // @alpha (undocumented)
 export type SubLayerId = string | number;
 
+// @beta
+export interface SynchronizationConfigLinkProps extends UrlLinkProps {
+    // (undocumented)
+    lastSuccessfulRun?: string;
+}
+
 // @public
 export enum SyncMode {
-    // (undocumented)
     FixedVersion = 1,
-    // (undocumented)
     PullAndPush = 2,
-    // (undocumented)
     PullOnly = 3
 }
 
@@ -7685,6 +7706,36 @@ export class Tweens {
 }
 
 // @public
+export enum TxnAction {
+    Abandon = 2,
+    Commit = 1,
+    Merge = 5,
+    None = 0,
+    Reinstate = 4,
+    Reverse = 3
+}
+
+// @internal
+export interface TxnNotifications {
+    // (undocumented)
+    notifyAfterUndoRedo: (isUndo: boolean) => void;
+    // (undocumented)
+    notifyBeforeUndoRedo: (isUndo: boolean) => void;
+    // (undocumented)
+    notifyChangesApplied: () => void;
+    // (undocumented)
+    notifyCommit: () => void;
+    // (undocumented)
+    notifyCommitted: () => void;
+    // (undocumented)
+    notifyElementsChanged: (changes: ChangedEntities) => void;
+    // (undocumented)
+    notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
+    // (undocumented)
+    notifyModelsChanged: (changes: ChangedEntities) => void;
+}
+
+// @public
 export class TypeDefinition extends RelatedElement {
 }
 
@@ -8170,6 +8221,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
 // @public
 export class WebAppRpcRequest extends RpcRequest {
     constructor(client: RpcInterface, operation: string, parameters: any[]);
+    // (undocumented)
+    protected computeRetryAfter(attempts: number): number;
     protected static computeTransportType(value: RpcSerializedValue, source: any): RpcContentType;
     // (undocumented)
     protected handleUnknownResponse(code: number): void;

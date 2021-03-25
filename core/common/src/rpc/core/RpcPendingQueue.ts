@@ -70,7 +70,8 @@ export class RpcPendingQueue {
     ++this._pendingLock;
 
     for (const request of this._pending) {
-      if (request.connecting || (request.lastSubmitted + request.retryInterval) > now) {
+      const retry = request.retryAfter ?? request.retryInterval;
+      if (request.connecting || (request.lastSubmitted + retry) > now) {
         continue;
       }
 
@@ -88,7 +89,7 @@ export class RpcPendingQueue {
 
     let i = this._pending.length;
     while (i--) {
-      if (!this._pending[i].pending) {
+      if (!this._pending[i].pending && !RpcRequestStatus.isTransientError(this._pending[i].status)) {
         this._pending.splice(i, 1);
       }
     }

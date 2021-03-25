@@ -5,12 +5,12 @@
 import * as React from "react";
 import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
-import { CommonToolbarItem, ConditionalBooleanValue, StagePanelLocation, StageUsage, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { CommonToolbarItem, ConditionalBooleanValue, StageUsage, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { SelectionMode } from "@bentley/ui-components";
 import {
   AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps,
   CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager, ModelsTreeNodeType,
-  StagePanel, StagePanelHeader, StagePanelState, ToolbarHelper, VisibilityComponentHierarchy, VisibilityWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
+  StagePanel, ToolbarHelper, VisibilityComponentHierarchy, VisibilityWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../../frontend/index";
 import { EditTools } from "../../../tools/editing/ToolSpecifications";
@@ -39,10 +39,6 @@ export class EditFrontstage extends FrontstageProvider {
         control={VisibilityTreeWidgetControl}
       />,
     ],
-  };
-
-  private _rightPanel = {
-    allowedZones: [2, 6, 9],
   };
 
   private _bottomPanel = {
@@ -152,9 +148,7 @@ export class EditFrontstage extends FrontstageProvider {
             defaultState={ZoneState.Minimized}
             initialWidth={350}
             widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
-              <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
+              <Widget id="VisibilityWidget" iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
                 applicationData={{
                   iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories], useControlledTree: true,
                   config: { modelsTreeConfig: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
@@ -178,26 +172,6 @@ export class EditFrontstage extends FrontstageProvider {
               ]}
           />
         }
-        leftPanel={
-          <StagePanel
-            header={<StagePanelHeader
-              collapseButton
-              collapseButtonTitle="Collapse"
-              location={StagePanelLocation.Left}
-              title="Visibility tree"
-            />}
-            defaultState={StagePanelState.Minimized}
-            size={280}
-            minSize={300}
-            maxSize={800}
-            widgets={this._leftPanel.widgets}
-          />
-        }
-        rightPanel={
-          <StagePanel
-            allowedZones={this._rightPanel.allowedZones}
-          />
-        }
         bottomPanel={
           <StagePanel
             widgets={this._bottomPanel.widgets}
@@ -212,13 +186,10 @@ export class EditFrontstage extends FrontstageProvider {
  */
 class AdditionalTools {
 
-  public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
-    ToolbarHelper.createToolbarItemFromItemDef(110, CoreTools.keyinBrowserButtonItemDef),
-    ToolbarHelper.createToolbarItemFromItemDef(115, EditTools.deleteElementTool),
-    ToolbarHelper.createToolbarItemFromItemDef(115, EditTools.moveElementTool),
-    ToolbarHelper.createToolbarItemFromItemDef(120, EditTools.placeLineStringTool),
-    ToolbarHelper.createToolbarItemFromItemDef(130, EditTools.placeBlockTool),
-  ];
+  public additionalHorizontalToolbarItems: CommonToolbarItem[] =
+  ToolbarHelper.createToolbarItemsFromItemDefs([CoreTools.keyinPaletteButtonItemDef, EditTools.deleteElementTool,
+    EditTools.moveElementTool, EditTools.rotateElementTool,
+    EditTools.placeLineStringTool, EditTools.placeBlockTool], 100);
 
   private get _accudrawDialogItemVertical() {
     const dialogId = "accudraw-vertical";

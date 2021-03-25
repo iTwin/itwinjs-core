@@ -2123,6 +2123,9 @@ export interface FormatUnitsProps extends CommonProps {
 // @public
 export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
 
+// @internal (undocumented)
+export function getCSSColorFromDef(colorDef: ColorDef): string;
+
 // @beta @deprecated
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
 
@@ -2948,6 +2951,7 @@ export class MutableTreeModel implements TreeModel {
     getRootNode(): TreeModelRootNode;
     insertChild(parentId: string | undefined, childNodeInput: TreeModelNodeInput, offset: number): void;
     iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
+    moveNode(sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): boolean;
     removeChild(parentId: string | undefined, childId: string): void;
     setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
     setNumChildren(parentId: string | undefined, numChildren: number | undefined): void;
@@ -3101,7 +3105,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // (undocumented)
-    get hasFocus(): boolean;
+    hasFocus: boolean;
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
@@ -3112,6 +3116,8 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
 
 // @beta
 export class NumericInputPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesEnter(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
@@ -4156,6 +4162,8 @@ export class SparseTree<T extends Node> {
     // (undocumented)
     insertChild(parentId: string | undefined, child: T, offset: number): void;
     // (undocumented)
+    moveNode(sourceParentId: string | undefined, sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): void;
+    // (undocumented)
     removeChild(parentId: string | undefined, childId: string): void;
     // (undocumented)
     setChildren(parentId: string | undefined, children: T[], offset: number): void;
@@ -5061,6 +5069,8 @@ export class TreeImageLoader implements ITreeImageLoader {
 // @beta
 export interface TreeModel {
     // (undocumented)
+    getChildOffset(parentId: string | undefined, childId: string): number | undefined;
+    // (undocumented)
     getChildren(parentId: string | undefined): SparseArray<string> | undefined;
     // (undocumented)
     getNode(id: string): TreeModelNode | undefined;
@@ -5164,7 +5174,7 @@ export interface TreeModelRootNode {
 
 // @beta
 export class TreeModelSource {
-    constructor();
+    constructor(_model?: MutableTreeModel);
     getModel(): TreeModel;
     getVisibleNodes(): VisibleTreeNodes;
     modifyModel(callback: (model: MutableTreeModel) => void): void;

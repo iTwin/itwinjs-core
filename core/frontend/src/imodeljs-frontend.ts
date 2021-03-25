@@ -7,6 +7,7 @@ export * from "./AccuSnap";
 export * from "./AuxCoordSys";
 export * from "./BingLocation";
 export * from "./BriefcaseConnection";
+export * from "./BriefcaseTxns";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
 export * from "./ContextRealityModelState";
@@ -16,7 +17,6 @@ export * from "./DevTools";
 export * from "./DisplayStyleState";
 export * from "./DrawingViewState";
 export * from "./EditingFunctions";
-export * from "./ElementEditor";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
@@ -48,7 +48,9 @@ export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
-export * from "./QuantityFormatter";
+export * from "./quantity-formatting/QuantityFormatter";
+export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
+export * from "./quantity-formatting/LocalUnitFormatProvider";
 export * from "./RenderScheduleState";
 export * from "./CheckpointConnection";
 export * from "./SelectionSet";
@@ -72,7 +74,6 @@ export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
 export * from "./WebViewerApp";
-export * from "./oidc/DesktopAuthorizationClient";
 export * from "./oidc/OidcBrowserClient";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";
@@ -208,6 +209,10 @@ export * from "./LocalhostIpcApp";
 /**
  * @docs-group-description Features
  * Classes for Feature Tracking classification.
+ */
+/**
+ * @docs-group-description QuantityFormatting
+ * Classes for formatting and parsing quantity values.
  */
 /**
  * @docs-group-description Tiles

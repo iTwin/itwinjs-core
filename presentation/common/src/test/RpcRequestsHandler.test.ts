@@ -264,22 +264,6 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
-    it("forwards loadHierarchy call", async () => {
-      const handlerOptions: HierarchyRequestOptions<IModelRpcProps> = {
-        imodel: token,
-        rulesetOrId: faker.random.word(),
-      };
-      const rpcOptions: PresentationRpcRequestOptions<HierarchyRequestOptions<any>> = {
-        clientId,
-        rulesetOrId: handlerOptions.rulesetOrId,
-      };
-      rpcInterfaceMock
-        .setup(async (x) => x.loadHierarchy(token, rpcOptions))
-        .returns(async () => successResponse(undefined)).verifiable();
-      await handler.loadHierarchy(handlerOptions);
-      rpcInterfaceMock.verifyAll();
-    });
-
     it("forwards getContentDescriptor call", async () => {
       const displayType = faker.random.word();
       const keys = new KeySet().toJSON();

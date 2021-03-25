@@ -14,7 +14,7 @@ import {
 } from "@bentley/geometry-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
+  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
   PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
@@ -24,7 +24,7 @@ import { BlobDaemon } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb } from "../../IModelDb";
 import {
-  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
+  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, Category,
   ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
   DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers,
   ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost,
@@ -1270,6 +1270,7 @@ describe("iModel", () => {
       assert.equal(count, 1);
     });
 
+    let firstCodeValueId: Id64String | undefined;
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
@@ -1280,10 +1281,15 @@ describe("iModel", () => {
         const row = stmt4.getRow();
         // Verify that we got the row that we asked for
         assert.equal(row.codeValue, codeValueToFind);
+        firstCodeValueId = row.id;
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
     });
+
+    // make sure we can use parameterized values for queryEnityId (test on parameterized codevalue)
+    const ids = imodel2.queryEntityIds({ from: "bis.element", where: "codevalue=:cv", bindings: { cv: firstCodeValue } });
+    assert.equal(ids.values().next().value, firstCodeValueId);
 
     imodel2.withPreparedStatement("select ecinstanceid as id, codevalue from bis.element", (stmt5: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === stmt5.step()) {
@@ -2377,6 +2383,12 @@ describe("iModel", () => {
     assert.equal(subject2.description, "Description2");
     assert.equal(subject3.description, ""); // NOTE: different behavior between auto-handled and custom-handled
     assert.isUndefined(subject4.description);
+
+    // Test toJSON
+    assert.equal(subject1.toJSON().description, "Description1");
+    assert.equal(subject2.toJSON().description, "Description2");
+    assert.equal(subject3.toJSON().description, "");
+    assert.isUndefined(subject4.toJSON().description);
 
     // Element.UserLabel is a custom-handled property
     assert.equal(subject1.userLabel, "UserLabel1");

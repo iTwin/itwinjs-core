@@ -1,6 +1,32 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Updates to use new QuantityParserResult
+- Upgrade react-resize-detector to avoid lodash security vulnerability
+- Fixed broken double angle bracket link syntax
+- Fix solar timeline component so that sunTime is properly set for project location.
+- Add ui-components for displaying and editing FormatProps that are used to Format and Parse Quantities.
+- Updated to use TypeScript 4.1
+- Add a captureClicks prop to ColorPickerPopup that will stop propagation of click events from the popup.
+- `MutableTreeModel`: Add `changeNodeId` method.
+- `MutableTreeModel`: Allow `undefined` child count in `setNumChildren`.
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:53 GMT
+
+_Version update only_
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -16,6 +42,16 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - Consider string values starting with `pw:\` or `pw://` to be URLs without checking the rest of the string.
 - `ControlledTree`: Fix calling `scrollToNode` too early triggering an assertion error.
 - Update TimelineComponent.tsx to properly respond to changed props.
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
@@ -58,10 +94,10 @@ Fri, 18 Dec 2020 18:24:01 GMT
 ### Updates
 
 - Add support for onClose function in ColorPickerPopupProps. This allows color value from popup to be used by caller.
-- Added matchesCount attribute to [PropertyDataFilterResult]($ui-components) to optionally tell how many matches there were in a [PropertyRecord]($ui-components). Matches in label and value are separated.
-- Added match counting functionality to [FilteringPropertyDataProvider]($ui-components). The returned [FilteredPropertyData]($ui-components) now has total matches count and a function get information about a match at specific index.
-- Added highlightedRecordProps to [VirtualizedPropertyGridProps]($ui-components) to allow highlighting specific parts of rendered PropertyRecords.
-- Updated [FilteringInput]($ui-components) component. Component's `filteringInProgress` prop was deprecated and new `status` property was introduced. This allows rendering the component in any state, including `filtering finished`, without having to cycle through other states first.
+- Added matchesCount attribute to [[PropertyDataFilterResult]] to optionally tell how many matches there were in a [[PropertyRecord]]. Matches in label and value are separated.
+- Added match counting functionality to [[FilteringPropertyDataProvider]]. The returned [[FilteredPropertyData]] now has total matches count and a function get information about a match at specific index.
+- Added highlightedRecordProps to [[VirtualizedPropertyGridProps]] to allow highlighting specific parts of rendered PropertyRecords.
+- Updated [[FilteringInput]] component. Component's `filteringInProgress` prop was deprecated and new `status` property was introduced. This allows rendering the component in any state, including `filtering finished`, without having to cycle through other states first.
 - fix but in ParsedInput control where formatted text was not updating if underlying parsed value did not change.
 - Refactor DialogItem and Property interfaces to make them eaiser to use.
 - Added support for decimal point in Table numeric filter

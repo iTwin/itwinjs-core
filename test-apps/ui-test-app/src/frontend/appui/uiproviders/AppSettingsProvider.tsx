@@ -4,18 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { UiFramework } from "@bentley/ui-framework";
+import { getQuantityFormatsSettingsManagerEntry, UiFramework } from "@bentley/ui-framework";
 import { SettingsProvider, SettingsTabEntry } from "@bentley/ui-core";
-import { getQuantityFormatsSettingsManagerEntry } from "../frontstages/QuantityFormatStage";
 import { ConnectedUiSettingsPage } from "../frontstages/Settings";
 
-// Sample UI items provider that dynamically adds ui items
+// Sample settings provider that dynamically adds settings into the setting stage
 export class AppSettingsProvider implements SettingsProvider {
   public readonly id = "AppSettingsProvider";
 
   public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
     return [
-      getQuantityFormatsSettingsManagerEntry(10),
+      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
       {
         itemPriority: 20, tabId: "ui-test-app:UI", label: "UI",
         page: <ConnectedUiSettingsPage />,
