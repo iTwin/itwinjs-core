@@ -192,6 +192,22 @@ describe("TreeSelectionManager", () => {
       expect(changeSpy).to.not.be.called;
     });
 
+    it("selects nodes when there are placeholder visible nodes", () => {
+      const placeholder = { childIndex: 0, depth: 0 };
+      const node = createTreeModelNode();
+      setupModelWithNodes([placeholder, node]);
+      const spy = sinon.spy(selectionHandler, "completeDragAction");
+      const changeSpy = sinon.spy(multipleSelectionManager.onSelectionChanged, "emit");
+      multipleSelectionManager.onNodeMouseDown(node.id);
+      window.dispatchEvent(new Event("mouseup"));
+      multipleSelectionManager.onNodeClicked(node.id, eventMock.object);
+      expect(spy).to.be.called;
+      expect(changeSpy).to.be.calledWithExactly({
+        selectedNodes: [node.id],
+        deselectedNodes: [],
+      });
+    });
+
   });
 
   describe("onNodeMouseMove", () => {
