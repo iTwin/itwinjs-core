@@ -1489,6 +1489,8 @@ export class PropertyDescriptionHelper {
     // @alpha
     static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
     // @alpha
+    static buildNumberEditorDescription(name: string, label: string, overrideParams?: RangeEditorParams, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // @alpha
     static buildTextEditorDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
     // @alpha
     static buildToggleDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
