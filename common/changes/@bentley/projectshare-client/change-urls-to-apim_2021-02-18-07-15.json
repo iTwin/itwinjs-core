@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/projectshare-client",
+      "comment": "Update service URL",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/projectshare-client",
+  "email": "laurynasr@users.noreply.github.com"
+}

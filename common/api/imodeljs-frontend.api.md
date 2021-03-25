@@ -35,6 +35,7 @@ import { Capabilities } from '@bentley/webgl-compatibility';
 import { Cartographic } from '@bentley/imodeljs-common';
 import { CartographicRange } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
+import { ChangedEntities } from '@bentley/imodeljs-common';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipShape } from '@bentley/geometry-core';
@@ -66,11 +67,11 @@ import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
+import { EditingSessionNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementGeometryChange } from '@bentley/imodeljs-common';
 import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
-import { ElementsChanged } from '@bentley/imodeljs-common';
 import { Ellipsoid } from '@bentley/geometry-core';
 import { EllipsoidPatch } from '@bentley/geometry-core';
 import { EntityProps } from '@bentley/imodeljs-common';
@@ -129,11 +130,11 @@ import { ImageBufferFormat } from '@bentley/imodeljs-common';
 import { ImageSource } from '@bentley/imodeljs-common';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
-import { IModelChangeNotifications } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
+import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { IModelVersionProps } from '@bentley/imodeljs-common';
@@ -145,8 +146,6 @@ import { IpcAppChannel } from '@bentley/imodeljs-common';
 import { IpcAppFunctions } from '@bentley/imodeljs-common';
 import { IpcListener } from '@bentley/imodeljs-common';
 import { IpcSocketFrontend } from '@bentley/imodeljs-common';
-import { LDClient } from 'ldclient-js';
-import { LDFlagValue } from 'ldclient-js';
 import { LightSettings } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LocalBriefcaseProps } from '@bentley/imodeljs-common';
@@ -169,6 +168,7 @@ import { MeshPolyline } from '@bentley/imodeljs-common';
 import { MeshPolylineList } from '@bentley/imodeljs-common';
 import { ModelGeometryChanges } from '@bentley/imodeljs-common';
 import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
+import { ModelIdAndGeometryGuid } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
@@ -271,6 +271,7 @@ import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
 import { Tweens } from '@bentley/imodeljs-common';
+import { TxnNotifications } from '@bentley/imodeljs-common';
 import { UiAdmin } from '@bentley/ui-abstract';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
@@ -1630,6 +1631,7 @@ export interface BlankConnectionProps {
 
 // @public
 export class BriefcaseConnection extends IModelConnection {
+    protected constructor(props: IModelConnectionProps);
     // @beta
     beginEditingSession(): Promise<InteractiveEditingSession>;
     close(): Promise<void>;
@@ -1655,6 +1657,8 @@ export class BriefcaseConnection extends IModelConnection {
     saveChanges(description?: string): Promise<void>;
     // @beta
     supportsInteractiveEditing(): Promise<boolean>;
+    // @beta
+    readonly txns: BriefcaseTxns;
 }
 
 // @beta
@@ -1665,6 +1669,49 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
     // (undocumented)
     get channelName(): string;
     }
+
+// @beta
+export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNotifications {
+    // @internal
+    constructor(iModel: BriefcaseConnection);
+    // @internal (undocumented)
+    get briefcaseChannelName(): IpcAppChannel;
+    // @internal (undocumented)
+    dispose(): void;
+    getRedoString(): Promise<string>;
+    getUndoString(allowCrossSessions?: boolean): Promise<string>;
+    hasPendingTxns(): Promise<boolean>;
+    isRedoPossible(): Promise<boolean>;
+    isUndoPossible(): Promise<boolean>;
+    // @internal (undocumented)
+    notifyAfterUndoRedo(isUndo: boolean): void;
+    // @internal (undocumented)
+    notifyBeforeUndoRedo(isUndo: boolean): void;
+    // @internal (undocumented)
+    notifyChangesApplied(): void;
+    // @internal (undocumented)
+    notifyCommit(): void;
+    // @internal (undocumented)
+    notifyCommitted(): void;
+    // @internal (undocumented)
+    notifyElementsChanged(changed: ChangedEntities): void;
+    // @internal (undocumented)
+    notifyGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
+    // @internal (undocumented)
+    notifyModelsChanged(changed: ChangedEntities): void;
+    readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
+    readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
+    readonly onChangesApplied: BeEvent<() => void>;
+    readonly onCommit: BeEvent<() => void>;
+    readonly onCommitted: BeEvent<() => void>;
+    readonly onElementsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
+    readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
+    readonly onModelsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
+    reinstateTxn(): Promise<IModelStatus>;
+    reverseAll(): Promise<IModelStatus>;
+    reverseSingleTxn(): Promise<IModelStatus>;
+    reverseTxns(numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus>;
+}
 
 // @internal (undocumented)
 export type CachedDecoration = {
@@ -3339,7 +3386,6 @@ export interface FrameRenderData {
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
     EventSource = "imodeljs-frontend.EventSource",
-    FeatureToggle = "imodeljs-frontend.FeatureToggles",
     // @alpha
     FeatureTracking = "imodeljs-frontend.FeatureTracking",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
@@ -4273,8 +4319,6 @@ export class IModelApp {
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @beta
     static get extensionAdmin(): ExtensionAdmin;
-    // @internal
-    static get featureToggles(): FeatureToggleClient;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
     // @internal (undocumented)
@@ -4353,8 +4397,6 @@ export interface IModelAppOptions {
     authorizationClient?: FrontendAuthorizationClient;
     // @beta
     extensionAdmin?: ExtensionAdmin;
-    // @internal
-    featureToggles?: FeatureToggleClient;
     i18n?: I18N | I18NOptions;
     imodelClient?: IModelClient;
     // @internal (undocumented)
@@ -4685,7 +4727,7 @@ export interface InstancedGraphicParams {
 }
 
 // @beta
-export class InteractiveEditingSession extends BriefcaseNotificationHandler implements IModelChangeNotifications {
+export class InteractiveEditingSession extends BriefcaseNotificationHandler implements EditingSessionNotifications {
     // @internal
     static begin(imodel: BriefcaseConnection): Promise<InteractiveEditingSession>;
     // (undocumented)
@@ -4697,11 +4739,8 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     // @internal (undocumented)
     get isDisposed(): boolean;
     // @internal (undocumented)
-    notifyElementsChanged(changed: ElementsChanged): void;
-    // @internal (undocumented)
     notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
     static readonly onBegin: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onElementChanges: BeEvent<(changes: ElementsChanged, iModel: BriefcaseConnection) => void>;
     readonly onEnded: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onEnding: BeEvent<(session: InteractiveEditingSession) => void>;
     readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>;
@@ -5891,15 +5930,7 @@ export class MeasureAreaTool extends MeasureElementTool {
 // @alpha (undocumented)
 export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
-    protected readonly _acceptedSegments: {
-        distance: number;
-        slope: number;
-        start: Point3d;
-        end: Point3d;
-        delta: Vector3d;
-        refAxes: Matrix3d;
-        marker: MeasureMarker;
-    }[];
+    protected readonly _acceptedSegments: Segment[];
     // (undocumented)
     protected acceptNewSegments(): Promise<void>;
     // (undocumented)
@@ -5913,7 +5944,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected displayDelta(context: DecorateContext, seg: any): void;
     // (undocumented)
-    protected displayDynamicDistance(context: DecorateContext, points: Point3d[]): void;
+    protected displayDynamicDistance(context: DecorateContext, points: Point3d[], adjustedPoints: Point3d[]): void;
     // (undocumented)
     getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
     // (undocumented)
@@ -5929,12 +5960,11 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
     // (undocumented)
+    protected _lastMotionAdjustedPt?: Point3d;
+    // (undocumented)
     protected _lastMotionPt?: Point3d;
     // (undocumented)
-    protected readonly _locationData: {
-        point: Point3d;
-        refAxes: Matrix3d;
-    }[];
+    protected readonly _locationData: Location[];
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -6365,13 +6395,13 @@ export enum ModifyElementSource {
     Unknown = 0
 }
 
-// @alpha
+// @beta
 export class NativeApp {
     // (undocumented)
     static callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType<NativeAppFunctions[T]>>;
     // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
-    static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
+    static closeStorage(storage: Storage, deleteStorage?: boolean): Promise<void>;
     static deleteBriefcase(fileName: string): Promise<void>;
     // (undocumented)
     static getBriefcaseFileName(props: BriefcaseProps): Promise<string>;
@@ -6392,7 +6422,7 @@ export class NativeApp {
     static startup(ipc: IpcSocketFrontend, opts?: NativeAppOpts): Promise<void>;
     }
 
-// @alpha
+// @beta
 export class NativeAppAuthorization {
     constructor(config: NativeAppAuthorizationConfiguration);
     // (undocumented)
@@ -6425,7 +6455,7 @@ export class NativeAppLogger {
     static logWarning(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
     }
 
-// @alpha
+// @beta
 export interface NativeAppOpts extends IpcAppOptions {
     // (undocumented)
     nativeApp?: {
@@ -8075,6 +8105,8 @@ export abstract class RenderSystem implements IDisposable {
     get supportsInstancing(): boolean;
     // @internal (undocumented)
     get supportsLogZBuffer(): boolean;
+    // @internal (undocumented)
+    get supportsNonuniformScaledInstancing(): boolean;
 }
 
 // @public
@@ -8090,6 +8122,7 @@ export namespace RenderSystem {
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
+        // @public
         doIdleWork?: boolean;
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
@@ -8469,6 +8502,8 @@ export class ScreenViewport extends Viewport {
         source: DepthPointSource;
         sourceId?: string;
     };
+    // @internal (undocumented)
+    picker: ElementPicker;
     pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
     static removeAllChildren(el: HTMLDivElement): void;
@@ -9255,19 +9290,15 @@ export enum StartOrResume {
     Start = 1
 }
 
-// @alpha
+// @beta
 export class Storage {
-    constructor(id: string, _isOpen?: boolean);
-    close(deleteIt?: boolean): Promise<void>;
-    // @internal
+    constructor(id: string);
     getData(key: string): Promise<StorageValue | undefined>;
     getKeys(): Promise<string[]>;
     // (undocumented)
     readonly id: string;
-    get isOpen(): boolean;
     removeAll(): Promise<void>;
     removeData(key: string): Promise<void>;
-    // @internal
     setData(key: string, value: StorageValue): Promise<void>;
 }
 
@@ -10162,6 +10193,8 @@ export class TileDrawArgs {
     readonly now: BeTimePoint;
     // @internal (undocumented)
     parentsAndChildrenExclusive: boolean;
+    // @internal (undocumented)
+    readonly pixelSizeScaleFactor: number;
     // @internal (undocumented)
     planarClassifier?: RenderPlanarClassifier;
     // @internal
@@ -12639,6 +12672,10 @@ export abstract class ViewState extends ElementState {
     // (undocumented)
     toJSON(): ViewDefinitionProps;
     toProps(): ViewStateProps;
+    // @internal (undocumented)
+    transformNormalByModelDisplayTransform(modelId: string | undefined, normal: Vector3d): void;
+    // @internal (undocumented)
+    transformPointByModelDisplayTransform(modelId: string | undefined, pnt: Point3d, inverse: boolean): void;
     // (undocumented)
     protected _updateMaxGlobalScopeFactor(): void;
     get viewFlags(): ViewFlags;
