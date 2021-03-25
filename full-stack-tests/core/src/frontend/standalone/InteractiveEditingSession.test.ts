@@ -6,42 +6,16 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BatchType, ChangedEntities, Code, ElementGeometryChange, IModelError, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
 import {
-  BriefcaseConnection, EditingFunctions, ElementEditor3d, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession,
-  TileLoadPriority,
+  BriefcaseConnection, EditingFunctions, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { deleteElements, initializeEditTools, insertLineElement, makeLineSegment, transformElements } from "../Editing";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
-
-function makeLine(p1?: Point3d, p2?: Point3d): LineSegment3d {
-  return LineSegment3d.create(p1 || new Point3d(0, 0, 0), p2 || new Point3d(0, 0, 0));
-}
-
-async function createLineElement(editor: ElementEditor3d, model: Id64String, category: Id64String, line: LineSegment3d): Promise<Id64String> {
-  const geomprops = IModelJson.Writer.toIModelJson(line);
-  const origin = line.point0Ref;
-  const angles = new YawPitchRollAngles();
-  const code = Code.createEmpty();
-  code.value = Guid.createValue();
-
-  const props3d = { classFullName: "Generic:PhysicalObject", model, category, code };
-  await editor.createElement(props3d, origin, angles, geomprops);
-
-  const props = await editor.writeReturningProps();
-  expect(Array.isArray(props)).to.be.true;
-  expect(props.length).to.equal(1);
-  expect(props[0].id).not.to.be.undefined;
-
-  return props[0].id!;
-}
-async function deleteElements(imodel: BriefcaseConnection, ids: string[]) {
-  // eslint-disable-next-line deprecation/deprecation
-  return IModelWriteRpcInterface.getClientForRouting(imodel.routingContext.token).deleteElements(imodel.getRpcProps(), ids);
-}
 
 const dummyRange = new Range3d();
 function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange { return { id, type: DbOpcode.Insert, range: (range ?? dummyRange) }; }
@@ -65,6 +39,7 @@ describe("InteractiveEditingSession", () => {
 
     before(async () => {
       await ElectronApp.startup();
+      await initializeEditTools();
     });
 
     after(async () => {
@@ -164,7 +139,6 @@ describe("InteractiveEditingSession", () => {
 
     it("accumulates geometry changes", async () => {
       imodel = await openWritable();
-      const editor = await ElementEditor3d.start(imodel);
       // eslint-disable-next-line deprecation/deprecation
       const editing = new EditingFunctions(imodel);
       const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
@@ -199,7 +173,7 @@ describe("InteractiveEditingSession", () => {
 
       // Insert a line element.
       expect(session.getGeometryChangesForModel(modelId)).to.be.undefined;
-      const elem1 = await createLineElement(editor, modelId, category, makeLine());
+      const elem1 = await insertLineElement(imodel, modelId, category);
       // Events not dispatched until changes saved.
       await imodel.saveChanges();
       const insertElem1 = makeInsert(elem1);
@@ -209,28 +183,20 @@ describe("InteractiveEditingSession", () => {
       expect(changedElements!.inserted).to.not.be.undefined;
 
       // Modify the line element.
-      await editor.startModifyingElements([elem1]);
-      await editor.applyTransform(Transform.createTranslationXYZ(1, 0, 0).toJSON());
-      await editor.write();
+      await transformElements(imodel, [elem1], Transform.createTranslationXYZ(1, 0, 0));
       const updateElem1 = makeUpdate(elem1);
       await imodel.saveChanges();
       expectChanges([updateElem1]);
 
       // Modify the line element twice.
-      await editor.startModifyingElements([elem1]);
-      await editor.applyTransform(Transform.createTranslationXYZ(0, 1, 0).toJSON());
-      await editor.write();
-      await editor.startModifyingElements([elem1]);
-      await editor.applyTransform(Transform.createTranslationXYZ(-1, 0, 0).toJSON());
-      await editor.write();
+      await transformElements(imodel, [elem1], Transform.createTranslationXYZ(0, 1, 0));
+      await transformElements(imodel, [elem1], Transform.createTranslationXYZ(-1, 0, 0));
       await imodel.saveChanges();
       expectChanges([updateElem1]);
 
       // Insert a new line element, modify both elements, then delete the old line element.
-      const elem2 = await createLineElement(editor, modelId, category, makeLine());
-      await editor.startModifyingElements([elem1, elem2]);
-      await editor.applyTransform(Transform.createTranslationXYZ(0, 0, 1).toJSON());
-      await editor.write();
+      const elem2 = await insertLineElement(imodel, modelId, category);
+      await transformElements(imodel, [elem1, elem2], Transform.createTranslationXYZ(0, 0, 1));
       await deleteElements(imodel, [elem1]);
       const deleteElem1 = makeDelete(elem1);
       const insertElem2 = makeInsert(elem2);
@@ -270,22 +236,19 @@ describe("InteractiveEditingSession", () => {
 
       await redo();
       expectChanges([deleteElem1, insertElem2]);
-
       await session.end();
-      await editor.end();
     });
 
     it("updates state of tile trees", async () => {
       imodel = await openWritable();
 
       // Initial geometric model contains one line element.
-      const editor = await ElementEditor3d.start(imodel);
       // eslint-disable-next-line deprecation/deprecation
       const editing = new EditingFunctions(imodel);
       const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
       const dictModelId = await imodel.models.getDictionaryModel();
       const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, Guid.createValue(), { color: 0 });
-      const elem1 = await createLineElement(editor, modelId, category, makeLine(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
+      const elem1 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
       await imodel.saveChanges();
 
       await imodel.models.load([modelId]);
@@ -358,7 +321,7 @@ describe("InteractiveEditingSession", () => {
       await expectTreeState(tree0, "disposed", 0, modelRange);
 
       // Insert a new element.
-      const elem2 = await createLineElement(editor, modelId, category, makeLine(new Point3d(0, 0, 0), new Point3d(-10, 0, 0)));
+      const elem2 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(-10, 0, 0)));
       await imodel.saveChanges();
 
       // Newly-inserted elements don't exist in tiles, therefore don't need to be hidden.
@@ -370,9 +333,7 @@ describe("InteractiveEditingSession", () => {
       await expectTreeState(trees, "dynamic", 0, range2);
 
       // Modify an element.
-      await editor.startModifyingElements([elem1]);
-      await editor.applyTransform(Transform.createTranslationXYZ(0, 5, 0).toJSON());
-      await editor.write();
+      await transformElements(imodel, [elem1], Transform.createTranslationXYZ(0, 5, 0));
       await imodel.saveChanges();
 
       const range3 = range2.clone();
@@ -417,8 +378,6 @@ describe("InteractiveEditingSession", () => {
         tree.dispose();
         await expectTreeState(tree, "disposed", 0, modelRange);
       }
-
-      await editor.end();
     });
   }
 });

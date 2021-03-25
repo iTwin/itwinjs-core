@@ -10,7 +10,7 @@ import {
   Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
+  AuxCoordSystem2dProps, Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
   FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator,
   GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, PlanProjectionSettings,
   RelatedElement, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
@@ -230,6 +230,8 @@ export namespace IModelTransformerUtils {
       commonNavigation: { id: sourcePhysicalCategoryId },
       commonString: "Common",
       commonDouble: 7.3,
+      sourceBinary: new Uint8Array([1, 3, 5, 7]),
+      commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
       extraString: "Extra",
     } as PhysicalElementProps;
     const sourcePhysicalElementId: Id64String = sourceDb.elements.insertElement(sourcePhysicalElementProps);
@@ -242,6 +244,7 @@ export namespace IModelTransformerUtils {
       commonDouble: 1.1,
       commonString: "Unique",
       commonLong: physicalObjectId1,
+      commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
       sourceDouble: 11.1,
       sourceString: "UniqueAspect",
       sourceLong: physicalObjectId1,
@@ -621,6 +624,8 @@ export namespace IModelTransformerUtils {
     assert.equal(physicalElement1.asAny.commonNavigation.id, targetPhysicalCategoryId, "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonString, "Common", "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
+    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.targetBinary), Base64EncodedString.fromUint8Array(new Uint8Array([1, 3, 5, 7])), "Property should have been remapped by onTransformElement override");
+    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])), "Property should have been automatically remapped (same name)");
     assert.notExists(physicalElement1.asAny.extraString, "Property should have been dropped during transformation");
     assert.equal(childObject1A.parent!.id, physicalObjectId1);
     assert.equal(childObject1B.parent!.id, physicalObjectId1);
@@ -630,6 +635,7 @@ export namespace IModelTransformerUtils {
     assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
     assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique");
     assert.equal(targetUniqueAspects[0].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
+    assert.equal(Base64EncodedString.fromUint8Array(targetUniqueAspects[0].asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])));
     assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
     assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect");
     assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
@@ -1249,6 +1255,7 @@ export class PhysicalModelConsolidator extends IModelTransformer {
   protected shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
       this.context.remapElement(sourceElement.id, this._targetModelId);
+      // NOTE: must allow export to continue so the PhysicalModel sub-modeling the PhysicalPartition is processed
     }
     return super.shouldExportElement(sourceElement);
   }
@@ -1378,6 +1385,7 @@ export class TestIModelTransformer extends IModelTransformer {
     if ("TestTransformerSource:SourcePhysicalElement" === sourceElement.classFullName) {
       targetElementProps.targetString = sourceElement.asAny.sourceString;
       targetElementProps.targetDouble = sourceElement.asAny.sourceDouble;
+      targetElementProps.targetBinary = sourceElement.asAny.sourceBinary;
       targetElementProps.targetNavigation = {
         id: this.context.findTargetElementId(sourceElement.asAny.sourceNavigation.id),
         relClassName: "TestTransformerTarget:TargetPhysicalElementUsesTargetDefinition",

@@ -2,11 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import * as Azure from "@azure/storage-blob";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
+import {
+  BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry,
+} from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { assert } from "chai";
 import { IModelDb } from "../../IModelDb";
 import { AuthorizedBackendRequestContext, GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";

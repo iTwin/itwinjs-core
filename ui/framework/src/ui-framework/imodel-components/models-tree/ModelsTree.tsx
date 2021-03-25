@@ -48,6 +48,7 @@ export interface ModelsTreeProps {
   selectionPredicate?: ModelsTreeSelectionPredicate;
   /**
    * Start loading hierarchy as soon as the component is created
+   * @deprecated Going to be removed due to too high pressure on the backend
    */
   enablePreloading?: boolean;
   /**
@@ -105,7 +106,12 @@ export function ModelsTree(props: ModelsTreeProps) {
     return !selectionPredicate ? true : selectionPredicate(key, ModelsVisibilityHandler.getNodeType(node, nodeLoader.dataProvider));
   }, [selectionPredicate, nodeLoader.dataProvider]);
 
-  const visibilityHandler = useVisibilityHandler(nodeLoader.dataProvider.rulesetId, activeView, modelsVisibilityHandler, getFilteredDataProvider(filteredNodeLoader.dataProvider));
+  const visibilityHandler = useVisibilityHandler(
+    nodeLoader.dataProvider.rulesetId,
+    activeView,
+    modelsVisibilityHandler,
+    getFilteredDataProvider(filteredNodeLoader.dataProvider),
+    props.enableHierarchyAutoUpdate);
   const eventHandler = useDisposable(React.useCallback(() => new VisibilityTreeEventHandler({
     nodeLoader: filteredNodeLoader,
     visibilityHandler,
@@ -174,10 +180,16 @@ function useModelsTreeNodeLoader(props: ModelsTreeProps) {
   };
 }
 
-const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibilityHandler?: ModelsVisibilityHandler, filteredDataProvider?: IFilteredPresentationTreeDataProvider) => {
+function useVisibilityHandler(
+  rulesetId: string,
+  activeView?: Viewport,
+  visibilityHandler?: ModelsVisibilityHandler,
+  filteredDataProvider?: IFilteredPresentationTreeDataProvider,
+  hierarchyAutoUpdateEnabled?: boolean,
+) {
   const defaultVisibilityHandler = useOptionalDisposable(React.useCallback(() => {
-    return visibilityHandler ? undefined : createVisibilityHandler(rulesetId, activeView);
-  }, [visibilityHandler, rulesetId, activeView]));
+    return visibilityHandler ? undefined : createVisibilityHandler(rulesetId, activeView, hierarchyAutoUpdateEnabled);
+  }, [visibilityHandler, rulesetId, activeView, hierarchyAutoUpdateEnabled]));
 
   const handler = visibilityHandler ?? defaultVisibilityHandler;
 
@@ -186,11 +198,11 @@ const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibili
   }, [handler, filteredDataProvider]);
 
   return handler;
-};
+}
 
-const createVisibilityHandler = (rulesetId: string, activeView?: Viewport): ModelsVisibilityHandler | undefined => {
+const createVisibilityHandler = (rulesetId: string, activeView?: Viewport, hierarchyAutoUpdateEnabled?: boolean): ModelsVisibilityHandler | undefined => {
   // istanbul ignore next
-  return activeView ? new ModelsVisibilityHandler({ rulesetId, viewport: activeView }) : undefined;
+  return activeView ? new ModelsVisibilityHandler({ rulesetId, viewport: activeView, hierarchyAutoUpdateEnabled }) : undefined;
 };
 
 const isFilteredDataProvider = (dataProvider: IPresentationTreeDataProvider | IFilteredPresentationTreeDataProvider): dataProvider is IFilteredPresentationTreeDataProvider => {

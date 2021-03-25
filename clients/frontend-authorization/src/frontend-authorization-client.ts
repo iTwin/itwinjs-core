@@ -6,7 +6,6 @@ export * from "./FrontendAuthorizationClient";
 
 export * from "./oidc/browser/BrowserAuthorizationCallbackHandler";
 export * from "./oidc/browser/BrowserAuthorizationClient";
-export * from "./ntlm/ntlm";
 
 /** @docs-package-description
  * The frontend-authorization-client package contains classes and structures relevant to user authentication/authorization in frontend applications, with specific implementations for web browser use-cases.

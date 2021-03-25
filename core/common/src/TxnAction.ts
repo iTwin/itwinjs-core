@@ -16,9 +16,9 @@ export enum TxnAction {
   Commit = 1,
   /** Abandoning the current Txn, e.g., via [IModelDb.abandonChanges]($backend). */
   Abandon = 2,
-  /** Reversing a previously-committed changeset, e.g., via [IModelDb.reverseTxns]($backend). */
+  /** Reversing a previously-committed changeset, e.g., via [TxnManager.reverseTxns]($backend) [BriefcaseTxns.reverseTxns]($frontend). */
   Reverse = 3,
-  /** Reinstating a previously reversed changeset, e.g., via [IModelDb.reinstateTxn]($backend). */
+  /** Reinstating a previously reversed changeset, e.g., via [TxnManager.reinstateTxn]($backend) or [BriefcaseTxns.reinstateTxn]($frontend). */
   Reinstate = 4,
   /** Merging a changeset produced by a different briefcase, e.g., via [BriefcaseDb.pullAndMergeChanges]($backend) or [BriefcaseConnection.pullAndMergeChanges]($frontend). */
   Merge = 5,

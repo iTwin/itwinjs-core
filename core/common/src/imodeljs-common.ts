@@ -96,7 +96,6 @@ export * from "./ViewDetails";
 export * from "./ViewFlags";
 export * from "./ViewProps";
 export * from "./rpc/DevToolsRpcInterface";
-export * from "./rpc/EditorRpcInterface";
 export * from "./rpc/IModelReadRpcInterface";
 export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";

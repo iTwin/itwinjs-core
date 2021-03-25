@@ -191,6 +191,7 @@ alpha;FormatUnitLabelProps
 alpha;FormatUnits(props: FormatUnitsProps): JSX.Element
 alpha;FormatUnitsProps 
 public;from
+internal;getCSSColorFromDef(colorDef: ColorDef): string
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 alpha;GridCategoryItem 

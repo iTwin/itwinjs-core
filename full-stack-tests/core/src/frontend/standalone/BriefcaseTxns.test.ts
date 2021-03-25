@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelJson, LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, EditingFunctions, ElementEditor3d } from "@bentley/imodeljs-frontend";
+import { Transform } from "@bentley/geometry-core";
+import { BriefcaseConnection, EditingFunctions } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { deleteElements, initializeEditTools, insertLineElement, transformElements } from "../Editing";
 
 describe("BriefcaseTxns", () => {
   if (ProcessDetector.isElectronAppFrontend) {
@@ -16,10 +16,12 @@ describe("BriefcaseTxns", () => {
 
     before(async () => {
       await ElectronApp.startup();
+      await initializeEditTools();
     });
 
     after(async () => {
       await ElectronApp.shutdown();
+      await initializeEditTools();
     });
 
     beforeEach(async () => {
@@ -64,7 +66,6 @@ describe("BriefcaseTxns", () => {
 
       const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
 
-      const editor = await ElementEditor3d.start(imodel);
       // eslint-disable-next-line deprecation/deprecation
       const editing = new EditingFunctions(imodel);
 
@@ -77,32 +78,18 @@ describe("BriefcaseTxns", () => {
       await imodel.saveChanges();
       await expectCommit("onElementsChanged", "onModelsChanged");
 
-      const insertLine = async () => {
-        const segment = LineSegment3d.create(new Point3d(0, 0, 0), new Point3d(1, 1, 1));
-        const geom = IModelJson.Writer.toIModelJson(segment);
-        const props = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty() };
-        await editor.createElement(props, segment.point0Ref, new YawPitchRollAngles(), geom);
-        const ret = await editor.writeReturningProps();
-        expect(Array.isArray(ret)).to.be.true;
-        expect(ret.length).to.equal(1);
-        expect(ret[0].id).not.to.be.undefined;
-        return ret[0].id!;
-      };
-
       // NB: onCommit is produced *after* we process all changes. onModelGeometryChanged is produced *during* change processing.
-      const elem1 = await insertLine();
+      const elem1 = await insertLineElement(imodel, model, category);
       await imodel.saveChanges();
 
       await expectCommit("onModelGeometryChanged", "onElementsChanged");
 
-      await editor.startModifyingElements([elem1]);
-      await editor.applyTransform(Transform.createTranslationXYZ(1, 0, 0).toJSON());
-      await editor.write();
+      await transformElements(imodel, [elem1], Transform.createTranslationXYZ(1, 0, 0));
       await imodel.saveChanges();
       await expectCommit("onModelGeometryChanged", "onElementsChanged");
 
       // eslint-disable-next-line deprecation/deprecation
-      await IModelWriteRpcInterface.getClientForRouting(imodel.routingContext.token).deleteElements(imodel.getRpcProps(), [elem1]);
+      await deleteElements(imodel, [elem1]);
       await imodel.saveChanges();
       await expectCommit("onModelGeometryChanged", "onElementsChanged");
 

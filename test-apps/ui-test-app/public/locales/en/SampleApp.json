@@ -314,10 +314,13 @@
         "stop": "Stop"
       }
     },
+    "EditingSession": {
+      "keyin": "test edit"
+    },
     "PlaceBlock": {
-      "keyin": "place block",
-      "description": "Place block",
-      "flyover": "Place block",
+      "keyin": "test place block",
+      "description": "Place Block",
+      "flyover": "Place Block",
       "prompts": {
         "firstPoint": "First point",
         "nextPoint": "Next point (Ctrl for polygon)",
@@ -327,19 +330,9 @@
         "heigh": "Height"
       }
     },
-    "DeleteElement": {
-      "keyin": "Test DeleteElementTool",
-      "description": "Delete element tool",
-      "flyover": "Delete Element"
-    },
-    "MoveElement": {
-      "keyin": "Test MoveElementTool",
-      "description": "Move element tool",
-      "flyover": "Move Element"
-    },
-    "PlaceLineString": {
-      "keyin": "Test PlaceLineString Tool",
-      "description": "Place Line-string tool",
+    "PlaceLinestring": {
+      "keyin": "test place linestring",
+      "description": "Place Line-string",
       "flyover": "Place Line-string"
     }
   },

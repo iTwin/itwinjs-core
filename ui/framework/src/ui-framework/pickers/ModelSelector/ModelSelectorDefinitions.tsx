@@ -182,5 +182,5 @@ export class ModelSelectorDataProvider implements IPresentationTreeDataProvider 
   };
 
   // istanbul ignore next
-  public async loadHierarchy() { return this._baseProvider.loadHierarchy(); }
+  public async loadHierarchy() { }
 }
