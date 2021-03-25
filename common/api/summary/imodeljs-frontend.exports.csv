@@ -72,6 +72,7 @@ public;BlankConnection
 public;BlankConnectionProps
 public;BriefcaseConnection 
 beta;class BriefcaseNotificationHandler 
+beta;BriefcaseTxns 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -342,10 +343,10 @@ alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 alpha;ModifyElementSource
-alpha;NativeApp
-alpha;NativeAppAuthorization
+beta;NativeApp
+beta;NativeAppAuthorization
 internal;NativeAppLogger
-alpha;NativeAppOpts 
+beta;NativeAppOpts 
 internal;NoRenderApp
 beta;class NotificationHandler
 public;NotificationManager
@@ -487,7 +488,7 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-alpha;Storage
+beta;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest

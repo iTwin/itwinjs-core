@@ -186,7 +186,7 @@ public;ElementTooltipChangedEventArgs
 alpha;EmphasizeElementsChangedArgs
 beta;ExpandableSection 
 beta;ExpandableSectionProps 
-internal;expandWidget: 
+internal;expandWidget: (base:
 beta;ExtensibleToolbarProps
 beta;featureOverridesActiveStateFunc(state: Readonly
 alpha;FocusToolSettings 
@@ -457,11 +457,11 @@ beta;SessionStateActionsProps
 beta;SessionStateActionsUnion = ActionsUnion
 beta;sessionStateMapDispatchToProps:
 beta;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
-internal;setPanelSize: 
+internal;setPanelSize: (base:
 beta;SettingsModalFrontstage 
 internal;settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus
-internal;setWidgetLabel: 
-internal;setWidgetState: 
+internal;setWidgetLabel: (base:
+internal;setWidgetState: (base:
 alpha;SheetCard 
 alpha;SheetCardProps
 alpha;SheetData
@@ -469,7 +469,7 @@ alpha;SheetNavigationAid
 alpha;SheetNavigationAidControl 
 alpha;SheetNavigationProps 
 alpha;SheetsModalFrontstage 
-internal;showWidget: 
+internal;showWidget: (base:
 public;SignIn 
 public;SignInProps 
 public;SignOutModalFrontstage 

@@ -1869,7 +1869,7 @@ export interface ExpandableSectionProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export const expandWidget: <Base extends {
+export const expandWidget: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -1982,7 +1982,7 @@ export const expandWidget: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, id: string) => Base;
+}, id: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @beta
 export interface ExtensibleToolbarProps {
@@ -3855,6 +3855,7 @@ export interface ModelsTreeProps {
     enableElementsClassGrouping?: ClassGroupingOption;
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
+    // @deprecated
     enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
@@ -3917,6 +3918,8 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
 
 // @alpha
 export interface ModelsVisibilityHandlerProps {
+    // (undocumented)
+    hierarchyAutoUpdateEnabled?: boolean;
     // (undocumented)
     rulesetId: string;
     // (undocumented)
@@ -4314,7 +4317,7 @@ export interface ProjectServices {
 }
 
 // @public @deprecated
-export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "style" | "className" | "ref" | "isInFooterMode" | "key" | "onOpenWidget" | "openWidget">>;
 
 // @public
 export class PropsHelper {
@@ -4537,10 +4540,10 @@ export class SelectionContextToolDefinitions {
 }
 
 // @public
-export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "style" | "className" | "ref" | "isInFooterMode" | "key" | "onOpenWidget" | "openWidget">>;
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "style" | "className" | "ref" | "isInFooterMode" | "key" | "onOpenWidget" | "openWidget">>;
 
 // @public
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -4656,7 +4659,7 @@ export const sessionStateMapDispatchToProps: {
 export function SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly<SessionState>;
 
 // @internal (undocumented)
-export const setPanelSize: <Base extends {
+export const setPanelSize: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -4769,7 +4772,7 @@ export const setPanelSize: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, side: PanelSide, size: number | undefined) => Base;
+}, side: PanelSide, size: number | undefined) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @beta
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
@@ -4794,7 +4797,7 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
 export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
 
 // @internal (undocumented)
-export const setWidgetLabel: <Base extends {
+export const setWidgetLabel: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -4907,10 +4910,10 @@ export const setWidgetLabel: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, id: string, label: string) => Base;
+}, id: string, label: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @internal (undocumented)
-export const setWidgetState: <Base extends {
+export const setWidgetState: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -5023,7 +5026,7 @@ export const setWidgetState: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, widgetDef: WidgetDef, state: WidgetState_2) => Base;
+}, widgetDef: WidgetDef, state: WidgetState_2) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @alpha
 export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
@@ -5090,7 +5093,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
 }
 
 // @internal (undocumented)
-export const showWidget: <Base extends {
+export const showWidget: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -5203,7 +5206,7 @@ export const showWidget: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, id: string) => Base;
+}, id: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @public
 export class SignIn extends React.PureComponent<SignInProps> {
@@ -5235,7 +5238,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     }
 
 // @public
-export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "style" | "className" | "ref" | "isInFooterMode" | "key" | "onOpenWidget" | "openWidget">>;
 
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
@@ -5874,7 +5877,7 @@ export interface TaskPropsList {
 }
 
 // @public
-export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<ThemeManagerComponent> & ThemeProps, "ref" | "children" | "key">>;
+export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<ThemeManagerComponent> & ThemeProps, "children" | "ref" | "key">>;
 
 // @beta
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
@@ -7329,7 +7332,7 @@ export enum WidgetType {
 }
 
 // @beta
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "targetRef" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>>) => JSX.Element;
 
 // @alpha
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {
@@ -7387,7 +7390,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (
 };
 
 // @beta
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "onOpenWidget" | "openWidget">>>) => JSX.Element;
 
 // @public
 export class Workflow extends ItemDefBase {

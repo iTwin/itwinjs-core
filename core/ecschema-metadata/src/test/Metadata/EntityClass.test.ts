@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
-import { ECClassModifier } from "../../ECObjects";
+import { ECClassModifier, SchemaItemType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { ECClass, MutableClass } from "../../Metadata/Class";
 import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass";
@@ -154,7 +154,7 @@ describe("EntityClass", () => {
 
       const testClass = await ecschema.getItem("testClass");
       assert.isDefined(testClass);
-      assert.isTrue(testClass instanceof EntityClass);
+      assert.isTrue(testClass?.schemaItemType === SchemaItemType.EntityClass);
       const entityClass = testClass as EntityClass;
 
       const mixinClass = await ecschema.getItem<Mixin>("testMixin");
@@ -569,7 +569,7 @@ describe("EntityClass", () => {
 
       const testClass = await ecschema.getItem("testClass");
       assert.isDefined(testClass);
-      assert.isTrue(testClass instanceof EntityClass);
+      assert.isTrue(testClass?.schemaItemType === SchemaItemType.EntityClass);
       const entityClass = testClass as EntityClass;
       const entityClassSerialization = entityClass.toJSON(false, true);
       const expectedResult = {

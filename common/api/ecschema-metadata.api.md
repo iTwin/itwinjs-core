@@ -94,7 +94,7 @@ export abstract class BaseSchemaChange implements ISchemaChange {
     set changeType(changeType: ChangeType);
     abstract get defaultChangeType(): ChangeType;
     get diagnostic(): AnyDiagnostic;
-    protected getNameFromArgument(index: number, itemType: typeof SchemaItem | typeof OverrideFormat | typeof Schema, allowUndefined?: boolean, fullName?: boolean): string;
+    protected getNameFromArgument(index: number, allowUndefined?: boolean, fullName?: boolean): string;
     protected getStringFromArgument(index: number): string;
     protected getValueFromArgument(index: number): any;
     abstract get topLevelSchemaItem(): SchemaItem | Schema;
@@ -751,7 +751,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem";
+export function diagnosticTypeToString(type: DiagnosticType): "None" | "Schema" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem";
 
 // @beta
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
@@ -810,6 +810,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     is(targetClass: string, schemaName: string): Promise<boolean>;
     // (undocumented)
     is(targetClass: ECClass): Promise<boolean>;
+    // @internal (undocumented)
+    static isECClass(object: any): object is ECClass;
     isSync(targetClass: ECClass): boolean;
     // (undocumented)
     protected loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema): Promise<PrimitiveType | Enumeration>;
@@ -2005,6 +2007,8 @@ export class OverrideFormat {
     hasFormatTrait(formatTrait: FormatTraits): boolean;
     // (undocumented)
     get includeZero(): boolean | undefined;
+    // @internal (undocumented)
+    static isOverrideFormat(object: any): object is OverrideFormat;
     // (undocumented)
     get minWidth(): number | undefined;
     readonly name: string;
@@ -2260,6 +2264,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     isNavigation(): this is NavigationProperty;
     // (undocumented)
     isPrimitive(): this is AnyPrimitiveProperty;
+    // @internal (undocumented)
+    static isProperty(object: any): object is Property;
     // (undocumented)
     get isReadOnly(): boolean;
     // (undocumented)
@@ -2434,7 +2440,7 @@ export enum PropertyType {
 }
 
 // @beta (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "PrimitiveArrayProperty" | "NavigationProperty" | "StructProperty" | "StructArrayProperty";
 
 // @beta (undocumented)
 export namespace PropertyTypeUtils {
@@ -2542,6 +2548,8 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     // (undocumented)
     fromJSONSync(relationshipConstraintProps: RelationshipConstraintProps): void;
     get fullName(): string;
+    // @internal (undocumented)
+    static isRelationshipConstraint(object: any): object is RelationshipConstraint;
     get isSource(): boolean;
     // (undocumented)
     get multiplicity(): RelationshipMultiplicity | undefined;
@@ -2734,6 +2742,8 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined;
     getSchemaItemKey(fullName: string): SchemaItemKey;
+    // @internal (undocumented)
+    static isSchema(object: any): object is Schema;
     // (undocumented)
     get label(): string | undefined;
     // (undocumented)
@@ -2900,13 +2910,13 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     BaseClassDelta: {
-        new (ecClass: AnyClass, messageArgs: [CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined, CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined], category?: DiagnosticCategory): {
+        new (ecClass: AnyClass, messageArgs: [EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined, CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined] | undefined;
+            messageArgs?: [EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass | undefined] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -3303,6 +3313,8 @@ export abstract class SchemaItem {
     fromJSONSync(schemaItemProps: SchemaItemProps): void;
     // (undocumented)
     get fullName(): string;
+    // @internal (undocumented)
+    static isSchemaItem(object: any): object is SchemaItem;
     // (undocumented)
     get key(): SchemaItemKey;
     // (undocumented)

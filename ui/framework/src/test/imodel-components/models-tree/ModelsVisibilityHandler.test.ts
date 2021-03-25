@@ -15,6 +15,7 @@ import { isPromiseLike } from "@bentley/ui-core";
 import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
 import { TestUtils } from "../../TestUtils";
 import { createCategoryNode, createElementClassGroupingNode, createElementNode, createModelNode, createSubjectNode } from "./Common";
+import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager } from "@bentley/presentation-frontend";
 
 describe("ModelsVisibilityHandler", () => {
 
@@ -77,6 +78,7 @@ describe("ModelsVisibilityHandler", () => {
     const props: ModelsVisibilityHandlerProps = {
       rulesetId: "test",
       viewport: partialProps.viewport || mockViewport().object,
+      hierarchyAutoUpdateEnabled: partialProps.hierarchyAutoUpdateEnabled,
     };
     return new ModelsVisibilityHandler(props);
   };
@@ -116,6 +118,15 @@ describe("ModelsVisibilityHandler", () => {
       expect(vpMock.object.onNeverDrawnChanged.numberOfListeners).to.eq(1);
     });
 
+    it("should subscribe for 'onIModelHierarchyChanged' event if hierarchy auto update is enabled", () => {
+      const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+      const changeEvent = new BeEvent<(args: IModelHierarchyChangeEventArgs) => void>();
+      presentationManagerMock.setup((x) => x.onIModelHierarchyChanged).returns(() => changeEvent);
+      Presentation.setPresentationManager(presentationManagerMock.object);
+      createHandler({ viewport: mockViewport().object, hierarchyAutoUpdateEnabled: true });
+      expect(changeEvent.numberOfListeners).to.eq(1);
+    });
+
   });
 
   describe("dispose", () => {
@@ -128,6 +139,15 @@ describe("ModelsVisibilityHandler", () => {
       expect(vpMock.object.onViewedModelsChanged.numberOfListeners).to.eq(0);
       expect(vpMock.object.onAlwaysDrawnChanged.numberOfListeners).to.eq(0);
       expect(vpMock.object.onNeverDrawnChanged.numberOfListeners).to.eq(0);
+    });
+
+    it("should unsubscribe from 'onIModelHierarchyChanged' event", () => {
+      const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+      const changeEvent = new BeEvent<(args: IModelHierarchyChangeEventArgs) => void>();
+      presentationManagerMock.setup((x) => x.onIModelHierarchyChanged).returns(() => changeEvent);
+      Presentation.setPresentationManager(presentationManagerMock.object);
+      using(createHandler({ viewport: mockViewport().object, hierarchyAutoUpdateEnabled: true }), (_) => { });
+      expect(changeEvent.numberOfListeners).to.eq(0);
     });
 
   });

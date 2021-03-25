@@ -80,7 +80,7 @@ export namespace CacheInvalidationProps {
 // @internal
 export class ContentBuilder {
     static createPropertyDescription(field: Field, props?: PropertyDescriptionCreationProps): PropertyDescription;
-    static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord | undefined;
+    static createPropertyRecord(fieldHierarchy: FieldHierarchy, item: Item): FieldRecord;
 }
 
 // @public
@@ -167,10 +167,10 @@ export interface DataProvidersFactoryProps {
 export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset;
 
 // @beta @deprecated
-export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
+export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "nodeLoader" | "onFilterApplied" | "onMatchesCounted" | "onNodeLoaderChanged" | "activeMatchIndex" | Exclude<keyof P, "visibleNodes">>>;
 
 // @beta @deprecated
-export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithVisibleNodesProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | Exclude<keyof P, "visibleNodes">>>;
+export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithVisibleNodesProps, "style" | "className" | "nodeLoader" | "treeEvents" | "selectionMode" | "descriptionsEnabled" | "iconsEnabled" | "nodeHighlightingProps" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | Exclude<keyof P, "visibleNodes">>>;
 
 // @public @deprecated
 export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps>;
@@ -374,7 +374,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     getNodes(parentNode?: TreeNodeItem, pageOptions?: PageOptions_2): Promise<DelayLoadedTreeNodeItem[]>;
     getNodesCount(parentNode?: TreeNodeItem): Promise<number>;
     get imodel(): IModelConnection;
-    // @alpha
+    // @alpha @deprecated
     loadHierarchy(): Promise<void>;
     get pagingSize(): number | undefined;
     set pagingSize(value: number | undefined);
@@ -412,7 +412,7 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
     pagingSize: number;
-    // @alpha
+    // @alpha @deprecated
     preloadingEnabled?: boolean;
 }
 
