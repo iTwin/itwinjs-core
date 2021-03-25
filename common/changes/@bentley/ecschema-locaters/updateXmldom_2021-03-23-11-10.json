@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-locaters",
+      "comment": "update xmldom to 0.5.0",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-locaters",
+  "email": "47949861+DaumantasJankauskas@users.noreply.github.com"
+}
