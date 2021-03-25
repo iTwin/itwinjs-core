@@ -12,7 +12,7 @@ import { BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps,
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
+import { CheckpointManager, CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
@@ -127,12 +127,21 @@ export class RpcBriefcaseUtility {
 
     // opening a checkpoint, readonly.
     let db: SnapshotDb | void;
+    // first check if it's already open
+    db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(checkpoint));
+    if (db) {
+      Logger.logTrace(loggerCategory, "Checkpoint was already open", () => ({ ...tokenProps }));
+      return db;
+    }
+
     try {
-      // first try V2 checkpoint
+      // now try V2 checkpoint
       db = await SnapshotDb.openCheckpointV2(checkpoint);
       requestContext.enter();
       Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
     } catch (e) {
+      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ ...tokenProps }));
+
       // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
       const request = {
         checkpoint,
