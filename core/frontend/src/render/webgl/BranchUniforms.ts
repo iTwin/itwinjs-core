@@ -61,6 +61,7 @@ export class BranchUniforms {
   private readonly _mvp32 = new Matrix4();
   private readonly _m32 = new Matrix4();
   private readonly _v32 = new Matrix3();
+  private readonly _mvn32 = new Matrix3();
 
   // Working state
   private readonly _scratchTransform = Transform.createIdentity();
@@ -169,6 +170,11 @@ export class BranchUniforms {
       uniform.setMatrix3(this._v32);
   }
 
+  public bindModelViewNTransform(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean) {
+    if (this.update(uniform, geom, isViewCoords))
+      uniform.setMatrix3(this._mvn32);
+  }
+
   private update(uniform: UniformHandle, geometry: CachedGeometry, isViewCoords: boolean): boolean {
     const uniforms = this._target.uniforms[isViewCoords ? "viewRect" : "frustum"];
     if (!sync(uniforms, this))
@@ -229,6 +235,12 @@ export class BranchUniforms {
 
     Matrix4d.createTransform(mv, this._mv);
     this._mv32.initFromTransform(mv);
+
+    const inv = this._mv.createInverse();
+    if (undefined !== inv) {
+      const invTr = inv.cloneTransposed();
+      this._mvn32.initFromMatrix3d(invTr.matrixPart());
+    }
 
     // Don't bother computing mvp for instanced geometry - it's not used.
     if (!this._isInstanced) {
