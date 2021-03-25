@@ -152,6 +152,27 @@ describe("<NumericInputEditor />", () => {
     expect(spyOnCommit.calledOnce).to.be.true;
   });
 
+  it("calls onCommit on increment click", async () => {
+    const propertyRecord = TestUtils.createNumericProperty("Test", 123, StandardEditorNames.NumericInput);
+    const spyOnCommit = sinon.spy();
+    function handleCommit(_commit: PropertyUpdatedArgs): void {
+      spyOnCommit();
+    }
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const inputNode = wrapper.container.querySelector("input");
+    expect(inputNode).not.to.be.null;
+
+    const input = wrapper.container.querySelector("input") as HTMLInputElement;
+    const incrementor = wrapper.container.querySelectorAll(".core-number-input-button");
+    expect(incrementor.length).to.eq(2);
+    fireEvent.click(incrementor[0]);
+
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnCommit.calledOnce).to.be.true;
+
+    expect(input.value).to.eq("124");
+  });
+
   class MineDataController extends DataControllerBase {
     public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
       return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
