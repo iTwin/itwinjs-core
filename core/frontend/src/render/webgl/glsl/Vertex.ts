@@ -12,6 +12,7 @@ import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
 import { RenderPass, TextureUnit } from "../RenderFlags";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
+import { System } from "../System";
 import { decodeUint16, decodeUint24 } from "./Decode";
 import { addInstanceOverrides } from "./Instancing";
 import { addLookupTable } from "./LookupTable";
@@ -113,7 +114,13 @@ export function addModelViewMatrix(vert: VertexShaderBuilder): void {
 }
 
 const computeNormalMatrix = `
-  g_nmx = mat3(MAT_MV);
+  g_nmx = mat3(u_modelViewN);
+  g_nmx[0][0] *= u_frustumScale.x;
+  g_nmx[1][1] *= u_frustumScale.y;
+`;
+
+const computeNormalMatrix2 = `
+  g_nmx = transpose(inverse(mat3(MAT_MV)));
   g_nmx[0][0] *= u_frustumScale.x;
   g_nmx[1][1] *= u_frustumScale.y;
 `;
@@ -128,7 +135,16 @@ export function addNormalMatrix(vert: VertexShaderBuilder) {
     });
   });
 
-  vert.addInitializer(computeNormalMatrix);
+  if (System.instance.capabilities.isWebGL2)
+    vert.addInitializer(computeNormalMatrix2);
+  else {
+    vert.addUniform("u_modelViewN", VariableType.Mat3, (prog) => {
+      prog.addGraphicUniform("u_modelViewN", (uniform, params) => {
+        params.target.uniforms.branch.bindModelViewNTransform(uniform, params.geometry, false);
+      });
+    });
+    vert.addInitializer(computeNormalMatrix);
+  }
 }
 
 const scratchLutParams = new Float32Array(4);
