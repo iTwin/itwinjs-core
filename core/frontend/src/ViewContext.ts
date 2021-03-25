@@ -44,13 +44,13 @@ export class GridDisplaySettings {
   /** Culling option based on distance to neighbor when camera is off. 0 for none, 1 for previous neighbor, 2 for previous displayed neighbor */
   public static cullingOption: 0 | 1 | 2 = 2;
   /** Culling option based on distance to neighbor when camera is on. 0 for none, 1 for previous neighbor, 2 for previous displayed neighbor */
-  public static cullingPerspectiveOption: 0 | 1 | 2 = 1;
+  public static cullingPerspectiveOption: 0 | 1 | 2 = 2;
   /** Clipping option based on distance to neighbor. 0 for none */
-  public static clippingOption: 0 | 1 = 1;
+  public static clippingOption: 0 | 1 = 0;
   /** crude upper limit on lines to draw.
    * This is applied symmetrically above and below the limits at "frontMost" points of the grid plane intersection with the frustum
   */
-  public static lineLimiter: number = 1000;
+  public static lineLimiter: number = 2000;
   /**
    * GridInViewContext optionally limits grid lines to size of view frustum.
    * * This clip may be compute intensive

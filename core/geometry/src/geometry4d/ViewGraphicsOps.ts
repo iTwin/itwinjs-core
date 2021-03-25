@@ -416,9 +416,7 @@ export class GridInViewContext {
     const gridSpaceRange = GridInViewContext.getRestrictedGridRange(npcLoop, gridSpaceLoop, viewRange, lineCountLimiter);
     const gridCandidateRange = gridSpaceLoop.getRange();
     const area = PolygonOps.areaXY(gridSpaceLoop);
-    if (area < 0.0)
-      gridSpaceLoop.reverseInPlace();
-    const gridSpaceClipper = ConvexClipPlaneSet.createXYPolyLine(gridSpaceLoop.getPoint3dArray(), undefined, true);
+    const gridSpaceClipper = ConvexClipPlaneSet.createXYPolyLine(gridSpaceLoop.getPoint3dArray(), undefined, area > 0.0);
     const lineProximityContext = new LineProximityContext(worldToDisplay.transform0);
     return new GridInViewContext(worldToDisplay.clone(), viewRange.clone(), gridToWorld, worldToGrid,
       gridPlane,
