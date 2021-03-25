@@ -227,6 +227,11 @@ export class RpcInvocation {
       interfaceName: (typeof (this.operation) === "undefined") ? "" : this.operation.interfaceDefinition.interfaceName,
     };
 
+    const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition) as any;
+    if (impl[CURRENT_INVOCATION] === this) {
+      impl[CURRENT_INVOCATION] = undefined;
+    }
+
     return fulfillment;
   }
 
