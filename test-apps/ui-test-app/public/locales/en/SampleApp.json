@@ -212,7 +212,8 @@
         "Coordinate": "Coordinate",
         "Length": "Length",
         "Angle": "Angle",
-        "ImageCheckBox": "Image Check Box"
+        "ImageCheckBox": "Image Check Box",
+        "Number": "Number"
       },
       "Options": {
         "Red": "Red",
