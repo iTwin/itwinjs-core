@@ -10857,7 +10857,6 @@ export class ToolSettings {
     static doubleClickTimeout: BeDuration;
     static doubleClickToleranceInches: number;
     static doubleTapTimeout: BeDuration;
-    // @beta
     static enableVirtualCursorForLocate: boolean;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;
