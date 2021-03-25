@@ -1709,6 +1709,7 @@ describe("iModel", () => {
     const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
     const changeSetId = generateChangeSetId();
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
     snapshot.close();
@@ -1753,6 +1754,43 @@ describe("iModel", () => {
     expectIModelError(DbResult.BE_SQLITE_ERROR, error);
 
     checkpoint.close();
+  });
+
+  it("should throw for invalid dbGuid in v2 checkpoint", async () => {
+    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
+    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
+    const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
+    const contextId = Guid.createValue();
+    const changeSetId = generateChangeSetId();
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId);
+    snapshot.saveChanges();
+    snapshot.close();
+
+    // Mock iModelHub
+    const mockCheckpointV2: CheckpointV2 = {
+      wsgId: "INVALID",
+      ecId: "INVALID",
+      changeSetId,
+      containerAccessKeyAccount: "testAccount",
+      containerAccessKeyContainer: `imodelblocks-${iModelId}`,
+      containerAccessKeySAS: "testSAS",
+      containerAccessKeyDbName: "testDb",
+    };
+    const checkpointsV2Handler = IModelHost.iModelClient.checkpointsV2;
+    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
+    sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+
+    // Mock blockcacheVFS daemon
+    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
+    const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
+    sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
+
+    process.env.BLOCKCACHE_DIR = "/foo/";
+    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+
+    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId }));
+    expectIModelError(IModelStatus.ValidationFailed, error);
   });
 
   it("should throw when opening checkpoint without blockcache dir env", async () => {
