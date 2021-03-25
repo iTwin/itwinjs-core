@@ -11,8 +11,8 @@ import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-ed
 /**
  * Initializes Electron backend
  */
-const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
-const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
+const windowTitle = "Ui Test App";
+const mainWindowName = "mainWindow";
 
 export async function initializeElectron() {
   const electronHost: ElectronHostOptions = {
@@ -21,7 +21,7 @@ export async function initializeElectron() {
     developmentServer: process.env.NODE_ENV === "development",
   };
 
-  await ElectronHost.startup({ electronHost });
+  await ElectronHost.startup({ electronHost, nativeHost: { applicationName: "ui-test-app" } });
   EditCommandAdmin.register(BasicManipulationCommand);
 
   // Handle custom keyboard shortcuts
@@ -37,13 +37,18 @@ export async function initializeElectron() {
     });
   });
 
-  await ElectronHost.openMainWindow({ width: 800, height: 650, show: !maximizeWindow, title: "Ui Test App" });
+  // Restore previous window size, position and maximized state
+  const sizeAndPosition = ElectronHost.getWindowSizeSetting(mainWindowName);
+  const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
+
+  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: windowTitle, storeWindowName: mainWindowName });
   assert(ElectronHost.mainWindow !== undefined);
 
   if (maximizeWindow) {
     ElectronHost.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
     ElectronHost.mainWindow.show();
   }
-  if (autoOpenDevTools)
+
+  if ((undefined === process.env.imjs_TESTAPP_NO_DEV_TOOLS))
     ElectronHost.mainWindow.webContents.toggleDevTools();
 }
