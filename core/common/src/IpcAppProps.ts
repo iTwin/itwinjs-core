@@ -6,11 +6,11 @@
  * @module NativeApp
  */
 
-import { IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
-import { ElementsChanged, ModelGeometryChangesProps } from "./ModelGeometryChanges";
+import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
@@ -20,11 +20,41 @@ export interface TileTreeContentIds {
   contentIds: string[];
 }
 
+/** Specifies a [GeometricModel]($backend)'s Id and a Guid identifying the current state of the geometry contained within the model.
+ * @see [TxnManager.onModelGeometryChanged]($backend) and [BriefcaseTxns.onModelGeometryChanged]($frontend).
+ * @beta
+ */
+export interface ModelIdAndGeometryGuid {
+  /** The model's Id. */
+  id: Id64String;
+  /** A unique identifier for the current state of the model's geometry. If the guid differs between two revisions of the same iModel, it indicates that the geometry differs.
+   * This is primarily an implementation detail used to determine whether [Tile]($frontend)s produced for one revision are compatible with another revision.
+   */
+  guid: GuidString;
+}
+
+/** The set of elements or models that were changed by a [Txn]($docs/learning/InteractiveEditing.md)
+ * @note this object holds lists of ids of elements or models that were modified somehow during the Txn. Any modifications to an [[ElementAspect]]($backend) will
+ * cause its element to appear in these lists.
+ * @see [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend).
+ * @see [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend).
+ * @beta
+ */
+export interface ChangedEntities {
+  /** The ids of entities that were inserted during this Txn */
+  inserted?: CompressedId64Set;
+  /** The ids of entities that were deleted during this Txn */
+  deleted?: CompressedId64Set;
+  /** The ids of entities that were modified during this Txn */
+  updated?: CompressedId64Set;
+}
+
 /** @internal */
 export enum IpcAppChannel {
   Functions = "ipc-app",
   AppNotify = "ipcApp-notify",
-  IModelChanges = "imodel-changes",
+  Txns = "txns",
+  EditingSession = "editing-session",
   PushPull = "push-pull",
 }
 
@@ -36,12 +66,27 @@ export interface IpcAppNotifications {
   notifyApp: () => void;
 }
 
-/**
- * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel
+/** Interface implemented by the frontend [NotificationHandler]($common) to be notified of changes to an iModel.
+ * @see [TxnManager]($backend) for the source of these events.
+ * @see [BriefcaseTxns]($frontend) for the frontend implementation.
  * @internal
  */
-export interface IModelChangeNotifications {
-  notifyElementsChanged: (changes: ElementsChanged) => void;
+export interface TxnNotifications {
+  notifyElementsChanged: (changes: ChangedEntities) => void;
+  notifyModelsChanged: (changes: ChangedEntities) => void;
+  notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
+  notifyCommit: () => void;
+  notifyCommitted: () => void;
+  notifyChangesApplied: () => void;
+  notifyBeforeUndoRedo: (isUndo: boolean) => void;
+  notifyAfterUndoRedo: (isUndo: boolean) => void;
+}
+
+/**
+ * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel during an [InteractiveEditingSession]($frontend).
+ * @internal
+ */
+export interface EditingSessionNotifications {
   notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
 
@@ -74,8 +119,17 @@ export interface IpcAppFunctions {
   closeIModel: (key: string) => Promise<void>;
   /** see BriefcaseConnection.saveChanges */
   saveChanges: (key: string, description?: string) => Promise<void>;
-  /** see BriefcaseConnection.hasPendingTxns */
+  /** see BriefcaseTxns.hasPendingTxns */
   hasPendingTxns: (key: string) => Promise<boolean>;
+  /** see BriefcaseTxns.isUndoPossible */
+  isUndoPossible: (key: string) => Promise<boolean>;
+  /** see BriefcaseTxns.isRedoPossible */
+  isRedoPossible: (key: string) => Promise<boolean>;
+  /** see BriefcaseTxns.getUndoString */
+  getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
+  /** see BriefcaseTxns.getRedoString */
+  getRedoString: (key: string) => Promise<string>;
+
   /** see BriefcaseConnection.pullAndMergeChanges */
   pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<void>;
   /** see BriefcaseConnection.pushChanges */
@@ -90,7 +144,8 @@ export interface IpcAppFunctions {
 
   toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
   isInteractiveEditingSupported: (key: string) => Promise<boolean>;
-  reverseSingleTxn: (key: string) => Promise<IModelStatus>;
+
+  reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
   reverseAllTxn: (key: string) => Promise<IModelStatus>;
   reinstateTxn: (key: string) => Promise<IModelStatus>;
 

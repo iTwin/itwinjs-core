@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": "Update service URL",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client",
+  "email": "laurynasr@users.noreply.github.com"
+}

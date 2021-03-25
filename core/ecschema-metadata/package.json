@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-metadata",
-  "version": "2.15.0-dev.4",
+  "version": "2.15.0-dev.7",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/ecschema-metadata.js",
@@ -33,10 +33,12 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.15.0-dev.4",
-    "@bentley/build-tools": "2.15.0-dev.4",
-    "@bentley/eslint-plugin": "2.15.0-dev.4",
-    "@bentley/imodeljs-i18n": "2.15.0-dev.4",
+    "@bentley/bentleyjs-core": "2.15.0-dev.7",
+    "@bentley/build-tools": "2.15.0-dev.7",
+    "@bentley/eslint-plugin": "2.15.0-dev.7",
+    "@bentley/imodeljs-i18n": "2.15.0-dev.7",
+    "@bentley/units-schema": "^1.0.5",
+    "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -44,7 +46,7 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/sinon": "^9.0.0",
-    "@types/xmldom": "^0.1.29",
+    "@types/xmldom": "^0.1.30",
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
@@ -55,12 +57,15 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "typescript": "~4.1.0",
-    "xmldom": "^0.1.27",
+    "xmldom": "^0.5.0",
     "xmlhttprequest": "^1.8.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.15.0-dev.4",
-    "@bentley/imodeljs-i18n": "^2.15.0-dev.4"
+    "@bentley/bentleyjs-core": "^2.15.0-dev.7",
+    "@bentley/imodeljs-i18n": "^2.15.0-dev.7"
+  },
+  "dependencies": {
+    "almost-equal": "^1.1.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

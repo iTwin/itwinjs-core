@@ -7,6 +7,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@azure-tools/azcopy-node",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@azure/storage-blob",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -239,6 +243,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@bentley/units-schema",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "@bentley/usage-logging-client",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -288,6 +296,10 @@
     },
     {
       "name": "@ungap/url-search-params",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "almost-equal",
       "allowedCategories": [ "common" ]
     },
     {
@@ -992,7 +1004,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tsconfig-paths",
