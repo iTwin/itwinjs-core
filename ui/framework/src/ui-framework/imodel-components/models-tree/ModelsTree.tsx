@@ -170,7 +170,6 @@ function useModelsTreeNodeLoader(props: ModelsTreeProps) {
     dataProvider: props.dataProvider,
     ruleset: RULESET_MODELS_SEARCH,
     pagingSize: PAGING_SIZE,
-    preloadingEnabled: props.enablePreloading,
     enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
   });
 
