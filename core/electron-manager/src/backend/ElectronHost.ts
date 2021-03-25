@@ -17,7 +17,7 @@ import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfigur
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
-// cSpell:ignore signin devserver webcontents copyfile
+// cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
 class ElectronIpc implements IpcSocketBackend {
   public addListener(channel: string, listener: IpcListener): RemoveFunction {
@@ -55,11 +55,28 @@ export interface ElectronHostOptions {
   frontendPort?: number;
   /** list of [IpcHandler]($common) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
+  /** name of application. Used for naming settings file. */
+  applicationName?: string;
 }
 
 /** @beta */
 export interface ElectronHostOpts extends NativeHostOpts {
   electronHost?: ElectronHostOptions;
+}
+
+/** @beta */
+export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptions {
+  storeWindowName?: string;
+}
+
+/** the size and position of a window as stored in the settings file.
+ * @beta
+ */
+export interface WindowSizeAndPositionProps {
+  width: number;
+  height: number;
+  x: number;
+  y: number;
 }
 
 /**
@@ -111,7 +128,7 @@ export class ElectronHost {
     return assetPath;
   }
 
-  private static _openWindow(options: BrowserWindowConstructorOptions = {}) {
+  private static _openWindow(options?: ElectronHostWindowOptions) {
     const opts: BrowserWindowConstructorOptions = {
       autoHideMenuBar: true,
       webPreferences: {
@@ -131,16 +148,53 @@ export class ElectronHost {
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
 
+    /** Monitors and saves main window size, position and maximized state */
+    if (options?.storeWindowName) {
+      const mainWindow = this._mainWindow;
+      const name = options.storeWindowName;
+      const saveWindowPosition = () => {
+        const resolution = mainWindow.getSize();
+        const position = mainWindow.getPosition();
+        const pos: WindowSizeAndPositionProps = {
+          width: resolution[0],
+          height: resolution[1],
+          x: position[0],
+          y: position[1],
+        };
+        NativeHost.settingsStore.setData(`windowPos-${name}`, JSON.stringify(pos));
+      };
+      const saveMaximized = (maximized: boolean) => {
+        if (!maximized)
+          saveWindowPosition();
+        NativeHost.settingsStore.setData(`windowMaximized-${name}`, maximized);
+      };
+
+      mainWindow.on("resized", () => saveWindowPosition());
+      mainWindow.on("moved", () => saveWindowPosition());
+      mainWindow.on("maximize", () => saveMaximized(true));
+      mainWindow.on("unmaximize", () => saveMaximized(false));
+    }
   }
 
   /** The "main" BrowserWindow for this application. */
   public static get mainWindow() { return this._mainWindow; }
 
+  /** Gets window size and position for a window, by name, from settings file, if present */
+  public static getWindowSizeSetting(windowName: string): WindowSizeAndPositionProps | undefined {
+    const saved = NativeHost.settingsStore.getString(`windowPos-${windowName}`);
+    return saved ? JSON.parse(saved) as WindowSizeAndPositionProps : undefined;
+  }
+
+  /** Gets "window maximized" flag for a window, by name, from settings file if present */
+  public static getWindowMaximizedSetting(windowName: string): boolean | undefined {
+    return NativeHost.settingsStore.getBoolean(`windowMaximized-${windowName}`);
+  }
+
   /**
    * Open the main Window when the app is ready.
    * @param windowOptions Options for constructing the main BrowserWindow. See: https://electronjs.org/docs/api/browser-window#new-browserwindowoptions
    */
-  public static async openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
+  public static async openMainWindow(windowOptions?: ElectronHostWindowOptions): Promise<void> {
     const app = this.app;
     // quit the application when all windows are closed (unless we're running on MacOS)
     app.on("window-all-closed", () => {
@@ -177,6 +231,7 @@ export class ElectronHost {
 
     this._openWindow(windowOptions);
   }
+
   public static get isValid() { return this._ipc !== undefined; }
 
   /**
@@ -205,6 +260,7 @@ export class ElectronHost {
       this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
       this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, opts?.nativeHost?.rpcInterfaces);
     }
+
     opts = opts ?? {};
     opts.ipcHost = opts.ipcHost ?? {};
     opts.ipcHost.socket = this._ipc;

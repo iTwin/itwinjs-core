@@ -9,7 +9,7 @@ import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
-import { IModelHost, IModelHostConfiguration, LocalhostIpcHost, NativeHostOptions } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@bentley/imodeljs-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
@@ -245,22 +245,26 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
     if (undefined !== logLevelEnv)
       logLevel = Logger.parseLogLevel(logLevelEnv);
   }
-
-  const nativeHost: NativeHostOptions = {
-    rpcInterfaces: getRpcInterfaces(),
+  const opts = {
+    iModelHost,
+    electronHost,
+    nativeHost: {
+      applicationName: "display-test-app",
+      rpcInterfaces: getRpcInterfaces(),
+    },
   };
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (ProcessDetector.isElectronAppBackend) {
-    await ElectronHost.startup({ electronHost, iModelHost, nativeHost });
+    await ElectronHost.startup(opts);
     EditCommandAdmin.register(BasicManipulationCommand);
   } else if (ProcessDetector.isIOSAppBackend) {
-    await IOSHost.startup({ iModelHost, nativeHost });
+    await IOSHost.startup(opts);
   } else if (ProcessDetector.isAndroidAppBackend) {
-    await AndroidHost.startup({ iModelHost, nativeHost });
+    await AndroidHost.startup(opts);
   } else {
-    await LocalhostIpcHost.startup({ iModelHost });
+    await LocalhostIpcHost.startup(opts);
   }
 
   // Set up logging (by default, no logging is enabled)

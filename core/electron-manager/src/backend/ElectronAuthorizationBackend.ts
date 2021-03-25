@@ -72,9 +72,9 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     if (tokenResponse === undefined || tokenResponse.refreshToken === undefined)
       return undefined;
     try {
-      Logger.logTrace(loggerCategory, "Refreshing token from storage");
       return await this.refreshAccessToken(tokenResponse.refreshToken);
     } catch (err) {
+      Logger.logError(loggerCategory, `Error refreshing access token`, () => err);
       return undefined;
     }
   }
@@ -99,7 +99,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     // Create the authorization request
     const nativeConfig = this._config!;
     const authReqJson: AuthorizationRequestJson = {
-      client_id: nativeConfig.clientId, // eslint-disable-line @typescript-eslint/naming-convention
+      client_id: nativeConfig.clientId,   // eslint-disable-line @typescript-eslint/naming-convention
       redirect_uri: nativeConfig.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
       scope: nativeConfig.scope,
       response_type: AuthorizationRequest.RESPONSE_TYPE_CODE, // eslint-disable-line @typescript-eslint/naming-convention
