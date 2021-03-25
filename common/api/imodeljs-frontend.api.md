@@ -6404,13 +6404,13 @@ export enum ModifyElementSource {
     Unknown = 0
 }
 
-// @alpha
+// @beta
 export class NativeApp {
     // (undocumented)
     static callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType<NativeAppFunctions[T]>>;
     // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
-    static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
+    static closeStorage(storage: Storage, deleteStorage?: boolean): Promise<void>;
     static deleteBriefcase(fileName: string): Promise<void>;
     // (undocumented)
     static getBriefcaseFileName(props: BriefcaseProps): Promise<string>;
@@ -6431,7 +6431,7 @@ export class NativeApp {
     static startup(ipc: IpcSocketFrontend, opts?: NativeAppOpts): Promise<void>;
     }
 
-// @alpha
+// @beta
 export class NativeAppAuthorization {
     constructor(config: NativeAppAuthorizationConfiguration);
     // (undocumented)
@@ -6464,7 +6464,7 @@ export class NativeAppLogger {
     static logWarning(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
     }
 
-// @alpha
+// @beta
 export interface NativeAppOpts extends IpcAppOptions {
     // (undocumented)
     nativeApp?: {
@@ -9295,19 +9295,15 @@ export enum StartOrResume {
     Start = 1
 }
 
-// @alpha
+// @beta
 export class Storage {
-    constructor(id: string, _isOpen?: boolean);
-    close(deleteIt?: boolean): Promise<void>;
-    // @internal
+    constructor(id: string);
     getData(key: string): Promise<StorageValue | undefined>;
     getKeys(): Promise<string[]>;
     // (undocumented)
     readonly id: string;
-    get isOpen(): boolean;
     removeAll(): Promise<void>;
     removeData(key: string): Promise<void>;
-    // @internal
     setData(key: string, value: StorageValue): Promise<void>;
 }
 

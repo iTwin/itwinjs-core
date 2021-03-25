@@ -180,6 +180,7 @@ import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StandaloneOpenOptions } from '@bentley/imodeljs-common';
 import { StandardViewIndex } from '@bentley/geometry-core';
 import { StatusCodeWithMessage } from '@bentley/bentleyjs-core';
+import { StorageValue } from '@bentley/imodeljs-common';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
@@ -3441,6 +3442,28 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
 }
 
 // @beta
+export class NativeAppStorage {
+    close(deleteFile?: boolean): void;
+    // @internal
+    static closeAll(): void;
+    static find(name: string): NativeAppStorage;
+    getBoolean(key: string): boolean | undefined;
+    getData(key: string): StorageValue | undefined;
+    getKeys(): string[];
+    getNumber(key: string): number | undefined;
+    // @internal (undocumented)
+    static getStorageNames(): string[];
+    getString(key: string): string | undefined;
+    getUint8Array(key: string): Uint8Array | undefined;
+    // (undocumented)
+    readonly id: string;
+    static open(name: string): NativeAppStorage;
+    removeAll(): void;
+    removeData(key: string): void;
+    setData(key: string, value: StorageValue): void;
+    }
+
+// @beta
 export class NativeHost {
     static get appSettingsCacheDir(): string;
     // @internal (undocumented)
@@ -3454,12 +3477,19 @@ export class NativeHost {
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
+    // (undocumented)
+    static get settingsStore(): NativeAppStorage;
     static shutdown(): Promise<void>;
     static startup(opt?: NativeHostOpts): Promise<void>;
 }
 
 // @beta (undocumented)
-export type NativeHostOpts = IpcHostOpts;
+export interface NativeHostOpts extends IpcHostOpts {
+    // (undocumented)
+    nativeHost?: {
+        applicationName?: string;
+    };
+}
 
 export { NativeLoggerCategory }
 
