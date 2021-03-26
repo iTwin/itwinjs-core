@@ -1869,7 +1869,7 @@ export interface ExpandableSectionProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export const expandWidget: <Base extends {
+export const expandWidget: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -1982,7 +1982,7 @@ export const expandWidget: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, id: string) => Base;
+}, id: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @beta
 export interface ExtensibleToolbarProps {
@@ -4656,7 +4656,7 @@ export const sessionStateMapDispatchToProps: {
 export function SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly<SessionState>;
 
 // @internal (undocumented)
-export const setPanelSize: <Base extends {
+export const setPanelSize: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -4769,7 +4769,7 @@ export const setPanelSize: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, side: PanelSide, size: number | undefined) => Base;
+}, side: PanelSide, size: number | undefined) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @beta
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
@@ -4794,7 +4794,7 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
 export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
 
 // @internal (undocumented)
-export const setWidgetLabel: <Base extends {
+export const setWidgetLabel: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -4907,10 +4907,10 @@ export const setWidgetLabel: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, id: string, label: string) => Base;
+}, id: string, label: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @internal (undocumented)
-export const setWidgetState: <Base extends {
+export const setWidgetState: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -5023,7 +5023,7 @@ export const setWidgetState: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, widgetDef: WidgetDef, state: WidgetState_2) => Base;
+}, widgetDef: WidgetDef, state: WidgetState_2) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @alpha
 export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
@@ -5090,7 +5090,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
 }
 
 // @internal (undocumented)
-export const showWidget: <Base extends {
+export const showWidget: (base: {
     readonly draggedTab: {
         readonly tabId: string;
         readonly position: {
@@ -5203,7 +5203,7 @@ export const showWidget: <Base extends {
         readonly width: number;
         readonly height: number;
     };
-}>(base: Base, id: string) => Base;
+}, id: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @public
 export class SignIn extends React.PureComponent<SignInProps> {

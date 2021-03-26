@@ -251,7 +251,7 @@ dependencies:
   i18next-browser-languagedetector: 2.2.4
   i18next-xhr-backend: 2.0.1
   ignore-styles: 5.0.1
-  immer: 8.0.1
+  immer: 9.0.1
   immutable: 3.8.2
   inspire-tree: 5.0.2
   istanbul-instrumenter-loader: 3.0.1_webpack@4.42.0
@@ -10054,6 +10054,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-aqXhGP7//Gui2+UrEtvxZxSquQVXTpZ7KDxfCcKAF3Vysvw0CViVaW9RZ1j1xlIYqaaaipBoqdqeibkc18PNvA==
+  /immer/9.0.1:
+    dev: false
+    resolution:
+      integrity: sha512-7CCw1DSgr8kKYXTYOI1qMM/f5qxT5vIVMeGLDCDX8CSxsggr1Sjdoha4OhsP0AZ1UvWbyZlILHvLjaynuu02Mg==
   /immutable/3.8.2:
     dev: false
     engines:
@@ -21380,7 +21384,7 @@ packages:
       eslint: 6.8.0
       faker: 4.1.0
       ignore-styles: 5.0.1
-      immer: 8.0.1
+      immer: 9.0.1
       jsdom-global: 3.0.2_jsdom@11.12.0
       lodash: 4.17.21
       micro-memoize: 4.0.9
@@ -21402,7 +21406,7 @@ packages:
     peerDependencies:
       jsdom: '*'
     resolution:
-      integrity: sha512-k+5cS1ZMST5fbsQ7GNjomVRSloRhZ+KFDKqfx+xIxLRIydaCSSJlJ8LX/SFALPN8W55FqVbzIIqKj6hnZI9N8A==
+      integrity: sha512-QnPbrBWICSfgCy/oJXHBgrmmkdYjArLpH+f/qaw623b7aNBRbSAo5Jkes/encm1XC/bzOrULjGK/KObxzzZ9Kg==
       tarball: 'file:projects/presentation-components.tgz'
     version: 0.0.0
   'file:projects/presentation-frontend.tgz_jsdom@11.12.0':
@@ -21473,7 +21477,7 @@ packages:
       eslint: 6.8.0
       faker: 4.1.0
       ignore-styles: 5.0.1
-      immer: 8.0.1
+      immer: 9.0.1
       jsdom-global: 3.0.2_jsdom@11.12.0
       mocha: 5.2.0
       react: 16.14.0
@@ -21492,7 +21496,7 @@ packages:
     peerDependencies:
       jsdom: '*'
     resolution:
-      integrity: sha512-1sbwafUCauNCnsiQDfC7IDjm2nzZUlzLamD4IUKVRC5ZVfV7Yo4SRst6B2+ggnXBJF6zolhrngH7R+wOYfZTlQ==
+      integrity: sha512-6UilnHbj6XUhhOK1ui65mZZ9a9gHucL9CHmLLY0spovpOCrd9DI4br7170aggeODH7RqZdhGU9ZcHPO9q1buqw==
       tarball: 'file:projects/presentation-full-stack-tests.tgz'
     version: 0.0.0
   'file:projects/presentation-test-app.tgz_webpack-cli@3.3.12':
@@ -21829,7 +21833,7 @@ packages:
       eventemitter2: 5.0.1
       faker: 4.1.0
       ignore-styles: 5.0.1
-      immer: 8.0.1
+      immer: 9.0.1
       immutable: 3.8.2
       inspire-tree: 5.0.2
       jsdom: 11.12.0
@@ -21869,7 +21873,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-components'
     resolution:
-      integrity: sha512-MIydD7jXSA3uOzW7W1ZGzenMxK0sriWPXwErbKc5jvxueeaVnECf/e3FpdMQjhTtJSwxYU8ov7Ug8mg9zPmhXw==
+      integrity: sha512-tC5QTdcBeNEHkZo3L2BoFVbPDW70Wztt0xdQswPbe1CBvhlRjh0/sygQpkDzJ6qPM8NLvwqCK3lvXz4bznATLg==
       tarball: 'file:projects/ui-components.tgz'
     version: 0.0.0
   'file:projects/ui-core.tgz_2f645c1465aea7f802b6a9a8594dc28f':
@@ -21977,7 +21981,7 @@ packages:
       eslint: 6.8.0
       faker: 4.1.0
       ignore-styles: 5.0.1
-      immer: 8.0.1
+      immer: 9.0.1
       jsdom: 11.12.0
       jsdom-global: 3.0.2_jsdom@11.12.0
       lodash: 4.17.21
@@ -22011,7 +22015,7 @@ packages:
       webpack: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-58U7VAUeuZ9+iTAn1SzsgxQAS2WJ3tvOewb8KRvtdhvRrHIr6cUiYAlo46Q3qWThpTCgqaYSy+TIUBpS2zuYEw==
+      integrity: sha512-6MdSxMkzV9Xv9AKFmyla/CegSDcRsF8xqpQCgjJRKcgrNQ1JS105R5LkGvXaHAON/3i/UP1iwvzQp3178e7RGQ==
       tarball: 'file:projects/ui-framework.tgz'
     version: 0.0.0
   'file:projects/ui-ninezone.tgz_react-test-renderer@16.14.0':
@@ -22041,7 +22045,7 @@ packages:
       enzyme-to-json: 3.6.1_enzyme@3.11.0
       eslint: 6.8.0
       ignore-styles: 5.0.1
-      immer: 8.0.1
+      immer: 9.0.1
       jsdom: 11.12.0
       jsdom-global: 3.0.2_jsdom@11.12.0
       mocha: 5.2.0
@@ -22062,7 +22066,7 @@ packages:
     peerDependencies:
       react-test-renderer: '*'
     resolution:
-      integrity: sha512-GmGUH+9lfCtS6ZUpe7QCeof9w0CvlcYpqvd6nB8TB6z5LfvMxD0EfpMo357FvKiCezas0XdpwCcomvzRI3PIdQ==
+      integrity: sha512-bAft63SUyUH+zm4M+eBF4V2rCsHGnsQCPBQFWLAPJIynbb2JjIbwYlI00VboZ2G+mibT3Y2mCICP0TTUJIsgwA==
       tarball: 'file:projects/ui-ninezone.tgz'
     version: 0.0.0
   'file:projects/ui-test-app.tgz_webpack-cli@3.3.12':
@@ -22457,7 +22461,7 @@ specifiers:
   i18next-browser-languagedetector: ^2.1.0
   i18next-xhr-backend: ^2.0.1
   ignore-styles: ^5.0.1
-  immer: ^8.0.1
+  immer: ^9.0.1
   immutable: ^3.8.2
   inspire-tree: ^5.0.1
   istanbul-instrumenter-loader: ^3.0.1
