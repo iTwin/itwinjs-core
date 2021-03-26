@@ -46,7 +46,7 @@ export class UnitQuery {
   }
 
   /**
-   * Find all units in phenomenon's schema that belongs to given phenomenon
+   * Find all units in context that belongs to given phenomenon
    * @param phenomenon Full name of phenomenon
    * @returns Array of units whose full name matches phenomenon param
    */
@@ -75,7 +75,13 @@ export class UnitQuery {
       });
 
     // Filter out schema items to find units' full name that match given phenomenon param
-    return this._context.filterSchemaItems((schemaItem) =>
-      schemaItem.schemaItemType === SchemaItemType.Unit && (schemaItem as Unit).phenomenon?.fullName === phenomenon);
+    const filteredUnits: Array<Unit> = [];
+    this._context.iterateSchemaItems((schemaItem) => {
+      if (schemaItem.schemaItemType === SchemaItemType.Unit && (schemaItem as Unit).phenomenon?.fullName === phenomenon) {
+        filteredUnits.push(schemaItem as Unit);
+      }
+    });
+
+    return filteredUnits;
   }
 }
