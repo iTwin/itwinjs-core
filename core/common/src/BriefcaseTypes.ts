@@ -129,6 +129,9 @@ export interface LocalBriefcaseProps {
 
   /** The current changeSetId. */
   changeSetId: GuidString;
+
+  /** Size of the briefcase file in bytes  */
+  fileSize: number;
 }
 
 /** Properties for downloading a briefcase to a local file, from iModelHub.
