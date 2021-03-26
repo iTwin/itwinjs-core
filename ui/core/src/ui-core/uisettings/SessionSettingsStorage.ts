@@ -6,13 +6,13 @@
  * @module UiSettings
  */
 
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "./UiSettings";
+import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "./UiSettingsStorage";
 
 /**
  * Implementation of [[UiSettings]] using Window.sessionStorage.
- * @beta
+ * @public
  */
-export class SessionUiSettings implements UiSettings {
+export class SessionSettingsStorage implements UiSettingsStorage {
 
   constructor(public w: Window = window) { }
 
@@ -37,4 +37,11 @@ export class SessionUiSettings implements UiSettings {
     this.w.sessionStorage.removeItem(name);
     return { status: UiSettingsStatus.Success };
   }
+}
+
+/** Alias for [[SessionSettingsStorage]]
+ * @beta @deprecated use SessionSettingsStorage
+ */
+export class SessionUiSettings extends SessionSettingsStorage {
+  constructor(w: Window = window) { super (w);}
 }

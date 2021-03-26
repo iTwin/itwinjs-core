@@ -9,7 +9,7 @@ import { render } from "@testing-library/react";
 import { CoreTools, FrontstageDef, FrontstageManager, FrontstageProps, ModalFrontstage, ModalFrontstageInfo, SettingsModalFrontstage } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { UiFramework } from "../../ui-framework/UiFramework";
-import { SettingsManager, SettingsProvider, SettingsTabEntry, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "@bentley/ui-core";
+import { SettingsManager, SettingsTabEntry, SettingsTabsProvider, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "@bentley/ui-core";
 import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 
@@ -88,7 +88,7 @@ describe("ModalSettingsStage", () => {
     expect (ConditionalBooleanValue.getValue(backstageActionItem.isHidden)).to.be.true;
   });
 
-  class TestSettingsProvider implements SettingsProvider {
+  class TestSettingsProvider implements SettingsTabsProvider {
     public readonly id = "AppSettingsProvider";
 
     public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
