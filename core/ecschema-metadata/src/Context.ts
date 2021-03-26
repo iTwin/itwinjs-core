@@ -121,6 +121,19 @@ export class SchemaCache implements ISchemaLocater {
 
     return foundSchema as T;
   }
+
+  /**
+   *
+   * @param filterFunction
+   */
+  public iterateSchemaMap<T extends SchemaItem>(filterFunction: (item: T) => boolean): T[] {
+    const allItems = [];
+    for (const schema of this._schema) {
+      const schemaItems = [...schema.getItems()] as T[];
+      allItems.push(...schemaItems.filter((schemaItem) => filterFunction(schemaItem)));
+    }
+    return allItems;
+  }
 }
 
 /**
@@ -238,5 +251,12 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     if (undefined === schema)
       return undefined;
     return schema.getItemSync<T>(schemaItemKey.name);
+  }
+
+  /**
+   *
+   */
+  public filterSchemaItems<T extends SchemaItem>(filterFunction: (item: T) => boolean): T[] {
+    return this._knownSchemas.iterateSchemaMap(filterFunction);
   }
 }

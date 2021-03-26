@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { Constant, Phenomenon, SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, Unit } from "../ecschema-metadata";
+import { SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, Unit } from "../ecschema-metadata";
 import { SchemaItemType } from "../ECObjects";
 
 export class UnitQuery {
-
   /**
    *
    * @param _context
@@ -15,10 +14,12 @@ export class UnitQuery {
   constructor(private readonly _context: SchemaContext) {}
 
   /**
-   *
-   * @param unitName
+   * Find unit in a schema that has unitName
+   * @param unitName Full name of unit
+   * @returns Unit whose full name matches unitName
    */
-  async findUnitByName(unitName: string): Promise<Unit> {
+  public async findUnitByName(unitName: string): Promise<Unit> {
+    // Check if schema exists and unit exists in schema
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(unitName);
     const schemaKey = new SchemaKey(schemaName);
     const schema = await this._context.getSchema(schemaKey);
@@ -32,7 +33,7 @@ export class UnitQuery {
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
     const item = await this._context.getSchemaItem(itemKey);
     if (!item)
-      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item", () => {
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item/unit", () => {
         return { item: schemaItemName, schema: schemaName };
       });
 
@@ -45,10 +46,12 @@ export class UnitQuery {
   }
 
   /**
-   *
-   * @param phenomenon
+   * Find all units in phenomenon's schema that belongs to given phenomenon
+   * @param phenomenon Full name of phenomenon
+   * @returns Array of units whose full name matches phenomenon param
    */
-  async findUnitByPhenomenon(phenomenon: string) {
+  public async findUnitsByPhenomenon(phenomenon: string): Promise<Array<Unit>> {
+    // Check if schema exists and phenomenon exists in schema
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(phenomenon);
     const schemaKey = new SchemaKey(schemaName);
     const schema = await this._context.getSchema(schemaKey);
@@ -60,17 +63,19 @@ export class UnitQuery {
     }
 
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
-    const item = await this._context.getSchemaItem(itemKey);
-    if (!item)
-      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item", () => {
+    const phenom = await this._context.getSchemaItem(itemKey);
+    if (!phenom)
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item/phenomenon", () => {
         return { item: schemaItemName, schema: schemaName };
       });
 
-    if (item.schemaItemType !== SchemaItemType.Phenomenon)
+    if (phenom.schemaItemType !== SchemaItemType.Phenomenon)
       throw new BentleyError(BentleyStatus.ERROR, "Item is not a phenomenon", () => {
-        return { itemType: item.key.fullName };
+        return { itemType: phenom.key.fullName };
       });
 
-
+    // Filter out schema items to find units' full name that match given phenomenon param
+    return this._context.filterSchemaItems((schemaItem) =>
+      schemaItem.schemaItemType === SchemaItemType.Unit && (schemaItem as Unit).phenomenon?.fullName === phenomenon);
   }
 }
