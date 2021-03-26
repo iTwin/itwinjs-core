@@ -186,7 +186,7 @@ export class BriefcaseManager {
   /** Determine whether the supplied briefcaseId is a standalone briefcase */
   public static isStandaloneBriefcaseId(id: BriefcaseId) {
     // eslint-disable-next-line deprecation/deprecation
-    return id === BriefcaseIdValue.Standalone || id === BriefcaseIdValue.DeprecatedStandalone;
+    return id === BriefcaseIdValue.Unassigned || id === BriefcaseIdValue.DeprecatedStandalone;
   }
 
   /** Determine whether the supplied briefcaseId is in the range of BriefcaseIds issued by iModelHub
@@ -230,7 +230,7 @@ export class BriefcaseManager {
    * a filename, the local briefcase cache is used by creating a file with the briefcaseId as its name in the `briefcases` folder below the folder named
    * for the IModelId.
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
-   * @note The special briefcaseId [[BriefcaseIdValue.Standalone]] (0) can be used for a local briefcase that can accept changesets but may not be changed locally.
+   * @note The special briefcaseId [[BriefcaseIdValue.Unassigned]] (0) can be used for a local briefcase that can accept changesets but may not be changed locally.
    * @see CheckpointManager.downloadCheckpoint
    */
   public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
