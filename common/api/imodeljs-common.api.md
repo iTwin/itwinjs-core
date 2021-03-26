@@ -4367,6 +4367,7 @@ export interface LocalBriefcaseProps {
     changeSetId: GuidString;
     contextId: GuidString;
     fileName: string;
+    fileSize: number;
     iModelId: GuidString;
 }
 

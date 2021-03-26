@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
-import { AndroidHost, IOSHost, MobileRpcManager } from "@bentley/mobile-manager/lib/MobileBackend";
+import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
 import { Presentation } from "@bentley/presentation-backend";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
@@ -22,11 +22,18 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Trace);
 
+    const rpcInterfaces = [
+      IModelReadRpcInterface,
+      IModelTileRpcInterface,
+      SnapshotIModelRpcInterface,
+      PresentationRpcInterface,
+    ];
+
     // initialize imodeljs-backend
     if (ProcessDetector.isIOSAppBackend)
-      await IOSHost.startup();
+      await IOSHost.startup({ mobileHost: { rpcInterfaces } });
     else
-      await AndroidHost.startup();
+      await AndroidHost.startup({ mobileHost: { rpcInterfaces } });
 
     // initialize presentation-backend
     Presentation.initialize({
@@ -37,12 +44,6 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
       updatesPollInterval: 100,
     });
 
-    MobileRpcManager.initializeImpl([
-      IModelReadRpcInterface,
-      IModelTileRpcInterface,
-      SnapshotIModelRpcInterface,
-      PresentationRpcInterface,
-    ]);
   } catch (error) {
     Logger.logError("ui-test-app", error);
     process.exitCode = 1;
