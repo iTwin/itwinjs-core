@@ -19,6 +19,6 @@ export class IOSHost extends MobileHost {
     // The abstract functions of MobileDevice are implemented at runtime in native code.
     (global as any).__iTwinJsNativeBridge = device; // for native side
     const socket = opt?.ipcHost?.socket ?? new IpcWebSocketBackend();
-    return MobileHost.startup({ ...opt, mobileHost: { device }, ipcHost: { socket } });
+    return MobileHost.startup({ ...opt, mobileHost: { ...opt?.mobileHost, device }, ipcHost: { ...opt?.ipcHost, socket } });
   }
 }
