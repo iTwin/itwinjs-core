@@ -155,8 +155,9 @@ export class BriefcaseManager {
         if (briefcaseName.endsWith(".bim")) {
           try {
             const fileName = path.join(bcPath, briefcaseName);
+            const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
-            briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changeSetId: db.getParentChangeSetId() });
+            briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changeSetId: db.getParentChangeSetId(), fileSize });
             db.closeIModel();
           } catch (_err) {
           }
@@ -249,12 +250,14 @@ export class BriefcaseManager {
     };
 
     await CheckpointManager.downloadCheckpoint(args);
+    const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
     const response: LocalBriefcaseProps = {
       fileName,
       briefcaseId,
       iModelId: request.iModelId,
       contextId: request.contextId,
       changeSetId: args.checkpoint.changeSetId,
+      fileSize,
     };
 
     // now open the downloaded checkpoint and reset its BriefcaseId

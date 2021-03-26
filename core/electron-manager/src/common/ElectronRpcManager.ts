@@ -6,8 +6,9 @@
  * @module RpcInterface
  */
 
+import { IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
-import { IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager } from "@bentley/imodeljs-common";
 
 /** RPC interface configuration for an Electron-based application.
  * @internal
@@ -35,7 +36,13 @@ export class ElectronRpcManager extends RpcManager {
   }
 
   private static performInitialization(ipcSocket: IpcSocket, rpcs?: RpcInterfaceDefinition[]): ElectronRpcConfiguration {
-    const interfaces = rpcs ?? [];
+    const interfaces = rpcs ?? [
+      IModelReadRpcInterface,
+      IModelTileRpcInterface,
+      IModelWriteRpcInterface,
+      SnapshotIModelRpcInterface,
+      PresentationRpcInterface,
+    ];
     const config = class extends ElectronRpcConfiguration {
       public interfaces = () => interfaces;
       public protocol: ElectronRpcProtocol = new ElectronRpcProtocol(this, ipcSocket);
