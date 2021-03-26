@@ -103,7 +103,7 @@ export class ApplyViewByIdTool extends Tool {
 // @beta
 export class ApplyViewTool extends Tool {
     // (undocumented)
-    static get maxArgs(): undefined;
+    static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
@@ -1584,6 +1584,14 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
 
 // @beta
 export class SaveViewTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(inputArgs: string[]): boolean;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     run(): boolean;
     // (undocumented)
