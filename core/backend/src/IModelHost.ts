@@ -488,6 +488,7 @@ export class IModelHost {
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
   public static async shutdown(): Promise<void> {
+    // NB: This method is set as a node listener where `this` is unbound
     if (!IModelHost._isValid)
       return;
 
