@@ -88,12 +88,13 @@ export class SaveViewTool extends Tool {
 }
 
 /** Given a string containing a JSON representation of a ViewState, applies that ViewState to the active viewport.
- * ###TODO The JSON string should be enclosed in double quotes. Currently parser does not handle quoted arguments at all.
+ * The JSON string should be enclosed in double quotes and embedded double quote should be duplicated, example:
+ * - "{""viewDefinitionProps"":{""classFullName"":""BisCore:SpatialViewDefinition"",""id"":""0x1a""}}"
  * @beta
  */
 export class ApplyViewTool extends Tool {
   public static toolId = "ApplyView";
-  public static get maxArgs() { return undefined; } // ###TODO Once quoted argument parsing is implemented, this should be 1.
+  public static get maxArgs() { return 1; }
   public static get minArgs() { return 1; }
 
   public run(view?: ViewState): boolean {
@@ -110,8 +111,7 @@ export class ApplyViewTool extends Tool {
       return true;
 
     try {
-      const arg = args.join("");
-      const json = JSON.parse(arg);
+      const json = JSON.parse(args[0]);
 
       // ###TODO: async...
       deserializeViewState(json, vp.iModel).then((view) => this.run(view)); // eslint-disable-line @typescript-eslint/no-floating-promises
