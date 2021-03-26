@@ -2503,7 +2503,7 @@ export class SnapshotDb extends IModelDb {
     if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, `Could not create snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
 
-    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, `Could not set briefcaseId for snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
 
@@ -2550,7 +2550,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.deleteLocalValue(IModelDb._edit);
     nativeDb.saveChanges();
     nativeDb.deleteAllTxns();
-    nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue()); // WIP: clean up copied file on error?
     if (options?.createClassViews)
@@ -2646,7 +2646,7 @@ export class SnapshotDb extends IModelDb {
  *
  * Some additional details. Standalone iModels:
  * - always have [Guid.empty]($bentley) for their contextId (they are "unassociated" files)
- * - always have BriefcaseId === [BriefcaseIdValue.Standalone]($backend)
+ * - always have BriefcaseId === [BriefcaseIdValue.Unassigned]($backend)
  * - are connected to the frontend via [BriefcaseConnection.openStandalone]($frontend)
  * - may be opened without supplying any user credentials
  * - may be opened read/write
@@ -2697,7 +2697,7 @@ export class StandaloneDb extends IModelDb {
     nativeDb.saveLocalValue(IModelDb._edit, undefined === args.allowEdit ? "" : args.allowEdit);
     nativeDb.saveProjectGuid(Guid.empty);
 
-    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     if (DbResult.BE_SQLITE_OK !== status) {
       nativeDb.closeIModel();
       throw new IModelError(status, `Could not set briefcaseId for iModel:  ${filePath}`, Logger.logError, loggerCategory);
