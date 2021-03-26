@@ -2245,7 +2245,7 @@ export class BriefcaseDb extends IModelDb {
       this.concurrencyControl.onSavedChanges();
   }
 
-  private static async lockSchema(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: GuidString, briefcaseId: number): Promise<void> {
+  private static async lockSchema(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, briefcaseId: number): Promise<void> {
     requestContext.enter();
     const lock = new Lock();
     lock.briefcaseId = briefcaseId;

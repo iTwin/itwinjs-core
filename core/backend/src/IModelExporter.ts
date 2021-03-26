@@ -252,7 +252,7 @@ export class IModelExporter {
    * If this parameter is not provided, then just the current changeset will be exported.
    * @note To form a range of versions to export, set `startChangeSetId` for the start of the desired range and open the source iModel as of the end of the desired range.
    */
-  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
+  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void> {
     requestContext.enter();
     if (!this.sourceDb.isBriefcaseDb()) {
       throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory);
@@ -714,7 +714,7 @@ class ChangedInstanceIds {
   public relationship = new ChangedInstanceOps();
   public font = new ChangedInstanceOps();
   private constructor() { }
-  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: BriefcaseDb, startChangeSetId: GuidString): Promise<ChangedInstanceIds> {
+  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: BriefcaseDb, startChangeSetId: string): Promise<ChangedInstanceIds> {
     requestContext.enter();
     const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
     // NOTE: ChangeSummaryManager.downloadChangeSets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangeSets)

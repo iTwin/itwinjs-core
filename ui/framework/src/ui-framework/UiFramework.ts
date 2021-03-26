@@ -200,7 +200,7 @@ export class UiFramework {
     UiFramework._initialized = true;
 
     // initialize any standalone settings providers that don't need to have defaults set by iModelApp
-    UiShowHideSettingsProvider.initialize ();
+    UiShowHideSettingsProvider.initialize();
 
     return readFinishedPromise;
   }
@@ -249,7 +249,7 @@ export class UiFramework {
     try {
       // eslint-disable-next-line dot-notation
       return UiFramework.store.getState()[UiFramework.frameworkStateKey];
-    } catch (_e){
+    } catch (_e) {
       return undefined;
     }
   }
@@ -522,7 +522,7 @@ export class UiFramework {
     if (UiFramework.uiVersion === version)
       return;
 
-    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1"?"1":"2", true);
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1" ? "1" : "2", true);
   }
 
   public static get useDragInteraction(): boolean {
@@ -537,7 +537,7 @@ export class UiFramework {
    * @internal
    */
   // istanbul ignore next
-  public static async postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: GuidString, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
+  public static async postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
     if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
       return;
     const requestContext = await AuthorizedFrontendRequestContext.create();
