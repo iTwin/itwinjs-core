@@ -1034,6 +1034,28 @@ export abstract class ViewState extends ElementState {
     return this.modelDisplayTransformProvider ? this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, baseTransform) : baseTransform;
   }
 
+  /** @internal */
+  public transformPointByModelDisplayTransform(modelId: string | undefined, pnt: Point3d, inverse: boolean): void {
+    if (undefined !== modelId && undefined !== this.modelDisplayTransformProvider) {
+      const transform = this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
+      const newPnt = inverse ? transform.multiplyInversePoint3d(pnt) : transform.multiplyPoint3d(pnt);
+      if (undefined !== newPnt)
+        pnt.set(newPnt.x, newPnt.y, newPnt.z);
+    }
+  }
+
+  /** @internal */
+  public transformNormalByModelDisplayTransform(modelId: string | undefined, normal: Vector3d): void {
+    if (undefined !== modelId && undefined !== this.modelDisplayTransformProvider) {
+      const transform = this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
+      const newVec = transform.matrix.multiplyInverse(normal);
+      if (undefined !== newVec) {
+        newVec.normalizeInPlace();
+        normal.set(newVec.x, newVec.y, newVec.z);
+      }
+    }
+  }
+
   /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
    * A ViewState can be attached to at most **one** Viewport.
    * @note If you override this method you **must** call `super.attachToViewport`.
