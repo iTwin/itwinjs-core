@@ -625,7 +625,9 @@ export enum BriefcaseIdValue {
     Illegal = 4294967295,
     LastValid = 16777205,
     Max = 16777216,
-    Standalone = 0
+    // @deprecated
+    Standalone = 0,
+    Unassigned = 0
 }
 
 // @beta
