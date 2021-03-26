@@ -264,8 +264,8 @@ export class V1CheckpointManager {
         nativeDb.deleteAllTxns();
       }
 
-      if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Standalone)
-        nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+      if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned)
+        nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
       // Validate the native briefcase against the checkpoint meta-data
       try {
