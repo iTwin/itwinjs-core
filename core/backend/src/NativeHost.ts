@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import * as path from "path";
+import { join } from "path";
 import { BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
@@ -33,8 +33,10 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety);
   }
   public setAccessToken(token?: AccessToken) {
+    if (token === this._accessToken)
+      return;
     this._accessToken = token;
-    NativeHost.onUserStateChanged.raiseEvent(this._accessToken);
+    NativeHost.onUserStateChanged.raiseEvent(token);
   }
   public async getAccessToken(): Promise<AccessToken> {
     if (!this.isAuthorized)
@@ -166,6 +168,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 /** @beta */
 export interface NativeHostOpts extends IpcHostOpts {
   nativeHost?: {
+    /** Application named. Used to name settings file */
     applicationName?: string;
   };
 }
@@ -191,9 +194,8 @@ export class NativeHost {
 
   /** Get the local cache folder for application settings */
   public static get appSettingsCacheDir(): string {
-    if (this._appSettingsCacheDir === undefined) {
-      this._appSettingsCacheDir = path.join(IModelHost.cacheDir, "appSettings");
-    }
+    if (this._appSettingsCacheDir === undefined)
+      this._appSettingsCacheDir = join(IModelHost.cacheDir, "appSettings");
     return this._appSettingsCacheDir;
   }
 
