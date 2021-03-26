@@ -1,20 +1,20 @@
 # Settings
 
-The [SettingsManager]($ui-core) allows the registration of [SettingsProvider]($ui-core) classes to provide the settings to display with the [SettingsContainer]($ui-core) component. In an application that employs App UI, the [SettingsModalFrontstage]($ui-framework) frontstage will display the SettingsContainer and its entries.
+The [SettingsManager]($ui-core) allows the registration of [SettingsTabsProvider]($ui-core) classes to provide the settings to display with the [SettingsContainer]($ui-core) component. In an application that employs App UI, the [SettingsModalFrontstage]($ui-framework) frontstage will display the SettingsContainer and its entries.
 
 ## SettingsTabEntry
 
-Registered [SettingsProvider]($ui-core) instance will implement the method `getSettingEntries` to return an array of [SettingsProvider]($ui-core) items. Each SettingsTabEntry will populate a Tab entry in the [SettingsContainer]($ui-core) component. The `tabId` property is a string and must be unique across all registered SettingsProviders. A common practice is to prefix the tabId with the package name to ensure uniqueness. The `page` property holds the React.Element that will be used to construct the component to edit settings for this entry.  It is the `page's` responsibility to persist and retrieve persisted settings. If the `page` contains multiple properties that must be saved together the SettingsTabEntry can set the `pageWillHandleCloseRequest` property to `true`. The `page's` control should then register to be notified when the setting container is closing or when the active SettingsEnty is changing so that any unsaved data can be saved. Two React hooks are provided to assist: `settingsManager.onProcessSettingsTabActivation` and `settingsManager.onProcessSettingsContainerClose`.
+Registered [SettingsTabsProvider]($ui-core) instance will implement the method `getSettingEntries` to return an array of [SettingsTabsProvider]($ui-core) items. Each SettingsTabEntry will populate a Tab entry in the [SettingsContainer]($ui-core) component. The `tabId` property is a string and must be unique across all registered SettingsProviders. A common practice is to prefix the tabId with the package name to ensure uniqueness. The `page` property holds the React.Element that will be used to construct the component to edit settings for this entry.  It is the `page's` responsibility to persist and retrieve persisted settings. If the `page` contains multiple properties that must be saved together the SettingsTabEntry can set the `pageWillHandleCloseRequest` property to `true`. The `page's` control should then register to be notified when the setting container is closing or when the active SettingsEnty is changing so that any unsaved data can be saved. Two React hooks are provided to assist: `settingsManager.onProcessSettingsTabActivation` and `settingsManager.onProcessSettingsContainerClose`.
 
 ## Example
 
-### Example SettingsProvider
+### Example SettingsTabsProvider
 
 Example below shows a settings provide that provides two settings pages. The first one depicts a page that has properties that cannot be saved immediately as individual properties are changed. It must be treated as a modal where once all values are define a save button is used the save the changes.  The second settings page handles settings that can be immediately saved when changed and does not require any special processing when the page is closed.
 
 ```tsx
 // Sample UI items provider that dynamically adds ui items
-export class ExampleSettingsProvider implements SettingsProvider {
+export class ExampleSettingsProvider implements SettingsTabsProvider {
   public readonly id = "myApp:ExampleSettingsProvider";
 
   public getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
@@ -145,6 +145,6 @@ function SaveFormatModalDialog({ persistChangesFunc, persistChangesFuncArg, onDi
 ## API Reference
 
 - [SettingsManager]($ui-core)
-- [SettingsProvider]($ui-core)
+- [SettingsTabsProvider]($ui-core)
 - [SettingsContainer]($ui-core)
 - [SettingsTabEntry]($ui-core)
