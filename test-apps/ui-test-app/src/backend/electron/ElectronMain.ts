@@ -2,26 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
-import { getSupportedRpcs } from "../../common/rpcs";
-import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 
-/**
- * Initializes Electron backend
- */
-const windowTitle = "Ui Test App";
+import { join } from "path";
+import { assert } from "@bentley/bentleyjs-core";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import { getSupportedRpcs } from "../../common/rpcs";
+
 const mainWindowName = "mainWindow";
 
+/** Initializes Electron backend */
 export async function initializeElectron() {
-  const electronHost: ElectronHostOptions = {
-    webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
-    rpcInterfaces: getSupportedRpcs(),
-    developmentServer: process.env.NODE_ENV === "development",
+
+  const opt = {
+    electronHost: {
+      webResourcesPath: join(__dirname, "..", "..", "..", "build"),
+      developmentServer: process.env.NODE_ENV === "development",
+      rpcInterfaces: getSupportedRpcs(),
+    },
+    nativeHost: {
+      applicationName: "ui-test-app",
+    },
   };
 
-  await ElectronHost.startup({ electronHost, nativeHost: { applicationName: "ui-test-app" } });
+  await ElectronHost.startup(opt);
   EditCommandAdmin.register(BasicManipulationCommand);
 
   // Handle custom keyboard shortcuts
@@ -41,7 +45,7 @@ export async function initializeElectron() {
   const sizeAndPosition = ElectronHost.getWindowSizeSetting(mainWindowName);
   const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
 
-  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: windowTitle, storeWindowName: mainWindowName });
+  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: "Ui Test App", storeWindowName: mainWindowName });
   assert(ElectronHost.mainWindow !== undefined);
 
   if (maximizeWindow) {
