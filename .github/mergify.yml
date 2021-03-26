@@ -8,8 +8,7 @@ pull_request_rules:
     conditions:
       - "#changes-requested-reviews-by=0"
       - -draft
-      - base=master
-      - base~=release/*
+      - base~=master|release/*
       - check-success=iModel.js
       - check-success=iModel.js Integration - GitHub
       - check-success=iModelJs Docs
