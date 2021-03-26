@@ -73,6 +73,7 @@ export enum SyncUiEventId {
   ViewStateChanged = "viewstatechanged",
   /** The current object the reads and write UI Settings has changed. */
   UiSettingsChanged = "uisettingschanged",
+  ShowHideManagerSettingChange = "show-hide-setting-change",
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.

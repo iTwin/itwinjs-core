@@ -143,6 +143,29 @@
       "formatSectionLabel": "Quantity Formats",
       "setButtonLabel": "Set",
       "clearButtonLabel": "Clear"
+    },
+    "uiSettingsPage": {
+      "label": "UI Settings",
+      "tooltip": "UI Settings",
+      "light": "Light",
+      "dark": "Dark",
+      "systemPreferred": "System preferred",
+      "themeTitle": "Theme",
+      "themeDescription": "Toggle the theme between light and dark",
+      "autoHideTitle": "Auto-Hide UI",
+      "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
+      "dragInteractionTitle": "Toolbar Group Buttons show child action item",
+      "dragInteractionDescription": "Requires long press to open pop-up panel. Single click executes displayed action.",
+      "newUiTitle": "Use 2.0 Ui",
+      "newUiDescription": "Use new 2.0 UI layout",
+      "useProximityOpacityTitle": "Change Toolbar Opacity",
+      "useProximityOpacityDescription": "Change the toolbar opacity as the mouse gets closer or farther away",
+      "snapWidgetOpacityTitle": "Snap Toolbar Opacity",
+      "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close",
+      "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
+      "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
+      "widgetOpacityTitle": "Widget Opacity",
+      "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets"
     }
   },
   "tools": {

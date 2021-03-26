@@ -9,13 +9,18 @@
 /** Interface for getting, saving and deleting settings.
  * @public
  */
-export interface UiSettings {
+export interface UiSettingsStorage {
   getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
   saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
   deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
 }
 
-/** Enum for [[UiSettings]] status.
+/** Alias for [[UiSettingsStorage]]
+ * @public
+ */
+export type UiSettings = UiSettingsStorage;
+
+/** Enum for [[UiSettingsStorage]] status.
  * @public
  */
 export enum UiSettingsStatus {
@@ -26,7 +31,7 @@ export enum UiSettingsStatus {
   AuthorizationError = 4,
 }
 
-/** Interface for [[UiSettings]] result.
+/** Interface for result of accessing setting in [[UiSettingsStorage]].
  * @public
  */
 export interface UiSettingsResult {
