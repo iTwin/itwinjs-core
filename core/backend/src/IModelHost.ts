@@ -448,6 +448,7 @@ export class IModelHost {
 
     UsageLoggingUtilities.configure({ hostApplicationId: IModelHost.applicationId, hostApplicationVersion: IModelHost.applicationVersion, clientAuthManager: this._clientAuthIntrospectionManager });
     process.once("beforeExit", IModelHost.shutdown);
+    IModelHost.onAfterStartup.raiseEvent();
   }
 
   private static _briefcaseCacheDir: string;
@@ -487,10 +488,11 @@ export class IModelHost {
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
   public static async shutdown(): Promise<void> {
-    if (!this._isValid)
+    // NB: This method is set as a node listener where `this` is unbound
+    if (!IModelHost._isValid)
       return;
 
-    this._isValid = false;
+    IModelHost._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;
