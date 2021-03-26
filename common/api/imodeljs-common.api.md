@@ -3880,7 +3880,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 
 // @public
 export interface IModelRpcOpenProps {
-    changeSetId?: GuidString;
+    changeSetId?: string;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
     openMode?: OpenMode;
@@ -3933,7 +3933,7 @@ export interface IModelTileTreeProps extends TileTreeProps {
 
 // @public
 export class IModelVersion {
-    static asOfChangeSet(changeSetId: GuidString): IModelVersion;
+    static asOfChangeSet(changeSetId: string): IModelVersion;
     evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString>;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
@@ -3961,7 +3961,7 @@ export type IModelVersionProps = {
     afterChangeSetId?: never;
     versionName?: never;
 } | {
-    afterChangeSetId: GuidString;
+    afterChangeSetId: string;
     first?: never;
     latest?: never;
     versionName?: never;
@@ -4362,7 +4362,7 @@ export type LocalAlignedBox3d = Range3d;
 // @beta
 export interface LocalBriefcaseProps {
     briefcaseId: number;
-    changeSetId: GuidString;
+    changeSetId: string;
     contextId: GuidString;
     fileName: string;
     iModelId: GuidString;
