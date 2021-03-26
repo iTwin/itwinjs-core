@@ -10,14 +10,13 @@ import { assert, dispose } from "@bentley/bentleyjs-core";
 import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@bentley/geometry-core";
 import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@bentley/imodeljs-common";
 import { IModelApp } from "../../IModelApp";
-import { GraphicBuilder, TileTreeLoadStatus } from "../../imodeljs-frontend";
+import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import { RenderSystem, TerrainTexture } from "../../render/RenderSystem";
-import { RealityMeshGeometry } from "../../render/webgl/RealityMesh";
+import { RenderRealityMeshGeometry, RenderSystem, TerrainTexture } from "../../render/RenderSystem";
 import { ViewingSpace } from "../../ViewingSpace";
-import { ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TraversalSelectionContext } from "../internal";
+import { ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileTreeLoadStatus, TraversalSelectionContext } from "../internal";
 import { TileGraphicType } from "../TileTreeReference";
 
 /** @internal */
@@ -94,7 +93,7 @@ class PlanarProjection extends MapTileProjection {
 /** @internal */
 export interface TerrainTileContent extends TileContent {
   terrain?: {
-    geometry?: RealityMeshGeometry;
+    geometry?: RenderRealityMeshGeometry;
     /** Used on leaves to support up-sampling. */
     mesh?: TerrainMeshPrimitive;
   };
@@ -117,7 +116,7 @@ export class MapTile extends RealityTile {
   private _imageryTiles?: ImageryMapTile[];
   public everLoaded = false;                    // If the tile is only required for availability metadata, load it once and then allow it to be unloaded.
   protected _heightRange: Range1d | undefined;
-  protected _geometry?: RealityMeshGeometry;
+  protected _geometry?: RenderRealityMeshGeometry;
   protected _mesh?: TerrainMeshPrimitive;     // Primitive retained on leaves only for upsampling.
   public get isReady(): boolean { return super.isReady && this.baseImageryIsReady; }
   public get geometry() { return this._geometry; }

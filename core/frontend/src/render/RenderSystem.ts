@@ -32,7 +32,6 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { RealityMeshGeometry } from "./webgl/RealityMesh";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -133,6 +132,11 @@ export interface RenderSystemDebugControl {
   debugShaderFiles?: DebugShaderFile[];
 }
 
+/** @internal */
+export abstract class RenderRealityMeshGeometry implements IDisposable, RenderMemory.Consumer {
+  public abstract dispose(): void;
+  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
+}
 /** @internal */
 export class TerrainTexture {
   public constructor(public readonly texture: RenderTexture, public featureId: number, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly targetRectangle: Range2d, public readonly layerIndex: number, public transparency: number, public readonly clipRectangle?: Range2d) {
@@ -264,9 +268,9 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RealityMeshGeometry | undefined { return undefined; }
+  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined { return undefined; }
   /** @internal */
-  public createRealityMeshGraphic(_terrainGeometry: RealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined { return undefined; }
   /** @internal */

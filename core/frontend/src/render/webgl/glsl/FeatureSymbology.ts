@@ -133,7 +133,7 @@ function addFeatureIndex(vert: VertexShaderBuilder): void {
   vert.addFunction(decodeUint24);
   vert.addFunction(getFeatureIndex(vert));
 
-  if (vert.usesVertexTable)
+  if (vert.usesVertexTable && !vert.usesInstancedGeometry)
     addFeatureAndMaterialLookup(vert);
 }
 
