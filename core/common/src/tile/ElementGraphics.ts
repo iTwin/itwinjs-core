@@ -52,12 +52,23 @@ export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
  * @beta
  */
 export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
-  /** If specified, tools will recognize the generated graphics as being associated with this element. */
-  readonly elementId?: Id64String;
   /** The geometry from which to generate the graphics. */
   readonly geometry: GeometryStreamProps;
-  /** The location, orientation, and bounding box of the geometry. The bounding box must fully enclose the [[geometry]]. */
-  readonly placement: PlacementProps;
+  /** The location and orientation of the geometry. The bounding box will be computed from the supplied [[geometry]].
+   * Supply a 2d placement for 2d geometry or 3d placement for 3d geometry.
+   */
+  readonly placement: Omit<PlacementProps, "bbox">;
+  /** The category to which the geometry belongs. This is required to identify a persistent [SpatialCategory]($backend) for 3d geometry or
+   * [DrawingCategory]($backend) for 2d geometry.
+   */
+  readonly categoryId: Id64String;
+  /** If specified, tools will recognize the generated graphics as being associated with this element. */
+  readonly elementId?: Id64String;
+  /** If specified, tools will recognize the generated graphics as being associated with this model.
+   * It should identify a 3d model for 3d geometry or a 2d model for 2d geometry.
+   * It needn't identify a persistent model - it can be a transient Id.
+   */
+  readonly modelId?: Id64String;
 }
 
 /** Wire format describing a request to produce graphics in "iMdl" format for a single element or geometry stream.
