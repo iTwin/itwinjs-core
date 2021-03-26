@@ -116,16 +116,53 @@ class MeasureMarker extends Marker {
   }
 }
 
+/** @internal */
+interface Location { point: Point3d, adjustedPoint: Point3d, refAxes: Matrix3d }
+/** @internal */
+interface Segment { distance: number, slope: number, start: Point3d, end: Point3d, delta: Vector3d, adjustedStart: Point3d, adjustedEnd: Point3d, adjustedDelta: Vector3d, refAxes: Matrix3d, marker: MeasureMarker }
+
+/** @internal */
+function adjustPoint(ev: BeButtonEvent, segments?: Array<Segment>, locations?: Array<Location>): Point3d {
+  // If the point was from a hit we must transform it by the model display tyransform of what got hit.
+  if (undefined === ev.viewport || undefined === ev.viewport.view.modelDisplayTransformProvider)
+    return ev.point;
+  if (undefined !== IModelApp.accuSnap.currHit && undefined !== IModelApp.accuSnap.currHit.modelId) {
+    if ("0" !== IModelApp.accuSnap.currHit.modelId) {
+      const newPoint = ev.point.clone();
+      ev.viewport.view.transformPointByModelDisplayTransform(IModelApp.accuSnap.currHit.modelId, newPoint, true);
+      return newPoint;
+    } else {
+      // Must have snapped to a decoration, so look through previous any segments & locations for a match to get an adjusted point.
+      if (undefined !== segments) {
+        for (const seg of segments) {
+          if (seg.start.isExactEqual(ev.point))
+            return seg.adjustedStart.clone();
+          if (seg.end.isExactEqual(ev.point))
+            return seg.adjustedEnd.clone();
+        }
+      }
+      if (undefined !== locations) {
+        for (const loc of locations) {
+          if (loc.point.isExactEqual(ev.point))
+            return loc.adjustedPoint.clone();
+        }
+      }
+    }
+  }
+  return ev.point;
+}
+
 /** @alpha */
 export class MeasureDistanceTool extends PrimitiveTool {
   public static toolId = "Measure.Distance";
   public static iconSpec = "icon-measure-distance";
-  protected readonly _locationData = new Array<{ point: Point3d, refAxes: Matrix3d }>();
-  protected readonly _acceptedSegments = new Array<{ distance: number, slope: number, start: Point3d, end: Point3d, delta: Vector3d, refAxes: Matrix3d, marker: MeasureMarker }>();
+  protected readonly _locationData = new Array<Location>();
+  protected readonly _acceptedSegments = new Array<Segment>();
   protected _totalDistance: number = 0.0;
   protected _totalDistanceMarker?: MeasureLabel;
   protected _snapGeomId?: string;
   protected _lastMotionPt?: Point3d;
+  protected _lastMotionAdjustedPt?: Point3d;
 
   protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
@@ -200,10 +237,10 @@ export class MeasureDistanceTool extends PrimitiveTool {
     return (undefined === geomData ? undefined : [geomData]);
   }
 
-  protected displayDynamicDistance(context: DecorateContext, points: Point3d[]): void {
+  protected displayDynamicDistance(context: DecorateContext, points: Point3d[], adjustedPoints: Point3d[]): void {
     let totalDistance = 0.0;
-    for (let i = 0; i < points.length - 1; i++)
-      totalDistance += points[i].distance(points[i + 1]);
+    for (let i = 0; i < adjustedPoints.length - 1; i++)
+      totalDistance += adjustedPoints[i].distance(adjustedPoints[i + 1]);
     if (0.0 === totalDistance)
       return;
 
@@ -265,11 +302,15 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (!this.isCompatibleViewport(context.viewport, false))
       return;
 
-    if (!isSuspended && this._locationData.length > 0 && undefined !== this._lastMotionPt) {
+    if (!isSuspended && this._locationData.length > 0 && undefined !== this._lastMotionPt && undefined !== this._lastMotionAdjustedPt) {
       const tmpPoints: Point3d[] = [];
-      for (const loc of this._locationData)
+      const tmpAdjustedPoints: Point3d[] = [];
+      for (const loc of this._locationData) {
         tmpPoints.push(loc.point); // Deep copy not necessary...
+        tmpAdjustedPoints.push(loc.adjustedPoint);
+      }
       tmpPoints.push(this._lastMotionPt);
+      tmpAdjustedPoints.push(this._lastMotionAdjustedPt);
 
       const builderDynVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
       const colorDynVis = context.viewport.hilite.color;
@@ -286,7 +327,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       builderDynHid.addLineString(tmpPoints);
 
       context.addDecorationFromBuilder(builderDynHid);
-      this.displayDynamicDistance(context, tmpPoints);
+      this.displayDynamicDistance(context, tmpPoints, tmpAdjustedPoints);
     }
 
     if (this._acceptedSegments.length > 0) {
@@ -334,10 +375,15 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
     if (this._locationData.length > 0 && undefined !== ev.viewport) {
-      if (undefined !== this._lastMotionPt)
-        this._lastMotionPt.setFrom(ev.point);
-      else
-        this._lastMotionPt = ev.point.clone();
+      const point = ev.point;
+      const adjustedPoint = adjustPoint(ev, this._acceptedSegments, this._locationData);
+      if (undefined !== this._lastMotionPt) {
+        this._lastMotionPt.setFrom(point);
+        this._lastMotionAdjustedPt?.setFrom(adjustedPoint);
+      } else {
+        this._lastMotionPt = point.clone();
+        this._lastMotionAdjustedPt = adjustedPoint;
+      }
       ev.viewport.invalidateDecorations();
     }
   }
@@ -431,7 +477,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
   }
 
   protected async updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent, reopenToolTip: boolean): Promise<void> {
-    seg.marker.title = await this.getMarkerToolTip(seg.distance, seg.slope, seg.start, seg.end, seg.marker.isSelected ? seg.delta : undefined);
+    seg.marker.title = await this.getMarkerToolTip(seg.distance, seg.slope, seg.adjustedStart, seg.adjustedEnd, seg.marker.isSelected ? seg.adjustedDelta : undefined);
     if (!reopenToolTip || undefined === ev.viewport || !IModelApp.notifications.isToolTipOpen)
       return;
     IModelApp.notifications.clearToolTip();
@@ -441,17 +487,21 @@ export class MeasureDistanceTool extends PrimitiveTool {
   protected async acceptNewSegments(): Promise<void> {
     if (this._locationData.length > 1) {
       for (let i = 0; i <= this._locationData.length - 2; i++) {
+        const adjustedStart = this._locationData[i].adjustedPoint;
+        const adjustedEnd = this._locationData[i + 1].adjustedPoint;
+        const distance = adjustedStart.distance(adjustedEnd);
+        const xyDist = adjustedStart.distanceXY(adjustedEnd);
+        const zDist = adjustedEnd.z - adjustedStart.z;
+        const slope = (0.0 === xyDist ? Math.PI : Math.atan(zDist / xyDist));
+        const adjustedDelta = Vector3d.createStartEnd(adjustedStart, adjustedEnd);
+        const refAxes = this._locationData[i].refAxes;
+        refAxes.multiplyTransposeVectorInPlace(adjustedDelta);
         const start = this._locationData[i].point;
         const end = this._locationData[i + 1].point;
-        const distance = start.distance(end);
-        const xyDist = start.distanceXY(end);
-        const zDist = end.z - start.z;
-        const slope = (0.0 === xyDist ? Math.PI : Math.atan(zDist / xyDist));
         const delta = Vector3d.createStartEnd(start, end);
-        const refAxes = this._locationData[i].refAxes;
         refAxes.multiplyTransposeVectorInPlace(delta);
 
-        const toolTip = await this.getMarkerToolTip(distance, slope, start, end);
+        const toolTip = await this.getMarkerToolTip(distance, slope, adjustedStart, adjustedEnd);
         const marker = new MeasureMarker((this._acceptedSegments.length + 1).toString(), toolTip, start.interpolate(0.5, end), Point2d.create(25, 25));
 
         const segMarkerButtonFunc = (ev: BeButtonEvent) => {
@@ -481,7 +531,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
         };
 
         marker.onMouseButton = segMarkerButtonFunc; // eslint-disable-line @typescript-eslint/unbound-method
-        this._acceptedSegments.push({ distance, slope, start, end, delta, refAxes, marker });
+        this._acceptedSegments.push({ distance, slope, start, end, delta, adjustedStart, adjustedEnd, adjustedDelta, refAxes, marker });
       }
     }
     this._locationData.length = 0;
@@ -497,6 +547,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const point = ev.point.clone();
+    const adjustedPoint = adjustPoint(ev, this._acceptedSegments, this._locationData);
     const refAxes = this.getReferenceAxes(ev.viewport);
     const zDir = refAxes.columnZ();
     const normal = refAxes.columnZ();
@@ -532,7 +583,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       }
     }
 
-    this._locationData.push({ point, refAxes });
+    this._locationData.push({ point, adjustedPoint, refAxes });
 
     if (this._locationData.length > 1 && !ev.isControlKey)
       await this.acceptNewSegments();
@@ -677,7 +728,8 @@ export class MeasureLocationTool extends PrimitiveTool {
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const point = ev.point.clone();
-    const toolTip = await this.getMarkerToolTip(point);
+    const adjustedPoint = adjustPoint(ev);
+    const toolTip = await this.getMarkerToolTip(adjustedPoint);
     const marker = new MeasureMarker((this._acceptedLocations.length + 1).toString(), toolTip, point, Point2d.create(25, 25));
 
     this._acceptedLocations.push(marker);
