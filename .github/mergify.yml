@@ -16,13 +16,13 @@ pull_request_rules:
     actions:
       update: {}
 
-  - name: automatic merge of native addon updates
-    conditions:
-      - head~=native/*
-      - base=master
-      # Mergify requests required status checks so no need to check here
-    actions:
-      merge:
-        method: merge
-        strict: true
-        commit_message: "Update @bentley/imodeljs-native"
+  # - name: automatic merge of native addon updates
+  #   conditions:
+  #     - head~=native/*
+  #     - base=master
+  #     # Mergify requests required status checks so no need to check here
+  #   actions:
+  #     merge:
+  #       method: merge
+  #       strict: true
+  #       commit_message: "Update @bentley/imodeljs-native"
