@@ -13,7 +13,7 @@ import * as moq from "typemoq";
 
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
-import { HorizontalAlignment, LocalUiSettings } from "@bentley/ui-core";
+import { HorizontalAlignment, LocalSettingsStorage } from "@bentley/ui-core";
 
 import {
   CellItem, ColumnDescription, PropertyUpdatedArgs, PropertyValueRendererManager, RowItem, SelectionMode, Table, TableDataChangeEvent,
@@ -1355,7 +1355,7 @@ describe("Table", () => {
         reorderableColumns={true}
         ref={ref}
         settingsIdentifier="test"
-        uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
+        settingsStorage={new LocalSettingsStorage({ localStorage: storageMock() } as Window)}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();
@@ -1378,7 +1378,7 @@ describe("Table", () => {
         onRowsLoaded={onRowsLoaded}
         settingsIdentifier="test"
         showHideColumns={true}
-        uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
+        settingsStorage={new LocalSettingsStorage({ localStorage: storageMock() } as Window)}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();
