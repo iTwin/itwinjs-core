@@ -54,18 +54,12 @@ $signin-hyperlink-hover-color: $buic-foreground-primary-tone;
   .components-signin-prompt {
     margin-top: 3em;
     text-align: center;
+    height: 7em;
   }
 
   /* sign in button */
   .components-signin-button {
     @include uicore-buttons-primary-large;
-    margin-top: auto;
-  }
-
-  /* signing-in message */
-  .components-signingin-message {
-    margin-top: 3em;
-    text-align: center;
   }
 
   /* "Register" container */
