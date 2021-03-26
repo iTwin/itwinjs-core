@@ -6,13 +6,13 @@
  * @module UiSettings
  */
 
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "./UiSettings";
+import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "./UiSettingsStorage";
 
 /**
- * Implementation of [[UiSettings]] using Window.localStorage.
- * @beta
+ * Implementation of [[UiSettingsStorage]] using Window.localStorage.
+ * @public
  */
-export class LocalUiSettings implements UiSettings {
+export class LocalSettingsStorage implements UiSettingsStorage {
 
   constructor(public w: Window = window) { }
 
@@ -38,3 +38,11 @@ export class LocalUiSettings implements UiSettings {
     return { status: UiSettingsStatus.Success };
   }
 }
+
+/** Alias for [[LocalSettingsStorage]]
+ * @beta @deprecated use LocalSettingsStorage
+ */
+export class LocalUiSettings extends LocalSettingsStorage {
+  constructor(w: Window = window) { super (w);}
+}
+
