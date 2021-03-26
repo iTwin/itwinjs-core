@@ -8,7 +8,7 @@
 
 import { Id64String } from "@bentley/bentleyjs-core";
 import { TransformProps } from "@bentley/geometry-core";
-import { PlacementProps } from "../ElementProps";
+import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { GeometryStreamProps } from "../geometry/GeometryStream";
 import { ContentFlags, TreeFlags } from "../tile/TileMetadata";
 
@@ -48,16 +48,13 @@ export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
 }
 
 /** Wire format describing a request to produce graphics in "iMdl" format for a single geometry stream.
+ * @see [[DynamicGraphicsRequest2dProps]] and [[DynamicGraphicsRequest3dProps]].
  * @see [[ElementGraphicsRequestProps]] for more details.
  * @beta
  */
 export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
   /** The geometry from which to generate the graphics. */
   readonly geometry: GeometryStreamProps;
-  /** The location and orientation of the geometry. The bounding box will be computed from the supplied [[geometry]].
-   * Supply a 2d placement for 2d geometry or 3d placement for 3d geometry.
-   */
-  readonly placement: Omit<PlacementProps, "bbox">;
   /** The category to which the geometry belongs. This is required to identify a persistent [SpatialCategory]($backend) for 3d geometry or
    * [DrawingCategory]($backend) for 2d geometry.
    */
@@ -71,10 +68,28 @@ export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
   readonly modelId?: Id64String;
 }
 
+/** Wire format describing a request to produce graphics in "iMdl" format for a 2d geometry stream.
+ * @see [[ElementGraphicsRequestProps]] for more details.
+ * @beta
+ */
+export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
+  readonly type: "2d";
+  readonly placement: Omit<Placement2dProps, "bbox">;
+}
+
+/** Wire format describing a request to produce graphics in "iMdl" format for a 3d geometry stream.
+ * @see [[ElementGraphicsRequestProps]] for more details.
+ * @beta
+ */
+export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestProps {
+  readonly type: "3d";
+  readonly placement: Omit<Placement3dProps, "bbox">;
+}
+
 /** Wire format describing a request to produce graphics in "iMdl" format for a single element or geometry stream.
  * @note Every request must have an `id` that is unique amongst all extant requests for a given [[IModel]].
  * @see [TileAdmin.requestElementGraphics]($frontend) and [IModelDb.generateElementGraphics]($backend) to fulfill such a request.
  * @see [readElementGraphics]($frontend) to convert the result of a request to a [RenderGraphic]($frontend) for display.
  * @beta
  */
-export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequestProps;
+export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps;
