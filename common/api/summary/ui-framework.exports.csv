@@ -37,6 +37,7 @@ public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonIt
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 internal;appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray
 public;AppNotificationManager 
+beta;AppUiSettings 
 beta;areNoFeatureOverridesActive(): boolean
 public;Backstage 
 deprecated;Backstage 
@@ -119,7 +120,7 @@ public;ConfigurableUiControlConstructor = new (info: ConfigurableCreateInfo, opt
 public;ConfigurableUiControlType
 public;ConfigurableUiElement
 public;ConfigurableUiManager
-public;ConfigurableUiReducer(state: ConfigurableUiState | undefined, _action: ConfigurableUiActionsUnion): ConfigurableUiState
+public;ConfigurableUiReducer(state: ConfigurableUiState | undefined, action: ConfigurableUiActionsUnion): ConfigurableUiState
 public;ConfigurableUiState
 beta;connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps
 beta;connectIModelConnectionAndViewState: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps
@@ -264,6 +265,7 @@ beta;getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial
 beta;getSelectionContextSyncEventIds(): string[]
 internal;getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
+beta;getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry
 internal;getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes
 public;GroupButton(props: GroupButtonProps): JSX.Element
 internal;GroupButtonItem(props: GroupButtonProps_2): JSX.Element
@@ -294,6 +296,7 @@ beta;IModelViewportControl
 beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator 
+beta;InitialAppUiSettings
 internal;initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState
 internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState
 alpha;InputEditorCommitHandler
@@ -445,7 +448,7 @@ internal;ProjectServices
 public;PromptField: import("react-redux").ConnectedComponent
 deprecated;PromptField: import("react-redux").ConnectedComponent
 public;PropsHelper
-beta;QuantityFormatSettingsPanel({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element
+beta;QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element
 beta;QuantityFormatterSettingsOptions
 alpha;ReactContent
 public;ReactMessage = ReactMessage_2
@@ -635,9 +638,11 @@ public;UiFramework
 internal;UiIntervalEvent 
 internal;UiIntervalEventArgs
 internal;UiSettingsContext: React.Context
-alpha;UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element
-alpha;UiSettingsProviderProps
+beta;UiSettingsPage({ allowSettingUiFrameworkVersion }:
+beta;UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element
+beta;UiSettingsProviderProps
 public;UiShowHideManager
+internal;UiShowHideSettingsProvider 
 public;UiVisibilityChangedEvent 
 public;UiVisibilityEventArgs
 internal;useActiveFrontstageDef(): FrontstageDef | undefined
@@ -661,6 +666,8 @@ internal;useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch
 internal;useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined
 public;UserProfileBackstageItem 
 public;UserProfileBackstageItemProps 
+beta;UserSettingsProvider
+public;UserSettingsStorage 
 internal;useSavedFrontstageState(frontstageDef: FrontstageDef): void
 internal;useSaveFrontstageSettings(frontstageDef: FrontstageDef): void
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
@@ -668,7 +675,7 @@ internal;useSyncDefinitions(frontstageDef: FrontstageDef): void
 internal;useToolSettingsNode(): React.ReactNode
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
-internal;useUiSettingsContext(): UiSettings
+beta;useUiSettingsStorageContext(): UiSettingsStorage
 internal;useUiVisibility(): boolean
 internal;useUpdateNineZoneSize(frontstageDef: FrontstageDef): void
 alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider
