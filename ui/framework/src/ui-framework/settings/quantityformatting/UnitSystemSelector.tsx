@@ -11,14 +11,18 @@ import { UiFramework } from "../../UiFramework";
 import { Select } from "@bentley/ui-core";
 import { UnitSystemKey } from "@bentley/imodeljs-frontend";
 
-/** @alpha */
+/** Props for [[UnitSystemSelector]]
+ * @beta
+ */
 export interface UnitSystemSelectorProps {
   selectedUnitSystemKey: UnitSystemKey;
   onUnitSystemSelected: (unitSystem: UnitSystemKey) => void;
   availableUnitSystems: Set<UnitSystemKey>;
 }
 
-/** @alpha */
+/** Select control to set the "active" Presentation Unit System. This setting determine what units are display for quantity values (i.e. foot vs meter).
+ * @alpha
+ */
 export function UnitSystemSelector(props: UnitSystemSelectorProps) { // eslint-disable-line @typescript-eslint/naming-convention
   const label = React.useRef (UiFramework.translate("presentationUnitSystem.selector-label"));
   const { selectedUnitSystemKey, onUnitSystemSelected, availableUnitSystems } = props;

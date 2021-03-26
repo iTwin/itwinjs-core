@@ -46,7 +46,10 @@
         }
 
         .uicore-tabs-icon {
-          width: ( $uicore-icons-small + 10px );
+          width: ( $uicore-icons-small + 12px );
+          height: ( $uicore-icons-small + 12px );
+          display: flex;
+          align-items: center;
         }
       }
 
