@@ -38,6 +38,7 @@
     "@bentley/imodeljs-backend": "^2.15.0-dev.8",
     "@bentley/itwin-client": "^2.15.0-dev.8",
     "@bentley/imodelhub-client": "^2.15.0-dev.8",
+    "@bentley/presentation-common": "^2.15.0-dev.8",
     "ws": "^7.2.0",
     "js-base64": "^2.4.5"
   },
@@ -51,6 +52,7 @@
     "@bentley/imodeljs-common": "2.15.0-dev.8",
     "@bentley/itwin-client": "2.15.0-dev.8",
     "@bentley/imodelhub-client": "2.15.0-dev.8",
+    "@bentley/presentation-common": "2.15.0-dev.8",
     "@types/node": "10.14.1",
     "@types/mocha": "^5.2.5",
     "@types/chai": "^4.1.4",
