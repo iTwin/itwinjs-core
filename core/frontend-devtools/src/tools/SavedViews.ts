@@ -12,6 +12,7 @@ import {
   EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
+import { parseArgs } from "./parseArgs";
 
 /** Serialize a ViewState to JSON. The returned JSON can later be passed to [deserializeViewState] to reinstantiate the ViewState.
  * @beta
@@ -37,10 +38,33 @@ export async function deserializeViewState(props: ViewStateProps, iModel: IModel
 }
 
 /** Copies a JSON representation of the active viewport's view to the clipboard.
+ *  * Arguments:
+ *  * `quote`: format the JSON so it can be parsed directly by [ApplyViewTool].
  * @beta
  */
 export class SaveViewTool extends Tool {
+  private _quote = false;
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
   public static toolId = "SaveView";
+
+  public parse(inputArgs: string[]) {
+    const args = parseArgs(inputArgs);
+    function getArg(name: string): true | undefined {
+      return args.getBoolean(name) ? true : undefined;
+    }
+
+    this._quote = true === getArg("q");
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    if (this.parse(args))
+      return this.run();
+    else
+      return false;
+  }
 
   public run(): boolean {
     const vp = IModelApp.viewManager.selectedView;
@@ -50,8 +74,10 @@ export class SaveViewTool extends Tool {
     }
 
     try {
-      const json = serializeViewState(vp.view);
-      copyStringToClipboard(JSON.stringify(json));
+      let json = JSON.stringify(serializeViewState(vp.view));
+      if (this._quote)
+        json = `"${json.replace(/"/g, '""')}"`;
+      copyStringToClipboard(json);
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "JSON copied to clipboard"));
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
