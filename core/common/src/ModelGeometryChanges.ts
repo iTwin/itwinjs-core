@@ -9,20 +9,6 @@
 import { assert, CompressedId64Set, DbOpcode, GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 
-/** The set of elements that were changed for a Txn in an [interactive editing session]($docs/learning/InteractiveEditing.md)
- * @note this object holds lists of ids of elements that were modified somehow during the Txn. Any modifications to [[ElementAspect]]($backend)s will
- * cause its element to appear in these lists.
- * @alpha
- */
-export interface ElementsChanged {
-  /** The ids of elements that were inserted during this Txn */
-  inserted?: CompressedId64Set;
-  /** The ids of elements that were deleted during this Txn */
-  deleted?: CompressedId64Set;
-  /** The ids of elements that were modified during this Txn */
-  updated?: CompressedId64Set;
-}
-
 /** Compact wire format representing geometric changes to a set of elements as part of a [[ModelGeometryChangesProps]].
  * All of the elements belong to the same model.
  * The number of [[ids]] and [[ranges]] are guaranteed to be the same.

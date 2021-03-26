@@ -3,31 +3,49 @@ publish: false
 ---
 # NextVersion
 
-## New Settings UI Features
+## Txn monitoring
 
-### Add Settings Page to set Quantity Formatting Overrides
+[TxnManager]($backend) now has additional events for monitoring changes to the iModel resulting from [Txns]($docs/learning/InteractiveEditing.md), including:
+  * [TxnManager.onModelsChanged]($backend) for changes to the properties of [Model]($backend)s and
+  * [TxnManager.onModelGeometryChanged]($backend) for changes to the geometry contained within [GeometricModel]($backend)s.
 
-The [QuantityFormatSettingsPanel]($ui-framework) component has been added to the @bentley/ui-framework package to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This panel can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core). Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
+[BriefcaseConnection.txns]($frontend) now exposes the same events provided by `TxnManager`, but on the frontend, via [BriefcaseTxns]($frontend).
+
+## New settings UI features
+
+### Add Settings Tabs and Pages to UI
+
+#### Quantity Formatting Settings
+
+The [QuantityFormatSettingsPage]($ui-framework) component has been added to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+
+#### User Interface Settings
+
+The [UiSettingsPage]($ui-framework) component has been to provide the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+
+#### Registering Settings
+
+Below is an example of registering the `QuantityFormatSettingsPage` with the `SettingsManager`.
 
 ```ts
 // Sample settings provider that dynamically adds settings into the setting stage
-export class AppSettingsProvider implements SettingsProvider {
-  public readonly id = "AppSettingsProvider";
+export class AppSettingsTabsProvider implements SettingsTabsProvider {
+  public readonly id = "AppSettingsTabsProvider";
 
   public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
     return [
       getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
+      getUiSettingsManagerEntry(30, true),
     ];
   }
 
   public static initializeAppSettingProvider() {
-    UiFramework.settingsManager.addSettingsProvider(new AppSettingsProvider());
+    UiFramework.settingsManager.addSettingsProvider(new AppSettingsTabsProvider());
   }
 }
-
 ```
 
-The `QuantityFormatSettingsPanel` is marked as alpha in this release and is subject to minor modifications in future releases.
+The `QuantityFormatSettingsPage` is marked as alpha in this release and is subject to minor modifications in future releases.
 
 ## @bentley/imodeljs-quantity package
 
@@ -41,7 +59,23 @@ Shader precompilation will cease once all shader programs have been compiled, or
 
 To disable this functionality, set the `doIdleWork` property of the `RenderSystem.Options` object passed to `IModelApp.startup` to false.
 
+## Added NativeHost.settingsStore for storing user-level settings for native applications
+
+The @beta class `NativeHost` now has a member [NativeHost.settingsStore]($backend) that may be used by native applications to store user-level data in a file in the [[NativeHost.appSettingsCacheDir]($backend) directory. It uses the [NativeAppStorage]($backend) api to store and load key/value pairs. Note that these settings are stored in a local file that may be deleted by the user, so it should only be used for a local cache of values that may be restored elsewhere.
+
+## NativeApp is now @beta
+
+The class [NativeApp]($frontend) has been promoted from @alpha to @beta. `NativeApp` is relevant for both Electron and mobile applications. Please provide feedback if you have issues or concerns on its use.
+
 ## Breaking Api Changes
+
+### @bentley/ui-core package
+
+The beta class `SettingsProvider` was renamed to `SettingsTabsProvider`.
+
+### @bentley/ui-framework package
+
+The beta class `QuantityFormatSettingsPanel` was renamed to `QuantityFormatSettingsPage`.
 
 ### @bentley/imodeljs-quantity package
 

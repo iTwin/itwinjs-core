@@ -14,7 +14,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { CheckpointQuery, CheckpointV2Query } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, DownloadBriefcaseStatus, IModelError } from "@bentley/imodeljs-common";
-import { BlobDaemon, BlobDaemonCommandArg } from "@bentley/imodeljs-native";
+import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -271,17 +271,7 @@ export class V1CheckpointManager {
         if (dbChangeSetId !== checkpoint.mergedChangeSetId)
           throw new IModelError(IModelStatus.ValidationFailed, "ParentChangeSetId of the checkpoint was not correctly setup", Logger.logError, loggerCategory, () => ({ ...traceInfo, ...checkpoint, dbChangeSetId }));
 
-        const dbGuid = Guid.normalize(nativeDb.getDbGuid());
-        if (dbGuid !== Guid.normalize(requestedCkp.iModelId)) {
-          Logger.logWarning(loggerCategory, "iModelId is not properly setup in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, ...checkpoint, dbGuid }));
-          nativeDb.setDbGuid(Guid.normalize(requestedCkp.iModelId));
-          // Required to reset the ChangeSetId because setDbGuid clears the value.
-          nativeDb.saveLocalValue("ParentChangeSetId", dbChangeSetId);
-        }
-
-        const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
-        if (dbContextGuid !== Guid.normalize(requestedCkp.contextId))
-          throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly setup in the checkpoint", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbContextGuid }));
+        CheckpointManager.validateCheckpointGuids(requestedCkp, nativeDb);
 
         // Apply change sets if necessary
         if (dbChangeSetId !== requestedCkp.changeSetId) {
@@ -290,6 +280,7 @@ export class V1CheckpointManager {
           requestContext.enter();
         }
       } finally {
+        db.saveChanges();
         db.close();
       }
 
@@ -341,6 +332,27 @@ export class CheckpointManager {
     }
 
     return V1CheckpointManager.downloadCheckpoint(request);
+  }
+
+  /** checks a file's dbGuid & contextId for consistency, and updates the dbGuid when possible */
+  public static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb) {
+    const traceInfo = { contextId: checkpoint.contextId, iModelId: checkpoint.iModelId };
+
+    const dbChangeSetId = nativeDb.getParentChangeSetId();
+    const dbGuid = Guid.normalize(nativeDb.getDbGuid());
+    if (dbGuid !== Guid.normalize(checkpoint.iModelId)) {
+      if (nativeDb.isReadonly())
+        throw new IModelError(IModelStatus.ValidationFailed, "iModelId is not properly setup in the checkpoint", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbGuid }));
+
+      Logger.logWarning(loggerCategory, "iModelId is not properly setup in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, dbGuid }));
+      nativeDb.setDbGuid(Guid.normalize(checkpoint.iModelId));
+      // Required to reset the ChangeSetId because setDbGuid clears the value.
+      nativeDb.saveLocalValue("ParentChangeSetId", dbChangeSetId);
+    }
+
+    const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
+    if (dbContextGuid !== Guid.normalize(checkpoint.contextId))
+      throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly setup in the checkpoint", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbContextGuid }));
   }
 
   /** @returns true if the file is the checkpoint requested */

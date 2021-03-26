@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipVector, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -88,6 +88,8 @@ export class TileDrawArgs {
   public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
   /** If defined, tiles will be culled if they do not intersect the clip vector. */
   public intersectionClip?: ClipVector;
+  /** @internal */
+  public readonly pixelSizeScaleFactor;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -192,6 +194,34 @@ export class TileDrawArgs {
     return this.viewingSpace.worldToViewMap;
   }
 
+  private computePixelSizeScaleFactor(): number {
+    // Check to see if a model display transform with non-uniform scaling is being used.
+    const tf = this.context.viewport.view.getModelDisplayTransform(this.tree.modelId, Transform.createIdentity());
+    const scale = [];
+    scale[0] = tf.matrix.getColumn(0).magnitude();
+    scale[1] = tf.matrix.getColumn(1).magnitude();
+    scale[2] = tf.matrix.getColumn(2).magnitude();
+    if (Math.abs(scale[0] - scale[1]) <= Geometry.smallMetricDistance && Math.abs(scale[0] - scale[2]) <= Geometry.smallMetricDistance)
+      return 1;
+    // If the component with the largest scale is not the same as the component with the largest tile range use it to adjust the pixel size.
+    const rangeDiag = this.tree.range.diagonal();
+    let maxS = 0;
+    let maxR = 0;
+    if (scale[0] > scale[1]) {
+      maxS = (scale[0] > scale[2] ? 0 : 2);
+    } else {
+      maxS = (scale[1] > scale[2] ? 1 : 2);
+    }
+    if (rangeDiag.x > rangeDiag.y) {
+      maxR = (rangeDiag.x > rangeDiag.z ? 0 : 2);
+    } else {
+      maxR = (rangeDiag.y > rangeDiag.z ? 1 : 2);
+    }
+    if (maxS !== maxR)
+      return scale[maxS];
+    return 1;
+  }
+
   /** Constructor */
   public constructor(params: TileDrawArgParams) {
     const { location, tree, context, now, viewFlagOverrides, clipVolume, parentsAndChildrenExclusive, symbologyOverrides } = params;
@@ -222,6 +252,8 @@ export class TileDrawArgs {
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
     if (context.viewport.view.isCameraEnabled())
       this._nearFrontCenter = context.viewport.getFrustum(CoordSystem.World).frontCenter;
+
+    this.pixelSizeScaleFactor = this.computePixelSizeScaleFactor();
   }
 
   /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.

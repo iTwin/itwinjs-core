@@ -225,8 +225,9 @@ internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;class NativeAppAuthorizationBackend 
+beta;NativeAppStorage
 beta;NativeHost
-beta;NativeHostOpts = IpcHostOpts
+beta;NativeHostOpts 
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -263,6 +264,7 @@ public;SectionDrawing
 beta;SectionDrawingLocation 
 public;SectionDrawingModel 
 alpha;SectionLocation 
+internal;setMaxEntitiesPerEvent(max: number): number
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
@@ -303,7 +305,7 @@ public;Texture
 internal;TextureCreateProps 
 public;TitleText 
 public;TxnAction
-beta;TxnElementsChanged
+beta;TxnChangedEntities
 public;TxnIdString = string
 beta;TxnManager
 public;class TypeDefinitionElement 
