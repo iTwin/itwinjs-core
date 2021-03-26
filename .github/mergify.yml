@@ -26,4 +26,4 @@ pull_request_rules:
       merge:
         method: merge
         strict: true
-        commit_message: Update @bentley/imodeljs-native
+        commit_message: "Update @bentley/imodeljs-native"
