@@ -9,10 +9,12 @@ import { BriefcaseManager } from "../../BriefcaseManager";
 import { RpcRegistry } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Schemas } from "../../Schema";
+import sinon = require("sinon");
 
 describe("IModelHost", () => {
 
   afterEach(async () => {
+    sinon.restore();
     // Restore the backend to the initial state.
     await IModelTestUtils.shutdownBackend();
     await IModelTestUtils.startBackend();
@@ -35,6 +37,34 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("BisCore")).to.exist;
     expect(Schemas.getRegisteredSchema("Generic")).to.exist;
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
+  });
+
+  it("should raise onAfterStartup events", async () => {
+    await IModelTestUtils.shutdownBackend();
+
+    const eventHandler = sinon.spy();
+    IModelHost.onAfterStartup.addOnce(eventHandler);
+    const promise = IModelHost.startup();
+    expect(eventHandler.called).to.be.false;
+    await promise;
+    expect(eventHandler.calledOnce).to.be.true;
+  });
+
+  it("should raise onBeforeShutdown events", async () => {
+    const eventHandler = sinon.spy();
+    IModelHost.onBeforeShutdown.addOnce(eventHandler);
+    await IModelTestUtils.shutdownBackend();
+    expect(eventHandler.calledOnce).to.be.true;
+  });
+
+  it("should auto-shutdown on process beforeExit event", async () => {
+    expect(IModelHost.isValid).to.be.true;
+    const eventHandler = sinon.spy();
+    IModelHost.onBeforeShutdown.addOnce(eventHandler);
+    process.emit("beforeExit", 0);
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(eventHandler.calledOnce).to.be.true;
+    expect(IModelHost.isValid).to.be.false;
   });
 
   it("should set the briefcase cache directory to expected locations", async () => {
