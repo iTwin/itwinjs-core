@@ -131,6 +131,9 @@ export interface LocalBriefcaseProps {
    * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
    */
   changeSetId: string;
+
+  /** Size of the briefcase file in bytes  */
+  fileSize: number;
 }
 
 /** Properties for downloading a briefcase to a local file, from iModelHub.
