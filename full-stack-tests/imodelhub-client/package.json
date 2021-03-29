@@ -23,7 +23,7 @@
     "pretest": "npm run copy:test-assets",
     "test": "npm run pretest && betools test --offline=\"mock\" --grep=\"#integration\" --invert --testDir ./lib",
     "test:integration": "npm run pretest && betools test --grep=\"#unit\" --invert --testDir ./lib",
-    "test:imodel-bank": "npm run pretest && betools test --grep=\"#iModelBank\" --testDir ./lib"
+    "test:imodel-bank": "npm run pretest && npm run copy:config && betools test --grep=\"#iModelBank\" --testDir ./lib"
   },
   "keywords": [
     "Bentley",
