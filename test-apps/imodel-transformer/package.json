@@ -9,7 +9,7 @@
     "compile": "npm run build",
     "cover": "",
     "docs": "",
-    "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint --max-warnings 0 \"./src/**/*.ts\" 1>&2",
     "start": "node ./lib/Main.js",
     "test": "betools test"
   },
