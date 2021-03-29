@@ -40,7 +40,9 @@ public;AppNotificationManager
 beta;AppUiSettings 
 beta;areNoFeatureOverridesActive(): boolean
 public;Backstage 
+deprecated;Backstage 
 beta;BackstageActionItem 
+deprecated;BackstageActionItem 
 public;BackstageAppButton(props: BackstageAppButtonProps): JSX.Element
 public;BackstageAppButtonProps
 public;BackstageComposer(props: BackstageComposerProps): JSX.Element
@@ -53,13 +55,19 @@ internal;BackstageComposerStageLauncher({ item }: BackstageComposerStageLauncher
 internal;BackstageComposerStageLauncherProps
 public;BackstageEvent 
 public;BackstageEventArgs
+deprecated;BackstageEventArgs
 public;BackstageItemProps 
+deprecated;BackstageItemProps 
 public;BackstageItemState
+deprecated;BackstageItemState
 beta;BackstageItemType
+deprecated;BackstageItemType
 beta;BackstageItemUtilities
 beta;BackstageManager
 public;BackstageProps 
+deprecated;BackstageProps 
 beta;BackstageStageLauncher 
+deprecated;BackstageStageLauncher 
 beta;BackstageToggledArgs
 public;BaseItemState
 beta;BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element
@@ -89,6 +97,7 @@ beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 internal;clearKeyinPaletteHistory(): void
 public;COLOR_THEME_DEFAULT = ColorTheme.Light
+deprecated;COLOR_THEME_DEFAULT = ColorTheme.Light
 public;ColorTheme
 public;CombinedReducerState
 public;combineReducers: CombineReducersFunction
@@ -163,7 +172,9 @@ public;DeepReadonlyArray
 public;DeepReadonlyObject
 beta;DefaultDialogGridContainer({ componentGenerator, isToolSettings }:
 beta;DefaultNavigationProps
+deprecated;DefaultNavigationProps
 beta;DefaultNavigationWidget 
+deprecated;DefaultNavigationWidget 
 internal;DefaultToolSettingsProvider 
 alpha;DefaultViewOverlay 
 public;DialogChangedEvent 
@@ -175,11 +186,17 @@ internal;DialogRendererBase
 internal;DialogRendererProps
 internal;DockedStatusBarItem(props: StatusBarItemProps): JSX.Element
 beta;DragDropLayerChangedEvent 
+deprecated;DragDropLayerChangedEvent 
 beta;DragDropLayerChangedEventArgs
+deprecated;DragDropLayerChangedEventArgs
 beta;DragDropLayerManager
+deprecated;DragDropLayerManager
 beta;DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass
+deprecated;DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass
 beta;DragDropLayerRendererComponent 
+deprecated;DragDropLayerRendererComponent 
 beta;DragDropLayerRendererProps 
+deprecated;DragDropLayerRendererProps 
 beta;DrawingNavigationAidControl 
 public;ElementTooltip 
 public;ElementTooltipChangedEvent 
@@ -228,8 +245,10 @@ public;FrontstageReadyEvent
 public;FrontstageReadyEventArgs
 internal;FrontstageRuntimeProps
 public;FunctionKey
+deprecated;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
+deprecated;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
 internal;getBadgeClassName(badgeType: BadgeType | undefined): "uifw-badge-new" | "uifw-badge-tp" | undefined
 alpha;getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise
 internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps
@@ -261,9 +280,11 @@ alpha;HideIsolateEmphasizeManager
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
 beta;IModelAppUiSettings 
+deprecated;IModelAppUiSettings 
 beta;IModelConnectedCategoryTree: import("react-redux").ConnectedComponent
 alpha;IModelConnectedModelsTree: import("react-redux").ConnectedComponent
 beta;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
+deprecated;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
 beta;IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewport: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
@@ -363,6 +384,7 @@ public;ModelessDialogManager
 public;ModelessDialogProps 
 public;ModelessDialogRenderer 
 internal;ModelSelectorWidget 
+deprecated;ModelSelectorWidget 
 internal;ModelSelectorWidgetControl 
 public;ModelsTree(props: ModelsTreeProps): JSX.Element
 beta;ModelsTreeNodeType
@@ -379,11 +401,14 @@ public;NavigationAidControl
 public;NavigationAidHost(props: NavigationAidHostProps): JSX.Element
 public;NavigationAidHostProps
 public;NavigationWidget 
+deprecated;NavigationWidget 
 public;NavigationWidgetComposer(props: NavigationWidgetComposerProps): JSX.Element
 public;NavigationWidgetComposerProps 
 public;NavigationWidgetDef 
+deprecated;NavigationWidgetDef 
 public;NavigationWidgetProps 
 public;NavigationWidgetPropsEx 
+deprecated;NavigationWidgetPropsEx 
 public;NestedFrontstage
 public;NineZoneChangeHandler
 public;NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessageDetails
@@ -399,9 +424,13 @@ public;PointerMessageChangedEvent
 public;PointerMessageChangedEventArgs
 public;PointerMessageProps 
 public;PopupButton 
+deprecated;PopupButton 
 public;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode
+deprecated;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode
 public;PopupButtonChildrenRenderPropArgs
+deprecated;PopupButtonChildrenRenderPropArgs
 public;PopupButtonProps 
+deprecated;PopupButtonProps 
 alpha;PopupContentType = HTMLElement | ReactContent
 alpha;PopupInfo
 alpha;PopupManager
@@ -418,11 +447,13 @@ internal;ProjectReadStatus
 internal;ProjectScope
 internal;ProjectServices
 public;PromptField: import("react-redux").ConnectedComponent
+deprecated;PromptField: import("react-redux").ConnectedComponent
 public;PropsHelper
 beta;QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element
 beta;QuantityFormatterSettingsOptions
 alpha;ReactContent
 public;ReactMessage = ReactMessage_2
+deprecated;ReactMessage = ReactMessage_2
 public;ReactNotifyMessageDetails
 public;Reducer
 public;ReducerActions
@@ -481,6 +512,7 @@ alpha;SolarTimelineDataProvider
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
 public;SpatialContainmentTreeProps
 public;SpecialKey
+deprecated;SpecialKey
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
 public;StagePanel 
@@ -515,6 +547,7 @@ public;StatusBarFieldId = string | null
 public;StatusBarItem 
 internal;StatusBarItemProps 
 beta;StatusBarItemsManager 
+deprecated;StatusBarItemsManager 
 public;StatusBarItemUtilities
 public;StatusBarLeftSection(props: CommonDivProps): JSX.Element
 public;StatusBarProps 
@@ -588,11 +621,14 @@ internal;ToolSettingsZone
 internal;ToolSettingsZoneProps 
 public;ToolUiProvider 
 public;ToolWidget 
+deprecated;ToolWidget 
 public;ToolWidgetComposer(props: ToolWidgetComposerProps): JSX.Element
 public;ToolWidgetComposerProps 
 public;ToolWidgetDef 
+deprecated;ToolWidgetDef 
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
+deprecated;ToolWidgetPropsEx 
 internal;toPanelSide(location: StagePanelLocation_2): PanelSide
 internal;TrackingTime
 internal;UiActivityEvent 
@@ -705,6 +741,7 @@ internal;WidgetStackTabProps
 internal;WidgetStackTabs 
 internal;WidgetStackTabsProps
 public;WidgetState
+deprecated;WidgetState
 public;WidgetStateChangedEvent 
 public;WidgetStateChangedEventArgs
 public;WidgetStateFunc = (state: Readonly

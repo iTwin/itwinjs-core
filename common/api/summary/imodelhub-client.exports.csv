@@ -55,6 +55,7 @@ public;EventSAS
 public;EventSubscription 
 public;EventSubscriptionHandler
 internal;EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent"
+deprecated;EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent"
 internal;GetEventOperationType
 internal;GlobalCheckpointCreatedEvent 
 internal;GlobalEventHandler 

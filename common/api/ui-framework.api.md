@@ -7374,7 +7374,7 @@ export interface WidgetStackTabsProps {
     widgetTabs: WidgetTabs;
 }
 
-// @public
+// @public @deprecated
 export enum WidgetState {
     Closed = 1,
     Floating = 3,
