@@ -140,7 +140,7 @@ public;CubeNavigationAidControl
 public;CursorDirection
 public;CursorDirectionParts
 public;CursorInformation
-beta;CursorMenuData
+public;CursorMenuData
 public;CursorPopup 
 public;CursorPopupContent(props: CommonDivProps): JSX.Element
 internal;CursorPopupFadeOutEvent 
@@ -157,7 +157,7 @@ internal;CursorPrompt
 public;CursorUpdatedEvent 
 public;CursorUpdatedEventArgs
 public;CustomItemDef 
-beta;CustomItemProps 
+public;CustomItemProps 
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
@@ -335,7 +335,7 @@ alpha;MenuButtonPopupProps
 alpha;MenuButtonProps 
 alpha;MenuItem 
 alpha;MenuItemHelpers
-beta;MenuItemProps = AbstractMenuItemProps
+public;MenuItemProps = AbstractMenuItemProps
 public;MessageAddedEvent 
 public;MessageAddedEventArgs
 public;MessageCenterField 
@@ -412,7 +412,7 @@ alpha;PopupsChangedEventArgs
 alpha;PositionPopup 
 alpha;PositionPopupContent(props: CommonDivProps): JSX.Element
 alpha;PositionPopupProps 
-beta;PresentationSelectionScope
+public;PresentationSelectionScope
 internal;ProjectInfo
 internal;ProjectReadStatus
 internal;ProjectScope
@@ -454,10 +454,10 @@ public;SelectionInfoField: import("react-redux").ConnectedComponent
 public;SelectionScopeField: import("react-redux").ConnectedComponent
 public;SeparatorBackstageItem 
 public;SessionState
-beta;SessionStateActionId
-beta;SessionStateActions:
+public;SessionStateActionId
+public;SessionStateActions:
 beta;SessionStateActionsProps
-beta;SessionStateActionsUnion = ActionsUnion
+public;SessionStateActionsUnion = ActionsUnion
 beta;sessionStateMapDispatchToProps:
 public;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
 internal;setPanelSize: (base:

@@ -103,7 +103,7 @@ export interface SessionStateActionsProps {
 }
 
 /** An object with a function that creates each SessionStateReducer that can be handled by our reducer.
- * @beta
+ * @public
  */
 export const SessionStateActions = {  // eslint-disable-line @typescript-eslint/naming-convention
   setUserInfo:
