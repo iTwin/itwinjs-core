@@ -18,7 +18,7 @@ import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
 import { UiFramework } from "../UiFramework";
 
 /** Enum for StagePanel state.
- * @beta
+ * @public
  */
 export enum StagePanelState {
   Off,
@@ -51,7 +51,7 @@ export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { 
 
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
- * @beta
+ * @public
  */
 export class StagePanelDef extends WidgetHost {
   private _panelState = StagePanelState.Open;

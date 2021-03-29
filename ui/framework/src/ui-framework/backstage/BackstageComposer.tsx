@@ -96,7 +96,7 @@ export const useGroupedItems = (items: ReadonlyArray<BackstageItem>): GroupedIte
 };
 
 /** Props of [[BackstageComposer]] component.
- * @beta
+ * @public
  */
 export interface BackstageComposerProps extends CommonProps {
   /** React node for an optional header item */
@@ -108,7 +108,7 @@ export interface BackstageComposerProps extends CommonProps {
 }
 
 /** Backstage component composed from [[BackstageManager]] items.
- * @beta
+ * @public
  */
 export function BackstageComposer(props: BackstageComposerProps) {
   const [defaultItemsManager, setDefaultItemsManager] = React.useState(new BackstageItemsManager(props.items));
