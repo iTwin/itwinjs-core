@@ -134,7 +134,7 @@ describe("Background map", () => {
         }
 
         expect(actualPixel.type).to.equal(Pixel.GeometryType.Surface);
-        //  With the unified reality/terrain mesh, a feature table is present, so this test removed.... expect(actualPixel.featureTable).not.to.be.undefined;
+        expect(actualPixel.featureTable).not.to.be.undefined;
         expect(Id64.isTransient(actualPixel.featureTable!.modelId)).to.equal("map" === expectedPixel);
       };
 
