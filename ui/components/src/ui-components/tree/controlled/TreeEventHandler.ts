@@ -6,12 +6,11 @@
  * @module Tree
  */
 
-import { from } from "rxjs/internal/observable/from";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { Subject } from "rxjs/internal/Subject";
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { TreeModelMutator } from "./internal/TreeModelMutator";
-import { Subscription } from "./Observable";
+import { Subscription, toRxjsObservable } from "./Observable";
 import {
   TreeCheckboxStateChangeEventArgs, TreeEvents, TreeNodeEventArgs, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "./TreeEvents";
@@ -68,7 +67,7 @@ export class TreeEventHandler implements TreeEvents, IDisposable {
 
   /** Expands node and starts loading children. */
   public onNodeExpanded({ nodeId }: TreeNodeEventArgs) {
-    from(this._modelMutator.expandNode(nodeId)).pipe(takeUntil(this._disposed)).subscribe();
+    toRxjsObservable(this._modelMutator.expandNode(nodeId)).pipe(takeUntil(this._disposed)).subscribe();
   }
 
   /** Collapses node */
@@ -78,7 +77,7 @@ export class TreeEventHandler implements TreeEvents, IDisposable {
 
   /** Selects and deselects nodes until event is handled, handler is disposed or selection replaced event occurs. */
   public onSelectionModified({ modifications }: TreeSelectionModificationEventArgs): Subscription | undefined {
-    return from(modifications)
+    return toRxjsObservable(modifications)
       .pipe(
         takeUntil(this._disposed),
         takeUntil(this._selectionReplaced),
@@ -95,7 +94,7 @@ export class TreeEventHandler implements TreeEvents, IDisposable {
     this._selectionReplaced.next();
 
     let firstEmission = true;
-    return from(replacements)
+    return toRxjsObservable(replacements)
       .pipe(
         takeUntil(this._disposed),
         takeUntil(this._selectionReplaced),
