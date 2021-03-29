@@ -1,0 +1,9038 @@
+[
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 3.9409469568
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 3940946.9568
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 3940946956800
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 39409.46956799999
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 394.0946956799999
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 0.0000039409469568
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 0.039409469568
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 0.00039409469568
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 6108.4800000000005
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 0.04242
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 4.713333333333333
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 0.0000015216081267217631
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 0.009738292011019284
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 0.0009738292011019284
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 6108.455566104434
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 42.41983032016968
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 4.713314480018854
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 0.0000015216020402953428
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 0.009738253057890193
+  },
+  {
+    "from": "SQ_FT",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 0.0009738253057890192
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 3940.9469568
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 3940946956800000
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 3940946956.8
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 39409469.568
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 394094.69568
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 0.003940946956799999
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 39.409469568
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 0.39409469568
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 6108480
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 42420
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 42.42
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 4713.333333333334
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 0.001521608126721763
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 9.738292011019285
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 0.9738292011019284
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 6108455.5661044335
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 42419.830320169676
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 4713.314480018853
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 0.0015216020402953425
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 9.738253057890192
+  },
+  {
+    "from": "THOUSAND_SQ_FT",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 0.9738253057890192
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 35.468522611199994
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 35468522611200
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 35468522.6112
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 354685.22611199995
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 3546.8522611199987
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 0.000035468522611199996
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 0.35468522611199993
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 0.0035468522611199994
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 54976.32
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 381.78000000000003
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 0.38178
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 0.00001369447314049587
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 0.08764462809917356
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 0.008764462809917356
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 54976.1000949399
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 381.77847288152714
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 42.41983032016968
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 0.000013694418362658081
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 0.08764427752101174
+  },
+  {
+    "from": "SQ_YRD",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 0.008764427752101173
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 109867295.64045312
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 109867295640453100000
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 109867295640453.12
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 1098672956404.5311
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 10986729564.04531
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 109.86729564045312
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 1098672.9564045311
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 10986.72956404531
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 170294648832
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 1182601728
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 1182601.7280000001
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 131400192
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 271488
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 27148.800000000003
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 170293967654.08585
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 1182596997.5978184
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 131399666.39975758
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 42.41983032016968
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 271486.9140490859
+  },
+  {
+    "from": "SQ_MILE",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 27148.691404908597
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 17166.7649438208
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 17166764943820800
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 17166764943.820799
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 171667649.43820798
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 1716676.49438208
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 0.0171667649438208
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 171.66764943820803
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 1.71667649438208
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 26608538.880000003
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 184781.52000000002
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 184.78152
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 20531.280000000002
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 0.006628125
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 4.242
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 26608432.445950914
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 184780.7808746591
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 20531.197874962123
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 0.006628098487526513
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 42.41983032016968
+  },
+  {
+    "from": "SQ_CHAIN",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 4.241983032016969
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 171667.649438208
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 171667649438208000
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 171667649438.20798
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 1716676494.3820798
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 17166764.943820797
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 0.171667649438208
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 1716.67649438208
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 17.166764943820798
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 266085388.8
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 1847815.2000000002
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 1847.8152000000002
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 205312.80000000002
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 0.06628125
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 424.20000000000005
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 42.42
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 266084324.45950913
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 1847807.8087465912
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 205311.97874962122
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 0.06628098487526513
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 424.1983032016967
+  },
+  {
+    "from": "ACRE",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 42.41983032016967
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 0.027367796671077214
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 27367796671.077213
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 27367.796671077216
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 273.6779667107721
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 2.736779667107721
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 2.7367796671077217e-8
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 0.00027367796671077214
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 0.0000027367796671077212
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 42.42016968050905
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 0.2945845116702017
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 0.0002945845116702017
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 0.03273161240780019
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 1.0566765369253676e-8
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 0.00006762729836322353
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 0.000006762729836322352
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 0.2945833333333333
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 0.03273148148148148
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 1.0566723102234465e-8
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 0.00006762702785430058
+  },
+  {
+    "from": "SQ_US_SURVEY_IN",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 0.000006762702785430058
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 3.940962720635119
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 3940962720635.119
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 3940962.720635119
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 39409.627206351186
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 394.09627206351183
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 0.000003940962720635118
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 0.03940962720635119
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 0.0003940962720635119
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 6108.504433993302
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 42.42016968050905
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 0.042420169680509046
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 4.7133521867232275
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 0.0000015216142131725291
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 0.009738330964304188
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 0.0009738330964304188
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 6108.4800000000005
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 4.713333333333333
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 0.0000015216081267217631
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 0.009738292011019284
+  },
+  {
+    "from": "SQ_US_SURVEY_FT",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 0.0009738292011019284
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 35.46866448571607
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 35468664485716.07
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 35468664.485716075
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 354686.6448571607
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 3546.8664485716063
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 0.00003546866448571607
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 0.35468664485716067
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 0.0035468664485716075
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 54976.53990593973
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 381.7815271245815
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 0.38178152712458147
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 42.42016968050905
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 0.000013694527918552765
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 0.08764497867873769
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 0.008764497867873769
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 54976.32
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 381.78000000000003
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 0.00001369447314049587
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 0.08764462809917356
+  },
+  {
+    "from": "SQ_US_SURVEY_YRD",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 0.008764462809917356
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 109867735.11095409
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 109867735110954090000
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 109867735110954.11
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 1098677351109.5408
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 10986773511.095407
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 109.86773511095409
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 1098677.351109541
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 10986.773511095409
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 170295330012.6389
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 1182606458.4211035
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 1182606.4584211034
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 131400717.60234481
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 42.42016968050905
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 271489.0859552579
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 27148.908595525787
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 170294648832
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 1182601728
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 131400192
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 271488
+  },
+  {
+    "from": "SQ_US_SURVEY_MILE",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 27148.800000000003
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 17166.83361108658
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 17166833611086578
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 17166833611.086578
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 171668336.11086577
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 1716683.3611086574
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 0.017166833611086577
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 171.66833611086577
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 1.7166833611086576
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 26608645.314474825
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 184782.25912829742
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 184.78225912829743
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 20531.36212536638
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 0.006628151512579538
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 42.42016968050905
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 4.242016968050904
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 26608538.880000003
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 184781.52000000002
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 20531.280000000002
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 0.006628125
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_US_SURVEY_CHAIN",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 4.242
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_M",
+    "expect": 171668.33611086576
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_UM",
+    "expect": 171668336110865800
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_MM",
+    "expect": 171668336110.86578
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_CM",
+    "expect": 1716683361.1086576
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_DM",
+    "expect": 17166833.611086573
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_KM",
+    "expect": 0.17166833611086577
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "ARE",
+    "expect": 1716.6833611086574
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "HECTARE",
+    "expect": 17.166833611086577
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_IN",
+    "expect": 266086453.14474824
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_FT",
+    "expect": 1847822.5912829742
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "THOUSAND_SQ_FT",
+    "expect": 1847.8225912829741
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_YRD",
+    "expect": 205313.62125366376
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_MILE",
+    "expect": 0.06628151512579537
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_CHAIN",
+    "expect": 424.2016968050905
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "ACRE",
+    "expect": 42.420169680509055
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_IN",
+    "expect": 266085388.8
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_FT",
+    "expect": 1847815.2000000002
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_YRD",
+    "expect": 205312.80000000002
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_MILE",
+    "expect": 0.06628125
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "SQ_US_SURVEY_CHAIN",
+    "expect": 424.20000000000005
+  },
+  {
+    "from": "US_SURVEY_ACRE",
+    "input": 42.42,
+    "to": "US_SURVEY_ACRE",
+    "expect": 42.42
+  },
+  {
+    "from": "MM_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "MM_TO_THE_FOURTH",
+    "expect": 42.42
+  },
+  {
+    "from": "MM_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "M_TO_THE_FOURTH",
+    "expect": 4.242e-11
+  },
+  {
+    "from": "MM_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "CM_TO_THE_FOURTH",
+    "expect": 0.004242
+  },
+  {
+    "from": "MM_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "IN_TO_THE_FOURTH",
+    "expect": 0.00010191445765742299
+  },
+  {
+    "from": "MM_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "FT_TO_THE_FOURTH",
+    "expect": 4.914856175608747e-9
+  },
+  {
+    "from": "M_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "MM_TO_THE_FOURTH",
+    "expect": 42420000000000
+  },
+  {
+    "from": "M_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "M_TO_THE_FOURTH",
+    "expect": 42.42
+  },
+  {
+    "from": "M_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "CM_TO_THE_FOURTH",
+    "expect": 4242000000
+  },
+  {
+    "from": "M_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "IN_TO_THE_FOURTH",
+    "expect": 101914457.65742299
+  },
+  {
+    "from": "M_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "FT_TO_THE_FOURTH",
+    "expect": 4914.856175608747
+  },
+  {
+    "from": "CM_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "MM_TO_THE_FOURTH",
+    "expect": 424200
+  },
+  {
+    "from": "CM_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "M_TO_THE_FOURTH",
+    "expect": 4.242e-7
+  },
+  {
+    "from": "CM_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "CM_TO_THE_FOURTH",
+    "expect": 42.42
+  },
+  {
+    "from": "CM_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "IN_TO_THE_FOURTH",
+    "expect": 1.0191445765742297
+  },
+  {
+    "from": "CM_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "FT_TO_THE_FOURTH",
+    "expect": 0.00004914856175608747
+  },
+  {
+    "from": "IN_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "MM_TO_THE_FOURTH",
+    "expect": 17656537.073952
+  },
+  {
+    "from": "IN_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "M_TO_THE_FOURTH",
+    "expect": 0.000017656537073951998
+  },
+  {
+    "from": "IN_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "CM_TO_THE_FOURTH",
+    "expect": 1765.6537073952
+  },
+  {
+    "from": "IN_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "IN_TO_THE_FOURTH",
+    "expect": 42.42
+  },
+  {
+    "from": "IN_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "FT_TO_THE_FOURTH",
+    "expect": 0.0020457175925925925
+  },
+  {
+    "from": "FT_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "MM_TO_THE_FOURTH",
+    "expect": 366125952765.4687
+  },
+  {
+    "from": "FT_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "M_TO_THE_FOURTH",
+    "expect": 0.3661259527654686
+  },
+  {
+    "from": "FT_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "CM_TO_THE_FOURTH",
+    "expect": 36612595.27654686
+  },
+  {
+    "from": "FT_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "IN_TO_THE_FOURTH",
+    "expect": 879621.12
+  },
+  {
+    "from": "FT_TO_THE_FOURTH",
+    "input": 42.42,
+    "to": "FT_TO_THE_FOURTH",
+    "expect": 42.42
+  },
+  {
+    "from": "PERSON",
+    "input": 42.42,
+    "to": "PERSON",
+    "expect": 42.42
+  },
+  {
+    "from": "PERSON",
+    "input": 42.42,
+    "to": "HUNDRED_PERSON",
+    "expect": 0.4242
+  },
+  {
+    "from": "PERSON",
+    "input": 42.42,
+    "to": "THOUSAND_PERSON",
+    "expect": 0.04242
+  },
+  {
+    "from": "HUNDRED_PERSON",
+    "input": 42.42,
+    "to": "PERSON",
+    "expect": 4242
+  },
+  {
+    "from": "HUNDRED_PERSON",
+    "input": 42.42,
+    "to": "HUNDRED_PERSON",
+    "expect": 42.42
+  },
+  {
+    "from": "HUNDRED_PERSON",
+    "input": 42.42,
+    "to": "THOUSAND_PERSON",
+    "expect": 4.242
+  },
+  {
+    "from": "THOUSAND_PERSON",
+    "input": 42.42,
+    "to": "PERSON",
+    "expect": 42420
+  },
+  {
+    "from": "THOUSAND_PERSON",
+    "input": 42.42,
+    "to": "HUNDRED_PERSON",
+    "expect": 424.20000000000005
+  },
+  {
+    "from": "THOUSAND_PERSON",
+    "input": 42.42,
+    "to": "THOUSAND_PERSON",
+    "expect": 42.42
+  },
+  {
+    "from": "US_DOLLAR",
+    "input": 42.42,
+    "to": "US_DOLLAR",
+    "expect": 42.42
+  },
+  {
+    "from": "A",
+    "input": 42.42,
+    "to": "A",
+    "expect": 42.42
+  },
+  {
+    "from": "A",
+    "input": 42.42,
+    "to": "KILOAMPERE",
+    "expect": 0.04242
+  },
+  {
+    "from": "A",
+    "input": 42.42,
+    "to": "MILLIAMPERE",
+    "expect": 42420
+  },
+  {
+    "from": "A",
+    "input": 42.42,
+    "to": "MICROAMPERE",
+    "expect": 42420000
+  },
+  {
+    "from": "KILOAMPERE",
+    "input": 42.42,
+    "to": "A",
+    "expect": 42420
+  },
+  {
+    "from": "KILOAMPERE",
+    "input": 42.42,
+    "to": "KILOAMPERE",
+    "expect": 42.42
+  },
+  {
+    "from": "KILOAMPERE",
+    "input": 42.42,
+    "to": "MILLIAMPERE",
+    "expect": 42420000
+  },
+  {
+    "from": "KILOAMPERE",
+    "input": 42.42,
+    "to": "MICROAMPERE",
+    "expect": 42420000000
+  },
+  {
+    "from": "MILLIAMPERE",
+    "input": 42.42,
+    "to": "A",
+    "expect": 0.04242
+  },
+  {
+    "from": "MILLIAMPERE",
+    "input": 42.42,
+    "to": "KILOAMPERE",
+    "expect": 0.00004242
+  },
+  {
+    "from": "MILLIAMPERE",
+    "input": 42.42,
+    "to": "MILLIAMPERE",
+    "expect": 42.42
+  },
+  {
+    "from": "MILLIAMPERE",
+    "input": 42.42,
+    "to": "MICROAMPERE",
+    "expect": 42420.00000000001
+  },
+  {
+    "from": "MICROAMPERE",
+    "input": 42.42,
+    "to": "A",
+    "expect": 0.00004242
+  },
+  {
+    "from": "MICROAMPERE",
+    "input": 42.42,
+    "to": "KILOAMPERE",
+    "expect": 4.242e-8
+  },
+  {
+    "from": "MICROAMPERE",
+    "input": 42.42,
+    "to": "MILLIAMPERE",
+    "expect": 0.04242
+  },
+  {
+    "from": "MICROAMPERE",
+    "input": 42.42,
+    "to": "MICROAMPERE",
+    "expect": 42.42
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 42.42
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 0.00004242000000000001
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 0.04242000000000001
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 0.04242000000000001
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 42420000.000000015
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 42420.000000000015
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 2.648194087640054
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 0.35401205685466003
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 0.42515075330742463
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 0.00153251972664355
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 354012.05685466004
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 0.08230838848257951
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 0.002648194087640054
+  },
+  {
+    "from": "KG_PER_CUB_M",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 0.001324097043820027
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 42420000
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 42.42
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 42420.00000000001
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 42420
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 42420000000000.01
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 42420000000.00001
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 2648194.087640054
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 354012.05685466
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 425150.75330742454
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 1532.51972664355
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 354012056854.66
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 82308.38848257951
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 2648.1940876400536
+  },
+  {
+    "from": "KG_PER_CUB_CM",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 1324.0970438200268
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 42419.99999999999
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 0.04242
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 42.42
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 42.42
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 42420000000
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 42420000
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 2648.1940876400536
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 354.01205685465993
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 425.1507533074245
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 1.5325197266435495
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 354012056.85466
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 82.3083884825795
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 2.648194087640054
+  },
+  {
+    "from": "KG_PER_LITRE",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 1.324097043820027
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 42420
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 0.04242
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 42.42000000000001
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 42.42
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 42420000000.00001
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 42420000.00000001
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 2648.1940876400536
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 354.01205685465993
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 425.15075330742457
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 1.5325197266435493
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 354012056.85466
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 82.30838848257952
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 2.6481940876400536
+  },
+  {
+    "from": "G_PER_CUB_CM",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 1.3240970438200268
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 0.00004241999999999999
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 4.242e-11
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 4.2420000000000005e-8
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 4.2420000000000005e-8
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 42.42
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 0.04242
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 0.000002648194087640053
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 3.540120568546599e-7
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 4.251507533074245e-7
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 1.5325197266435495e-9
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 0.35401205685466
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 8.230838848257954e-8
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 2.6481940876400533e-9
+  },
+  {
+    "from": "MKG_PER_LITRE",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 1.3240970438200266e-9
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 0.04241999999999999
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 4.2420000000000005e-8
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 0.00004242
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 0.00004242
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 42420.00000000001
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 42.42
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 0.0026481940876400536
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 0.00035401205685466
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 0.0004251507533074245
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 0.0000015325197266435495
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 354.01205685465993
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 0.0000823083884825795
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 0.000002648194087640054
+  },
+  {
+    "from": "MG_PER_LITRE",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 0.000001324097043820027
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 679.5032163233892
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 0.0006795032163233894
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 0.6795032163233894
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 0.6795032163233894
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 679503216.3233894
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 679503.2163233893
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 42.42
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 5.670729166666667
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 6.810261770266544
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 0.02454861111111111
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 5670729.166666667
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 1.3184539062778828
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 0.04242
+  },
+  {
+    "from": "LBM_PER_CUB_FT",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 0.02121
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 5083.037046782756
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 0.005083037046782757
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 5.083037046782757
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 5.083037046782756
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 5083037046.782757
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 5083037.046782757
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 317.32363636363635
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 42.42
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 50.94429583991597
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 0.18363636363636365
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 42420000
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 9.862720130078708
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 0.31732363636363636
+  },
+  {
+    "from": "LBM_PER_GALLON",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 0.15866181818181818
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 4232.513728368773
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 0.0042325137283687735
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 4.232513728368774
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 4.232513728368774
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 4232513728.3687744
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 4232513.728368774
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 264.2272001725966
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 35.3220389119617
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 42.42
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 0.15290925935914154
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 35322038.9119617
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 8.212432442537201
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 0.2642272001725966
+  },
+  {
+    "from": "LBM_PER_GALLON_IMPERIAL",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 0.1321136000862983
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 1174181.5578068167
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 1.1741815578068169
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 1174.181557806817
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 1174.181557806817
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 1174181557806.817
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 1174181557.8068168
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 73301.76000000001
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 9799.02
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 11768.132339020587
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 42.42
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 9799020000
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 2278.2883500481817
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 73.30176
+  },
+  {
+    "from": "LBM_PER_CUB_IN",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 36.65088
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 0.005083037046782756
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 5.0830370467827564e-9
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 0.000005083037046782757
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 0.000005083037046782757
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 5083.037046782758
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 5.083037046782756
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 0.00031732363636363637
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 0.00004242
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 0.00005094429583991596
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 1.8363636363636363e-7
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 42.42
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 0.000009862720130078708
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 3.173236363636363e-7
+  },
+  {
+    "from": "LBM_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 1.5866181818181816e-7
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 21862.369476239386
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 0.02186236947623939
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 21.862369476239394
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 21.862369476239383
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 21862369476.23939
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 21862369.47623939
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 1364.8231397637794
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 182.45031555869969
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 219.11369287855774
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 0.7898282058818168
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 182450315.5586997
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 42.42
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 1.3648231397637793
+  },
+  {
+    "from": "SLUG_PER_CUB_FT",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 0.6824115698818897
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 679503.2163233891
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 0.6795032163233892
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 679.5032163233892
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 679.5032163233894
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 679503216323.3894
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 679503216.3233894
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 42420
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 5670.729166666668
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 6810.261770266543
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 24.548611111111114
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 5670729166.666667
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 1318.453906277883
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 42.42
+  },
+  {
+    "from": "KIP_PER_CUB_FT",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 21.21
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_CUB_M",
+    "expect": 1359006.4326467782
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_CUB_CM",
+    "expect": 1.3590064326467783
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KG_PER_LITRE",
+    "expect": 1359.0064326467784
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "G_PER_CUB_CM",
+    "expect": 1359.0064326467789
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "MKG_PER_LITRE",
+    "expect": 1359006432646.7788
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "MG_PER_LITRE",
+    "expect": 1359006432.6467788
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_FT",
+    "expect": 84840
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON",
+    "expect": 11341.458333333336
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_GALLON_IMPERIAL",
+    "expect": 13620.523540533086
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_CUB_IN",
+    "expect": 49.09722222222223
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "LBM_PER_MILLION_GALLON",
+    "expect": 11341458333.333334
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "SLUG_PER_CUB_FT",
+    "expect": 2636.907812555766
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KIP_PER_CUB_FT",
+    "expect": 84.84
+  },
+  {
+    "from": "SHORT_TON_PER_CUB_FT",
+    "input": 42.42,
+    "to": "SHORT_TON_PER_CUB_FT",
+    "expect": 42.42
+  },
+  {
+    "from": "PA_S",
+    "input": 42.42,
+    "to": "PA_S",
+    "expect": 42.42
+  },
+  {
+    "from": "PA_S",
+    "input": 42.42,
+    "to": "POISE",
+    "expect": 424.20000000000005
+  },
+  {
+    "from": "PA_S",
+    "input": 42.42,
+    "to": "CENTIPOISE",
+    "expect": 42420
+  },
+  {
+    "from": "PA_S",
+    "input": 42.42,
+    "to": "LBM_PER_FT_S",
+    "expect": 28.50492392541788
+  },
+  {
+    "from": "POISE",
+    "input": 42.42,
+    "to": "PA_S",
+    "expect": 4.242
+  },
+  {
+    "from": "POISE",
+    "input": 42.42,
+    "to": "POISE",
+    "expect": 42.42
+  },
+  {
+    "from": "POISE",
+    "input": 42.42,
+    "to": "CENTIPOISE",
+    "expect": 4242
+  },
+  {
+    "from": "POISE",
+    "input": 42.42,
+    "to": "LBM_PER_FT_S",
+    "expect": 2.850492392541788
+  },
+  {
+    "from": "CENTIPOISE",
+    "input": 42.42,
+    "to": "PA_S",
+    "expect": 0.04242
+  },
+  {
+    "from": "CENTIPOISE",
+    "input": 42.42,
+    "to": "POISE",
+    "expect": 0.4242
+  },
+  {
+    "from": "CENTIPOISE",
+    "input": 42.42,
+    "to": "CENTIPOISE",
+    "expect": 42.42
+  },
+  {
+    "from": "CENTIPOISE",
+    "input": 42.42,
+    "to": "LBM_PER_FT_S",
+    "expect": 0.02850492392541788
+  },
+  {
+    "from": "LBM_PER_FT_S",
+    "input": 42.42,
+    "to": "PA_S",
+    "expect": 63.12791448622048
+  },
+  {
+    "from": "LBM_PER_FT_S",
+    "input": 42.42,
+    "to": "POISE",
+    "expect": 631.2791448622047
+  },
+  {
+    "from": "LBM_PER_FT_S",
+    "input": 42.42,
+    "to": "CENTIPOISE",
+    "expect": 63127.91448622048
+  },
+  {
+    "from": "LBM_PER_FT_S",
+    "input": 42.42,
+    "to": "LBM_PER_FT_S",
+    "expect": 42.42
+  },
+  {
+    "from": "COULOMB",
+    "input": 42.42,
+    "to": "COULOMB",
+    "expect": 42.42
+  },
+  {
+    "from": "VOLT",
+    "input": 42.42,
+    "to": "VOLT",
+    "expect": 42.42
+  },
+  {
+    "from": "VOLT",
+    "input": 42.42,
+    "to": "KILOVOLT",
+    "expect": 0.04242
+  },
+  {
+    "from": "VOLT",
+    "input": 42.42,
+    "to": "MEGAVOLT",
+    "expect": 0.00004242
+  },
+  {
+    "from": "KILOVOLT",
+    "input": 42.42,
+    "to": "VOLT",
+    "expect": 42420
+  },
+  {
+    "from": "KILOVOLT",
+    "input": 42.42,
+    "to": "KILOVOLT",
+    "expect": 42.42
+  },
+  {
+    "from": "KILOVOLT",
+    "input": 42.42,
+    "to": "MEGAVOLT",
+    "expect": 0.04242
+  },
+  {
+    "from": "MEGAVOLT",
+    "input": 42.42,
+    "to": "VOLT",
+    "expect": 42420000
+  },
+  {
+    "from": "MEGAVOLT",
+    "input": 42.42,
+    "to": "KILOVOLT",
+    "expect": 42420
+  },
+  {
+    "from": "MEGAVOLT",
+    "input": 42.42,
+    "to": "MEGAVOLT",
+    "expect": 42.42
+  },
+  {
+    "from": "J_PER_CUB_M",
+    "input": 42.42,
+    "to": "J_PER_CUB_M",
+    "expect": 42.42
+  },
+  {
+    "from": "J_PER_CUB_M",
+    "input": 42.42,
+    "to": "KJ_PER_CUB_M",
+    "expect": 0.04242
+  },
+  {
+    "from": "J_PER_CUB_M",
+    "input": 42.42,
+    "to": "KWH_PER_CUB_M",
+    "expect": 0.000011783333333333335
+  },
+  {
+    "from": "J_PER_CUB_M",
+    "input": 42.42,
+    "to": "KWH_PER_CUB_FT",
+    "expect": 3.336668423423999e-7
+  },
+  {
+    "from": "J_PER_CUB_M",
+    "input": 42.42,
+    "to": "KWH_PER_MILLION_GALLON",
+    "expect": 0.0446047688548
+  },
+  {
+    "from": "KJ_PER_CUB_M",
+    "input": 42.42,
+    "to": "J_PER_CUB_M",
+    "expect": 42420
+  },
+  {
+    "from": "KJ_PER_CUB_M",
+    "input": 42.42,
+    "to": "KJ_PER_CUB_M",
+    "expect": 42.42
+  },
+  {
+    "from": "KJ_PER_CUB_M",
+    "input": 42.42,
+    "to": "KWH_PER_CUB_M",
+    "expect": 0.011783333333333333
+  },
+  {
+    "from": "KJ_PER_CUB_M",
+    "input": 42.42,
+    "to": "KWH_PER_CUB_FT",
+    "expect": 0.0003336668423424
+  },
+  {
+    "from": "KJ_PER_CUB_M",
+    "input": 42.42,
+    "to": "KWH_PER_MILLION_GALLON",
+    "expect": 44.60476885480001
+  },
+  {
+    "from": "KWH_PER_CUB_M",
+    "input": 42.42,
+    "to": "J_PER_CUB_M",
+    "expect": 152712000
+  },
+  {
+    "from": "KWH_PER_CUB_M",
+    "input": 42.42,
+    "to": "KJ_PER_CUB_M",
+    "expect": 152712
+  },
+  {
+    "from": "KWH_PER_CUB_M",
+    "input": 42.42,
+    "to": "KWH_PER_CUB_M",
+    "expect": 42.42
+  },
+  {
+    "from": "KWH_PER_CUB_M",
+    "input": 42.42,
+    "to": "KWH_PER_CUB_FT",
+    "expect": 1.2012006324326399
+  },
+  {
+    "from": "KWH_PER_CUB_M",
+    "input": 42.42,
+    "to": "KWH_PER_MILLION_GALLON",
+    "expect": 160577.16787728
+  },
+  {
+    "from": "KWH_PER_CUB_FT",
+    "input": 42.42,
+    "to": "J_PER_CUB_M",
+    "expect": 5392973384.371965
+  },
+  {
+    "from": "KWH_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KJ_PER_CUB_M",
+    "expect": 5392973.384371966
+  },
+  {
+    "from": "KWH_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KWH_PER_CUB_M",
+    "expect": 1498.0481623255462
+  },
+  {
+    "from": "KWH_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KWH_PER_CUB_FT",
+    "expect": 42.42
+  },
+  {
+    "from": "KWH_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KWH_PER_MILLION_GALLON",
+    "expect": 5670729.166666667
+  },
+  {
+    "from": "KWH_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "J_PER_CUB_M",
+    "expect": 40342.24245971756
+  },
+  {
+    "from": "KWH_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "KJ_PER_CUB_M",
+    "expect": 40.34224245971756
+  },
+  {
+    "from": "KWH_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "KWH_PER_CUB_M",
+    "expect": 0.011206178461032655
+  },
+  {
+    "from": "KWH_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "KWH_PER_CUB_FT",
+    "expect": 0.00031732363636363637
+  },
+  {
+    "from": "KWH_PER_MILLION_GALLON",
+    "input": 42.42,
+    "to": "KWH_PER_MILLION_GALLON",
+    "expect": 42.42
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 42.42
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 2545.2000000000003
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 152712
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 3665088
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 42419.99999999999
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 2545199.9999999995
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 152711999.99999997
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 3665087999.9999995
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 2588627.2244985434
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 155317633.46991262
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 1498.0481623255462
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 89882.88973953277
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 129431361.22492717
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 2971.335198001084
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 123.80563325004512
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 2.0634272208340856
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 35656.022376013
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 1485.6675990005415
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 24.76112665000903
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 9331.0955128473
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 559865.730770838
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 806206652.3100069
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 11206.178461032658
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 672370.7076619593
+  },
+  {
+    "from": "CUB_M_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 968213819.0332216
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.7070000000000001
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 42.42
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 2545.2000000000003
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 61084.8
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 706.9999999999998
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 42419.99999999999
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 2545199.9999999995
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 61084799.99999999
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 43143.78707497573
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 2588627.2244985434
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 24.967469372092435
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 1498.0481623255462
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 2157189.3537487867
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 49.52225330001806
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 2.0634272208340856
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.03439045368056809
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 594.2670396002167
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 24.76112665000903
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.41268544416681713
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 155.51825854745502
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 9331.0955128473
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 13436777.538500112
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 186.76964101721094
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 11206.178461032658
+  },
+  {
+    "from": "CUB_M_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 16136896.983887026
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.011783333333333333
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.7070000000000001
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 42.42
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 1018.08
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 11.783333333333331
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 706.9999999999998
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 42419.99999999999
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 1018079.9999999998
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 719.0631179162621
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 43143.78707497573
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.4161244895348739
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 24.967469372092435
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 35953.155895813106
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.8253708883336343
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.03439045368056809
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.0005731742280094683
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 9.904450660003612
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.41268544416681713
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.00687809073611362
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 2.591970975790917
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 155.51825854745502
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 223946.29230833525
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 3.112827350286849
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 186.76964101721094
+  },
+  {
+    "from": "CUB_M_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 268948.2830647838
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.0004909722222222222
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.029458333333333336
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 1.7675
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 42.42
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 0.4909722222222221
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 29.45833333333333
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 1767.4999999999998
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 42419.99999999999
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 29.96096324651092
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 1797.6577947906553
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.01733852039728641
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 1.0403112238371848
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 1498.0481623255462
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.03439045368056809
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.0014329355700236702
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.00002388225950039451
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 0.41268544416681713
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.017195226840284045
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.00028658711400473413
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 0.10799879065795488
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 6.479927439477292
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 9331.0955128473
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 0.12970113959528537
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 7.782068375717123
+  },
+  {
+    "from": "CUB_M_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 11206.178461032658
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.04242000000000001
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 2.545200000000001
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 152.71200000000002
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 3665.088000000001
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 42.42
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 2545.2000000000003
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 152712
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 3665088
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 2588.6272244985444
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 155317.63346991266
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 1.4980481623255462
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 89.88288973953279
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 129431.3612249272
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 2.971335198001084
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.12380563325004515
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.002063427220834086
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 35.656022376013006
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 1.485667599000542
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.024761126650009034
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 9.331095512847304
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 559.8657307708381
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 806206.652310007
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 11.20617846103266
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 672.3707076619595
+  },
+  {
+    "from": "LITRE_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 968213.8190332217
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.0007070000000000002
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.04242000000000001
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 2.545200000000001
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 61.084800000000016
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 0.7070000000000001
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 42.42
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 2545.2000000000003
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 61084.8
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 43.14378707497575
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 2588.6272244985444
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.024967469372092443
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 1.4980481623255462
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 2157.1893537487867
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.04952225330001807
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.002063427220834086
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.0000343904536805681
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 0.5942670396002168
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.024761126650009034
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.0004126854441668172
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 0.15551825854745507
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 9.331095512847304
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 13436.777538500117
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 0.18676964101721097
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 11.20617846103266
+  },
+  {
+    "from": "LITRE_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 16136.896983887029
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.000011783333333333338
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.0007070000000000002
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 0.04242000000000001
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 1.0180800000000003
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 0.011783333333333333
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 0.7070000000000001
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 42.42
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 1018.08
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 0.7190631179162623
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 43.14378707497575
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.0004161244895348741
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 0.024967469372092443
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 35.95315589581312
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.0008253708883336344
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.0000343904536805681
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 5.731742280094682e-7
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 0.009904450660003613
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.0004126854441668172
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.000006878090736113619
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 0.0025919709757909176
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 0.15551825854745507
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 223.9462923083353
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 0.0031128273502868497
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 0.18676964101721097
+  },
+  {
+    "from": "LITRE_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 268.9482830647838
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 4.909722222222223e-7
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.00002945833333333334
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 0.0017675000000000006
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 0.04242000000000001
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 0.0004909722222222222
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 0.029458333333333336
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 1.7675
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 42.42
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 0.02996096324651093
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 1.7976577947906558
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.00001733852039728642
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 0.001040311223837185
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 1.4980481623255462
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.0000343904536805681
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.000001432935570023671
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 2.3882259500394516e-8
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 0.0004126854441668172
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.00001719522684028405
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 2.8658711400473416e-7
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 0.0001079987906579549
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 0.006479927439477294
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 9.331095512847304
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 0.00012970113959528541
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 0.007782068375717125
+  },
+  {
+    "from": "LITRE_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 11.20617846103266
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.00069513925488
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.0417083552928
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 2.502501317568
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 60.06003162163199
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 0.6951392548799998
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 41.70835529279999
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 2502.5013175679996
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 60060.03162163198
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 42.42
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 2545.2000000000003
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.02454861111111111
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 1.4729166666666669
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 2121
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.048691460055096426
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.0020288108356290176
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.00003381351392715029
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 0.584297520661157
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.024345730027548213
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.0004057621671258035
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 0.15290925935914154
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 9.174555561548493
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 13211.360008629828
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 0.18363636363636365
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 11.018181818181818
+  },
+  {
+    "from": "CUB_IN_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 15866.18181818182
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.000011585654248
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.00069513925488
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 0.0417083552928
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 1.0010005270272
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 0.011585654247999998
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 0.6951392548799998
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 41.70835529279999
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 1001.0005270271997
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 0.7070000000000001
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 42.42
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.00040914351851851854
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 0.02454861111111111
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 35.35
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.000811524334251607
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.00003381351392715029
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 5.635585654525048e-7
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 0.009738292011019284
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.0004057621671258035
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.000006762702785430058
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 0.0025484876559856923
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 0.15290925935914154
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 220.1893334771638
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 0.0030606060606060605
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 0.18363636363636365
+  },
+  {
+    "from": "CUB_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 264.43636363636364
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 1.2012006324326399
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 72.0720379459584
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 4324.3222767575035
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 103783.73464218009
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 1201.2006324326396
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 72072.03794595838
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 4324322.276757503
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 103783734.64218006
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 73301.76000000001
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 4398105.600000001
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 42.42
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 2545.2000000000003
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 3665088
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 84.13884297520661
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 3.5057851239669424
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.058429752066115705
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 1009.6661157024794
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 42.06942148760331
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.7011570247933885
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 264.22720017259655
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 15853.632010355794
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 22829230.094912343
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 317.32363636363635
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 19039.418181818182
+  },
+  {
+    "from": "CUB_FT_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 27416762.181818184
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.020020010540543996
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 1.2012006324326399
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 72.0720379459584
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 1729.7289107030015
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 20.020010540543993
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 1201.2006324326396
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 72072.03794595838
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 1729728.910703001
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 1221.6960000000001
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 73301.76000000001
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.7070000000000001
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 42.42
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 61084.8
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 1.402314049586777
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.058429752066115705
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.0009738292011019284
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 16.827768595041324
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.7011570247933885
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.011685950413223142
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 4.403786669543276
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 264.22720017259655
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 380487.1682485391
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 5.2887272727272725
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 317.32363636363635
+  },
+  {
+    "from": "CUB_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 456946.0363636364
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.000013902785097599997
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.000834167105856
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 0.050050026351359994
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 1.2012006324326399
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 0.013902785097599995
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 0.8341671058559997
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 50.05002635135998
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 1201.2006324326396
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 0.8484
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 50.904
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.0004909722222222222
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 0.029458333333333336
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 42.42
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.0009738292011019284
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.000040576216712580355
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 6.76270278543006e-7
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 0.011685950413223142
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.0004869146005509642
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.00000811524334251607
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 0.00305818518718283
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 0.18349111123096984
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 264.22720017259655
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 0.003672727272727273
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 0.22036363636363637
+  },
+  {
+    "from": "CUB_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 317.32363636363635
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.605605318851456
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 36.33631913108736
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 2180.1791478652417
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 52324.2995487658
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 605.6053188514559
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 36336.31913108735
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 2180179.1478652414
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 52324299.548765786
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 36956.304
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 2217378.24
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 21.38675
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 1283.2050000000002
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 1847815.2000000002
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 42.42
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 1.7675
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.029458333333333336
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 509.04
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 21.21
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.35350000000000004
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 133.21454675368412
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 7992.872805221047
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 11509736.839518307
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 159.984
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 9599.04
+  },
+  {
+    "from": "ACRE_FT_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 13822617.600000001
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 14.534527652434944
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 872.0716591460966
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 52324.2995487658
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 1255783.1891703792
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 14534.527652434941
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 872071.6591460964
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 52324299.548765786
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 1255783189.170379
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 886951.296
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 53217077.760000005
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 513.282
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 30796.920000000002
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 44347564.800000004
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 1018.08
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 42.42
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.7070000000000001
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 12216.960000000001
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 509.04
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 8.484
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 3197.1491220884186
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 191828.9473253051
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 276233684.14843935
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 3839.616
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 230376.96000000002
+  },
+  {
+    "from": "ACRE_FT_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 331742822.4
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 872.0716591460966
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 52324.2995487658
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 3139457.972925948
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 75346991.35022275
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 872071.6591460964
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 52324299.548765786
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 3139457972.9259477
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 75346991350.22275
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 53217077.760000005
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 3193024665.6
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 30796.920000000002
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 1847815.2000000002
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 2660853888
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 61084.8
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 2545.2000000000003
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 42.42
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 733017.6
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 30542.4
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 509.04
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 191828.9473253051
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 11509736.839518307
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 16574021048.906363
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 230376.96000000002
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 13822617.600000001
+  },
+  {
+    "from": "ACRE_FT_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 19904569344
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.050467109904288
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 3.02802659425728
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 181.6815956554368
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 4360.358295730483
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 50.46710990428799
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 3028.026594257279
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 181681.59565543677
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 4360358.295730483
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 3079.6920000000005
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 184781.52000000002
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 1.7822291666666665
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 106.93375000000002
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 153984.6
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 3.535
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.14729166666666665
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.0024548611111111112
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 42.42
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 1.7675
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.029458333333333336
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 11.101212229473676
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 666.0727337684204
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 959144.7366265256
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 13.332000000000003
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 799.9200000000001
+  },
+  {
+    "from": "ACRE_IN_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 1151884.8
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 1.211210637702912
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 72.67263826217471
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 4360.358295730483
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 104648.5990975316
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 1211.2106377029118
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 72672.6382621747
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 4360358.295730483
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 104648599.09753157
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 73912.60800000001
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 4434756.48
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 42.7735
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 2566.4100000000003
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 3695630.4000000004
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 84.84
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 3.535
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.05891666666666666
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 1018.08
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 42.42
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.7070000000000001
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 266.42909350736824
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 15985.745610442094
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 23019473.679036614
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 319.968
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 19198.08
+  },
+  {
+    "from": "ACRE_IN_PER_HR",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 27645235.200000003
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 72.67263826217471
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 4360.358295730483
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 261621.497743829
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 6278915.945851896
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 72672.6382621747
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 4360358.295730483
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 261621497.74382895
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 6278915945.851895
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 4434756.48
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 266085388.8
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 2566.4100000000003
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 153984.6
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 221737824
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 5090.400000000001
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 212.10000000000002
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 3.535
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 61084.8
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 2545.2000000000003
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 42.42
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 15985.745610442094
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 959144.7366265256
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 1381168420.742197
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 19198.08
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 1151884.8
+  },
+  {
+    "from": "ACRE_IN_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 1658714112
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.1928451378000001
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 11.570708268000004
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 694.2424960800004
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 16661.819905920005
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 192.84513780000003
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 11570.708268
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 694242.49608
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 16661819.905920003
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 11768.132339020589
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 706087.9403412353
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 6.810261770266544
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 408.6157062159927
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 588406.6169510294
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 13.507957230280747
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.5628315512616979
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.009380525854361632
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 162.09548676336897
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 6.753978615140376
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.1125663102523396
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 42.42
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 2545.2000000000003
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 3665088
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 50.94429583991597
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 3056.6577503949584
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 4401587.160568739
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.0032140856300000016
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.1928451378000001
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 11.570708268000004
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 277.6969984320001
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 3.2140856300000005
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 192.84513780000003
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 11570.708268
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 277696.99843200005
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 196.1355389836765
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 11768.132339020589
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.11350436283777575
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 6.810261770266544
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 9806.776949183823
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.2251326205046791
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.009380525854361632
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.00015634209757269384
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 2.70159144605615
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.1125663102523396
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.0018761051708723261
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 0.7070000000000001
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 42.42
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 61084.8
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 0.8490715973319328
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 50.94429583991597
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 73359.786009479
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.000002232003909722223
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.00013392023458333338
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 0.008035214075000003
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 0.1928451378000001
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 0.0022320039097222222
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 0.13392023458333335
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 8.035214075
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 192.84513780000003
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 0.1362052354053309
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 8.172314124319852
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.00007882247419289982
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 0.004729348451573989
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 6.810261770266544
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.00015634209757269384
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.00000651425406552891
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 1.0857090109214851e-7
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 0.0018761051708723261
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.00007817104878634692
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.0000013028508131057817
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 0.0004909722222222222
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 0.029458333333333336
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 42.42
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 0.0005896330537027311
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 0.035377983222163865
+  },
+  {
+    "from": "GALLON_IMPERIAL_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 50.94429583991597
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.16057716787728
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 9.6346300726368
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 578.077804358208
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 13873.867304596992
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 160.57716787727998
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 9634.630072636797
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 578077.8043582079
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 13873867.304596988
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 9799.02
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 587941.2000000001
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 5.670729166666667
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 340.24375000000003
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 489951
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 11.247727272727275
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.46865530303030306
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.007810921717171716
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 134.9727272727273
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 5.6238636363636365
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.09373106060606061
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 35.32203891196169
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 2119.322334717702
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 3051824.1619934905
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 42.42
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 2545.2000000000003
+  },
+  {
+    "from": "GALLON_PER_SEC",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 3665088
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.0026762861312879995
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.16057716787728
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 9.6346300726368
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 231.23112174328318
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 2.6762861312879993
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 160.57716787727998
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 9634.630072636797
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 231231.12174328315
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 163.317
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 9799.02
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.09451215277777779
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 5.670729166666667
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 8165.85
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.18746212121212122
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.007810921717171716
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 0.00013018202861952863
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 2.2495454545454545
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.09373106060606061
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.0015621843434343433
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 0.5887006485326948
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 35.32203891196169
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 50863.73603322484
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 0.7070000000000001
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 42.42
+  },
+  {
+    "from": "GALLON_PER_MIN",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 61084.8
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_SEC",
+    "expect": 0.0000018585320356166666
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_MIN",
+    "expect": 0.00011151192213699999
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_HR",
+    "expect": 0.00669071532822
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_M_PER_DAY",
+    "expect": 0.16057716787728
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_SEC",
+    "expect": 0.0018585320356166663
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_MIN",
+    "expect": 0.11151192213699997
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_HR",
+    "expect": 6.690715328219998
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "LITRE_PER_DAY",
+    "expect": 160.57716787727998
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_SEC",
+    "expect": 0.11341458333333333
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_IN_PER_MIN",
+    "expect": 6.804875000000001
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_SEC",
+    "expect": 0.00006563343942901234
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_MIN",
+    "expect": 0.003938006365740741
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "CUB_FT_PER_DAY",
+    "expect": 5.670729166666667
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_DAY",
+    "expect": 0.00013018202861952863
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_HR",
+    "expect": 0.000005424251192480359
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_FT_PER_MIN",
+    "expect": 9.040418654133933e-8
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_DAY",
+    "expect": 0.0015621843434343433
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_HR",
+    "expect": 0.0000650910143097643
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "ACRE_IN_PER_MIN",
+    "expect": 0.0000010848502384960721
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_SEC",
+    "expect": 0.00040881989481437146
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_MIN",
+    "expect": 0.024529193688862288
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_IMPERIAL_PER_DAY",
+    "expect": 35.32203891196169
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_SEC",
+    "expect": 0.0004909722222222222
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_MIN",
+    "expect": 0.029458333333333336
+  },
+  {
+    "from": "GALLON_PER_DAY",
+    "input": 42.42,
+    "to": "GALLON_PER_DAY",
+    "expect": 42.42
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "N",
+    "expect": 42.42
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "KN",
+    "expect": 0.04242
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "MN",
+    "expect": 42420
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "KGF",
+    "expect": 4.325636175452372
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "DYNE",
+    "expect": 4242000
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "PDL",
+    "expect": 306.8244475683237
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "SHORT_TON_FORCE",
+    "expect": 0.00476819768314486
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "LONG_TON_FORCE",
+    "expect": 0.004257319359950767
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "LBF",
+    "expect": 9.53639536628972
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "OZF",
+    "expect": 152.5823258606355
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "KPF",
+    "expect": 0.009536395366289719
+  },
+  {
+    "from": "KN",
+    "input": 42.42,
+    "to": "N",
+    "expect": 42420
+  },
+  {
+    "from": "KN",
+    "input": 42.42,
+    "to": "KN",
+    "expect": 42.42
+  },
+  {
+    "from": "KN",
+    "input": 42.42,
+    "to": "MN",
+    "expect": 42420000
+  },
+  {
+    "from": "KN",
+    "input": 42.42,
+    "to": "KGF",
+    "expect": 4325.636175452372
+  },
+  {
+    "from": "KN",
+    "input": 42.42,
+    "to": "DYNE",
+    "expect": 4242000000
+  },
+  {
+    "from": "KN",
+    "input": 42.42,
+    "to": "PDL",
+    "expect": 306824.4475683237
+  },
+  {
+    "from": "KN",
+    "input": 42.42,
+    "to": "SHORT_TON_FORCE",
+    "expect": 4.76819768314486
+  },
+  {
+    "from": "KN",
+    "input": 42.42,
+    "to": "LONG_TON_FORCE",
+    "expect": 4.257319359950768
+  },
+  {
+    "from": "KN",
+    "input": 42.42,
+    "to": "LBF",
+    "expect": 9536.39536628972
+  },
+  {
+    "from": "KN",
+    "input": 42.42,
+    "to": "OZF",
+    "expect": 152582.32586063552
+  },
+  {
+    "from": "KN",
+    "input": 42.42,
+    "to": "KPF",
+    "expect": 9.53639536628972
+  },
+  {
+    "from": "MN",
+    "input": 42.42,
+    "to": "N",
+    "expect": 0.04242
+  },
+  {
+    "from": "MN",
+    "input": 42.42,
+    "to": "KN",
+    "expect": 0.00004242
+  },
+  {
+    "from": "MN",
+    "input": 42.42,
+    "to": "MN",
+    "expect": 42.42
+  },
+  {
+    "from": "MN",
+    "input": 42.42,
+    "to": "KGF",
+    "expect": 0.004325636175452372
+  },
+  {
+    "from": "MN",
+    "input": 42.42,
+    "to": "DYNE",
+    "expect": 4242
+  },
+  {
+    "from": "MN",
+    "input": 42.42,
+    "to": "PDL",
+    "expect": 0.3068244475683237
+  },
+  {
+    "from": "MN",
+    "input": 42.42,
+    "to": "SHORT_TON_FORCE",
+    "expect": 0.000004768197683144859
+  },
+  {
+    "from": "MN",
+    "input": 42.42,
+    "to": "LONG_TON_FORCE",
+    "expect": 0.000004257319359950767
+  },
+  {
+    "from": "MN",
+    "input": 42.42,
+    "to": "LBF",
+    "expect": 0.00953639536628972
+  },
+  {
+    "from": "MN",
+    "input": 42.42,
+    "to": "OZF",
+    "expect": 0.15258232586063553
+  },
+  {
+    "from": "MN",
+    "input": 42.42,
+    "to": "KPF",
+    "expect": 0.00000953639536628972
+  },
+  {
+    "from": "KGF",
+    "input": 42.42,
+    "to": "N",
+    "expect": 415.998093
+  },
+  {
+    "from": "KGF",
+    "input": 42.42,
+    "to": "KN",
+    "expect": 0.415998093
+  },
+  {
+    "from": "KGF",
+    "input": 42.42,
+    "to": "MN",
+    "expect": 415998.093
+  },
+  {
+    "from": "KGF",
+    "input": 42.42,
+    "to": "KGF",
+    "expect": 42.42
+  },
+  {
+    "from": "KGF",
+    "input": 42.42,
+    "to": "DYNE",
+    "expect": 41599809.300000004
+  },
+  {
+    "from": "KGF",
+    "input": 42.42,
+    "to": "PDL",
+    "expect": 3008.9199687459018
+  },
+  {
+    "from": "KGF",
+    "input": 42.42,
+    "to": "SHORT_TON_FORCE",
+    "expect": 0.04676004580941254
+  },
+  {
+    "from": "KGF",
+    "input": 42.42,
+    "to": "LONG_TON_FORCE",
+    "expect": 0.04175004090126119
+  },
+  {
+    "from": "KGF",
+    "input": 42.42,
+    "to": "LBF",
+    "expect": 93.52009161882506
+  },
+  {
+    "from": "KGF",
+    "input": 42.42,
+    "to": "OZF",
+    "expect": 1496.321465901201
+  },
+  {
+    "from": "KGF",
+    "input": 42.42,
+    "to": "KPF",
+    "expect": 0.09352009161882507
+  },
+  {
+    "from": "DYNE",
+    "input": 42.42,
+    "to": "N",
+    "expect": 0.00042420000000000007
+  },
+  {
+    "from": "DYNE",
+    "input": 42.42,
+    "to": "KN",
+    "expect": 4.242e-7
+  },
+  {
+    "from": "DYNE",
+    "input": 42.42,
+    "to": "MN",
+    "expect": 0.4242
+  },
+  {
+    "from": "DYNE",
+    "input": 42.42,
+    "to": "KGF",
+    "expect": 0.000043256361754523724
+  },
+  {
+    "from": "DYNE",
+    "input": 42.42,
+    "to": "DYNE",
+    "expect": 42.42
+  },
+  {
+    "from": "DYNE",
+    "input": 42.42,
+    "to": "PDL",
+    "expect": 0.003068244475683238
+  },
+  {
+    "from": "DYNE",
+    "input": 42.42,
+    "to": "SHORT_TON_FORCE",
+    "expect": 4.76819768314486e-8
+  },
+  {
+    "from": "DYNE",
+    "input": 42.42,
+    "to": "LONG_TON_FORCE",
+    "expect": 4.2573193599507684e-8
+  },
+  {
+    "from": "DYNE",
+    "input": 42.42,
+    "to": "LBF",
+    "expect": 0.00009536395366289719
+  },
+  {
+    "from": "DYNE",
+    "input": 42.42,
+    "to": "OZF",
+    "expect": 0.001525823258606355
+  },
+  {
+    "from": "DYNE",
+    "input": 42.42,
+    "to": "KPF",
+    "expect": 9.536395366289722e-8
+  },
+  {
+    "from": "PDL",
+    "input": 42.42,
+    "to": "N",
+    "expect": 5.86477516462992
+  },
+  {
+    "from": "PDL",
+    "input": 42.42,
+    "to": "KN",
+    "expect": 0.00586477516462992
+  },
+  {
+    "from": "PDL",
+    "input": 42.42,
+    "to": "MN",
+    "expect": 5864.77516462992
+  },
+  {
+    "from": "PDL",
+    "input": 42.42,
+    "to": "KGF",
+    "expect": 0.5980406320843428
+  },
+  {
+    "from": "PDL",
+    "input": 42.42,
+    "to": "DYNE",
+    "expect": 586477.5164629921
+  },
+  {
+    "from": "PDL",
+    "input": 42.42,
+    "to": "PDL",
+    "expect": 42.42
+  },
+  {
+    "from": "PDL",
+    "input": 42.42,
+    "to": "SHORT_TON_FORCE",
+    "expect": 0.0006592269531389415
+  },
+  {
+    "from": "PDL",
+    "input": 42.42,
+    "to": "LONG_TON_FORCE",
+    "expect": 0.0005885954938740547
+  },
+  {
+    "from": "PDL",
+    "input": 42.42,
+    "to": "LBF",
+    "expect": 1.3184539062778828
+  },
+  {
+    "from": "PDL",
+    "input": 42.42,
+    "to": "OZF",
+    "expect": 21.095262500446125
+  },
+  {
+    "from": "PDL",
+    "input": 42.42,
+    "to": "KPF",
+    "expect": 0.0013184539062778826
+  },
+  {
+    "from": "SHORT_TON_FORCE",
+    "input": 42.42,
+    "to": "N",
+    "expect": 377387.1218387008
+  },
+  {
+    "from": "SHORT_TON_FORCE",
+    "input": 42.42,
+    "to": "KN",
+    "expect": 377.3871218387008
+  },
+  {
+    "from": "SHORT_TON_FORCE",
+    "input": 42.42,
+    "to": "MN",
+    "expect": 377387121.8387008
+  },
+  {
+    "from": "SHORT_TON_FORCE",
+    "input": 42.42,
+    "to": "KGF",
+    "expect": 38482.776670800005
+  },
+  {
+    "from": "SHORT_TON_FORCE",
+    "input": 42.42,
+    "to": "DYNE",
+    "expect": 37738712183.87008
+  },
+  {
+    "from": "SHORT_TON_FORCE",
+    "input": 42.42,
+    "to": "PDL",
+    "expect": 2729646.279527559
+  },
+  {
+    "from": "SHORT_TON_FORCE",
+    "input": 42.42,
+    "to": "SHORT_TON_FORCE",
+    "expect": 42.42
+  },
+  {
+    "from": "SHORT_TON_FORCE",
+    "input": 42.42,
+    "to": "LONG_TON_FORCE",
+    "expect": 37.875
+  },
+  {
+    "from": "SHORT_TON_FORCE",
+    "input": 42.42,
+    "to": "LBF",
+    "expect": 84840
+  },
+  {
+    "from": "SHORT_TON_FORCE",
+    "input": 42.42,
+    "to": "OZF",
+    "expect": 1357440
+  },
+  {
+    "from": "SHORT_TON_FORCE",
+    "input": 42.42,
+    "to": "KPF",
+    "expect": 84.84
+  },
+  {
+    "from": "LONG_TON_FORCE",
+    "input": 42.42,
+    "to": "N",
+    "expect": 422673.5764593449
+  },
+  {
+    "from": "LONG_TON_FORCE",
+    "input": 42.42,
+    "to": "KN",
+    "expect": 422.6735764593449
+  },
+  {
+    "from": "LONG_TON_FORCE",
+    "input": 42.42,
+    "to": "MN",
+    "expect": 422673576.45934486
+  },
+  {
+    "from": "LONG_TON_FORCE",
+    "input": 42.42,
+    "to": "KGF",
+    "expect": 43100.70987129601
+  },
+  {
+    "from": "LONG_TON_FORCE",
+    "input": 42.42,
+    "to": "DYNE",
+    "expect": 42267357645.93449
+  },
+  {
+    "from": "LONG_TON_FORCE",
+    "input": 42.42,
+    "to": "PDL",
+    "expect": 3057203.833070866
+  },
+  {
+    "from": "LONG_TON_FORCE",
+    "input": 42.42,
+    "to": "SHORT_TON_FORCE",
+    "expect": 47.510400000000004
+  },
+  {
+    "from": "LONG_TON_FORCE",
+    "input": 42.42,
+    "to": "LONG_TON_FORCE",
+    "expect": 42.42
+  },
+  {
+    "from": "LONG_TON_FORCE",
+    "input": 42.42,
+    "to": "LBF",
+    "expect": 95020.8
+  },
+  {
+    "from": "LONG_TON_FORCE",
+    "input": 42.42,
+    "to": "OZF",
+    "expect": 1520332.8
+  },
+  {
+    "from": "LONG_TON_FORCE",
+    "input": 42.42,
+    "to": "KPF",
+    "expect": 95.02080000000001
+  },
+  {
+    "from": "LBF",
+    "input": 42.42,
+    "to": "N",
+    "expect": 188.6935609193504
+  },
+  {
+    "from": "LBF",
+    "input": 42.42,
+    "to": "KN",
+    "expect": 0.18869356091935038
+  },
+  {
+    "from": "LBF",
+    "input": 42.42,
+    "to": "MN",
+    "expect": 188693.5609193504
+  },
+  {
+    "from": "LBF",
+    "input": 42.42,
+    "to": "KGF",
+    "expect": 19.241388335400003
+  },
+  {
+    "from": "LBF",
+    "input": 42.42,
+    "to": "DYNE",
+    "expect": 18869356.09193504
+  },
+  {
+    "from": "LBF",
+    "input": 42.42,
+    "to": "PDL",
+    "expect": 1364.8231397637796
+  },
+  {
+    "from": "LBF",
+    "input": 42.42,
+    "to": "SHORT_TON_FORCE",
+    "expect": 0.02121
+  },
+  {
+    "from": "LBF",
+    "input": 42.42,
+    "to": "LONG_TON_FORCE",
+    "expect": 0.0189375
+  },
+  {
+    "from": "LBF",
+    "input": 42.42,
+    "to": "LBF",
+    "expect": 42.42
+  },
+  {
+    "from": "LBF",
+    "input": 42.42,
+    "to": "OZF",
+    "expect": 678.72
+  },
+  {
+    "from": "LBF",
+    "input": 42.42,
+    "to": "KPF",
+    "expect": 0.04242
+  },
+  {
+    "from": "OZF",
+    "input": 42.42,
+    "to": "N",
+    "expect": 11.7933475574594
+  },
+  {
+    "from": "OZF",
+    "input": 42.42,
+    "to": "KN",
+    "expect": 0.011793347557459399
+  },
+  {
+    "from": "OZF",
+    "input": 42.42,
+    "to": "MN",
+    "expect": 11793.3475574594
+  },
+  {
+    "from": "OZF",
+    "input": 42.42,
+    "to": "KGF",
+    "expect": 1.2025867709625002
+  },
+  {
+    "from": "OZF",
+    "input": 42.42,
+    "to": "DYNE",
+    "expect": 1179334.75574594
+  },
+  {
+    "from": "OZF",
+    "input": 42.42,
+    "to": "PDL",
+    "expect": 85.30144623523623
+  },
+  {
+    "from": "OZF",
+    "input": 42.42,
+    "to": "SHORT_TON_FORCE",
+    "expect": 0.001325625
+  },
+  {
+    "from": "OZF",
+    "input": 42.42,
+    "to": "LONG_TON_FORCE",
+    "expect": 0.00118359375
+  },
+  {
+    "from": "OZF",
+    "input": 42.42,
+    "to": "LBF",
+    "expect": 2.65125
+  },
+  {
+    "from": "OZF",
+    "input": 42.42,
+    "to": "OZF",
+    "expect": 42.42
+  },
+  {
+    "from": "OZF",
+    "input": 42.42,
+    "to": "KPF",
+    "expect": 0.00265125
+  },
+  {
+    "from": "KPF",
+    "input": 42.42,
+    "to": "N",
+    "expect": 188693.5609193504
+  },
+  {
+    "from": "KPF",
+    "input": 42.42,
+    "to": "KN",
+    "expect": 188.6935609193504
+  },
+  {
+    "from": "KPF",
+    "input": 42.42,
+    "to": "MN",
+    "expect": 188693560.9193504
+  },
+  {
+    "from": "KPF",
+    "input": 42.42,
+    "to": "KGF",
+    "expect": 19241.388335400003
+  },
+  {
+    "from": "KPF",
+    "input": 42.42,
+    "to": "DYNE",
+    "expect": 18869356091.93504
+  },
+  {
+    "from": "KPF",
+    "input": 42.42,
+    "to": "PDL",
+    "expect": 1364823.1397637795
+  },
+  {
+    "from": "KPF",
+    "input": 42.42,
+    "to": "SHORT_TON_FORCE",
+    "expect": 21.21
+  },
+  {
+    "from": "KPF",
+    "input": 42.42,
+    "to": "LONG_TON_FORCE",
+    "expect": 18.9375
+  },
+  {
+    "from": "KPF",
+    "input": 42.42,
+    "to": "LBF",
+    "expect": 42420
+  },
+  {
+    "from": "KPF",
+    "input": 42.42,
+    "to": "OZF",
+    "expect": 678720
+  },
+  {
+    "from": "KPF",
+    "input": 42.42,
+    "to": "KPF",
+    "expect": 42.42
+  },
+  {
+    "from": "N_PER_CUB_M",
+    "input": 42.42,
+    "to": "N_PER_CUB_M",
+    "expect": 42.42
+  },
+  {
+    "from": "N_PER_CUB_M",
+    "input": 42.42,
+    "to": "KN_PER_CUB_M",
+    "expect": 0.04242
+  },
+  {
+    "from": "N_PER_CUB_M",
+    "input": 42.42,
+    "to": "N_PER_CUB_FT",
+    "expect": 1.2012006324326399
+  },
+  {
+    "from": "N_PER_CUB_M",
+    "input": 42.42,
+    "to": "KN_PER_CUB_FT",
+    "expect": 0.0012012006324326398
+  },
+  {
+    "from": "KN_PER_CUB_M",
+    "input": 42.42,
+    "to": "N_PER_CUB_M",
+    "expect": 42420
+  },
+  {
+    "from": "KN_PER_CUB_M",
+    "input": 42.42,
+    "to": "KN_PER_CUB_M",
+    "expect": 42.42
+  },
+  {
+    "from": "KN_PER_CUB_M",
+    "input": 42.42,
+    "to": "N_PER_CUB_FT",
+    "expect": 1201.20063243264
+  },
+  {
+    "from": "KN_PER_CUB_M",
+    "input": 42.42,
+    "to": "KN_PER_CUB_FT",
+    "expect": 1.2012006324326399
+  },
+  {
+    "from": "N_PER_CUB_FT",
+    "input": 42.42,
+    "to": "N_PER_CUB_M",
+    "expect": 1498.0481623255462
+  },
+  {
+    "from": "N_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KN_PER_CUB_M",
+    "expect": 1.4980481623255462
+  },
+  {
+    "from": "N_PER_CUB_FT",
+    "input": 42.42,
+    "to": "N_PER_CUB_FT",
+    "expect": 42.42
+  },
+  {
+    "from": "N_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KN_PER_CUB_FT",
+    "expect": 0.04242
+  },
+  {
+    "from": "KN_PER_CUB_FT",
+    "input": 42.42,
+    "to": "N_PER_CUB_M",
+    "expect": 1498048.162325546
+  },
+  {
+    "from": "KN_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KN_PER_CUB_M",
+    "expect": 1498.0481623255462
+  },
+  {
+    "from": "KN_PER_CUB_FT",
+    "input": 42.42,
+    "to": "N_PER_CUB_FT",
+    "expect": 42420
+  },
+  {
+    "from": "KN_PER_CUB_FT",
+    "input": 42.42,
+    "to": "KN_PER_CUB_FT",
+    "expect": 42.42
+  },
+  {
+    "from": "HZ",
+    "input": 42.42,
+    "to": "HZ",
+    "expect": 42.42
+  },
+  {
+    "from": "HZ",
+    "input": 42.42,
+    "to": "KHZ",
+    "expect": 0.04242
+  },
+  {
+    "from": "HZ",
+    "input": 42.42,
+    "to": "MHZ",
+    "expect": 0.00004242
+  },
+  {
+    "from": "KHZ",
+    "input": 42.42,
+    "to": "HZ",
+    "expect": 42420
+  },
+  {
+    "from": "KHZ",
+    "input": 42.42,
+    "to": "KHZ",
+    "expect": 42.42
+  },
+  {
+    "from": "KHZ",
+    "input": 42.42,
+    "to": "MHZ",
+    "expect": 0.04242
+  },
+  {
+    "from": "MHZ",
+    "input": 42.42,
+    "to": "HZ",
+    "expect": 42420000
+  },
+  {
+    "from": "MHZ",
+    "input": 42.42,
+    "to": "KHZ",
+    "expect": 42420
+  },
+  {
+    "from": "MHZ",
+    "input": 42.42,
+    "to": "MHZ",
+    "expect": 42.42
+  },
+  {
+    "from": "W_PER_SQ_M",
+    "input": 42.42,
+    "to": "W_PER_SQ_M",
+    "expect": 42.42
+  },
+  {
+    "from": "W_PER_SQ_M_K",
+    "input": 42.42,
+    "to": "W_PER_SQ_M_K",
+    "expect": 42.42
+  },
+  {
+    "from": "W_PER_SQ_M_K",
+    "input": 42.42,
+    "to": "W_PER_SQ_M_CELSIUS",
+    "expect": 42.42
+  },
+  {
+    "from": "W_PER_SQ_M_K",
+    "input": 42.42,
+    "to": "BTU_PER_SQ_FT_HR_FAHRENHEIT",
+    "expect": 7.4705939918034145
+  },
+  {
+    "from": "W_PER_SQ_M_CELSIUS",
+    "input": 42.42,
+    "to": "W_PER_SQ_M_K",
+    "expect": 42.42
+  },
+  {
+    "from": "W_PER_SQ_M_CELSIUS",
+    "input": 42.42,
+    "to": "W_PER_SQ_M_CELSIUS",
+    "expect": 42.42
+  },
+  {
+    "from": "W_PER_SQ_M_CELSIUS",
+    "input": 42.42,
+    "to": "BTU_PER_SQ_FT_HR_FAHRENHEIT",
+    "expect": 7.4705939918034145
+  },
+  {
+    "from": "BTU_PER_SQ_FT_HR_FAHRENHEIT",
+    "input": 42.42,
+    "to": "W_PER_SQ_M_K",
+    "expect": 240.87193093003418
+  },
+  {
+    "from": "BTU_PER_SQ_FT_HR_FAHRENHEIT",
+    "input": 42.42,
+    "to": "W_PER_SQ_M_CELSIUS",
+    "expect": 240.87193093003418
+  },
+  {
+    "from": "BTU_PER_SQ_FT_HR_FAHRENHEIT",
+    "input": 42.42,
+    "to": "BTU_PER_SQ_FT_HR_FAHRENHEIT",
+    "expect": 42.42
+  },
+  {
+    "from": "LUX",
+    "input": 42.42,
+    "to": "LUX",
+    "expect": 42.42
+  },
+  {
+    "from": "LUX",
+    "input": 42.42,
+    "to": "LUMEN_PER_SQ_FT",
+    "expect": 3.9409469568
+  },
+  {
+    "from": "LUMEN_PER_SQ_FT",
+    "input": 42.42,
+    "to": "LUX",
+    "expect": 456.6050798768265
+  },
+  {
+    "from": "LUMEN_PER_SQ_FT",
+    "input": 42.42,
+    "to": "LUMEN_PER_SQ_FT",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_M_PER_SEC",
+    "input": 42.42,
+    "to": "SQ_M_PER_SEC",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_M_PER_SEC",
+    "input": 42.42,
+    "to": "SQ_FT_PER_SEC",
+    "expect": 456.60507987682644
+  },
+  {
+    "from": "SQ_M_PER_SEC",
+    "input": 42.42,
+    "to": "STOKE",
+    "expect": 424200
+  },
+  {
+    "from": "SQ_M_PER_SEC",
+    "input": 42.42,
+    "to": "CENTISTOKE",
+    "expect": 42420000
+  },
+  {
+    "from": "SQ_FT_PER_SEC",
+    "input": 42.42,
+    "to": "SQ_M_PER_SEC",
+    "expect": 3.9409469568
+  },
+  {
+    "from": "SQ_FT_PER_SEC",
+    "input": 42.42,
+    "to": "SQ_FT_PER_SEC",
+    "expect": 42.42
+  },
+  {
+    "from": "SQ_FT_PER_SEC",
+    "input": 42.42,
+    "to": "STOKE",
+    "expect": 39409.46956799999
+  },
+  {
+    "from": "SQ_FT_PER_SEC",
+    "input": 42.42,
+    "to": "CENTISTOKE",
+    "expect": 3940946.9568
+  },
+  {
+    "from": "STOKE",
+    "input": 42.42,
+    "to": "SQ_M_PER_SEC",
+    "expect": 0.004242
+  },
+  {
+    "from": "STOKE",
+    "input": 42.42,
+    "to": "SQ_FT_PER_SEC",
+    "expect": 0.04566050798768265
+  },
+  {
+    "from": "STOKE",
+    "input": 42.42,
+    "to": "STOKE",
+    "expect": 42.42
+  },
+  {
+    "from": "STOKE",
+    "input": 42.42,
+    "to": "CENTISTOKE",
+    "expect": 4242.000000000001
+  },
+  {
+    "from": "CENTISTOKE",
+    "input": 42.42,
+    "to": "SQ_M_PER_SEC",
+    "expect": 0.00004242
+  },
+  {
+    "from": "CENTISTOKE",
+    "input": 42.42,
+    "to": "SQ_FT_PER_SEC",
+    "expect": 0.00045660507987682646
+  },
+  {
+    "from": "CENTISTOKE",
+    "input": 42.42,
+    "to": "STOKE",
+    "expect": 0.42419999999999997
+  },
+  {
+    "from": "CENTISTOKE",
+    "input": 42.42,
+    "to": "CENTISTOKE",
+    "expect": 42.42
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "M",
+    "expect": 42.42
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "MM",
+    "expect": 42420
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "CM",
+    "expect": 4242
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "DM",
+    "expect": 424.20000000000005
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "KM",
+    "expect": 0.04242
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "UM",
+    "expect": 42420000
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "MILLIINCH",
+    "expect": 1670078.7401574804
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "MICROINCH",
+    "expect": 1670078740.1574805
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "MILLIFOOT",
+    "expect": 139173.22834645672
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "IN",
+    "expect": 1670.0787401574805
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "FT",
+    "expect": 139.1732283464567
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "YRD",
+    "expect": 46.39107611548557
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "CHAIN",
+    "expect": 2.1086852779766168
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "MILE",
+    "expect": 0.02635856597470771
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "US_SURVEY_IN",
+    "expect": 1670.0754
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "US_SURVEY_FT",
+    "expect": 139.17295000000001
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "US_SURVEY_YRD",
+    "expect": 46.39098333333333
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "US_SURVEY_CHAIN",
+    "expect": 2.108681060606061
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "US_SURVEY_MILE",
+    "expect": 0.026358513257575756
+  },
+  {
+    "from": "M",
+    "input": 42.42,
+    "to": "NAUT_MILE",
+    "expect": 0.022904967602591794
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "M",
+    "expect": 0.04242
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "MM",
+    "expect": 42.42
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "CM",
+    "expect": 4.242
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "DM",
+    "expect": 0.4242
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "KM",
+    "expect": 0.00004242
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "UM",
+    "expect": 42420.00000000001
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "MILLIINCH",
+    "expect": 1670.0787401574805
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "MICROINCH",
+    "expect": 1670078.7401574804
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "MILLIFOOT",
+    "expect": 139.1732283464567
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "IN",
+    "expect": 1.6700787401574804
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "FT",
+    "expect": 0.1391732283464567
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "YRD",
+    "expect": 0.04639107611548557
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "CHAIN",
+    "expect": 0.0021086852779766165
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "MILE",
+    "expect": 0.000026358565974707707
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "US_SURVEY_IN",
+    "expect": 1.6700754000000002
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "US_SURVEY_FT",
+    "expect": 0.13917295000000002
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "US_SURVEY_YRD",
+    "expect": 0.04639098333333333
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "US_SURVEY_CHAIN",
+    "expect": 0.002108681060606061
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "US_SURVEY_MILE",
+    "expect": 0.000026358513257575757
+  },
+  {
+    "from": "MM",
+    "input": 42.42,
+    "to": "NAUT_MILE",
+    "expect": 0.000022904967602591793
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "M",
+    "expect": 0.4242
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "MM",
+    "expect": 424.20000000000005
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "CM",
+    "expect": 42.42
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "DM",
+    "expect": 4.242
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "KM",
+    "expect": 0.00042420000000000007
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "UM",
+    "expect": 424200
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "MILLIINCH",
+    "expect": 16700.787401574806
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "MICROINCH",
+    "expect": 16700787.401574805
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "MILLIFOOT",
+    "expect": 1391.7322834645672
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "IN",
+    "expect": 16.700787401574804
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "FT",
+    "expect": 1.391732283464567
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "YRD",
+    "expect": 0.4639107611548558
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "CHAIN",
+    "expect": 0.021086852779766168
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "MILE",
+    "expect": 0.0002635856597470771
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "US_SURVEY_IN",
+    "expect": 16.700754
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "US_SURVEY_FT",
+    "expect": 1.3917295
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "US_SURVEY_YRD",
+    "expect": 0.46390983333333335
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "US_SURVEY_CHAIN",
+    "expect": 0.021086810606060605
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "US_SURVEY_MILE",
+    "expect": 0.0002635851325757576
+  },
+  {
+    "from": "CM",
+    "input": 42.42,
+    "to": "NAUT_MILE",
+    "expect": 0.00022904967602591794
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "M",
+    "expect": 4.242
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "MM",
+    "expect": 4242
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "CM",
+    "expect": 424.20000000000005
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "DM",
+    "expect": 42.42
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "KM",
+    "expect": 0.004242
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "UM",
+    "expect": 4242000.000000001
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "MILLIINCH",
+    "expect": 167007.8740157481
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "MICROINCH",
+    "expect": 167007874.01574808
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "MILLIFOOT",
+    "expect": 13917.32283464567
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "IN",
+    "expect": 167.00787401574803
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "FT",
+    "expect": 13.917322834645672
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "YRD",
+    "expect": 4.639107611548558
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "CHAIN",
+    "expect": 0.21086852779766171
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "MILE",
+    "expect": 0.002635856597470771
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "US_SURVEY_IN",
+    "expect": 167.00754
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "US_SURVEY_FT",
+    "expect": 13.917295000000001
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "US_SURVEY_YRD",
+    "expect": 4.639098333333334
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "US_SURVEY_CHAIN",
+    "expect": 0.21086810606060608
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "US_SURVEY_MILE",
+    "expect": 0.0026358513257575757
+  },
+  {
+    "from": "DM",
+    "input": 42.42,
+    "to": "NAUT_MILE",
+    "expect": 0.0022904967602591798
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "M",
+    "expect": 42420
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "MM",
+    "expect": 42420000
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "CM",
+    "expect": 4242000
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "DM",
+    "expect": 424200
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "KM",
+    "expect": 42.42
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "UM",
+    "expect": 42420000000
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "MILLIINCH",
+    "expect": 1670078740.1574805
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "MICROINCH",
+    "expect": 1670078740157.4802
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "MILLIFOOT",
+    "expect": 139173228.3464567
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "IN",
+    "expect": 1670078.7401574806
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "FT",
+    "expect": 139173.2283464567
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "YRD",
+    "expect": 46391.07611548556
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "CHAIN",
+    "expect": 2108.6852779766164
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "MILE",
+    "expect": 26.3585659747077
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "US_SURVEY_IN",
+    "expect": 1670075.4000000001
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "US_SURVEY_FT",
+    "expect": 139172.95
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "US_SURVEY_YRD",
+    "expect": 46390.98333333334
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "US_SURVEY_CHAIN",
+    "expect": 2108.681060606061
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "US_SURVEY_MILE",
+    "expect": 26.35851325757576
+  },
+  {
+    "from": "KM",
+    "input": 42.42,
+    "to": "NAUT_MILE",
+    "expect": 22.904967602591793
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "M",
+    "expect": 0.00004242
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "MM",
+    "expect": 0.04242
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "CM",
+    "expect": 0.004242
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "DM",
+    "expect": 0.00042419999999999996
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "KM",
+    "expect": 4.242e-8
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "UM",
+    "expect": 42.42
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "MILLIINCH",
+    "expect": 1.6700787401574804
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "MICROINCH",
+    "expect": 1670.0787401574805
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "MILLIFOOT",
+    "expect": 0.1391732283464567
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "IN",
+    "expect": 0.0016700787401574806
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "FT",
+    "expect": 0.00013917322834645668
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "YRD",
+    "expect": 0.00004639107611548557
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "CHAIN",
+    "expect": 0.0000021086852779766164
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "MILE",
+    "expect": 2.6358565974707707e-8
+  },
+  {
+    "from": "UM",
+    "input": 42.42,
+    "to": "US_SURVEY_IN",
+    "expect": 0.0016700754
+  },
+  {
+    "from": "GRAD",
+    "input": 42.42,
+    "to": "ARC_DEG",
+    "expect": 38.178
+  },
+  {
+    "from": "ARC_DEG",
+    "input": 42.42,
+    "to": "GRAD",
+    "expect": 47.13333333333334
+  },
+  {
+    "from": "ARC_MINUTE",
+    "input": 42.42,
+    "to": "ARC_DEG",
+    "expect": 0.7070000000000001
+  },
+  {
+    "from": "ARC_DEG",
+    "input": 42.42,
+    "to": "ARC_MINUTE",
+    "expect": 2545.2000000000003
+  },
+  {
+    "from": "GRAD",
+    "input": 42.42,
+    "to": "ARC_QUADRANT",
+    "expect": 0.42419999999999997
+  },
+  {
+    "from": "ARC_QUADRANT",
+    "input": 42.42,
+    "to": "GRAD",
+    "expect": 4242
+  },
+  {
+    "from": "ARC_MINUTE",
+    "input": 42.42,
+    "to": "ARC_QUADRANT",
+    "expect": 0.007855555555555555
+  },
+  {
+    "from": "ARC_QUADRANT",
+    "input": 42.42,
+    "to": "ARC_MINUTE",
+    "expect": 229068
+  },
+  {
+    "from": "GRAD",
+    "input": 42.42,
+    "to": "REVOLUTION",
+    "expect": 0.10604999999999999
+  },
+  {
+    "from": "REVOLUTION",
+    "input": 42.42,
+    "to": "GRAD",
+    "expect": 16968
+  },
+  {
+    "from": "ARC_MINUTE",
+    "input": 42.42,
+    "to": "REVOLUTION",
+    "expect": 0.0019638888888888887
+  },
+  {
+    "from": "REVOLUTION",
+    "input": 42.42,
+    "to": "ARC_MINUTE",
+    "expect": 916272
+  },
+  {
+    "from": "DEG_PER_SEC",
+    "input": 42.42,
+    "to": "RAD_PER_MIN",
+    "expect": 44.422120121759676
+  },
+  {
+    "from": "RAD_PER_MIN",
+    "input": 42.42,
+    "to": "DEG_PER_SEC",
+    "expect": 40.5081161157492
+  },
+  {
+    "from": "DEG_PER_HR",
+    "input": 42.42,
+    "to": "RPM",
+    "expect": 0.001963888888888889
+  },
+  {
+    "from": "RPM",
+    "input": 42.42,
+    "to": "DEG_PER_HR",
+    "expect": 916272
+  },
+  {
+    "from": "KILOPASCAL",
+    "input": 42.42,
+    "to": "PSI",
+    "expect": 6.152500834515474
+  },
+  {
+    "from": "BARYE",
+    "input": 42.42,
+    "to": "HECTOPASCAL",
+    "expect": 0.04242
+  },
+  {
+    "from": "SQ_FT_HR_FAHRENHEIT_PER_BTU",
+    "input": 42.42,
+    "to": "SQ_M_CELSIUS_PER_WATT",
+    "expect": 7.470593991803412
+  },
+  {
+    "from": "SQ_M_CELSIUS_PER_WATT",
+    "input": 42.42,
+    "to": "SQ_FT_HR_FAHRENHEIT_PER_BTU",
+    "expect": 240.8719309300342
+  },
+  {
+    "from": "FT_PER_IN",
+    "input": 42.42,
+    "to": "PERCENT_SLOPE",
+    "expect": 50904
+  },
+  {
+    "from": "PERCENT_SLOPE",
+    "input": 42.42,
+    "to": "FT_PER_IN",
+    "expect": 0.03535
+  },
+  {
+    "from": "AT",
+    "input": 42.42,
+    "to": "AT_GAUGE",
+    "expect": 41.38677254720012
+  },
+  {
+    "from": "AT_GAUGE",
+    "input": 42.42,
+    "to": "AT",
+    "expect": 43.45322745279989
+  },
+  {
+    "from": "AT_GAUGE",
+    "input": 42.42,
+    "to": "PA_GAUGE",
+    "expect": 4159980.93
+  },
+  {
+    "from": "PA_GAUGE",
+    "input": 42.42,
+    "to": "AT_GAUGE",
+    "expect": 0.0004325636175450151
+  },
+  {
+    "from": "BAR",
+    "input": 42.42,
+    "to": "BAR_GAUGE",
+    "expect": 41.406749999999995
+  },
+  {
+    "from": "BAR_GAUGE",
+    "input": 42.42,
+    "to": "BAR",
+    "expect": 43.433249999999994
+  },
+  {
+    "from": "TORR",
+    "input": 42.42,
+    "to": "AT_GAUGE",
+    "expect": -0.9755570468159765
+  },
+  {
+    "from": "AT_GAUGE",
+    "input": 42.42,
+    "to": "TORR",
+    "expect": 31962.42296373057
+  },
+  {
+    "from": "KILOPASCAL_GAUGE",
+    "input": 42.42,
+    "to": "PA_GAUGE",
+    "expect": 42420
+  },
+  {
+    "from": "PA_GAUGE",
+    "input": 42.42,
+    "to": "KILOPASCAL_GAUGE",
+    "expect": 0.04242
+  },
+  {
+    "from": "KILOPASCAL_GAUGE",
+    "input": 42.42,
+    "to": "PSIG",
+    "expect": 6.152500834515474
+  },
+  {
+    "from": "PSIG",
+    "input": 42.42,
+    "to": "KILOPASCAL_GAUGE",
+    "expect": 292.47560437620194
+  },
+  {
+    "from": "FAHRENHEIT",
+    "input": 42.42,
+    "to": "K",
+    "expect": 278.93888888888887
+  },
+  {
+    "from": "K",
+    "input": 42.42,
+    "to": "FAHRENHEIT",
+    "expect": -383.31399999999996
+  },
+  {
+    "from": "CELSIUS",
+    "input": 42.42,
+    "to": "RANKINE",
+    "expect": 568.026
+  },
+  {
+    "from": "RANKINE",
+    "input": 42.42,
+    "to": "CELSIUS",
+    "expect": -249.58333333333331
+  },
+  {
+    "from": "FAHRENHEIT",
+    "input": 42.42,
+    "to": "CELSIUS",
+    "expect": 5.7888888888888985
+  },
+  {
+    "from": "CELSIUS",
+    "input": 42.42,
+    "to": "FAHRENHEIT",
+    "expect": 108.35600000000001
+  }
+]
