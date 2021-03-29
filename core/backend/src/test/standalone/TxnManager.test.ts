@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, DbResult, Guid, Id64, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, DbResult, Guid, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
@@ -14,7 +14,6 @@ import {
   TxnChangedEntities, TxnManager,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
-import { NativeLoggerCategory } from "@bentley/imodeljs-native";
 
 describe("TxnManager", () => {
   let imodel: StandaloneDb;
@@ -36,7 +35,7 @@ describe("TxnManager", () => {
   };
 
   before(async () => {
-    Logger.setLevel(NativeLoggerCategory.BeSQLite, LogLevel.Info); // temporary, to debug transient errors on CI job
+    IModelTestUtils.setupDebugLogLevels(); // temporary, to debug random errors on CI job
 
     IModelTestUtils.registerTestBimSchema();
     testFileName = IModelTestUtils.prepareOutputFile("TxnManager", "TxnManagerTest.bim");
@@ -69,7 +68,8 @@ describe("TxnManager", () => {
 
   after(() => {
     imodel.close();
-    Logger.setLevel(NativeLoggerCategory.BeSQLite, LogLevel.Error); // temporary, to debug transient errors on CI job
+    IModelTestUtils.resetDebugLogLevels(); // temporary, to debug random errors on CI job
+
   });
 
   it("TxnManager", async () => {
