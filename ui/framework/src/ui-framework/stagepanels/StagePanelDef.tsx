@@ -85,6 +85,7 @@ export class StagePanelDef extends WidgetHost {
     if (this._size === size)
       return;
 
+    // istanbul ignore else
     if (UiFramework.uiVersion === "2") {
       const frontstageDef = FrontstageManager.activeFrontstageDef;
       if (frontstageDef && frontstageDef.nineZoneState) {

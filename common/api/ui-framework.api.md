@@ -164,9 +164,11 @@ import { UiAdmin } from '@bentley/ui-abstract';
 import { UiDataProvider } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
 import { UiLayoutDataProvider } from '@bentley/ui-abstract';
+import { UiSetting } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
 import { UiSettingsResult } from '@bentley/ui-core';
 import { UiSettingsStatus } from '@bentley/ui-core';
+import { UiSettingsStorage } from '@bentley/ui-core';
 import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-components';
 import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
 import { UnitSystemKey } from '@bentley/imodeljs-frontend';
@@ -484,6 +486,25 @@ export class AppNotificationManager extends NotificationManager {
     setupActivityMessage(details: ActivityMessageDetails): boolean;
     protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
     updatePointerMessage(displayPoint: XAndY, relativePosition: RelativePosition): void;
+}
+
+// @beta
+export class AppUiSettings implements UserSettingsProvider {
+    constructor(defaults: Partial<InitialAppUiSettings>);
+    // (undocumented)
+    apply(storage: UiSettingsStorage): Promise<void>;
+    // (undocumented)
+    colorTheme: UiSetting<string>;
+    // (undocumented)
+    dragInteraction: UiSetting<boolean>;
+    // (undocumented)
+    frameworkVersion: UiSetting<string>;
+    // (undocumented)
+    loadUserSettings(storage: UiSettingsStorage): Promise<void>;
+    // (undocumented)
+    readonly providerId = "AppUiSettingsProvider";
+    // (undocumented)
+    widgetOpacity: UiSetting<number>;
 }
 
 // @beta
@@ -1015,6 +1036,10 @@ export class ConfigurableCreateInfo {
 // @public
 export enum ConfigurableUiActionId {
     // (undocumented)
+    SetDragInteraction = "configurableui:set-drag-interaction",
+    // (undocumented)
+    SetFrameworkVersion = "configurableui:set-framework-version",
+    // (undocumented)
     SetSnapMode = "configurableui:set_snapmode",
     // (undocumented)
     SetTheme = "configurableui:set_theme",
@@ -1030,6 +1055,8 @@ export const ConfigurableUiActions: {
     setTheme: (theme: string) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetTheme, string>;
     setToolPrompt: (toolPrompt: string) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetToolPrompt, string>;
     setWidgetOpacity: (opacity: number) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetWidgetOpacity, number>;
+    setDragInteraction: (dragInteraction: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetDragInteraction, boolean>;
+    setFrameworkVersion: (frameworkVersion: string) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetFrameworkVersion, string>;
 };
 
 // @public
@@ -1120,16 +1147,20 @@ export class ConfigurableUiManager {
 }
 
 // @public
-export function ConfigurableUiReducer(state: ConfigurableUiState | undefined, _action: ConfigurableUiActionsUnion): ConfigurableUiState;
+export function ConfigurableUiReducer(state: ConfigurableUiState | undefined, action: ConfigurableUiActionsUnion): ConfigurableUiState;
 
 // @public
 export interface ConfigurableUiState {
+    // (undocumented)
+    frameworkVersion: string;
     // (undocumented)
     snapMode: number;
     // (undocumented)
     theme: string;
     // (undocumented)
     toolPrompt: string;
+    // (undocumented)
+    useDragInteraction: boolean;
     // (undocumented)
     widgetOpacity: number;
 }
@@ -2016,7 +2047,7 @@ export interface FooterModeFieldProps extends StatusFieldProps {
 }
 
 // @internal (undocumented)
-export class FrameworkAccuDraw extends AccuDraw {
+export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider {
     constructor();
     static get displayNotifications(): boolean;
     static set displayNotifications(v: boolean);
@@ -2032,6 +2063,8 @@ export class FrameworkAccuDraw extends AccuDraw {
     static readonly isSideRotationConditional: ConditionalBooleanValue;
     static readonly isTopRotationConditional: ConditionalBooleanValue;
     static readonly isViewRotationConditional: ConditionalBooleanValue;
+    // (undocumented)
+    loadUserSettings(storage: UiSettings): Promise<void>;
     static readonly onAccuDrawUiSettingsChangedEvent: AccuDrawUiSettingsChangedEvent;
     // (undocumented)
     onCompassModeChange(): void;
@@ -2042,6 +2075,8 @@ export class FrameworkAccuDraw extends AccuDraw {
     onMotion(_ev: BeButtonEvent): void;
     // (undocumented)
     onRotationModeChange(): void;
+    // (undocumented)
+    readonly providerId = "FrameworkAccuDraw";
     // (undocumented)
     setFocusItem(index: ItemField): void;
     // (undocumented)
@@ -2056,7 +2091,7 @@ export class FrameworkAccuDraw extends AccuDraw {
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("@bentley/itwin-client").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("@bentley/itwin-client").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2723,6 +2758,9 @@ export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string)
 // @internal (undocumented)
 export const getStagePanelType: (location: StagePanelLocation_2) => StagePanelType;
 
+// @beta
+export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry;
+
 // @internal (undocumented)
 export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes;
 
@@ -2908,14 +2946,8 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
     relativePosition: RelativePosition;
 }
 
-// @beta
-export class IModelAppUiSettings implements UiSettings {
-    // (undocumented)
-    deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    getSetting(namespace: string, name: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult>;
+// @beta @deprecated
+export class IModelAppUiSettings extends UserSettingsStorage {
 }
 
 // @beta
@@ -3036,6 +3068,18 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     constructor(props: IndicatorProps);
     // (undocumented)
     render(): JSX.Element;
+}
+
+// @beta
+export interface InitialAppUiSettings {
+    // (undocumented)
+    colorTheme: string;
+    // (undocumented)
+    dragInteraction: boolean;
+    // (undocumented)
+    frameworkVersion: string;
+    // (undocumented)
+    widgetOpacity: number;
 }
 
 // @internal (undocumented)
@@ -4328,7 +4372,7 @@ export class PropsHelper {
 }
 
 // @beta
-export function QuantityFormatSettingsPanel({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element;
+export function QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element;
 
 // @beta
 export interface QuantityFormatterSettingsOptions {
@@ -5762,6 +5806,8 @@ export enum SyncUiEventId {
     NavigationAidActivated = "navigationaidactivated",
     SelectionSetChanged = "selectionsetchanged",
     SettingsProvidersChanged = "settingsproviderschanged",
+    // (undocumented)
+    ShowHideManagerSettingChange = "show-hide-setting-change",
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
     UiSettingsChanged = "uisettingschanged",
@@ -5939,7 +5985,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     // @internal (undocumented)
     context: React.ContextType<typeof UiSettingsContext>;
     // @internal (undocumented)
-    static contextType: React.Context<UiSettings>;
+    static contextType: React.Context<UiSettingsStorage>;
     // @internal (undocumented)
     static readonly defaultProps: ToolAssistanceFieldDefaultProps;
     // @internal (undocumented)
@@ -5957,7 +6003,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
     defaultPromptAtCursor: boolean;
     fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
-    uiSettings?: UiSettings;
+    uiSettings?: UiSettingsStorage;
 }
 
 // @internal
@@ -6375,7 +6421,7 @@ export class UiFramework {
     // (undocumented)
     static getIsUiVisible(): boolean;
     // @beta (undocumented)
-    static getUiSettings(): UiSettings;
+    static getUiSettingsStorage(): UiSettingsStorage;
     // @beta (undocumented)
     static getUserInfo(): UserInfo | undefined;
     // (undocumented)
@@ -6409,6 +6455,8 @@ export class UiFramework {
     }): Promise<void>;
     // @internal (undocumented)
     static get projectServices(): ProjectServices;
+    // @alpha
+    static registerUserSettingsProvider(entry: UserSettingsProvider): boolean;
     // (undocumented)
     static setAccudrawSnapMode(snapMode: SnapMode): void;
     // (undocumented)
@@ -6432,7 +6480,11 @@ export class UiFramework {
     // @beta
     static get settingsManager(): SettingsManager;
     // @beta (undocumented)
-    static setUiSettings(uiSettings: UiSettings, immediateSync?: boolean): void;
+    static setUiSettingsStorage(storage: UiSettingsStorage, immediateSync?: boolean): Promise<void>;
+    // (undocumented)
+    static setUiVersion(version: string): void;
+    // (undocumented)
+    static setUseDragInteraction(useDragInteraction: boolean): void;
     // @beta (undocumented)
     static setUserInfo(userInfo: UserInfo | undefined, immediateSync?: boolean): void;
     // (undocumented)
@@ -6443,6 +6495,8 @@ export class UiFramework {
     static translate(key: string | string[]): string;
     // @beta
     static get uiVersion(): string;
+    // (undocumented)
+    static get useDragInteraction(): boolean;
     // @alpha (undocumented)
     static get widgetManager(): WidgetManager;
     }
@@ -6458,17 +6512,22 @@ export interface UiIntervalEventArgs {
 }
 
 // @internal (undocumented)
-export const UiSettingsContext: React.Context<UiSettings>;
+export const UiSettingsContext: React.Context<UiSettingsStorage>;
 
-// @alpha
+// @beta
+export function UiSettingsPage({ allowSettingUiFrameworkVersion }: {
+    allowSettingUiFrameworkVersion: boolean;
+}): JSX.Element;
+
+// @beta
 export function UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element;
 
-// @alpha
+// @beta
 export interface UiSettingsProviderProps {
     // (undocumented)
     children?: React.ReactNode;
     // (undocumented)
-    uiSettings: UiSettings;
+    settingsStorage: UiSettingsStorage;
 }
 
 // @public
@@ -6482,6 +6541,12 @@ export class UiShowHideManager {
     static set inactivityTime(time: number);
     static get isUiVisible(): boolean;
     static set isUiVisible(visible: boolean);
+    // @internal (undocumented)
+    static setAutoHideUi(value: boolean): void;
+    // @internal (undocumented)
+    static setSnapWidgetOpacity(value: boolean): void;
+    // @internal (undocumented)
+    static setUseProximityOpacity(value: boolean): void;
     static get showHideFooter(): boolean;
     static set showHideFooter(showHide: boolean);
     static get showHidePanels(): boolean;
@@ -6492,6 +6557,22 @@ export class UiShowHideManager {
     static set snapWidgetOpacity(value: boolean);
     static get useProximityOpacity(): boolean;
     static set useProximityOpacity(value: boolean);
+    }
+
+// @internal
+export class UiShowHideSettingsProvider implements UserSettingsProvider {
+    // (undocumented)
+    static initialize(): void;
+    // (undocumented)
+    loadUserSettings(storage: UiSettings): Promise<void>;
+    // (undocumented)
+    readonly providerId = "UiShowHideSettingsProvider";
+    // (undocumented)
+    static storeAutoHideUi(v: boolean, storage?: UiSettings): Promise<void>;
+    // (undocumented)
+    static storeSnapWidgetOpacity(v: boolean, storage?: UiSettings): Promise<void>;
+    // (undocumented)
+    static storeUseProximityOpacity(v: boolean, storage?: UiSettings): Promise<void>;
     }
 
 // @public
@@ -6575,6 +6656,22 @@ export interface UserProfileBackstageItemProps extends CommonProps {
     userInfo: UserInfo;
 }
 
+// @beta
+export interface UserSettingsProvider {
+    loadUserSettings(storage: UiSettingsStorage): Promise<void>;
+    providerId: string;
+}
+
+// @public
+export class UserSettingsStorage implements UiSettingsStorage {
+    // (undocumented)
+    deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    getSetting(namespace: string, name: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult>;
+}
+
 // @internal (undocumented)
 export function useSavedFrontstageState(frontstageDef: FrontstageDef): void;
 
@@ -6596,8 +6693,8 @@ export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2
 // @beta
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
 
-// @internal (undocumented)
-export function useUiSettingsContext(): UiSettings;
+// @beta (undocumented)
+export function useUiSettingsStorageContext(): UiSettingsStorage;
 
 // @internal (undocumented)
 export function useUiVisibility(): boolean;
@@ -7276,7 +7373,7 @@ export interface WidgetStackTabsProps {
     widgetTabs: WidgetTabs;
 }
 
-// @public
+// @public @deprecated
 export enum WidgetState {
     Closed = 1,
     Floating = 3,
