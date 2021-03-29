@@ -2135,7 +2135,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     supplyDialogItems(): DialogItem[] | undefined;
 }
 
-// @beta
+// @public
 export enum WidgetState {
     Closed = 1,
     Floating = 3,

@@ -174,4 +174,4 @@ beta;UiItemsArbiter
 public;UiItemsManager
 public;UiItemsProvider
 beta;class UiLayoutDataProvider 
-beta;WidgetState
+public;WidgetState
