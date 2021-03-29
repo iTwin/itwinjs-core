@@ -6,9 +6,9 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MockRender } from "@bentley/imodeljs-frontend";
-import { ContentLayoutDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef, WidgetState } from "../../ui-framework";
+import { ContentLayoutDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
+import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@bentley/ui-abstract";
 import { addFloatingWidget, addPanelWidget, addTab, createNineZoneState } from "@bentley/ui-ninezone";
 
 describe("FrontstageDef", () => {
@@ -173,7 +173,7 @@ describe("FrontstageDef", () => {
 describe("float and dock widget", () => {
 
   it("should float", () => {
-    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
@@ -187,7 +187,7 @@ describe("float and dock widget", () => {
     sinon.stub(UiFramework, "uiVersion").get(() => "2");
     sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
     sinon.stub(frontstageDef, "nineZoneState").get(() => state);
-    frontstageDef.floatWidget("t1", {x:55, y:105});
+    frontstageDef.floatWidget("t1", { x: 55, y: 105 });
     nineZoneStateSetter.calledOnce.should.true;
 
     frontstageDef.floatWidget("ta");
@@ -195,7 +195,7 @@ describe("float and dock widget", () => {
   });
 
   it("should not float if v1", () => {
-    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
@@ -208,7 +208,7 @@ describe("float and dock widget", () => {
 
     sinon.stub(UiFramework, "uiVersion").get(() => "1");
     sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
-    frontstageDef.floatWidget("t1", {x:55, y:105});
+    frontstageDef.floatWidget("t1", { x: 55, y: 105 });
     nineZoneStateSetter.calledOnce.should.not.be.true;
 
     sinon.stub(UiFramework, "uiVersion").get(() => "");
@@ -217,7 +217,7 @@ describe("float and dock widget", () => {
   });
 
   it("should dock", () => {
-    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addFloatingWidget(state, "fw1", ["t1"]);
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
@@ -241,7 +241,7 @@ describe("float and dock widget", () => {
   });
 
   it("should not dock if V1", () => {
-    let state = createNineZoneState({size: {height: 1000, width: 1600}});
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addFloatingWidget(state, "fw1", ["t1"]);
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);

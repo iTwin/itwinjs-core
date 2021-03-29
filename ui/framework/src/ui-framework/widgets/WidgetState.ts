@@ -7,8 +7,8 @@
  */
 /** Widget state enum.
  * @public
- * Deprecated - Use [WidgetState]($ui-abstract) in bentley/ui-abstract instead.
- */
+ * @deprecated - Use [WidgetState]($ui-abstract) in bentley/ui-abstract instead.
+ */
 export enum WidgetState {
   /** Widget tab is visible and active and its contents are visible */
   Open,
