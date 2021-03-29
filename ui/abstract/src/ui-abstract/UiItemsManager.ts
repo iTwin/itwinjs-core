@@ -15,7 +15,7 @@ import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 import { StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 
 /** Action taken by the application on item provided by a UiItemsProvider
- * @beta
+ * @public
  */
 export enum UiItemsApplicationAction {
   /** Allow the change to the item */
@@ -27,7 +27,7 @@ export enum UiItemsApplicationAction {
 }
 
 /** Describes interface of objects that want to provide UI component to the running IModelApp.
- * @beta
+ * @public
  */
 export interface UiItemsProvider {
   /** id of provider */
@@ -55,7 +55,7 @@ export interface UiItemsProvider {
 }
 
 /** UIProvider Registered Event Args interface.
- * @beta
+ * @public
  */
 export interface UiItemProviderRegisteredEventArgs {
   providerId: string;
@@ -63,7 +63,7 @@ export interface UiItemProviderRegisteredEventArgs {
 
 /**
  * Controls registering of UiItemsProviders and calls the provider's methods when populating different parts of the User Interface.
- * @beta
+ * @public
  */
 export class UiItemsManager {
   private static _registeredUiItemsProviders: Map<string, UiItemsProvider> = new Map<string, UiItemsProvider>();

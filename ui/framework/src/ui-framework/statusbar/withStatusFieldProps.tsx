@@ -11,7 +11,7 @@ import { StatusFieldProps } from "../statusfields/StatusFieldProps";
 import { StatusBarContext } from "./StatusBar";
 
 /** HOC that injects values for [[StatusFieldProps]].
- * @beta
+ * @public
  */
 export const withStatusFieldProps = <P extends StatusFieldProps, C>(
   // eslint-disable-next-line @typescript-eslint/naming-convention
