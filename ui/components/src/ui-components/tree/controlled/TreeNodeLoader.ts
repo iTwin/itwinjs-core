@@ -24,7 +24,7 @@ import {
   ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw,
   TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
 } from "../TreeDataProvider";
-import { Observable } from "./Observable";
+import { Observable, toRxjsObservable } from "./Observable";
 import { isTreeModelNode, MutableTreeModel, TreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "./TreeModel";
 import { TreeModelSource } from "./TreeModelSource";
 
@@ -74,7 +74,7 @@ export abstract class AbstractTreeNodeLoader implements ITreeNodeLoader {
 
   /** Do not override this method. @see `load` */
   public loadNode(parent: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<TreeNodeLoadResult> {
-    return from(this.load(parent, childIndex)).pipe(
+    return toRxjsObservable(this.load(parent, childIndex)).pipe(
       map((loadedHierarchy) => {
         this.updateModel(loadedHierarchy);
         return { loadedNodes: collectTreeNodeItems(loadedHierarchy.hierarchyItems) };
