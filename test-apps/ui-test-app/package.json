@@ -12,7 +12,7 @@
     "build:frontend": "npm run pseudolocalize && cross-env GENERATE_SOURCEMAP=false DISABLE_ESLINT=true TRANSPILE_DEPS=false USE_FAST_SASS=true DISABLE_TERSER=true react-scripts build",
     "clean": "rimraf lib build .rush/temp/package-deps*.json",
     "copy:assets": "cpx ./src/backend/web/BackendServer.config.json ./lib/backend/web",
-    "lint": "eslint -f visualstudio --config package.json --no-eslintrc ./src/**/*.{ts,tsx} 1>&2",
+    "lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.{ts,tsx}\" 1>&2",
     "start": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/main.js",
     "start:electron:prod": "cross-env NODE_ENV=production electron ./lib/backend/main.js",

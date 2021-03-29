@@ -5,13 +5,13 @@
 import * as React from "react";
 import {
   DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
-  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames,
+  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames, WidgetState,
 } from "@bentley/ui-abstract";
 import {
   CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps,
   FrontstageProvider, GroupButton, ModalDialogManager, ModelessDialogManager,
   NavigationWidget, StagePanel, StagePanelState, ToolButton,
-  ToolWidget, Widget, WidgetState, Zone, ZoneState,
+  ToolWidget, Widget, Zone, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
