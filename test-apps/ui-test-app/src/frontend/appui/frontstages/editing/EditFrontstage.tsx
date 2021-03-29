@@ -186,10 +186,12 @@ export class EditFrontstage extends FrontstageProvider {
  */
 class AdditionalTools {
 
-  public additionalHorizontalToolbarItems: CommonToolbarItem[] =
-    ToolbarHelper.createToolbarItemsFromItemDefs([CoreTools.keyinPaletteButtonItemDef, EditTools.deleteElementTool,
-    EditTools.moveElementTool, EditTools.rotateElementTool,
-    EditTools.placeLineStringTool, EditTools.placeBlockTool], 100);
+  public additionalHorizontalToolbarItems: CommonToolbarItem[] = ToolbarHelper.createToolbarItemsFromItemDefs(
+    [
+      CoreTools.keyinPaletteButtonItemDef, EditTools.deleteElementTool,
+      EditTools.moveElementTool, EditTools.rotateElementTool,
+      EditTools.placeLineStringTool, EditTools.placeBlockTool,
+    ], 100);
 
   private get _accudrawDialogItemVertical() {
     const dialogId = "accudraw-vertical";

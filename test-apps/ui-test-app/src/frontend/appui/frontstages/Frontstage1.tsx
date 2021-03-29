@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { WidgetState } from "@bentley/ui-abstract";
 import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@bentley/ui-components";
 import {
   ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
@@ -16,7 +15,7 @@ import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
-import { UiAdmin } from "@bentley/ui-abstract";
+import { UiAdmin, WidgetState } from "@bentley/ui-abstract";
 
 /* eslint-disable react/jsx-key */
 
