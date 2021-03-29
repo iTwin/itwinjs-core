@@ -532,6 +532,7 @@ beta;ToolbarProps
 beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
 beta;ToolbarWithOverflowProps 
+internal;toRxjsObservable
 internal;toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition
 beta;TreeActions
 beta;TreeCellUpdatedArgs
