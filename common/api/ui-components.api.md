@@ -4928,6 +4928,9 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
 }
 
 // @internal (undocumented)
+export function toRxjsObservable<T>(observable: Observable<T>): Observable_2<T>;
+
+// @internal (undocumented)
 export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;
 
 // @beta
