@@ -539,15 +539,15 @@ export interface BackstageActionItem extends BackstageActionItem_2 {
     readonly type: BackstageItemType.ActionItem;
 }
 
-// @beta
+// @public
 export function BackstageAppButton(props: BackstageAppButtonProps): JSX.Element;
 
-// @beta
+// @public
 export interface BackstageAppButtonProps {
     icon?: string;
 }
 
-// @beta
+// @public
 export function BackstageComposer(props: BackstageComposerProps): JSX.Element;
 
 // @internal (undocumented)
@@ -567,7 +567,7 @@ export interface BackstageComposerItemProps {
     readonly item: BackstageItem;
 }
 
-// @beta
+// @public
 export interface BackstageComposerProps extends CommonProps {
     readonly header?: React.ReactNode;
     readonly items: BackstageItem[];
@@ -1462,7 +1462,7 @@ export class CursorInformation {
     static readonly onCursorUpdatedEvent: CursorUpdatedEvent;
 }
 
-// @beta
+// @public
 export interface CursorMenuData {
     // (undocumented)
     items: MenuItemProps[];
@@ -1609,7 +1609,7 @@ export interface CursorUpdatedEventArgs {
     oldPt: PointProps;
 }
 
-// @beta
+// @public
 export class CustomItemDef extends ActionButtonItemDef {
     constructor(props: CustomItemProps);
     // (undocumented)
@@ -1626,7 +1626,7 @@ export class CustomItemDef extends ActionButtonItemDef {
     toolbarReactNode(index?: number): React.ReactNode;
 }
 
-// @beta
+// @public
 export interface CustomItemProps extends ItemProps {
     // (undocumented)
     customId?: string;
@@ -2015,7 +2015,7 @@ export const expandWidget: (base: {
     };
 }, id: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
-// @beta
+// @public
 export interface ExtensibleToolbarProps {
     // (undocumented)
     items: CommonToolbarItem[];
@@ -2087,7 +2087,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
     static set uiSettings(v: AccuDrawUiSettings | undefined);
     }
 
-// @beta
+// @public
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
@@ -2154,7 +2154,7 @@ export interface FrameworkStagePanelProps {
     widgetTabs: WidgetTabs;
 }
 
-// @beta
+// @public
 export interface FrameworkState {
     // (undocumented)
     configurableUiState: ConfigurableUiState;
@@ -2167,7 +2167,7 @@ export class FrameworkToolAdmin extends ToolAdmin {
     processShortcutKey(e: KeyboardEvent, wentDown: boolean): boolean;
 }
 
-// @beta
+// @public
 export class FrameworkUiAdmin extends UiAdmin {
     closeDialog(dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
@@ -3174,7 +3174,7 @@ export const isReactContent: (content: PopupContentType) => content is ReactCont
 // @internal
 export const isReactNotifyMessageDetails: (details: any) => details is ReactNotifyMessageDetails;
 
-// @alpha
+// @public
 export const isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem;
 
 // @internal (undocumented)
@@ -3387,14 +3387,14 @@ export interface KeyinBrowserProps extends CommonProps {
     onExecute?: (args: KeyinBrowserExecuteArgs) => void;
 }
 
-// @beta
+// @public
 export interface KeyinEntry {
     isHistory?: boolean;
     matches?: IMatch[];
     value: string;
 }
 
-// @beta
+// @public
 export enum KeyinFieldLocalization {
     Both = 2,
     Localized = 1,
@@ -3633,7 +3633,7 @@ export class MenuItemHelpers {
     static createMenuItems(itemPropsList: MenuItemProps[], onSelection?: () => void): MenuItem[];
 }
 
-// @beta
+// @public
 export type MenuItemProps = AbstractMenuItemProps;
 
 // @public
@@ -3979,7 +3979,7 @@ export interface MouseDownChangedEventArgs {
     mouseDown: boolean;
 }
 
-// @beta
+// @public
 export interface NameToReducerMap {
     // (undocumented)
     [name: string]: (state: any, action: any) => any;
@@ -4009,10 +4009,10 @@ export class NavigationAidControl extends ConfigurableUiControl {
     set reactNode(r: React.ReactNode);
     }
 
-// @beta
+// @public
 export function NavigationAidHost(props: NavigationAidHostProps): JSX.Element;
 
-// @beta
+// @public
 export interface NavigationAidHostProps {
     // (undocumented)
     minHeight?: string;
@@ -4033,10 +4033,10 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
     readonly state: Readonly<NavigationWidgetState>;
 }
 
-// @beta
+// @public
 export function NavigationWidgetComposer(props: NavigationWidgetComposerProps): JSX.Element;
 
-// @beta
+// @public
 export interface NavigationWidgetComposerProps extends CommonProps {
     horizontalToolbar?: React.ReactNode;
     navigationAidHost?: React.ReactNode;
@@ -4313,7 +4313,7 @@ export interface PositionPopupProps extends CommonProps {
     point: PointProps;
 }
 
-// @beta
+// @public
 export interface PresentationSelectionScope {
     // (undocumented)
     id: string;
@@ -4596,7 +4596,7 @@ export class SeparatorBackstageItem extends React.PureComponent<BackstageItemPro
     render(): React.ReactNode;
     }
 
-// @beta
+// @public
 export interface SessionState {
     // (undocumented)
     activeSelectionScope: string;
@@ -4620,7 +4620,7 @@ export interface SessionState {
     userInfo: UserInfo | undefined;
 }
 
-// @beta
+// @public
 export enum SessionStateActionId {
     // (undocumented)
     SetActiveIModelId = "sessionstate:set-active-imodelid",
@@ -4644,7 +4644,7 @@ export enum SessionStateActionId {
     UpdateCursorMenu = "sessionstate:update-cursor-menu"
 }
 
-// @beta
+// @public
 export const SessionStateActions: {
     setUserInfo: (userInfo: UserInfo) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<UserInfo>>;
     setActiveIModelId: (iModelId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
@@ -4682,7 +4682,7 @@ export interface SessionStateActionsProps {
     updateCursorMenu: (typeof SessionStateActions.updateCursorMenu);
 }
 
-// @beta
+// @public
 export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
 
 // @beta
@@ -4699,7 +4699,7 @@ export const sessionStateMapDispatchToProps: {
     updateCursorMenu: (cursorMenuData: CursorMenuData) => import("./redux-ts").ActionWithPayload<SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<CursorMenuData>>;
 };
 
-// @beta
+// @public
 export function SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly<SessionState>;
 
 // @internal (undocumented)
@@ -5362,7 +5362,7 @@ export interface SplitterPaneTargetProps {
     paneIndex: number;
 }
 
-// @beta
+// @public
 export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {
     constructor(props: StagePanelProps);
     // (undocumented)
@@ -5393,7 +5393,7 @@ export interface StagePanelChangeHandler {
     handleTogglePanelCollapse(panelLocation: StagePanelLocation_2): void;
 }
 
-// @beta
+// @public
 export class StagePanelDef extends WidgetHost {
     constructor();
     get applicationData(): any | undefined;
@@ -5425,7 +5425,7 @@ export class StagePanelDef extends WidgetHost {
     get widgetDefs(): ReadonlyArray<WidgetDef>;
 }
 
-// @beta
+// @public
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
 // @alpha
@@ -5458,12 +5458,12 @@ export enum StagePanelLocation {
     TopMost = 102
 }
 
-// @beta
+// @public
 export type StagePanelMaxSizeSpec = number | {
     percentage: number;
 };
 
-// @beta
+// @public
 export interface StagePanelProps {
     allowedZones?: ZoneLocation[];
     applicationData?: any;
@@ -5471,6 +5471,7 @@ export interface StagePanelProps {
     header?: React.ReactNode;
     maxSize?: StagePanelMaxSizeSpec;
     minSize?: number;
+    // @beta
     panelZones?: StagePanelZonesProps;
     pinned?: boolean;
     resizable: boolean;
@@ -5516,7 +5517,7 @@ export enum StagePanelSection {
     Start = 0
 }
 
-// @beta
+// @public
 export enum StagePanelState {
     // (undocumented)
     Minimized = 1,
@@ -5537,7 +5538,7 @@ export class StagePanelZoneDef extends WidgetHost {
 // @internal (undocumented)
 export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "middle" | "end">;
 
-// @beta
+// @public
 export interface StagePanelZoneProps {
     applicationData?: any;
     widgets: Array<React.ReactElement<WidgetProps>>;
@@ -5557,7 +5558,7 @@ export class StagePanelZonesDef {
     get start(): StagePanelZoneDef;
     }
 
-// @beta
+// @public
 export interface StagePanelZonesProps {
     end?: StagePanelZoneProps;
     middle?: StagePanelZoneProps;
@@ -5598,7 +5599,7 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
     static navigationAidId: string;
 }
 
-// @beta
+// @public
 export class StateManager {
     constructor(defaultReducers?: NameToReducerMap);
     // @internal
@@ -5628,10 +5629,10 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 // @public
 export function StatusBarCenterSection(props: CommonDivProps): JSX.Element;
 
-// @beta
+// @public
 export function StatusBarComposer(props: StatusBarComposerProps): JSX.Element;
 
-// @beta
+// @public
 export interface StatusBarComposerProps extends CommonProps {
     centerClassName?: string;
     items: CommonStatusBarItem[];
@@ -5646,7 +5647,7 @@ export const StatusBarContext: React.Context<StatusBarWidgetControlArgs>;
 // @public
 export type StatusBarFieldId = string | null;
 
-// @beta
+// @public
 export interface StatusBarItem extends AbstractStatusBarCustomItem {
     readonly reactNode: React.ReactNode;
 }
@@ -5660,7 +5661,7 @@ export interface StatusBarItemProps extends CommonProps {
 export class StatusBarItemsManager extends StatusBarItemsManager_2 {
 }
 
-// @beta
+// @public
 export class StatusBarItemUtilities {
     static createStatusBarItem: (id: string, section: StatusBarSection, itemPriority: number, reactNode: React.ReactNode, itemProps?: Partial<StatusBarItem> | undefined) => StatusBarItem;
 }
@@ -6029,7 +6030,7 @@ export class ToolbarButtonHelper {
     static searchVerticalToolbarsByTitle(title: string): HTMLButtonElement | null;
 }
 
-// @beta
+// @public
 export function ToolbarComposer(props: ExtensibleToolbarProps): JSX.Element;
 
 // @beta
@@ -6052,7 +6053,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
     readonly state: Readonly<ToolbarGroupItemState>;
     }
 
-// @beta
+// @public
 export class ToolbarHelper {
     static constructChildToolbarItems(itemDefs: AnyItemDef[]): Array<ActionButton | GroupButton_2>;
     static createCustomDefinitionToolbarItem(itemPriority: number, itemDef: CustomItemDef, overrides?: Partial<CustomButtonDefinition>): CustomToolbarItem;
@@ -6309,10 +6310,10 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
     readonly state: Readonly<ToolWidgetState>;
 }
 
-// @beta
+// @public
 export function ToolWidgetComposer(props: ToolWidgetComposerProps): JSX.Element;
 
-// @beta
+// @public
 export interface ToolWidgetComposerProps extends CommonProps {
     cornerItem?: React.ReactNode;
     horizontalToolbar?: React.ReactNode;
@@ -7428,7 +7429,7 @@ export enum WidgetType {
     ToolSettings = 4
 }
 
-// @beta
+// @public
 export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "targetRef" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
 
 // @alpha
@@ -7486,7 +7487,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (
     contextType?: React.Context<any> | undefined;
 };
 
-// @beta
+// @public
 export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
 
 // @public

@@ -12,7 +12,7 @@ import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ProvidedItem } from "../items/ProvidedItem";
 
 /** Used to specify the usage of the toolbar which determine the toolbar position.
- * @beta
+ * @public
  */
 export enum ToolbarUsage {
   /** Contains tools to Create Update and Delete content - in ninezone this is in top left of content area. */
@@ -22,7 +22,7 @@ export enum ToolbarUsage {
 }
 
 /** Used to specify the orientation of the toolbar.
- * @beta
+ * @public
  */
 export enum ToolbarOrientation {
   /** Horizontal toolbar. */
@@ -32,7 +32,7 @@ export enum ToolbarOrientation {
 }
 
 /** Describes the data needed to insert a UI items into an existing set of UI items.
- * @beta
+ * @public
  */
 export interface ToolbarItem extends ProvidedItem {
   /** can be used by application to store miscellaneous data. */
@@ -65,7 +65,7 @@ export interface ToolbarItem extends ProvidedItem {
 }
 
 /** Describes the data needed to insert an action button into a toolbar.
- * @beta
+ * @public
  */
 export interface ActionButton extends ToolbarItem {
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
@@ -77,7 +77,7 @@ export interface ActionButton extends ToolbarItem {
 }
 
 /** Describes the data needed to insert a group button into a toolbar.
- * @beta
+ * @public
  */
 export interface GroupButton extends ToolbarItem {
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
@@ -91,7 +91,7 @@ export interface GroupButton extends ToolbarItem {
 }
 
 /** Describes the data needed to insert a custom button into a toolbar.
- * @beta
+ * @public
  */
 export interface CustomButtonDefinition extends ToolbarItem {
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
@@ -103,17 +103,17 @@ export interface CustomButtonDefinition extends ToolbarItem {
 }
 
 /** Any Button Type that can be inserted into a toolbar.
- * @beta
+ * @public
  */
 export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
 
 /** Type for Toolbar Item Id
- * @beta
+ * @public
  */
 export type ToolbarItemId = CommonToolbarItem["id"];
 
 /** Helper class to create Abstract StatusBar Item definitions.
- * @beta
+ * @public
  */
 export class ToolbarItemUtilities {
   /** Creates an Action Button */
