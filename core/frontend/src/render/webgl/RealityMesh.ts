@@ -133,7 +133,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public get supportsThematicDisplay() { return true; }
   public get overrideColorMix() { return .5; }     // TThis could be a setting from either the mesh or the override if required.
 
-  private constructor(private _realityMeshParams: RealityMeshGeometryParams, public textureParams: RealityTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean) {
+  private constructor(private _realityMeshParams: RealityMeshGeometryParams, public textureParams: RealityTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean, private _isTerrain: boolean) {
     super(_realityMeshParams);
   }
 
@@ -144,7 +144,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
   public static createFromTerrainMesh(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined) {
     const params = RealityMeshGeometryParams.createFromRealityMesh(terrainMesh);
-    return params ? new RealityMeshGeometry(params, undefined, transform, undefined, false) : undefined;
+    return params ? new RealityMeshGeometry(params, undefined, transform, undefined, false, true) : undefined;
   }
 
   public static createFromRealityMesh(realityMesh: RealityMeshPrimitive): RealityMeshGeometry | undefined {
@@ -153,7 +153,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
       return undefined;
     const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
-    return new RealityMeshGeometry(params, texture ? RealityTextureParams.create([texture]) : undefined, undefined, undefined, false);
+    return new RealityMeshGeometry(params, texture ? RealityTextureParams.create([texture]) : undefined, undefined, undefined, false, false);
   }
 
   public getRange(): Range3d {
@@ -179,7 +179,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
     }
     if (layerCount < 2) {
       // If only there is not more than one layer then we can group all of the textures into a single draw call.
-      meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(textures), realityMesh._transform, baseColor, baseTransparent));
+      meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(textures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
     } else {
       const primaryLayer = layers.shift()!;
       for (const primaryTexture of primaryLayer) {
@@ -204,7 +204,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
                 layerTextures.push(new TerrainTexture(secondaryTexture.texture, secondaryTexture.featureId, secondaryTexture.scale, secondaryTexture.translate, secondaryTexture.targetRectangle, secondaryTexture.layerIndex, secondaryTexture.transparency, textureRange));
             }
             layerTextures.length = Math.min(layerTextures.length, texturesPerMesh);
-            meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent));
+            meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
           }
         }
       }
@@ -223,7 +223,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addTerrain(this._realityMeshParams.bytesUsed);
+    this._isTerrain ? stats.addTerrain(this._realityMeshParams.bytesUsed) : stats.addRealityMesh(this._realityMeshParams.bytesUsed);
   }
 
   public get techniqueId(): TechniqueId { return TechniqueId.RealityMesh; }
