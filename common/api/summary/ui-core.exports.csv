@@ -15,6 +15,7 @@ internal;BetaBadge(props: CommonProps): JSX.Element
 public;BlockText(props: TextProps): JSX.Element
 public;BodyText(props: TextProps): JSX.Element
 beta;BoundsFunctionProp = number | (() => number | undefined)
+deprecated;BoundsFunctionProp = number | (() => number | undefined)
 public;Button 
 public;ButtonProps 
 public;ButtonSize
@@ -179,8 +180,11 @@ beta;NodeCheckboxRenderProps = Omit
 beta;NumberInput: (props: NumberInputProps) => JSX.Element | null
 beta;NumberInputProps 
 beta;NumericInput 
+deprecated;NumericInput 
 internal;NumericInputDefaultProps = Pick
+deprecated;NumericInputDefaultProps = Pick
 beta;NumericInputProps 
+deprecated;NumericInputProps 
 public;Omit
 public;OmitChildrenProp
 beta;OptionsType = Array
@@ -213,8 +217,11 @@ public;RadioProps
 public;RatioChangeResult
 public;ReactMessage
 internal;ReactNumericInput 
+deprecated;ReactNumericInput 
 beta;ReactNumericInputProps 
+deprecated;ReactNumericInputProps 
 internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
+deprecated;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
 internal;Rectangle 
 public;RectangleProps
 internal;ResizeObserver: ResizeObserverType

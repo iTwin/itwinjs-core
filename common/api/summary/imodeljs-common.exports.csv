@@ -490,6 +490,7 @@ beta;SectionDrawingLocationProps
 beta;SectionDrawingProps 
 beta;SectionDrawingViewProps
 alpha;SectionLocationProps 
+deprecated;SectionLocationProps 
 public;SectionType
 public;SerializedRpcOperation
 public;SerializedRpcRequest 
