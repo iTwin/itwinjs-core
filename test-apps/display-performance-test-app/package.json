@@ -27,6 +27,7 @@
     "test:chrome": "node ./lib/common/npmCommands.js chrome",
     "test:edge": "node ./lib/common/npmCommands.js edge",
     "test:firefox": "node ./lib/common/npmCommands.js firefox",
+    "test:safari": "node ./lib/common/npmCommands.js safari",
     "build:mobile-backend": "tsc 1>&2 && webpack --config ./node_modules/@bentley/webpack-tools/mobile/backend.config.js --env.outdir=./lib/mobile --env.entry=./lib/backend/MobileMain.js --env.bundlename=main ",
     "test": "",
     "cover": ""
