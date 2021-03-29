@@ -19,14 +19,25 @@ export class GraphUtils {
    * @param op Reducing function
    * @param initial Initial label
    */
-  public static dfsReduce<T>(_graph: Graph<Unit | Constant>, key: string, op: (previous: T, current: string) => T, visitChildren: (key: string) => boolean, initial: T): T {
+  public static dfsReduce<T>(_graph: Graph<Unit | Constant>, key: string, op: (previous: T, current: string) => T, initial: T, baseUnitsMap: Map<string, number>, accumulatedExponent: number): T {
     const outEdges = _graph.outEdges(key);
     let t = initial;
-    if (outEdges && visitChildren(key)) {
+    if (outEdges.length > 0) {
       t = outEdges.reduce<T>(
-        (p, edge) => GraphUtils.dfsReduce(_graph, edge.w, op, visitChildren, p),
+        (p, edge) => {
+          const {v, w} = edge;
+          const edgeExponent = _graph.edge(v, w).exponent;
+          return GraphUtils.dfsReduce(_graph, edge.w, op, p, baseUnitsMap, accumulatedExponent * edgeExponent);
+        },
         t
       );
+    } else {
+      if (baseUnitsMap.has(key)) {
+        const oldExponent = baseUnitsMap.get(key)!;
+        baseUnitsMap.set(key, oldExponent + accumulatedExponent);
+      } else {
+        baseUnitsMap.set(key, accumulatedExponent);
+      }
     }
 
     return op(t, key);
@@ -107,7 +118,8 @@ export class UnitGraph {
     if (this._graph.hasNode(unit.key.fullName)) return;
 
     this._graph.setNode(unit.key.fullName, unit);
-    if (this.isIdentity(unit)) return;
+    if (this.isIdentity(unit))
+      return;
 
     const umap = parseDefinition(unit.definition);
 
@@ -140,19 +152,14 @@ export class UnitGraph {
    * @param unit Unit to be processed
    * @param stopNodes The tree exploration should stop here
    */
-  public reduce(unit: Unit | Constant, stopNodes: Set<string>): Map<string, UnitConversion> {
+  public reduce(unit: Unit | Constant, baseUnitsMap: Map<string, number>): Map<string, UnitConversion> {
     const unitFullName = unit.key.fullName;
     const innerMapStore = new Map<string, UnitConversion>();
-    const outerMapStore = GraphUtils.dfsReduce(this._graph, unitFullName, (p, c) => this.reducingFunction(stopNodes, p, c), (c) => !stopNodes.has(c), innerMapStore);
+    const outerMapStore = GraphUtils.dfsReduce(this._graph, unitFullName, (p, c) => this.reducingFunction(p, c), innerMapStore, baseUnitsMap, 1);
     return outerMapStore;
   }
 
-  private reducingFunction(stopNodes: Set<string>, innermapStore: Map<string, UnitConversion>, unitFullName: string) {
-    if (stopNodes.has(unitFullName)) {
-      innermapStore.set(unitFullName, UnitConversion.identity);
-      return innermapStore;
-    }
-
+  private reducingFunction(innermapStore: Map<string, UnitConversion>, unitFullName: string) {
     const outEdges = this._graph.outEdges(unitFullName);
     if (outEdges) {
       const cmap = outEdges.reduce<UnitConversion | undefined>((pm, e) => {
