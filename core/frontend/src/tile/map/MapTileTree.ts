@@ -522,7 +522,7 @@ export class MapTileTreeReference extends TileTreeReference {
   private _baseColor?: ColorDef;
   private readonly _imageryTrees: ImageryMapLayerTreeReference[] = new Array<ImageryMapLayerTreeReference>();
   private _baseTransparent = false;
-  private _symbologyOverrides = new FeatureSymbology.Overrides();
+  private _symbologyOverrides: FeatureSymbology.Overrides | undefined;
   private _planarClipMask?: PlanarClipMaskState;
 
   public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, public isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
@@ -705,7 +705,13 @@ export class MapTileTreeReference extends TileTreeReference {
 
     const nonLocatable = this.settings.locatable ? undefined : true;
     const transparency = this.settings.transparency ? this.settings.transparency : undefined;
-    this._symbologyOverrides.overrideModel(tree.modelId, FeatureAppearance.fromJSON({ transparency, nonLocatable }));
+    if (nonLocatable || transparency) {
+      this._symbologyOverrides = new FeatureSymbology.Overrides();
+      this._symbologyOverrides.overrideModel(tree.modelId, FeatureAppearance.fromJSON({ transparency, nonLocatable }));
+    } else {
+      this._symbologyOverrides = undefined;
+    }
+
     const args = this.createDrawArgs(context);
     if (undefined !== args)
       tree.draw(args);
