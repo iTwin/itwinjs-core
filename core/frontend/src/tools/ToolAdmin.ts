@@ -1573,7 +1573,15 @@ export class ToolAdmin {
     viewport.drawLocateCursor(context, ev.viewPoint, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn, hit);
   }
 
-  public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse && this._canvasDecoration === undefined; }
+  public get isLocateCircleOn(): boolean {
+    if (!this.toolState.locateCircleOn || undefined !== this._canvasDecoration)
+      return false;
+
+    if (InputSource.Mouse === this.currentInputState.inputSource)
+      return true;
+
+    return (InputSource.Touch === this.currentInputState.inputSource && undefined !== IModelApp.accuSnap.touchCursor);
+  }
 
   /** @internal */
   public beginDynamics(): void {

@@ -33,7 +33,7 @@ export interface SettingsTabEntry {
   readonly isDisabled?: boolean | ConditionalBooleanValue;
 }
 
-/** Event class for [[this.onSettingsProvidersChanged]] which is emitted when a new SettingsProvider is added or removed.
+/** Event class for [[this.onSettingsProvidersChanged]] which is emitted when a new SettingsTabsProvider is added or removed.
  * @beta
  */
 export class SettingsProvidersChangedEvent extends BeUiEvent<SettingsProvidersChangedEventArgs> { }
@@ -42,7 +42,7 @@ export class SettingsProvidersChangedEvent extends BeUiEvent<SettingsProvidersCh
  * @beta
  */
 export interface SettingsProvidersChangedEventArgs {
-  readonly providers: ReadonlyArray<SettingsProvider>;
+  readonly providers: ReadonlyArray<SettingsTabsProvider>;
 }
 
 /** Event class for [[this.onProcessSettingsTabActivation]] which is emitted when a new Tab needs to be activated. This allows the current
@@ -94,7 +94,7 @@ export interface ActivateSettingsTabEventArgs {
  * classes that implement this interface need to be registered with the [[SettingsManager]].
  * @beta
  */
-export interface SettingsProvider {
+export interface SettingsTabsProvider {
   /** Id of provider, used to remove registration. */
   readonly id: string;
   getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined;
@@ -104,7 +104,7 @@ export interface SettingsProvider {
  * @beta
  */
 export class SettingsManager {
-  private _providers: ReadonlyArray<SettingsProvider> = [];
+  private _providers: ReadonlyArray<SettingsTabsProvider> = [];
 
   /** Event raised when SettingsProviders are changed.
    */
@@ -131,8 +131,8 @@ export class SettingsManager {
   public readonly onCloseSettingsContainer = new CloseSettingsContainerEvent();
 
   /** @beta */
-  public get providers(): ReadonlyArray<SettingsProvider> { return this._providers; }
-  public set providers(p: ReadonlyArray<SettingsProvider>) {
+  public get providers(): ReadonlyArray<SettingsTabsProvider> { return this._providers; }
+  public set providers(p: ReadonlyArray<SettingsTabsProvider>) {
     this._providers = p;
     this.onSettingsProvidersChanged.emit({ providers: p });
   }
@@ -151,7 +151,7 @@ export class SettingsManager {
     this.onCloseSettingsContainer.emit({ closeFunc, closeFuncArgs });
   }
 
-  public addSettingsProvider(settingsProvider: SettingsProvider): void {
+  public addSettingsProvider(settingsProvider: SettingsTabsProvider): void {
     const foundProvider = this._providers.find((p) => p.id === settingsProvider.id);
     if (!foundProvider) {
       const updatedProviders = [

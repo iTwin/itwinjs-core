@@ -17,6 +17,7 @@ public;PresentationManagerMode
 public;PresentationManagerProps
 public;PresentationProps = PresentationPropsDeprecated | PresentationPropsNew
 public;PresentationPropsDeprecated 
+deprecated;PresentationPropsDeprecated 
 public;PresentationPropsNew 
 beta;RulesetEmbedder
 public;RulesetEmbedderProps

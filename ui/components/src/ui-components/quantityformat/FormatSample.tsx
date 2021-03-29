@@ -26,16 +26,14 @@ export interface FormatSampleProps extends CommonProps {
  */
 export function FormatSample(props: FormatSampleProps) {
   const { initialMagnitude, formatSpec, hideLabels } = props;
-  const initialMagnitudeRef = React.useRef(initialMagnitude ?? 0);
-  const [magnitude, setMagnitude] = React.useState(initialMagnitudeRef.current);
-  const [sampleValue, setSampleValue] = React.useState(magnitude.toString());
+  const initialValue = initialMagnitude??0;
+  const [magnitude, setMagnitude] = React.useState(initialValue);
+  const [sampleValue, setSampleValue] = React.useState(initialValue.toString());
 
   React.useEffect(() => {
-    if (initialMagnitudeRef.current !== initialMagnitude) {
-      initialMagnitudeRef.current = initialMagnitude ?? 0;
-      setMagnitude(initialMagnitudeRef.current);
-      setSampleValue(initialMagnitudeRef.current.toString());
-    }
+    const value = initialMagnitude ?? 0;
+    setMagnitude(value);
+    setSampleValue(value.toString());
   }, [initialMagnitude]);
 
   const handleOnValueBlur = React.useCallback(() => {
