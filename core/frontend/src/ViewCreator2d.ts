@@ -22,7 +22,7 @@ import { DrawingViewState } from "./DrawingViewState";
 import { SheetViewState } from "./SheetViewState";
 import { EntityState, loggerCategory } from "./imodeljs-frontend";
 
-/** @beta Options for creating a 2d [[ViewState]] via [[ViewCreator2d]] */
+/** @public Options for creating a 2d [[ViewState]] via [[ViewCreator2d]] */
 export interface ViewCreator2dOptions {
   /** vpAspect aspect ratio of vp to create fit view. */
   vpAspect?: number;
@@ -32,7 +32,8 @@ export interface ViewCreator2dOptions {
   useSeedView?: boolean;
 }
 
-/** @beta API for creating a [[ViewState]] for a 2D model ([[GeometricModel2dState]]).
+/**
+ * @public API for creating a [[ViewState]] for a 2D model ([[GeometricModel2dState]]).
  * ```ts
  * const viewCreator = new ViewCreator2d(imodel);
  * const models = await imodel.models.queryProps({ from: "BisCore.GeometricModel2d" });

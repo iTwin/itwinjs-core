@@ -21,7 +21,7 @@ import { ViewState } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
 import { Environment, loggerCategory } from "./imodeljs-frontend";
 
-/** @beta Options for creating a 3d [[ViewState]] via [[ViewCreator3d]] */
+/** @public Options for creating a 3d [[ViewState]] via [[ViewCreator3d]] */
 export interface ViewCreator3dOptions {
   /** Turn camera on when generating view */
   cameraOn?: boolean;
@@ -35,7 +35,8 @@ export interface ViewCreator3dOptions {
   vpAspect?: number;
 }
 
-/** @beta API for creating a 3D default [[ViewState]]  for an iModel.
+/**
+ * @public API for creating a 3D default [[ViewState]]  for an iModel.
  * ```ts
  * const viewCreator = new ViewCreator3d(imodel);
  * const defaultView = await viewCreator.createDefaultView({skyboxOn: true});
