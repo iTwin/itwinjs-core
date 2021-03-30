@@ -58,7 +58,7 @@ export interface RootSubjectProps {
   description?: string;
 }
 
-/** Properties that are about an iModel.
+/** Properties of an iModel that are always held in memory whenever one is opened, both on the frontend and on the backend .
  * @public
  */
 export interface IModelProps {
@@ -76,7 +76,11 @@ export interface IModelProps {
   name?: string;
 }
 
-/** @alpha */
+/**
+ * The properties returned by the backend when creating a new [[IModelConnection]] from the frontend, either with Rpc or with Ipc.
+ * These properties describe the iModel held on the backend for thew newly formed connection and are used to construct a new
+ * [[IModelConnection]] instance on the frontend to access it.
+ * @public */
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
 /** The properties that can be supplied when creating a *new* iModel.
@@ -123,8 +127,8 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   autoUploadBlocks?: boolean;
 }
 
-/** Options that can be supplied when opening an existing StandaloneDb.
- * @beta
+/** Options supplied to open an existing StandaloneDb.
+ * @public
  */
 export type StandaloneOpenOptions = OpenDbKey;
 

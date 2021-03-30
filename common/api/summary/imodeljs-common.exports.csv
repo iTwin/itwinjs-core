@@ -123,8 +123,8 @@ public;DisplayStyleSubCategoryProps
 beta;DomainOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
-beta;Easing:
-beta;EasingFunction = (k: number) => number
+public;Easing:
+public;EasingFunction = (k: number) => number
 public;EcefLocation 
 public;EcefLocationProps
 public;ECJsNames
@@ -250,7 +250,7 @@ public;ImageSourceFormat
 internal;ImdlFlags
 internal;ImdlHeader 
 public;class IModel 
-alpha;IModelConnectionProps = IModelProps & IModelRpcProps
+public;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
 public;IModelEncryptionProps
@@ -271,8 +271,8 @@ public;InformationPartitionElementProps
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
 beta;InternetConnectivityStatus
-beta;Interpolation:
-beta;InterpolationFunction = (v: any, k: number) => number
+public;Interpolation:
+public;InterpolationFunction = (v: any, k: number) => number
 internal;IpcAppChannel
 internal;IpcAppFunctions
 internal;IpcAppNotifications
@@ -414,7 +414,7 @@ internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
 public;RelationshipProps 
-beta;RemoveFunction = () => void
+public;RemoveFunction = () => void
 beta;class RenderMaterial
 beta;RenderMaterial
 beta;RenderMaterialProps 
@@ -515,7 +515,7 @@ public;SolarShadowSettingsProps
 public;SourceAndTarget
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
-beta;StandaloneOpenOptions = OpenDbKey
+public;StandaloneOpenOptions = OpenDbKey
 beta;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
@@ -570,15 +570,15 @@ internal;TileTreeMetadata
 internal;TileTreeProps
 alpha;TileVersionInfo
 internal;TreeFlags
-beta;Tween
-beta;TweenCallback = (obj: any) => void
-beta;Tweens
+public;Tween
+public;TweenCallback = (obj: any) => void
+public;Tweens
 public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
 internal;TypeOfChange
-beta;UpdateCallback = (obj: any, t: number) => void
+public;UpdateCallback = (obj: any, t: number) => void
 beta;UpgradeOptions
 public;UrlLinkProps 
 public;ViewAttachmentLabelProps 
