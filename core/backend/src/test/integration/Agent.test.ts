@@ -13,8 +13,7 @@ import { HubUtility } from "./HubUtility";
 //    imjs_agent_test_client_id
 //    imjs_agent_test_client_secret
 
-describe("Agent (#integration)", () => {
-  // iOS does not support agent test
+describe("Agent iModel Download (#integration)", () => {
   let testProjectId: string;
   let testReadIModelId: string;
   let testWriteIModelId: string;
@@ -26,7 +25,7 @@ describe("Agent (#integration)", () => {
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
       clientId: Config.App.getString("imjs_agent_test_client_id"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
-      scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
+      scope: "imodelhub context-registry-service:read-only",
     };
 
     const agentClient = new AgentAuthorizationClient(agentConfiguration);

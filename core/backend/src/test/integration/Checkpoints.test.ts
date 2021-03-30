@@ -18,7 +18,7 @@ describe.skip("Checkpoints (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
   let testContextId: GuidString;
-  let testChangeSetId: GuidString;
+  let testChangeSetId: string;
 
   const blockcacheDir = path.join(KnownTestLocations.outputDir, "blockcachevfs");
   let daemonProc: ChildProcess;

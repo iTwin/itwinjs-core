@@ -1183,7 +1183,7 @@ export class UserStatisticsQuery extends WsgQuery {
 
 // @public
 export class Version extends WsgInstance {
-    changeSetId?: GuidString;
+    changeSetId?: string;
     createdDate?: string;
     description?: string;
     hidden?: boolean;
