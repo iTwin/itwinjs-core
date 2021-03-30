@@ -16,6 +16,7 @@ import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
+import { Order2Bezier } from "../numerics/BezierPolynomials";
 import { Map4d } from "./Map4d";
 import { Matrix4d } from "./Matrix4d";
 /**
@@ -57,7 +58,12 @@ export class ViewportGraphicsGridSpacingOptions {
    * * 0 ==> output entire line (entire line is clipped by view frustum but not limited by neighbors)
    * * 1 ==> clip line where it is close predecessor line
    */
-  public clippingOption: 0 | 1;
+  public clipIfCloseToNeighborLine: 0 | 1;
+  /**
+   * clipping of each line to the view frustum.
+   */
+   public clipToViewFrustum: boolean;
+
   /**
    * distance-between-lines criteria for use when filtering lines.
    * * Units depend on choice of map (view or npc)
@@ -68,11 +74,12 @@ export class ViewportGraphicsGridSpacingOptions {
    */
   public gridMultiple: number;
 
-  private constructor(distanceBetweenLines: number, cullingOption: 0 | 1 | 2, clippingOption: 0 | 1, gridMultiple: number) {
+  private constructor(distanceBetweenLines: number, cullingOption: 0 | 1 | 2, clippingOption: 0 | 1, gridMultiple: number, clipToViewFrustum: boolean) {
     this.distanceBetweenLines = distanceBetweenLines;
     this.cullingOption = cullingOption;
-    this.clippingOption = clippingOption;
+    this.clipIfCloseToNeighborLine = clippingOption;
     this.gridMultiple = gridMultiple;
+    this.clipToViewFrustum = clipToViewFrustum;
   }
   /**
    * Create a ViewportGraphicsSpacingOptions instance
@@ -81,13 +88,13 @@ export class ViewportGraphicsGridSpacingOptions {
    * @param clippingOption See ViewportGraphicsGridSpacingOptions
    * @param gridMultiple 1 for all grid lines, 10 for every 10th line etc
    */
-  public static create(distanceBetweenLines: number, cullingOption: 0 | 1 | 2 = 2, clippingOption: 0 | 1 = 1, gridMultiple = 1) {
+  public static create(distanceBetweenLines: number, cullingOption: 0 | 1 | 2 = 2, clippingOption: 0 | 1 = 1, gridMultiple = 1, clipToViewFrustum: boolean = true) {
     return new ViewportGraphicsGridSpacingOptions(distanceBetweenLines, cullingOption, clippingOption,
-    Math.max (1, Math.floor (gridMultiple)));
+    Math.max (1, Math.floor (gridMultiple)), clipToViewFrustum);
   }
   /** Return a member-by-member clone */
   public clone(): ViewportGraphicsGridSpacingOptions {
-    return new ViewportGraphicsGridSpacingOptions(this.distanceBetweenLines, this.cullingOption, this.clippingOption, this.gridMultiple);
+    return new ViewportGraphicsGridSpacingOptions(this.distanceBetweenLines, this.cullingOption, this.clipIfCloseToNeighborLine, this.gridMultiple, this.clipToViewFrustum);
   }
 }
 
@@ -171,7 +178,17 @@ class LineProximityContext {
     return true;
   }
 
-  private static _horizonTrimFraction = 0.90;
+  private fractionAtOffsetFromLineA(offsetDistance: number, point0B: Point3d, point1B: Point3d, defaultFraction: number): number {
+    const npc0B = this.worldToNPC.multiplyPoint3d(point0B, 1.0);
+    const npc1B = this.worldToNPC.multiplyPoint3d(point1B, 1.0);
+    const c = offsetDistance - this.npc0A.x * this.uy - this.npc0A.y * this.ux;
+    const b0 = Geometry.crossProductXYXY(npc0B.x, npc0B.y, this.ux, this.uy) - c * npc0B.w;
+    const b1 = Geometry.crossProductXYXY(npc1B.x, npc1B.y, this.ux, this.uy) - c * npc0B.w;
+    const fraction = Order2Bezier.solveCoffs(b0, b1);
+    if (fraction !== undefined)
+      return fraction;
+    return defaultFraction;
+  }
   /**
   * * return the fractional interval on line B, such that points in the interval are at a distance minimumDistance or larger
   * * If line B jumps complete between "far negative" and "far positive", only the first fractional part is returned.
@@ -190,6 +207,7 @@ class LineProximityContext {
   ): boolean {
     if (this.divMagU === undefined)
       return false;
+
     const minimumDistance = options.distanceBetweenLines;
     this.worldToNPC.multiplyPoint3dQuietNormalize(point0B, this.npc0B);
     this.worldToNPC.multiplyPoint3dQuietNormalize(point1B, this.npc1B);
@@ -200,19 +218,27 @@ class LineProximityContext {
       if (d1 < -minimumDistance) {
         return this.setRanges(fractions, 0, 1, perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       } else {
-        return this.setRanges(fractions, 0, Geometry.safeDivideFraction(-minimumDistance - d0, d1 - d0, 0.0), perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
+        return this.setRanges(fractions,
+          0, this.fractionAtOffsetFromLineA(-minimumDistance, point0B, point1B, 1.0),
+          perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       }
     } else if (d0 > minimumDistance) {
       if (d1 > minimumDistance) {
         return this.setRanges(fractions, 0, 1, perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       } else {
-        return this.setRanges(fractions, 0.0, Geometry.safeDivideFraction(minimumDistance - d0, d1 - d0, 0.0), perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
+        return this.setRanges(fractions,
+          0.0, this.fractionAtOffsetFromLineA(minimumDistance, point0B, point1B, 1.0),
+          perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       }
     } else { // d0 starts inside -- may move outside
       if (d1 > minimumDistance) {
-        return this.setRanges(fractions, Geometry.safeDivideFraction(minimumDistance - d0, d1 - d0, 0.0), 1.0, perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
+        return this.setRanges(fractions,
+          this.fractionAtOffsetFromLineA(minimumDistance, point0B, point1B, 0.0), 1.0,
+          perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       } else if (d1 < -minimumDistance) {
-        return this.setRanges(fractions, Geometry.safeDivideFraction(-minimumDistance - d0, d1 - d0, 0.0), 1.0, perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
+        return this.setRanges(fractions,
+          this.fractionAtOffsetFromLineA(-minimumDistance, point0B, point1B, 0.0), 1.0,
+          perspectiveZStartEnd, this.npc0B.z, this.npc1B.z);
       }
       return false;
     }
@@ -257,6 +283,7 @@ export class ViewGraphicsOps {
  * @internal
  */
 export class GridInViewContext {
+  private static _announceAllCandidates = false;
 
   private static getRestrictedGridRange(npcLoop: GrowableXYZArray, stLoop: GrowableXYZArray, viewRange: Range3d, _maxLinesInDirection: number): Range3d {
     const stRange1 = stLoop.getRange();   // this might be unreasonably large
@@ -475,7 +502,7 @@ export class GridInViewContext {
           if (options.cullingOption === 1)
             lineContext.moveLineBToLineA();
         } else {
-          if (options.clippingOption === 0 || fractionRange.isExact01)
+          if (options.clipIfCloseToNeighborLine === 0 || fractionRange.isExact01)
             announceLine(clippedPointWorld0, clippedPointWorld1,
               perspectiveZStartEnd.x0, perspectiveZStartEnd.x1,
               startEndDistance,
@@ -506,7 +533,10 @@ export class GridInViewContext {
       gridLineIdentifier.index = iy;
       gridPoint0.set(xLow, iy);
       gridPoint1.set(xHigh, iy);
-      this._gridSpaceClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
+      if (!options.clipToViewFrustum)
+        announceInterval(0, 1);
+      else
+        this._gridSpaceClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
       }
 
     // sweep left to right
@@ -522,7 +552,10 @@ export class GridInViewContext {
       gridPoint0.set(ix, yLow);
       gridPoint1.set(ix, yHigh);
       gridLineIdentifier.index = ix;
-      this._gridSpaceClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
+      if (!options.clipToViewFrustum)
+        announceInterval(0, 1);
+      else
+        this._gridSpaceClipper.announceClippedSegmentIntervals(0.0, 1.0, gridPoint0, gridPoint1, announceInterval);
     }
 
     return numAnnounced > 0;
