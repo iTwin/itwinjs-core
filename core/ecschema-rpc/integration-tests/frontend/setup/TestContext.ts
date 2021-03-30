@@ -15,7 +15,6 @@ import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
 
-declare const PACKAGE_VERSION: string;
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;

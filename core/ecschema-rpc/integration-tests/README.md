@@ -12,7 +12,7 @@ Refer to the iModel.js [prerequisites](https://github.com/imodeljs/imodeljs#prer
 
 Before running the tests, the environment needs to be setup.  The easiest way is to configure a [.env] file in the working directory, the [template.env](./template.env) file has information about how to set one up and all the variables that need to be configured.
 
-All test related settings are contained in the `process.env` variable and parsed by [Settings.ts](./setup/Settings.ts).  If something required is missing or not configured properly, the tests will fail to setup.
+All test related settings are contained in the `process.env` variable and parsed by [Settings.ts](./common/Settings.ts).  If something required is missing or not configured properly, the tests will fail to setup.
 
 ### Setting up the required context
 
@@ -61,4 +61,4 @@ Once all the required environment variables are setup, to run the integration te
 The base 'after all' and 'before all' hooks are implemented in TestSetup.test.ts. Any cleanup and setup steps should be added here.
 
 The `TestContext` class follows the singleton pattern and will automatically be setup when its static instance is invoked via its `TestContext.instance()`.
-The setup uses a [.env file](./.env) and `process.env` to populate the `TestContext`.
+The setup uses a .env file and `process.env` to populate the `TestContext`.

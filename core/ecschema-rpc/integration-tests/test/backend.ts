@@ -16,7 +16,6 @@ import { getRpcInterfaces, Settings } from "../common/Settings";
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 const settings = new Settings(process.env);
 Config.App.set("imjs_buddi_resolve_url_using_region", settings.env);
-// tslint:disable-next-line:no-floating-promises
 (async () => {
   RpcConfiguration.developmentMode = true;
 
@@ -32,6 +31,5 @@ Config.App.set("imjs_buddi_resolve_url_using_region", settings.env);
   const port = 5011;
   const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
-  // tslint:disable-next-line:no-console
   console.log("Web backend for schema-rpc-tests listening on port " + port);
 })();

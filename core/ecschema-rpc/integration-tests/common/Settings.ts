@@ -7,7 +7,6 @@ import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { SchemaRpcInterface } from "@bentley/schema-rpcinterface-common";
 
-// tslint:disable:ter-indent
 
 export interface Backend {
   version: string;

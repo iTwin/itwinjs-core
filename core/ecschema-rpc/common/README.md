@@ -1,4 +1,4 @@
-﻿# iModel.js Schema RPC Interface
+﻿# iTwin.js Schema RPC Interface
 
 Copyright © Bentley Systems, Incorporated. All rights reserved.
 

@@ -25,6 +25,7 @@ type IModelDb = backend.IModelDb & {
 
 /**
  * Implementation of the SchemaRpcInterface.
+ * @Internal
  */
 export class SchemaRpcInterfaceImpl extends SchemaRpcInterface {
   /**

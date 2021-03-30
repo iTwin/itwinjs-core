@@ -6,8 +6,6 @@ import { expect } from "chai";
 import { Config } from "@bentley/bentleyjs-core";
 import { IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 
-// tslint:disable:ter-indent
-
 export class IModelSession {
 
   public contextId: string;
@@ -26,9 +24,6 @@ export class IModelSession {
 
   public async open(): Promise<IModelConnection> {
     try {
-      const env = Config.App.get("imjs_buddi_resolve_url_using_region");
-      // tslint:disable-next-line:no-console
-      console.log("Environment: " + env);
       this._iModel = await RemoteBriefcaseConnection.open(this.contextId, this.iModelId);
       expect(this._iModel).to.exist;
     } catch (e) {
