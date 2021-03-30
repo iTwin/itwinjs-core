@@ -514,7 +514,7 @@ export function bisectTileRange2d(range: Range3d, takeUpper: boolean): void;
 // @internal (undocumented)
 export function bisectTileRange3d(range: Range3d, takeUpper: boolean): void;
 
-// @internal
+// @public
 export class BoundingSphere {
     constructor(center?: Point3d, radius?: number);
     // (undocumented)

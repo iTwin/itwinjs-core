@@ -3279,7 +3279,7 @@ export class ViewGlobeBirdTool extends ViewTool {
 /** A tool that views a location on the background map corresponding to a specified string.
  * This will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed.
  * Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeLocationTool extends ViewTool {
   private _globalLocation?: GlobalLocation;

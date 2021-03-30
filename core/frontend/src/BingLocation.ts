@@ -13,7 +13,9 @@ import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";
 
-/** @internal */
+/** Provides an interface to the Bing location services
+ * @internal
+ */
 export class BingLocationProvider {
   private _locationRequestTemplate: string;
   // private _localCircularSearchRequestTemplate: string;
@@ -27,6 +29,9 @@ export class BingLocationProvider {
     this._locationRequestTemplate = "https://dev.virtualearth.net/REST/v1/Locations?query={query}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
     // this._localCircularSearchRequestTemplate = "https://dev.virtualearth.net/REST/v1/LocalSearch/?CircularMapView={{circle}}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
   }
+  /** Return the location of a query (or undefined if not found)
+   * @public
+   */
   public async getLocation(query: string): Promise<GlobalLocation | undefined> {
     const requestUrl = this._locationRequestTemplate.replace("{query}", query);
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
@@ -45,18 +50,6 @@ export class BingLocationProvider {
           northeast: Cartographic.fromRadians(Angle.degreesToRadians(eastLongitude), Angle.degreesToRadians(northLatitude)),
         },
       };
-    } catch (error) {
-      return undefined;
-    }
-  }
-  public async doLocalSearchByRadius(_center: Cartographic, _radius: number) {
-    // const searchCircle = (center.latitude * Angle.degreesPerRadian) + "," + (center.longitude * Angle.degreesPerRadian) + "," + radius;
-    // const requestUrl = this._localCircularSearchRequestTemplate.replace("{circle}", searchCircle);
-    // const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
-    try {
-      // const locationResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
-      return {};
-
     } catch (error) {
       return undefined;
     }

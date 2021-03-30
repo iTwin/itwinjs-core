@@ -29,7 +29,9 @@ enum QuantizedMeshExtensionIds {
 /** @internal */
 const bentleyCesiumIonRequestKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZWIxNzk1OC0wNmVjLTQ1NDItOTBlYS1lOTViMDljNzQyNWUiLCJpZCI6MTQwLCJzY29wZXMiOlsiYXNsIiwiYXNyIiwiYXN3IiwiZ2MiXSwiaWF0IjoxNTYyMDA0NTYwfQ.VyMP5TPl--eX2bCQjIY7ijfPCd-J0sSPnEFj_mfPC3k";
 
-/** @beta */
+/** Return the URL for a Cesium ION asset from its asset ID and request Key.
+ * @public
+ */
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string) {
   return `$CesiumIonAsset=${osmAssetId}:${requestKey}`;
 }

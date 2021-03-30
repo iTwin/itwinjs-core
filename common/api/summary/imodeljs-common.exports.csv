@@ -32,7 +32,7 @@ public;class BentleyCloudRpcProtocol
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
-internal;BoundingSphere
+public;BoundingSphere
 alpha;BRepCutProps
 beta;BRepEntity
 alpha;BRepGeometryCreate

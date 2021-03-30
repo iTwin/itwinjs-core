@@ -22,7 +22,9 @@ import { RenderSystem } from "../../render/RenderSystem";
 
 // cspell:ignore atae qdng uyzv auje sealevel
 
-/** @internal */
+/** Provides an interface to the Bing Elevation services.
+ * @public
+ */
 export class BingElevationProvider {
   private static _scratchRange = Range3d.createNull();
   private static _scratchVertex = Point3d.createZero();
@@ -46,6 +48,10 @@ export class BingElevationProvider {
     this._seaLevelOffsetRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
     this._heightListRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
   }
+
+  /** Return the height (altitude) at a given cartographic location
+   * @public
+   */
   public async getHeight(carto: Cartographic, geodetic = true) {
     const requestUrl = this._heightListRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
@@ -56,7 +62,8 @@ export class BingElevationProvider {
       return 0.0;
     }
   }
-  public async getHeights(range: Range2d) {
+  /** @internal */
+  private async getHeights(range: Range2d) {
     const boundingBox = `${range.low.y},${range.low.x},${range.high.y},${range.high.x}`;
     const requestUrl = this._heightRangeRequestTemplate.replace("{boundingBox}", boundingBox);
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
@@ -67,6 +74,7 @@ export class BingElevationProvider {
       return undefined;
     }
   }
+  /** @internal */
   public async getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number> {
     const carto = iModel.spatialToCartographicFromEcef(point);
     const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`);
@@ -78,10 +86,16 @@ export class BingElevationProvider {
       return 0.0;
     }
   }
+  /** Get the height (altitude) at a given iModel coordinate
+   * @public
+   */
   public async getHeightValue(point: Point3d, iModel: IModelConnection, geodetic = true): Promise<number> {
     return this.getHeight(iModel.spatialToCartographicFromEcef(point), geodetic);
   }
 
+  /** Get the height (altitude) range for a given iModel project extents
+   * @public
+   */
   public async getHeightRange(iModel: IModelConnection) {
     const latLongRange = Range2d.createNull();
     const range = iModel.projectExtents.clone();
@@ -94,6 +108,9 @@ export class BingElevationProvider {
     return Range1d.createArray(heights);
   }
 
+  /** Get the average height (altitude) for a given iModel project extents
+   * @public
+   */
   public async getHeightAverage(iModel: IModelConnection) {
     const latLongRange = Range2d.createNull();
     for (const corner of iModel.projectExtents.corners()) {
@@ -105,6 +122,7 @@ export class BingElevationProvider {
     for (const height of heights) total += height;
     return total / heights.length;
   }
+  /** @internal */
   public async getGraphic(latLongRange: Range2d, corners: Point3d[], groundBias: number, texture: RenderTexture, system: RenderSystem): Promise<RenderGraphic | undefined> {
     const heights = await this.getHeights(latLongRange);
     if (undefined === heights)
