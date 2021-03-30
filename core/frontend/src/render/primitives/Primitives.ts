@@ -99,6 +99,14 @@ export class TriangleList {
 
     this._flags.push(flags);
   }
+  public addFromTypedArray(indices: Uint16Array | Uint32Array, flags: number = 0) {
+    for (let i = 0; i < indices.length; ) {
+      this.indices.push(indices[i++]);
+      this.indices.push(indices[i++]);
+      this.indices.push(indices[i++]);
+      this._flags.push(flags);
+    }
+  }
 
   public getTriangle(index: number, out?: Triangle): Triangle {
     const triangle = undefined !== out ? out : new Triangle();
