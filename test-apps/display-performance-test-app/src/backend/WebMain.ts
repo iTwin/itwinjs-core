@@ -101,10 +101,14 @@ function startWebServer() {
   // ---------------------------------------------
   switch (browser) {
     case "chrome":
-      chromeLauncher.launch({ // eslint-disable-line @typescript-eslint/no-floating-promises
-        startingUrl: "http://localhost:3000",
-        chromeFlags,
-      }).then((val) => { DisplayPerfRpcInterface.chrome = val; });
+      if (process.platform === "darwin") { // Ie, if running on Mac
+        child_process.execSync("open -a \"Google Chrome\" http://localhost:3000");
+      } else {
+        chromeLauncher.launch({ // eslint-disable-line @typescript-eslint/no-floating-promises
+          startingUrl: "http://localhost:3000",
+          chromeFlags,
+        }).then((val) => { DisplayPerfRpcInterface.chrome = val; });
+        }
       break;
     case "edge":
       child_process.execSync("start microsoft-edge:http://localhost:3000");
