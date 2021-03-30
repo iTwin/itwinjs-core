@@ -205,6 +205,7 @@ beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 alpha;GlobalLocation
 alpha;GlobalLocationArea
 internal;GlobeAnimator 
+internal;GltfMeshData
 internal;class GltfReader
 internal;GltfReaderProps
 internal;GltfReaderResult 
@@ -419,6 +420,7 @@ public;class RenderGraphicOwner
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
+internal;class RenderRealityMeshGeometry 
 internal;RenderScheduleState
 public;class RenderSystem 
 public;RenderSystem
@@ -426,7 +428,6 @@ beta;Options
 beta;RenderSystemDebugControl
 internal;class RenderTarget 
 beta;RenderTargetDebugControl
-internal;class RenderTerrainMeshGeometry 
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 internal;RootIModelTile = Tile &
