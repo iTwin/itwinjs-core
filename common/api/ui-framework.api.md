@@ -6451,7 +6451,7 @@ export class UiFramework {
     // @internal (undocumented)
     static get packageName(): string;
     // @internal
-    static postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: GuidString, time?: TrackingTime, additionalProperties?: {
+    static postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: {
         [key: string]: any;
     }): Promise<void>;
     // @internal (undocumented)

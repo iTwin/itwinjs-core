@@ -86,7 +86,7 @@ export class BriefcaseManager {
   }
 
   /** @internal */
-  public static getChangeSetFolderNameFromId(changeSetId: GuidString): string {
+  public static getChangeSetFolderNameFromId(changeSetId: string): string {
     return changeSetId || this._firstChangeSetDir;
   }
 
@@ -172,7 +172,7 @@ export class BriefcaseManager {
   public static get cacheDir() { return this._cacheDir; }
 
   /** Get the index of the change set from its id */
-  private static async getChangeSetIndexFromId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: GuidString): Promise<number> {
+  private static async getChangeSetIndexFromId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string): Promise<number> {
     requestContext.enter();
     if (changeSetId === "")
       return 0; // the first version
