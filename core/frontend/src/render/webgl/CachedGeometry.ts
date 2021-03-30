@@ -28,7 +28,7 @@ import { CompositeFlags, FlashMode, RenderOrder, RenderPass } from "./RenderFlag
 import { System } from "./System";
 import { Target } from "./Target";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
-import { TerrainMeshGeometry } from "./TerrainMesh";
+import { RealityMeshGeometry } from "./RealityMesh";
 import { TextureHandle } from "./Texture";
 import { VertexLUT } from "./VertexLUT";
 
@@ -55,7 +55,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get asSurface(): SurfaceGeometry | undefined { return undefined; }
   public get asMesh(): MeshGeometry | undefined { return undefined; }
   public get asEdge(): EdgeGeometry | undefined { return undefined; }
-  public get asTerrainMesh(): TerrainMeshGeometry | undefined { return undefined; }
+  public get asRealityMesh(): RealityMeshGeometry | undefined { return undefined; }
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
   public get isInstanced() { return undefined !== this.asInstanced; }
@@ -102,7 +102,6 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
 
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public get hasFeatures(): boolean { return false; }
-
   public get viewIndependentOrigin(): Point3d | undefined { return undefined; }
   public get isViewIndependent(): boolean { return undefined !== this.viewIndependentOrigin; }
 

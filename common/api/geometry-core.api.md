@@ -5602,9 +5602,10 @@ export interface ViewportGraphicsGridLineIdentifier {
 
 // @internal
 export class ViewportGraphicsGridSpacingOptions {
-    clippingOption: 0 | 1;
+    clipIfCloseToNeighborLine: 0 | 1;
+    clipToViewFrustum: boolean;
     clone(): ViewportGraphicsGridSpacingOptions;
-    static create(distanceBetweenLines: number, cullingOption?: 0 | 1 | 2, clippingOption?: 0 | 1, gridMultiple?: number): ViewportGraphicsGridSpacingOptions;
+    static create(distanceBetweenLines: number, cullingOption?: 0 | 1 | 2, clippingOption?: 0 | 1, gridMultiple?: number, clipToViewFrustum?: boolean): ViewportGraphicsGridSpacingOptions;
     cullingOption: 0 | 1 | 2;
     distanceBetweenLines: number;
     gridMultiple: number;
