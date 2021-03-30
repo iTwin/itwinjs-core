@@ -4080,7 +4080,7 @@ export enum SqliteValueType {
     String = 3
 }
 
-// @internal
+// @public
 export class StandaloneDb extends IModelDb {
     get changeSetId(): undefined;
     static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;

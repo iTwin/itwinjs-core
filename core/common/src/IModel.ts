@@ -127,7 +127,7 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   autoUploadBlocks?: boolean;
 }
 
-/** Options supplied to open an existing StandaloneDb.
+/** Options supplied to open a StandaloneDb.
  * @public
  */
 export type StandaloneOpenOptions = OpenDbKey;
