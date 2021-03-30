@@ -108,7 +108,7 @@ function startWebServer() {
           startingUrl: "http://localhost:3000",
           chromeFlags,
         }).then((val) => { DisplayPerfRpcInterface.chrome = val; });
-        }
+      }
       break;
     case "edge":
       child_process.execSync("start microsoft-edge:http://localhost:3000");
