@@ -81,7 +81,7 @@ deprecated;class DocumentCarrier
 public;DocumentListModel 
 public;DocumentPartition 
 internal;DownloadJob
-beta;DownloadRequest
+internal;DownloadRequest
 internal;Downloads
 public;Drawing 
 public;DrawingCategory 
