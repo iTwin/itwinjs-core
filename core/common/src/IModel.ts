@@ -128,7 +128,7 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
 }
 
 /** Options to open a [StandaloneDb]($backend) via [StandaloneDb.openFile]($backend) from the backend,
- * or [BriefcaseConnection.openStandalone]($fronted) from the frontend.
+ * or [BriefcaseConnection.openStandalone]($frontend) from the frontend.
  * @public
  */
 export type StandaloneOpenOptions = OpenDbKey;
