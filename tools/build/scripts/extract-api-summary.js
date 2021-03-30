@@ -45,7 +45,7 @@ if (shouldGenerateFullReport) {
     outputLines.push("sep=;");
     outputLines.push("Package Name;Release Tag;API Item");
   }
-} else if (!shouldGenerateFullReport) {
+} else {
   fs.createFileSync(sigFilePath);
   outputLines.push("sep=;");
   outputLines.push("Release Tag;API Item");
