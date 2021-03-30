@@ -26,10 +26,11 @@ export class UnitConverter {
    * Find conversion between from and to units, formatted {schemaName}.{schemaItemName} or {schemaName}:{schemaItemName}
    * @param fromUnit SchemaItem full name of source unit
    * @param toUnit SchemaItem full name of target unit
-   * @returns [[UnitConversion]] converting fromFullName -> toFullName with a factor and an offset
+   * @returns [[UnitConversion]] converting fromUnit -> toUnit with a factor and an offset
    * @throws Error if from and to Units' SchemaItem is not found in Schema or Schema prefix is not found in SchemaContext
    * @throws Error if from and to Units do not belong to the same phenomenon
    * @throws Error if definitions' SchemaItems cannot be found in its own or referenced Schemas
+   * @throws Error if base units of source and target unit do not match
    */
   public async calculateConversion(fromUnit: string, toUnit: string): Promise<UnitConversion> {
     const [fromSchemaName, fromSchemaItemName] = SchemaItem.parseFullName(fromUnit);
@@ -70,15 +71,57 @@ export class UnitConverter {
     await this._uGraph.addUnit(from);
     await this._uGraph.addUnit(to);
 
+    const fromBaseUnits = new Map<string, number>();
+    const toBaseUnits = new Map<string, number>();
     // Calculate map of UnitConversions to get between from -> base
-    const fromMapStore = this._uGraph.reduce(from, new Set<string>());
+    const fromMapStore = this._uGraph.reduce(from, fromBaseUnits);
     // Calculate map of UnitConversions to get between base -> to
-    const toMapStore = this._uGraph.reduce(to, new Set<string>());
+    const toMapStore = this._uGraph.reduce(to, toBaseUnits);
+
+    if (!this.checkBaseUnitsMatch(fromBaseUnits, toBaseUnits))
+      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not have matching base units`, ()  => {
+        return { from, to };
+      });
 
     // Final calculations to get singular UnitConversion between from -> to
     const fromMap = fromMapStore.get(from.key.fullName) || UnitConversion.identity;
     const toMap = toMapStore.get(to.key.fullName) || UnitConversion.identity;
     const fromInverse = fromMap.inverse();
     return fromInverse.compose(toMap);
+  }
+
+  /**
+   * Check if fromBaseUnits's base units and exponents matches toBaseUnits's
+   * @param fromBaseUnits Map of base units for source unit
+   * @param toBaseUnits Map of base units for target unit
+   * @internal
+   */
+  private checkBaseUnitsMatch(fromBaseUnits: Map<string, number>, toBaseUnits: Map<string, number>): boolean {
+    // Trim maps of "One" and value that equal zero as they do not affect the base units and calculations
+    for (const [key, value] of fromBaseUnits.entries()) {
+      const [, schemaItemName] = SchemaItem.parseFullName(key);
+      if (schemaItemName === "ONE" || value === 0) {
+        fromBaseUnits.delete(key);
+      }
+    }
+
+    for (const [key, value] of toBaseUnits.entries()) {
+      const [, schemaItemName] = SchemaItem.parseFullName(key);
+      if (schemaItemName === "ONE" || value === 0) {
+        toBaseUnits.delete(key);
+      }
+    }
+
+    if (fromBaseUnits.size !== toBaseUnits.size)
+      return false;
+
+    for (const key of fromBaseUnits.keys()) {
+      if (!toBaseUnits.has(key) || fromBaseUnits.get(key) !== toBaseUnits.get(key)) {
+        // Mismatching key or value
+        return false;
+      }
+    }
+
+    return true;
   }
 }
