@@ -14,4 +14,6 @@
 
 ## Creating the Full Summary API Report
 
-1. Set the `GENERATE_FULL_API_REPORT` environment variable to create a `summary.exports.csv` file
+1. Delete any existing `common/api/summary/summary.exports.csv`
+    > The script will not overwrite any existing file
+2. Set the `GENERATE_FULL_API_REPORT` environment variable to create a `summary.exports.csv` file
