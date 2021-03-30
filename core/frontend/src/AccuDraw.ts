@@ -24,7 +24,7 @@ import { DecorateContext } from "./ViewContext";
 import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
-import { QuantityType } from "./QuantityFormatter";
+import { QuantityType } from "./quantity-formatting/QuantityFormatter";
 import { ParseError, Parser, QuantityParseResult } from "@bentley/imodeljs-quantity";
 
 // cspell:ignore dont primitivetools

@@ -115,11 +115,13 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
   }
 
   private _onEditCommit = (args: PropertyUpdatedArgs) => {
+    // istanbul ignore else
     if (this.props.onEditCommit)
       this.props.onEditCommit(args);
   };
 
   private _onEditCancel = () => {
+    // istanbul ignore else
     if (this.props.onEditCancel)
       this.props.onEditCancel();
   };

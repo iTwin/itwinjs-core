@@ -7,7 +7,6 @@
  */
 
 import { useCallback } from "react";
-import { from } from "rxjs/internal/observable/from";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { tap } from "rxjs/internal/operators/tap";
 import { Subject } from "rxjs/internal/Subject";
@@ -15,8 +14,8 @@ import { Guid, IDisposable } from "@bentley/bentleyjs-core";
 import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
 import { Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper } from "@bentley/presentation-frontend";
 import {
-  AbstractTreeNodeLoaderWithProvider, MutableTreeModel, MutableTreeModelNode, TreeEditingParams, TreeEventHandler, TreeModelChanges, TreeModelSource,
-  TreeNodeItem, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
+  AbstractTreeNodeLoaderWithProvider, MutableTreeModel, MutableTreeModelNode, toRxjsObservable, TreeEditingParams, TreeEventHandler, TreeModelChanges,
+  TreeModelSource, TreeNodeItem, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
@@ -90,7 +89,7 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
   }
 
   public onSelectionModified({ modifications }: TreeSelectionModificationEventArgs) {
-    const withUnifiedSelection = from(modifications).pipe(
+    const withUnifiedSelection = toRxjsObservable(modifications).pipe(
       takeUntil(this._cancelled),
       tap({
         next: ({ selectedNodeItems, deselectedNodeItems }) => {
@@ -110,7 +109,7 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
 
   public onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs) {
     let firstEmission = true;
-    const withUnifiedSelection = from(replacements).pipe(
+    const withUnifiedSelection = toRxjsObservable(replacements).pipe(
       takeUntil(this._cancelled),
       tap({
         next: ({ selectedNodeItems }) => {

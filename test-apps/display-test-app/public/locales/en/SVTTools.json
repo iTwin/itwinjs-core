@@ -10,6 +10,9 @@
         "keyin": "dta classifyclip selected"
       }
     },
+    "GridSettings": {
+      "keyin": "dta grid settings"
+    },
     "Markup": {
       "keyin": "dta markup",
       "TestSelect": {
@@ -106,29 +109,14 @@
     "ApplyModelTransform": {
       "keyin": "dta model transform"
     },
+    "ApplyModelDisplayScale": {
+      "keyin": "dta model scale"
+    },
     "EditingSession": {
       "keyin": "dta edit"
     },
-    "DeleteElements": {
-      "keyin": "dta delete elements"
-    },
-    "MoveElements": {
-      "keyin": "dta move elements"
-    },
-    "RotateElementsByAngle": {
-      "keyin": "dta rotate elements angle"
-    },
-    "RotateElementsByPoints": {
-      "keyin": "dta rotate elements points"
-    },
     "PlaceLineString": {
       "keyin": "dta place line string"
-    },
-    "DtaUndo": {
-      "keyin": "dta undo"
-    },
-    "DtaRedo": {
-      "keyin": "dta redo"
     }
   }
 }

@@ -68,15 +68,28 @@ export class QParams2d {
     return params;
   }
 
+  /** Return the unquantized point for the input values */
+  public unquantize(x: number, y: number, out?: Point2d): Point2d {
+    const pt: Point2d = undefined !== out ? out : new Point2d();
+    pt.x = Quantization.unquantize(x, this.origin.x, this.scale.x);
+    pt.y = Quantization.unquantize(y, this.origin.y, this.scale.y);
+    return pt;
+  }
+
   /** Creates parameters supporting quantization of values within the range [-1.0, 1.0]. */
   public static fromNormalizedRange(rangeScale = Quantization.rangeScale16) { return QParams2d.fromRange(Range2d.createArray([Point2d.create(-1, -1), Point2d.create(1, 1)]), undefined, rangeScale); }
 
   /** Creates parameters supporting quantization of values within the range [0.0, 1.0]. */
   public static fromZeroToOne(rangeScale = Quantization.rangeScale16) { return QParams2d.fromRange(Range2d.createArray([Point2d.create(0, 0), Point2d.create(1, 1)]), undefined, rangeScale); }
 
+  /** Create parameters from origin and scale components */
+  public static fromOriginAndScale(ox: number, oy: number, sx: number, sy: number) { return new QParams2d(ox, oy, sx, sy); }
+
   // Return the range diagonal.
   public get rangeDiagonal(): Vector2d { return Vector2d.createFrom({ x: 0 === this.scale.x ? 0 : Quantization.rangeScale16 / this.scale.x, y: 0 === this.scale.y ? 0 : Quantization.rangeScale16 / this.scale.y }); }
 
+  /** Return true if the point point is quantizable */
+  public isQuantizable(point: Point2d ) { return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y); }
 }
 
 /** Represents a quantized 2d point as an (x, y) pair in the integer range [0, 0xffff].
@@ -261,6 +274,15 @@ export class QParams3d {
       this.scale.x = this.scale.y = this.scale.z = 0;
     }
   }
+  /** Return the unquantized point for the input values */
+  public unquantize(x: number, y: number, z: number, out?: Point3d): Point3d {
+    const pt: Point3d = undefined !== out ? out : new Point3d();
+    pt.x = Quantization.unquantize(x, this.origin.x, this.scale.x);
+    pt.y = Quantization.unquantize(y, this.origin.y, this.scale.y);
+    pt.z = Quantization.unquantize(z, this.origin.z, this.scale.z);
+    return pt;
+  }
+
   /** Creates parameters to support quantization of values within the specified range. */
   public static fromRange(range: Range3d, out?: QParams3d, rangeScale = Quantization.rangeScale16) {
     const params = undefined !== out ? out : new QParams3d();
@@ -283,6 +305,9 @@ export class QParams3d {
 
   // Return the range diagonal.
   public get rangeDiagonal(): Vector3d { return Vector3d.createFrom({ x: this.scale.x === 0 ? 0 : Quantization.rangeScale16 / this.scale.x, y: this.scale.y === 0 ? 0 : Quantization.rangeScale16 / this.scale.y, z: this.scale.z === 0 ? 0 : Quantization.rangeScale16 / this.scale.z }); }
+
+  /** Return true if the point point is quantizable */
+  public isQuantizable(point: Point3d ) { return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y) && Quantization.isQuantizable(point.z, this.origin.z, this.scale.z); }
 }
 
 /** Represents a quantized 3d point as an (x, y, z) triplet in the integer range [0, 0xffff].

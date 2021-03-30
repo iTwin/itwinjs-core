@@ -21,8 +21,8 @@ beta;BriefcaseStatus
 beta;ByteStream
 public;ChangeSetApplyOption
 beta;ChangeSetStatus
-public;ClientRequestContext 
-public;ClientRequestContextProps
+public;ClientRequestContext
+public;ClientRequestContextProps 
 public;CloneFunction
 public;compareBooleans(a: boolean, b: boolean): number
 public;compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number
@@ -68,7 +68,9 @@ public;IModelStatus
 public;IndexedValue
 public;IndexMap
 internal;isElectronMain: boolean
+deprecated;isElectronMain: boolean
 internal;isElectronRenderer: boolean
+deprecated;isElectronRenderer: boolean
 public;isIDisposable(obj: unknown): obj is IDisposable
 public;isInstanceOf
 public;JsonUtils
@@ -87,6 +89,7 @@ beta;ObservableSet
 beta;OneAtATimeAction
 public;OpenMode
 public;OrderedComparator
+alpha;OrderedId64Array 
 beta;OrderedId64Iterable = Iterable
 beta;OrderedId64Iterable
 public;OrderedSet
@@ -99,6 +102,7 @@ public;ReadonlySortedArray
 beta;RepositoryStatus
 beta;RpcInterfaceStatus
 public;SerializedClientRequestContext
+public;SessionProps
 public;shallowClone
 public;SortedArray
 beta;StatusCodeWithMessage

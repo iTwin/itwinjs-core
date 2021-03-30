@@ -4,15 +4,39 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyUpdateInfo, HierarchyUpdateInfoJSON, NodeDeletionInfo, NodeDeletionInfoJSON,
-  NodeInsertionInfo, NodeInsertionInfoJSON, NodeUpdateInfo, NodeUpdateInfoJSON, PartialHierarchyModification, UpdateInfo, UpdateInfoJSON,
+  HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyUpdateInfo, HierarchyUpdateInfoJSON, Node, NodeDeletionInfo, NodeDeletionInfoJSON,
+  NodeInsertionInfo, NodeInsertionInfoJSON, NodeJSON, NodeUpdateInfo, NodeUpdateInfoJSON, PartialHierarchyModification, StandardNodeTypes, UpdateInfo,
+  UpdateInfoJSON,
 } from "../presentation-common";
-import { createRandomECInstancesNode, createRandomECInstancesNodeJSON } from "./_helpers/random";
+
+const testNode: Node = {
+  key: {
+    instanceKeys: [],
+    pathFromRoot: [],
+    type: StandardNodeTypes.ECInstancesNode,
+  },
+  label: {
+    displayValue: "TestNode",
+    rawValue: "test_node",
+    typeName: "string",
+  },
+};
+
+const testNodeJson: NodeJSON = {
+  key: {
+    instanceKeys: [],
+    pathFromRoot: [],
+    type: StandardNodeTypes.ECInstancesNode,
+  },
+  labelDefinition: {
+    displayValue: "TestNode",
+    rawValue: "test_node",
+    typeName: "string",
+  },
+};
 
 describe("UpdateInfo", () => {
-
   describe("toJSON", () => {
-
     it("serializes `UpdateInfo` object to JSON", () => {
       const info: UpdateInfo = {
         ["test_imodel_1"]: {
@@ -27,18 +51,16 @@ describe("UpdateInfo", () => {
           ["test_ruleset_3"]: {
             hierarchy: [{
               type: "Delete",
-              node: createRandomECInstancesNode(),
+              target: testNode.key,
             }],
           },
         },
       };
       expect(UpdateInfo.toJSON(info)).to.matchSnapshot();
     });
-
   });
 
   describe("fromJSON", () => {
-
     it("deserializes `UpdateInfo` object from JSON", () => {
       const json: UpdateInfoJSON = {
         ["test_imodel_1"]: {
@@ -53,22 +75,18 @@ describe("UpdateInfo", () => {
           ["test_ruleset_3"]: {
             hierarchy: [{
               type: "Delete",
-              node: createRandomECInstancesNodeJSON(),
+              target: testNodeJson.key,
             }],
           },
         },
       };
       expect(UpdateInfo.fromJSON(json)).to.matchSnapshot();
     });
-
   });
-
 });
 
 describe("HierarchyUpdateInfo", () => {
-
   describe("toJSON", () => {
-
     it("serializes \"FULL\" `HierarchyUpdateInfo` to JSON", () => {
       const info: HierarchyUpdateInfo = "FULL";
       expect(HierarchyUpdateInfo.toJSON(info)).to.eq("FULL");
@@ -77,15 +95,13 @@ describe("HierarchyUpdateInfo", () => {
     it("serializes partial `HierarchyUpdateInfo` to JSON", () => {
       const info: HierarchyUpdateInfo = [{
         type: "Delete",
-        node: createRandomECInstancesNode(),
+        target: testNode.key,
       }];
       expect(HierarchyUpdateInfo.toJSON(info)).to.matchSnapshot();
     });
-
   });
 
   describe("fromJSON", () => {
-
     it("deserializes \"FULL\" `HierarchyUpdateInfo` from JSON", () => {
       const json: HierarchyUpdateInfoJSON = "FULL";
       expect(HierarchyUpdateInfo.fromJSON(json)).to.eq("FULL");
@@ -94,24 +110,30 @@ describe("HierarchyUpdateInfo", () => {
     it("deserializes partial `HierarchyUpdateInfo` from JSON", () => {
       const json: HierarchyUpdateInfoJSON = [{
         type: "Delete",
-        node: createRandomECInstancesNodeJSON(),
+        target: testNodeJson.key,
       }];
       expect(HierarchyUpdateInfo.fromJSON(json)).to.matchSnapshot();
     });
-
   });
-
 });
 
 describe("PartialHierarchyModification", () => {
-
   describe("toJSON", () => {
-
-    it("serializes `NodeInsertionInfo`", () => {
+    it("serializes `NodeInsertionInfo` without parent", () => {
       const info: NodeInsertionInfo = {
         type: "Insert",
         position: 123,
-        node: createRandomECInstancesNode(),
+        node: testNode,
+      };
+      expect(PartialHierarchyModification.toJSON(info)).to.matchSnapshot();
+    });
+
+    it("serializes `NodeInsertionInfo` with parent", () => {
+      const info: NodeInsertionInfo = {
+        type: "Insert",
+        parent: testNode.key,
+        position: 123,
+        node: testNode,
       };
       expect(PartialHierarchyModification.toJSON(info)).to.matchSnapshot();
     });
@@ -119,12 +141,10 @@ describe("PartialHierarchyModification", () => {
     it("serializes `NodeUpdateInfo`", () => {
       const info: NodeUpdateInfo = {
         type: "Update",
-        node: createRandomECInstancesNode(),
-        changes: [{
-          name: "test",
-          old: "old value",
-          new: "new value",
-        }],
+        target: testNode.key,
+        changes: {
+          backColor: "new value",
+        },
       };
       expect(PartialHierarchyModification.toJSON(info)).to.matchSnapshot();
     });
@@ -132,20 +152,28 @@ describe("PartialHierarchyModification", () => {
     it("serializes `NodeDeletionInfo`", () => {
       const info: NodeDeletionInfo = {
         type: "Delete",
-        node: createRandomECInstancesNode(),
+        target: testNode.key,
       };
       expect(PartialHierarchyModification.toJSON(info)).to.matchSnapshot();
     });
-
   });
 
   describe("fromJSON", () => {
-
-    it("deserializes `NodeInsertionInfo` from JSON", () => {
+    it("deserializes `NodeInsertionInfo` without parent from JSON", () => {
       const info: NodeInsertionInfoJSON = {
         type: "Insert",
         position: 123,
-        node: createRandomECInstancesNodeJSON(),
+        node: testNodeJson,
+      };
+      expect(PartialHierarchyModification.fromJSON(info)).to.matchSnapshot();
+    });
+
+    it("deserializes `NodeInsertionInfo` with parent from JSON", () => {
+      const info: NodeInsertionInfoJSON = {
+        type: "Insert",
+        parent: testNodeJson.key,
+        position: 123,
+        node: testNodeJson,
       };
       expect(PartialHierarchyModification.fromJSON(info)).to.matchSnapshot();
     });
@@ -153,12 +181,10 @@ describe("PartialHierarchyModification", () => {
     it("deserializes `NodeUpdateInfo` from JSON", () => {
       const info: NodeUpdateInfoJSON = {
         type: "Update",
-        node: createRandomECInstancesNodeJSON(),
-        changes: [{
-          name: "test",
-          old: "old value",
-          new: "new value",
-        }],
+        target: testNode.key,
+        changes: {
+          backColor: "new value",
+        },
       };
       expect(PartialHierarchyModification.fromJSON(info)).to.matchSnapshot();
     });
@@ -166,39 +192,33 @@ describe("PartialHierarchyModification", () => {
     it("deserializes `NodeDeletionInfo` from JSON", () => {
       const info: NodeDeletionInfoJSON = {
         type: "Delete",
-        node: createRandomECInstancesNodeJSON(),
+        target: testNodeJson.key,
       };
       expect(PartialHierarchyModification.fromJSON(info)).to.matchSnapshot();
     });
-
   });
-
 });
 
 describe("HierarchyCompareInfo", () => {
-
   describe("toJSON", () => {
-
     it("serializes `HierarchyCompareInfo` to JSON", () => {
       const info: HierarchyCompareInfo = {
         changes: [
           {
             type: "Insert",
             position: 123,
-            node: createRandomECInstancesNode(),
+            node: testNode,
           },
           {
             type: "Update",
-            node: createRandomECInstancesNode(),
-            changes: [{
-              name: "test",
-              old: "old value",
-              new: "new value",
-            }],
+            target: testNode.key,
+            changes: {
+              backColor: "new value",
+            },
           },
           {
             type: "Delete",
-            node: createRandomECInstancesNode(),
+            target: testNode.key,
           },
         ],
         continuationToken: {
@@ -208,31 +228,27 @@ describe("HierarchyCompareInfo", () => {
       };
       expect(HierarchyCompareInfo.toJSON(info)).to.matchSnapshot();
     });
-
   });
 
   describe("fromJSON", () => {
-
     it("deserializes `HierarchyCompareInfo` from JSON", () => {
       const info: HierarchyCompareInfoJSON = {
         changes: [
           {
             type: "Insert",
             position: 123,
-            node: createRandomECInstancesNodeJSON(),
+            node: testNodeJson,
           },
           {
             type: "Update",
-            node: createRandomECInstancesNodeJSON(),
-            changes: [{
-              name: "test",
-              old: "old value",
-              new: "new value",
-            }],
+            target: testNodeJson.key,
+            changes: {
+              backColor: "new value",
+            },
           },
           {
             type: "Delete",
-            node: createRandomECInstancesNodeJSON(),
+            target: testNodeJson.key,
           },
         ],
         continuationToken: {
@@ -242,7 +258,5 @@ describe("HierarchyCompareInfo", () => {
       };
       expect(HierarchyCompareInfo.fromJSON(info)).to.matchSnapshot();
     });
-
   });
-
 });

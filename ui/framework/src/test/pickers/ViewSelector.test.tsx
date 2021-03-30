@@ -14,6 +14,7 @@ import TestUtils, { mount } from "../TestUtils";
 
 describe("ViewSelector", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
+  const imodelMock2 = moq.Mock.ofType<IModelConnection>();
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -34,7 +35,6 @@ describe("ViewSelector", () => {
     const wrapper = mount(
       <ViewSelector imodel={imodelMock.object} listenForShowUpdates={true} />,
     );
-
     const vs = wrapper.find(ViewSelector);
     expect(vs).to.not.be.undefined;
 
@@ -49,6 +49,14 @@ describe("ViewSelector", () => {
     expect(vs.state("showDrawings")).to.be.false;
     expect(vs.state("showSheets")).to.be.false;
     expect(vs.state("showUnknown")).to.be.false;
+  });
+
+  it("should trigger componentDidUpdate processing", async () => {
+    const wrapper = mount(
+      <ViewSelector imodel={imodelMock.object} />,
+    );
+    wrapper.setProps({imodel:imodelMock2.object});
+    await TestUtils.flushAsyncOperations();
   });
 
 });

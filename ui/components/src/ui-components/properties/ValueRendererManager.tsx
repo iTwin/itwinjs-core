@@ -16,6 +16,7 @@ import { MultilineTextPropertyValueRenderer } from "./renderers/value/MultilineT
 import { NavigationPropertyValueRenderer } from "./renderers/value/NavigationPropertyValueRenderer";
 import { PrimitivePropertyValueRenderer } from "./renderers/value/PrimitivePropertyValueRenderer";
 import { StructPropertyValueRenderer } from "./renderers/value/StructPropertyValueRenderer";
+import { UrlPropertyValueRenderer } from "./renderers/value/UrlPropertyValueRenderer";
 
 /** Types of property containers
  * @public
@@ -69,7 +70,8 @@ export interface PropertyValueRendererContext {
   /** Called when property value expansion or collapse is requested. */
   onExpansionToggled?: () => void;
   /** Called when property value element height changes. */
-  onHeightChanged?: (newHeight: number) => void;}
+  onHeightChanged?: (newHeight: number) => void;
+}
 
 /** Custom property value renderer interface
  * @public
@@ -155,5 +157,6 @@ export class PropertyValueRendererManager {
 }
 
 PropertyValueRendererManager.defaultManager.registerRenderer("navigation", new NavigationPropertyValueRenderer());
+PropertyValueRendererManager.defaultManager.registerRenderer("url", new UrlPropertyValueRenderer());
 PropertyValueRendererManager.defaultManager.registerRenderer("double", new DoublePropertyValueRenderer());
 PropertyValueRendererManager.defaultManager.registerRenderer("multiline", new MultilineTextPropertyValueRenderer());

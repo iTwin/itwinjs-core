@@ -21,10 +21,10 @@ import {
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus,
   MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
-  SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title, Toggle, ToggleButtonType,
-  UnderlinedButton, VerticalTabs,
+  SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
+  Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
-import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails } from "@bentley/ui-framework";
+import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../..";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
@@ -32,6 +32,28 @@ import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
+import { AccudrawSettingsPageComponent } from "../Settings";
+
+function MySettingsPage() {
+  const tabs: SettingsTabEntry[] = [
+    {
+      itemPriority: 10, tabId: "Quantity", pageWillHandleCloseRequest: true, label: "Quantity", tooltip: "Quantity Format Settings", icon: "icon-measure",
+      page: <QuantityFormatSettingsPage initialQuantityType={QuantityType.Length} availableUnitSystems={new Set(["metric","imperial","usCustomary","usSurvey"])} />,
+    },
+    {
+      itemPriority: 20, tabId: "Accudraw", label: "Accudraw", tooltip: "Accudraw Settings", icon: "icon-paintbrush",
+      page: <AccudrawSettingsPageComponent />,
+    },
+    { itemPriority: 30, tabId: "page3", label: "page3", page: <div>Page 3</div> },
+    { itemPriority: 40, tabId: "page4", label: "page4", subLabel: "disabled page4", isDisabled: true, page: <div>Page 4</div> },
+  ];
+
+  return (
+    <div style={{ display: "flex", width: "100%", height: "100%" }}>
+      <SettingsContainer tabs={tabs} settingsManager={UiFramework.settingsManager} />
+    </div>
+  );
+}
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
   const traitStr = Format.getTraitString(trait);
@@ -93,7 +115,7 @@ function providePrimaryChildren(formatProps: FormatProps, fireFormatChange: (new
 }
 
 async function provideFormatSpec(formatProps: FormatProps, persistenceUnit: UnitProps, unitsProvider: UnitsProvider, formatName?: string) {
-  const actualFormat = await Format.createFromJSON(formatName ?? "custom",unitsProvider, formatProps);
+  const actualFormat = await Format.createFromJSON(formatName ?? "custom", unitsProvider, formatProps);
   return FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, persistenceUnit);
 }
 
@@ -114,7 +136,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
       if (formatterSpec) {
         const pu = formatterSpec.persistenceUnit;
         if (pu) {
-          const actualFormat = await  Format.createFromJSON("custom", unitsProvider, formatProps);
+          const actualFormat = await Format.createFromJSON("custom", unitsProvider, formatProps);
           await actualFormat.fromJSON(unitsProvider, formatProps);
           const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
           setFormattedValue(newSpec.applyFormatting(initialMagnitude));
@@ -1083,6 +1105,17 @@ export class ComponentExamplesProvider {
     };
   }
 
+  private static get settingPage(): ComponentExampleCategory {
+    const examples = [];
+    examples.push(
+      createComponentExample("Setting Page", undefined, <MySettingsPage />),
+    );
+    return {
+      title: "Setting Page Component",
+      examples,
+    };
+  }
+
   public static get categories(): ComponentExampleCategory[] {
     return [
       ComponentExamplesProvider.badgeSamples,
@@ -1109,6 +1142,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.toggleSamples,
       ComponentExamplesProvider.weightSamples,
       ComponentExamplesProvider.quantityFormatting,
+      ComponentExamplesProvider.settingPage,
       ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }

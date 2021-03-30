@@ -331,6 +331,7 @@ export class CheckpointV2Query extends WsgQuery {
 export enum CheckpointV2State {
     Failed = 2,
     InProgress = 0,
+    NotGenerated = 3,
     Successful = 1
 }
 
@@ -586,6 +587,7 @@ export class HubCode extends CodeBase {
 // @public
 export class HubIModel extends WsgInstance {
     createdDate?: string;
+    dataLocationId?: string;
     description?: string;
     extent?: number[];
     id?: GuidString;
@@ -610,6 +612,8 @@ export class HubUserInfo extends WsgInstance {
 export class IModelBankClient extends IModelClient {
     constructor(url: string, handler: FileHandler | undefined);
     // (undocumented)
+    get baseUrl(): string;
+    // (undocumented)
     getUrl(rqctx: AuthorizedClientRequestContext): Promise<string>;
 }
 
@@ -631,6 +635,8 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 // @internal
 export class IModelBankHandler extends IModelBaseHandler {
     constructor(url: string, handler: FileHandler | undefined, keepAliveDuration?: number);
+    // (undocumented)
+    baseUrl?: string;
     // (undocumented)
     getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
     // (undocumented)
@@ -663,13 +669,11 @@ export class IModelBaseHandler extends WsgClient {
     protected getRelyingPartyUrl(): string;
     // @internal
     getUrl(requestContext: ClientRequestContext): Promise<string>;
-    // @internal
+    // @internal (undocumented)
     protected getUrlSearchKey(): string;
     postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
     postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    // (undocumented)
-    static readonly searchKey: string;
     // @internal
     protected setupHttpOptions(options?: HttpRequestOptions): HttpRequestOptions;
     // @internal
@@ -1179,7 +1183,7 @@ export class UserStatisticsQuery extends WsgQuery {
 
 // @public
 export class Version extends WsgInstance {
-    changeSetId?: GuidString;
+    changeSetId?: string;
     createdDate?: string;
     description?: string;
     hidden?: boolean;

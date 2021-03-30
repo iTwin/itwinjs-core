@@ -3,6 +3,14 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
+      "name": "@axe-core/react",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@azure-tools/azcopy-node",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@azure/storage-blob",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -48,7 +56,7 @@
     },
     {
       "name": "@bentley/electron-manager",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@bentley/eslint-plugin",
@@ -80,7 +88,7 @@
     },
     {
       "name": "@bentley/geometry-core",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/hypermodeling-frontend",
@@ -176,7 +184,7 @@
     },
     {
       "name": "@bentley/presentation-common",
-      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/presentation-components",
@@ -204,7 +212,7 @@
     },
     {
       "name": "@bentley/react-scripts",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@bentley/reality-data-client",
@@ -216,7 +224,7 @@
     },
     {
       "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "edit", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/ui-components",
@@ -233,6 +241,10 @@
     {
       "name": "@bentley/ui-ninezone",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/units-schema",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "@bentley/usage-logging-client",
@@ -268,11 +280,11 @@
     },
     {
       "name": "@testing-library/react",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "@testing-library/react-hooks",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@typescript-eslint/eslint-plugin",
@@ -287,12 +299,20 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "almost-equal",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "applicationinsights",
       "allowedCategories": [ "backend" ]
     },
     {
       "name": "autoprefixer",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "azurite",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "babel-loader",
@@ -305,6 +325,10 @@
     {
       "name": "babel-preset-react-app",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "benchmark",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "body-parser",
@@ -336,19 +360,19 @@
     },
     {
       "name": "chai",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "chai-as-promised",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "chai-jest-snapshot",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "chai-spies",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "chai-string",
@@ -432,15 +456,15 @@
     },
     {
       "name": "enzyme",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "enzyme-adapter-react-16",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "enzyme-to-json",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "eslint",
@@ -543,6 +567,10 @@
       "allowedCategories": [ "backend", "edit", "frontend", "internal", "tools" ]
     },
     {
+      "name": "got",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "highlight.js",
       "allowedCategories": [ "internal" ]
     },
@@ -557,6 +585,10 @@
     {
       "name": "i18next-browser-languagedetector",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "i18next-node-fs-backend",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "i18next-xhr-backend",
@@ -592,11 +624,11 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "jsdom-global",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "json-schema-faker",
@@ -647,6 +679,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "mkdirp",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "mobx",
       "allowedCategories": [ "internal" ]
     },
@@ -656,7 +692,7 @@
     },
     {
       "name": "mocha",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "mocha-junit-reporter",
@@ -676,7 +712,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "null-loader",
@@ -684,7 +720,7 @@
     },
     {
       "name": "nyc",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "object-hash",
@@ -745,10 +781,6 @@
     {
       "name": "react-autosuggest",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "react-axe",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-beautiful-dnd",
@@ -908,11 +940,11 @@
     },
     {
       "name": "sinon",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "sinon-chai",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
     },
     {
       "name": "source-map-loader",
@@ -925,6 +957,10 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "stream-buffers",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "style-loader",
@@ -968,7 +1004,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "tsconfig-paths",
@@ -1072,7 +1108,7 @@
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "common", "frontend", "internal" ]
+      "allowedCategories": [ "common", "extensions", "frontend", "internal" ]
     },
     {
       "name": "xpath",

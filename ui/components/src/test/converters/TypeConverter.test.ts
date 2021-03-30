@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { PrimitiveValue, PropertyDescription } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyConverterInfo, PropertyDescription } from "@bentley/ui-abstract";
 import { TypeConverter } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
@@ -70,7 +70,10 @@ describe("TypeConverter", () => {
       converterMock.callBase = true;
       converterMock.setup(async (mock) => mock.convertFromString(moq.It.isAny())).returns(async (value: string) => value);
 
-      const propertyValue = await converterMock.object.convertFromStringToPropertyValue("def", TestUtils.createPrimitiveStringProperty("abc", "abc"));
+      const propertyRecord = TestUtils.createPrimitiveStringProperty("abc", "abc");
+      const convertInfo: PropertyConverterInfo = { options: new Map([["test", "test"]]) };
+      propertyRecord.property.converter = convertInfo;
+      const propertyValue = await converterMock.object.convertFromStringToPropertyValue("def", propertyRecord);
       expect((propertyValue as PrimitiveValue).value).to.be.eq("def");
     });
   });

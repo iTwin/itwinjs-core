@@ -3,191 +3,90 @@ publish: false
 ---
 # NextVersion
 
-## The iModel.js Project Is Renamed iTwin.js
+## Txn monitoring
 
-The version begins the process of renaming our project from **iModel.js** to **iTwin.js** to better reflect its purpose as the *platform for infrastructure digital twins*.
+[TxnManager]($backend) now has additional events for monitoring changes to the iModel resulting from [Txns]($docs/learning/InteractiveEditing.md), including:
 
-iModels are of course a big part of iTwins, so much of the api remains iModel-centric, and many packages within this repository are appropriately named with the `imodeljs` prefix. But, many parts that don't have a direct relationship to iModels will use the term iTwin going forward to avoid confusion.
+* [TxnManager.onModelsChanged]($backend) for changes to the properties of [Model]($backend)s and
+* [TxnManager.onModelGeometryChanged]($backend) for changes to the geometry contained within [GeometricModel]($backend)s.
 
-The full conversion will be made gradually and incrementally, and will likely take several major release cycles to complete. We will not rename packages, classes, methods, etc. unless they are substantially replaced. That may leave some permanent historical vestiges of this transition, but as they say, c'est la vie.
+[BriefcaseConnection.txns]($frontend) now exposes the same events provided by `TxnManager`, but on the frontend, via [BriefcaseTxns]($frontend).
 
-This version begins the process by redirecting `www.imodeljs.org` to `www.itwinjs.org`, and updating references to the project name in markdown files.
+## New settings UI features
 
-## GPU memory limits
+### Add Settings Tabs and Pages to UI
 
-The [RenderGraphic]($frontend)s used to represent a [Tile]($frontend)'s contents consume WebGL resources - chiefly, GPU memory. If the amount of GPU memory consumed exceeds that available, the WebGL context will be lost, causing an error dialog to be displayed and all rendering to cease. The [TileAdmin]($frontend) can now be configured with a strategy for managing the amount of GPU memory consumed and avoiding context loss. Each strategy defines a maximum amount of GPU memory permitted to be allocated to tile graphics; when that limit is exceeded, graphics for tiles that are not currently being displayed by any [Viewport]($frontend) are discarded one by one until the limit is satisfied or no more tiles remain to be discarded. Graphics are discarded in order from least-recently- to most-recently-displayed, and graphics currently being displayed will not be discarded. The available strategies are:
+#### Quantity Formatting Settings
 
-- "default" - a "reasonable" amount of GPU memory can be consumed.
-- "aggressive" - a conservative amount of GPU memory can be consumed.
-- "relaxed" - a generous amount of GPU memory can be consumed.
-- "none" - an unbounded amount of GPU memory can be consumed - no maximum is imposed.
+The [QuantityFormatSettingsPage]($ui-framework) component has been added to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
 
-The precise amount of memory permitted by each strategy varies based on whether or not the client is running on a mobile device; see [TileAdmin.mobileGpuMemoryLimits]($frontend) and [TileAdmin.nonMobileGpuMemoryLimits]($frontend) for precise values. The application can also specify an exact amount in number of bytes instead.
+#### User Interface Settings
 
-The limit defaults to "default" for mobile devices and "none" for non-mobile devices. To configure the limit when calling [IModelApp.startup]($frontend), specify [TileAdmin.Props.gpuMemoryLimits]($frontend). For example:
+The [UiSettingsPage]($ui-framework) component has been to provide the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
 
-```ts
-  IModelApp.startup({ tileAdmin: TileAdmin.create({ gpuMemoryLimits: "aggressive" }) });
-```
+#### Registering Settings
 
-Separate limits for mobile and non-mobile devices can be specified at startup if desired; the appropriate limit will be selected based on the type of device the client is running on:
+Below is an example of registering the `QuantityFormatSettingsPage` with the `SettingsManager`.
 
 ```ts
-  IModelApp.startup({ tileAdmin: TileAdmin.create({
-    gpuMemoryLimits: {
-      mobile: "default",
-      nonMobile: "relaxed",
-    }),
-  });
+// Sample settings provider that dynamically adds settings into the setting stage
+export class AppSettingsTabsProvider implements SettingsTabsProvider {
+  public readonly id = "AppSettingsTabsProvider";
+
+  public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
+    return [
+      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
+      getUiSettingsManagerEntry(30, true),
+    ];
+  }
+
+  public static initializeAppSettingProvider() {
+    UiFramework.settingsManager.addSettingsProvider(new AppSettingsTabsProvider());
+  }
+}
 ```
 
-To adjust the limit after startup, assign to [TileAdmin.gpuMemoryLimit]($frontend).
+The `QuantityFormatSettingsPage` is marked as alpha in this release and is subject to minor modifications in future releases.
 
-This feature replaces the `@alpha` `TileAdmin.Props.mobileExpirationMemoryThreshold` option.
+## @bentley/imodeljs-quantity package
 
-## IModelHost and IModelApp Initialization Changes
+The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
 
-Initialization processing of iTwin.js applications, and in particular the order of individual steps for frontend and backend classes has been complicated and vague, involving several steps that vary depending on application type and platform. This release attempts to clarify and simplify that process, while maintaining backwards compatibility. In general, if your code uses [IModelHost.startup]($backend) and [IModelApp.startup]($frontend) for web visualization, it will continue to work without changes. However, for native (desktop and mobile) apps, some refactoring may be necessary. See [IModelHost documentation]($docs/learning/backend/IModelHost.md) for appropriate backend initialization, and [IModelApp documentation]($docs/learning/frontend/IModelApp.md) for frontend initialization.
+## Incremental Precompilation of Shaders Enabled by Default
 
-The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes `ElectronHost` and `ElectronApp`.
+To help prevent delays when a user interacts with a [Viewport]($frontend), the WebGL render system now by default precompiles shader programs used by the [RenderSystem]($frontend) before any Viewport is opened.
 
-To create an Electron application, you should initialize your frontend via:
+Shader precompilation will cease once all shader programs have been compiled, or when a [Viewport]($frontend) is opened (registered with the [ViewManager]($frontend)).  As such, applications which do not open a [Viewport]($frontend) immediately upon startup stand to benefit - for example, if the user is first expected to select an iModel and/or a view through the user interface.
 
-```ts
-  import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-  ...
-  await ElectronApp.startup();
-```
+To disable this functionality, set the `doIdleWork` property of the `RenderSystem.Options` object passed to `IModelApp.startup` to false.
 
-And your backend via:
+## Added NativeHost.settingsStore for storing user-level settings for native applications
 
-```ts
-  import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
-  ...
-  await ElectronHost.startup();
-```
+The @beta class `NativeHost` now has a member [NativeHost.settingsStore]($backend) that may be used by native applications to store user-level data in a file in the [[NativeHost.appSettingsCacheDir]($backend) directory. It uses the [NativeAppStorage]($backend) api to store and load key/value pairs. Note that these settings are stored in a local file that may be deleted by the user, so it should only be used for a local cache of values that may be restored elsewhere.
 
-Likewise, to create an iOS application, you should initialize your frontend via:
+## NativeApp is now @beta
 
-```ts
-  import { IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
-  ...
-  await IOSApp.startup();
-```
+The class [NativeApp]($frontend) has been promoted from @alpha to @beta. `NativeApp` is relevant for both Electron and mobile applications. Please provide feedback if you have issues or concerns on its use.
 
-And your backend via:
+## Properly declare changeSetId
 
-```ts
-  import { IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
-  ...
-  await IOSHost.startup();
-```
-
-Both frontend and backend `startup` methods take optional arguments to customize the App/Host environments.
-
-## ProcessDetector API
-
-It is frequently necessary to detect the type of JavaScript process currently executing. Previously, there were several ways (sometimes redundant, sometimes conflicting) to do that, depending on the subsystem being used. This release attempts to centralize process classification into the class [ProcessDetector]($bentley) in the `@bentleyjs-core` package. All previous methods for detecting process type have been deprecated in favor of `ProcessDetector`. The deprecated methods will likely be removed in version 3.0.
-
-## Common table expression support in ECSQL
-
-CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
+There were a number of places where *changeSetId* variables/parameters were incorrectly typed as [GuidString]($bentley) instead of `string`.
+A *changeSetId* is a string hash value based on the ChangeSet contents and parent. It is not a GUID.
+This is not a breaking change because `GuidString` is just a type alias for `string`.
+It was, however, confusing from a usage and documentation perspective and needed to be corrected.
 
 ## Breaking Api Changes
 
-### Quantity package
+### @bentley/ui-core package
 
-The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
-New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.
+The beta class `SettingsProvider` was renamed to `SettingsTabsProvider`.
 
-### Frontend package
+### @bentley/ui-framework package
 
-The alpha class QuantityFormatter now registers its own standard QuantityTypeDefinitions during initialization. CustomQuantityTypeDefinitions must now be registered to support additional QuantityTypes. This replaces the use of FormatterParserSpecsProvider to provide custom quantity types. Removed koq methods that were never implemented.
+The beta class `QuantityFormatSettingsPanel` was renamed to `QuantityFormatSettingsPage`.
 
-### IModelHostConfiguration.applicationType
+### @bentley/imodeljs-quantity package
 
-The type of the internal member `IModelHostConfiguration.applicationType` had a redundant declaration in `IModelHost.ts`. It is now correctly declared to be of type `IModelJsNative.ApplicationType`. The names of the members were the same, so this will not likely cause problems.
+#### UnitProps property name change
 
-### IModelTransformer and IModelExporter APIs are now async
-
-The *export* methods of [IModelExporter]($backend) and the *process* methods of [IModelTransformer]($backend) are now `async`. This is a breaking API change.
-While exporting and transforming should generally be considered *batch* operations, changing these methods to `async` makes progress reporting and process health monitoring much easier. This is particularly important when processing large iModels.
-
-To react to the changes, add an `await` before each `IModelExporter.export*` and `IModelTransformer.process*` method call and make sure they are called from within an `async` method. No internal logic was changed, so that should be the only changes required.
-
-## Presentation
-
-### Setting up default formats
-
-A new feature was introduced, which allows supplying default unit formats to use for formatting properties that don't have a presentation unit for requested unit system. The formats are set when initializing [Presentation]($presentation-backend) and passing `PresentationManagerProps.defaultFormats`.
-Example:
-
-```ts
-Presentation.initialize({
-  defaultFormats: {
-    length: {
-      unitSystems: [PresentationUnitSystem.BritishImperial],
-      format: MY_DEFAULT_FORMAT_FOR_LENGTHS_IN_BRITISH_IMPERIAL_UNITS,
-    },
-    area: {
-      unitSystems: [PresentationUnitSystem.UsCustomary, PresentationUnitSystem.UsSurvey],
-      format: MY_DEFAULT_FORMAT_FOR_AREAS_IN_US_UNITS,
-    },
-  },
-});
-```
-
-### Accessing selection in instance filter of content specifications
-
-Added a way to create and filter content that's related to given input through some ID type of property that is not part of a relationship. That can be done by
-using [ContentInstancesOfSpecificClasses specification](../learning/presentation/content/ContentInstancesOfSpecificClasses.md) with an instance filter that makes use
-of the newly added [SelectedInstanceKeys](../learning/presentation/content/ECExpressions.md#instance=filter) ECExpression symbol. Example:
-
-```json
-{
-  "ruleType": "Content",
-  "condition": "SelectedNode.IsOfClass(\"ECClassDef\", \"ECDbMeta\")",
-  "specifications": [
-    {
-      "specType": "ContentInstancesOfSpecificClasses",
-      "classes": {
-        "schemaName": "BisCore",
-        "classNames": ["Element"]
-      },
-      "arePolymorphic": true,
-      "instanceFilter": "SelectedInstanceKeys.AnyMatches(x => this.IsOfClass(x.ECInstanceId))"
-    }
-  ]
-}
-```
-
-The above example creates content for `ECDbMeta.ECClassDef` instances by selecting all `BisCore.Element` instances
-that are of given `ECDbMeta.ECClassDef` instances.
-
-Previously this was not possible, because there is no ECRelationship between `ECDbMeta.ECClassDef` and `BisCore.Element`.
-
-### ECInstance ECExpression context method enhancements
-
-Added lambda versions for [ECInstance ECExpression context](../learning/presentation/ECExpressions.md#ecinstance) methods: `GetRelatedInstancesCount`,
-`HasRelatedInstance`, `GetRelatedValue`. This allows using those methods without the need of an ECRelationship between "current" ECInstance
-and related ECInstance. Example:
-
-```json
-{
-  "ruleType": "RootNodes",
-  "specifications": [
-    {
-      "specType": "InstanceNodesOfSpecificClasses",
-      "classes": {
-        "schemaName": "ECDbMeta",
-        "classNames": ["ECClassDef"]
-      },
-      "instanceFilter": "this.HasRelatedInstance(\"BisCore:Element\", el => el.IsOfClass(this.ECInstanceId))",
-      "groupByClass": false,
-      "groupByLabel": false
-    }
-  ]
-}
-```
-
-The above example returns `ECDbMeta:ECClassDef` instances only if there are `BisCore:Elements` of those classes.
+The interface [UnitProps]($quantity) property `unitFamily` has been renamed to `phenomenon` to be consistent with naming in `ecschema-metadata` package.

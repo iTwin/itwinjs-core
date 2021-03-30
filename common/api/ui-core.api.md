@@ -7,6 +7,7 @@
 import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import Component from 'react-select';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
@@ -27,6 +28,16 @@ import { RelativePosition } from '@bentley/ui-abstract';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { SliderModeFunction } from 'react-compound-slider';
 import { ValueType } from 'react-select/src/types';
+
+// @beta
+export class ActivateSettingsTabEvent extends BeUiEvent<ActivateSettingsTabEventArgs> {
+}
+
+// @beta
+export interface ActivateSettingsTabEventArgs {
+    // (undocumented)
+    readonly settingsTabId: string;
+}
 
 // @internal
 export class AnnularSector {
@@ -100,7 +111,7 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     onSuggestionSelected: (selected: AutoSuggestData) => void;
     options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
     // @internal
-    renderInputComponent?: ReactAutosuggest.RenderInputComponent<AutoSuggestData>;
+    renderInputComponent?: any;
     // @internal
     renderSuggestionsContainer?: ReactAutosuggest.RenderSuggestionsContainer;
     setFocus?: boolean;
@@ -187,6 +198,8 @@ export function Centered(props: CommonDivProps): JSX.Element;
 
 // @public
 export class Checkbox extends React.PureComponent<CheckboxProps> {
+    // @internal
+    constructor(props: CheckboxProps);
     // (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -211,6 +224,7 @@ export interface CheckBoxInfo {
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
     indeterminate?: boolean;
     inputClassName?: string;
+    inputRef?: React.Ref<HTMLInputElement>;
     inputStyle?: React.CSSProperties;
     label?: string;
     labelClassName?: string;
@@ -266,6 +280,10 @@ export class Circle {
 // @public
 export interface ClassNameProps {
     className?: string;
+}
+
+// @internal
+export class CloseSettingsContainerEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> {
 }
 
 // @public
@@ -814,6 +832,9 @@ export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
 export function FlexWrapContainer(props: CommonDivProps): JSX.Element;
 
 // @internal
+export function focusIntoContainer(focusContainer: HTMLDivElement, initialFocusElement?: React.RefObject<HTMLElement> | string): boolean;
+
+// @internal
 export function FocusTrap(props: FocusTrapProps): JSX.Element | null;
 
 // @internal
@@ -942,12 +963,13 @@ export class IconHelper {
 }
 
 // @public
-export function IconInput(props: IconInputProps): JSX.Element;
+export const IconInput: (props: IconInputProps) => JSX.Element | null;
 
 // @public
 export interface IconInputProps extends InputProps {
     containerClassName?: string;
     icon: React.ReactNode;
+    ref?: React.Ref<HTMLInputElement>;
 }
 
 // @public
@@ -972,6 +994,7 @@ export interface ImageCheckBoxProps extends CommonProps {
     imageOff: string | React.ReactNode;
     imageOn: string | React.ReactNode;
     inputClassName?: string;
+    inputRef?: React.Ref<HTMLInputElement>;
     inputStyle?: React.CSSProperties;
     onClick?: (checked: boolean) => any;
     tooltip?: string;
@@ -1224,8 +1247,8 @@ export interface LoadingStatusProps extends CommonProps {
     percent: number;
 }
 
-// @beta
-export class LocalUiSettings implements UiSettings {
+// @public
+export class LocalSettingsStorage implements UiSettingsStorage {
     constructor(w?: Window);
     // (undocumented)
     deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
@@ -1237,11 +1260,19 @@ export class LocalUiSettings implements UiSettings {
     w: Window;
 }
 
+// @beta @deprecated
+export class LocalUiSettings extends LocalSettingsStorage {
+    constructor(w?: Window);
+}
+
 // @public
 export interface MainTabsProps extends TabsProps {
     mainClassName: string;
     orientation: Orientation;
 }
+
+// @internal
+export function mergeRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
 
 // @public
 export class MessageBox extends React.PureComponent<MessageBoxProps> {
@@ -1353,7 +1384,7 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 };
 
 // @beta
-export function NumberInput(props: NumberInputProps): JSX.Element;
+export const NumberInput: (props: NumberInputProps) => JSX.Element | null;
 
 // @beta
 export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange"> {
@@ -1364,6 +1395,7 @@ export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step
     onChange?: (value: number | undefined, stringValue: string) => void;
     parse?: ((value: string) => number | null | undefined);
     precision?: number;
+    ref?: React.Ref<HTMLInputElement>;
     showTouchButtons?: boolean;
     snap?: boolean;
     step?: StepFunctionProp;
@@ -1527,6 +1559,30 @@ export interface PopupProps extends CommonProps {
     showShadow: boolean;
     target?: HTMLElement | null;
     top: number;
+}
+
+// @beta
+export class ProcessSettingsContainerCloseEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> {
+}
+
+// @beta
+export interface ProcessSettingsContainerCloseEventArgs {
+    // (undocumented)
+    readonly closeFunc: (args: any) => void;
+    // (undocumented)
+    readonly closeFuncArgs?: any;
+}
+
+// @beta
+export class ProcessSettingsTabActivationEvent extends BeUiEvent<ProcessSettingsTabActivationEventArgs> {
+}
+
+// @beta
+export interface ProcessSettingsTabActivationEventArgs {
+    // (undocumented)
+    readonly requestedSettingsTabId: string;
+    // (undocumented)
+    readonly tabSelectionFunc: (tabId: string) => void;
 }
 
 // @beta
@@ -1817,7 +1873,7 @@ export interface SearchBoxProps extends CommonProps {
 }
 
 // @public
-export function Select(props: SelectProps): JSX.Element;
+export const Select: (props: SelectProps) => JSX.Element | null;
 
 // @public
 export interface SelectOption {
@@ -1831,11 +1887,12 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
     options: (string | SelectOption)[] | {
         [key: string]: (string | SelectOption);
     };
+    ref?: React.Ref<HTMLSelectElement>;
     setFocus?: boolean;
 }
 
-// @beta
-export class SessionUiSettings implements UiSettings {
+// @public
+export class SessionSettingsStorage implements UiSettingsStorage {
     constructor(w?: Window);
     // (undocumented)
     deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
@@ -1845,6 +1902,79 @@ export class SessionUiSettings implements UiSettings {
     saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)
     w: Window;
+}
+
+// @beta @deprecated
+export class SessionUiSettings extends SessionSettingsStorage {
+    constructor(w?: Window);
+}
+
+// @beta
+export const SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element;
+
+// @beta (undocumented)
+export interface SettingsContainerProps {
+    // (undocumented)
+    currentSettingsTab?: SettingsTabEntry;
+    // (undocumented)
+    onSettingsTabSelected?: (tab: SettingsTabEntry) => void;
+    // (undocumented)
+    settingsManager: SettingsManager;
+    // (undocumented)
+    showHeader?: boolean;
+    // (undocumented)
+    tabs: SettingsTabEntry[];
+}
+
+// @beta
+export class SettingsManager {
+    activateSettingsTab(settingsTabId: string): void;
+    // (undocumented)
+    addSettingsProvider(settingsProvider: SettingsTabsProvider): void;
+    closeSettingsContainer(closeFunc: (args: any) => void, closeFuncArgs?: any): void;
+    getSettingEntries(stageId: string, stageUsage: string): Array<SettingsTabEntry>;
+    // @internal
+    readonly onActivateSettingsTab: ActivateSettingsTabEvent;
+    // @internal
+    readonly onCloseSettingsContainer: CloseSettingsContainerEvent;
+    readonly onProcessSettingsContainerClose: ProcessSettingsContainerCloseEvent;
+    readonly onProcessSettingsTabActivation: ProcessSettingsTabActivationEvent;
+    readonly onSettingsProvidersChanged: SettingsProvidersChangedEvent;
+    // (undocumented)
+    get providers(): ReadonlyArray<SettingsTabsProvider>;
+    set providers(p: ReadonlyArray<SettingsTabsProvider>);
+    // (undocumented)
+    removeSettingsProvider(providerId: string): boolean;
+}
+
+// @beta
+export class SettingsProvidersChangedEvent extends BeUiEvent<SettingsProvidersChangedEventArgs> {
+}
+
+// @beta
+export interface SettingsProvidersChangedEventArgs {
+    // (undocumented)
+    readonly providers: ReadonlyArray<SettingsTabsProvider>;
+}
+
+// @beta
+export interface SettingsTabEntry {
+    readonly icon?: string | JSX.Element;
+    readonly isDisabled?: boolean | ConditionalBooleanValue;
+    readonly itemPriority: number;
+    readonly label: string;
+    readonly page: JSX.Element;
+    readonly pageWillHandleCloseRequest?: boolean;
+    readonly subLabel?: string;
+    readonly tabId: string;
+    readonly tooltip?: string | JSX.Element;
+}
+
+// @beta
+export interface SettingsTabsProvider {
+    // (undocumented)
+    getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined;
+    readonly id: string;
 }
 
 // @internal
@@ -2010,6 +2140,21 @@ export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
 
+// @beta
+export interface TabLabel {
+    // (undocumented)
+    disabled?: boolean;
+    // (undocumented)
+    icon?: string | JSX.Element;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    subLabel?: string;
+    // (undocumented)
+    tabId: string;
+    tooltip?: string | JSX.Element;
+}
+
 // @public
 export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
     constructor(props: MainTabsProps);
@@ -2025,7 +2170,8 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
     activeIndex?: number;
     green?: boolean;
-    labels: string[];
+    // @beta
+    labels: Array<string | TabLabel>;
     onActivateTab?: (index: number) => any;
     // @deprecated
     onClickLabel?: (index: number) => any;
@@ -2063,6 +2209,7 @@ export type ThemedSelectProps = {
     controlShouldRenderValue?: boolean;
     defaultMenuIsOpen?: boolean;
     defaultValue?: ValueType<OptionType>;
+    divRef?: React.Ref<HTMLDivElement>;
     escapeClearsValue?: boolean;
     filterOption?: ((option: OptionType, rawInput: string) => boolean) | null;
     formatGroupLabel?: typeof formatGroupLabel;
@@ -2105,6 +2252,7 @@ export type ThemedSelectProps = {
     options: OptionsType;
     pageSize?: number;
     placeholder?: string;
+    ref?: React.Ref<Component>;
     styles?: React.CSSProperties;
     tabIndex?: string;
     tabSelectsValue?: boolean;
@@ -2167,7 +2315,7 @@ export function Title(props: TextProps): JSX.Element;
 export function Title2(props: TextProps): JSX.Element;
 
 // @public
-export function Toggle(props: ToggleProps): JSX.Element;
+export const Toggle: (props: ToggleProps) => JSX.Element | null;
 
 // @public
 export enum ToggleButtonType {
@@ -2183,6 +2331,7 @@ export interface ToggleProps extends CommonProps {
     large?: boolean;
     onBlur?: (event: React.FocusEvent) => any;
     onChange?: (checked: boolean) => any;
+    ref?: React.Ref<HTMLInputElement>;
     rounded?: boolean;
     setFocus?: boolean;
     showCheckmark?: boolean;
@@ -2338,34 +2487,29 @@ export class UiCore {
 export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
 }
 
-// @beta
+// @public
 export class UiSetting<T> {
-    constructor(settingNamespace: string, settingName: string, getValue: () => T, applyValue?: ((v: T) => void) | undefined);
+    constructor(settingNamespace: string, settingName: string, getValue: () => T, applyValue?: ((v: T) => void) | undefined, defaultValue?: T | undefined);
     // (undocumented)
     applyValue?: ((v: T) => void) | undefined;
-    deleteSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
-    getSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
-    getSettingAndApplyValue(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    // (undocumented)
+    defaultValue?: T | undefined;
+    deleteSetting(storage: UiSettingsStorage): Promise<UiSettingsResult>;
+    getSetting(storage: UiSettingsStorage): Promise<UiSettingsResult>;
+    getSettingAndApplyValue(storage: UiSettingsStorage): Promise<UiSettingsResult>;
     // (undocumented)
     getValue: () => T;
-    saveSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    saveSetting(storage: UiSettingsStorage): Promise<UiSettingsResult>;
     // (undocumented)
     settingName: string;
     // (undocumented)
     settingNamespace: string;
 }
 
-// @beta
-export interface UiSettings {
-    // (undocumented)
-    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
-}
+// @public
+export type UiSettings = UiSettingsStorage;
 
-// @beta
+// @public
 export interface UiSettingsResult {
     // (undocumented)
     setting?: any;
@@ -2373,7 +2517,7 @@ export interface UiSettingsResult {
     status: UiSettingsStatus;
 }
 
-// @beta
+// @public
 export enum UiSettingsStatus {
     // (undocumented)
     AuthorizationError = 4,
@@ -2385,6 +2529,16 @@ export enum UiSettingsStatus {
     Uninitialized = 3,
     // (undocumented)
     UnknownError = 2
+}
+
+// @public
+export interface UiSettingsStorage {
+    // (undocumented)
+    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
 }
 
 // @public
@@ -2426,6 +2580,12 @@ export function useRefState<T>(): [React.Ref<T>, T | undefined];
 
 // @internal
 export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
+
+// @beta
+export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void;
+
+// @beta
+export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void): void;
 
 // @internal
 export const useTargeted: (ref: React.RefObject<Element>) => boolean;

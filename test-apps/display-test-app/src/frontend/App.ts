@@ -8,11 +8,12 @@ import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
-  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
+  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
+import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode,
-  TileAdmin, Tool, ToolAdmin, WebViewerApp,
+  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem,
+  SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -21,9 +22,10 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { DeleteElementsTool, EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, RotateElementByAngleTool, RotateElementByPointsTool, UndoTool } from "./EditingTools";
+import { EditingSessionTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
+import { ChangeGridSettingsTool } from "./Grid";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { Notifications } from "./Notifications";
@@ -37,6 +39,7 @@ import {
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -122,7 +125,7 @@ class ShutDownTool extends Tool {
 
   public run(_args: any[]): boolean {
     DisplayTestApp.surface.closeAllViewers();
-    if (ProcessDetector.isElectronAppFrontend)
+    if (ElectronApp.isValid)
       ElectronApp.shutdown();// eslint-disable-line @typescript-eslint/no-floating-promises
     else
       IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -140,19 +143,36 @@ export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
+  public static getAuthConfig() {
+    const redirectUri = ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
+    const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
+
+    return ProcessDetector.isNativeAppFrontend
+      ? {
+        clientId: "imodeljs-electron-test",
+        redirectUri,
+        scope: `${baseOidcScope} offline_access`,
+      }
+      : {
+        clientId: "imodeljs-spa-test",
+        redirectUri,
+        scope: `${baseOidcScope} imodeljs-router`,
+        responseType: "code",
+      };
+  }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
+    const authConfig = this.getAuthConfig();
     const opts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
-        tileAdmin: TileAdmin.create(DisplayTestApp.tileAdminProps),
+        tileAdmin: DisplayTestApp.tileAdminProps,
         toolAdmin: new DisplayTestAppToolAdmin(),
         uiAdmin: new UiManager(),
         renderSys,
         rpcInterfaces: [
           DtaRpcInterface,
-          Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
           IModelReadRpcInterface,
           IModelTileRpcInterface,
           IModelWriteRpcInterface,
@@ -164,17 +184,25 @@ export class DisplayTestApp {
           uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001",
           info: { title: "DisplayTestApp", version: "v1.0" },
         },
+        authConfig,
+      },
+      localhostIpcApp: {
+        socketPort: 3002,
+      },
+      nativeApp: {
+        authConfig,
       },
     };
 
-    if (ProcessDetector.isElectronAppFrontend)
+    if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
-    else if (ProcessDetector.isIOSAppFrontend)
+    } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);
-    else if (ProcessDetector.isAndroidAppFrontend)
+    } else if (ProcessDetector.isAndroidAppFrontend) {
       await AndroidApp.startup(opts);
-    else
-      await WebViewerApp.startup(opts);
+    } else {
+      await LocalhostIpcApp.startup(opts);
+    }
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
@@ -184,12 +212,13 @@ export class DisplayTestApp {
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     [
+      ApplyModelDisplayScaleTool,
       ApplyModelTransformTool,
+      ChangeGridSettingsTool,
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
       CreateWindowTool,
-      DeleteElementsTool,
       DockWindowTool,
       DrawingAidTestTool,
       EditingSessionTool,
@@ -201,32 +230,28 @@ export class DisplayTestApp {
       MarkupTool,
       MaximizeWindowTool,
       ModelClipTool,
-      MoveElementTool,
       OpenIModelTool,
       OutputShadersTool,
       PlaceLineStringTool,
       PurgeTileTreesTool,
       RecordFpsTool,
-      RedoTool,
       RefreshTilesTool,
       ReopenIModelTool,
       ResizeWindowTool,
       RestoreWindowTool,
-      RotateElementByAngleTool,
-      RotateElementByPointsTool,
       SaveImageTool,
       ShutDownTool,
       SVTSelectionTool,
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
-      UndoTool,
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
+    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true });
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

@@ -84,18 +84,27 @@ export class ViewManager {
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
   private _doIdleWork = false;
+  private _idleWorkTimer?: any;
 
   /** @internal */
   public readonly toolTipProviders: ToolTipProvider[] = [];
 
   private _beginIdleWork() {
     const idleWork = () => {
-      if (this._viewports.length > 0)
+      if (undefined === this._idleWorkTimer)
         return;
+      if (this._viewports.length > 0) {
+        this._idleWorkTimer = undefined;
+        return;
+      }
       if (IModelApp.renderSystem.doIdleWork())
-        setTimeout(idleWork, 1);
+        this._idleWorkTimer = setTimeout(idleWork, 1);
+      else
+        this._idleWorkTimer = undefined;
     };
-    setTimeout(idleWork, 1);
+
+    if (undefined === this._idleWorkTimer)
+      this._idleWorkTimer = setTimeout(idleWork, 1);
   }
 
   /** @internal */
@@ -107,13 +116,17 @@ export class ViewManager {
     this.cursor = "default";
 
     const options = IModelApp.renderSystem.options;
-    this._doIdleWork = true === options.doIdleWork;
+    this._doIdleWork = false !== options.doIdleWork;
     if (this._doIdleWork)
       this._beginIdleWork();
   }
 
   /** @internal */
   public onShutDown() {
+    if (undefined !== this._idleWorkTimer) {
+      clearTimeout(this._idleWorkTimer);
+      this._idleWorkTimer = undefined;
+    }
     this._viewports.length = 0;
     this.decorators.length = 0;
     this.toolTipProviders.length = 0;

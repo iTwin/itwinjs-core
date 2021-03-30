@@ -17,7 +17,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 import {
-  ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileTree,
+  ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
 } from "./internal";
 
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
@@ -150,7 +150,11 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     resolve(this._elements.array);
   }
 
-  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+  public get channel(): TileRequestChannel {
+    throw new Error("Root dynamic tile has no content");
+  }
+
+  public async requestContent(): Promise<TileRequest.Response> {
     assert(false, "Root dynamic tile has no content");
     return undefined;
   }
@@ -192,6 +196,10 @@ class ElementTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     // Invoked from constructor. We'll add child tiles later as needed.
     resolve([]);
+  }
+
+  public get channel(): TileRequestChannel {
+    throw new Error("ElementTile has no content");
   }
 
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
@@ -329,6 +337,10 @@ class GraphicsTile extends Tile {
     resolve(undefined);
   }
 
+  public get channel(): TileRequestChannel {
+    return IModelApp.tileAdmin.channels.elementGraphicsRpc;
+  }
+
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
     // ###TODO tree flags (enforce display priority)
     // ###TODO classifiers, animation
@@ -383,9 +395,5 @@ class GraphicsTile extends Tile {
     }
 
     return content;
-  }
-
-  public onActiveRequestCanceled(): void {
-    IModelApp.tileAdmin.cancelElementGraphicsRequest(this);
   }
 }

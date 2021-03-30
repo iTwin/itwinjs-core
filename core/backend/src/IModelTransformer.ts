@@ -6,7 +6,7 @@
  * @module iModels
  */
 import * as path from "path";
-import { ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, Transform } from "@bentley/geometry-core";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
@@ -79,7 +79,9 @@ export class IModelTransformer extends IModelExportHandler {
   public readonly exporter: IModelExporter;
   /** The IModelImporter that will import into the target iModel. */
   public readonly importer: IModelImporter;
-  /** The read-only source iModel. */
+  /** The normally read-only source iModel.
+   * @note The source iModel will need to be read/write when provenance is being stored during a reverse synchronization.
+   */
   public readonly sourceDb: IModelDb;
   /** The read/write target iModel. */
   public readonly targetDb: IModelDb;
@@ -141,27 +143,40 @@ export class IModelTransformer extends IModelExportHandler {
     this.context.dispose();
   }
 
-  /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation.
-   * @param sourceElement The new ExternalSourceAspectProps will be tracking this Element from the source iModel.
-   * @param targetElementId The optional Id of the target Element that will own the ExternalSourceAspect.
+  /** Log current settings that affect IModelTransformer's behavior. */
+  private logSettings(): void {
+    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantGeometry=${this.exporter.wantGeometry}`);
+    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantSystemSchemas=${this.exporter.wantSystemSchemas}`);
+    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantTemplateModels=${this.exporter.wantTemplateModels}`);
+    Logger.logInfo(loggerCategory, `this.targetScopeElementId=${this.targetScopeElementId}`);
+    Logger.logInfo(loggerCategory, `this._noProvenance=${this._noProvenance}`);
+    Logger.logInfo(loggerCategory, `this._cloneUsingBinaryGeometry=${this._cloneUsingBinaryGeometry}`);
+    Logger.logInfo(loggerCategory, `this._wasSourceIModelCopiedToTarget=${this._wasSourceIModelCopiedToTarget}`);
+    Logger.logInfo(loggerCategory, `this._isReverseSynchronization=${this._isReverseSynchronization}`);
+    Logger.logInfo(BackendLoggerCategory.IModelImporter, `this.importer.autoExtendProjectExtents=${this.importer.autoExtendProjectExtents}`);
+    Logger.logInfo(BackendLoggerCategory.IModelImporter, `this.importer.simplifyElementGeometry=${this.importer.simplifyElementGeometry}`);
+  }
+
+  /** Return the IModelDb where IModelTransformer will store its provenance.
+   * @note This will be [[targetDb]] except when it is a reverse synchronization. In that case it be [[sourceDb]].
    */
-  private initElementProvenance(sourceElement: Element, targetElementId: Id64String): ExternalSourceAspectProps {
+  public get provenanceDb(): IModelDb {
+    return this._isReverseSynchronization ? this.sourceDb : this.targetDb;
+  }
+
+  /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation. */
+  private initElementProvenance(sourceElementId: Id64String, targetElementId: Id64String): ExternalSourceAspectProps {
+    const elementId = this._isReverseSynchronization ? sourceElementId : targetElementId;
+    const aspectIdentifier = this._isReverseSynchronization ? targetElementId : sourceElementId;
     const aspectProps: ExternalSourceAspectProps = {
       classFullName: ExternalSourceAspect.classFullName,
-      element: { id: targetElementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      element: { id: elementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
       scope: { id: this.targetScopeElementId },
-      identifier: sourceElement.id,
+      identifier: aspectIdentifier,
       kind: ExternalSourceAspect.Kind.Element,
-      version: sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id),
+      version: this.sourceDb.elements.queryLastModifiedTime(sourceElementId),
     };
-    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} a WHERE a.Element.Id=:elementId AND a.Scope.Id=:scopeId AND a.Kind=:kind AND a.Identifier=:identifier LIMIT 1`;
-    aspectProps.id = this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
-      statement.bindId("elementId", targetElementId);
-      statement.bindId("scopeId", this.targetScopeElementId);
-      statement.bindString("kind", ExternalSourceAspect.Kind.Element);
-      statement.bindString("identifier", sourceElement.id); // ExternalSourceAspect.Identifier is of type string
-      return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
-    });
+    aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
     return aspectProps;
   }
 
@@ -172,34 +187,65 @@ export class IModelTransformer extends IModelExportHandler {
    */
   private initRelationshipProvenance(sourceRelationship: Relationship, targetRelInstanceId: Id64String): ExternalSourceAspectProps {
     const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, targetRelInstanceId);
+    const elementId = this._isReverseSynchronization ? sourceRelationship.sourceId : targetRelationship.sourceId;
+    const aspectIdentifier = this._isReverseSynchronization ? targetRelInstanceId : sourceRelationship.id;
     const aspectProps: ExternalSourceAspectProps = {
       classFullName: ExternalSourceAspect.classFullName,
-      element: { id: targetRelationship.sourceId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      element: { id: elementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
       scope: { id: this.targetScopeElementId },
-      identifier: sourceRelationship.id,
+      identifier: aspectIdentifier,
       kind: ExternalSourceAspect.Kind.Relationship,
       jsonProperties: JSON.stringify({ targetRelInstanceId }),
     };
-    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} aspect` +
-      ` WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind=:kind AND aspect.Identifier=:identifier LIMIT 1`;
-    aspectProps.id = this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
-      statement.bindId("elementId", targetRelationship.sourceId);
-      statement.bindId("scopeId", this.targetScopeElementId);
-      statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
-      statement.bindString("identifier", sourceRelationship.id);
-      return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
-    });
+    aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
     return aspectProps;
   }
 
+  private validateScopeProvenance(): void {
+    const aspectProps: ExternalSourceAspectProps = {
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: this.targetScopeElementId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      scope: { id: IModel.rootSubjectId }, // the root Subject scopes scope elements
+      identifier: this._isReverseSynchronization ? this.targetDb.iModelId : this.sourceDb.iModelId, // the opposite side of where provenance is stored
+      kind: ExternalSourceAspect.Kind.Scope,
+    };
+    aspectProps.id = this.queryExternalSourceAspectId(aspectProps); // this query includes "identifier"
+    if (undefined === aspectProps.id) {
+      // this query does not include "identifier" to find possible conflicts
+      const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE Element.Id=:elementId AND Scope.Id=:scopeId AND Kind=:kind LIMIT 1`;
+      const hasConflictingScope = this.provenanceDb.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
+        statement.bindId("elementId", aspectProps.element.id);
+        statement.bindId("scopeId", aspectProps.scope.id);
+        statement.bindString("kind", aspectProps.kind);
+        return DbResult.BE_SQLITE_ROW === statement.step();
+      });
+      if (hasConflictingScope) {
+        throw new IModelError(IModelStatus.InvalidId, "Provenance scope conflict", Logger.logError, loggerCategory);
+      }
+      if (!this._noProvenance) {
+        this.provenanceDb.elements.insertAspect(aspectProps);
+      }
+    }
+  }
+
+  private queryExternalSourceAspectId(aspectProps: ExternalSourceAspectProps): Id64String | undefined {
+    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE Element.Id=:elementId AND Scope.Id=:scopeId AND Kind=:kind AND Identifier=:identifier LIMIT 1`;
+    return this.provenanceDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
+      statement.bindId("elementId", aspectProps.element.id);
+      statement.bindId("scopeId", aspectProps.scope.id);
+      statement.bindString("kind", aspectProps.kind);
+      statement.bindString("identifier", aspectProps.identifier);
+      return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
+    });
+  }
+
   /** Iterate all matching ExternalSourceAspects in the target iModel and call a function for each one. */
-  private forEachExternalSourceAspect(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
-    const iModelDb = this._isReverseSynchronization ? this.sourceDb : this.targetDb;
-    if (!iModelDb.containsClass(ExternalSourceAspect.classFullName)) {
+  private forEachTrackedElement(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
+    if (!this.provenanceDb.containsClass(ExternalSourceAspect.classFullName)) {
       throw new IModelError(IModelStatus.BadSchema, "The BisCore schema version of the target database is too old", Logger.logError, loggerCategory);
     }
-    const sql = `SELECT aspect.Identifier,aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
-    iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+    const sql = `SELECT Identifier,Element.Id FROM ${ExternalSourceAspect.classFullName} WHERE Scope.Id=:scopeId AND Kind=:kind`;
+    this.provenanceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("scopeId", this.targetScopeElementId);
       statement.bindString("kind", ExternalSourceAspect.Kind.Element);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -218,7 +264,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
   public initFromExternalSourceAspects(): void {
-    this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
+    this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {
       this.context.remapElement(sourceElementId, targetElementId);
     });
   }
@@ -233,7 +279,7 @@ export class IModelTransformer extends IModelExportHandler {
       throw new IModelError(IModelStatus.BadRequest, "Cannot detect deletes when isReverseSynchronization=true", Logger.logError, loggerCategory);
     }
     const targetElementsToDelete: Id64String[] = [];
-    this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
+    this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {
       if (undefined === this.sourceDb.elements.tryGetElementProps(sourceElementId)) {
         // if the sourceElement is not found, then it must have been deleted, so propagate the delete to the target iModel
         targetElementsToDelete.push(targetElementId);
@@ -383,12 +429,11 @@ export class IModelTransformer extends IModelExportHandler {
     }
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
     if (!this._noProvenance) {
-      // record provenance in ExternalSourceAspect
-      const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement, targetElementProps.id!);
+      const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
       if (aspectProps.id === undefined) {
-        this.targetDb.elements.insertAspect(aspectProps);
+        this.provenanceDb.elements.insertAspect(aspectProps);
       } else {
-        this.targetDb.elements.updateAspect(aspectProps);
+        this.provenanceDb.elements.updateAspect(aspectProps);
       }
     }
   }
@@ -528,7 +573,7 @@ export class IModelTransformer extends IModelExportHandler {
     if (!this._noProvenance && Id64.isValidId64(targetRelationshipInstanceId)) {
       const aspectProps: ExternalSourceAspectProps = this.initRelationshipProvenance(sourceRelationship, targetRelationshipInstanceId);
       if (undefined === aspectProps.id) {
-        this.targetDb.elements.insertAspect(aspectProps);
+        this.provenanceDb.elements.insertAspect(aspectProps);
       }
     }
   }
@@ -713,6 +758,9 @@ export class IModelTransformer extends IModelExportHandler {
    * @note [[processSchemas]] is not called automatically since the target iModel may want a different collection of schemas.
    */
   public async processAll(): Promise<void> {
+    Logger.logTrace(loggerCategory, "processAll()");
+    this.logSettings();
+    this.validateScopeProvenance();
     this.initFromExternalSourceAspects();
     await this.exporter.exportCodeSpecs();
     await this.exporter.exportFonts();
@@ -736,8 +784,11 @@ export class IModelTransformer extends IModelExportHandler {
    * If this parameter is not provided, then just the current changeset will be exported.
    * @note To form a range of versions to process, set `startChangeSetId` for the start of the desired range and open the source iModel as of the end of the desired range.
    */
-  public async processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
+  public async processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void> {
     requestContext.enter();
+    Logger.logTrace(loggerCategory, "processChanges()");
+    this.logSettings();
+    this.validateScopeProvenance();
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(requestContext, startChangeSetId);
     requestContext.enter();

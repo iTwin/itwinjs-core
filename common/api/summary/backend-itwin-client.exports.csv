@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 beta;AgentAuthorizationClient 
 beta;AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
+internal;AzCopyFileHandler 
 internal;AzureFileHandler 
 beta;class BackendAuthorizationClient 
 beta;BackendAuthorizationClientConfiguration
@@ -14,6 +15,7 @@ alpha;ClientAuthDetail
 alpha;ClientAuthIntrospectionManager
 beta;DelegationAuthorizationClient 
 beta;DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
+internal;HttpRequestHost
 internal;ImsClientAuthDetail 
 internal;ImsClientAuthIntrospectionManager 
 internal;ImsIntrospectionResponse 
@@ -23,9 +25,12 @@ alpha;class IntrospectionResponseCache
 internal;LocalhostHandler 
 alpha;MemoryIntrospectionResponseCache 
 beta;OidcAgentClient = AgentAuthorizationClient
+deprecated;OidcAgentClient = AgentAuthorizationClient
 beta;OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration
+deprecated;OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration
 beta;OidcDelegationClient = DelegationAuthorizationClient
+deprecated;OidcDelegationClient = DelegationAuthorizationClient
 beta;OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration
-internal;RequestHost
+deprecated;OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration
 internal;StorageServiceFileHandler 
 internal;UrlFileHandler 

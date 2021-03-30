@@ -7,8 +7,9 @@
  */
 import { flatbuffers } from "flatbuffers";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, GeometryQuery, LineString3d, Loop, Matrix3d, Point2d, Point3d, PointString3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { EGFBAccessors } from "./ElementGeometryFB";
+import { Base64EncodedString } from "../Base64EncodedString";
 import { TextString, TextStringProps } from "./TextString";
 import { ColorDef } from "../ColorDef";
 import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
@@ -235,7 +236,83 @@ export type BRepGeometryFunction = (info: BRepGeometryInfo) => void;
 export namespace ElementGeometry {
   /** [[ElementGeometry.Builder]] is a helper class for populating a [[ElementGeometryDataEntry]] array needed to create a [[GeometricElement]] or [[GeometryPart]]. */
   export class Builder {
+    private _localToWorld?: Transform;
+    private _worldToLocal?: Transform;
+    /** GeometryStream entries */
     public readonly entries: ElementGeometryDataEntry[] = [];
+
+    /** Current placement transform, converts local coordinate (placement relative) input to world */
+    public get localToWorld() { return this._localToWorld; }
+
+    /** Current inverse placement transform, converts world coordinate input to local (placement relative) */
+    public get worldToLocal() { return this._worldToLocal; }
+
+    /** Supply optional local to world transform. Used to transform world coordinate input relative to element placement.
+     * For a [[GeometricElement]]'s placement to be meaningful, world coordinate geometry should never be appended to an element with an identity placement.
+     * Can be called with undefined or identity transform to start appending geometry supplied in local coordinates again.
+     */
+    public setLocalToWorld(localToWorld?: Transform) {
+      this._localToWorld = (undefined === localToWorld || localToWorld.isIdentity ? undefined : localToWorld.clone());
+      this._worldToLocal = (undefined === this._localToWorld ? undefined : this._localToWorld.inverse());
+    }
+
+    /** Supply local to world transform from a Point3d and optional YawPitchRollAngles.
+     * @see [[Placement3d]]
+     */
+    public setLocalToWorld3d(origin: Point3d, angles: YawPitchRollAngles = YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0)) {
+      this.setLocalToWorld(Transform.createOriginAndMatrix(origin, angles.toMatrix3d()));
+    }
+
+    /** Supply local to world transform from a Point2d and optional Angle.
+     * @see [[Placement2d]]
+     */
+    public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
+      this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)));
+    }
+
+    /** Compute angles suitable for passing to [[setLocalToWorld3d]] from an array of 3d points. */
+    public static placementAnglesFromPoints(pts: Point3d[], defaultUp?: Vector3d, result?: YawPitchRollAngles): YawPitchRollAngles {
+      const angles = result ? result : new YawPitchRollAngles();
+      const zVec = defaultUp ? defaultUp.clone() : Vector3d.unitZ();
+      const matrix = Matrix3d.createRigidHeadsUp(zVec);
+
+      YawPitchRollAngles.createFromMatrix3d(matrix, angles);
+
+      if (pts.length < 2 || pts[0].isAlmostEqual(pts[1]))
+        return angles;
+
+      // Check if points have a well defined normal to use instead of defaultUp...
+      const frameTransform = FrameBuilder.createFrameToDistantPoints(pts);
+      if (undefined !== frameTransform) {
+        const plane = Plane3dByOriginAndUnitNormal.create(pts[0], frameTransform.matrix.getColumn(2));
+        if (undefined !== plane && Point3dArray.isCloseToPlane(pts, plane))
+          zVec.setFrom(plane.getNormalRef());
+      }
+
+      const xVec = Vector3d.createStartEnd(pts[0], pts[1]);
+      if (xVec.isParallelTo(zVec, true))
+        return angles;
+
+      const yVec = xVec.unitCrossProduct(zVec);
+      if (undefined === yVec)
+        return angles;
+
+      Matrix3d.createColumns(xVec, yVec, zVec, matrix);
+      if (undefined === Matrix3d.createRigidFromMatrix3d(matrix, undefined, matrix))
+        return angles;
+
+      YawPitchRollAngles.createFromMatrix3d(matrix, angles);
+      return angles;
+    }
+
+    /** Compute angle suitable for passing to [[setLocalToWorld2d]] from an array of xy plane points. */
+    public static placementAngleFromPoints(pts: Point3d[], result?: Angle): Angle {
+      const angles = ElementGeometry.Builder.placementAnglesFromPoints(pts);
+      if (undefined === result)
+        return angles.yaw;
+      result.setFrom(angles.yaw);
+      return result;
+    }
 
     /** Store local ranges for all subsequent geometry appended. Can improve performance of range testing for elements with a GeometryStream
      * containing more than one [[GeometryQuery]] differentiable by range. Not useful for a single [[GeometryQuery]] as its range and that of the [[GeometricElement]] are the same.
@@ -250,15 +327,15 @@ export namespace ElementGeometry {
     }
 
     /** Change [[GeometryParams]] for subsequent geometry.
-     *  It is not valid to change the sub-category when defining a [[GeometryPart]]. A [[GeometryPart]] inherits the symbology of their instance for anything not explicitly overridden.
+     * It is not valid to change the sub-category when defining a [[GeometryPart]]. A [[GeometryPart]] inherits the symbology of their instance for anything not explicitly overridden.
      */
     public appendGeometryParamsChange(geomParams: GeometryParams): boolean {
-      return appendGeometryParams(geomParams, this.entries);
+      return appendGeometryParams(geomParams, this.entries, this._worldToLocal);
     }
 
     /** Append a [[GeometryQuery]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
     public appendGeometryQuery(geometry: GeometryQuery): boolean {
-      const entry = ElementGeometry.fromGeometryQuery(geometry);
+      const entry = ElementGeometry.fromGeometryQuery(geometry, this._worldToLocal);
       if (undefined === entry)
         return false;
       this.entries.push(entry);
@@ -267,7 +344,7 @@ export namespace ElementGeometry {
 
     /** Append a [[TextString]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
     public appendTextString(text: TextString): boolean {
-      const entry = ElementGeometry.fromTextString(text.toJSON());
+      const entry = ElementGeometry.fromTextString(text.toJSON(), this._worldToLocal);
       if (undefined === entry)
         return false;
       this.entries.push(entry);
@@ -276,7 +353,7 @@ export namespace ElementGeometry {
 
     /** Append a [[ImageGraphic]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
     public appendImageGraphic(image: ImageGraphic): boolean {
-      const entry = ElementGeometry.fromImageGraphic(image.toJSON());
+      const entry = ElementGeometry.fromImageGraphic(image.toJSON(), this._worldToLocal);
       if (undefined === entry)
         return false;
       this.entries.push(entry);
@@ -288,7 +365,7 @@ export namespace ElementGeometry {
      * Backend code should use IModelDb.createBRepGeometry to create a brep [[ElementGeometryDataEntry]] directly.
      */
     public appendBRepData(brep: BRepEntity.DataProps): boolean {
-      const entry = ElementGeometry.fromBRep(brep);
+      const entry = ElementGeometry.fromBRep(brep, this._worldToLocal);
       if (undefined === entry)
         return false;
       this.entries.push(entry);
@@ -296,10 +373,10 @@ export namespace ElementGeometry {
     }
 
     /** Append a [[GeometryPart]] instance with relative transform to the [[ElementGeometryDataEntry]] array for creating a [[GeometricElement]].
-     *  Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
+     * Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
      */
-    public appendGeometryPart(partId: Id64String, partToElement?: Transform): boolean {
-      const entry = ElementGeometry.fromGeometryPart(partId, partToElement);
+    public appendGeometryPart(partId: Id64String, partTransform?: Transform): boolean {
+      const entry = ElementGeometry.fromGeometryPart(partId, partTransform, this._worldToLocal);
       if (undefined === entry)
         return false;
       this.entries.push(entry);
@@ -307,17 +384,17 @@ export namespace ElementGeometry {
     }
 
     /** Append a [[GeometryPart]] instance with relative position, orientation, and scale to the [[ElementGeometryDataEntry]] array for creating a [[GeometricElement3d]].
-     *  Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
+     * Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
      */
     public appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean {
-      const partToElement = Transform.createOriginAndMatrix(instanceOrigin, instanceRotation ? instanceRotation.toMatrix3d() : Matrix3d.createIdentity());
+      const partTransform = Transform.createOriginAndMatrix(instanceOrigin, instanceRotation ? instanceRotation.toMatrix3d() : Matrix3d.createIdentity());
       if (undefined !== instanceScale)
-        partToElement.matrix.scaleColumnsInPlace(instanceScale, instanceScale, instanceScale);
-      return this.appendGeometryPart(partId, partToElement);
+        partTransform.matrix.scaleColumnsInPlace(instanceScale, instanceScale, instanceScale);
+      return this.appendGeometryPart(partId, partTransform);
     }
 
     /** Append a [[GeometryPart]] instance with relative position, orientation, and scale to the [[ElementGeometryDataEntry]] array for creating a [[GeometricElement2d]].
-     *  Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
+     * Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
      */
     public appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean {
       return this.appendGeometryPart3d(partId, instanceOrigin ? Point3d.createFrom(instanceOrigin) : undefined, instanceRotation ? new YawPitchRollAngles(instanceRotation) : undefined, instanceScale);
@@ -341,34 +418,40 @@ export namespace ElementGeometry {
     public readonly localToWorld?: Transform;
     public localRange?: Range3d;
     private _value?: ElementGeometryDataEntry;
+    private readonly _applyLocalToWorld: boolean;
 
-    public constructor(geomParams: GeometryParams, localToWorld: Transform) {
+    public constructor(geomParams: GeometryParams, localToWorld: Transform, applyLocalToWorld?: boolean) {
       this.geomParams = geomParams;
       this.localToWorld = localToWorld;
+      this._applyLocalToWorld = applyLocalToWorld ? !localToWorld.isIdentity : false;
     }
 
     public get value() { return this._value!; }
     public set value(value: ElementGeometryDataEntry) { this._value = value; }
 
+    public get outputTransform(): Transform | undefined {
+      return this._applyLocalToWorld ? this.localToWorld : undefined;
+    }
+
     /** Return the [[GeometryQuery]] representation for the current entry */
     public toGeometryQuery(): GeometryQuery | undefined {
-      return toGeometryQuery(this.value);
+      return toGeometryQuery(this.value, this.outputTransform);
     }
 
     /** Return the [[BRepEntity.DataProps]] representation for the current entry for checking brep type and face attachments. */
     public toBRepData(wantBRepData: boolean = false): BRepEntity.DataProps | undefined {
-      return toBRep(this.value, wantBRepData);
+      return toBRep(this.value, wantBRepData, this.outputTransform);
     }
 
     /** Return the [[TextString]] representation for the current entry */
     public toTextString(): TextString | undefined {
-      const props = toTextString(this.value);
+      const props = toTextString(this.value, this.outputTransform);
       return (undefined !== props ? new TextString(props) : undefined);
     }
 
     /** Return the [[ImageGraphic]] representation for the current entry */
     public toImageGraphic(): ImageGraphic | undefined {
-      const props = toImageGraphic(this.value);
+      const props = toImageGraphic(this.value, this.outputTransform);
       return (undefined !== props ? ImageGraphic.fromJSON(props) : undefined);
     }
 
@@ -407,6 +490,8 @@ export namespace ElementGeometry {
     /** Used to initialize this._entry */
     private readonly _appearance: GeometryParams;
     private readonly _localToWorld: Transform;
+    /** Whether deserialized entry data is returned in world or local coordinates */
+    private _applyLocalToWorld = false;
 
     /** Construct a new Iterator given a [[ElementGeometryInfo]] from either a [[GeometricElement3d]], [[GeometricElement2d]], or [[GeometryPart]].
      * Supply the optional [[GeometryParams]] and localToWorld transform to iterate a [[GeometryPart]] in the context of a [[GeometricElement]] reference.
@@ -443,10 +528,15 @@ export namespace ElementGeometry {
       this.placement = new Placement3d(orgAng.origin, orgAng.angles, bbox);
     }
 
+    /** Call to return deserialized entry data in world coordinates */
+    public requestWorldCoordinates(): void {
+      this._applyLocalToWorld = !this._localToWorld.isIdentity;
+    }
+
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private get entry() {
       if (undefined === this._entry)
-        this._entry = new IteratorEntry(this._appearance, this._localToWorld);
+        this._entry = new IteratorEntry(this._appearance, this._localToWorld, this._applyLocalToWorld);
 
       return this._entry;
     }
@@ -456,7 +546,8 @@ export namespace ElementGeometry {
       while (this._index < this.entryArray.length) {
         const value = this.entryArray[this._index++];
         if (ElementGeometry.isAppearanceEntry(value)) {
-          ElementGeometry.updateGeometryParams(value, this.entry.geomParams);
+          const localToWorld = (this._applyLocalToWorld ? this._localToWorld : undefined);
+          ElementGeometry.updateGeometryParams(value, this.entry.geomParams, localToWorld);
         } else if (ElementGeometryOpcode.SubGraphicRange === value.opcode) {
           // NOTE: localRange remains valid until the next sub-range entry is encountered...
           this.entry.localRange = ElementGeometry.toSubGraphicRange(value);
@@ -524,7 +615,7 @@ export namespace ElementGeometry {
   }
 
   /** Return entry as a [[GeometryQuery]] */
-  export function toGeometryQuery(entry: ElementGeometryDataEntry): GeometryQuery | undefined {
+  export function toGeometryQuery(entry: ElementGeometryDataEntry, localToWorld?: Transform): GeometryQuery | undefined {
     if (!isGeometryQueryEntry(entry))
       return undefined;
 
@@ -539,6 +630,9 @@ export namespace ElementGeometry {
 
         if (0 === pts.length)
           return undefined;
+
+        if (undefined !== localToWorld)
+          localToWorld.multiplyPoint3dArrayInPlace(pts);
 
         switch (ppfb.boundary()) {
           case EGFBAccessors.BoundaryType.Open:
@@ -561,6 +655,9 @@ export namespace ElementGeometry {
         if (0 === pts.length)
           return undefined;
 
+        if (undefined !== localToWorld)
+          localToWorld.multiplyPoint3dArrayInPlace(pts);
+
         switch (ppfb.boundary()) {
           case EGFBAccessors.BoundaryType.Open:
             return LineString3d.createPoints(pts);
@@ -580,6 +677,9 @@ export namespace ElementGeometry {
         const vector90 = Vector3d.create(ppfb.vector90()!.x(), ppfb.vector90()!.y(), ppfb.vector90()!.z());
         const arc = Arc3d.create(center, vector0, vector90, AngleSweep.createStartSweepRadians(ppfb.start(), ppfb.sweep()));
 
+        if (undefined !== localToWorld && !arc.tryTransformInPlace(localToWorld))
+          return undefined;
+
         return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? Loop.create(arc) : arc);
       }
 
@@ -589,9 +689,11 @@ export namespace ElementGeometry {
       case ElementGeometryOpcode.BsplineSurface:
       case ElementGeometryOpcode.Polyface:
         const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
-        if (undefined !== geom && !Array.isArray(geom))
-          return geom;
-        return undefined; // Should always be a single entry not an array...
+        if (undefined === geom || Array.isArray(geom))
+          return undefined; // Should always be a single entry not an array...
+        if (undefined !== localToWorld && !geom.tryTransformInPlace(localToWorld))
+          return undefined;
+        return geom;
 
       default:
         return undefined; // Not a GeometryQuery, need to be handled explicitly...
@@ -599,7 +701,7 @@ export namespace ElementGeometry {
   }
 
   /** Create entry from a [[GeometryQuery]] */
-  export function fromGeometryQuery(geom: GeometryQuery): ElementGeometryDataEntry | undefined {
+  export function fromGeometryQuery(geom: GeometryQuery, worldToLocal?: Transform): ElementGeometryDataEntry | undefined {
     let opcode;
     switch (geom.geometryCategory) {
       case "bsurf":
@@ -622,6 +724,13 @@ export namespace ElementGeometry {
         return undefined;
     }
 
+    if (undefined !== worldToLocal) {
+      const localGeom = geom.cloneTransformed(worldToLocal);
+      if (undefined === localGeom)
+        return undefined;
+      geom = localGeom;
+    }
+
     const data = BentleyGeometryFlatBuffer.geometryToBytes(geom, true);
     if (undefined === data)
       return undefined;
@@ -630,7 +739,7 @@ export namespace ElementGeometry {
   }
 
   /** Return entry as a [[TextString]] */
-  export function toTextString(entry: ElementGeometryDataEntry): TextStringProps | undefined {
+  export function toTextString(entry: ElementGeometryDataEntry, localToWorld?: Transform): TextStringProps | undefined {
     if (ElementGeometryOpcode.TextString !== entry.opcode)
       return undefined;
 
@@ -655,11 +764,25 @@ export namespace ElementGeometry {
       props.rotation = YawPitchRollAngles.createFromMatrix3d(Matrix3d.createRowValues(transform.form3d00(), transform.form3d01(), transform.form3d02(), transform.form3d10(), transform.form3d11(), transform.form3d12(), transform.form3d20(), transform.form3d21(), transform.form3d22()));
     }
 
-    return props;
+    if (undefined === localToWorld)
+      return props;
+
+    const textString = new TextString(props);
+    if (!textString.transformInPlace(localToWorld))
+      return undefined;
+
+    return textString.toJSON();
   }
 
   /** Create entry from a [[TextString]] */
-  export function fromTextString(text: TextStringProps): ElementGeometryDataEntry | undefined {
+  export function fromTextString(text: TextStringProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined {
+    if (undefined !== worldToLocal) {
+      const localText = new TextString(text);
+      if (!localText.transformInPlace(worldToLocal))
+        return undefined;
+      text = localText.toJSON();
+    }
+
     const fbb = new flatbuffers.Builder();
     const builder = EGFBAccessors.TextString;
 
@@ -691,7 +814,7 @@ export namespace ElementGeometry {
   }
 
   /** Return entry as a [[ImageGraphic]] */
-  export function toImageGraphic(entry: ElementGeometryDataEntry): ImageGraphicProps | undefined {
+  export function toImageGraphic(entry: ElementGeometryDataEntry, localToWorld?: Transform): ImageGraphicProps | undefined {
     if (ElementGeometryOpcode.Image !== entry.opcode)
       return undefined;
 
@@ -717,11 +840,23 @@ export namespace ElementGeometry {
     if (null !== corner3)
       corners[3].setFrom(Point3d.create(corner3.x(), corner3.y(), corner3.z()));
 
+    if (undefined !== localToWorld) {
+      localToWorld.multiplyXYAndZInPlace(corners[0]);
+      localToWorld.multiplyXYAndZInPlace(corners[1]);
+      localToWorld.multiplyXYAndZInPlace(corners[2]);
+      localToWorld.multiplyXYAndZInPlace(corners[3]);
+    }
+
     return { corners: corners.toJSON(), textureId, hasBorder };
   }
 
   /** Create entry from a [[ImageGraphic]] */
-  export function fromImageGraphic(image: ImageGraphicProps): ElementGeometryDataEntry | undefined {
+  export function fromImageGraphic(image: ImageGraphicProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined {
+    if (undefined !== worldToLocal) {
+      const localImage = ImageGraphic.fromJSON(image).cloneTransformed(worldToLocal);
+      image = localImage.toJSON();
+    }
+
     const fbb = new flatbuffers.Builder();
     const builder = EGFBAccessors.Image;
     builder.startImage(fbb);
@@ -748,7 +883,7 @@ export namespace ElementGeometry {
   }
 
   /** Return entry as a [[BRepEntity.DataProps]] for checking brep type and face attachments. */
-  export function toBRep(entry: ElementGeometryDataEntry, wantBRepData: boolean = false): BRepEntity.DataProps | undefined {
+  export function toBRep(entry: ElementGeometryDataEntry, wantBRepData: boolean = false, localToWorld?: Transform): BRepEntity.DataProps | undefined {
     if (ElementGeometryOpcode.BRep !== entry.opcode)
       return undefined;
 
@@ -773,6 +908,13 @@ export namespace ElementGeometry {
     if (null !== entityTransform)
       transform = Transform.createRowValues(entityTransform.x00(), entityTransform.x01(), entityTransform.x02(), entityTransform.tx(), entityTransform.x10(), entityTransform.x11(), entityTransform.x12(), entityTransform.ty(), entityTransform.x20(), entityTransform.x21(), entityTransform.x22(), entityTransform.tz());
 
+    if (undefined !== localToWorld) {
+      if (undefined !== transform)
+        transform.multiplyTransformTransform(localToWorld, transform);
+      else
+        transform = localToWorld;
+    }
+
     const faceSymbLen = ppfb.symbologyLength();
     let faceSymbology;
     if (0 !== faceSymbLen) {
@@ -795,23 +937,34 @@ export namespace ElementGeometry {
     let data;
     const entityData = ppfb.entityDataArray();
     if (wantBRepData && null !== entityData)
-      data = `encoding=base64;${Base64.fromUint8Array(entityData)}`;
+      data = Base64EncodedString.fromUint8Array(entityData);
 
     return { data, type, transform: transform?.toJSON(), faceSymbology };
   }
 
   /** Create entry from a [[BRepEntity.DataProps]]. Provided for compatibility with GeometryStreamBuilder only. */
-  export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined {
+  export function fromBRep(brep: BRepEntity.DataProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined {
+    if (undefined !== worldToLocal) {
+      const entityTrans = Transform.fromJSON(brep.transform);
+      const localTrans = entityTrans.multiplyTransformTransform(worldToLocal);
+      brep = {
+        data: brep.data,
+        type: brep.type,
+        transform: localTrans.isIdentity ? undefined : localTrans.toJSON(),
+        faceSymbology: brep.faceSymbology,
+      };
+    }
+
     const fbb = new flatbuffers.Builder();
     const builder = EGFBAccessors.BRepData;
     let dataOffset;
     let faceSymbOffset;
 
     if (undefined !== brep.data) {
-      const base64Header = "encoding=base64;";
-      if (brep.data.length < base64Header.length || !brep.data.startsWith(base64Header))
+      const entityData = Base64EncodedString.toUint8Array(brep.data);
+      if (entityData.length === 0)
         return undefined;
-      const entityData = Base64.toUint8Array(brep.data.substr(base64Header.length));
+
       dataOffset = builder.createEntityDataVector(fbb, entityData);
     }
 
@@ -861,6 +1014,62 @@ export namespace ElementGeometry {
     return { opcode: ElementGeometryOpcode.BRep, data };
   }
 
+  /** Apply transform directly to ElementGeometryDataEntry for a BRep */
+  export function transformBRep(entry: ElementGeometryDataEntry, inputTransform: Transform): boolean {
+    if (ElementGeometryOpcode.BRep !== entry.opcode)
+      return false;
+
+    const buffer = new flatbuffers.ByteBuffer(entry.data);
+    const ppfb = EGFBAccessors.BRepData.getRootAsBRepData(buffer);
+
+    const fbb = new flatbuffers.Builder();
+    const builder = EGFBAccessors.BRepData;
+
+    const entityData = ppfb.entityDataArray();
+    const dataOffset = (null !== entityData ? builder.createEntityDataVector(fbb, entityData) : undefined);
+
+    let faceSymbOffset;
+    const faceSymbLen = ppfb.symbologyLength();
+    if (0 !== faceSymbLen) {
+      builder.startSymbologyVector(fbb, faceSymbLen);
+      for (let i = faceSymbLen - 1; i >= 0; i--) {
+        const faceSymbFb = ppfb.symbology(i);
+        if (null === faceSymbFb)
+          continue;
+        EGFBAccessors.FaceSymbology.createFaceSymbology(fbb, faceSymbFb.useColor(), faceSymbFb.useMaterial(), faceSymbFb.color(), faceSymbFb.materialId(), faceSymbFb.transparency(), 0, 0);
+      }
+      faceSymbOffset = fbb.endVector();
+    }
+
+    builder.startBRepData(fbb);
+    builder.addBrepType(fbb, ppfb.brepType());
+
+    let transform;
+    const entityTransform = ppfb.entityTransform();
+    if (null !== entityTransform)
+      transform = Transform.createRowValues(entityTransform.x00(), entityTransform.x01(), entityTransform.x02(), entityTransform.tx(), entityTransform.x10(), entityTransform.x11(), entityTransform.x12(), entityTransform.ty(), entityTransform.x20(), entityTransform.x21(), entityTransform.x22(), entityTransform.tz());
+
+    if (undefined !== transform)
+      transform.multiplyTransformTransform(inputTransform, transform);
+    else
+      transform = inputTransform;
+
+    const transformOffset = EGFBAccessors.Transform.createTransform(fbb, transform.matrix.coffs[0], transform.matrix.coffs[1], transform.matrix.coffs[2], transform.origin.x, transform.matrix.coffs[3], transform.matrix.coffs[4], transform.matrix.coffs[5], transform.origin.y, transform.matrix.coffs[6], transform.matrix.coffs[7], transform.matrix.coffs[8], transform.origin.z);
+    builder.addEntityTransform(fbb, transformOffset);
+
+    if (undefined !== dataOffset)
+      builder.addEntityData(fbb, dataOffset);
+
+    if (undefined !== faceSymbOffset)
+      builder.addSymbology(fbb, faceSymbOffset);
+
+    const mLoc = builder.endBRepData(fbb);
+    fbb.finish(mLoc);
+    entry.data = fbb.asUint8Array();
+
+    return true;
+  }
+
   /** @internal */
   enum StyleMod {
     Scale = 0x01,
@@ -879,7 +1088,7 @@ export namespace ElementGeometry {
   }
 
   /** Update the supplied [[GeometryParams]] from an entry with appearance information */
-  export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams): boolean {
+  export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean {
     if (!isAppearanceEntry(entry))
       return false;
 
@@ -994,6 +1203,9 @@ export namespace ElementGeometry {
           props.rotation = YawPitchRollAngles.createDegrees(ppfb.yaw(), ppfb.pitch(), ppfb.roll());
 
         const styleMod = new LineStyle.Modifier(props);
+        if (undefined !== localToWorld)
+          styleMod.applyTransform(localToWorld);
+
         if (undefined === geomParams.styleInfo) {
           geomParams.styleInfo = new LineStyle.Info(Id64.invalid, styleMod);
           changed = true;
@@ -1210,6 +1422,9 @@ export namespace ElementGeometry {
         }
 
         const pattern = AreaPattern.Params.fromJSON(props);
+        if (undefined !== localToWorld)
+          pattern.applyTransform(localToWorld);
+
         if (undefined === geomParams.pattern || !pattern.equals(geomParams.pattern)) {
           geomParams.pattern = pattern;
           changed = true;
@@ -1240,7 +1455,7 @@ export namespace ElementGeometry {
   }
 
   /** Append entries to represent a [[GeometryParams]] */
-  export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean {
+  export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[], worldToLocal?: Transform): boolean {
     const fbbBas = new flatbuffers.Builder();
     const builder = EGFBAccessors.BasicSymbology;
     builder.startBasicSymbology(fbbBas);
@@ -1287,11 +1502,17 @@ export namespace ElementGeometry {
       const builderLS = EGFBAccessors.LineStyleModifiers;
       builderLS.startLineStyleModifiers(fbbLS);
 
-      const lsMods = geomParams.styleInfo.styleMod;
+      let lsMods = geomParams.styleInfo.styleMod;
+      if (undefined !== worldToLocal) {
+        lsMods = new LineStyle.Modifier(lsMods);
+        if (!lsMods.applyTransform(worldToLocal))
+          return false;
+      }
+
       let modifiers = 0;
 
-      if (undefined !== geomParams.styleInfo.styleMod.scale) {
-        builderLS.addScale(fbbLS, geomParams.styleInfo.styleMod.scale);
+      if (undefined !== lsMods.scale) {
+        builderLS.addScale(fbbLS, lsMods.scale);
         modifiers |= StyleMod.Scale;
       }
 
@@ -1471,9 +1692,15 @@ export namespace ElementGeometry {
     }
 
     if (undefined !== geomParams.pattern) {
-      const pattern = geomParams.pattern;
       const fbbPat = new flatbuffers.Builder();
       const builderPat = EGFBAccessors.AreaPattern;
+
+      let pattern = geomParams.pattern;
+      if (undefined !== worldToLocal) {
+        pattern = pattern.clone();
+        if (!pattern.applyTransform(worldToLocal))
+          return false;
+      }
 
       let defLineVecOffset;
 
@@ -1620,7 +1847,11 @@ export namespace ElementGeometry {
   }
 
   /** Create entry from a [[GeometryPart]] id and instance transform */
-  export function fromGeometryPart(partId: Id64String, partToElement?: Transform): ElementGeometryDataEntry | undefined {
+  export function fromGeometryPart(partId: Id64String, partTransform?: Transform, worldToLocal?: Transform): ElementGeometryDataEntry | undefined {
+    let partToElement = partTransform;
+    if (undefined !== worldToLocal)
+      partToElement = worldToLocal.multiplyTransformTransform(undefined !== partTransform ? partTransform : Transform.createIdentity());
+
     const fbb = new flatbuffers.Builder();
     const builder = EGFBAccessors.GeometryPart;
     builder.startGeometryPart(fbb);

@@ -21,6 +21,7 @@ public;BisCoreSchema
 public;BriefcaseDb 
 public;BriefcaseId = number
 public;BriefcaseIdValue
+deprecated;BriefcaseIdValue
 beta;BriefcaseManager
 public;CachedECSqlStatement
 internal;CachedSqliteStatement
@@ -62,7 +63,6 @@ public;DefinitionGroupGroupsDefinitions
 public;DefinitionModel 
 public;DefinitionPartition 
 public;class DefinitionSet 
-alpha;DesktopAuthorizationClient 
 public;DetailCallout 
 public;class DetailingSymbol 
 internal;DevTools
@@ -77,6 +77,7 @@ public;DisplayStyle3d
 public;DisplayStyleCreationOptions 
 public;class Document 
 internal;class DocumentCarrier 
+deprecated;class DocumentCarrier 
 public;DocumentListModel 
 public;DocumentPartition 
 internal;DownloadJob
@@ -135,9 +136,18 @@ public;ExportPartInfo
 public;ExportPartInstanceInfo
 public;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
 public;ExportPartLinesInfo
+beta;ExternalSource 
 public;ExternalSourceAspect 
 public;ExternalSourceAspect
+beta;ExternalSourceAttachment 
+beta;ExternalSourceAttachmentAttachesSource 
+beta;ExternalSourceGroup 
+beta;ExternalSourceGroupGroupsSources 
+beta;ExternalSourceIsInRepository 
+beta;ExternalSourceOwnsAttachments 
 public;class FileNameResolver
+beta;FolderContainsRepositories 
+alpha;FolderLink 
 public;class FunctionalBreakdownElement 
 public;class FunctionalComponentElement 
 public;FunctionalComposite 
@@ -194,6 +204,7 @@ alpha;IModelSchemaLoader
 beta;IModelTransformer 
 beta;IModelTransformOptions
 internal;class InformationCarrierElement 
+deprecated;class InformationCarrierElement 
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -204,7 +215,7 @@ public;class InformationReferenceElement
 beta;InstanceChange
 beta;class IpcHandler
 beta;IpcHost
-beta;IpcHostOptions
+beta;IpcHostOpts
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -212,10 +223,14 @@ public;LineStyleDefinition
 public;class LinkElement 
 public;LinkModel 
 public;LinkPartition 
+internal;LocalhostIpcHost
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+internal;class NativeAppAuthorizationBackend 
+beta;NativeAppStorage
 beta;NativeHost
+beta;NativeHostOpts 
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -252,6 +267,8 @@ public;SectionDrawing
 beta;SectionDrawingLocation 
 public;SectionDrawingModel 
 alpha;SectionLocation 
+deprecated;SectionLocation 
+internal;setMaxEntitiesPerEvent(max: number): number
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
@@ -278,6 +295,9 @@ public;SubCategory
 public;Subject 
 public;SubjectOwnsPartitionElements 
 public;SubjectOwnsSubjects 
+beta;SynchronizationConfigLink 
+beta;SynchronizationConfigProcessesSources 
+beta;SynchronizationConfigSpecifiesRootSources 
 beta;TemplateModelCloner 
 beta;TemplateRecipe2d 
 beta;TemplateRecipe3d 
@@ -286,8 +306,11 @@ internal;TemplateViewDefinition3d
 public;TextAnnotation2d 
 public;TextAnnotation3d 
 public;Texture 
+internal;TextureCreateProps 
 public;TitleText 
 public;TxnAction
+deprecated;TxnAction
+beta;TxnChangedEntities
 public;TxnIdString = string
 beta;TxnManager
 public;class TypeDefinitionElement 

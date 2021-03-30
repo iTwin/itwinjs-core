@@ -80,7 +80,7 @@ export namespace CacheInvalidationProps {
 // @internal
 export class ContentBuilder {
     static createPropertyDescription(field: Field, props?: PropertyDescriptionCreationProps): PropertyDescription;
-    static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord | undefined;
+    static createPropertyRecord(fieldHierarchy: FieldHierarchy, item: Item): FieldRecord;
 }
 
 // @public
@@ -374,7 +374,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     getNodes(parentNode?: TreeNodeItem, pageOptions?: PageOptions_2): Promise<DelayLoadedTreeNodeItem[]>;
     getNodesCount(parentNode?: TreeNodeItem): Promise<number>;
     get imodel(): IModelConnection;
-    // @alpha
+    // @alpha @deprecated
     loadHierarchy(): Promise<void>;
     get pagingSize(): number | undefined;
     set pagingSize(value: number | undefined);
@@ -412,7 +412,7 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
     pagingSize: number;
-    // @alpha
+    // @alpha @deprecated
     preloadingEnabled?: boolean;
 }
 

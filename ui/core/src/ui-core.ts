@@ -109,6 +109,9 @@ export * from "./ui-core/select/ThemedSelect";
 export * from "./ui-core/select/LabeledThemedSelect";
 export * from "./ui-core/searchbox/SearchBox";
 
+export * from "./ui-core/settings/SettingsManager";
+export * from "./ui-core/settings/SettingsContainer";
+
 export * from "./ui-core/slider/Slider";
 
 export * from "./ui-core/splitbutton/SplitButton";
@@ -150,9 +153,9 @@ export { Tree, TreeProps } from "./ui-core/tree/Tree";
 export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder";
 
 export * from "./ui-core/uisettings/UiSetting";
-export * from "./ui-core/uisettings/UiSettings";
-export * from "./ui-core/uisettings/LocalUiSettings";
-export * from "./ui-core/uisettings/SessionUiSettings";
+export * from "./ui-core/uisettings/UiSettingsStorage";
+export * from "./ui-core/uisettings/LocalSettingsStorage";
+export * from "./ui-core/uisettings/SessionSettingsStorage";
 
 export * from "./ui-core/utils/IconHelper";
 export * from "./ui-core/utils/Point";
@@ -269,6 +272,10 @@ export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
 /**
  * @docs-group-description Select
  * Component is a wrapper for the `<select>` HTML element.
+ */
+/**
+ * @docs-group-description Settings
+ * Manager and UI Components that allow users to modify settings for different packages and extensions.
  */
 /**
  * @docs-group-description Slider

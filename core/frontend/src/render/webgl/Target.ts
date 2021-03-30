@@ -122,8 +122,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
   public activeVolumeClassifierModelId?: Id64String;
-  public terrainTransparency = 0.0;
-  public nonLocatableTerrain = false;
 
   // RenderTargetDebugControl
   public vcSupportIntersectingVolumes: boolean = false;
@@ -203,7 +201,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
     return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
   }
-  public createPlanarClassifier(properties: SpatialClassificationProps.Classifier): PlanarClassifier {
+  public createPlanarClassifier(properties?: SpatialClassificationProps.Classifier): PlanarClassifier {
     return PlanarClassifier.create(properties, this);
   }
   public getTextureDrape(id: Id64String): RenderTextureDrape | undefined {
@@ -507,9 +505,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     if (!this.assignDC())
       return;
-
-    this.terrainTransparency = plan.terrainTransparency;
-    this.nonLocatableTerrain = !plan.locatableTerrain;
 
     this.isFadeOutActive = plan.isFadeOutActive;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
@@ -892,9 +887,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
 
     // Apply any screen-space effects that shift pixels from their original locations.
-    this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
+    this.beginPerfMetricRecord("Screenspace Effects", true);
     this.renderSystem.screenSpaceEffects.apply(this);
-    this.endPerfMetricRecord(true); // Screenspace Effects
+    this.endPerfMetricRecord(true); // End "Screenspace Effects"
 
     // Restore the state
     this.uniforms.branch.pop();

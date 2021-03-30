@@ -8,11 +8,11 @@
 
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
-  ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
-  Point3d, Range1d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
-} from "@bentley/geometry-core";
+  ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GridInViewContext, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
+  Point3d, Range1d, Range3d, Segment1d, Transform, Vector2d, Vector3d, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY} from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
+import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
@@ -22,11 +22,36 @@ import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";
-import { Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
+import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
 import { ViewingSpace } from "./ViewingSpace";
-import { CachedDecoration, ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
+import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
+import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 
-const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
+/** @internal */
+export class GridDisplaySettings {
+  /** Grid plane fill transparency */
+  public static planeTransparency = 225;
+  /** Grid reference line transparency */
+  public static refTransparency = 150;
+  /** Grid line transparency */
+  public static lineTransparency = 220;
+  /** Distance between grid lines in pixels to use for culling/clipping when grid is unaffected by perspective */
+  public static minSeparation = 10.0;
+  /** Distance between grid lines in pixels to use for culling/clipping when grid is affected by perspective */
+  public static minPerspectiveSeparation = 3.0;
+  /** Distance between grid lines in pixels to use for fading lines before they are culled */
+  public static minFadeSeparation = 20.0;
+  /** Culling option based on distance to neighbor when camera is off. 0 for none, 1 for previous neighbor, 2 for previous displayed neighbor */
+  public static cullingOption: 0 | 1 | 2 = 2;
+  /** Culling option based on distance to neighbor when camera is on. 0 for none, 1 for previous neighbor, 2 for previous displayed neighbor */
+  public static cullingPerspectiveOption: 0 | 1 | 2 = 1;
+  /** Clipping option based on distance to neighbor. 0 for none */
+  public static clippingOption: 0 | 1 = 1;
+  /** crude upper limit on lines to draw.
+   * This is applied symmetrically above and below the limits at "frontMost" points of the grid plane intersection with the frustum
+  */
+  public static lineLimiter: number = 1000;
+}
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -34,15 +59,14 @@ const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 2
 export class RenderContext {
   /** ViewFlags extracted from the context's [[Viewport]]. */
   public readonly viewFlags: ViewFlags;
-  /** The [[Viewport]] associated with this context. */
-  public readonly viewport: Viewport;
+  private readonly _viewport: Viewport;
   /** Frustum extracted from the context's [[Viewport]]. */
   public readonly frustum: Frustum;
   /** Frustum planes extracted from the context's [[Viewport]]. */
   public readonly frustumPlanes: FrustumPlanes;
 
   constructor(vp: Viewport, frustum?: Frustum) {
-    this.viewport = vp;
+    this._viewport = vp;
     this.viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
     this.frustum = frustum ? frustum : vp.getFrustum();
     this.frustumPlanes = new FrustumPlanes(this.frustum);
@@ -51,6 +75,11 @@ export class RenderContext {
   /** Given a point in world coordinates, determine approximately how many pixels it occupies on screen based on this context's frustum. */
   public getPixelSizeAtPoint(inPoint?: Point3d): number {
     return this.viewport.viewingSpace.getPixelSizeAtPoint(inPoint);
+  }
+
+  /** The [[Viewport]] associated with this context. */
+  public get viewport(): Viewport {
+    return this._viewport;
   }
 
   /** @internal */
@@ -115,13 +144,25 @@ export class DynamicsContext extends RenderContext {
  * @public
  */
 export class DecorateContext extends RenderContext {
+  private readonly _decorations: Decorations;
+  private readonly _cache: DecorationsCache;
   private _curCacheableDecorator?: ViewportDecorator;
 
+  /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn.
+   * @deprecated use [[DecorateContext.viewport]].
+   */
+  public get screenViewport(): ScreenViewport { return this.viewport; }
+
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn. */
-  public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
+  public get viewport(): ScreenViewport {
+    return super.viewport as ScreenViewport;
+  }
+
   /** @internal */
-  constructor(vp: ScreenViewport, private readonly _decorations: Decorations) {
+  constructor(vp: ScreenViewport, decorations: Decorations, cache: DecorationsCache) {
     super(vp);
+    this._decorations = decorations;
+    this._cache = cache;
   }
 
   /** Create a builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
@@ -140,7 +181,7 @@ export class DecorateContext extends RenderContext {
     assert(undefined === this._curCacheableDecorator);
     try {
       if (decorator.useCachedDecorations) {
-        const cached = this.viewport.getCachedDecorations(decorator);
+        const cached = this._cache.get(decorator);
         if (cached) {
           this.restoreCache(cached);
           return;
@@ -174,7 +215,7 @@ export class DecorateContext extends RenderContext {
 
   private _appendToCache(decoration: CachedDecoration) {
     assert(undefined !== this._curCacheableDecorator);
-    this.viewport.addCachedDecoration(this._curCacheableDecorator, decoration);
+    this._cache.add(this._curCacheableDecorator, decoration);
   }
 
   /** Calls [[GraphicBuilder.finish]] on the supplied builder to obtain a [[RenderGraphic]], then adds the graphic to the appropriate list of
@@ -296,19 +337,11 @@ export class DecorateContext extends RenderContext {
     return shapePoints;
   }
 
-  private getCurrentGridRefSeparation(lastPt: Point3d, thisPt0: Point3d, thisPt1: Point3d, thisPt: Point3d, thisRay: Ray3d, planeX: Plane3dByOriginAndUnitNormal, planeY: Plane3dByOriginAndUnitNormal) {
-    thisRay.getOriginRef().setFrom(thisPt0);
-    thisRay.getDirectionRef().setStartEnd(thisPt0, thisPt1); thisRay.getDirectionRef().normalizeInPlace();
-    planeX.getOriginRef().setFrom(lastPt);
-    planeY.getOriginRef().setFrom(lastPt);
-    const dotX = Math.abs(planeX.getNormalRef().dotProduct(thisRay.getDirectionRef()));
-    const dotY = Math.abs(planeY.getNormalRef().dotProduct(thisRay.getDirectionRef()));
-    return (undefined !== thisRay.intersectionWithPlane(dotX > dotY ? planeX : planeY, thisPt)) ? lastPt.distance(thisPt) : 0.0;
-  }
-
   /** @internal */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
+    if (vp.viewingGlobe)
+      return;
     const eyePoint = vp.worldToViewMap.transform1.columnZ();
     const eyeDir = Vector3d.createFrom(eyePoint);
     const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);
@@ -334,175 +367,107 @@ export class DecorateContext extends RenderContext {
       return;
 
     const meterPerPixel = vp.getPixelSizeAtPoint(loopPt);
-    const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef;
-    const refSpacing = Vector2d.create(spacing.x, spacing.y).scale(refScale);
-    const drawRefLines = !((refSpacing.x / meterPerPixel) < gridConstants.minSeparation || (refSpacing.y / meterPerPixel) < gridConstants.minSeparation);
+    const refSpacing = Vector2d.create(spacing.x, spacing.y);
 
     const viewZ = vp.rotation.getRow(2);
     const gridOffset = Point3d.create(viewZ.x * meterPerPixel, viewZ.y * meterPerPixel, viewZ.z * meterPerPixel); // Avoid z fighting with coincident geometry
     const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, Transform.createTranslation(gridOffset));
     const color = vp.getContrastToBackgroundColor();
-    const planeColor = (eyeDot < 0.0 ? ColorDef.red : color).withTransparency(gridConstants.planeTransparency);
+    const planeColor = (eyeDot < 0.0 ? ColorDef.red : color).withTransparency(GridDisplaySettings.planeTransparency);
 
     builder.setBlankingFill(planeColor);
     builder.addShape(shapePoints);
 
-    if (drawRefLines) {
-      const invMatrix = rMatrix.inverse();
-      const transform = Transform.createRefs(gridOrigin, invMatrix!);
-      const localRange = Range3d.createInverseTransformedArray(transform, shapePoints);
-
-      let minX = Math.floor(localRange.low.x / refSpacing.x);
-      let maxX = Math.ceil(localRange.high.x / refSpacing.x);
-      let minY = Math.floor(localRange.low.y / refSpacing.y);
-      let maxY = Math.ceil(localRange.high.y / refSpacing.y);
-
-      const nRefRepetitionsX = (maxY - minY);
-      const nRefRepetitionsY = (maxX - minX);
-
-      minX *= refSpacing.x; maxX *= refSpacing.x;
-      minY *= refSpacing.y; maxY *= refSpacing.y;
-
-      let nGridRepetitionsX = nRefRepetitionsX;
-      let nGridRepetitionsY = nRefRepetitionsY;
-
-      const dirPoints: Point3d[] = [Point3d.create(minX, minY), Point3d.create(minX, minY + refSpacing.y), Point3d.create(minX + refSpacing.x, minY)];
-      transform.multiplyPoint3dArrayInPlace(dirPoints);
-
-      const xDir = Vector3d.createStartEnd(dirPoints[0], dirPoints[1]); xDir.normalizeInPlace();
-      const yDir = Vector3d.createStartEnd(dirPoints[0], dirPoints[2]); yDir.normalizeInPlace();
-      const dotX = xDir.dotProduct(viewZ);
-      const dotY = yDir.dotProduct(viewZ);
-      const unambiguousX = Math.abs(dotX) > 0.25;
-      const unambiguousY = Math.abs(dotY) > 0.25;
-      const reverseX = dotX > 0.0;
-      const reverseY = dotY > 0.0;
-      const refStepX = reverseY ? -refSpacing.x : refSpacing.x;
-      const refStepY = reverseX ? -refSpacing.y : refSpacing.y;
-      const fadeRefSteps = 8;
-      const fadeRefTransparencyStep = (255 - gridConstants.refTransparency) / (fadeRefSteps + 2);
-
-      let lastDist = 0.0;
-      const lastPt = Point3d.createZero();
-      const planeX = Plane3dByOriginAndUnitNormal.create(lastPt, Vector3d.unitX())!;
-      const planeY = Plane3dByOriginAndUnitNormal.create(lastPt, Vector3d.unitY())!;
-      const thisPt = Point3d.create();
-      const thisPt0 = Point3d.create();
-      const thisPt1 = Point3d.create();
-      const thisRay = Ray3d.createZero();
-
-      let refColor = color.withTransparency(gridConstants.refTransparency);
-      const linePat = eyeDot < 0.0 ? LinePixels.Code2 : LinePixels.Solid;
-
-      const drawRefX = (nRefRepetitionsX < gridConstants.maxRefLines || (vp.isCameraOn && unambiguousX));
-      const drawRefY = (nRefRepetitionsY < gridConstants.maxRefLines || (vp.isCameraOn && unambiguousY));
-      const drawGridLines = drawRefX && drawRefY && (gridsPerRef > 1 && !((spacing.x / meterPerPixel) < gridConstants.minSeparation || (spacing.y / meterPerPixel) < gridConstants.minSeparation));
-
-      if (drawRefX) {
-        builder.setSymbology(refColor, planeColor, 1, linePat);
-
-        for (let xRef = 0, refY = reverseX ? maxY : minY, doFadeX = false, xFade = 0; xRef <= nRefRepetitionsX && xFade < fadeRefSteps; ++xRef, refY += refStepY) {
-          const linePoints: Point3d[] = [Point3d.create(minX, refY), Point3d.create(maxX, refY)];
-          transform.multiplyPoint3dArrayInPlace(linePoints);
-
-          vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
-          vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
-
-          if (doFadeX) {
-            refColor = refColor.withTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++xFade));
-            builder.setSymbology(refColor, planeColor, 1, linePat);
-          } else if (xRef > 0 && nRefRepetitionsX > 10) {
-            if (xRef > gridConstants.maxRefLines) {
-              doFadeX = true;
-            } else if (unambiguousX && vp.isCameraOn) {
-              const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
-              if (thisDist < gridConstants.minSeparation)
-                doFadeX = (vp.isCameraOn ? (xRef > 1 && thisDist < lastDist) : true);
-              lastDist = thisDist;
-            }
-            if (doFadeX) nGridRepetitionsX = xRef;
-          }
-
-          thisPt0.interpolate(0.5, thisPt1, lastPt);
-          builder.addLineString(linePoints);
-        }
+    const addGridLine = (pointA: Point3d, pointB: Point3d, startEndDistances: Segment1d | undefined, gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
+      if (skipRefLines && (0 === gridLineIdentifier.index % gridsPerRef)) {
+        return; // skip reference lines when drawing grid lines...
       }
 
-      if (drawRefY) {
-        refColor = refColor.withTransparency(gridConstants.refTransparency);
-        builder.setSymbology(refColor, planeColor, 1, linePat);
-
-        for (let yRef = 0, refX = reverseY ? maxX : minX, doFadeY = false, yFade = 0; yRef <= nRefRepetitionsY && yFade < fadeRefSteps; ++yRef, refX += refStepX) {
-          const linePoints: Point3d[] = [Point3d.create(refX, minY), Point3d.create(refX, maxY)];
-          transform.multiplyPoint3dArrayInPlace(linePoints);
-
-          vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
-          vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
-
-          if (doFadeY) {
-            refColor = refColor.withTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++yFade));
-            builder.setSymbology(refColor, planeColor, 1, linePat);
-          } else if (yRef > 0 && nRefRepetitionsY > 10) {
-            if (yRef > gridConstants.maxRefLines) {
-              doFadeY = true;
-            } else if (unambiguousY && vp.isCameraOn) {
-              const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
-              if (thisDist < gridConstants.minSeparation)
-                doFadeY = (vp.isCameraOn ? (yRef > 1 && thisDist < lastDist) : true);
-              lastDist = thisDist;
-            }
-            if (doFadeY) nGridRepetitionsY = yRef;
-          }
-
-          thisPt0.interpolate(0.5, thisPt1, lastPt);
-          builder.addLineString(linePoints);
-        }
+      if (undefined === startEndDistances || 0 === gridLineIdentifier.stepCount) {
+        noOutput = false;
+        firstLine = [pointA, pointB];
+        return; // defer output of 1st direction line until minDist can be evaluated...
       }
 
-      if (drawGridLines) {
-        const gridStepX = refStepX / gridsPerRef;
-        const gridStepY = refStepY / gridsPerRef;
-        let gridColor = color;
-        const fadeGridTransparencyStep = (255 - gridConstants.gridTransparency) / (gridsPerRef + 2);
+      const minDist = Math.abs(startEndDistances.x0 + startEndDistances.x1) / (gridLineIdentifier.stepCount * 2);
+      if (minDist < GridDisplaySettings.minFadeSeparation)
+        thisTransparency = Math.ceil(Geometry.interpolate(255, minDist / (GridDisplaySettings.minFadeSeparation + gridOptions.distanceBetweenLines), lineTransparency));
+      else
+        thisTransparency = lineTransparency;
 
-        if (nGridRepetitionsX > 1) {
-          gridColor = gridColor.withTransparency(gridConstants.gridTransparency);
-          builder.setSymbology(gridColor, planeColor, 1);
+      if (gridLineIdentifier.stepCount > 1 && (skipRefLines || thisTransparency > 240))
+        return; // limit number of steps...
 
-          for (let xRef = 0, refY = reverseX ? maxY : minY; xRef < nGridRepetitionsX; ++xRef, refY += refStepY) {
-            const doFadeX = (nGridRepetitionsX < nRefRepetitionsX && (xRef === nGridRepetitionsX - 1));
-            for (let yGrid = 1, gridY = refY + gridStepY; yGrid < gridsPerRef; ++yGrid, gridY += gridStepY) {
-              const gridPoints: Point3d[] = [Point3d.create(minX, gridY), Point3d.create(maxX, gridY)];
-              transform.multiplyPoint3dArrayInPlace(gridPoints);
-              if (doFadeX) {
-                gridColor = gridColor.withTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * yGrid));
-                builder.setSymbology(gridColor, planeColor, 1);
-              }
-              builder.addLineString(gridPoints);
-            }
-          }
-        }
-
-        if (nGridRepetitionsY > 1) {
-          gridColor = gridColor.withTransparency(gridConstants.gridTransparency);
-          builder.setSymbology(gridColor, planeColor, 1);
-
-          for (let yRef = 0, refX = reverseY ? maxX : minX; yRef < nGridRepetitionsY; ++yRef, refX += refStepX) {
-            const doFadeY = (nGridRepetitionsY < nRefRepetitionsY && (yRef === nGridRepetitionsY - 1));
-            for (let xGrid = 1, gridX = refX + gridStepX; xGrid < gridsPerRef; ++xGrid, gridX += gridStepX) {
-              const gridPoints: Point3d[] = [Point3d.create(gridX, minY), Point3d.create(gridX, maxY)];
-              transform.multiplyPoint3dArrayInPlace(gridPoints);
-              if (doFadeY) {
-                gridColor = gridColor.withTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * xGrid));
-                builder.setSymbology(gridColor, planeColor, 1);
-              }
-              builder.addLineString(gridPoints);
-            }
-          }
-        }
+      if (undefined === lastTransparency || (Math.abs(thisTransparency - lastTransparency) > 5)) {
+        builder.setSymbology(color.withTransparency(thisTransparency), planeColor, 1, linePattern);
+        lastTransparency = thisTransparency;
       }
+
+      if (undefined !== firstLine) {
+        builder.addLineString(firstLine);
+        firstLine = undefined;
+        if (1 === gridLineIdentifier.stepCount)
+          drawGridLines = true; // Only need to draw grid lines when ref lines aren't being skipped...
+      }
+
+      builder.addLineString([pointA, pointB]);
+    };
+
+    const _world000 = vp.worldToNpcMap.transform1.multiplyXYZW(0, 0, 0, 1);
+    const _world111 = vp.worldToNpcMap.transform1.multiplyXYZW(1, 1, 1, 1);
+    const _view000 = vp.worldToViewMap.transform0.multiplyPoint4d(_world000);
+    const _view111 = vp.worldToViewMap.transform0.multiplyPoint4d(_world111);
+    const npcRange = Range3d.createXYZXYZ(_view000.x, _view000.y, _view000.z, _view111.x, _view111.y, _view111.z);
+
+    const gridOptions = ViewportGraphicsGridSpacingOptions.create(
+      (vp.isCameraOn && Math.abs(zVec.dotProduct(vp.rotation.getRow(2))) < 0.9) ? GridDisplaySettings.minPerspectiveSeparation : GridDisplaySettings.minSeparation,
+      (vp.isCameraOn ? GridDisplaySettings.cullingPerspectiveOption : GridDisplaySettings.cullingOption),
+      GridDisplaySettings.clippingOption,
+      10      // first pass only gets major block lines !!!
+    );
+
+    const gridRefXStep = rMatrix.rowX().scale(refSpacing.x);
+    const gridRefYStep = rMatrix.rowY().scale(refSpacing.y);
+
+    let noOutput = true;
+    let drawGridLines = false;
+    let skipRefLines = false;
+    let firstLine: Point3d[] | undefined;
+    let linePattern = eyeDot < 0.0 ? LinePixels.Code2 : LinePixels.Solid;
+    let lineTransparency = GridDisplaySettings.refTransparency;
+    let lastTransparency: number;
+    let thisTransparency: number;
+    const gridInViewContext = GridInViewContext.create(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
+    gridOptions.gridMultiple = gridsPerRef > 0 ? gridsPerRef: 1;
+    gridInViewContext?.processGrid (gridOptions,
+      (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
+        startEndDistances: Segment1d | undefined,
+        gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
+        addGridLine(pointA, pointB, startEndDistances, gridLineIdentifier);
+      });
+    // add first line now if it ended up being the only one in the view due to zoom level...
+    if (undefined !== firstLine) {
+      builder.setSymbology(color.withTransparency(lineTransparency), planeColor, 1, linePattern);
+      builder.addLineString(firstLine);
     }
+    // might still need grid lines even if no ref lines are visible in the view due to zoom level...
+    if (noOutput || undefined !== firstLine)
+      drawGridLines = true;
 
+    if (drawGridLines) {
+
+      lineTransparency = GridDisplaySettings.lineTransparency;
+      linePattern = LinePixels.Solid;
+      skipRefLines = true;
+      gridOptions.gridMultiple = 1;
+      // const gridInViewContext1 = GridInViewContext.create(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
+      gridInViewContext?.processGrid (gridOptions,
+        (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
+          startEndDistances: Segment1d | undefined,
+          gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
+          addGridLine(pointA, pointB, startEndDistances, gridLineIdentifier);
+        });
+    }
     this.addDecorationFromBuilder(builder);
   }
 
@@ -540,7 +505,6 @@ export class SceneContext extends RenderContext {
   }
 
   /** @internal */
-  public readonly modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
   private _viewingSpace?: ViewingSpace;
   private _graphicType: TileGraphicType = TileGraphicType.Scene;
 
@@ -587,22 +551,16 @@ export class SceneContext extends RenderContext {
   }
 
   /** @internal */
-  public addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTreeReference, classifiedTree: TileTreeReference): RenderPlanarClassifier | undefined {
-    // Have we already seen this classifier before?
-    const id = props.modelId;
-    let classifier = this.planarClassifiers.get(id);
-    if (undefined !== classifier)
-      return classifier;
-
+  public addPlanarClassifier(classifiedModelId: Id64String, classifierTree?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): RenderPlanarClassifier | undefined {
     // Target may have the classifier from a previous frame; if not we must create one.
-    classifier = this.viewport.target.getPlanarClassifier(id);
+    let classifier = this.viewport.target.getPlanarClassifier(classifiedModelId);
     if (undefined === classifier)
-      classifier = this.viewport.target.createPlanarClassifier(props);
+      classifier = this.viewport.target.createPlanarClassifier(classifierTree?.activeClassifier);
 
     // Either way, we need to collect the graphics to draw for this frame, and record that we did so.
     if (undefined !== classifier) {
-      this.planarClassifiers.set(id, classifier);
-      classifier.collectGraphics(this, classifiedTree, tileTree);
+      this.planarClassifiers.set(classifiedModelId, classifier);
+      classifier.setSource(classifierTree, planarClipMask);
     }
 
     return classifier;
@@ -610,8 +568,7 @@ export class SceneContext extends RenderContext {
 
   /** @internal */
   public getPlanarClassifierForModel(modelId: Id64String) {
-    const classifierId = this.modelClassifiers.get(modelId);
-    return undefined === classifierId ? undefined : this.planarClassifiers.get(classifierId);
+    return this.planarClassifiers.get(modelId);
   }
 
   /** @internal */

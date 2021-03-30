@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipVector, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
+import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -81,13 +81,15 @@ export class TileDrawArgs {
   /** Tiles that we want to draw and that are ready to draw. May not actually be selected, e.g. if sibling tiles are not yet ready. */
   public readonly readyTiles = new Set<Tile>();
   /** For perspective views, the view-Z of the near plane. */
-  private readonly _nearViewZ?: number;
+  private readonly _nearFrontCenter?: Point3d;
   /** View Flag overrides */
   public get viewFlagOverrides(): ViewFlagOverrides { return this.graphics.viewFlagOverrides; }
   /**  Symbology overrides */
   public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
   /** If defined, tiles will be culled if they do not intersect the clip vector. */
   public intersectionClip?: ClipVector;
+  /** @internal */
+  public readonly pixelSizeScaleFactor;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -143,21 +145,24 @@ export class TileDrawArgs {
    * Device scaling is not applied.
    */
   protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
-    if (this.context.viewport.view.isCameraEnabled()) {
+    if (this.context.viewport.view.isCameraEnabled() && this._nearFrontCenter) {
+      const toFront = Vector3d.createStartEnd(center, this._nearFrontCenter);
+      const viewZ = this.context.viewport.rotation.rowZ();
+      // If the sphere overlaps the near front plane just use near front point.  This also handles behind eye conditions.
+      if (viewZ.dotProduct(toFront) < radius) {
+        center = this._nearFrontCenter;
+      } else {
       // Find point on sphere closest to eye.
-      const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
-      if (toEye) {
-        toEye.scaleInPlace(radius);
-        center.addInPlace(toEye);
+        const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
+
+        if (toEye) {  // Only if tile is not already behind the eye.
+          toEye.scaleInPlace(radius);
+          center.addInPlace(toEye);
+        }
       }
     }
 
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
-    if (undefined !== this._nearViewZ && viewPt.z > this._nearViewZ) {
-      // Limit closest point on sphere to the near plane.
-      viewPt.z = this._nearViewZ;
-    }
-
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
   }
@@ -189,6 +194,34 @@ export class TileDrawArgs {
     return this.viewingSpace.worldToViewMap;
   }
 
+  private computePixelSizeScaleFactor(): number {
+    // Check to see if a model display transform with non-uniform scaling is being used.
+    const tf = this.context.viewport.view.getModelDisplayTransform(this.tree.modelId, Transform.createIdentity());
+    const scale = [];
+    scale[0] = tf.matrix.getColumn(0).magnitude();
+    scale[1] = tf.matrix.getColumn(1).magnitude();
+    scale[2] = tf.matrix.getColumn(2).magnitude();
+    if (Math.abs(scale[0] - scale[1]) <= Geometry.smallMetricDistance && Math.abs(scale[0] - scale[2]) <= Geometry.smallMetricDistance)
+      return 1;
+    // If the component with the largest scale is not the same as the component with the largest tile range use it to adjust the pixel size.
+    const rangeDiag = this.tree.range.diagonal();
+    let maxS = 0;
+    let maxR = 0;
+    if (scale[0] > scale[1]) {
+      maxS = (scale[0] > scale[2] ? 0 : 2);
+    } else {
+      maxS = (scale[1] > scale[2] ? 1 : 2);
+    }
+    if (rangeDiag.x > rangeDiag.y) {
+      maxR = (rangeDiag.x > rangeDiag.z ? 0 : 2);
+    } else {
+      maxR = (rangeDiag.y > rangeDiag.z ? 1 : 2);
+    }
+    if (maxS !== maxR)
+      return scale[maxS];
+    return 1;
+  }
+
   /** Constructor */
   public constructor(params: TileDrawArgParams) {
     const { location, tree, context, now, viewFlagOverrides, clipVolume, parentsAndChildrenExclusive, symbologyOverrides } = params;
@@ -218,7 +251,9 @@ export class TileDrawArgs {
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
     if (context.viewport.view.isCameraEnabled())
-      this._nearViewZ = context.viewport.getFrustum(CoordSystem.View).frontCenter.z;
+      this._nearFrontCenter = context.viewport.getFrustum(CoordSystem.World).frontCenter;
+
+    this.pixelSizeScaleFactor = this.computePixelSizeScaleFactor();
   }
 
   /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.

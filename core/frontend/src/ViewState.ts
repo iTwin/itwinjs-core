@@ -201,16 +201,17 @@ export abstract class ViewState extends ElementState {
     };
   }
 
-  /** Get the ViewFlags from the [[DisplayStyleState]] of this ViewState.
-   * @note Do not modify this object directly. Instead, use the setter as follows:
-   *
-   *  ```ts
-   *  const flags = viewState.viewFlags.clone();
-   *  flags.renderMode = RenderMode.SmoothShade; // or whatever alterations are desired
-   *  viewState.viewFlags = flags;
-   *  ```ts
+  /** Flags controlling various aspects of this view's [[DisplayStyleState]].
+   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
+   * @see [DisplayStyleSettings.viewFlags]($common)
    */
-  public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
+  public get viewFlags(): ViewFlags {
+    return this.displayStyle.viewFlags;
+  }
+  public set viewFlags(flags: ViewFlags) {
+    this.displayStyle.viewFlags = flags;
+  }
+
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
   public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.settings.analysisStyle; }
 
@@ -1033,6 +1034,28 @@ export abstract class ViewState extends ElementState {
     return this.modelDisplayTransformProvider ? this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, baseTransform) : baseTransform;
   }
 
+  /** @internal */
+  public transformPointByModelDisplayTransform(modelId: string | undefined, pnt: Point3d, inverse: boolean): void {
+    if (undefined !== modelId && undefined !== this.modelDisplayTransformProvider) {
+      const transform = this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
+      const newPnt = inverse ? transform.multiplyInversePoint3d(pnt) : transform.multiplyPoint3d(pnt);
+      if (undefined !== newPnt)
+        pnt.set(newPnt.x, newPnt.y, newPnt.z);
+    }
+  }
+
+  /** @internal */
+  public transformNormalByModelDisplayTransform(modelId: string | undefined, normal: Vector3d): void {
+    if (undefined !== modelId && undefined !== this.modelDisplayTransformProvider) {
+      const transform = this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
+      const newVec = transform.matrix.multiplyInverse(normal);
+      if (undefined !== newVec) {
+        newVec.normalizeInPlace();
+        normal.set(newVec.x, newVec.y, newVec.z);
+      }
+    }
+  }
+
   /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
    * A ViewState can be attached to at most **one** Viewport.
    * @note If you override this method you **must** call `super.attachToViewport`.
@@ -1079,6 +1102,14 @@ export abstract class ViewState extends ElementState {
     // In attachToViewport, we register event listeners on the category selector. We remove them in detachFromViewport.
     // So a non-empty list of event listener removal functions indicates we are currently attached to a viewport.
     return this._unregisterCategorySelectorListeners.length > 0;
+  }
+
+  /** Returns an iterator over additional Viewports used to construct this view's scene. e.g., those used for ViewAttachments and section drawings.
+   * This exists chiefly for display-performance-test-app to determine when all tiles required for the view have been loaded.
+   * @internal
+   */
+  public get secondaryViewports(): Iterable<Viewport> {
+    return [];
   }
 }
 

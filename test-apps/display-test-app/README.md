@@ -140,8 +140,6 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the pixel ratio used instead of the system's actual device pixel ratio.
 * SVT_DPI_LOD
   * If defined, account for the device DPI when computing level of detail for tiles and decoration graphics.
-* SVT_NO_CANCEL_TILE_REQUESTS
-  * If defined, do not cancel tile requests on backend when cancelled on front-end.
 * SVT_DISABLE_EDGE_DISPLAY
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 * SVT_USE_WEBGL2
@@ -203,6 +201,11 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
   * `background=`: Preserve background color when drawing as a raster image.
 * **dta aspect skew decorator** *apply=0|1* - Toggle a decorator that draws a simple bspline curve based on the project extents, for testing the effect of aspect ratio skew on the curve stroke tolerance. Use in conjunction with `fdt aspect skew` to adjust the skew. If `apply` is 0, then the skew will have no effect on the curve's level of detail; otherwise a higher aspect ratio skew should produce higher-resolution curve graphics.
 * **dta classifyclip selected** *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
+* **dta grid settings** - Change the grid settings for the selected viewport.
+  * `spacing=number` Specify x and y grid reference line spacing in meters.
+  * `ratio=number` Specify y spacing as current x * ratio.
+  * `gridsPerRef=number` Specify number of grid lines to display per reference line.
+  * `orientation=0|1|2|3|4` Value for GridOrientationType.
 * **dta model transform** - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
 
 ## Editing
@@ -219,9 +222,7 @@ Using an editing session is optional, but outside of a session, the viewport's g
 
 ### Editing key-ins
 
+display-test-app has access to all key-ins defined in the imodeljs-editor-frontend package. It also provides the following additional key-ins.
+
 * `dta edit` - begin a new editing session, or end the current editing session. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing session, or "[EDIT]" indicating an active editing session.
-* `dta delete elements` - delete all elements currently in the selection set.
-* `dta move elements` - start moving elements. If no elements are currently in the selection set, you will be prompted to select one. First data point defines the start point; second defines the end point and moves the element(s) by the delta between the two points.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
-* `dta undo` - undo the most recent change.
-* `dta redo` - redo the most recently-undone change.

@@ -9,10 +9,14 @@
 // cspell:ignore leftpanel rightpanel
 
 $settings-leftpanel-width: 225px;
-$settings-rightpanel-width: 200px;
+$settings-rightpanel-width: 220px;
+
+.components-settings-container {
+  height: calc(100% - 50px);
+  overflow: hidden;
+  }
 
 .uifw-settings {
-  @include uicore-scrollview;
   background: $buic-background-dialog;
   color: $buic-text-color;
   border-radius: 3px;
@@ -32,8 +36,8 @@ $settings-rightpanel-width: 200px;
 
   > .left-panel {
     flex-direction: column;
-    width: $settings-leftpanel-width;
-    padding: 30px 50px 30px 50px;
+    min-width: $settings-leftpanel-width;
+    padding: 20px 15px 20px 15px;
 
     > .title {
       font-size: 18px;
@@ -47,8 +51,9 @@ $settings-rightpanel-width: 200px;
   }
 
   > .right-panel {
+    display:flex;
     align-items: center;
-    width: $settings-rightpanel-width;
+    min-width: $settings-rightpanel-width;
     padding: 30px 50px 30px 30px;
 
     .toggle {

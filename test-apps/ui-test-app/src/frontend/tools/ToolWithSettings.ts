@@ -14,8 +14,8 @@ import {
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import {
   DialogItem, DialogLayoutDataProvider, DialogProperty, DialogPropertyItem, DialogPropertySyncItem,
-  InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus, PropertyDescriptionHelper,
-  PropertyEditorParamTypes, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
+  EnumerationChoice, InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus,
+  PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
 } from "@bentley/ui-abstract";
 import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
 
@@ -134,7 +134,7 @@ export class ToolWithSettings extends PrimitiveTool {
 
   // ------------- Color Enum ---------------
   private enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
-  private getColorChoices = () => {
+  private getColorChoices = (): EnumerationChoice[] => {
     return this.useLengthProperty.isDisabled ? [
       { label: this.enumAsPicklistMessage(ToolOptionNames.Red), value: ToolOptions.Red },
       { label: this.enumAsPicklistMessage(ToolOptionNames.White), value: ToolOptions.White },
@@ -191,6 +191,17 @@ export class ToolWithSettings extends PrimitiveTool {
   public coordinateProperty = new DialogProperty<string>(
     PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Coordinate")),
     "0.0, 0.0, 0.0", undefined);
+
+  // ------------- text based edit field ---------------
+  public numberProperty = new DialogProperty<number>(
+    PropertyDescriptionHelper.buildNumberEditorDescription("numberVal", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Number"),
+      {
+        type: PropertyEditorParamTypes.Range,
+        step: 2,
+        precision: 0,
+        minimum: 0,
+        maximum: 1000,
+      } as RangeEditorParams), 14.0 );
 
   // ------------- display station value as text  ---------------
   private _stationFormatterSpec?: FormatterSpec;
@@ -384,8 +395,9 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push(this.cityProperty.toDialogItem({ rowPriority: 10, columnIndex: 2 }));
     toolSettings.push(this.stateProperty.toDialogItem({ rowPriority: 10, columnIndex: 4 }));
     toolSettings.push(this.coordinateProperty.toDialogItem({ rowPriority: 15, columnIndex: 2 }));
-    toolSettings.push(this.stationProperty.toDialogItem({ rowPriority: 16, columnIndex: 2 }));
-    const lengthLock = this.useLengthProperty.toDialogItem({ rowPriority: 20, columnIndex: 0 });
+    toolSettings.push(this.numberProperty.toDialogItem({ rowPriority: 16, columnIndex: 2 }));
+    toolSettings.push(this.stationProperty.toDialogItem({ rowPriority: 17, columnIndex: 2 }));
+    const lengthLock = this.useLengthProperty.toDialogItem({ rowPriority: 18, columnIndex: 0 });
     toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 20, columnIndex: 2 }, lengthLock));
     toolSettings.push(this.surveyLengthProperty.toDialogItem({ rowPriority: 21, columnIndex: 2 }));
     toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 25, columnIndex: 2 }));
@@ -431,6 +443,9 @@ export class ToolWithSettings extends PrimitiveTool {
     } else if (updatedValue.propertyName === this.lengthProperty.name) {
       this.lengthProperty.value = updatedValue.value.value as number;
       this.showInfoFromUi(updatedValue);
+    } else if (updatedValue.propertyName === this.numberProperty.name) {
+      this.numberProperty.value = updatedValue.value.value as number;
+      this.showInfoFromUi(updatedValue);
     } else if (updatedValue.propertyName === this.surveyLengthProperty.name) {
       this.surveyLengthProperty.value = updatedValue.value.value as number;
       this.showInfoFromUi(updatedValue);
@@ -441,5 +456,26 @@ export class ToolWithSettings extends PrimitiveTool {
 
     // return true is change is valid
     return true;
+  }
+
+  /** Used to bump the value of a tool setting. If no `settingIndex` param is specified, the first setting is bumped.
+   * @beta
+   */
+  public async bumpToolSetting(settingIndex?: number): Promise<boolean> {
+    if (settingIndex === 0 || settingIndex === undefined) {
+      const newValue = await PropertyDescriptionHelper.bumpEnumProperty(this.colorOptionProperty.description, this.colorOptionProperty.value);
+
+      if (newValue !== this.colorOptionProperty.value) {
+        this.colorOptionProperty.value = newValue as number;
+        this.syncToolSettingsProperties([this.colorOptionProperty.syncItem]);
+        return true;
+      }
+    } else if (settingIndex === 2) {
+      this.lockProperty.value = !this.lockProperty.value;
+      this.syncToolSettingsProperties([this.lockProperty.syncItem]);
+      return true;
+    }
+
+    return false;
   }
 }

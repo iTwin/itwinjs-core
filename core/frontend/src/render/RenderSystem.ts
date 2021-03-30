@@ -15,6 +15,7 @@ import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
+import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
@@ -22,6 +23,7 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
@@ -131,11 +133,10 @@ export interface RenderSystemDebugControl {
 }
 
 /** @internal */
-export abstract class RenderTerrainMeshGeometry implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderRealityMeshGeometry implements IDisposable, RenderMemory.Consumer {
   public abstract dispose(): void;
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
-
 /** @internal */
 export class TerrainTexture {
   public constructor(public readonly texture: RenderTexture, public featureId: number, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly targetRectangle: Range2d, public readonly layerIndex: number, public transparency: number, public readonly clipRectangle?: Range2d) {
@@ -189,6 +190,9 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public get supportsInstancing(): boolean { return true; }
+
+  /** @internal */
+  public get supportsNonuniformScaledInstancing(): boolean { return true; }
 
   /** @internal */
   public get dpiAwareLOD(): boolean { return true === this.options.dpiAwareLOD; }
@@ -264,11 +268,13 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform: Transform): RenderTerrainMeshGeometry | undefined { return undefined; }
+  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined { return undefined; }
   /** @internal */
-  public createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public get maxTerrainImageryLayers() { return 0; }
+  public createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined { return undefined; }
+  /** @internal */
+  public get maxRealityImageryLayers() { return 0; }
   /** @internal */
   public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
@@ -464,6 +470,25 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
+
+  /** A function that is invoked after the WebGL context is lost. Context loss is almost always caused by excessive consumption of GPU memory.
+   * After context loss occurs, the RenderSystem will be unable to interact with WebGL by rendering viewports, creating graphics and textures, etc.
+   * By default, this function invokes [[ToolAdmin.exceptionHandler]] with a brief message describing what occurred.
+   * An application can override this behavior as follows:
+   * ```ts
+   * RenderSystem.contextLossHandler = (): Promise<any> => {
+   *  // your implementation here.
+   * }
+   * ```
+   * @note Context loss is reported by the browser some short time *after* it has occurred. It is not possible to determine the specific cause.
+   * @see [[TileAdmin.gpuMemoryLimit]] to limit the amount of GPU memory consumed thereby reducing the likelihood of context loss.
+   * @see [[TileAdmin.totalTileContentBytes]] for the amount of GPU memory allocated for tile graphics.
+   * @beta
+   */
+  public static async contextLossHandler(): Promise<any> {
+    const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
+    return ToolAdmin.exceptionHandler(msg);
+  }
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
@@ -575,14 +600,14 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      */
     planProjections?: boolean;
 
-    /** By default, shader programs used by the [[RenderSystem]] are not compiled until the first time they are used. This can produce noticeable delays when the user interacts with a [[Viewport]].
-     * To prevent such delays, set this to `true` to allow the RenderSystem to precompile shader programs before any Viewport is opened.
-     * Applications should consider enabling this feature if they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and a view through the user interface.
+    /** To help prevent delays when a user interacts with a [[Viewport]], the WebGL render system precompiles shader programs before any Viewport is opened.
+     * This particularly helps applications when they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and a view through the user interface.
      * Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [[ViewManager]]).
+     * To disable this feature, set this to `false`.
      *
-     * Default value: false
+     * Default value: true
      *
-     * @beta
+     * @public
      */
     doIdleWork?: boolean;
 

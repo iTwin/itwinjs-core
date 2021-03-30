@@ -39,6 +39,7 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { immerable } from 'immer';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import * as Inspire from 'inspire-tree';
+import { LinkElementsInfo } from '@bentley/ui-abstract';
 import { Matrix3d } from '@bentley/geometry-core';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeCheckboxProps as NodeCheckboxProps_2 } from '@bentley/ui-core';
@@ -72,6 +73,7 @@ import { TimeDisplay } from '@bentley/ui-abstract';
 import { TimeFormat } from '@bentley/ui-core';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
+import { UiSettingsStorage } from '@bentley/ui-core';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
 import { Vector3d } from '@bentley/geometry-core';
@@ -515,6 +517,10 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -839,6 +845,10 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
     componentDidUpdate(prevProps: PropertyEditorProps): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -973,7 +983,7 @@ export interface CommonPropertyGridProps extends CommonProps {
     onPropertyContextMenu?: (args: PropertyGridContextMenuArgs) => void;
     // @beta
     onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
-    // @beta
+    // @beta @deprecated
     onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
     onPropertySelectionChanged?: (property: PropertyRecord) => void;
     // @beta
@@ -1108,6 +1118,9 @@ export namespace ConvertedPrimitives {
     export type Value = boolean | number | string | Date | Point | Id64String;
 }
 
+// @internal
+export function convertPrimitiveRecordToString(record: PropertyRecord): string | Promise<string>;
+
 // @internal (undocumented)
 export enum CubeHover {
     // (undocumented)
@@ -1172,6 +1185,10 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -1180,6 +1197,8 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
 // @alpha
 export class CustomNumberPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesEscape(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
@@ -1264,6 +1283,10 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
+    // (undocumented)
     processDateChange(typeConverter: TypeConverter, newValue: Date): Promise<void>;
     // (undocumented)
     render(): React.ReactNode;
@@ -1321,6 +1344,9 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
     // (undocumented)
     sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number;
 }
+
+// @beta
+export const DEFAULT_LINKS_HANDLER: LinkElementsInfo;
 
 // @public
 export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
@@ -1657,6 +1683,10 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     componentDidUpdate(prevProps: PropertyEditorProps): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -1673,6 +1703,10 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -2090,6 +2124,9 @@ export interface FormatUnitsProps extends CommonProps {
 // @public
 export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
 
+// @internal (undocumented)
+export function getCSSColorFromDef(colorDef: ColorDef): string;
+
 // @beta @deprecated
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
 
@@ -2226,6 +2263,10 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     }
@@ -2275,6 +2316,10 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -2896,6 +2941,7 @@ export interface MutableTreeDataProvider extends ITreeDataProvider {
 export class MutableTreeModel implements TreeModel {
     // (undocumented)
     [immerable]: boolean;
+    changeNodeId(currentId: string, newId: string): boolean;
     clearChildren(parentId: string | undefined): void;
     computeVisibleNodes(): VisibleTreeNodes;
     getChildOffset(parentId: string | undefined, childId: string): number | undefined;
@@ -2906,9 +2952,10 @@ export class MutableTreeModel implements TreeModel {
     getRootNode(): TreeModelRootNode;
     insertChild(parentId: string | undefined, childNodeInput: TreeModelNodeInput, offset: number): void;
     iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
+    moveNode(sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): boolean;
     removeChild(parentId: string | undefined, childId: string): void;
     setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
-    setNumChildren(parentId: string | undefined, numChildren: number): void;
+    setNumChildren(parentId: string | undefined, numChildren: number | undefined): void;
     }
 
 // @beta
@@ -3058,6 +3105,10 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    hasFocus: boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -3066,6 +3117,8 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
 
 // @beta
 export class NumericInputPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesEnter(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
@@ -3423,6 +3476,8 @@ export abstract class PropertyEditorBase implements DataController {
 export class PropertyEditorManager {
     // (undocumented)
     static createEditor(editType: string, editorName?: string, dataControllerName?: string): PropertyEditorBase;
+    // @internal (undocumented)
+    static deregisterDataController(controllerName: string): void;
     // (undocumented)
     static hasCustomEditor(editType: string, editorName: string): boolean;
     // (undocumented)
@@ -3474,10 +3529,15 @@ export interface PropertyGridCategory {
 // @internal (undocumented)
 export class PropertyGridCommons {
     // (undocumented)
-    static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick?: (property: PropertyRecord, text: string) => void): void;
+    static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick: (property: PropertyRecord, text: string) => void): void;
     // (undocumented)
     static getCurrentOrientation(width: number, preferredOrientation?: Orientation, isOrientationFixed?: boolean, horizontalOrientationMinWidth?: number): Orientation;
-    }
+    static getLinks: (value: string) => Array<{
+        start: number;
+        end: number;
+    }>;
+    static handleLinkClick(text: string): void;
+}
 
 // @public
 export interface PropertyGridContextMenuArgs {
@@ -4019,6 +4079,10 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -4099,9 +4163,13 @@ export class SparseTree<T extends Node> {
     // (undocumented)
     insertChild(parentId: string | undefined, child: T, offset: number): void;
     // (undocumented)
+    moveNode(sourceParentId: string | undefined, sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): void;
+    // (undocumented)
     removeChild(parentId: string | undefined, childId: string): void;
     // (undocumented)
     setChildren(parentId: string | undefined, children: T[], offset: number): void;
+    // (undocumented)
+    setNodeId(parentId: string | undefined, index: number, newId: string): boolean;
     // (undocumented)
     setNumChildren(parentId: string | undefined, numChildren: number): void;
 }
@@ -4460,9 +4528,11 @@ export interface TableProps extends CommonProps {
     scrollToRow?: number;
     selectionMode?: SelectionMode;
     settingsIdentifier?: string;
+    settingsStorage?: UiSettingsStorage;
     showHideColumns?: boolean;
     stripedRows?: boolean;
     tableSelectionTarget?: TableSelectionTarget;
+    // @deprecated
     uiSettings?: UiSettings;
 }
 
@@ -4517,6 +4587,10 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -4545,6 +4619,10 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -4561,6 +4639,10 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -4692,6 +4774,10 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -4842,6 +4928,9 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
 }
 
 // @internal (undocumented)
+export function toRxjsObservable<T>(observable: Observable<T>): Observable_2<T>;
+
+// @internal (undocumented)
 export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;
 
 // @beta
@@ -4986,6 +5075,8 @@ export class TreeImageLoader implements ITreeImageLoader {
 // @beta
 export interface TreeModel {
     // (undocumented)
+    getChildOffset(parentId: string | undefined, childId: string): number | undefined;
+    // (undocumented)
     getChildren(parentId: string | undefined): SparseArray<string> | undefined;
     // (undocumented)
     getNode(id: string): TreeModelNode | undefined;
@@ -5089,7 +5180,7 @@ export interface TreeModelRootNode {
 
 // @beta
 export class TreeModelSource {
-    constructor();
+    constructor(_model?: MutableTreeModel);
     getModel(): TreeModel;
     getVisibleNodes(): VisibleTreeNodes;
     modifyModel(callback: (model: MutableTreeModel) => void): void;
@@ -5371,6 +5462,10 @@ export class TypeConverterManager {
 export interface TypeEditor {
     // (undocumented)
     getPropertyValue: () => Promise<PropertyValue | undefined>;
+    // (undocumented)
+    hasFocus: boolean;
+    // (undocumented)
+    htmlElement: HTMLElement | null;
 }
 
 // @public
@@ -5432,7 +5527,7 @@ export function usePropertyGridModelSource(props: {
 }): PropertyGridModelSource;
 
 // @internal (undocumented)
-export function useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise<string>, context?: PropertyValueRendererContext): {
+export function useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise<string>, context?: PropertyValueRendererContext, linksHandler?: LinkElementsInfo): {
     stringValue?: string;
     element: React.ReactNode;
 };
@@ -5701,6 +5796,10 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
     componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)

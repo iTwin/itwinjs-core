@@ -211,7 +211,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * The Ids are iterated in ascending order based on their unsigned 64-bit integer values.
    * @alpha
    */
-  export function * iterator(ids: CompressedId64Set): Iterator<Id64String> {
+  export function* iterator(ids: CompressedId64Set): Iterator<Id64String> {
     if (0 === ids.length)
       return; // empty set.
 
@@ -351,7 +351,8 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
   }
 }
 
-class OrderedId64Array extends SortedArray<Id64String> {
+/** @alpha */
+export class OrderedId64Array extends SortedArray<Id64String> {
   public constructor() {
     super((lhs, rhs) => OrderedId64Iterable.compare(lhs, rhs));
   }

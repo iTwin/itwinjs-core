@@ -97,11 +97,16 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
   const handleDecimalSeparatorChange = React.useCallback((decimalSeparator: string) => {
     let thousandSeparator = formatProps.thousandSeparator;
     // make sure 1000 and decimal separator do not match
+    // istanbul ignore else
     if (isFormatTraitSet(FormatTraits.Use1000Separator)) {
-      if (decimalSeparator === ".")
-        thousandSeparator = ",";
-      else if (decimalSeparator === ",")
-        thousandSeparator = ".";
+      switch(decimalSeparator) {
+        case ".":
+          thousandSeparator = ",";
+          break;
+        case ",":
+          thousandSeparator = ".";
+          break;
+      }
     }
     const newFormatProps = { ...formatProps, thousandSeparator, decimalSeparator };
     handleSetFormatProps(newFormatProps);

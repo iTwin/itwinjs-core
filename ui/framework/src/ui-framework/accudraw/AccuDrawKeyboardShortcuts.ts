@@ -59,6 +59,10 @@ export class AccuDrawKeyboardShortcuts {
             item: AccuDrawCommandItems.lockDistance,
             isHidden: FrameworkAccuDraw.isRectangularModeConditional,
           },
+          {
+            key: "b",
+            item: AccuDrawCommandItems.bumpToolSetting,
+          },
         ],
       },
       {

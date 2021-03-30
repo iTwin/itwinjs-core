@@ -11,6 +11,7 @@ export * from "./ui-framework/accudraw/AccuDrawCommandItems";
 export * from "./ui-framework/accudraw/AccuDrawDialog";
 export * from "./ui-framework/accudraw/AccuDrawKeyboardShortcuts";
 export * from "./ui-framework/accudraw/AccuDrawPopupManager";
+export * from "./ui-framework/accudraw/AccuDrawUiSettings";
 export * from "./ui-framework/accudraw/AccuDrawWidget";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
@@ -78,6 +79,7 @@ export * from "./ui-framework/frontstage/FrontstageManager";
 export * from "./ui-framework/frontstage/FrontstageProvider";
 export * from "./ui-framework/frontstage/NestedFrontstage";
 export * from "./ui-framework/frontstage/ModalFrontstage";
+export * from "./ui-framework/frontstage/ModalSettingsStage";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
 export * from "./ui-framework/hooks/useActiveViewport";
@@ -142,6 +144,9 @@ export * from "./ui-framework/safearea/SafeAreaContext";
 export * from "./ui-framework/selection/SelectionContextItemDef";
 export * from "./ui-framework/selection/HideIsolateEmphasizeManager";
 export * from "./ui-framework/selection/ClearEmphasisStatusField";
+
+export * from "./ui-framework/settings/ui/UiSettingsPage";
+export * from "./ui-framework/settings/quantityformatting/QuantityFormat";
 
 export * from "./ui-framework/shared/ActionButtonItemDef";
 export * from "./ui-framework/shared/AnyItemDef";
@@ -214,12 +219,14 @@ export * from "./ui-framework/tools/CoreToolDefinitions";
 export * from "./ui-framework/tools/FrameworkToolAdmin";
 export * from "./ui-framework/tools/MarkupToolDefinitions";
 export * from "./ui-framework/tools/RestoreLayoutTool";
+export * from "./ui-framework/tools/ToolSettingsTools";
 
 export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 
 export * from "./ui-framework/uiprovider/DefaultDialogGridContainer";
 
-export * from "./ui-framework/uisettings/IModelAppUiSettings";
+export * from "./ui-framework/uisettings/AppUiSettings";
+export * from "./ui-framework/uisettings/UserSettingsStorage";
 export * from "./ui-framework/uisettings/useUiSettings";
 
 export * from "./ui-framework/utils/ViewUtilities";
@@ -342,6 +349,10 @@ export * from "./ui-framework/zones/ZoneDef";
 /**
  * @docs-group-description State
  * Classes for maintaining state
+ */
+/**
+ * @docs-group-description Settings
+ * Classes and components used by settings pages displayed in the modal settings stage
  */
 /**
  * @docs-group-description StatusBar

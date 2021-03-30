@@ -18,6 +18,7 @@ public;ClassId = Id64String
 public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
+internal;CommonIpcParams
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
 public;ConditionContainer
 public;Content
@@ -45,13 +46,21 @@ public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
 public;DefaultPropertyCategoryOverride 
 public;DEPRECATED_AllInstanceNodesSpecification 
+deprecated;DEPRECATED_AllInstanceNodesSpecification 
 public;DEPRECATED_AllRelatedInstanceNodesSpecification 
+deprecated;DEPRECATED_AllRelatedInstanceNodesSpecification 
 public;DEPRECATED_ContentRelatedInstancesSpecification 
+deprecated;DEPRECATED_ContentRelatedInstancesSpecification 
 public;DEPRECATED_PropertiesDisplaySpecification
+deprecated;DEPRECATED_PropertiesDisplaySpecification
 public;DEPRECATED_PropertyEditorsSpecification 
+deprecated;DEPRECATED_PropertyEditorsSpecification 
 public;DEPRECATED_RelatedInstanceNodesSpecification 
+deprecated;DEPRECATED_RelatedInstanceNodesSpecification 
 public;DEPRECATED_RelatedInstanceSpecification
+deprecated;DEPRECATED_RelatedInstanceSpecification
 public;DEPRECATED_RelatedPropertiesSpecification
+deprecated;DEPRECATED_RelatedPropertiesSpecification
 public;Descriptor 
 public;DescriptorJSON
 public;DescriptorOverrides
@@ -158,6 +167,7 @@ public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
 public;LabelRequestOptions
 public;LabelRpcRequestOptions = PresentationRpcRequestOptions
 public;LoggingNamespaces
+deprecated;LoggingNamespaces
 public;MultiSchemaClassesSpecification
 beta;NamedFieldDescriptor 
 public;NavigationRule = RootNodeRule | ChildNodeRule
@@ -169,9 +179,11 @@ public;NestedContentValue
 public;NestedContentValueJSON
 public;Node
 public;Node
+internal;fromPartialJSON(json: PartialNodeJSON): PartialNode
 internal;listFromJSON(json: NodeJSON[] | string): Node[]
 internal;listReviver(key: string, value: any): any
 internal;reviver(key: string, value: any): any
+internal;toPartialJSON(node: PartialNode): PartialNodeJSON
 public;NodeArtifactsRule 
 alpha;NodeDeletionInfo
 alpha;NodeDeletionInfoJSON
@@ -200,11 +212,15 @@ public;PageOptions
 alpha;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
 alpha;PartialHierarchyModification
 alpha;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
+alpha;PartialNode = AllOrNone
+alpha;PartialNodeJSON = AllOrNone
 internal;PRESENTATION_COMMON_ROOT: string
+internal;PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface"
 alpha;PresentationDataCompareOptions
 alpha;PresentationDataCompareRpcOptions = PresentationRpcRequestOptions
 public;PresentationError 
 alpha;PresentationIpcEvents
+internal;PresentationIpcInterface
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
 public;PresentationStatus
@@ -274,6 +290,7 @@ public;RuleBase
 public;Ruleset
 public;RulesetsFactory
 public;RulesetVariable
+public;RulesetVariableJSON
 public;RuleTypes
 public;SameLabelInstanceGroup 
 public;SameLabelInstanceGroupApplicationStage
@@ -286,6 +303,7 @@ public;SelectionInfo
 public;SelectionScope
 public;SelectionScopeRequestOptions
 public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
+internal;SetRulesetVariableParams
 public;SingleSchemaClassSpecification
 public;SortDirection
 public;SortingRule = PropertySortingRule | DisabledSortingRule
@@ -302,6 +320,7 @@ public;Subtract
 public;SupplementationInfo
 public;TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription
 alpha;UPDATE_FULL = "FULL"
+internal;UpdateHierarchyStateParams
 alpha;UpdateInfo
 alpha;UpdateInfo
 alpha;UpdateInfoJSON

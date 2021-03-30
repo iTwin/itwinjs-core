@@ -150,7 +150,7 @@ describe("IModelConnection (#integration)", () => {
     assert.isNotNull(noVersionsIModel3);
   });
 
-  it("should send a usage log everytime an iModel is opened", async () => {
+  it.skip("should send a usage log everytime an iModel is opened", async () => {
     const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const iModelId = await TestUtility.getTestIModelId(projectId, "ReadOnlyTest");
 
@@ -204,7 +204,7 @@ describe("IModelConnection (#integration)", () => {
     expect(modelProps.length).to.equal(1);
 
     const treeId = modelProps[0].id!.toString();
-    const tree = await iModel.tiles.getTileTreeProps(treeId);
+    const tree = await IModelApp.tileAdmin.requestTileTreeProps(iModel, treeId);
 
     expect(tree.id).to.equal(modelProps[0].id);
     expect(tree.maxTilesToSkip).to.equal(1);

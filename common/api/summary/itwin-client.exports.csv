@@ -1,10 +1,13 @@
 sep=;
 Release Tag;API Item
 beta;AccessToken
+beta;AccessTokenProps
 beta;AuthenticationError 
 beta;AuthorizationClient
 public;AuthorizedClientRequestContext 
-public;AuthorizedClientRequestContextProps 
+beta;AuthorizedClientRequestContextProps 
+beta;AuthorizedSession 
+beta;AuthorizedSessionProps 
 beta;CancelRequest
 beta;ChangeState = "new" | "modified" | "deleted" | "existing"
 beta;ChunkedQueryContext
@@ -13,6 +16,7 @@ beta;class Client
 internal;ConstructorType = new () => any
 internal;DefaultRequestOptionsProvider
 internal;DefaultWsgRequestOptionsProvider 
+internal;DownloadError 
 internal;DownloadFailed 
 beta;class ECInstance
 internal;ECJsonTypeMap
@@ -37,13 +41,18 @@ beta;RequestTimeoutOptions
 beta;Response
 beta;ResponseError 
 internal;SamlAccessToken 
+deprecated;SamlAccessToken 
 internal;SamlAuthorizationToken 
+deprecated;SamlAuthorizationToken 
 internal;class SamlToken
+deprecated;class SamlToken
 beta;SasUrlExpired 
 internal;TokenPrefix(prefix: string): (constructor: any) => void
+internal;UploadError 
 internal;UrlDiscoveryClient 
 internal;UserCancelledError 
 beta;UserInfo
+beta;UserInfoProps
 beta;class WsgClient 
 beta;WsgError 
 beta;class WsgInstance 

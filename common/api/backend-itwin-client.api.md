@@ -40,6 +40,20 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
 export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
 // @internal
+export class AzCopyFileHandler implements FileHandler {
+    constructor();
+    basename(filePath: string): string;
+    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    exists(filePath: string): boolean;
+    getFileSize(filePath: string): number;
+    isDirectory(filePath: string): boolean;
+    static isUrlExpired(downloadUrl: string, futureSeconds?: number): boolean;
+    join(...paths: string[]): string;
+    unlink(filePath: string): void;
+    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
+}
+
+// @internal
 export class AzureFileHandler implements FileHandler {
     constructor(useDownloadBuffer?: boolean, threshold?: number);
     // (undocumented)
@@ -164,6 +178,11 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
 // @beta
 export type DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
+// @internal
+export class HttpRequestHost {
+    static initialize(): Promise<void>;
+    }
+
 // @internal (undocumented)
 export class ImsClientAuthDetail extends ClientAuthDetail {
     constructor(response: ImsIntrospectionResponse);
@@ -280,11 +299,6 @@ export type OidcDelegationClient = DelegationAuthorizationClient;
 
 // @beta @deprecated
 export type OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration;
-
-// @internal
-export class RequestHost {
-    static initialize(): Promise<void>;
-    }
 
 // @internal
 export class StorageServiceFileHandler extends UrlFileHandler {

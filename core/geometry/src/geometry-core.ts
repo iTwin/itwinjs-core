@@ -166,6 +166,7 @@ export * from "./clipping/ClipVector";
 export * from "./clipping/ClipUtils";
 export * from "./numerics/ConvexPolygon2d";
 export * from "./geometry4d/PlaneByOriginAndVectors4d";
+export * from "./geometry4d/ViewGraphicsOps";
 export * from "./geometry4d/Point4d";
 export * from "./geometry4d/Matrix4d";
 export * from "./geometry4d/Map4d";

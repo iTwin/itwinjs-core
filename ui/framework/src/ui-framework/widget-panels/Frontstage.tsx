@@ -23,7 +23,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
 import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
-import { useUiSettingsContext } from "../uisettings/useUiSettings";
+import { useUiSettingsStorageContext } from "../uisettings/useUiSettings";
 import { WidgetDef, WidgetEventArgs, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
 import { WidgetContent } from "./Content";
@@ -33,6 +33,7 @@ import { WidgetPanelsStatusBar } from "./StatusBar";
 import { WidgetPanelsTab } from "./Tab";
 import { WidgetPanelsToolbars } from "./Toolbars";
 import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
+import { useEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -180,8 +181,13 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
   useItemsManager(frontstageDef);
   useSyncDefinitions(frontstageDef);
   const labels = useLabels();
+  const handleKeyDown = useEscapeSetFocusToHome();
   return (
-    <div className="uifw-widgetPanels-frontstage">
+    <div
+      className="uifw-widgetPanels-frontstage"
+      onKeyDown={handleKeyDown}
+      role="presentation"
+    >
       <NineZone
         dispatch={dispatch}
         labels={labels}
@@ -788,11 +794,11 @@ export const setWidgetLabel = produce((nineZone: Draft<NineZoneState>, id: TabSt
 
 /** @internal */
 export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
-  const uiSettings = useUiSettingsContext();
-  const uiSettingsRef = React.useRef(uiSettings);
+  const uiSettingsStorage = useUiSettingsStorageContext();
+  const uiSettingsRef = React.useRef(uiSettingsStorage);
   React.useEffect(() => {
-    uiSettingsRef.current = uiSettings;
-  }, [uiSettings]);
+    uiSettingsRef.current = uiSettingsStorage;
+  }, [uiSettingsStorage]);
   React.useEffect(() => {
     async function fetchFrontstageState() {
       if (frontstageDef.nineZoneState)
@@ -818,7 +824,7 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
 /** @internal */
 export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   const nineZone = useNineZoneState(frontstageDef);
-  const uiSettings = useUiSettingsContext();
+  const uiSettingsStorage = useUiSettingsStorageContext();
   const saveSetting = React.useCallback(debounce(async (id: string, version: number, state: NineZoneState) => {
     const setting: WidgetPanelsFrontstageState = {
       id,
@@ -826,8 +832,8 @@ export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
       stateVersion,
       version,
     };
-    await uiSettings.saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id), setting);
-  }, 1000), [uiSettings]);
+    await uiSettingsStorage.saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id), setting);
+  }, 1000), [uiSettingsStorage]);
   React.useEffect(() => {
     return () => {
       saveSetting.cancel();
@@ -905,11 +911,11 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
       FrontstageManager.onWidgetExpandEvent.removeListener(listener);
     };
   }, [frontstageDef]);
-  const uiSettings = useUiSettingsContext();
+  const uiSettingsStorage = useUiSettingsStorageContext();
   React.useEffect(() => {
     const listener = (args: FrontstageEventArgs) => {
       // TODO: track restoring frontstages to support workflows:  i.e. prevent loading frontstage OR saving layout when delete is pending
-      uiSettings.deleteSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(args.frontstageDef.id)); // eslint-disable-line @typescript-eslint/no-floating-promises
+      uiSettingsStorage.deleteSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(args.frontstageDef.id)); // eslint-disable-line @typescript-eslint/no-floating-promises
       if (frontstageDef.id === args.frontstageDef.id) {
         args.frontstageDef.nineZoneState = initializeNineZoneState(frontstageDef);
       } else {
@@ -920,7 +926,7 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
     return () => {
       FrontstageManager.onFrontstageRestoreLayoutEvent.removeListener(listener);
     };
-  }, [uiSettings, frontstageDef]);
+  }, [uiSettingsStorage, frontstageDef]);
   React.useEffect(() => {
     const listener = createListener(frontstageDef, ({ widgetDef }: WidgetEventArgs) => {
       assert(!!frontstageDef.nineZoneState);

@@ -14,14 +14,16 @@ import {
   HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
   isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition,
   LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
-  PresentationDataCompareOptions, PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RequestPriority,
+  PresentationDataCompareOptions, PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem,
   RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { LocalizationHelper } from "./LocalizationHelper";
+import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
+import { StateTracker } from "./StateTracker";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -80,6 +82,12 @@ export interface PresentationManagerProps {
 
   /** @internal */
   rpcRequestsHandler?: RpcRequestsHandler;
+
+  /** @internal */
+  ipcRequestsHandler?: IpcRequestsHandler;
+
+  /** @internal */
+  stateTracker?: StateTracker;
 }
 
 /**
@@ -95,6 +103,8 @@ export class PresentationManager implements IDisposable {
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
+  private _ipcRequestsHandler?: IpcRequestsHandler;
+  private _stateTracker?: StateTracker;
 
   /**
    * An event raised when hierarchies created using specific ruleset change
@@ -129,6 +139,8 @@ export class PresentationManager implements IDisposable {
     if (IpcApp.isValid) {
       // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
       this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
+      this._ipcRequestsHandler = props?.ipcRequestsHandler ?? new IpcRequestsHandler(this._requestsHandler.clientId);
+      this._stateTracker = props?.stateTracker ?? new StateTracker(this._ipcRequestsHandler);
     }
   }
 
@@ -230,6 +242,12 @@ export class PresentationManager implements IDisposable {
   /** @internal */
   public get rpcRequestsHandler() { return this._requestsHandler; }
 
+  /** @internal */
+  public get ipcRequestsHandler() { return this._ipcRequestsHandler; }
+
+  /** @internal */
+  public get stateTracker() { return this._stateTracker; }
+
   /**
    * Get rulesets manager
    */
@@ -241,7 +259,7 @@ export class PresentationManager implements IDisposable {
    */
   public vars(rulesetId: string) {
     if (!this._rulesetVars.has(rulesetId)) {
-      const varsManager = new RulesetVariablesManagerImpl();
+      const varsManager = new RulesetVariablesManagerImpl(rulesetId, this._ipcRequestsHandler);
       this._rulesetVars.set(rulesetId, varsManager);
     }
     return this._rulesetVars.get(rulesetId)!;
@@ -273,8 +291,13 @@ export class PresentationManager implements IDisposable {
       foundRulesetOrId = foundRuleset ? foundRuleset.toJSON() : rulesetOrId;
     }
     const rulesetId = (typeof foundRulesetOrId === "object") ? foundRulesetOrId.id : foundRulesetOrId;
-    const variablesManager = this.vars(rulesetId);
-    const variables = [...(rulesetVariables || []), ...await variablesManager.getAllVariables()];
+    const variables = [...(rulesetVariables || [])];
+    if (!this._ipcRequestsHandler) {
+      // only need to add variables from variables manager if there's no IPC
+      // handler - if there is one, the variables are already known by the backend
+      variables.push(...(await this.vars(rulesetId).getAllVariables()));
+    }
+
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
@@ -356,18 +379,12 @@ export class PresentationManager implements IDisposable {
   }
 
   /**
-   * Loads the whole hierarchy.
-   * @param requestOptions options for the request. If `requestOptions.priority` is not set, it defaults to `RequestPriority.Preload`.
-   * @return A promise object that resolves as soon as the load request is queued (not when loading finishes)
-   * @alpha Will be removed in 3.0.
+   * A no-op that used to request the whole hierarchy to be loaded on the backend.
+   * @alpha @deprecated Will be removed in 3.0.
    */
-  public async loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void> {
-    await this.onConnection(requestOptions.imodel);
-
-    if (!requestOptions.priority)
-      requestOptions.priority = RequestPriority.Preload;
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    return this._requestsHandler.loadHierarchy(this.toRpcTokenOptions(options));
+  // istanbul ignore next
+  public async loadHierarchy(_requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void> {
+    // This is noop just to avoid breaking the API.
   }
 
   /**
@@ -552,7 +569,10 @@ export const buildPagedResponse = async <TItem>(requestedPage: PageOptions | und
   while (true) {
     const partialResult = await getter({ start: pageStart, size: pageSize }, requestIndex++);
     if (partialResult.total !== 0 && partialResult.items.length === 0) {
-      Logger.logError(PresentationFrontendLoggerCategory.Package, "Paged request returned non zero total count but no items");
+      if (requestedPageStart >= partialResult.total)
+        Logger.logWarning(PresentationFrontendLoggerCategory.Package, `Requested page with start index ${requestedPageStart} is out of bounds. Total number of items: ${partialResult.total}`);
+      else
+        Logger.logError(PresentationFrontendLoggerCategory.Package, "Paged request returned non zero total count but no items");
       return { total: 0, items: [] };
     }
     totalCount = partialResult.total;
