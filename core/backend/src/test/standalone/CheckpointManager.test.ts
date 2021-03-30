@@ -6,13 +6,12 @@
 import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import { IModelHost } from "../../imodeljs-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
-import { Guid } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("V1 Checkpoint Manager", () => {
@@ -88,14 +87,14 @@ describe("V1 Checkpoint Manager", () => {
     sinon.stub(IModelHost.iModelClient, "checkpoints").get(() => checkpointsHandler);
 
     const fileHandler = IModelHost.iModelClient.fileHandler!;
-    sinon.stub(fileHandler, "downloadFile").callsFake(async (_requestContext: AuthorizedClientRequestContext, _downloadUrl: string, path: string) => {
-      IModelJsFs.copySync(dbPath, path);
+    sinon.stub(fileHandler, "downloadFile").callsFake(async (_requestContext: AuthorizedClientRequestContext, _downloadUrl: string, downloadPath: string) => {
+      IModelJsFs.copySync(dbPath, downloadPath);
     });
     sinon.stub(IModelHost.iModelClient, "fileHandler").get(() => fileHandler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     const downloadedDbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
-    await V1CheckpointManager.downloadCheckpoint({ localFile: downloadedDbPath, checkpoint: { requestContext: ctx, contextId, iModelId, changeSetId } })
+    await V1CheckpointManager.downloadCheckpoint({ localFile: downloadedDbPath, checkpoint: { requestContext: ctx, contextId, iModelId, changeSetId } });
     const db = SnapshotDb.openCheckpointV1(downloadedDbPath, { requestContext: ctx, contextId, iModelId, changeSetId });
     assert.equal(iModelId, db.nativeDb.getDbGuid(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
   });
