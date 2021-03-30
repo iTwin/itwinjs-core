@@ -1,0 +1,23 @@
+{
+  // Comments are allowed here!
+  "testBundle": "./lib/dist/bundled-tests.js",
+  "backendInitModule": "./lib/backend/BackendInit.js",
+  "ports": {
+    "debugging": 5858,
+    "frontend": 3010,
+    "frontendDebugging": 9223
+  },
+  "chromeOptions": {
+    "args": [
+      "--disable-web-security",
+      "--no-sandbox"
+    ]
+  },
+  "mochaOptions": {
+    "timeout": 90000,
+    "reporter": "node_modules/@bentley/build-tools/mocha-reporter",
+    "reporterOptions": {
+      "mochaFile": "schema-rpcinterface-tests-result/schema-rpcinterface-tests-result.xml"
+    }
+  }
+}

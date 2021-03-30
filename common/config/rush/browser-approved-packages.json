@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "@bentley/electron-manager",
@@ -64,7 +64,7 @@
     },
     {
       "name": "@bentley/express-server",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/extension-client",
@@ -132,7 +132,7 @@
     },
     {
       "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-markup",
@@ -144,7 +144,7 @@
     },
     {
       "name": "@bentley/imodeljs-quantity",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/itwin-client",
@@ -168,11 +168,11 @@
     },
     {
       "name": "@bentley/oidc-signin-tool",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/orbitgt-core",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/perf-tools",
@@ -200,7 +200,7 @@
     },
     {
       "name": "@bentley/product-settings-client",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/projectshare-client",
@@ -217,6 +217,18 @@
     {
       "name": "@bentley/reality-data-client",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@bentley/schema-rpcinterface-common",
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@bentley/schema-rpcinterface-impl",
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@bentley/schema-rpcinterface-tests",
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/telemetry-client",
@@ -252,7 +264,7 @@
     },
     {
       "name": "@bentley/webgl-compatibility",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/webpack-tools-core",
@@ -712,7 +724,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "null-loader",
@@ -1076,7 +1088,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "integration-testing" ]
+      "allowedCategories": [ "integration-testing", "tools" ]
     },
     {
       "name": "webpack-core",
