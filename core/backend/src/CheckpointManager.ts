@@ -50,7 +50,7 @@ export interface CheckpointProps {
 export type ProgressFunction = (loaded: number, total: number) => number;
 
 /** The parameters that specify a request to download a checkpoint file from iModelHub.
- * @beta
+ * @internal
  */
 export interface DownloadRequest {
   /** name of local file to hold the downloaded data. */

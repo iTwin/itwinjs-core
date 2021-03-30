@@ -10,8 +10,6 @@ import {
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-// spell-checker: disable
-
 describe("Category", () => {
   let imodel: StandaloneDb;
   before(() => {
@@ -42,7 +40,7 @@ describe("Category", () => {
     const materialId = RenderMaterialElement.insert(imodel, IModelDb.dictionaryId, "FieldWeldMaterial", params);
     expect(Id64.isValidId64(materialId)).to.be.true;
 
-    const appearance = new SubCategoryAppearance({material: materialId, priority: 100, transp: 0.75});
+    const appearance = new SubCategoryAppearance({ material: materialId, priority: 100, transp: 0.75 });
     const priCategoryId = SpatialCategory.insert(imodel, IModelDb.dictionaryId, "FieldWeld", appearance);
     expect(Id64.isValidId64(priCategoryId)).to.be.true;
 
