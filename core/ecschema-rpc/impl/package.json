@@ -40,6 +40,7 @@
     "@bentley/bentleyjs-core": "2.15.0-dev.12",
     "@bentley/build-tools": "2.15.0-dev.12",
     "@bentley/ecschema-metadata": "2.15.0-dev.12",
+    "@bentley/eslint-plugin": "2.15.0-dev.12",
     "@bentley/geometry-core": "2.15.0-dev.12",
     "@bentley/imodelhub-client": "2.15.0-dev.12",
     "@bentley/imodeljs-backend": "2.15.0-dev.12",

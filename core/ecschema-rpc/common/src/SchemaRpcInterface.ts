@@ -10,6 +10,7 @@ import { SchemaProps } from "@bentley/ecschema-metadata";
  * Method @see getSchemaNames will return the names of schemas that live in this iModel.
  * The actual schemas can be downloaded using @see getSchemaJSON to get the schema as JSON props
  * or @see getSchemaXml to get the schemas as XML document.
+ * @Internal
  */
 export abstract class SchemaRpcInterface extends RpcInterface {
   /** The version of the gateway. */

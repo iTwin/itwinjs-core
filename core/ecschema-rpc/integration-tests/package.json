@@ -14,7 +14,7 @@
     "build": "tsc 1>&2 && npm run webpack:frontend",
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "cover": "",
-    "lint": "tslint --project . 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "optest": "certa -r chrome --fgrep \"Operational: \"",
     "start:backend": "node ./lib/test/backend.js",
     "test": "",
@@ -54,6 +54,7 @@
     "puppeteer": "chrome-86"
   },
   "devDependencies": {
+    "@bentley/eslint-plugin": "2.15.0-dev.12",
     "@bentley/express-server": "2.15.0-dev.12",
     "@bentley/imodeljs-backend": "2.15.0-dev.12",
     "@types/chai": "^4.1.4",
