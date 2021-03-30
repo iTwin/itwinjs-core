@@ -5,9 +5,9 @@
 import * as React from "react";
 import {
   BasicNavigationWidget, BasicToolWidget, ContentGroup, CoreTools,
-  Frontstage, FrontstageProps, FrontstageProvider, IModelViewportControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher, ToolbarHelper, UiFramework, Widget, WidgetState, Zone,
+  Frontstage, FrontstageProps, FrontstageProvider, IModelViewportControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher, ToolbarHelper, UiFramework, Widget, Zone,
 } from "@bentley/ui-framework";
-import { CommonToolbarItem, StageUsage } from "@bentley/ui-abstract";
+import { CommonToolbarItem, StageUsage, WidgetState } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";

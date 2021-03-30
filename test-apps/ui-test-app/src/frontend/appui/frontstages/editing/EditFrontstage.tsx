@@ -5,12 +5,12 @@
 import * as React from "react";
 import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
-import { CommonToolbarItem, ConditionalBooleanValue, StageUsage, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { CommonToolbarItem, ConditionalBooleanValue, StageUsage, ToolbarItemUtilities, WidgetState } from "@bentley/ui-abstract";
 import { SelectionMode } from "@bentley/ui-components";
 import {
   AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps,
   CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager, ModelsTreeNodeType,
-  StagePanel, ToolbarHelper, VisibilityComponentHierarchy, VisibilityWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
+  StagePanel, ToolbarHelper, VisibilityComponentHierarchy, VisibilityWidget, Widget, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../../frontend/index";
 import { EditTools } from "../../../tools/editing/ToolSpecifications";
@@ -186,10 +186,12 @@ export class EditFrontstage extends FrontstageProvider {
  */
 class AdditionalTools {
 
-  public additionalHorizontalToolbarItems: CommonToolbarItem[] =
-  ToolbarHelper.createToolbarItemsFromItemDefs([CoreTools.keyinPaletteButtonItemDef, EditTools.deleteElementTool,
-    EditTools.moveElementTool, EditTools.rotateElementTool,
-    EditTools.placeLineStringTool, EditTools.placeBlockTool], 100);
+  public additionalHorizontalToolbarItems: CommonToolbarItem[] = ToolbarHelper.createToolbarItemsFromItemDefs(
+    [
+      CoreTools.keyinPaletteButtonItemDef, EditTools.deleteElementTool,
+      EditTools.moveElementTool, EditTools.rotateElementTool,
+      EditTools.placeLineStringTool, EditTools.placeBlockTool,
+    ], 100);
 
   private get _accudrawDialogItemVertical() {
     const dialogId = "accudraw-vertical";

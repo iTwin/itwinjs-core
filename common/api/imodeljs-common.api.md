@@ -625,7 +625,9 @@ export enum BriefcaseIdValue {
     Illegal = 4294967295,
     LastValid = 16777205,
     Max = 16777216,
-    Standalone = 0
+    // @deprecated
+    Standalone = 0,
+    Unassigned = 0
 }
 
 // @beta
@@ -4365,6 +4367,7 @@ export interface LocalBriefcaseProps {
     changeSetId: GuidString;
     contextId: GuidString;
     fileName: string;
+    fileSize: number;
     iModelId: GuidString;
 }
 

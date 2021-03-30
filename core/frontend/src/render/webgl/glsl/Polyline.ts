@@ -196,6 +196,7 @@ function addCommon(prog: ProgramBuilder) {
   addLineWeight(vert);
 
   vert.addGlobal("miterAdjust", VariableType.Float, "0.0");
+  prog.addVarying("v_eyeSpace", VariableType.Vec3);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.addVarying("v_lnInfo", VariableType.Vec4);
   addAdjustWidth(vert);
@@ -232,13 +233,10 @@ const computePosition = `
   v_lnInfo = vec4(0.0, 0.0, 0.0, 0.0);  // init and set flag to false
 
   vec4 next = g_nextPos;
-  float clipDist;
-  g_windowPos = modelToWindowCoordinates(rawPos, next, clipDist);
+  vec4 pos;
+  g_windowPos = modelToWindowCoordinates(rawPos, next, pos, v_eyeSpace);
   if (g_windowPos.w == 0.0)
     return g_windowPos;
-
-  vec4 clipPos = rawPos + clipDist * (next - rawPos);
-  vec4 pos = MAT_MVP * clipPos;
 
   float param = a_param;
   float weight = computeLineWeight();
@@ -257,7 +255,9 @@ const computePosition = `
     param -= kNegatePerp;
   }
 
-  vec4 projNext = modelToWindowCoordinates(next, rawPos, clipDist);
+  vec4 otherPos;
+  vec3 otherMvPos;
+  vec4 projNext = modelToWindowCoordinates(next, rawPos, otherPos, otherMvPos);
   g_windowDir = projNext.xy - g_windowPos.xy;
 
   if (param < kJointBase) {
@@ -269,7 +269,7 @@ const computePosition = `
   if (kNone != param) {
     vec2 delta = vec2(0.0);
     vec4 prev   = g_prevPos;
-    vec4 projPrev = modelToWindowCoordinates(prev, rawPos, clipDist);
+    vec4 projPrev = modelToWindowCoordinates(prev, rawPos, otherPos, otherMvPos);
     vec2 prevDir   = g_windowPos.xy - projPrev.xy;
     float thisLength = sqrt(g_windowDir.x * g_windowDir.x + g_windowDir.y * g_windowDir.y);
     const float s_minNormalizeLength = 1.0E-5;  // avoid normalizing zero length vectors.
