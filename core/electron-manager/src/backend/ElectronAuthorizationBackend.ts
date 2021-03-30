@@ -204,6 +204,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private async clearTokenResponse() {
     this._tokenResponse = undefined;
     await this.tokenStore.delete();
+    this.setAccessToken(undefined);
   }
 
   private async setTokenResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
