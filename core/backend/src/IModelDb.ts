@@ -2729,6 +2729,7 @@ export class StandaloneDb extends IModelDb {
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
    * @returns a new StandaloneDb if the file is not currently open, and the existing StandaloneDb if it is already
    * @throws [[IModelError]] if the file is not a standalone iModel.
+   * @see [BriefcaseConnection.openStandalone]($frontend) to open a StandaloneDb from the frontend
    */
   public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
     const file = { path: filePath, key: options?.key };

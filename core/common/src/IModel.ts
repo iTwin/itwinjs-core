@@ -106,7 +106,7 @@ export interface IModelEncryptionProps {
 }
 
 /**
- * A key used to identify an opened IModelDb between the frontend and backend for RPC communications.
+ * A key used to identify an opened [IModelDb]($backend) between the frontend and backend for Rpc and Ipc communications.
  * Keys must be unique - that is there can never be two IModelDbs opened with the same key at any given time.
  * If no key is supplied in a call to open an IModelDb, one is generated and returned.
  * It is only necessary to supply a key if you have some reason to assign a specific value to identify an IModelDb.
@@ -117,7 +117,7 @@ export interface OpenDbKey {
   key?: string;
 }
 
-/** Options that can be supplied when opening an existing SnapshotDb.
+/** Options to open a [SnapshotDb]($backend).
  * @public
  */
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
@@ -127,7 +127,8 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   autoUploadBlocks?: boolean;
 }
 
-/** Options supplied to open a StandaloneDb.
+/** Options to open a [StandaloneDb]($backend) via [StandaloneDb.openFile]($backend) from the backend,
+ * or [BriefcaseConnection.openStandalone]($fronted) from the frontend.
  * @public
  */
 export type StandaloneOpenOptions = OpenDbKey;
