@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/electron-manager",
+      "comment": "Cherry-pick logout fix",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/electron-manager",
+  "email": "38542573+williamkbentley@users.noreply.github.com"
+}
