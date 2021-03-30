@@ -131,9 +131,9 @@ public;DrawingViewState
 internal;class DynamicIModelTile 
 public;DynamicsContext 
 alpha;EditingFunctions
+deprecated;EditingFunctions
 alpha;EditingFunctions
-deprecated;CategoryEditor
-deprecated;ModelEditor
+deprecated;EditingFunctions
 alpha;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
@@ -165,8 +165,6 @@ alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
 public;FeatureOverrideType
 public;FeatureSymbology
-deprecated;Appearance 
-deprecated;AppearanceProps 
 alpha;FeatureTrackingManager
 alpha;FeatureTrackingProps
 alpha;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
@@ -207,6 +205,7 @@ beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 alpha;GlobalLocation
 alpha;GlobalLocationArea
 internal;GlobeAnimator 
+internal;GltfMeshData
 internal;class GltfReader
 internal;GltfReaderProps
 internal;GltfReaderResult 
@@ -355,6 +354,7 @@ internal;NullTarget
 internal;OffScreenTarget 
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
+deprecated;OidcBrowserClient 
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
@@ -411,6 +411,7 @@ internal;RealityTileParams
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 public;RemoteBriefcaseConnection 
+deprecated;RemoteBriefcaseConnection 
 beta;class RenderClipVolume 
 public;RenderContext
 internal;RenderDiagnostics
@@ -419,6 +420,7 @@ public;class RenderGraphicOwner
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
+internal;class RenderRealityMeshGeometry 
 internal;RenderScheduleState
 public;class RenderSystem 
 public;RenderSystem
@@ -426,7 +428,6 @@ beta;Options
 beta;RenderSystemDebugControl
 internal;class RenderTarget 
 beta;RenderTargetDebugControl
-internal;class RenderTerrainMeshGeometry 
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 internal;RootIModelTile = Tile &

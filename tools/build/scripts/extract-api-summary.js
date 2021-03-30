@@ -30,8 +30,8 @@ fs.ensureDir(path.normalize(argv.outDir));
 
 // create output file
 const trimmedApiSignature = (argv.apiSignature.split('.'))[0];
-const sigFileName = path.basename(path.normalize(trimmedApiSignature))
-const sigFilePath = path.join(argv.outDir, sigFileName + ".exports.csv")
+const sigFileName = path.basename(path.normalize(trimmedApiSignature));
+const sigFilePath = path.join(argv.outDir, sigFileName + ".exports.csv");
 fs.createFileSync(sigFilePath);
 
 const outputLines = [];
@@ -43,29 +43,36 @@ outputLines.push("Release Tag;API Item");
 fs.readFile(argv.apiSignature, function (error, data) {
   if (error) { throw error; }
 
-  let previousLine = undefined;
+  let previousLines = [];
   data.toString().split("\n").forEach(function (line, index, arr) {
     if (index === arr.length - 1 && line === "") { return; }
 
-    if (undefined !== previousLine) {
+    if (previousLines.length !== 0) {
       const matches = line.match(/export \S*\s(.*)(\s{|;)/);
       if (null !== matches) {
         const split = matches[1].split(/(<|extends|implements)/);
-        outputLines.push(`${previousLine};${split[0]}`);
+        for (const previousLine of previousLines)
+          outputLines.push(`${previousLine};${split[0]}`);
       }
 
-      previousLine = undefined;
+      previousLines = [];
       return;
     }
 
-    const matches = line.match(/\s@(beta|alpha|public|internal|deprecated)/);
-
-    if (null === matches || 2 > matches.length) {
-      previousLine = undefined;
+    let match = line.match(/\s@(beta|alpha|public|internal)/);
+    if (null === match) {
+      previousLines = [];
       return;
     }
 
-    previousLine = matches[1];
+    previousLines.push(match[1]);
+
+    // handle deprecated separate since it can be used together with the other release tags
+    match = line.match(/\s@(deprecated)/);
+    if (null !== match) {
+      previousLines.push(match[1]);
+      return;
+    }
   });
 
   fs.writeFileSync(sigFilePath, outputLines.join("\n"));

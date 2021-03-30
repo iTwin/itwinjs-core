@@ -14,7 +14,7 @@ import { TestUtility } from "./TestUtility";
 describe("Opening IModelConnection (#integration)", () => {
   let testProjectId: GuidString;
   let testIModelId: GuidString;
-  let testChangeSetId: GuidString;
+  let testChangeSetId: string;
 
   before(async () => {
     await MockRender.App.startup({
