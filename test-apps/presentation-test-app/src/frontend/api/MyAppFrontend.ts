@@ -58,13 +58,13 @@ export class MyAppFrontend {
 
   public static async updateElement(imodel: IModelConnection, newProps: ElementProps) {
     if (!IpcApp.isValid)
-      return;
+      throw new Error(`Updating element only supported in 'IpcApp'`);
     return this.callIpc("updateElement", imodel.key, newProps);
   }
 
   public static async deleteElements(imodel: IModelConnection, elementIds: Id64Arg) {
     if (!IpcApp.isValid)
-      return;
+      throw new Error(`Deleting elements only supported in 'IpcApp'`);
     return this.callIpc("deleteElements", imodel.key, elementIds);
   }
 
