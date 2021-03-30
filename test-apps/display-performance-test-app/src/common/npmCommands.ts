@@ -13,7 +13,7 @@ let browser = "";
 for (let i = 2; i < process.argv.length; i++) {
   const curArg = process.argv[i];
   args += `${curArg} `;
-  if (curArg === "chrome" || curArg === "edge" || curArg === "firefox")
+  if (curArg === "chrome" || curArg === "edge" || curArg === "firefox" || curArg === "safari")
     browser = curArg;
 }
 execSync(`npm run start:web ${args}`, { stdio: [0, 1, 2] });
