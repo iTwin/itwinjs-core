@@ -1341,7 +1341,7 @@ export interface DownloadJob {
     status: DownloadBriefcaseStatus;
 }
 
-// @beta
+// @internal
 export interface DownloadRequest {
     aliasFiles?: string[];
     checkpoint: CheckpointProps;
