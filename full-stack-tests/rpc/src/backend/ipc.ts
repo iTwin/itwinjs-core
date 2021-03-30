@@ -9,7 +9,7 @@ import { BackendTestCallbacks } from "../common/SideChannels";
 export async function setupIpcTest(before = async () => { }) {
   let socket: IpcWebSocketBackend;
   let ready: () => void;
-  let started = new Promise<void>((resolve) => ready = resolve);
+  const started = new Promise<void>((resolve) => ready = resolve);
 
   registerBackendCallback(BackendTestCallbacks.startIpcTest, () => {
     setTimeout(async () => {
