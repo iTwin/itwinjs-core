@@ -37,8 +37,10 @@ export interface CheckpointProps {
   /** Id of the iModel */
   iModelId: GuidString;
 
-  /** Id of the change set */
-  changeSetId: GuidString;
+  /** Id of the change set
+   * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
+   */
+  changeSetId: string;
 
   requestContext: AuthorizedClientRequestContext;
 }

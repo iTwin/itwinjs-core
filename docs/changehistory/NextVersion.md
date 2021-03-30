@@ -6,8 +6,9 @@ publish: false
 ## Txn monitoring
 
 [TxnManager]($backend) now has additional events for monitoring changes to the iModel resulting from [Txns]($docs/learning/InteractiveEditing.md), including:
-  * [TxnManager.onModelsChanged]($backend) for changes to the properties of [Model]($backend)s and
-  * [TxnManager.onModelGeometryChanged]($backend) for changes to the geometry contained within [GeometricModel]($backend)s.
+
+* [TxnManager.onModelsChanged]($backend) for changes to the properties of [Model]($backend)s and
+* [TxnManager.onModelGeometryChanged]($backend) for changes to the geometry contained within [GeometricModel]($backend)s.
 
 [BriefcaseConnection.txns]($frontend) now exposes the same events provided by `TxnManager`, but on the frontend, via [BriefcaseTxns]($frontend).
 
@@ -66,6 +67,13 @@ The @beta class `NativeHost` now has a member [NativeHost.settingsStore]($backen
 ## NativeApp is now @beta
 
 The class [NativeApp]($frontend) has been promoted from @alpha to @beta. `NativeApp` is relevant for both Electron and mobile applications. Please provide feedback if you have issues or concerns on its use.
+
+## Properly declare changeSetId
+
+There were a number of places where *changeSetId* variables/parameters were incorrectly typed as [GuidString]($bentley) instead of `string`.
+A *changeSetId* is a string hash value based on the ChangeSet contents and parent. It is not a GUID.
+This is not a breaking change because `GuidString` is just a type alias for `string`.
+It was, however, confusing from a usage and documentation perspective and needed to be corrected.
 
 ## Breaking Api Changes
 
