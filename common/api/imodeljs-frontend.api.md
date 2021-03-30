@@ -3943,7 +3943,6 @@ export enum GraphicType {
 // @internal (undocumented)
 export class GridDisplaySettings {
     static clippingOption: 0 | 1;
-    static clipToViewFrustum: boolean;
     static cullingOption: 0 | 1 | 2;
     static cullingPerspectiveOption: 0 | 1 | 2;
     static lineLimiter: number;
