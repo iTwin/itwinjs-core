@@ -64,14 +64,6 @@ function exerciseGc() {
   }
 }
 
-function generateChangeSetId(): string {
-  let result = "";
-  for (let i = 0; i < 20; ++i) {
-    result += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
-  }
-  return result;
-}
-
 describe("iModel", () => {
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
@@ -1709,7 +1701,7 @@ describe("iModel", () => {
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
-    const changeSetId = generateChangeSetId();
+    const changeSetId = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
@@ -1762,7 +1754,7 @@ describe("iModel", () => {
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
     const contextId = Guid.createValue();
-    const changeSetId = generateChangeSetId();
+    const changeSetId = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId);
     snapshot.saveChanges();
@@ -1797,7 +1789,7 @@ describe("iModel", () => {
   it("should throw when opening checkpoint without blockcache dir env", async () => {
     process.env.BLOCKCACHE_DIR = "";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
+    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
@@ -1808,11 +1800,11 @@ describe("iModel", () => {
     sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
