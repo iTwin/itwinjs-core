@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/schema-rpcinterface-tests",
+      "comment": "migrate rpc interface packages from imodeljs-internal",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/schema-rpcinterface-tests",
+  "email": "50554904+hl662@users.noreply.github.com"
+}
