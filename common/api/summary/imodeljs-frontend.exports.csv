@@ -420,6 +420,7 @@ public;class RenderGraphicOwner
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
+internal;class RenderRealityMeshGeometry 
 internal;RenderScheduleState
 public;class RenderSystem 
 public;RenderSystem

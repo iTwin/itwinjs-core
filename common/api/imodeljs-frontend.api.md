@@ -5450,9 +5450,9 @@ export class MapTile extends RealityTile {
     // (undocumented)
     freeMemory(): void;
     // (undocumented)
-    get geometry(): RealityMeshGeometry | undefined;
+    get geometry(): RenderRealityMeshGeometry | undefined;
     // (undocumented)
-    protected _geometry?: RealityMeshGeometry;
+    protected _geometry?: RenderRealityMeshGeometry;
     // (undocumented)
     getClipShape(): Point3d[];
     // (undocumented)
@@ -5686,7 +5686,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     getLayerImageryTreeRef(index: number): ImageryMapLayerTreeReference | undefined;
     // (undocumented)
-    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides;
+    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     // (undocumented)
@@ -7656,6 +7656,8 @@ export namespace RenderMemory {
         // (undocumented)
         get polylines(): Consumers;
         // (undocumented)
+        get reality(): Consumers;
+        // (undocumented)
         get silhouetteEdges(): Consumers;
         // (undocumented)
         get surfaces(): Consumers;
@@ -7667,7 +7669,7 @@ export namespace RenderMemory {
     // (undocumented)
     export enum BufferType {
         // (undocumented)
-        COUNT = 9,
+        COUNT = 10,
         // (undocumented)
         Instances = 7,
         // (undocumented)
@@ -7678,6 +7680,8 @@ export namespace RenderMemory {
         PolylineEdges = 3,
         // (undocumented)
         Polylines = 4,
+        // (undocumented)
+        RealityMesh = 9,
         // (undocumented)
         SilhouetteEdges = 2,
         // (undocumented)
@@ -7752,6 +7756,8 @@ export namespace RenderMemory {
         addPolyline(numBytes: number): void;
         // (undocumented)
         addPolylineEdges(numBytes: number): void;
+        // (undocumented)
+        addRealityMesh(numBytes: number): void;
         // (undocumented)
         addShadowMap(numBytes: number): void;
         // (undocumented)
@@ -7853,6 +7859,14 @@ export abstract class RenderPlanarClassifier implements IDisposable {
     abstract dispose(): void;
     // (undocumented)
     abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
+}
+
+// @internal (undocumented)
+export abstract class RenderRealityMeshGeometry implements IDisposable, RenderMemory.Consumer {
+    // (undocumented)
+    abstract collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
+    abstract dispose(): void;
 }
 
 // @internal (undocumented)
@@ -8072,9 +8086,9 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined;
     // @internal (undocumented)
-    createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RealityMeshGeometry | undefined;
+    createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined;
     // @internal (undocumented)
-    createRealityMeshGraphic(_terrainGeometry: RealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
+    createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @beta
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
@@ -9752,7 +9766,7 @@ export class TerrainTexture {
 export interface TerrainTileContent extends TileContent {
     // (undocumented)
     terrain?: {
-        geometry?: RealityMeshGeometry;
+        geometry?: RenderRealityMeshGeometry;
         mesh?: TerrainMeshPrimitive;
     };
 }
@@ -11082,7 +11096,7 @@ export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 // @internal (undocumented)
 export class UpsampledMapTile extends MapTile {
     // (undocumented)
-    get geometry(): RealityMeshGeometry | undefined;
+    get geometry(): RenderRealityMeshGeometry | undefined;
     // (undocumented)
     get isEmpty(): boolean;
     // (undocumented)
