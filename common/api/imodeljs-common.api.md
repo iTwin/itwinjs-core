@@ -3882,7 +3882,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 
 // @public
 export interface IModelRpcOpenProps {
-    changeSetId?: GuidString;
+    changeSetId?: string;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
     openMode?: OpenMode;
@@ -3935,7 +3935,7 @@ export interface IModelTileTreeProps extends TileTreeProps {
 
 // @public
 export class IModelVersion {
-    static asOfChangeSet(changeSetId: GuidString): IModelVersion;
+    static asOfChangeSet(changeSetId: string): IModelVersion;
     evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString>;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
@@ -3963,7 +3963,7 @@ export type IModelVersionProps = {
     afterChangeSetId?: never;
     versionName?: never;
 } | {
-    afterChangeSetId: GuidString;
+    afterChangeSetId: string;
     first?: never;
     latest?: never;
     versionName?: never;
@@ -4364,7 +4364,7 @@ export type LocalAlignedBox3d = Range3d;
 // @beta
 export interface LocalBriefcaseProps {
     briefcaseId: number;
-    changeSetId: GuidString;
+    changeSetId: string;
     contextId: GuidString;
     fileName: string;
     fileSize: number;
@@ -5494,8 +5494,10 @@ export class QParams2d {
     // (undocumented)
     copyFrom(src: QParams2d): void;
     static fromNormalizedRange(rangeScale?: number): QParams2d;
+    static fromOriginAndScale(ox: number, oy: number, sx: number, sy: number): QParams2d;
     static fromRange(range: Range2d, out?: QParams2d, rangeScale?: number): QParams2d;
     static fromZeroToOne(rangeScale?: number): QParams2d;
+    isQuantizable(point: Point2d): boolean;
     // (undocumented)
     readonly origin: Point2d;
     // (undocumented)
@@ -5503,6 +5505,7 @@ export class QParams2d {
     // (undocumented)
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
+    unquantize(x: number, y: number, out?: Point2d): Point2d;
 }
 
 // @internal
@@ -5515,6 +5518,7 @@ export class QParams3d {
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
     static fromRange(range: Range3d, out?: QParams3d, rangeScale?: number): QParams3d;
     static fromZeroToOne(rangeScale?: number): QParams3d;
+    isQuantizable(point: Point3d): boolean;
     // (undocumented)
     readonly origin: Point3d;
     // (undocumented)
@@ -5523,6 +5527,7 @@ export class QParams3d {
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
     setFromRange(range: Range3d, rangeScale?: number): void;
+    unquantize(x: number, y: number, z: number, out?: Point3d): Point3d;
 }
 
 // @internal

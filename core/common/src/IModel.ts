@@ -22,8 +22,10 @@ export interface IModelRpcOpenProps {
   readonly contextId?: GuidString;
   /** Guid of the iModel. */
   readonly iModelId?: GuidString;
-  /** Id of the last ChangeSet that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub. An empty string indicates the first version */
-  changeSetId?: GuidString;
+  /** Id of the last ChangeSet that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub. An empty string indicates the first version.
+   * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
+   */
+  changeSetId?: string;
   /** Mode used to open the iModel */
   openMode?: OpenMode;
 }

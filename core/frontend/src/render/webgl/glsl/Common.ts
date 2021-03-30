@@ -88,7 +88,7 @@ function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
 
   const geom = params.geometry.asLUT;
   if (undefined !== geom) {
-    // Could also be TerrainMeshGeometry, so only detect non-uniform color if explicitly LUTGeometry.
+    // Could also be RealityMeshGeometry, so only detect non-uniform color if explicitly LUTGeometry.
     const color = geom.getColor(params.target);
     if (color.isNonUniform)
       shaderFlagArray[kShaderBitNonUniformColor] = 1;

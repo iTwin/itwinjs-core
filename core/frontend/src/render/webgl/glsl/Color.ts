@@ -55,8 +55,12 @@ export function addColor(builder: ProgramBuilder) {
       }
     });
   });
+  addVaryingColor(builder, getComputeColor(builder.vert));
+}
 
+/** @internal */
+export function addVaryingColor(builder: ProgramBuilder, computeVertexBase: string) {
   builder.addVarying("v_color", VariableType.Vec4);
-  builder.vert.set(VertexShaderComponent.ComputeBaseColor, getComputeColor(builder.vert));
+  builder.vert.set(VertexShaderComponent.ComputeBaseColor, computeVertexBase);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 }
