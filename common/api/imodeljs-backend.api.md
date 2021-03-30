@@ -490,7 +490,7 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static getChangedElementsPathName(iModelId: GuidString): string;
     // @internal (undocumented)
-    static getChangeSetFolderNameFromId(changeSetId: GuidString): string;
+    static getChangeSetFolderNameFromId(changeSetId: string): string;
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
     // @internal @deprecated
@@ -591,11 +591,11 @@ export class ChangedElementsDb implements IDisposable {
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
     // (undocumented)
     dispose(): void;
-    getChangeData(startChangesetId: GuidString, endChangesetId: GuidString): ChangeData | undefined;
-    getChangedElements(startChangesetId: GuidString, endChangesetId: GuidString): ChangedElements | undefined;
-    getChangedModels(startChangesetId: GuidString, endChangesetId: GuidString): ChangedModels | undefined;
+    getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined;
+    getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
+    getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
     get isOpen(): boolean;
-    isProcessed(changesetId: GuidString): boolean;
+    isProcessed(changesetId: string): boolean;
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
@@ -697,7 +697,7 @@ export class CheckpointManager {
 
 // @beta
 export interface CheckpointProps {
-    changeSetId: GuidString;
+    changeSetId: string;
     contextId: GuidString;
     // (undocumented)
     expectV2?: boolean;
@@ -2710,7 +2710,7 @@ export class IModelExporter {
     excludeElementClass(classFullName: string): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
-    exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
+    exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void>;
     exportChildElements(elementId: Id64String): Promise<void>;
     exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
     exportCodeSpecByName(codeSpecName: string): Promise<void>;
@@ -2981,7 +2981,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): Promise<void>;
-    processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
+    processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void>;
     processChildElements(sourceElementId: Id64String): Promise<void>;
     processCodeSpec(codeSpecName: string): Promise<void>;
     processCodeSpecs(): Promise<void>;
