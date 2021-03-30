@@ -78,7 +78,6 @@ export class TestContext {
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
     await NoRenderApp.startup({
-      applicationVersion: PACKAGE_VERSION,
       applicationId: this.settings.gprid,
       authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
     });
