@@ -207,6 +207,7 @@ describe("iModel", () => {
     }
 
     stmt.dispose();
+    Logger.initializeToConsole(); // reset back to console so future tests will log correctly
   });
 
   it("should be able to get properties of an iIModel", () => {
