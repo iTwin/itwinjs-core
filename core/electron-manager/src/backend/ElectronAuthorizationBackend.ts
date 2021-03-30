@@ -133,7 +133,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
       if (!tokenResponse)
         await this.clearTokenResponse();
       else
-        this.setAccessToken(await this.setTokenResponse(tokenResponse));
+        await this.setTokenResponse(tokenResponse);
     });
 
     // Start the signin
@@ -211,6 +211,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     const accessToken = await this.createAccessTokenFromResponse(tokenResponse);
     this._tokenResponse = tokenResponse;
     await this.tokenStore.save(this._tokenResponse);
+    this.setAccessToken(accessToken);
     return accessToken;
   }
 

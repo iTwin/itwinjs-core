@@ -33,8 +33,10 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety);
   }
   public setAccessToken(token?: AccessToken) {
+    if (token === this._accessToken)
+      return;
     this._accessToken = token;
-    NativeHost.onUserStateChanged.raiseEvent(this._accessToken);
+    NativeHost.onUserStateChanged.raiseEvent(token);
   }
   public async getAccessToken(): Promise<AccessToken> {
     if (!this.isAuthorized)
