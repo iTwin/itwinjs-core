@@ -1,6 +1,11 @@
 # Change Log - @bentley/linear-referencing-common
 
-This log was last generated on Wed, 24 Mar 2021 19:09:54 GMT and should not be manually modified.
+This log was last generated on Wed, 31 Mar 2021 14:15:56 GMT and should not be manually modified.
+
+## 2.13.3
+Wed, 31 Mar 2021 14:15:56 GMT
+
+_Version update only_
 
 ## 2.13.2
 Wed, 24 Mar 2021 19:09:54 GMT

@@ -2,6 +2,12 @@
   "name": "@bentley/backend-webpack-tools",
   "entries": [
     {
+      "version": "2.13.3",
+      "tag": "@bentley/backend-webpack-tools_v2.13.3",
+      "date": "Wed, 31 Mar 2021 14:15:56 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.13.2",
       "tag": "@bentley/backend-webpack-tools_v2.13.2",
       "date": "Wed, 24 Mar 2021 19:09:54 GMT",
