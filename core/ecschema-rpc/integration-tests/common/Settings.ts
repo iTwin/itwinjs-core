@@ -66,16 +66,12 @@ export class Settings {
   constructor(env: NodeJS.ProcessEnv) {
     const isFrontend = (typeof (process) === "undefined");
     if (!isFrontend && undefined === env.TF_BUILD) {
-      const path = require("path"); // eslint-disable-line @typescript-eslint/no-var-requires
       const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
       const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
       // First check in process.cwd() for the config
-      let result = dotenv.config();
+      const result = dotenv.config();
       if (result.error) {
-        const potential = path.resolve(process.cwd(), "..", "..", "imodeljs-config", ".env");
-        result = dotenv.config({ path: potential });
-        if (result.error)
-          throw result.error;
+        throw result.error;
       }
 
       dotenvExpand(result);
