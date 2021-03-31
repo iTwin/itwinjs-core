@@ -1489,7 +1489,7 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 // @internal
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
 
-// @internal
+// @alpha
 export enum ContentFlags {
     // (undocumented)
     AllowInstancing = 1,
@@ -1938,6 +1938,30 @@ export enum DownloadBriefcaseStatus {
 export type DPoint2dProps = number[];
 
 // @public
+export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
+    // (undocumented)
+    readonly placement: Omit<Placement2dProps, "bbox">;
+    // (undocumented)
+    readonly type: "2d";
+}
+
+// @beta
+export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestProps {
+    // (undocumented)
+    readonly placement: Omit<Placement3dProps, "bbox">;
+    // (undocumented)
+    readonly type: "3d";
+}
+
+// @beta
+export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
+    readonly categoryId: Id64String;
+    readonly elementId?: Id64String;
+    readonly geometry: GeometryStreamProps;
+    readonly modelId?: Id64String;
+}
+
+// @beta
 export const Easing: {
     Linear: {
         None: (k: number) => number;
@@ -2266,18 +2290,8 @@ export interface ElementGeometryUpdate {
     viewIndependent?: boolean;
 }
 
-// @internal
-export interface ElementGraphicsRequestProps {
-    readonly clipToProjectExtents?: boolean;
-    readonly contentFlags?: ContentFlags;
-    readonly elementId: Id64String;
-    readonly formatVersion: number;
-    readonly id: string;
-    readonly location?: TransformProps;
-    readonly omitEdges?: boolean;
-    readonly toleranceLog10: number;
-    readonly treeFlags?: TreeFlags;
-}
+// @beta
+export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps;
 
 // @alpha
 export interface ElementIdsAndRangesProps {
@@ -3358,6 +3372,21 @@ export class GraphicParams {
     rasterWidth: number;
     setFillTransparency(transparency: number): void;
     setLineTransparency(transparency: number): void;
+}
+
+// @beta
+export interface GraphicsRequestProps {
+    readonly clipToProjectExtents?: boolean;
+    // @alpha
+    readonly contentFlags?: ContentFlags;
+    // @alpha
+    readonly formatVersion?: number;
+    readonly id: string;
+    readonly location?: TransformProps;
+    readonly omitEdges?: boolean;
+    readonly toleranceLog10: number;
+    // @alpha
+    readonly treeFlags?: TreeFlags;
 }
 
 // @public
@@ -5120,6 +5149,11 @@ export interface PartReference {
     };
     // (undocumented)
     type: "partReference";
+}
+
+// @beta
+export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
+    readonly elementId: Id64String;
 }
 
 // @public
@@ -7619,7 +7653,7 @@ export interface TileVersionInfo {
     formatVersion: number;
 }
 
-// @internal
+// @alpha
 export enum TreeFlags {
     // (undocumented)
     EnforceDisplayPriority = 2,
