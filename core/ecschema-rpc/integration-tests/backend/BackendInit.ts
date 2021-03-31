@@ -10,8 +10,6 @@ import { loadEnv } from "@bentley/config-loader";
 import { Settings } from "../common/Settings";
 import { exposeBackendCallbacks } from "../common/SideChannels";
 
-// tslint:disable:no-console
-
 module.exports = (async () => {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
 

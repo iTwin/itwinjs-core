@@ -1,4 +1,4 @@
-﻿# iModel.js RPC Interface Integration Tests
+﻿# iTwin.js RPC Interface Integration Tests
 
 Copyright © Bentley Systems, Incorporated. All rights reserved.
 
@@ -6,7 +6,7 @@ This package contains the Schema RPC Interface integration tests and configurati
 
 ## Prerequisites
 
-Refer to the iModel.js [prerequisites](https://github.com/imodeljs/imodeljs#prerequisites)
+Refer to the iTwin.js [prerequisites](https://github.com/imodeljs/imodeljs#prerequisites)
 
 ## Running the tests
 
