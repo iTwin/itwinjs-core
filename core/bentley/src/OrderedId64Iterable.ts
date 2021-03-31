@@ -114,7 +114,7 @@ export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint
     }
   }
 
-  /** Given two ordered collections of [[Id64Strings]], produce a collection representing their union - i.e., the Ids that are present in either or both collections.
+  /** Given two ordered collections of [[Id64String]]s, produce a collection representing their union - i.e., the Ids that are present in either or both collections.
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    */
   export function union(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable): OrderedId64Iterable {
