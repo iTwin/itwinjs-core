@@ -14,9 +14,9 @@ publish: false
 
 ## New settings UI features
 
-### Add Settings Tabs and Pages to UI
+### Add settings tabs and pages to UI
 
-#### Quantity Formatting Settings
+#### Quantity formatting settings
 
 The [QuantityFormatSettingsPage]($ui-framework) component has been added to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
 
@@ -24,7 +24,7 @@ The [QuantityFormatSettingsPage]($ui-framework) component has been added to prov
 
 The [UiSettingsPage]($ui-framework) component has been to provide the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
 
-#### Registering Settings
+#### Registering settings
 
 Below is an example of registering the `QuantityFormatSettingsPage` with the `SettingsManager`.
 
@@ -52,7 +52,7 @@ The `QuantityFormatSettingsPage` is marked as alpha in this release and is subje
 
 The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
 
-## Incremental Precompilation of Shaders Enabled by Default
+## Incremental precompilation of shaders enabled by default
 
 To help prevent delays when a user interacts with a [Viewport]($frontend), the WebGL render system now by default precompiles shader programs used by the [RenderSystem]($frontend) before any Viewport is opened.
 
@@ -75,7 +75,19 @@ A *changeSetId* is a string hash value based on the ChangeSet contents and paren
 This is not a breaking change because `GuidString` is just a type alias for `string`.
 It was, however, confusing from a usage and documentation perspective and needed to be corrected.
 
-## Breaking Api Changes
+## Promoted APIs
+
+The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
+* @bentley/bentleyjs-core
+  * [assert]($bentleyjs-core) for asserting logic invariants.
+  * [ProcessDetector]($bentleyjs-core) for querying the type of executing Javascript process.
+  * [ObservableSet]($bentleyjs-core) for a [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents are modified.
+  * [ByteStream]($bentleyjs-core) for extracting data from binary streams.
+  * Types related to collections of [Id64String]($bentleyjs-core)s
+    * [OrderedId64Iterable]($bentleyjs-core) and [OrderedId64Array]($bentleyjs-core)
+    * [CompressedId64Set]($bentleyjs-core) and [MutableCompressedId64Set]($bentleyjs-core)
+
+## Breaking API changes
 
 ### @bentley/ui-core package
 

@@ -9,7 +9,8 @@
 // Portions modified from package 'detect-gpu': https://github.com/TimvanScherpenzeel/detect-gpu/blob/master/src/index.ts
 
 /** Functions to determine the type of JavaScript process currently executing
- * @beta
+ * Portions derived from the [detect-gpu package](https://github.com/TimvanScherpenzeel/detect-gpu/blob/master/src/index.ts)
+ * @public
  */
 export class ProcessDetector {
 
