@@ -1936,10 +1936,27 @@ export enum DownloadBriefcaseStatus {
 export type DPoint2dProps = number[];
 
 // @beta
+export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
+    // (undocumented)
+    readonly placement: Omit<Placement2dProps, "bbox">;
+    // (undocumented)
+    readonly type: "2d";
+}
+
+// @beta
+export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestProps {
+    // (undocumented)
+    readonly placement: Omit<Placement3dProps, "bbox">;
+    // (undocumented)
+    readonly type: "3d";
+}
+
+// @beta
 export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
+    readonly categoryId: Id64String;
     readonly elementId?: Id64String;
     readonly geometry: GeometryStreamProps;
-    readonly placement: PlacementProps;
+    readonly modelId?: Id64String;
 }
 
 // @beta
@@ -2272,7 +2289,7 @@ export interface ElementGeometryUpdate {
 }
 
 // @beta
-export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequestProps;
+export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps;
 
 // @alpha
 export interface ElementIdsAndRangesProps {
@@ -3360,7 +3377,8 @@ export interface GraphicsRequestProps {
     readonly clipToProjectExtents?: boolean;
     // @alpha
     readonly contentFlags?: ContentFlags;
-    readonly formatVersion: number;
+    // @alpha
+    readonly formatVersion?: number;
     readonly id: string;
     readonly location?: TransformProps;
     readonly omitEdges?: boolean;

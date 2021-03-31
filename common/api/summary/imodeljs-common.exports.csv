@@ -123,6 +123,8 @@ public;DisplayStyleSubCategoryProps
 beta;DomainOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
+beta;DynamicGraphicsRequest2dProps 
+beta;DynamicGraphicsRequest3dProps 
 beta;DynamicGraphicsRequestProps 
 beta;Easing:
 beta;EasingFunction = (k: number) => number
@@ -145,7 +147,7 @@ alpha;ElementGeometryInfo
 alpha;ElementGeometryOpcode
 alpha;ElementGeometryRequest
 alpha;ElementGeometryUpdate
-beta;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequestProps
+beta;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 alpha;ElementIdsAndRangesProps
 public;ElementLoadProps
 public;ElementProps 
