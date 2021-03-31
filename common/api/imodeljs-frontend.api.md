@@ -3942,6 +3942,7 @@ export enum GraphicType {
 // @internal (undocumented)
 export class GridDisplaySettings {
     static clippingOption: 0 | 1;
+    static clipToViewFrustum: boolean;
     static cullingOption: 0 | 1 | 2;
     static cullingPerspectiveOption: 0 | 1 | 2;
     static lineLimiter: number;
@@ -11544,9 +11545,7 @@ export class ViewClipTool extends PrimitiveTool {
 // @beta
 export class ViewCreator2d {
     constructor(_imodel: IModelConnection);
-    createViewForModel(modelId: Id64String, modelType: string, options?: ViewCreator2dOptions): Promise<ViewState>;
-    static isDrawingModelClass(modelType: string): boolean;
-    static isSheetModelClass(modelType: string): boolean;
+    createViewForModel(modelId: Id64String, options?: ViewCreator2dOptions): Promise<ViewState>;
     }
 
 // @beta
