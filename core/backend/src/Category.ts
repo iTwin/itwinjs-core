@@ -132,7 +132,7 @@ export class Category extends DefinitionElement implements CategoryProps {
 
     const subCat = this.iModel.elements.getElement<SubCategory>(this.myDefaultSubCategoryId());
     subCat.appearance = new SubCategoryAppearance(props);
-    this.iModel.elements.updateElement(subCat);
+    this.iModel.elements.updateElement(subCat.toJSON());
   }
 }
 
