@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "common", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
     },
     {
       "name": "@bentley/electron-manager",
@@ -64,7 +64,7 @@
     },
     {
       "name": "@bentley/express-server",
-      "allowedCategories": [ "integration-testing", "internal"]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/extension-client",
@@ -172,7 +172,7 @@
     },
     {
       "name": "@bentley/orbitgt-core",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/perf-tools",
@@ -200,7 +200,7 @@
     },
     {
       "name": "@bentley/product-settings-client",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/projectshare-client",
@@ -220,15 +220,11 @@
     },
     {
       "name": "@bentley/schema-rpcinterface-common",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common", "integration-testing" ]
     },
     {
       "name": "@bentley/schema-rpcinterface-impl",
       "allowedCategories": [ "backend", "common" ]
-    },
-    {
-      "name": "@bentley/schema-rpcinterface-tests",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing" ]
     },
     {
       "name": "@bentley/telemetry-client",
@@ -236,7 +232,7 @@
     },
     {
       "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "edit", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/ui-components",
@@ -264,7 +260,7 @@
     },
     {
       "name": "@bentley/webgl-compatibility",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/webpack-tools-core",
@@ -728,7 +724,7 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "nyc",
@@ -1088,7 +1084,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "integration-testing", "tools" ]
+      "allowedCategories": [ "integration-testing" ]
     },
     {
       "name": "webpack-core",

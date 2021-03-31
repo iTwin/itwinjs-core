@@ -13,7 +13,7 @@ import { SchemaProps } from "@bentley/ecschema-metadata";
  * @Internal
  */
 export abstract class MetadataRpcInterface extends RpcInterface {
-  /** The version of the RpcInterface. */
+  /** The version of the RPC Interface. */
   public static version = "1.0.0";
 
   public static readonly interfaceName = "SchemaRpcInterface";

@@ -22,13 +22,6 @@ describe("Schema RPC Interface", () => {
     iModel = await testContext.iModelWithChangesets!.getConnection();
   });
 
-  it("should retrieve column headers", async () => {
-    // IModelReadRpcInterface is configured, expect success
-    const rows: any[] = await MetadataRpcInterface.getClient().getQueryColumnHeaders(iModel.getRpcProps(), "Select * from biscore.element");
-
-    expect(rows).to.not.be.undefined;
-  });
-
   it("should get schema names", async () => {
     let schemaNames: string[] = [];
     schemaNames = await MetadataRpcInterface.getClient().getSchemaNames(iModel.getRpcProps());
