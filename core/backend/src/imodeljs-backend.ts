@@ -53,6 +53,7 @@ export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./LocalhostIpcHost";
+export * from "./ElementGraphics";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
@@ -151,4 +152,7 @@ export * from "./IModelDb"; // must be last
  * @docs-group-description Authentication
  * Classes for working with Authentication.
  */
-
+/**
+ * @docs-group-description Tiles
+ * APIs for working with tile graphics.
+ */
