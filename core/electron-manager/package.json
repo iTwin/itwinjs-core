@@ -53,6 +53,7 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
+    "chromium": "^3.0.2",
     "electron": "^11.1.0",
     "electron-chromedriver": "^11.0.0",
     "eslint": "^6.8.0",

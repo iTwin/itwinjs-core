@@ -8,10 +8,9 @@ import * as path from "path";
 import * as app from "electron";
 import { chrome } from "process";
 import { FrustumPlanes } from "@bentley/imodeljs-common";
-//import { ChromeOptions } from "electron-chromedriver";
 describe("Application", function () {
 
-  this.timeout(10000)
+  //this.timeout(10000)
 
   beforeEach(function () {
     this.app = new Application({
