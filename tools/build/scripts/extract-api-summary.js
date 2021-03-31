@@ -28,18 +28,30 @@ if (undefined === argv.outDir) {
 
 fs.ensureDir(path.normalize(argv.outDir));
 
+let shouldGenerateFullReport = false;
+if (undefined !== argv.gatherFullReport)
+  shouldGenerateFullReport = true;
+
 // create output file
 const trimmedApiSignature = (argv.apiSignature.split('.'))[0];
 const sigFileName = path.basename(path.normalize(trimmedApiSignature));
-const sigFilePath = path.join(argv.outDir, sigFileName + ".exports.csv");
-fs.createFileSync(sigFilePath);
+const sigFilePath = path.join(argv.outDir, `${shouldGenerateFullReport ? "summary" : sigFileName}.exports.csv`);
 
 const outputLines = [];
-outputLines.push("sep=;");
-outputLines.push("Release Tag;API Item");
+if (shouldGenerateFullReport) {
+  if (fs.existsSync(sigFilePath))
+    outputLines.push("");
+  else {
+    outputLines.push("sep=;");
+    outputLines.push("Package Name;Release Tag;API Item");
+  }
+} else {
+  fs.createFileSync(sigFilePath);
+  outputLines.push("sep=;");
+  outputLines.push("Release Tag;API Item");
+}
 
 // Open up the signature file
-
 fs.readFile(argv.apiSignature, function (error, data) {
   if (error) { throw error; }
 
@@ -52,7 +64,7 @@ fs.readFile(argv.apiSignature, function (error, data) {
       if (null !== matches) {
         const split = matches[1].split(/(<|extends|implements)/);
         for (const previousLine of previousLines)
-          outputLines.push(`${previousLine};${split[0]}`);
+          outputLines.push(shouldGenerateFullReport ? `${sigFileName};${previousLine};${split[0]}` : `${previousLine};${split[0]}`);
       }
 
       previousLines = [];
@@ -75,5 +87,5 @@ fs.readFile(argv.apiSignature, function (error, data) {
     }
   });
 
-  fs.writeFileSync(sigFilePath, outputLines.join("\n"));
+  shouldGenerateFullReport ? fs.appendFileSync(sigFilePath, outputLines.join("\n")) : fs.writeFileSync(sigFilePath, outputLines.join("\n"));
 });
