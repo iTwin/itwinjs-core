@@ -43,8 +43,8 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
-beta;AsyncFunction = (...args: any) => Promise
-beta;AsyncMethodsOf
+public;AsyncFunction = (...args: any) => Promise
+public;AsyncMethodsOf
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -387,7 +387,7 @@ beta;PlanarClipMaskState
 internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
-beta;PromiseReturnType
+public;PromiseReturnType
 internal;QuadId
 beta;QuantityFormatOverridesChangedArgs
 beta;QuantityFormatsChangedArgs
