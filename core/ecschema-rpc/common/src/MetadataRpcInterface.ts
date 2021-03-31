@@ -12,19 +12,19 @@ import { SchemaProps } from "@bentley/ecschema-metadata";
  * or @see getSchemaXml to get the schemas as XML document.
  * @Internal
  */
-export abstract class SchemaRpcInterface extends RpcInterface {
+export abstract class MetadataRpcInterface extends RpcInterface {
   /** The version of the gateway. */
   public static version = "1.0.0";
 
   public static readonly interfaceName = "SchemaRpcInterface";
-  public static interfaceVersion = SchemaRpcInterface.version;
+  public static interfaceVersion = MetadataRpcInterface.version;
 
   /**
    * Returns the IModelGatewayProxy instance for the frontend.
    * @returns                 A client proxy to communicate with the RPC Interface.
    */
-  public static getClient(): SchemaRpcInterface {
-    return RpcManager.getClientForInterface(SchemaRpcInterface);
+  public static getClient(): MetadataRpcInterface {
+    return RpcManager.getClientForInterface(MetadataRpcInterface);
   }
 
   /**
@@ -44,17 +44,6 @@ export abstract class SchemaRpcInterface extends RpcInterface {
   public async getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps> {
     return this.forward.apply(this, [arguments]) as Promise<SchemaProps>;
   }
-
-  /**
-   * Gets the schema XML document for the current iModel context.
-   * @param tokenProps        The iModelToken props that hold the information which iModel is used.
-   * @param schemaName        The name of the schema that shall be returned.
-   */
-  /*
-  public async getSchemaXml(_tokenProps: IModelTokenProps, _schemaName: string): Promise<string> {
-    return this.forward.apply(this, [arguments]) as Promise<string>;
-  }
-  */
 
   /**
    * Gets the ECSQL column header values for the ECSQL query.

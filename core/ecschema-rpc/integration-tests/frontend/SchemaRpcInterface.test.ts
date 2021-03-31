@@ -9,7 +9,7 @@ import chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { SchemaRpcInterface } from "@bentley/schema-rpcinterface-common";
+import { MetadataRpcInterface } from "@bentley/schema-rpcinterface-common/lib/MetadataRpcInterface";
 import { TestContext } from "./setup/TestContext";
 
 describe("Schema RPC Interface", () => {
@@ -24,22 +24,22 @@ describe("Schema RPC Interface", () => {
 
   it("should retrieve column headers", async () => {
     // IModelReadRpcInterface is configured, expect success
-    const rows: any[] = await SchemaRpcInterface.getClient().getQueryColumnHeaders(iModel.getRpcProps(), "Select * from biscore.element");
+    const rows: any[] = await MetadataRpcInterface.getClient().getQueryColumnHeaders(iModel.getRpcProps(), "Select * from biscore.element");
 
     expect(rows).to.not.be.undefined;
   });
 
   it("should get schema names", async () => {
     let schemaNames: string[] = [];
-    schemaNames = await SchemaRpcInterface.getClient().getSchemaNames(iModel.getRpcProps());
+    schemaNames = await MetadataRpcInterface.getClient().getSchemaNames(iModel.getRpcProps());
 
     expect(schemaNames).to.not.be.undefined;
   });
 
   it("should get schema JSON", async () => {
     let schemaNames: string[] = [];
-    schemaNames = await SchemaRpcInterface.getClient().getSchemaNames(iModel.getRpcProps());
-    const schemaJSON = await SchemaRpcInterface.getClient().getSchemaJSON(iModel.getRpcProps(), schemaNames[0]);
+    schemaNames = await MetadataRpcInterface.getClient().getSchemaNames(iModel.getRpcProps());
+    const schemaJSON = await MetadataRpcInterface.getClient().getSchemaJSON(iModel.getRpcProps(), schemaNames[0]);
 
     expect(schemaJSON).to.not.be.undefined;
   });

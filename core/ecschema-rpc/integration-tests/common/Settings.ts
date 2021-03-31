@@ -5,7 +5,7 @@
 import { LogLevel } from "@bentley/bentleyjs-core";
 import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
-import { SchemaRpcInterface } from "@bentley/schema-rpcinterface-common";
+import { MetadataRpcInterface } from "@bentley/schema-rpcinterface-common/lib/MetadataRpcInterface";
 
 
 export interface Backend {
@@ -25,7 +25,7 @@ export interface IModelData {
 export function getRpcInterfaces() {
   const rpcInterfaces = [];
   rpcInterfaces.push(IModelReadRpcInterface);
-  rpcInterfaces.push(SchemaRpcInterface);
+  rpcInterfaces.push(MetadataRpcInterface);
 
   return rpcInterfaces;
 }

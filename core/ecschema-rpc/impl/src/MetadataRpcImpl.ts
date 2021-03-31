@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SchemaRpcInterface } from "@bentley/schema-rpcinterface-common";
+import { MetadataRpcInterface } from "@bentley/schema-rpcinterface-common";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
 import * as backend from "@bentley/imodeljs-backend";
 import { SchemaProps } from "@bentley/ecschema-metadata";
@@ -27,12 +27,12 @@ type IModelDb = backend.IModelDb & {
  * Implementation of the SchemaRpcInterface.
  * @Internal
  */
-export class SchemaRpcInterfaceImpl extends SchemaRpcInterface {
+export class MetadataRpcImpl extends MetadataRpcInterface {
   /**
    * Registers the RPC interface with its corresponding implementation class.
    */
   public static register() {
-    RpcManager.registerImpl(SchemaRpcInterface, SchemaRpcInterfaceImpl);
+    RpcManager.registerImpl(MetadataRpcInterface, MetadataRpcImpl);
   }
 
   /**

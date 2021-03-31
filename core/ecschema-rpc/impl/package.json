@@ -2,8 +2,8 @@
   "name": "@bentley/schema-rpcinterface-impl",
   "version": "2.15.0-dev.12",
   "description": "Schema RPC Interface backend implementation",
-  "main": "lib/SchemaRpcInterfaceImpl.js",
-  "typings": "lib/SchemaRpcInterfaceImpl",
+  "main": "lib/MetadataRpcImpl.js",
+  "typings": "lib/MetadataRpcImpl",
   "license": "MIT",
   "repository": {
     "type": "git",

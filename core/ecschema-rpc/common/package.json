@@ -2,8 +2,8 @@
   "name": "@bentley/schema-rpcinterface-common",
   "version": "2.15.0-dev.12",
   "description": "Schema RPC Interface common interface",
-  "main": "lib/SchemaRpcInterface.js",
-  "typings": "lib/SchemaRpcInterface",
+  "main": "lib/MetadataRpcInterface.js",
+  "typings": "lib/MetadataRpcInterface",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -37,6 +37,7 @@
     "@bentley/bentleyjs-core": "2.15.0-dev.12",
     "@bentley/build-tools": "2.15.0-dev.12",
     "@bentley/ecschema-metadata": "2.15.0-dev.12",
+    "@bentley/eslint-plugin": "2.15.0-dev.12",
     "@bentley/geometry-core": "2.15.0-dev.12",
     "@bentley/imodeljs-common": "2.15.0-dev.12",
     "@bentley/itwin-client": "2.15.0-dev.12",
