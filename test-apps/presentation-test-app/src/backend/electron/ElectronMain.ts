@@ -5,6 +5,7 @@
 import * as path from "path";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { SampleIpcHandler } from "../SampleIpcHandler";
 
 /**
  * Initializes Electron backend
@@ -18,6 +19,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
     webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
     rpcInterfaces,
     developmentServer: process.env.NODE_ENV === "development",
+    ipcHandlers: [SampleIpcHandler],
   };
 
   await ElectronHost.startup({ electronHost });

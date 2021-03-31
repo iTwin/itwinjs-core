@@ -625,7 +625,9 @@ export enum BriefcaseIdValue {
     Illegal = 4294967295,
     LastValid = 16777205,
     Max = 16777216,
-    Standalone = 0
+    // @deprecated
+    Standalone = 0,
+    Unassigned = 0
 }
 
 // @beta
@@ -1959,7 +1961,7 @@ export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
     readonly modelId?: Id64String;
 }
 
-// @beta
+// @public
 export const Easing: {
     Linear: {
         None: (k: number) => number;
@@ -2016,7 +2018,7 @@ export const Easing: {
     };
 };
 
-// @beta (undocumented)
+// @public (undocumented)
 export type EasingFunction = (k: number) => number;
 
 // @public
@@ -3806,7 +3808,7 @@ export abstract class IModel implements IModelProps {
     toJSON(): IModelConnectionProps;
 }
 
-// @alpha (undocumented)
+// @public
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
 // @beta
@@ -3909,7 +3911,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 
 // @public
 export interface IModelRpcOpenProps {
-    changeSetId?: GuidString;
+    changeSetId?: string;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
     openMode?: OpenMode;
@@ -3962,7 +3964,7 @@ export interface IModelTileTreeProps extends TileTreeProps {
 
 // @public
 export class IModelVersion {
-    static asOfChangeSet(changeSetId: GuidString): IModelVersion;
+    static asOfChangeSet(changeSetId: string): IModelVersion;
     evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString>;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
@@ -3990,7 +3992,7 @@ export type IModelVersionProps = {
     afterChangeSetId?: never;
     versionName?: never;
 } | {
-    afterChangeSetId: GuidString;
+    afterChangeSetId: string;
     first?: never;
     latest?: never;
     versionName?: never;
@@ -4067,7 +4069,7 @@ export enum InternetConnectivityStatus {
     Online = 0
 }
 
-// @beta
+// @public
 export const Interpolation: {
     Linear: (v: any, k: number) => number;
     Bezier: (v: any, k: number) => number;
@@ -4080,7 +4082,7 @@ export const Interpolation: {
     };
 };
 
-// @beta (undocumented)
+// @public (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
 // @internal (undocumented)
@@ -4391,9 +4393,10 @@ export type LocalAlignedBox3d = Range3d;
 // @beta
 export interface LocalBriefcaseProps {
     briefcaseId: number;
-    changeSetId: GuidString;
+    changeSetId: string;
     contextId: GuidString;
     fileName: string;
+    fileSize: number;
     iModelId: GuidString;
 }
 
@@ -5525,8 +5528,10 @@ export class QParams2d {
     // (undocumented)
     copyFrom(src: QParams2d): void;
     static fromNormalizedRange(rangeScale?: number): QParams2d;
+    static fromOriginAndScale(ox: number, oy: number, sx: number, sy: number): QParams2d;
     static fromRange(range: Range2d, out?: QParams2d, rangeScale?: number): QParams2d;
     static fromZeroToOne(rangeScale?: number): QParams2d;
+    isQuantizable(point: Point2d): boolean;
     // (undocumented)
     readonly origin: Point2d;
     // (undocumented)
@@ -5534,6 +5539,7 @@ export class QParams2d {
     // (undocumented)
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
+    unquantize(x: number, y: number, out?: Point2d): Point2d;
 }
 
 // @internal
@@ -5546,6 +5552,7 @@ export class QParams3d {
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
     static fromRange(range: Range3d, out?: QParams3d, rangeScale?: number): QParams3d;
     static fromZeroToOne(rangeScale?: number): QParams3d;
+    isQuantizable(point: Point3d): boolean;
     // (undocumented)
     readonly origin: Point3d;
     // (undocumented)
@@ -5554,6 +5561,7 @@ export class QParams3d {
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
     setFromRange(range: Range3d, rangeScale?: number): void;
+    unquantize(x: number, y: number, z: number, out?: Point3d): Point3d;
 }
 
 // @internal
@@ -5756,7 +5764,7 @@ export interface RelatedElementProps {
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
-// @beta
+// @public
 export type RemoveFunction = () => void;
 
 // @beta
@@ -7027,7 +7035,7 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     modelSelectorId: Id64String;
 }
 
-// @beta
+// @public
 export type StandaloneOpenOptions = OpenDbKey;
 
 // @beta
@@ -7334,7 +7342,7 @@ export interface TextureProps extends DefinitionElementProps {
     width: number;
 }
 
-// @beta
+// @public
 export class ThematicDisplay {
     readonly axis: Vector3d;
     readonly displayMode: ThematicDisplayMode;
@@ -7344,34 +7352,31 @@ export class ThematicDisplay {
     static fromJSON(json?: ThematicDisplayProps): ThematicDisplay;
     readonly gradientSettings: ThematicGradientSettings;
     readonly range: Range1d;
-    // @alpha
     readonly sensorSettings: ThematicDisplaySensorSettings;
     readonly sunDirection: Vector3d;
     // (undocumented)
     toJSON(): ThematicDisplayProps;
 }
 
-// @beta
+// @public
 export enum ThematicDisplayMode {
     Height = 0,
     HillShade = 3,
-    // @alpha
     InverseDistanceWeightedSensors = 1,
     Slope = 2
 }
 
-// @beta
+// @public
 export interface ThematicDisplayProps {
     axis?: XYZProps;
     displayMode?: ThematicDisplayMode;
     gradientSettings?: ThematicGradientSettingsProps;
     range?: Range1dProps;
-    // @alpha
     sensorSettings?: ThematicDisplaySensorSettingsProps;
     sunDirection?: XYZProps;
 }
 
-// @alpha
+// @public
 export class ThematicDisplaySensor {
     // (undocumented)
     equals(other: ThematicDisplaySensor): boolean;
@@ -7383,13 +7388,13 @@ export class ThematicDisplaySensor {
     readonly value: number;
 }
 
-// @alpha
+// @public
 export interface ThematicDisplaySensorProps {
     position?: XYZProps;
     value?: number;
 }
 
-// @alpha
+// @public
 export class ThematicDisplaySensorSettings {
     readonly distanceCutoff: number;
     // (undocumented)
@@ -7401,29 +7406,23 @@ export class ThematicDisplaySensorSettings {
     toJSON(): ThematicDisplaySensorSettingsProps;
 }
 
-// @alpha
+// @public
 export interface ThematicDisplaySensorSettingsProps {
     distanceCutoff?: number;
     sensors?: ThematicDisplaySensorProps[];
 }
 
-// @beta (undocumented)
+// @public
 export enum ThematicGradientColorScheme {
-    // (undocumented)
     BlueRed = 0,
-    // (undocumented)
     Custom = 5,
-    // (undocumented)
     Monochrome = 2,
-    // (undocumented)
     RedBlue = 1,
-    // (undocumented)
     SeaMountain = 4,
-    // (undocumented)
     Topographic = 3
 }
 
-// @beta (undocumented)
+// @public
 export enum ThematicGradientMode {
     IsoLines = 3,
     Smooth = 0,
@@ -7431,7 +7430,7 @@ export enum ThematicGradientMode {
     SteppedWithDelimiter = 2
 }
 
-// @beta
+// @public
 export class ThematicGradientSettings {
     clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
     readonly colorMix: number;
@@ -7456,7 +7455,7 @@ export class ThematicGradientSettings {
     toJSON(): ThematicGradientSettingsProps;
 }
 
-// @beta (undocumented)
+// @public
 export interface ThematicGradientSettingsProps {
     colorMix?: number;
     colorScheme?: ThematicGradientColorScheme;
@@ -7655,7 +7654,7 @@ export enum TreeFlags {
     UseProjectExtents = 1
 }
 
-// @beta
+// @public
 export class Tween {
     constructor(_group: Tweens, _object: any);
     // (undocumented)
@@ -7710,10 +7709,10 @@ export class Tween {
     yoyo(yoyo: boolean): this;
     }
 
-// @beta (undocumented)
+// @public (undocumented)
 export type TweenCallback = (obj: any) => void;
 
-// @beta
+// @public
 export class Tweens {
     // (undocumented)
     add(tween: Tween): void;
@@ -7793,7 +7792,7 @@ export enum TypeOfChange {
     Property = 1
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
 
 // @beta

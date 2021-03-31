@@ -25,6 +25,7 @@ import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingSessionTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
+import { ChangeGridSettingsTool } from "./Grid";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { Notifications } from "./Notifications";
@@ -38,6 +39,7 @@ import {
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -210,7 +212,9 @@ export class DisplayTestApp {
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     [
+      ApplyModelDisplayScaleTool,
       ApplyModelTransformTool,
+      ChangeGridSettingsTool,
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,

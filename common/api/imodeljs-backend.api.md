@@ -181,6 +181,7 @@ import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StandaloneOpenOptions } from '@bentley/imodeljs-common';
 import { StandardViewIndex } from '@bentley/geometry-core';
 import { StatusCodeWithMessage } from '@bentley/bentleyjs-core';
+import { StorageValue } from '@bentley/imodeljs-common';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
@@ -490,7 +491,7 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static getChangedElementsPathName(iModelId: GuidString): string;
     // @internal (undocumented)
-    static getChangeSetFolderNameFromId(changeSetId: GuidString): string;
+    static getChangeSetFolderNameFromId(changeSetId: string): string;
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
     // @internal @deprecated
@@ -591,11 +592,11 @@ export class ChangedElementsDb implements IDisposable {
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
     // (undocumented)
     dispose(): void;
-    getChangeData(startChangesetId: GuidString, endChangesetId: GuidString): ChangeData | undefined;
-    getChangedElements(startChangesetId: GuidString, endChangesetId: GuidString): ChangedElements | undefined;
-    getChangedModels(startChangesetId: GuidString, endChangesetId: GuidString): ChangedModels | undefined;
+    getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined;
+    getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
+    getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
     get isOpen(): boolean;
-    isProcessed(changesetId: GuidString): boolean;
+    isProcessed(changesetId: string): boolean;
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
@@ -690,13 +691,14 @@ export class CheckpointManager {
     // (undocumented)
     static readonly onDownload: BeEvent<(job: DownloadJob) => void>;
     static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
+    static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb): void;
     // (undocumented)
     static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean;
 }
 
 // @beta
 export interface CheckpointProps {
-    changeSetId: GuidString;
+    changeSetId: string;
     contextId: GuidString;
     // (undocumented)
     expectV2?: boolean;
@@ -1340,7 +1342,7 @@ export interface DownloadJob {
     status: DownloadBriefcaseStatus;
 }
 
-// @beta
+// @internal
 export interface DownloadRequest {
     aliasFiles?: string[];
     checkpoint: CheckpointProps;
@@ -2714,7 +2716,7 @@ export class IModelExporter {
     excludeElementClass(classFullName: string): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
-    exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
+    exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void>;
     exportChildElements(elementId: Id64String): Promise<void>;
     exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
     exportCodeSpecByName(codeSpecName: string): Promise<void>;
@@ -2985,7 +2987,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): Promise<void>;
-    processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
+    processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void>;
     processChildElements(sourceElementId: Id64String): Promise<void>;
     processCodeSpec(codeSpecName: string): Promise<void>;
     processCodeSpecs(): Promise<void>;
@@ -3447,6 +3449,28 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
 }
 
 // @beta
+export class NativeAppStorage {
+    close(deleteFile?: boolean): void;
+    // @internal
+    static closeAll(): void;
+    static find(name: string): NativeAppStorage;
+    getBoolean(key: string): boolean | undefined;
+    getData(key: string): StorageValue | undefined;
+    getKeys(): string[];
+    getNumber(key: string): number | undefined;
+    // @internal (undocumented)
+    static getStorageNames(): string[];
+    getString(key: string): string | undefined;
+    getUint8Array(key: string): Uint8Array | undefined;
+    // (undocumented)
+    readonly id: string;
+    static open(name: string): NativeAppStorage;
+    removeAll(): void;
+    removeData(key: string): void;
+    setData(key: string, value: StorageValue): void;
+    }
+
+// @beta
 export class NativeHost {
     static get appSettingsCacheDir(): string;
     // @internal (undocumented)
@@ -3460,12 +3484,19 @@ export class NativeHost {
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
+    // (undocumented)
+    static get settingsStore(): NativeAppStorage;
     static shutdown(): Promise<void>;
     static startup(opt?: NativeHostOpts): Promise<void>;
 }
 
 // @beta (undocumented)
-export type NativeHostOpts = IpcHostOpts;
+export interface NativeHostOpts extends IpcHostOpts {
+    // (undocumented)
+    nativeHost?: {
+        applicationName?: string;
+    };
+}
 
 export { NativeLoggerCategory }
 
@@ -4055,7 +4086,7 @@ export enum SqliteValueType {
     String = 3
 }
 
-// @internal
+// @public
 export class StandaloneDb extends IModelDb {
     get changeSetId(): undefined;
     static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;

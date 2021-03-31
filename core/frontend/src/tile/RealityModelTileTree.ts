@@ -112,6 +112,7 @@ export function createRealityTileTreeReference(props: RealityModelTileTree.Refer
 const zeroPoint = Point3d.createZero();
 const earthEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.polar);
 const scratchRay = Ray3d.createXAxis();
+
 /** @internal */
 export class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[] } | undefined {

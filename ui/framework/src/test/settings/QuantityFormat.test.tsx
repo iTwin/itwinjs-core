@@ -19,7 +19,7 @@ import { ModalDialogRenderer } from "../../ui-framework/dialog/ModalDialogManage
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import { UiFramework } from "../../ui-framework/UiFramework";
 
-describe("QuantityFormatSettingsPanel", () => {
+describe("QuantityFormatSettingsPage", () => {
 
   let presentationManagerMock: moq.IMock<PresentationManager>;
   const sandbox = sinon.createSandbox();

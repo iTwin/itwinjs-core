@@ -47,20 +47,12 @@ export function DatePickerPopupButton({ displayEditField, timeDisplay, selected,
   const timeLabelRef = React.useRef(UiComponents.translate("datepicker.time"));
   const toolTipLabelRef = React.useRef(UiComponents.translate("datepicker.selectDate"));
   const toolTipLabel = React.useMemo(() => buttonToolTip ? buttonToolTip : toolTipLabelRef.current, [buttonToolTip]);
-  const initialDateRef = React.useRef(selected);
 
-  // See if new initialDate props have changed since component mounted
+  // See if props have changed since component mounted
   React.useEffect(() => {
-    // istanbul ignore else
-    if (selected.getTime() !== initialDateRef.current.getTime()) {
-      const newWorkingDate = new Date(selected.getTime());
-      // istanbul ignore else
-      if (workingDate.getTime() !== newWorkingDate.getTime()) {
-        setWorkingDate(newWorkingDate);
-      }
-      initialDateRef.current = selected;
-    }
-  }, [selected, workingDate]);
+    const newWorkingDate = new Date(selected.getTime());
+    setWorkingDate(newWorkingDate);
+  }, [selected]);
 
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const togglePopupDisplay = React.useCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

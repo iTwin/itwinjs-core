@@ -73,6 +73,7 @@ import { TimeDisplay } from '@bentley/ui-abstract';
 import { TimeFormat } from '@bentley/ui-core';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
+import { UiSettingsStorage } from '@bentley/ui-core';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
 import { Vector3d } from '@bentley/geometry-core';
@@ -3107,7 +3108,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // (undocumented)
-    get hasFocus(): boolean;
+    hasFocus: boolean;
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
@@ -3118,6 +3119,8 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
 
 // @beta
 export class NumericInputPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesEnter(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
@@ -4539,9 +4542,11 @@ export interface TableProps extends CommonProps {
     scrollToRow?: number;
     selectionMode?: SelectionMode;
     settingsIdentifier?: string;
+    settingsStorage?: UiSettingsStorage;
     showHideColumns?: boolean;
     stripedRows?: boolean;
     tableSelectionTarget?: TableSelectionTarget;
+    // @deprecated
     uiSettings?: UiSettings;
 }
 
@@ -4935,6 +4940,9 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
     toolbarOpacitySetting?: ToolbarOpacitySetting;
     useDragInteraction?: boolean;
 }
+
+// @internal (undocumented)
+export function toRxjsObservable<T>(observable: Observable<T>): Observable_2<T>;
 
 // @internal (undocumented)
 export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;

@@ -7,19 +7,19 @@
  */
 
 import * as React from "react";
-import { from } from "rxjs/internal/observable/from";
 import { CommonProps, FillCentered, SpinnerSize } from "@bentley/ui-core";
+import { DelayedSpinner } from "../../../common/DelayedSpinner";
 import { SelectionMode } from "../../../common/selection/SelectionModes";
 import { UiComponents } from "../../../UiComponents";
 import { HighlightableTreeProps } from "../../HighlightingEngine";
 import { TreeImageLoader } from "../../ImageLoader";
+import { toRxjsObservable } from "../Observable";
 import { TreeEventDispatcher } from "../TreeEventDispatcher";
 import { TreeEvents } from "../TreeEvents";
 import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../TreeModel";
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
 import { RenderedItemsRange, TreeRenderer, TreeRendererProps } from "./TreeRenderer";
-import { DelayedSpinner } from "../../../common/DelayedSpinner";
 
 /**
  * Properties for [[ControlledTree]]
@@ -101,7 +101,7 @@ export function ControlledTree(props: ControlledTreeProps) {
 function useRootNodeLoader(visibleNodes: VisibleTreeNodes, nodeLoader: ITreeNodeLoader): boolean {
   React.useEffect(() => {
     if (visibleNodes.getNumRootNodes() === undefined) {
-      const subscription = from(nodeLoader.loadNode(visibleNodes.getModel().getRootNode(), 0)).subscribe();
+      const subscription = toRxjsObservable(nodeLoader.loadNode(visibleNodes.getModel().getRootNode(), 0)).subscribe();
       return () => subscription.unsubscribe();
     }
 

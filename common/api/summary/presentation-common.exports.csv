@@ -46,13 +46,21 @@ public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
 public;DefaultPropertyCategoryOverride 
 public;DEPRECATED_AllInstanceNodesSpecification 
+deprecated;DEPRECATED_AllInstanceNodesSpecification 
 public;DEPRECATED_AllRelatedInstanceNodesSpecification 
+deprecated;DEPRECATED_AllRelatedInstanceNodesSpecification 
 public;DEPRECATED_ContentRelatedInstancesSpecification 
+deprecated;DEPRECATED_ContentRelatedInstancesSpecification 
 public;DEPRECATED_PropertiesDisplaySpecification
+deprecated;DEPRECATED_PropertiesDisplaySpecification
 public;DEPRECATED_PropertyEditorsSpecification 
+deprecated;DEPRECATED_PropertyEditorsSpecification 
 public;DEPRECATED_RelatedInstanceNodesSpecification 
+deprecated;DEPRECATED_RelatedInstanceNodesSpecification 
 public;DEPRECATED_RelatedInstanceSpecification
+deprecated;DEPRECATED_RelatedInstanceSpecification
 public;DEPRECATED_RelatedPropertiesSpecification
+deprecated;DEPRECATED_RelatedPropertiesSpecification
 public;Descriptor 
 public;DescriptorJSON
 public;DescriptorOverrides
@@ -165,6 +173,7 @@ public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
 public;LabelRequestOptions
 public;LabelRpcRequestOptions = PresentationRpcRequestOptions
 public;LoggingNamespaces
+deprecated;LoggingNamespaces
 public;MultiSchemaClassesSpecification
 beta;NamedFieldDescriptor 
 public;NavigationRule = RootNodeRule | ChildNodeRule

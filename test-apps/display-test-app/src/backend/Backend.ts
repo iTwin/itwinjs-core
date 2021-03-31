@@ -245,18 +245,28 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
     if (undefined !== logLevelEnv)
       logLevel = Logger.parseLogLevel(logLevelEnv);
   }
+  const opts = {
+    iModelHost,
+    electronHost,
+    nativeHost: {
+      applicationName: "display-test-app",
+    },
+    mobileHost: {
+      rpcInterfaces: electronHost?.rpcInterfaces,
+    },
+  };
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (ProcessDetector.isElectronAppBackend) {
-    await ElectronHost.startup({ electronHost, iModelHost });
+    await ElectronHost.startup(opts);
     EditCommandAdmin.register(BasicManipulationCommand);
   } else if (ProcessDetector.isIOSAppBackend) {
-    await IOSHost.startup({ iModelHost });
+    await IOSHost.startup(opts);
   } else if (ProcessDetector.isAndroidAppBackend) {
-    await AndroidHost.startup({ iModelHost });
+    await AndroidHost.startup(opts);
   } else {
-    await LocalhostIpcHost.startup({ iModelHost });
+    await LocalhostIpcHost.startup(opts);
   }
 
   // Set up logging (by default, no logging is enabled)

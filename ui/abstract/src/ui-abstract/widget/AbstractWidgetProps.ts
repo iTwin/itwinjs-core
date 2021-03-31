@@ -12,7 +12,7 @@ import { ProvidedItem } from "../items/ProvidedItem";
 import { WidgetState } from "./WidgetState";
 
 /** Properties for a Widget.
- * @beta
+ * @public
  */
 export interface AbstractWidgetProps extends ProvidedItem {
   /** Gets the widget content */

@@ -1447,7 +1447,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
-     * explicitly updating it is occassionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
+     * explicitly updating it is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
      * [[GeometricElement]]s that reference those definition elements in their geometry streams.
      * @note This will throw IModelError with [IModelStatus.VersionTooOld]($bentleyjs-core) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
      * @throws IModelError if unable to update the geometry guid.
@@ -2254,7 +2254,7 @@ export class BriefcaseDb extends IModelDb {
       this.concurrencyControl.onSavedChanges();
   }
 
-  private static async lockSchema(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: GuidString, briefcaseId: number): Promise<void> {
+  private static async lockSchema(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, briefcaseId: number): Promise<void> {
     requestContext.enter();
     const lock = new Lock();
     lock.briefcaseId = briefcaseId;
@@ -2512,7 +2512,7 @@ export class SnapshotDb extends IModelDb {
     if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, `Could not create snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
 
-    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, `Could not set briefcaseId for snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
 
@@ -2559,7 +2559,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.deleteLocalValue(IModelDb._edit);
     nativeDb.saveChanges();
     nativeDb.deleteAllTxns();
-    nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue()); // WIP: clean up copied file on error?
     if (options?.createClassViews)
@@ -2614,6 +2614,12 @@ export class SnapshotDb extends IModelDb {
     const filePath = await V2CheckpointManager.attach(checkpoint);
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key: CheckpointManager.getKey(checkpoint) });
     snapshot._contextId = checkpoint.contextId;
+    try {
+      CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
+    } catch (err) {
+      snapshot.close();
+      throw err;
+    }
     return snapshot;
   }
 
@@ -2642,21 +2648,21 @@ export class SnapshotDb extends IModelDb {
 }
 
 /** Standalone iModels are read/write files that are not managed by iModelHub.
- * They are relevant only for single-practitioner scenarios where team collaboration is necessary.
- * However, Standalone iModels are designed such that the API interaction between Standalone iModels and Briefcase
+ * They are relevant only for small-scale single-user scenarios.
+ * Standalone iModels are designed such that the API for Standalone iModels and Briefcase
  * iModels (those synchronized with iModelHub) are as similar and consistent as possible.
- * This leads to a straightforward process where the practitioner can optionally choose to upgrade to iModelHub.
+ * This leads to a straightforward process where the a user starts with StandaloneDb and can
+ * optionally choose to upgrade to iModelHub.
  *
  * Some additional details. Standalone iModels:
  * - always have [Guid.empty]($bentley) for their contextId (they are "unassociated" files)
- * - always have BriefcaseId === [BriefcaseIdValue.Standalone]($backend)
+ * - always have BriefcaseId === [BriefcaseIdValue.Unassigned]($common)
  * - are connected to the frontend via [BriefcaseConnection.openStandalone]($frontend)
  * - may be opened without supplying any user credentials
  * - may be opened read/write
- * - may optionally support undo/redo via [[TxmManager]]
- * - cannot apply a changeset to nor generate a changesets
- * - are only available to authorized applications
- * @internal
+ * - may optionally support undo/redo via [[TxnManager]]
+ * - cannot apply a changeset to nor generate a changesets (since there is no timeline from which to get/push changesets)
+ * @public
  */
 export class StandaloneDb extends IModelDb {
   public get isStandalone(): boolean { return true; }
@@ -2700,7 +2706,7 @@ export class StandaloneDb extends IModelDb {
     nativeDb.saveLocalValue(IModelDb._edit, undefined === args.allowEdit ? "" : args.allowEdit);
     nativeDb.saveProjectGuid(Guid.empty);
 
-    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+    status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     if (DbResult.BE_SQLITE_OK !== status) {
       nativeDb.closeIModel();
       throw new IModelError(status, `Could not set briefcaseId for iModel:  ${filePath}`, Logger.logError, loggerCategory);
@@ -2732,6 +2738,7 @@ export class StandaloneDb extends IModelDb {
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
    * @returns a new StandaloneDb if the file is not currently open, and the existing StandaloneDb if it is already
    * @throws [[IModelError]] if the file is not a standalone iModel.
+   * @see [BriefcaseConnection.openStandalone]($frontend) to open a StandaloneDb from the frontend
    */
   public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
     const file = { path: filePath, key: options?.key };
