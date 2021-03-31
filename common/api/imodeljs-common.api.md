@@ -7308,7 +7308,7 @@ export interface TextureProps extends DefinitionElementProps {
     width: number;
 }
 
-// @beta
+// @public
 export class ThematicDisplay {
     readonly axis: Vector3d;
     readonly displayMode: ThematicDisplayMode;
@@ -7318,34 +7318,31 @@ export class ThematicDisplay {
     static fromJSON(json?: ThematicDisplayProps): ThematicDisplay;
     readonly gradientSettings: ThematicGradientSettings;
     readonly range: Range1d;
-    // @alpha
     readonly sensorSettings: ThematicDisplaySensorSettings;
     readonly sunDirection: Vector3d;
     // (undocumented)
     toJSON(): ThematicDisplayProps;
 }
 
-// @beta
+// @public
 export enum ThematicDisplayMode {
     Height = 0,
     HillShade = 3,
-    // @alpha
     InverseDistanceWeightedSensors = 1,
     Slope = 2
 }
 
-// @beta
+// @public
 export interface ThematicDisplayProps {
     axis?: XYZProps;
     displayMode?: ThematicDisplayMode;
     gradientSettings?: ThematicGradientSettingsProps;
     range?: Range1dProps;
-    // @alpha
     sensorSettings?: ThematicDisplaySensorSettingsProps;
     sunDirection?: XYZProps;
 }
 
-// @alpha
+// @public
 export class ThematicDisplaySensor {
     // (undocumented)
     equals(other: ThematicDisplaySensor): boolean;
@@ -7357,13 +7354,13 @@ export class ThematicDisplaySensor {
     readonly value: number;
 }
 
-// @alpha
+// @public
 export interface ThematicDisplaySensorProps {
     position?: XYZProps;
     value?: number;
 }
 
-// @alpha
+// @public
 export class ThematicDisplaySensorSettings {
     readonly distanceCutoff: number;
     // (undocumented)
@@ -7375,29 +7372,23 @@ export class ThematicDisplaySensorSettings {
     toJSON(): ThematicDisplaySensorSettingsProps;
 }
 
-// @alpha
+// @public
 export interface ThematicDisplaySensorSettingsProps {
     distanceCutoff?: number;
     sensors?: ThematicDisplaySensorProps[];
 }
 
-// @beta (undocumented)
+// @public
 export enum ThematicGradientColorScheme {
-    // (undocumented)
     BlueRed = 0,
-    // (undocumented)
     Custom = 5,
-    // (undocumented)
     Monochrome = 2,
-    // (undocumented)
     RedBlue = 1,
-    // (undocumented)
     SeaMountain = 4,
-    // (undocumented)
     Topographic = 3
 }
 
-// @beta (undocumented)
+// @public
 export enum ThematicGradientMode {
     IsoLines = 3,
     Smooth = 0,
@@ -7405,7 +7396,7 @@ export enum ThematicGradientMode {
     SteppedWithDelimiter = 2
 }
 
-// @beta
+// @public
 export class ThematicGradientSettings {
     clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
     readonly colorMix: number;
@@ -7430,7 +7421,7 @@ export class ThematicGradientSettings {
     toJSON(): ThematicGradientSettingsProps;
 }
 
-// @beta (undocumented)
+// @public
 export interface ThematicGradientSettingsProps {
     colorMix?: number;
     colorScheme?: ThematicGradientColorScheme;
