@@ -15,7 +15,6 @@ import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
 
-
 export class TestContext {
   public adminUserAccessToken!: AccessToken;
 
@@ -49,7 +48,7 @@ export class TestContext {
     expect(this.settings.iModels.length).to.be.gte(1, `Unexpected number of iModels found in settings - got ${this.settings.iModels.length}, expected at least 1`);
 
     // Print out the configuration
-    console.log(this.settings.toString()); // tslint:disable-line
+    console.log(this.settings.toString()); // eslint-disable-line
 
     // Configure iModel.js frontend logging to go to the console
     Logger.initializeToConsole();
@@ -70,8 +69,7 @@ export class TestContext {
     }
 
     const iModelData = this.settings.iModel;
-    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // tslint:disable-line
-
+    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line
     this.contextId = iModelData.projectId;
     this.iModelWithChangesets = new IModelSession(iModelData.id, this.contextId);
 
@@ -82,6 +80,6 @@ export class TestContext {
       authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
     });
 
-    console.log("TestSetup: Done");  // tslint:disable-line
+    console.log("TestSetup: Done");  // eslint-disable-line
   }
 }

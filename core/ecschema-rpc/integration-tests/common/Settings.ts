@@ -7,7 +7,6 @@ import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { MetadataRpcInterface } from "@bentley/schema-rpcinterface-common/lib/MetadataRpcInterface";
 
-
 export interface Backend {
   version: string;
   location: string;
@@ -55,6 +54,7 @@ export class Settings {
   public get writeIModel(): IModelData { return this.iModels[1]; }
   public get user(): TestUserCredentials { return this.users[0]; }
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public get Backend(): Backend { return this._backend; }
 
   public get runiModelTileRpcTests(): boolean { return checkEnabled(process.env.RPC_IMODELTILE_ENABLE); }
@@ -66,9 +66,9 @@ export class Settings {
   constructor(env: NodeJS.ProcessEnv) {
     const isFrontend = (typeof (process) === "undefined");
     if (!isFrontend && undefined === env.TF_BUILD) {
-      const path = require("path");
-      const dotenv = require("dotenv");
-      const dotenvExpand = require("dotenv-expand");
+      const path = require("path"); // eslint-disable-line @typescript-eslint/no-var-requires
+      const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+      const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
       // First check in process.cwd() for the config
       let result = dotenv.config();
       if (result.error) {
