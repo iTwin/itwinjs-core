@@ -20,8 +20,8 @@ export abstract class MetadataRpcInterface extends RpcInterface {
   public static interfaceVersion = MetadataRpcInterface.version;
 
   /**
-   * Returns the IModelGatewayProxy instance for the frontend.
-   * @returns                 A client proxy to communicate with the RPC Interface.
+   * Returns the RPC client instance for the frontend.
+   * @returns                 A client to communicate with the RPC Interface.
    */
   public static getClient(): MetadataRpcInterface {
     return RpcManager.getClientForInterface(MetadataRpcInterface);
