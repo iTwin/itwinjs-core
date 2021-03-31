@@ -34,11 +34,12 @@ import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCateg
   Presentation.initialize({
     rulesetDirectories: [path.join("assets", "presentation_rules")],
     localeDirectories: [path.join("assets", "locales")],
-    mode: PresentationManagerMode.ReadOnly,
+    mode: PresentationManagerMode.ReadWrite,
     taskAllocationsMap: {
       [RequestPriority.Max]: 1,
     },
     useMmap: true,
+    updatesPollInterval: 20,
   });
   // __PUBLISH_EXTRACT_END__
 
