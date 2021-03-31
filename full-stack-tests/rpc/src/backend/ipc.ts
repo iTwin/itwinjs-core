@@ -8,6 +8,8 @@ import { BackendTestCallbacks } from "../common/SideChannels";
 
 export async function setupIpcTest(before = async () => { }) {
   let socket: IpcWebSocketBackend;
+  let ready: () => void;
+  const started = new Promise<void>((resolve) => ready = resolve);
 
   registerBackendCallback(BackendTestCallbacks.startIpcTest, () => {
     setTimeout(async () => {
@@ -23,12 +25,15 @@ export async function setupIpcTest(before = async () => { }) {
       socket.handle("testinvoke", async (_event: Event, methodName: string, ...args: any[]) => {
         return [methodName, ...args];
       });
+
+      ready();
     });
 
     return true;
   });
 
-  registerBackendCallback(BackendTestCallbacks.sendIpcMessage, () => {
+  registerBackendCallback(BackendTestCallbacks.sendIpcMessage, async () => {
+    await started;
     socket.send("test", 4, 5, 6);
     return true;
   });

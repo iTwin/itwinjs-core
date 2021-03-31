@@ -289,7 +289,7 @@ internal;SqliteStatement
 internal;SqliteStatementCache
 internal;SqliteValue
 internal;SqliteValueType
-internal;StandaloneDb 
+public;StandaloneDb 
 internal;StringParam
 public;SubCategory 
 public;Subject 
