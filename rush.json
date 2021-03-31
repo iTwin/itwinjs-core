@@ -451,7 +451,7 @@
     {
       "packageName": "@bentley/schema-rpcinterface-tests",
       "projectFolder": "core/ecschema-rpc/integration-tests",
-      "reviewCategory": "tools",
+      "reviewCategory": "integration-testing",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },

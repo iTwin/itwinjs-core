@@ -64,7 +64,7 @@
     },
     {
       "name": "@bentley/express-server",
-      "allowedCategories": [ "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "integration-testing", "internal"]
     },
     {
       "name": "@bentley/extension-client",
@@ -132,7 +132,7 @@
     },
     {
       "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-markup",
@@ -144,7 +144,7 @@
     },
     {
       "name": "@bentley/imodeljs-quantity",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/itwin-client",
@@ -168,11 +168,11 @@
     },
     {
       "name": "@bentley/oidc-signin-tool",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/orbitgt-core",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/perf-tools",
@@ -200,7 +200,7 @@
     },
     {
       "name": "@bentley/product-settings-client",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/projectshare-client",
@@ -228,7 +228,7 @@
     },
     {
       "name": "@bentley/schema-rpcinterface-tests",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing" ]
     },
     {
       "name": "@bentley/telemetry-client",
