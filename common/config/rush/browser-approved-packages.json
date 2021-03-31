@@ -220,15 +220,15 @@
     },
     {
       "name": "@bentley/schema-rpcinterface-common",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "@bentley/schema-rpcinterface-impl",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/schema-rpcinterface-tests",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "tools" ]
     },
     {
       "name": "@bentley/telemetry-client",
