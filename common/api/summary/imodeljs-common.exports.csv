@@ -89,7 +89,7 @@ internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId):
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
-internal;ContentFlags
+alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModelProps
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
@@ -123,6 +123,9 @@ public;DisplayStyleSubCategoryProps
 beta;DomainOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
+beta;DynamicGraphicsRequest2dProps 
+beta;DynamicGraphicsRequest3dProps 
+beta;DynamicGraphicsRequestProps 
 beta;Easing:
 beta;EasingFunction = (k: number) => number
 public;EcefLocation 
@@ -144,7 +147,7 @@ alpha;ElementGeometryInfo
 alpha;ElementGeometryOpcode
 alpha;ElementGeometryRequest
 alpha;ElementGeometryUpdate
-internal;ElementGraphicsRequestProps
+beta;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 alpha;ElementIdsAndRangesProps
 public;ElementLoadProps
 public;ElementProps 
@@ -224,6 +227,7 @@ internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
 public;GraphicParams
+beta;GraphicsRequestProps
 public;GridOrientationType
 public;GroundPlane
 public;GroundPlaneProps
@@ -369,6 +373,7 @@ beta;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PartReference
+beta;PersistentGraphicsRequestProps 
 public;PhysicalElementProps 
 public;PhysicalTypeProps 
 public;Placement2d 
@@ -568,7 +573,7 @@ internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
 alpha;TileVersionInfo
-internal;TreeFlags
+alpha;TreeFlags
 beta;Tween
 beta;TweenCallback = (obj: any) => void
 beta;Tweens

@@ -18,7 +18,7 @@ import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-clien
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
   CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
+  ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,
   IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelTileTreeProps, IModelVersion, LocalBriefcaseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
@@ -46,6 +46,7 @@ import { Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { generateElementGraphics } from "./ElementGraphics";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -1248,6 +1249,14 @@ export abstract class IModelDb extends IModel {
    */
   public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
     return this.nativeDb.createBRepGeometry(createProps);
+  }
+
+  /** Generate graphics for an element or geometry stream.
+   * @see [readElementGraphics]($frontend) to convert the result to a [RenderGraphic]($frontend) for display.
+   * @beta
+   */
+  public async generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
+    return generateElementGraphics(request, this);
   }
 }
 
