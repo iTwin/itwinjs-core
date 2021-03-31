@@ -49,7 +49,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   private _indicator = React.createRef<HTMLDivElement>();
   private _title = UiFramework.translate("messageCenter.messages");
   private _unloadMessagesUpdatedHandler?: () => void;
-  private _openMessagesCenterHandler?: () => void;
+  private _removeOpenMessagesCenterHandler?: () => void;
 
   public readonly state: Readonly<MessageCenterState> = {
     activeTab: MessageCenterActiveTab.AllMessages,
@@ -67,7 +67,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   /** @internal */
   public componentDidMount() {
     this._unloadMessagesUpdatedHandler = MessageManager.onMessagesUpdatedEvent.addListener(this._handleMessagesUpdatedEvent, this);
-    this._openMessagesCenterHandler = MessageManager.onOpenMessageCenterEvent.addListener(this._handleOpenMessageCenterEvent, this);
+    this._removeOpenMessagesCenterHandler = MessageManager.onOpenMessageCenterEvent.addListener(this._handleOpenMessageCenterEvent, this);
   }
 
   /** @internal */
@@ -78,9 +78,9 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
       this._unloadMessagesUpdatedHandler = undefined;
     }
     // istanbul ignore else
-    if (this._openMessagesCenterHandler) {
-      this._openMessagesCenterHandler();
-      this._openMessagesCenterHandler = undefined;
+    if (this._removeOpenMessagesCenterHandler) {
+      this._removeOpenMessagesCenterHandler();
+      this._removeOpenMessagesCenterHandler = undefined;
     }
   }
 

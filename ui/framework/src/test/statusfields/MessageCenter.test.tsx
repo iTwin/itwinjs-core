@@ -139,7 +139,7 @@ describe("MessageCenter", () => {
 
     MessageManager.onOpenMessageCenterEvent.emit({});
     expect(statusBarInstance.state.openWidget).not.null;
-  })
+  });
 
   // nz-footer-messageCenter-tab
 
