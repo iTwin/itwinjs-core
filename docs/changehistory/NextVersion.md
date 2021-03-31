@@ -78,7 +78,7 @@ It was, however, confusing from a usage and documentation perspective and needed
 ## Promoted APIs
 
 The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
-* @bentley/bentleyjs-core
+### @bentley/bentleyjs-core
   * [assert]($bentleyjs-core) for asserting logic invariants.
   * [ProcessDetector]($bentleyjs-core) for querying the type of executing Javascript process.
   * [ObservableSet]($bentleyjs-core) for a [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents are modified.
