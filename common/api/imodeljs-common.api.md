@@ -1937,7 +1937,7 @@ export enum DownloadBriefcaseStatus {
 // @beta
 export type DPoint2dProps = number[];
 
-// @public
+// @beta
 export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
     // (undocumented)
     readonly placement: Omit<Placement2dProps, "bbox">;
@@ -1961,7 +1961,7 @@ export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
     readonly modelId?: Id64String;
 }
 
-// @beta
+// @public
 export const Easing: {
     Linear: {
         None: (k: number) => number;

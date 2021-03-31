@@ -123,16 +123,11 @@ public;DisplayStyleSubCategoryProps
 beta;DomainOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
-<<<<<<< HEAD
-public;Easing:
-public;EasingFunction = (k: number) => number
-=======
 beta;DynamicGraphicsRequest2dProps 
 beta;DynamicGraphicsRequest3dProps 
 beta;DynamicGraphicsRequestProps 
-beta;Easing:
-beta;EasingFunction = (k: number) => number
->>>>>>> 84d07af7dae7cb20d3c10c88030764552d8b2543
+public;Easing:
+public;EasingFunction = (k: number) => number
 public;EcefLocation 
 public;EcefLocationProps
 public;ECJsNames
@@ -579,17 +574,10 @@ internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
 alpha;TileVersionInfo
-<<<<<<< HEAD
-internal;TreeFlags
+alpha;TreeFlags
 public;Tween
 public;TweenCallback = (obj: any) => void
 public;Tweens
-=======
-alpha;TreeFlags
-beta;Tween
-beta;TweenCallback = (obj: any) => void
-beta;Tweens
->>>>>>> 84d07af7dae7cb20d3c10c88030764552d8b2543
 public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
