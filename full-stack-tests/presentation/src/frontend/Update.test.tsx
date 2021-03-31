@@ -190,7 +190,7 @@ describe("Update", () => {
               },
             },
           ],
-          [{ ["Physical Object"]: ["Physical Object [0-39]"] }],
+          [{ label: "Physical Object", expanded: true, children: ["Physical Object [0-39]"] }],
         );
       });
     });
@@ -615,7 +615,7 @@ describe("Update", () => {
       expectedTree: TreeHierarchy[],
     ): Promise<VerifiedHierarchy> {
       const { result, waitForNextUpdate } = renderHook(
-        (hookProps: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(hookProps),
+        (hookProps: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(hookProps).nodeLoader,
         { initialProps: props },
       );
       await expectTree(result.current, expectedTree);
@@ -694,7 +694,7 @@ describe("Update", () => {
         expect(ruleset).to.not.be.undefined;
 
         const { result, unmount } = renderHook(
-          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
+          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props).nodeLoader,
           { initialProps: { imodel, ruleset, pagingSize: 100, enableHierarchyAutoUpdate: true } },
         );
         await loadHierarchy(result.current);

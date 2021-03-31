@@ -44,6 +44,7 @@ import { PropertyGridProps } from '@bentley/ui-components';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyValueRendererContext } from '@bentley/ui-components';
 import * as React from 'react';
+import { RenderedItemsRange } from '@bentley/ui-components';
 import { RowItem } from '@bentley/ui-components';
 import { Ruleset } from '@bentley/presentation-common';
 import { RulesetsFactory } from '@bentley/presentation-common';
@@ -170,7 +171,7 @@ export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset;
 export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
 
 // @beta @deprecated
-export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithVisibleNodesProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | Exclude<keyof P, "visibleNodes">>>;
+export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithVisibleNodesProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | "onItemsRendered" | Exclude<keyof P, "visibleNodes">>>;
 
 // @public @deprecated
 export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps>;
@@ -529,7 +530,10 @@ export function useControlledTreeFiltering(props: ControlledTreeFilteringProps):
 };
 
 // @beta
-export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): {
+    nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+    onItemsRendered: (items: RenderedItemsRange) => void;
+};
 
 // @beta
 export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): {
