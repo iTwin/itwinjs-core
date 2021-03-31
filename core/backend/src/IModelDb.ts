@@ -2647,11 +2647,11 @@ export class SnapshotDb extends IModelDb {
  *
  * Some additional details. Standalone iModels:
  * - always have [Guid.empty]($bentley) for their contextId (they are "unassociated" files)
- * - always have BriefcaseId === [BriefcaseIdValue.Unassigned]($backend)
+ * - always have BriefcaseId === [BriefcaseIdValue.Unassigned]($common)
  * - are connected to the frontend via [BriefcaseConnection.openStandalone]($frontend)
  * - may be opened without supplying any user credentials
  * - may be opened read/write
- * - may optionally support undo/redo via [[TxmManager]]
+ * - may optionally support undo/redo via [[TxnManager]]
  * - cannot apply a changeset to nor generate a changesets (since there is no timeline from which to get/push changesets)
  * @public
  */
