@@ -96,7 +96,7 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 }
 
 /** Flags controlling the structure of a tile tree. The flags are part of the tile tree's Id.
- * @internal
+ * @alpha
  */
 export enum TreeFlags {
   None = 0,
@@ -216,7 +216,7 @@ export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileT
 }
 
 /** Flags controlling how tile content is produced. The flags are part of the ContentId.
- * @internal
+ * @alpha
  */
 export enum ContentFlags {
   None = 0,

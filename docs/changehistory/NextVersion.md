@@ -102,3 +102,47 @@ The beta class `QuantityFormatSettingsPanel` was renamed to `QuantityFormatSetti
 #### UnitProps property name change
 
 The interface [UnitProps]($quantity) property `unitFamily` has been renamed to `phenomenon` to be consistent with naming in `ecschema-metadata` package.
+
+### @bentley/presentation-components package
+
+Return value of [usePresentationTreeNodeLoader]($presentation-components) hook was changed from
+
+```ts
+PagedTreeNodeLoader<IPresentationTreeDataProvider>
+```
+
+to
+
+```ts
+{
+  nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+  onItemsRendered: (items: RenderedItemsRange) => void;
+}
+```
+
+Callback `onItemsRendered` returned from [usePresentationTreeNodeLoader]($presentation-components) hook should be passed to [ControlledTree]($ui-components) when property `enableHierarchyAutoUpdate` on [PresentationTreeNodeLoaderProps]($presentation-components) is set to true. If hierarchy auto update is not enabled replace:
+
+```ts
+const nodeLoader = usePresentationTreeNodeLoader(props);
+```
+
+With:
+
+```ts
+const { nodeLoader } = usePresentationTreeNodeLoader(props);
+```
+
+If hierarchy auto update is enabled replace:
+
+```ts
+const nodeLoader = usePresentationTreeNodeLoader(props);
+```
+
+With:
+
+```tsx
+const { nodeLoader, onItemsRendered } = usePresentationTreeNodeLoader(props);
+return <ControlledTree
+  onItemsRendered={onItemsRendered}
+/>;
+```

@@ -63,7 +63,7 @@ beta;UnifiedSelectionState = (selectionLevel?: number) => Readonly
 beta;UnifiedSelectionTreeEventHandler 
 beta;UnifiedSelectionTreeEventHandlerParams
 beta;useControlledTreeFiltering(props: ControlledTreeFilteringProps):
-beta;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader
+beta;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps):
 beta;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps):
 public;useRulesetRegistration(ruleset: Ruleset): void
 beta;useUnifiedSelectionContext(): UnifiedSelectionContext | undefined

@@ -7284,6 +7284,9 @@ export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Car
 // @internal
 export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined;
 
+// @beta
+export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise<RenderGraphic | undefined>;
+
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
@@ -10018,7 +10021,6 @@ export class TileAdmin {
     registerViewport(vp: Viewport): void;
     // @internal (undocumented)
     requestCachedTileContent(tile: IModelTile): Promise<Uint8Array | undefined>;
-    // @internal (undocumented)
     requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     // @internal
     requestTiles(vp: Viewport, tiles: Set<Tile>): void;
