@@ -11546,9 +11546,7 @@ export class ViewClipTool extends PrimitiveTool {
 // @beta
 export class ViewCreator2d {
     constructor(_imodel: IModelConnection);
-    createViewForModel(modelId: Id64String, modelType: string, options?: ViewCreator2dOptions): Promise<ViewState>;
-    static isDrawingModelClass(modelType: string): boolean;
-    static isSheetModelClass(modelType: string): boolean;
+    createViewForModel(modelId: Id64String, options?: ViewCreator2dOptions): Promise<ViewState>;
     }
 
 // @beta
