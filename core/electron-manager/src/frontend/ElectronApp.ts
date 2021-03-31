@@ -10,8 +10,9 @@ import { ElectronRpcManager } from "../common/ElectronRpcManager";
 
 /**
  * Frontend Ipc support for Electron apps.
+ * @beta
  */
-class ElectronIpc implements IpcSocketFrontend {
+export class ElectronIpc implements IpcSocketFrontend {
   private _api: ITwinElectronApi;
   public addListener(channelName: string, listener: IpcListener) {
     this._api.addListener(channelName, listener);
