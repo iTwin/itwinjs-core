@@ -18,7 +18,7 @@ import { IModelApp } from "./imodeljs-frontend";
 import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
-/** Properties for specifying the Briefcaseid for downloading
+/** Properties for specifying the BriefcaseId for downloading
  * @beta
  */
 export type DownloadBriefcaseId =
