@@ -13,7 +13,7 @@ import { SchemaProps } from "@bentley/ecschema-metadata";
  * @Internal
  */
 export abstract class MetadataRpcInterface extends RpcInterface {
-  /** The version of the gateway. */
+  /** The version of the RpcInterface. */
   public static version = "1.0.0";
 
   public static readonly interfaceName = "SchemaRpcInterface";
@@ -45,13 +45,4 @@ export abstract class MetadataRpcInterface extends RpcInterface {
     return this.forward.apply(this, [arguments]) as Promise<SchemaProps>;
   }
 
-  /**
-   * Gets the ECSQL column header values for the ECSQL query.
-   * @param IModelToken       The iModelToken holds information which iModel is used.
-   * @param ecsql             The ecsql to retrieve column headers from.
-   * @returns                 An array with only ECSQL header values.
-   */
-  public async getQueryColumnHeaders(_tokenProps: IModelRpcProps, _ecsql: string): Promise<any[]> {
-    return this.forward(arguments);
-  }
 }
