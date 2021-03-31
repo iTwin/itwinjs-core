@@ -1937,7 +1937,7 @@ export enum DownloadBriefcaseStatus {
 // @beta
 export type DPoint2dProps = number[];
 
-// @beta
+// @public
 export const Easing: {
     Linear: {
         None: (k: number) => number;
@@ -1994,7 +1994,7 @@ export const Easing: {
     };
 };
 
-// @beta (undocumented)
+// @public (undocumented)
 export type EasingFunction = (k: number) => number;
 
 // @public
@@ -3779,7 +3779,7 @@ export abstract class IModel implements IModelProps {
     toJSON(): IModelConnectionProps;
 }
 
-// @alpha (undocumented)
+// @public
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
 // @beta
@@ -4040,7 +4040,7 @@ export enum InternetConnectivityStatus {
     Online = 0
 }
 
-// @beta
+// @public
 export const Interpolation: {
     Linear: (v: any, k: number) => number;
     Bezier: (v: any, k: number) => number;
@@ -4053,7 +4053,7 @@ export const Interpolation: {
     };
 };
 
-// @beta (undocumented)
+// @public (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
 // @internal (undocumented)
@@ -5730,7 +5730,7 @@ export interface RelatedElementProps {
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
-// @beta
+// @public
 export type RemoveFunction = () => void;
 
 // @beta
@@ -7001,7 +7001,7 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     modelSelectorId: Id64String;
 }
 
-// @beta
+// @public
 export type StandaloneOpenOptions = OpenDbKey;
 
 // @beta
@@ -7629,7 +7629,7 @@ export enum TreeFlags {
     UseProjectExtents = 1
 }
 
-// @beta
+// @public
 export class Tween {
     constructor(_group: Tweens, _object: any);
     // (undocumented)
@@ -7684,10 +7684,10 @@ export class Tween {
     yoyo(yoyo: boolean): this;
     }
 
-// @beta (undocumented)
+// @public (undocumented)
 export type TweenCallback = (obj: any) => void;
 
-// @beta
+// @public
 export class Tweens {
     // (undocumented)
     add(tween: Tween): void;
@@ -7767,7 +7767,7 @@ export enum TypeOfChange {
     Property = 1
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
 
 // @beta
