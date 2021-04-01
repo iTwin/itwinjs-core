@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { Briefcase as HubBriefcase, BriefcaseQuery, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
+import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IModelApp, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -24,6 +24,7 @@ export class TestUtility {
     connectionRead: "ConnectionReadTest",
     smallTex: "SmallTex",
     sectionDrawingLocations: "SectionDrawingLocations",
+    synchro: "SYNCHRO.UTK",
   };
 
   public static testSnapshotIModels = {

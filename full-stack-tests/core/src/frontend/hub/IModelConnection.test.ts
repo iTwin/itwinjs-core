@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Guid, Id64, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Id64, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
 import {

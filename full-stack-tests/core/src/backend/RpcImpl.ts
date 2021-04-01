@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
-import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
+import { ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
+import { IModelBankClient } from "@bentley/imodelhub-client";
 import {
   BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs,
 } from "@bentley/imodeljs-backend";

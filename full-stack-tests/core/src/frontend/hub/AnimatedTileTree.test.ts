@@ -29,7 +29,7 @@ describe("Animated tile trees (#integration)", () => {
       applicationVersion: "1.2.1.1",
     });
     const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const iModelId = await TestUtility.queryIModelIdbyName(contextId, "SYNCHRO.UTK");
+    const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchro);
     imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
