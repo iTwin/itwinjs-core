@@ -91,10 +91,6 @@ The following APIs have been promoted to `public`. Public APIs are guaranteed to
 
 All hyper-modeling APIs are now public. [This interactive sample](https://www.itwinjs.org/sample-showcase/?group=Viewer&sample=hypermodeling-sample&imodel=House+Sample) demonstrates how to use hyper-modeling features.
 
-### [@bentley/imodeljs-frontend](https://www.itwinjs.org/reference/imodeljs-frontend/)
-
-* [ViewGlobeSatelliteTool]($frontend), [ViewGlobeBirdTool]($frontend), [ViewGlobeLocationTool]($frontend), [ViewGlobeIModelTool]($frontend) are tools for viewing the iModel in a global context.
-
 ## Breaking API changes
 
 ### @bentley/ui-core package
