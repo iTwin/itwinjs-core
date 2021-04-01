@@ -78,14 +78,24 @@ It was, however, confusing from a usage and documentation perspective and needed
 ## Promoted APIs
 
 The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
+
 ### @bentley/bentleyjs-core
-  * [assert]($bentleyjs-core) for asserting logic invariants.
-  * [ProcessDetector]($bentleyjs-core) for querying the type of executing Javascript process.
-  * [ObservableSet]($bentleyjs-core) for a [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents are modified.
-  * [ByteStream]($bentleyjs-core) for extracting data from binary streams.
-  * Types related to collections of [Id64String]($bentleyjs-core)s
-    * [OrderedId64Iterable]($bentleyjs-core) and [OrderedId64Array]($bentleyjs-core)
-    * [CompressedId64Set]($bentleyjs-core) and [MutableCompressedId64Set]($bentleyjs-core)
+
+* [assert]($bentleyjs-core) for asserting logic invariants.
+* [ProcessDetector]($bentleyjs-core) for querying the type of executing JavaScript process.
+* [ObservableSet]($bentleyjs-core) for a [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents are modified.
+* [ByteStream]($bentleyjs-core) for extracting data from binary streams.
+* Types related to collections of [Id64String]($bentleyjs-core)s
+  * [OrderedId64Iterable]($bentleyjs-core) and [OrderedId64Array]($bentleyjs-core)
+  * [CompressedId64Set]($bentleyjs-core) and [MutableCompressedId64Set]($bentleyjs-core)
+
+### @bentley/imodeljs-common
+
+* [Tween]($common) for smooth interpolation of values (based on [Tween.js](https://github.com/tweenjs/tween.js/blob/master/docs/user_guide.md))
+
+### @bentley/imodeljs-backend
+
+* [StandaloneDb]($backend) for opening Standalone iModels
 
 ## Breaking API changes
 
