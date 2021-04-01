@@ -59,7 +59,7 @@ export interface ElectronHostOptions {
   ipcHandlers?: (typeof IpcHandler)[];
   /** Authorization configuration */
   authConfig?: NativeAppAuthorizationConfiguration;
-  applicationName: never; // this should be supplied in NativeHostOpts
+  applicationName?: never; // this should be supplied in NativeHostOpts
 }
 
 /** @beta */

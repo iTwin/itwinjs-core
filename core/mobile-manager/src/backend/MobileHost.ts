@@ -152,10 +152,11 @@ export class MobileHost {
     if (IpcHost.isValid)
       MobileAppHandler.register();
 
-    const authConfig = opt?.mobileHost?.authConfig ?? {} as any;
-    authConfig.clientId = authConfig.clientId ?? opt?.nativeHost?.applicationName ?? "electron-app";
-    authConfig.redirectUri = authConfig.redirectUri ?? "imodeljs://app/signin-callback";
-    authConfig.scope = authConfig.scope ?? "openid email profile organization  offline_access";
+    const authConfig = opt?.mobileHost?.authConfig ?? {
+      clientId: opt?.nativeHost?.applicationName ?? "electron-app",
+      redirectUri: "imodeljs://app/signin-callback",
+      scope: "openid email profile organization  offline_access",
+    };
 
     IModelHost.authorizationClient = new MobileAuthorizationBackend(authConfig);
 

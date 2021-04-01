@@ -8,9 +8,8 @@
 
 import { BeEvent, Config, GuidString, Logger, SessionProps } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
-  NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
-  RequestNewBriefcaseProps, StorageValue, SyncMode,
+  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps, nativeAppChannel,
+  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -100,7 +99,7 @@ export class NativeAppAuthorization {
  */
 export interface NativeAppOpts extends IpcAppOptions {
   nativeApp?: {
-    authConfig: never; // this used to be supplied here, but is now supplied in ElectronHostOpts or MobileHostOpts
+    authConfig?: never; // this used to be supplied here, but is now supplied in ElectronHostOpts or MobileHostOpts
   };
 }
 

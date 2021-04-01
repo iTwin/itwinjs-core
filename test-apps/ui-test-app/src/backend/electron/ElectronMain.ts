@@ -23,7 +23,7 @@ export async function initializeElectron() {
         clientId: "imodeljs-electron-test",
         redirectUri: "http://localhost:3000/signin-callback",
         scope: "openid email profile organization imodelhub context-registry-service:read-only product-settings-service projectwise-share urlps-third-party imodel-extension-service-api offline_access",
-      }
+      },
     },
     nativeHost: {
       applicationName: "ui-test-app",

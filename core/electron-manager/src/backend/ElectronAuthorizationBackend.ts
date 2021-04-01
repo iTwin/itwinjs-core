@@ -10,7 +10,6 @@
 
 import { AuthStatus, BentleyError, ClientRequestContext, Logger, SessionProps } from "@bentley/bentleyjs-core";
 import { IModelHost, NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
-import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
@@ -36,7 +35,6 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   private _tokenStore?: ElectronTokenStore;
   public get tokenStore() { return this._tokenStore!; }
-
 
   /**
    * Used to initialize the client - must be awaited before any other methods are called.

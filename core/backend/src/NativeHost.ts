@@ -68,7 +68,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     NativeHost.authorization.setAccessToken(AccessToken.fromJson(token));
   }
   public async initializeAuth(props: SessionProps): Promise<number> {
-    NativeHost.authorization.initialize(props);
+    await NativeHost.authorization.initialize(props);
     return NativeHost.authorization.expireSafety;
   }
   public async signIn(): Promise<void> {
