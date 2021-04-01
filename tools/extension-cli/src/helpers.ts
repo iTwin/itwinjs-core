@@ -12,12 +12,12 @@ export async function signIn(): Promise<AccessToken> {
   const clientId = "imodeljs-extension-publisher";
   const redirectUri = "http://localhost:5001/signin-oidc";
   const requestContext = new ClientRequestContext();
-  const client = new ElectronAuthorizationBackend();
-  await client.initialize(requestContext, {
+  const client = new ElectronAuthorizationBackend({
     clientId,
     redirectUri,
     scope: "openid imodel-extension-service-api context-registry-service:read-only offline_access imodel-extension-service:modify",
   });
+  await client.initialize(requestContext);
   return new Promise<AccessToken>((resolve, reject) => {
     NativeHost.onUserStateChanged.addListener((token) => {
       if (token !== undefined) {

@@ -261,7 +261,7 @@ export class SampleAppIModelApp {
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
     // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
-    const lastTheme = (window.localStorage&&window.localStorage.getItem("uifw:defaultTheme"))??SYSTEM_PREFERRED_COLOR_THEME;
+    const lastTheme = (window.localStorage && window.localStorage.getItem("uifw:defaultTheme")) ?? SYSTEM_PREFERRED_COLOR_THEME;
     const defaults = {
       colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
       dragInteraction: false,
@@ -587,7 +587,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
     const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
     await UiFramework.setUiSettingsStorage(uiSettingsStorage);
-    this.setState({ authorized, uiSettingsStorage});
+    this.setState({ authorized, uiSettingsStorage });
     this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
@@ -724,9 +724,6 @@ async function main() {
     },
     webViewerApp: {
       rpcParams,
-      authConfig,
-    },
-    nativeApp: {
       authConfig,
     },
   };

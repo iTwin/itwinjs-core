@@ -999,10 +999,7 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<N
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
 
   if (ProcessDetector.isElectronAppFrontend) {
-    const clientId = "imodeljs-electron-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
-    const desktopClient = new NativeAppAuthorization(oidcConfiguration);
+    const desktopClient = new NativeAppAuthorization();
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {

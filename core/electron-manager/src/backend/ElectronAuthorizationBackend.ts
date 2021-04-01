@@ -37,13 +37,14 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private _tokenStore?: ElectronTokenStore;
   public get tokenStore() { return this._tokenStore!; }
 
+
   /**
    * Used to initialize the client - must be awaited before any other methods are called.
    * The call attempts a silent sign-if possible.
    */
-  public async initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
-    await super.initialize(props, config);
-    this._tokenStore = new ElectronTokenStore(config.clientId);
+  public async initialize(props: SessionProps): Promise<void> {
+    await super.initialize(props);
+    this._tokenStore = new ElectronTokenStore(this.config.clientId);
 
     const url = await this.getUrl(ClientRequestContext.fromJSON(props));
     const tokenRequestor = new NodeRequestor(); // the Node.js based HTTP client

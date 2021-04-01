@@ -17,12 +17,12 @@ describe.skip("ExtensionClient CLI (#integration)", () => {
 
     // Initialize an DesktopAuthorizationClient to delete refresh token from global store, then dispose it.
     const requestContext = new ClientRequestContext();
-    const client = new ElectronAuthorizationBackend();
-    await client.initialize(requestContext, {
+    const client = new ElectronAuthorizationBackend({
       clientId: "imodeljs-extension-publisher",
       redirectUri: "",
       scope: "",
     });
+    await client.initialize(requestContext);
     await (client as any)._tokenStore.delete();
 
     const token = await signIn();

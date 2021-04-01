@@ -16,8 +16,12 @@ export async function initializeBackend() {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
   if (ProcessDetector.isElectronAppBackend) {
+    const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+    const clientId = "imodeljs-electron-test";
+    const redirectUri = "http://localhost:3000/signin-callback";
+    const authConfig = { clientId, redirectUri, scope: `${scope} offline_access` };
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
-    await ElectronHost.startup({ electronHost: { webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces } });
+    await ElectronHost.startup({ electronHost: { webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces, authConfig } });
   } else
     await IModelHost.startup();
 }

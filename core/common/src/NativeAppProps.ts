@@ -55,7 +55,7 @@ export interface NativeAppAuthorizationConfiguration {
 
   /**
    * Upon signing in, the client application receives a response from the Bentley IMS OIDC/OAuth2 provider at this URI
-   * For mobile/desktop applications, must be `http://localhost:${redirectPort}` or `https://localhost:${redirectPort}`
+   * For mobile/desktop applications, must start with `http://localhost:${redirectPort}` or `https://localhost:${redirectPort}`
    */
   readonly redirectUri: string;
 
@@ -81,7 +81,10 @@ export interface NativeAppAuthorizationConfiguration {
 export interface NativeAppFunctions {
   silentLogin: (token: AccessTokenProps) => Promise<void>;
 
-  initializeAuth: (props: ClientRequestContextProps, config: NativeAppAuthorizationConfiguration) => Promise<void>;
+  /** initialize authorization client.
+   * @return expirySafety in seconds
+   */
+  initializeAuth: (props: ClientRequestContextProps) => Promise<number>;
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
   signIn: () => Promise<void>;

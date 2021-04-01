@@ -18,8 +18,8 @@ import { MobileHost } from "./MobileHost";
 export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
 
   /** Used to initialize the client - must be awaited before any other methods are called */
-  public async initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
-    await super.initialize(props, config);
+  public async initialize(props: SessionProps): Promise<void> {
+    await super.initialize(props);
 
     const requestContext = ClientRequestContext.fromJSON(props);
     if (!this.config.issuerUrl)
@@ -41,7 +41,7 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
     };
 
     return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authInit(requestContext, config, (err?: string) => {
+      MobileHost.device.authInit(requestContext, this.config, (err?: string) => {
         if (!err) {
           resolve();
         } else {
