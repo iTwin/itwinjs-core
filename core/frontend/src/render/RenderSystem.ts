@@ -608,7 +608,7 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      *
      * Default value: false
      *
-     * @public
+     * @beta
      */
     doIdleWork?: boolean;
 
