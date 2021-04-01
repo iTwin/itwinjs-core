@@ -619,7 +619,10 @@ export class TileAdmin {
     return { tokenProps, treeId, contentId, guid };
   }
 
-  /** @internal */
+  /** Request graphics for a single element or geometry stream.
+   * @see [[readElementGraphics]] to convert the result into a [[RenderGraphic]] for display.
+   * @beta
+   */
   public async requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
