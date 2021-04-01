@@ -131,6 +131,16 @@ describe("MessageCenter", () => {
     expect(statusBarInstance.state.openWidget).eq("test-widget");
   });
 
+  it("Message Center should open on OpenMessageCenterEvent", () => {
+    const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
+
+    const statusBarInstance = wrapper.instance();
+    expect(statusBarInstance.state.openWidget).null;
+
+    MessageManager.onOpenMessageCenterEvent.emit({});
+    expect(statusBarInstance.state.openWidget).not.null;
+  });
+
   // nz-footer-messageCenter-tab
 
 });
