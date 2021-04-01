@@ -26,6 +26,7 @@ import { BentleyCloudRpcParams } from '@bentley/imodeljs-common';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import { BoundingSphere } from '@bentley/imodeljs-common';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { BrowserAuthorizationClientConfiguration } from '@bentley/frontend-authorization-client';
@@ -9833,9 +9834,10 @@ export abstract class Tile {
     protected constructor(params: TileParams, tree: TileTree);
     // @internal (undocumented)
     protected addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void;
+    readonly boundingSphere: BoundingSphere;
     // @internal
     bytesUsed: number;
-    readonly center: Point3d;
+    get center(): Point3d;
     abstract get channel(): TileRequestChannel;
     get children(): Tile[] | undefined;
     protected _childrenLoadStatus: TileTreeLoadStatus;
@@ -9899,7 +9901,7 @@ export abstract class Tile {
     // @internal
     previous?: LRUTileListNode;
     produceGraphics(): RenderGraphic | undefined;
-    readonly radius: number;
+    get radius(): number;
     readonly range: ElementAlignedBox3d;
     // @internal (undocumented)
     protected get rangeGraphicColor(): ColorDef;
