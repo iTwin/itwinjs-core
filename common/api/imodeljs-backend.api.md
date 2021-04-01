@@ -60,6 +60,7 @@ import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementAspectProps } from '@bentley/imodeljs-common';
 import { ElementGeometryRequest } from '@bentley/imodeljs-common';
 import { ElementGeometryUpdate } from '@bentley/imodeljs-common';
+import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
 import { ElementLoadProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
 import { EntityMetaData } from '@bentley/imodeljs-common';
@@ -2188,6 +2189,9 @@ export abstract class FunctionalType extends TypeDefinitionElement {
     static get className(): string;
 }
 
+// @internal
+export function generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise<Uint8Array | undefined>;
+
 // @public
 export class GenericDocument extends Document {
     constructor(props: ElementProps, iModel: IModelDb);
@@ -2532,6 +2536,8 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
+    // @beta
+    generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
     // @beta
@@ -4080,7 +4086,7 @@ export enum SqliteValueType {
     String = 3
 }
 
-// @internal
+// @public
 export class StandaloneDb extends IModelDb {
     get changeSetId(): undefined;
     static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;

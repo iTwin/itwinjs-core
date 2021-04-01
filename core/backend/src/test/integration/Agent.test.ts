@@ -31,24 +31,36 @@ describe("Agent iModel Download (#integration)", () => {
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
     const jwt = await agentClient.getAccessToken(new ClientRequestContext());
     requestContext = new AuthorizedBackendRequestContext(jwt);
+    requestContext.enter();
 
-    testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
-    testReadIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, "ReadOnlyTest");
-    testWriteIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, "ReadWriteTest");
+    testProjectId = await HubUtility.getTestContextId(requestContext);
+    requestContext.enter();
+
+    testReadIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
+    requestContext.enter();
+
+    testWriteIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readWrite);
+    requestContext.enter();
   });
 
   after(async () => {
+    requestContext.enter();
+
     // Purge briefcases that are close to reaching the acquire limit
-    await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
-    await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadWriteTest");
+    await HubUtility.purgeAcquiredBriefcasesById(requestContext, testReadIModelId);
+    requestContext.enter();
+    await HubUtility.purgeAcquiredBriefcasesById(requestContext, testWriteIModelId);
+    requestContext.enter();
   });
 
   it("Agent should be able to open a checkpoint", async () => {
+    requestContext.enter();
     const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testReadIModelId });
     assert.isDefined(iModelDb);
   });
 
   it("Agent should be able to open a briefcase", async () => {
+    requestContext.enter();
     const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testProjectId, iModelId: testWriteIModelId });
     assert.isDefined(iModelDb);
   });

@@ -418,6 +418,7 @@ alpha;QuantityFormatPanelProps
 beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element
 beta;QuantityProps 
 public;ReactDataGridColumn 
+alpha;RenderedItemsRange
 public;ResultSelector 
 public;ResultSelectorProps 
 public;RowItem
