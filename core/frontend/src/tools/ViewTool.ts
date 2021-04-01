@@ -3183,6 +3183,7 @@ export class ViewGlobeSatelliteTool extends ViewTool {
     this.doAnimate = doAnimate;
   }
 
+  /** @internal */
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
       return (await this._beginSatelliteView(ev.viewport, this.oneShot, this.doAnimate)) ? EventHandled.Yes : EventHandled.No;
@@ -3190,6 +3191,7 @@ export class ViewGlobeSatelliteTool extends ViewTool {
     return EventHandled.No;
   }
 
+  /** @internal */
   public onPostInstall() {
     super.onPostInstall();
     const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
@@ -3237,6 +3239,7 @@ export class ViewGlobeBirdTool extends ViewTool {
     this.doAnimate = doAnimate;
   }
 
+  /** @internal */
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
       return (await this._beginDoBirdView(ev.viewport, this.oneShot, this.doAnimate)) ? EventHandled.Yes : EventHandled.No;
@@ -3244,6 +3247,7 @@ export class ViewGlobeBirdTool extends ViewTool {
     return EventHandled.No;
   }
 
+  /** @internal */
   public onPostInstall() {
     super.onPostInstall();
     const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
@@ -3335,6 +3339,7 @@ export class ViewGlobeLocationTool extends ViewTool {
     return true;
   }
 
+  /** @internal */
   public onPostInstall() {
     super.onPostInstall();
     (async () => {
@@ -3369,6 +3374,7 @@ export class ViewGlobeIModelTool extends ViewTool {
     this.doAnimate = doAnimate;
   }
 
+  /** @internal */
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
       return this._doIModelView() ? EventHandled.Yes : EventHandled.No;
@@ -3376,6 +3382,7 @@ export class ViewGlobeIModelTool extends ViewTool {
     return EventHandled.No;
   }
 
+  /** @internal */
   public onPostInstall() {
     super.onPostInstall();
     this._doIModelView();
