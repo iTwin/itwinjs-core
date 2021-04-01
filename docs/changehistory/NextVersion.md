@@ -98,6 +98,10 @@ All hyper-modeling APIs are now public. [This interactive sample](https://www.it
 * [ThematicDisplay]($frontend) for colorizing a [Viewport]($frontend)'s scene based on aspects of the rendered geometry. [This interactive sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=thematic-display-sample&imodel=CoffsHarborDemo) demonstrates the usage of thematic display.
 * [Tween]($common) for smooth interpolation of values (based on [Tween.js](https://github.com/tweenjs/tween.js/blob/master/docs/user_guide.md))
 
+### [@bentley/imodeljs-frontend](https://www.itwinjs.org/reference/imodeljs-frontend/)
+
+* [ViewGlobeSatelliteTool]($frontend), [ViewGlobeBirdTool]($frontend), [ViewGlobeLocationTool]($frontend), [ViewGlobeIModelTool]($frontend) for viewing the iModel in a global context.
+
 ### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
 
 * [StandaloneDb]($backend) for opening Standalone iModels
