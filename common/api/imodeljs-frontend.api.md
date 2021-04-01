@@ -1577,10 +1577,9 @@ export class BingElevationProvider {
     protected _requestContext: ClientRequestContext;
     }
 
-// @internal
+// @public
 export class BingLocationProvider {
     constructor();
-    // @public
     getLocation(query: string): Promise<GlobalLocation | undefined>;
     // (undocumented)
     protected _requestContext: ClientRequestContext;

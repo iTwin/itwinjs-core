@@ -39,6 +39,7 @@ export class BingElevationProvider {
   private _heightListRequestTemplate: string;
   protected _requestContext = new ClientRequestContext("");
 
+  /** @public */
   constructor() {
     let bingKey = "";
     if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps) {
@@ -50,7 +51,7 @@ export class BingElevationProvider {
   }
 
   /** Return the height (altitude) at a given cartographic location.
-   * If [[geodetic]] is true (the default) then height is returned in the Ellipsoidal WGS84 datum.  If [[geodetic]] is false then the sea level height id returned using the Earth Gravitational Model 2008 (EGM2008 2.5’).
+   * If geodetic is true (the default) then height is returned in the Ellipsoidal WGS84 datum.  If geodetic is false then the sea level height id returned using the Earth Gravitational Model 2008 (EGM2008 2.5’).
    * @public
    */
   public async getHeight(carto: Cartographic, geodetic = true) {
@@ -88,7 +89,7 @@ export class BingElevationProvider {
     }
   }
   /** Get the height (altitude) at a given iModel coordinate.  The height is geodetic (WGS84 ellipsoid)
-   * If [[geodetic]] is true (the default) then height is returned in the Ellipsoidal WGS84 datum.  If [[geodetic]] is false then sea level height is returned using the Earth Gravitational Model 2008 (EGM2008 2.5’).
+   * If geodetic is true (the default) then height is returned in the Ellipsoidal WGS84 datum.  If geodetic is false then sea level height is returned using the Earth Gravitational Model 2008 (EGM2008 2.5’).
    *
    * @public
    */
