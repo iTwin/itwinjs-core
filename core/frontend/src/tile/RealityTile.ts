@@ -49,7 +49,7 @@ export class RealityTile extends Tile {
       return;
 
     // Can transform be non-rigid?? -- if so would have to handle (readonly) radius.
-    this.transformToRoot.multiplyPoint3d(this.center, this.center);
+    this.boundingSphere.transformBy(this.transformToRoot, this.boundingSphere);
     this.transformToRoot.multiplyRange(this.range, this.range);
 
     if (this.rangeCorners)
