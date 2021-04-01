@@ -14,17 +14,17 @@ import { IModelApp, IModelAppOptions } from "./IModelApp";
 
 /**
  * type check for an function that returns a Promise
- * @beta
+ * @public
  */
 export type AsyncFunction = (...args: any) => Promise<any>;
 /**
  * a type that is the list of the asynchronous functions in an interface
- * @beta
+ * @public
  */
 export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P : never }[keyof T];
 /**
  * get the type of the promised value of an asynchronous function
- * @beta
+ * @public
  */
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 

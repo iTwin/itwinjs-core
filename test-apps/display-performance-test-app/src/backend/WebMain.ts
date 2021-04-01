@@ -54,7 +54,7 @@ function startWebServer() {
   process.argv.forEach((arg) => {
     if (arg.split(".").pop() === "json")
       DisplayPerfRpcInterface.jsonFilePath = arg;
-    else if (arg === "chrome" || arg === "edge" || arg === "firefox")
+    else if (arg === "chrome" || arg === "edge" || arg === "firefox" || arg === "safari")
       browser = arg;
     else if (arg === "headless")
       chromeFlags.push("--headless");
@@ -99,13 +99,29 @@ function startWebServer() {
   // ---------------------------------------------
   // Start the browser, if given a specific one
   // ---------------------------------------------
-  if (browser === "chrome")
-    chromeLauncher.launch({ // eslint-disable-line @typescript-eslint/no-floating-promises
-      startingUrl: "http://localhost:3000",
-      chromeFlags,
-    }).then((val) => { DisplayPerfRpcInterface.chrome = val; });
-  else if (browser === "firefox")
-    child_process.execSync("start firefox http://localhost:3000");
-  else if (browser === "edge")
-    child_process.execSync("start microsoft-edge:http://localhost:3000");
+  switch (browser) {
+    case "chrome":
+      if (process.platform === "darwin") { // Ie, if running on Mac
+        child_process.execSync("open -a \"Google Chrome\" http://localhost:3000");
+      } else {
+        chromeLauncher.launch({ // eslint-disable-line @typescript-eslint/no-floating-promises
+          startingUrl: "http://localhost:3000",
+          chromeFlags,
+        }).then((val) => { DisplayPerfRpcInterface.chrome = val; });
+      }
+      break;
+    case "edge":
+      child_process.execSync("start microsoft-edge:http://localhost:3000");
+      break;
+    case "safari":
+      child_process.execSync("open -a Safari http://localhost:3000");
+      break;
+    case "firefox":
+      if (process.platform === "darwin") { // Ie, if running on Mac
+        child_process.execSync("open -a firefox http://localhost:3000");
+      } else {
+        child_process.execSync("start firefox http://localhost:3000");
+      }
+      break;
+  }
 })();

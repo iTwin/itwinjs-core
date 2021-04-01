@@ -43,8 +43,8 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
-beta;AsyncFunction = (...args: any) => Promise
-beta;AsyncMethodsOf
+public;AsyncFunction = (...args: any) => Promise
+public;AsyncMethodsOf
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -387,7 +387,7 @@ beta;PlanarClipMaskState
 internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
-beta;PromiseReturnType
+public;PromiseReturnType
 internal;QuadId
 beta;QuantityFormatOverridesChangedArgs
 beta;QuantityFormatsChangedArgs
@@ -398,6 +398,7 @@ beta;QuantityTypeDefinition
 beta;QuantityTypeKey = string
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
+beta;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileClient
@@ -593,10 +594,10 @@ beta;ViewCreator3d
 beta;ViewCreator3dOptions
 internal;viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight?: number, pitchAngleRadians?: number, location?: GlobalLocation): number
 internal;ViewGlobalLocationConstants
-beta;ViewGlobeBirdTool 
-beta;ViewGlobeIModelTool 
+public;ViewGlobeBirdTool 
+public;ViewGlobeIModelTool 
 public;ViewGlobeLocationTool 
-beta;ViewGlobeSatelliteTool 
+public;ViewGlobeSatelliteTool 
 internal;ViewHandleArray
 internal;ViewHandleType
 beta;ViewingSpace

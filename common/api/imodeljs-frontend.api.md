@@ -26,6 +26,7 @@ import { BentleyCloudRpcParams } from '@bentley/imodeljs-common';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import { BoundingSphere } from '@bentley/imodeljs-common';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { BrowserAuthorizationClientConfiguration } from '@bentley/frontend-authorization-client';
@@ -1209,10 +1210,10 @@ export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, o
 // @internal
 export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
 
-// @beta
+// @public
 export type AsyncFunction = (...args: any) => Promise<any>;
 
-// @beta
+// @public
 export type AsyncMethodsOf<T> = {
     [P in keyof T]: T[P] extends AsyncFunction ? P : never;
 }[keyof T];
@@ -1639,7 +1640,6 @@ export class BriefcaseConnection extends IModelConnection {
     // (undocumented)
     protected _isClosed?: boolean;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
-    // @internal
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     // @beta
     pullAndMergeChanges(version?: IModelVersionProps): Promise<void>;
@@ -7101,7 +7101,7 @@ export enum PrimitiveVisibility {
     Uninstanced = 2
 }
 
-// @beta
+// @public
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 // @internal (undocumented)
@@ -7275,6 +7275,9 @@ export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Car
 
 // @internal
 export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined;
+
+// @beta
+export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise<RenderGraphic | undefined>;
 
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
@@ -9824,9 +9827,10 @@ export abstract class Tile {
     protected constructor(params: TileParams, tree: TileTree);
     // @internal (undocumented)
     protected addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void;
+    readonly boundingSphere: BoundingSphere;
     // @internal
     bytesUsed: number;
-    readonly center: Point3d;
+    get center(): Point3d;
     abstract get channel(): TileRequestChannel;
     get children(): Tile[] | undefined;
     protected _childrenLoadStatus: TileTreeLoadStatus;
@@ -9890,7 +9894,7 @@ export abstract class Tile {
     // @internal
     previous?: LRUTileListNode;
     produceGraphics(): RenderGraphic | undefined;
-    readonly radius: number;
+    get radius(): number;
     readonly range: ElementAlignedBox3d;
     // @internal (undocumented)
     protected get rangeGraphicColor(): ColorDef;
@@ -10010,7 +10014,6 @@ export class TileAdmin {
     registerViewport(vp: Viewport): void;
     // @internal (undocumented)
     requestCachedTileContent(tile: IModelTile): Promise<Uint8Array | undefined>;
-    // @internal (undocumented)
     requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     // @internal
     requestTiles(vp: Viewport, tiles: Set<Tile>): void;
@@ -11579,31 +11582,31 @@ export class ViewGlobalLocationConstants {
     static readonly satelliteHeightAboveEarthInMeters: number;
 }
 
-// @beta
+// @public
 export class ViewGlobeBirdTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot?: boolean, doAnimate?: boolean);
     // (undocumented)
     doAnimate: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     oneShot: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
     // (undocumented)
     static toolId: string;
 }
 
-// @beta
+// @public
 export class ViewGlobeIModelTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot?: boolean, doAnimate?: boolean);
     // (undocumented)
     doAnimate: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     oneShot: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
     // (undocumented)
     static toolId: string;
@@ -11620,24 +11623,23 @@ export class ViewGlobeLocationTool extends ViewTool {
     static get minArgs(): number;
     // (undocumented)
     oneShot: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
-    // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     static toolId: string;
 }
 
-// @beta
+// @public
 export class ViewGlobeSatelliteTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot?: boolean, doAnimate?: boolean);
     // (undocumented)
     doAnimate: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     oneShot: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
     // (undocumented)
     static toolId: string;

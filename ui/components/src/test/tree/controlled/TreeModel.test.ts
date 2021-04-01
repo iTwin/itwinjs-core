@@ -269,6 +269,7 @@ describe("MutableTreeModel", () => {
       expect(resultStatus).to.be.true;
       expect(treeModel.getNode("testId")).to.be.undefined;
       expect(treeModel.getNode("newId")!.item).to.be.deep.equal(nodeInput.item);
+      expect(treeModel.getNode("newId")!.id).to.be.equal("newId");
     });
 
     it("updates hierarchy", () => {
