@@ -17,6 +17,7 @@
   box-sizing: border-box;
   height: 100%;
   grid-gap: 6px;
+  grid-column: 1;
   align-items: start;
   justify-items: start;
   grid-template-columns: auto 1fr;
