@@ -64,8 +64,7 @@ describe("ChangeSummary (#integration)", () => {
     assert.equal(changeSetRows[0].cnt, 0);
   }).timeout(99999);
 
-  // FIXME: This test has apparently been failing for a while now...
-  it.skip("Change cache file generation during change summary extraction", async () => {
+  it("Change cache file generation during change summary extraction", async () => {
     assert.exists(iModel);
     // for now, imodel must be open read/write for changesummary extraction
     await iModel.close();

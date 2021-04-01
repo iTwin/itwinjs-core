@@ -25,7 +25,7 @@ To run the integration tests, there is an initial configuration step required to
     imjs_test_regular_user_name=
     imjs_test_regular_user_password=
 
-    # Register a SPA client from https://developer.bentley.com/my-apps.
+    # Register a SPA client from https://developer.bentley.com/my-apps. Use the client id and redirect uri from registration.
     imjs_oidc_browser_test_client_id=
     imjs_oidc_browser_test_redirect_uri=
     imjs_oidc_browser_test_scopes="openid email profile organization imodelhub context-registry-service:read-only product-settings-service"

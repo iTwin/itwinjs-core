@@ -112,6 +112,7 @@ describe("IModelConnection (#integration)", () => {
 
   });
 
+  // TODO: This test currently causes other tests to fail due to how it restarts IModelHost
   it.skip("should be able to re-establish IModelConnection if the backend is shut down", async () => {
     let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
@@ -199,8 +200,7 @@ describe("IModelConnection (#integration)", () => {
     expect(rootTile.isLeaf).to.be.false;
   });
 
-  // This require new build of Addon
-  it.skip("ECSQL with BLOB", async () => {
+  it("ECSQL with BLOB", async () => {
     assert.exists(iModel);
     let rows = await executeQuery(iModel, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
     assert.equal(rows.length, 1);
@@ -215,6 +215,7 @@ describe("IModelConnection (#integration)", () => {
     rows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
     assert.equal(rows.length, 1);
   });
+
   // This require new build of Addon
   it.skip("Parameterized ECSQL", async () => {
     assert.exists(iModel);
