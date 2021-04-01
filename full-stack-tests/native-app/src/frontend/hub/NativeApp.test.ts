@@ -30,7 +30,7 @@ describe("NativeApp (#integration)", () => {
     });
 
     await NativeApp.callNativeHost("silentLogin", (await getAccessTokenFromBackend(TestUsers.regular)).toJSON());
-    IModelApp.authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
+    IModelApp.authorizationClient = new NativeAppAuthorization();
 
     testProjectName = Config.App.get("imjs_test_project_name");
     testIModelName = Config.App.get("imjs_test_imodel_name");

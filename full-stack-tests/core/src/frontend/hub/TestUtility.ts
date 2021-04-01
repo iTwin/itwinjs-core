@@ -32,7 +32,7 @@ export class TestUtility {
 
     let authorizationClient: FrontendAuthorizationClient;
     if (NativeApp.isValid) {
-      authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
+      authorizationClient = new NativeAppAuthorization();
       await NativeApp.callNativeHost("silentLogin", (await getAccessTokenFromBackend(user)).toJSON());
     } else {
       authorizationClient = this.imodelCloudEnv.getAuthorizationClient(undefined, user);

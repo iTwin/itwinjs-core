@@ -22,16 +22,23 @@ import { NativeAppStorage } from "./NativeAppStorage";
 /** @internal */
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
   protected _accessToken?: AccessToken;
-  protected _expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
   protected _config?: NativeAppAuthorizationConfiguration;
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   public get config(): NativeAppAuthorizationConfiguration { return this._config!; }
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
   protected abstract refreshToken(): Promise<AccessToken>;
+  public readonly expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
   public get isAuthorized(): boolean {
-    return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety);
+    return undefined !== this._accessToken && !this._accessToken.isExpired(this.expireSafety);
   }
+  public constructor(config: NativeAppAuthorizationConfiguration) {
+    super();
+    this._config = config;
+    if (config.expiryBuffer)
+      this.expireSafety = config.expiryBuffer;
+  }
+
   public setAccessToken(token?: AccessToken) {
     if (token === this._accessToken)
       return;
@@ -44,10 +51,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     return this._accessToken!;
   }
   public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
-  public async initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
-    this._config = config;
-    if (config.expiryBuffer)
-      this._expireSafety = config.expiryBuffer;
+  public async initialize(props: SessionProps) {
     IModelHost.session.applicationId = props.applicationId;
     IModelHost.applicationVersion = props.applicationVersion;
     IModelHost.sessionId = props.sessionId;
@@ -63,8 +67,9 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public async silentLogin(token: AccessTokenProps) {
     NativeHost.authorization.setAccessToken(AccessToken.fromJson(token));
   }
-  public async initializeAuth(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
-    return NativeHost.authorization.initialize(props, config);
+  public async initializeAuth(props: SessionProps): Promise<number> {
+    NativeHost.authorization.initialize(props);
+    return NativeHost.authorization.expireSafety;
   }
   public async signIn(): Promise<void> {
     return NativeHost.authorization.signIn();

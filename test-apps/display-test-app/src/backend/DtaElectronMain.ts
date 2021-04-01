@@ -49,6 +49,11 @@ const dtaElectronMain = async () => {
     rpcInterfaces: getRpcInterfaces(),
     ipcHandlers: [DtaHandler],
     developmentServer: process.env.NODE_ENV === "development",
+    authConfig: {
+      clientId: "imodeljs-electron-test",
+      redirectUri: "http://localhost:3000/signin-callback",
+      scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api offline_access",
+    }
   };
 
   await initializeDtaBackend(opts);
