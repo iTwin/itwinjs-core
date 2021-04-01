@@ -77,7 +77,14 @@ export abstract class RealityTileLoader {
     switch (format) {
       case TileFormat.Pnts:
         this._containsPointClouds = true;
-        return { graphic: readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system) };
+        let graphic = readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
+        if (graphic && tile.transformToRoot && !tile.transformToRoot.isIdentity) {
+          const transformBranch = new GraphicBranch(true);
+          transformBranch.add(graphic);
+          graphic = system.createBranch(transformBranch, tile.transformToRoot);
+        }
+
+        return { graphic};
 
       case TileFormat.B3dm:
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap());
