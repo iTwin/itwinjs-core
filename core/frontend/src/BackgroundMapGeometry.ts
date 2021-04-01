@@ -364,7 +364,7 @@ export class BackgroundMapGeometry {
   }
 }
 
-/** Calculate the ECEF to database (IModel) coordiante transform at a provided location, using the GCS of the iModel.
+/** Calculate the ECEF to database (IModel) coordinate transform at a provided location, using the GCS of the iModel.
  *  The transform will exactly represent the GCS at the provided location.
  * @public
  */
