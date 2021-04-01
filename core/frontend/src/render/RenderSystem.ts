@@ -600,12 +600,13 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      */
     planProjections?: boolean;
 
-    /** To help prevent delays when a user interacts with a [[Viewport]], the WebGL render system precompiles shader programs before any Viewport is opened.
+    /** To help prevent delays when a user interacts with a [[Viewport]], the WebGL render system can precompile shader programs before any Viewport is opened.
      * This particularly helps applications when they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and a view through the user interface.
      * Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [[ViewManager]]).
-     * To disable this feature, set this to `false`.
+     * @note Enabling this feature can slow UI interactions before a [[Viewport]] is opened.
+     * To enable this feature, set this to `true`.
      *
-     * Default value: true
+     * Default value: false
      *
      * @public
      */
