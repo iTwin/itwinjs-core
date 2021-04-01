@@ -66,7 +66,7 @@ public;BeTouchEventProps
 public;BeWheelEvent 
 public;BeWheelEventProps 
 public;BingElevationProvider
-internal;BingLocationProvider
+public;BingLocationProvider
 internal;BingMapsImageryLayerProvider 
 public;BlankConnection 
 public;BlankConnectionProps

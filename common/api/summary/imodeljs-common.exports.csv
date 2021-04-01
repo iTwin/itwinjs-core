@@ -47,10 +47,10 @@ beta;BriefcaseDownloader
 public;BriefcaseIdValue
 beta;BriefcaseProps
 internal;BriefcasePushAndPullNotifications
-beta;calculateSolarAngles(date: Date, location: Cartographic):
-beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
-beta;calculateSolarDirectionFromAngles(azimuthElevation:
-beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
+public;calculateSolarAngles(date: Date, location: Cartographic):
+public;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
+public;calculateSolarDirectionFromAngles(azimuthElevation:
+public;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
 public;CalloutProps 
 public;Camera 
 public;CameraProps
