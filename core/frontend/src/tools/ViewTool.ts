@@ -3300,7 +3300,8 @@ export class ViewGlobeLocationTool extends ViewTool {
 
   /** This runs the tool based on the provided location arguments.
    * arguments: latitude longitude | string
-   * the latitude and longitude arguments are specified in degrees
+   * If specified, the latitude and longitude arguments are numbers specified in degrees.
+   * If specified, the string argument contains a location name. Examples of location name include named geographic areas like "Seattle, WA" or "Alaska", a specific address like "1600 Pennsylvania Avenue NW, Washington, DC 20500", or a place name like "Philadelphia Museum of Art".
    **/
   public parseAndRun(...args: string[]): boolean {
     if (2 === args.length) { // try to parse latitude and longitude
