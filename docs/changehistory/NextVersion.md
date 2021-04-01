@@ -78,7 +78,7 @@ It was, however, confusing from a usage and documentation perspective and needed
 ## Promoted APIs
 
 The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
-### @bentley/bentleyjs-core
+### [@bentley/bentleyjs-core](https://www.itwinjs.org/reference/bentleyjs-core/)
   * [assert]($bentleyjs-core) for asserting logic invariants.
   * [ProcessDetector]($bentleyjs-core) for querying the type of executing Javascript process.
   * [ObservableSet]($bentleyjs-core) for a [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents are modified.
@@ -86,6 +86,10 @@ The following APIs have been promoted to `public`. Public APIs are guaranteed to
   * Types related to collections of [Id64String]($bentleyjs-core)s
     * [OrderedId64Iterable]($bentleyjs-core) and [OrderedId64Array]($bentleyjs-core)
     * [CompressedId64Set]($bentleyjs-core) and [MutableCompressedId64Set]($bentleyjs-core)
+
+### [@bentley/hypermodeling-frontend](https://www.itwinjs.org/reference/hypermodeling-frontend/)
+
+All hyper-modeling APIs are now public. [This interactive sample](https://www.itwinjs.org/sample-showcase/?group=Viewer&sample=hypermodeling-sample&imodel=House+Sample) demonstrates how to use hyper-modeling features.
 
 ## Breaking API changes
 
