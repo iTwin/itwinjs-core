@@ -110,6 +110,11 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
  */
 export class InputFieldMessageRemovedEvent extends UiEvent<{}> { }
 
+/** Open Message Center Event class.
+ * @public
+ */
+export class OpenMessageCenterEvent extends UiEvent<{}> { }
+
 /** Tool Assistance Changed event class
  * @public
  */
@@ -156,6 +161,8 @@ export class MessageManager {
 
   public static readonly onInputFieldMessageAddedEvent = new InputFieldMessageAddedEvent();
   public static readonly onInputFieldMessageRemovedEvent = new InputFieldMessageRemovedEvent();
+
+  public static readonly onOpenMessageCenterEvent = new OpenMessageCenterEvent();
 
   /** The ToolAssistanceChangedEvent is fired when a tool calls IModelApp.notifications.setToolAssistance().
    * @public
@@ -335,6 +342,13 @@ export class MessageManager {
    */
   public static hideInputFieldMessage() {
     this.onInputFieldMessageRemovedEvent.emit({});
+  }
+
+  /**
+   * Opens message center.
+   */
+  public static openMessageCenter() {
+    this.onOpenMessageCenterEvent.emit({});
   }
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */

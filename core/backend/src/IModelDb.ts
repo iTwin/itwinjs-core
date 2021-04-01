@@ -18,7 +18,7 @@ import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-clien
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
   CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
+  ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,
   IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelTileTreeProps, IModelVersion, LocalBriefcaseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
@@ -46,6 +46,7 @@ import { Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { generateElementGraphics } from "./ElementGraphics";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -1249,6 +1250,14 @@ export abstract class IModelDb extends IModel {
   public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
     return this.nativeDb.createBRepGeometry(createProps);
   }
+
+  /** Generate graphics for an element or geometry stream.
+   * @see [readElementGraphics]($frontend) to convert the result to a [RenderGraphic]($frontend) for display.
+   * @beta
+   */
+  public async generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
+    return generateElementGraphics(request, this);
+  }
 }
 
 /** @public */
@@ -1438,7 +1447,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
-     * explicitly updating it is occassionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
+     * explicitly updating it is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
      * [[GeometricElement]]s that reference those definition elements in their geometry streams.
      * @note This will throw IModelError with [IModelStatus.VersionTooOld]($bentleyjs-core) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
      * @throws IModelError if unable to update the geometry guid.
@@ -2639,21 +2648,21 @@ export class SnapshotDb extends IModelDb {
 }
 
 /** Standalone iModels are read/write files that are not managed by iModelHub.
- * They are relevant only for single-practitioner scenarios where team collaboration is necessary.
- * However, Standalone iModels are designed such that the API interaction between Standalone iModels and Briefcase
+ * They are relevant only for small-scale single-user scenarios.
+ * Standalone iModels are designed such that the API for Standalone iModels and Briefcase
  * iModels (those synchronized with iModelHub) are as similar and consistent as possible.
- * This leads to a straightforward process where the practitioner can optionally choose to upgrade to iModelHub.
+ * This leads to a straightforward process where the a user starts with StandaloneDb and can
+ * optionally choose to upgrade to iModelHub.
  *
  * Some additional details. Standalone iModels:
  * - always have [Guid.empty]($bentley) for their contextId (they are "unassociated" files)
- * - always have BriefcaseId === [BriefcaseIdValue.Unassigned]($backend)
+ * - always have BriefcaseId === [BriefcaseIdValue.Unassigned]($common)
  * - are connected to the frontend via [BriefcaseConnection.openStandalone]($frontend)
  * - may be opened without supplying any user credentials
  * - may be opened read/write
- * - may optionally support undo/redo via [[TxmManager]]
- * - cannot apply a changeset to nor generate a changesets
- * - are only available to authorized applications
- * @internal
+ * - may optionally support undo/redo via [[TxnManager]]
+ * - cannot apply a changeset to nor generate a changesets (since there is no timeline from which to get/push changesets)
+ * @public
  */
 export class StandaloneDb extends IModelDb {
   public get isStandalone(): boolean { return true; }
@@ -2729,6 +2738,7 @@ export class StandaloneDb extends IModelDb {
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
    * @returns a new StandaloneDb if the file is not currently open, and the existing StandaloneDb if it is already
    * @throws [[IModelError]] if the file is not a standalone iModel.
+   * @see [BriefcaseConnection.openStandalone]($frontend) to open a StandaloneDb from the frontend
    */
   public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
     const file = { path: filePath, key: options?.key };

@@ -602,7 +602,6 @@ describe("handleLoadedNodeHierarchy", () => {
       model.setChildren(undefined, [convertToTreeModelNodeInput(parentNode)], 0);
     });
 
-    // numChildren set to undefined indicates that this is not he first request for children response
     const loadedHierarchy: LoadedNodeHierarchy = {
       parentId: parentNode.id,
       offset: 0,
@@ -618,4 +617,46 @@ describe("handleLoadedNodeHierarchy", () => {
     expect(modelSource.getModel().getChildren(parentNode.id)).to.be.undefined;
   });
 
+  it("updates existing expanded nodes in the same position", () => {
+    const root1 = createRandomTreeNodeItem("root1", undefined, "root-node-1");
+    const root2 = createRandomTreeNodeItem("root2", undefined, "root-node-2");
+    const root3 = createRandomTreeNodeItem("root3", undefined, "root-node-3");
+    const child1 = createRandomTreeNodeItem("child1", root2.id, "child-node-1");
+    const child2 = createRandomTreeNodeItem("child2", root3.id, "child-node-2");
+    const newNode = createRandomTreeNodeItem("new-root1", undefined, "new-root-node");
+    modelSource.modifyModel((model) => {
+      model.setChildren(
+        undefined,
+        [convertToTreeModelNodeInput(root1), { ...convertToTreeModelNodeInput(root2), isExpanded: true }, { ...convertToTreeModelNodeInput(root3), isExpanded: true, description: "description" }],
+        0,
+      );
+      model.setChildren(root2.id, [convertToTreeModelNodeInput(child1)], 0);
+      model.setChildren(root3.id, [convertToTreeModelNodeInput(child2)], 0);
+    });
+
+    const loadedHierarchy: LoadedNodeHierarchy = {
+      parentId: undefined,
+      offset: 0,
+      numChildren: undefined,
+      hierarchyItems: [
+        {
+          item: newNode,
+        },
+        {
+          item: { ...root2, label: PropertyRecord.fromString("new-label"), hasChildren: true },
+        },
+        {
+          item: { ...root3, description: undefined, hasChildren: true },
+        },
+      ],
+    };
+    handleLoadedNodeHierarchy(modelSource, loadedHierarchy);
+
+    expect(modelSource.getModel().getNode(root1.id)).to.be.undefined;
+    expect(modelSource.getModel().getNode(newNode.id)).to.be.not.undefined;
+    expect(modelSource.getModel().getNode(root2.id)?.label).to.be.deep.equal(PropertyRecord.fromString("new-label"));
+    expect(modelSource.getModel().getNode(child1.id)).to.be.not.undefined;
+    expect(modelSource.getModel().getNode(root3.id)?.description).to.be.equal("");
+    expect(modelSource.getModel().getNode(child2.id)).to.be.not.undefined;
+  });
 });

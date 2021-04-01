@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Guid, Logger } from "@bentley/bentleyjs-core";
-import { ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { Guid, Id64Arg, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { ElementProps, IModelError, ViewQueryParams } from "@bentley/imodeljs-common";
+import { AsyncMethodsOf, BriefcaseConnection, IModelConnection, IpcApp, PromiseReturnType, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { PRESENTATION_TEST_APP_IPC_CHANNEL_NAME, SampleIpcInterface } from "../../common/SampleIpcInterface";
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
 export class MyAppFrontend {
@@ -19,8 +20,17 @@ export class MyAppFrontend {
   }
 
   public static async openIModel(path: string): Promise<IModelConnection> {
-    this.iModel = await SnapshotConnection.openFile(path);
-    Logger.logInfo("presentation", `Opened: ${this.iModel.name}`);
+    if (IpcApp.isValid) {
+      Logger.logInfo("presentation", `Trying to open standalone ${path}`);
+      this.iModel = await tryOpenStandalone(path);
+    }
+
+    if (!this.iModel) {
+      Logger.logInfo("presentation", `Opening snapshot: ${path}`);
+      this.iModel = await SnapshotConnection.openFile(path);
+      Logger.logInfo("presentation", `Opened snapshot: ${this.iModel.name}`);
+    }
+
     return this.iModel;
   }
 
@@ -45,4 +55,35 @@ export class MyAppFrontend {
         label: spec.userLabel ?? spec.code.value!,
       }));
   }
+
+  public static async updateElement(imodel: IModelConnection, newProps: ElementProps) {
+    if (!IpcApp.isValid)
+      throw new Error(`Updating element only supported in 'IpcApp'`);
+    return this.callIpc("updateElement", imodel.key, newProps);
+  }
+
+  public static async deleteElements(imodel: IModelConnection, elementIds: Id64Arg) {
+    if (!IpcApp.isValid)
+      throw new Error(`Deleting elements only supported in 'IpcApp'`);
+    return this.callIpc("deleteElements", imodel.key, elementIds);
+  }
+
+  private static async callIpc<T extends AsyncMethodsOf<SampleIpcInterface>>(methodName: T, ...args: Parameters<SampleIpcInterface[T]>): Promise<PromiseReturnType<SampleIpcInterface[T]>> {
+    return IpcApp.callIpcChannel(PRESENTATION_TEST_APP_IPC_CHANNEL_NAME, methodName, ...args);
+  }
+}
+
+async function tryOpenStandalone(path: string) {
+  let iModel: IModelConnection | undefined;
+  try {
+    iModel = await BriefcaseConnection.openStandalone(path, OpenMode.ReadWrite);
+    Logger.logInfo("presentation", `Opened standalone: ${iModel.name}`);
+  } catch (err) {
+    if (err instanceof IModelError) {
+      Logger.logError("presentation", `Failed to open standalone: ${err.message}`, err.getMetaData);
+    } else {
+      Logger.logError("presentation", `Failed to open standalone.`);
+    }
+  }
+  return iModel;
 }

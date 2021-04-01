@@ -1210,10 +1210,10 @@ export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, o
 // @internal
 export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
 
-// @beta
+// @public
 export type AsyncFunction = (...args: any) => Promise<any>;
 
-// @beta
+// @public
 export type AsyncMethodsOf<T> = {
     [P in keyof T]: T[P] extends AsyncFunction ? P : never;
 }[keyof T];
@@ -1649,7 +1649,6 @@ export class BriefcaseConnection extends IModelConnection {
     // (undocumented)
     protected _isClosed?: boolean;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
-    // @internal
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     // @beta
     pullAndMergeChanges(version?: IModelVersionProps): Promise<void>;
@@ -7111,7 +7110,7 @@ export enum PrimitiveVisibility {
     Uninstanced = 2
 }
 
-// @beta
+// @public
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 // @internal (undocumented)
@@ -7285,6 +7284,9 @@ export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Car
 
 // @internal
 export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined;
+
+// @beta
+export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise<RenderGraphic | undefined>;
 
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
@@ -10021,7 +10023,6 @@ export class TileAdmin {
     registerViewport(vp: Viewport): void;
     // @internal (undocumented)
     requestCachedTileContent(tile: IModelTile): Promise<Uint8Array | undefined>;
-    // @internal (undocumented)
     requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     // @internal
     requestTiles(vp: Viewport, tiles: Set<Tile>): void;
