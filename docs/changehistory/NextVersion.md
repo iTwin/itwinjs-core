@@ -91,6 +91,31 @@ The following APIs have been promoted to `public`. Public APIs are guaranteed to
 
 All hyper-modeling APIs are now public. [This interactive sample](https://www.itwinjs.org/sample-showcase/?group=Viewer&sample=hypermodeling-sample&imodel=House+Sample) demonstrates how to use hyper-modeling features.
 
+### [@bentley/imodeljs-frontend](https://www.itwinjs.org/reference/imodeljs-frontend/)
+
+* [ViewGlobeSatelliteTool]($frontend) for viewing the current camera location from approximately a satellite's height above the background map.
+* [ViewGlobeBirdTool]($frontend) for viewing the current camera location from approximately a bird's eye height above the background map.
+* [ViewGlobeLocationTool]($frontend) for navigating to and viewing a specified location on the background map.
+* [ViewGlobeIModelTool]($frontend) for navigating to and viewing the current iModel on the background map so the entire extents of the iModel is visible.
+
+### [@bentley/imodeljs-common](https://www.itwinjs.org/reference/imodeljs-common/)
+
+ The thematic display API has been promoted to public. Thematic display allows a user to colorize a scene using a color gradient in a way that provides a visual cue about certain attributes of the rendered geometry. This scene colorization will be done based on certain geometric attributes like height, surface slope, position of surfaces relative to a sun position, or geometric position relative to a list of sensors.
+
+ Thematic Display API:
+
+* [ThematicGradientMode]($common) describes the gradient mode used generate and apply a thematic effect to a scene.
+* [ThematicGradientColorScheme]($common) describes the color scheme used to generate the colors of a thematic gradient within an applied range.
+* [ThematicGradientSettingsProps]($common) contains the JSON representation of [ThematicGradientSettings]($common).
+* [ThematicGradientSettings]($common) describes the thematic settings specific to creating a color gradient used by [ThematicDisplay]($common).
+* [ThematicDisplaySensorProps]($common) contains the JSON representation of [ThematicDisplaySensor]($common).
+* [ThematicDisplaySensor]($common) describes a sensor in world space, used for the `InverseDistanceWeightedSensors` value of [ThematicDisplayMode]($common).
+* [ThematicDisplaySensorSettingsProps]($common) contains the JSON representation of [ThematicDisplaySensorSettings]($common).
+* [ThematicDisplaySensorSettings]($common) describes settings for sensor-based thematic display for the `InverseDistanceWeightedSensors` value of [ThematicDisplayMode]($common).
+* [ThematicDisplayMode]($common) describes the thematic display mode; this determines how to apply the thematic color gradient to the geometry.
+* [ThematicDisplayProps]($common) contains the JSON representation of [ThematicDisplay]($common).
+* [ThematicDisplay]($common) describes the thematic display setup.
+
 ## Breaking API changes
 
 ### @bentley/ui-core package

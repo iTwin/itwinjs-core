@@ -3169,7 +3169,7 @@ export class FitViewTool extends ViewTool {
 }
 
 /** A tool that views a location on the background map from a satellite's perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeSatelliteTool extends ViewTool {
   public static toolId = "View.GlobeSatellite";
@@ -3223,7 +3223,7 @@ export class ViewGlobeSatelliteTool extends ViewTool {
 }
 
 /** A tool that views a location on the background map from a bird's eye perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeBirdTool extends ViewTool {
   public static toolId = "View.GlobeBird";
@@ -3279,7 +3279,7 @@ export class ViewGlobeBirdTool extends ViewTool {
 /** A tool that views a location on the background map corresponding to a specified string.
  * This will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed.
  * Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeLocationTool extends ViewTool {
   private _globalLocation?: GlobalLocation;
@@ -3298,8 +3298,10 @@ export class ViewGlobeLocationTool extends ViewTool {
   public static get minArgs() { return 1; }
   public static get maxArgs() { return undefined; }
 
-  // arguments: latitude longitude | string
-  // the latitude and longitude arguments are specified in degrees
+  /** This runs the tool based on the provided location arguments.
+   * arguments: latitude longitude | string
+   * the latitude and longitude arguments are specified in degrees
+   **/
   public parseAndRun(...args: string[]): boolean {
     if (2 === args.length) { // try to parse latitude and longitude
       const latitude = parseFloat(args[0]);
@@ -3352,7 +3354,7 @@ export class ViewGlobeLocationTool extends ViewTool {
 }
 
 /** A tool that views the current iModel on the background map so that the extent of the project is visible. Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeIModelTool extends ViewTool {
   public static toolId = "View.GlobeIModel";

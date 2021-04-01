@@ -594,10 +594,10 @@ beta;ViewCreator3d
 beta;ViewCreator3dOptions
 internal;viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight?: number, pitchAngleRadians?: number, location?: GlobalLocation): number
 internal;ViewGlobalLocationConstants
-beta;ViewGlobeBirdTool 
-beta;ViewGlobeIModelTool 
-beta;ViewGlobeLocationTool 
-beta;ViewGlobeSatelliteTool 
+public;ViewGlobeBirdTool 
+public;ViewGlobeIModelTool 
+public;ViewGlobeLocationTool 
+public;ViewGlobeSatelliteTool 
 internal;ViewHandleArray
 internal;ViewHandleType
 beta;ViewingSpace

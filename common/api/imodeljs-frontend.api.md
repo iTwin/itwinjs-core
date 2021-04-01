@@ -11589,7 +11589,7 @@ export class ViewGlobalLocationConstants {
     static readonly satelliteHeightAboveEarthInMeters: number;
 }
 
-// @beta
+// @public
 export class ViewGlobeBirdTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot?: boolean, doAnimate?: boolean);
     // (undocumented)
@@ -11604,7 +11604,7 @@ export class ViewGlobeBirdTool extends ViewTool {
     static toolId: string;
 }
 
-// @beta
+// @public
 export class ViewGlobeIModelTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot?: boolean, doAnimate?: boolean);
     // (undocumented)
@@ -11619,7 +11619,7 @@ export class ViewGlobeIModelTool extends ViewTool {
     static toolId: string;
 }
 
-// @beta
+// @public
 export class ViewGlobeLocationTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot?: boolean, doAnimate?: boolean);
     // (undocumented)
@@ -11638,7 +11638,7 @@ export class ViewGlobeLocationTool extends ViewTool {
     static toolId: string;
 }
 
-// @beta
+// @public
 export class ViewGlobeSatelliteTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot?: boolean, doAnimate?: boolean);
     // (undocumented)
