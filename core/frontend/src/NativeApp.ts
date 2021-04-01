@@ -100,7 +100,7 @@ export class NativeAppAuthorization {
  */
 export interface NativeAppOpts extends IpcAppOptions {
   nativeApp?: {
-    authConfig: never; // this used to be supplied here, but now for native apps authConfig is supplied on ElectronHost or MobileHost
+    authConfig: never; // this used to be supplied here, but is now supplied in ElectronHostOpts or MobileHostOpts
   };
 }
 
