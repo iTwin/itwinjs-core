@@ -5,6 +5,7 @@
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, Unit } from "../ecschema-metadata";
 import { SchemaItemType } from "../ECObjects";
+import { UNIT_DATA } from "./UnitsData";
 
 export class UnitQuery {
   /**
@@ -84,4 +85,92 @@ export class UnitQuery {
 
     return filteredUnits;
   }
+
+  public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<Array<Unit>> {
+    const labelToFind = unitLabel.toLowerCase();
+    const unitPhenomToFind = phenomenon ? phenomenon.toLowerCase() : undefined;
+    const unitSystemToFind = unitSystem ? unitSystem.toLowerCase() : undefined;
+
+    const foundUnitsAltDisplayLabel = await this.findUnitsByAltDisplayLabel(labelToFind, unitPhenomToFind, unitSystemToFind);
+    const foundUnitsDisplayLabel = await this.findUnitsByDisplayLabel(labelToFind, schemaName, unitPhenomToFind, unitSystemToFind);
+
+    return foundUnitsAltDisplayLabel.concat(foundUnitsDisplayLabel);
+  }
+
+  public async findUnitsByDisplayLabel(displayLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<Array<Unit>> {
+    const labelToFind = displayLabel.toLowerCase();
+    const unitPhenomToFind = phenomenon ? phenomenon.toLowerCase() : undefined;
+    const unitSystemToFind = unitSystem ? unitSystem.toLowerCase() : undefined;
+    const foundUnits: Array<Unit> = [];
+
+    if (schemaName) {
+      const schemaKey = new SchemaKey(schemaName);
+      const schema = await this._context.getSchema(schemaKey);
+
+      if (!schema)
+        throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema for display label", () => {
+          return { schema: schemaName };
+        });
+
+      const schemaItems = schema.getItems();
+      for (const schemaItem of schemaItems) {
+        if (schemaItem.schemaItemType === SchemaItemType.Unit && schemaItem.label?.toLowerCase() === labelToFind) {
+          // Check if unit's phenomenon and unitSystem matches params
+          if (!unitPhenomToFind || schemaItem.phenomenon?.fullName.toLowerCase() === unitPhenomToFind) {
+            if (!unitSystemToFind || schemaItem.unitSystem?.fullName.toLowerCase() === unitSystemToFind) {
+              console.log(schemaItem.fullName);
+              foundUnits.push(schemaItem);
+            }
+          }
+        }
+      }
+    } else {
+      this._context.iterateSchemaItems((schemaItem) => {
+        if (schemaItem.schemaItemType === SchemaItemType.Unit && schemaItem.label?.toLowerCase() === labelToFind) {
+          // Check if unit's phenomenon and unitSystem matches params
+          if (!unitPhenomToFind || (schemaItem as Unit).phenomenon?.fullName.toLowerCase() === unitPhenomToFind) {
+            if (!unitSystemToFind || (schemaItem as Unit).unitSystem?.fullName.toLowerCase() === unitSystemToFind) {
+              console.log(schemaItem.fullName);
+              foundUnits.push(schemaItem as Unit);
+            }
+          }
+        }
+      });
+    }
+    return foundUnits;
+  }
+
+  /**
+   *
+   * @param unitLabel
+   * @param phenomenon
+   * @param unitSystem
+   */
+  public async findUnitsByAltDisplayLabel(altDisplayLabel: string, phenomenon?: string, unitSystem?: string): Promise<Array<Unit>> {
+    const labelToFind = altDisplayLabel.toLowerCase();
+    const unitPhenomToFind = phenomenon ? phenomenon.toLowerCase() : undefined;
+    const unitSystemToFind = unitSystem ? unitSystem.toLowerCase() : undefined;
+    const foundUnits: Array<Unit> = [];
+
+    for (const entry of UNIT_DATA) {
+      if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
+        if (entry.altDisplayLabels.findIndex((ref) => ref.toLowerCase() === labelToFind) !== -1) {
+          // Found altDisplayLabel that matches label to find
+          const unit = await this.findUnitByName(entry.name);
+          // Check if unit's phenomenon and unitSystem matches params
+          if (unitPhenomToFind && unit.phenomenon?.fullName.toLowerCase() !== unitPhenomToFind)
+            continue;
+
+          if (unitSystemToFind && unit.unitSystem?.fullName.toLowerCase() !== unitSystemToFind)
+            continue;
+
+          // console.log(unit.fullName)
+          foundUnits.push(unit);
+        }
+      }
+    }
+
+    return foundUnits;
+  }
+
 }
