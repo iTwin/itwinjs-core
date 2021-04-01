@@ -13,8 +13,8 @@ import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";
 
-/** Provides an interface to the Bing location services
- * @internal
+/** Provides an interface to the [Bing Maps location services](https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/).
+ * @public
  */
 export class BingLocationProvider {
   private _locationRequestTemplate: string;
@@ -27,9 +27,10 @@ export class BingLocationProvider {
       bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
     }
     this._locationRequestTemplate = "https://dev.virtualearth.net/REST/v1/Locations?query={query}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
-    // this._localCircularSearchRequestTemplate = "https://dev.virtualearth.net/REST/v1/LocalSearch/?CircularMapView={{circle}}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
   }
-  /** Return the location of a query (or undefined if not found)
+  /** Return the location of a query (or undefined if not found). The strings "Space Needle" (a landmark) and "1 Microsoft Way Redmond WA" (an address) are examples of query strings with location information.
+   * These strings can be specified as a structured URL parameter or as a query parameter value.  See [Bing Location Services documentation](https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/find-a-location-by-query) for additional
+   * information on queries.
    * @public
    */
   public async getLocation(query: string): Promise<GlobalLocation | undefined> {

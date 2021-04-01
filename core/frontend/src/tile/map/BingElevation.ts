@@ -22,7 +22,7 @@ import { RenderSystem } from "../../render/RenderSystem";
 
 // cspell:ignore atae qdng uyzv auje sealevel
 
-/** Provides an interface to the Bing Elevation services.
+/** Provides an interface to the [Bing Maps elevation services](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/).
  * @public
  */
 export class BingElevationProvider {
@@ -49,7 +49,8 @@ export class BingElevationProvider {
     this._heightListRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
   }
 
-  /** Return the height (altitude) at a given cartographic location
+  /** Return the height (altitude) at a given cartographic location.
+   * If [[geodetic]] is true (the default) then height is returned in the Ellipsoidal WGS84 datum.  If [[geodetic]] is false then the sea level height id returned using the Earth Gravitational Model 2008 (EGM2008 2.5’).
    * @public
    */
   public async getHeight(carto: Cartographic, geodetic = true) {
@@ -86,14 +87,16 @@ export class BingElevationProvider {
       return 0.0;
     }
   }
-  /** Get the height (altitude) at a given iModel coordinate
+  /** Get the height (altitude) at a given iModel coordinate.  The height is geodetic (WGS84 ellipsoid)
+   * If [[geodetic]] is true (the default) then height is returned in the Ellipsoidal WGS84 datum.  If [[geodetic]] is false then sea level height is returned using the Earth Gravitational Model 2008 (EGM2008 2.5’).
+   *
    * @public
    */
   public async getHeightValue(point: Point3d, iModel: IModelConnection, geodetic = true): Promise<number> {
     return this.getHeight(iModel.spatialToCartographicFromEcef(point), geodetic);
   }
 
-  /** Get the height (altitude) range for a given iModel project extents
+  /** Get the height (altitude) range for a given iModel project extents. The height values are  geodetic (WGS84 ellipsoid).
    * @public
    */
   public async getHeightRange(iModel: IModelConnection) {
@@ -108,7 +111,7 @@ export class BingElevationProvider {
     return Range1d.createArray(heights);
   }
 
-  /** Get the average height (altitude) for a given iModel project extents
+  /** Get the average height (altitude) for a given iModel project extents.  The height values are geodetic (WGS84 ellipsoid).
    * @public
    */
   public async getHeightAverage(iModel: IModelConnection) {
