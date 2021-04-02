@@ -430,8 +430,8 @@ export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: b
   });
 }
 
-function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
-  addNormalMatrix(builder.vert);
+function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: IsAnimated) {
+  addNormalMatrix(builder.vert, instanced);
 
   builder.vert.addFunction(octDecodeNormal);
   addChooseWithBitFlagFunctions(builder.vert);
@@ -510,7 +510,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
   addSurfaceDiscard(builder, flags);
-  addNormal(builder, flags.isAnimated);
+  addNormal(builder, flags.isInstanced, flags.isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
   addChooseWithBitFlagFunctions(builder.frag);
