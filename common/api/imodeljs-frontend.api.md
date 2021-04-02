@@ -1563,33 +1563,24 @@ export interface BeWheelEventProps extends BeButtonEventProps {
     wheelDelta?: number;
 }
 
-// @internal (undocumented)
+// @public
 export class BingElevationProvider {
     constructor();
-    // (undocumented)
+    // @internal (undocumented)
     getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number>;
-    // (undocumented)
+    // @internal (undocumented)
     getGraphic(latLongRange: Range2d, corners: Point3d[], groundBias: number, texture: RenderTexture, system: RenderSystem): Promise<RenderGraphic | undefined>;
-    // (undocumented)
     getHeight(carto: Cartographic, geodetic?: boolean): Promise<any>;
-    // (undocumented)
     getHeightAverage(iModel: IModelConnection): Promise<number>;
-    // (undocumented)
     getHeightRange(iModel: IModelConnection): Promise<Range1d>;
-    // (undocumented)
-    getHeights(range: Range2d): Promise<any>;
-    // (undocumented)
     getHeightValue(point: Point3d, iModel: IModelConnection, geodetic?: boolean): Promise<number>;
     // (undocumented)
     protected _requestContext: ClientRequestContext;
     }
 
-// @internal (undocumented)
+// @public
 export class BingLocationProvider {
     constructor();
-    // (undocumented)
-    doLocalSearchByRadius(_center: Cartographic, _radius: number): Promise<{} | undefined>;
-    // (undocumented)
     getLocation(query: string): Promise<GlobalLocation | undefined>;
     // (undocumented)
     protected _requestContext: ClientRequestContext;
@@ -1734,7 +1725,7 @@ export interface CachedIModelCoordinatesResponseProps {
     result: Array<PointWithStatus | undefined>;
 }
 
-// @internal (undocumented)
+// @public
 export function calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise<Transform | undefined>;
 
 // @public
@@ -3547,7 +3538,7 @@ export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?
     url?: string;
 }>;
 
-// @beta (undocumented)
+// @public
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string;
 
 // @internal (undocumented)
@@ -3571,7 +3562,7 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string;
 // @beta
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
-// @alpha
+// @public
 export interface GlobalLocation {
     // (undocumented)
     area?: GlobalLocationArea;
@@ -3579,7 +3570,7 @@ export interface GlobalLocation {
     center: Cartographic;
 }
 
-// @alpha
+// @public
 export interface GlobalLocationArea {
     // (undocumented)
     northeast: Cartographic;
@@ -7279,7 +7270,7 @@ export interface QuantityTypeDefinition {
 // @beta
 export type QuantityTypeKey = string;
 
-// @internal
+// @public
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
 
 // @internal

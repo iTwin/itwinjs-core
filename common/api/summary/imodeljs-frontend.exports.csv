@@ -65,8 +65,8 @@ public;BeTouchEvent
 public;BeTouchEventProps 
 public;BeWheelEvent 
 public;BeWheelEventProps 
-internal;BingElevationProvider
-internal;BingLocationProvider
+public;BingElevationProvider
+public;BingLocationProvider
 internal;BingMapsImageryLayerProvider 
 public;BlankConnection 
 public;BlankConnectionProps
@@ -75,7 +75,7 @@ beta;class BriefcaseNotificationHandler
 beta;BriefcaseTxns 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
-internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
+public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
@@ -194,7 +194,7 @@ public;GeometricModel3dState
 public;class GeometricModelState 
 internal;GeoServices
 beta;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
-beta;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
+public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string
 internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise
 beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
@@ -202,8 +202,8 @@ internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
-alpha;GlobalLocation
-alpha;GlobalLocationArea
+public;GlobalLocation
+public;GlobalLocationArea
 internal;GlobeAnimator 
 internal;GltfMeshData
 internal;class GltfReader
@@ -396,7 +396,7 @@ beta;QuantityType
 beta;QuantityTypeArg = QuantityType | string
 beta;QuantityTypeDefinition
 beta;QuantityTypeKey = string
-internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
+public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 beta;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
