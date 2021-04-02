@@ -18,7 +18,7 @@ class MockTile extends Tile {
 
   public get channel() {
     // This is never called.
-    return { } as unknown as TileRequestChannel;
+    return {} as unknown as TileRequestChannel;
   }
 
   public async requestContent(_canceled: () => boolean): Promise<TileRequest.Response> {
@@ -220,7 +220,7 @@ describe("requestTileTreeProps", () => {
 
       const expectedNumPending = numRemaining - expectedNumActive;
 
-      // ###TODO The following occassionally fails with 'expected 1 to equal 0'.
+      // ###TODO The following occasionally fails with 'expected 1 to equal 0'.
       expect(stats.numPendingTileTreePropsRequests).to.equal(expectedNumPending);
     };
 

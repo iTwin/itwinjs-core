@@ -17,6 +17,7 @@
   box-sizing: border-box;
   height: 100%;
   grid-gap: 6px;
+  grid-column: 2;
   grid-template-columns: 1fr minmax($mls-navigation-aid-width, auto);
   grid-template-rows: minmax($mls-navigation-aid-width, auto) 1fr;
   justify-items: end;

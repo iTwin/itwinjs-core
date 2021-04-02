@@ -17,23 +17,23 @@ import { testOnScreenViewport } from "../TestViewport";
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 
 describe("HyperModeling (#integration)", () => {
-  const projectName = "iModelJsIntegrationTest";
   let imodel: IModelConnection; // An iModel containing no section drawing locations
   let hypermodel: IModelConnection; // An iModel containing 3 section drawing locations
 
   before(async () => {
     await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
+      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
 
     await HyperModeling.initialize();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);
 
-    const projectId = await TestUtility.getTestProjectId(projectName);
-    const iModelId = await TestUtility.getTestIModelId(projectId, "SectionDrawingLocations");
-    hypermodel = await CheckpointConnection.openRemote(projectId, iModelId);
+    const testContextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const testIModelId = await TestUtility.queryIModelIdbyName(testContextId, TestUtility.testIModelNames.sectionDrawingLocations);
+
+    hypermodel = await CheckpointConnection.openRemote(testContextId, testIModelId);
   });
 
   after(async () => {

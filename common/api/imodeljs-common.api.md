@@ -514,7 +514,7 @@ export function bisectTileRange2d(range: Range3d, takeUpper: boolean): void;
 // @internal (undocumented)
 export function bisectTileRange3d(range: Range3d, takeUpper: boolean): void;
 
-// @internal
+// @public
 export class BoundingSphere {
     constructor(center?: Point3d, radius?: number);
     // (undocumented)
@@ -655,22 +655,22 @@ export interface BriefcasePushAndPullNotifications {
 
 export { BriefcaseStatus }
 
-// @beta
+// @public
 export function calculateSolarAngles(date: Date, location: Cartographic): {
     azimuth: number;
     elevation: number;
 };
 
-// @beta
+// @public
 export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d;
 
-// @beta
+// @public
 export function calculateSolarDirectionFromAngles(azimuthElevation: {
     azimuth: number;
     elevation: number;
 }): Vector3d;
 
-// @beta
+// @public
 export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date;
 
 // @public (undocumented)
