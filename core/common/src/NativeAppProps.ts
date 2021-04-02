@@ -81,10 +81,7 @@ export interface NativeAppAuthorizationConfiguration {
 export interface NativeAppFunctions {
   silentLogin: (token: AccessTokenProps) => Promise<void>;
 
-  /** initialize authorization client.
-   * @param config if provided, overrides backend supplied config.
-   * @return expirySafety in seconds
-   */
+  /** returns expirySafety, in seconds */
   initializeAuth: (props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration) => Promise<number>;
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
