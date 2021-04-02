@@ -18,16 +18,17 @@ There are two types of tests;
 To run the integration tests, there is an initial configuration step required to get started.
 
 1. Create a `.env` file as a peer of the `package.json` for this package.
-1. Populate
+1. Populate the newly created `.env` with the following variables:
 
     ```sh
     # User registered with iTwin Platform
     imjs_test_regular_user_name=
     imjs_test_regular_user_password=
 
-    # Register a SPA client from https://developer.bentley.com/my-apps. Use the client id and redirect uri from registration.
+    # Register a new SPA client at https://developer.bentley.com/my-apps.
+    # Ensure the client is configured for  the redirect uri and scopes below.
     imjs_oidc_browser_test_client_id=
-    imjs_oidc_browser_test_redirect_uri=
+    imjs_oidc_browser_test_redirect_uri="http://localhost:3000/signin-callback"
     imjs_oidc_browser_test_scopes="openid email profile organization imodelhub context-registry-service:read-only product-settings-service"
     ```
 
