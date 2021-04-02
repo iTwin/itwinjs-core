@@ -20,8 +20,8 @@ import { setTitle } from "./Title";
 
 // Simple tools for testing interactive editing. They require the iModel to have been opened in read-write mode.
 
-/** If an editing session is currently in progress, end it; otherwise, begin a new one. */
-export class EditingSessionTool extends Tool {
+/** If an editing scope is currently in progress, end it; otherwise, begin a new one. */
+export class EditingScopeTool extends Tool {
   public static toolId = "EditingSession";
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 0; }
@@ -37,11 +37,11 @@ export class EditingSessionTool extends Tool {
     if (!imodel || !imodel.isBriefcaseConnection())
       return;
 
-    const session = imodel.editingSession;
-    if (session)
-      await session.end();
+    const scope = imodel.editingScope;
+    if (scope)
+      await scope.end();
     else
-      await imodel.beginEditingSession();
+      await imodel.enterEditingScope();
 
     setTitle(imodel);
   }

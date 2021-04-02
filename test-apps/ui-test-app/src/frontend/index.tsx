@@ -66,7 +66,7 @@ import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
-import { EditingSessionTool } from "./tools/editing/PrimitiveToolEx";
+import { EditingScopeTool } from "./tools/editing/PrimitiveToolEx";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -230,7 +230,7 @@ export class SampleAppIModelApp {
 
     // Register editing tools
     if (this.allowWrite) {
-      EditingSessionTool.register(this.sampleAppNamespace);
+      EditingScopeTool.register(this.sampleAppNamespace);
       PlaceBlockTool.register(this.sampleAppNamespace);
       PlaceLineStringTool.register(this.sampleAppNamespace);
     }
