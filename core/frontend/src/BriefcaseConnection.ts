@@ -49,9 +49,8 @@ export class BriefcaseConnection extends IModelConnection {
     return connection;
   }
 
-  /** Open a BriefcaseConnection to a StandaloneDb.
+  /** Open a BriefcaseConnection to a [StandaloneDb]($backend)
    * @note StandaloneDbs, by definition, may not push or pull changes. Attempting to do so will throw exceptions.
-   * @internal
    */
   public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection> {
     const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
@@ -65,7 +64,7 @@ export class BriefcaseConnection extends IModelConnection {
 
   /**
    * Close this BriefcaseConnection.
-   * @note make sure to call SaveChanges before calling this method. Unsaved local changes are abandoned.
+   * @note make sure to call [[saveChanges]] before calling this method. Unsaved local changes are abandoned.
    */
   public async close(): Promise<void> {
     if (this.isClosed)

@@ -94,6 +94,9 @@ public;ECPropertyValueQuerySpecification
 public;EditorDescription
 public;EnumerationChoice
 public;EnumerationInfo
+alpha;ExpandedNodeUpdateRecord
+alpha;ExpandedNodeUpdateRecord
+alpha;ExpandedNodeUpdateRecordJSON
 beta;ExtendedContentRequestOptions
 beta;ExtendedContentRpcRequestOptions = PresentationRpcRequestOptions
 public;ExtendedDataRule 
@@ -118,9 +121,12 @@ alpha;HierarchyCompareInfo
 alpha;HierarchyCompareInfoJSON
 public;HierarchyRequestOptions
 public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
-alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | PartialHierarchyModification[]
+alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | HierarchyUpdateRecord[]
 alpha;HierarchyUpdateInfo
-alpha;HierarchyUpdateInfoJSON = typeof UPDATE_FULL | PartialHierarchyModificationJSON[]
+alpha;HierarchyUpdateInfoJSON = typeof UPDATE_FULL | HierarchyUpdateRecordJSON[]
+alpha;HierarchyUpdateRecord
+alpha;HierarchyUpdateRecord
+alpha;HierarchyUpdateRecordJSON
 public;ImageIdOverride 
 public;InstanceId = Id64String
 public;InstanceKey

@@ -124,6 +124,7 @@ export * from "./rpc/web/WebAppRpcProtocol";
 export * from "./rpc/web/WebAppRpcRequest";
 export * from "./tile/B3dmTileIO";
 export * from "./tile/CompositeTileIO";
+export * from "./tile/ElementGraphics";
 export * from "./tile/GltfTileIO";
 export * from "./tile/I3dmTileIO";
 export * from "./tile/IModelTileIO";
