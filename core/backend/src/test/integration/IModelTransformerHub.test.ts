@@ -15,7 +15,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   BackendLoggerCategory, BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
   ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, NativeLoggerCategory,
-  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, Subject,
+  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
@@ -348,6 +348,7 @@ describe("IModelTransformerHub (#integration)", () => {
   it("should merge changes made on a branch back to master", async () => {
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     const projectId = await HubUtility.getTestContextId(requestContext);
+    const initializeIModelTimeout = 15 * 60 * 1000; // 15 minutes (in case many CI integration jobs are running at the same time)
 
     // create and push master IModel
     const masterIModelName = HubUtility.generateUniqueName("Master");
@@ -370,24 +371,15 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.equal(masterDb.contextId, projectId);
     assert.equal(masterDb.iModelId, masterIModelId);
     assertPhysicalObjects(masterDb, state0);
-    const changeSetMasterFirst = masterDb.changeSetId;
-
-    // can't copy the baseline version as a template, so create a changeSet
-    const rootSubject = masterDb.elements.getElement<Subject>(IModel.rootSubjectId, Subject);
-    rootSubject.description = new Date().toLocaleTimeString();
-    rootSubject.update();
-    await masterDb.concurrencyControl.request(requestContext);
-    masterDb.saveChanges();
-    await masterDb.pushChanges(requestContext, "State0");
     const changeSetMasterState0 = masterDb.changeSetId;
-    assert.notEqual(changeSetMasterState0, changeSetMasterFirst);
 
     // create Branch1 iModel using Master as a template
     const branchIModelName1 = HubUtility.generateUniqueName("Branch1");
     await deleteIModelByName(requestContext, projectId, branchIModelName1);
     const branchIModel1 = await IModelHost.iModelClient.iModels.create(requestContext, projectId, branchIModelName1, {
       description: `Branch1 of ${masterIModelName}`,
-      template: { imodelId: masterIModelId, changeSetId: changeSetMasterState0 },
+      template: { imodelId: masterIModelId },
+      timeOutInMilliseconds: initializeIModelTimeout,
     });
     assert.isDefined(branchIModel1?.id);
     const branchIModelId1: GuidString = branchIModel1!.id!; // eslint-disable-line
@@ -403,7 +395,8 @@ describe("IModelTransformerHub (#integration)", () => {
     await deleteIModelByName(requestContext, projectId, branchIModelName2);
     const branchIModel2 = await IModelHost.iModelClient.iModels.create(requestContext, projectId, branchIModelName2, {
       description: `Branch2 of ${masterIModelName}`,
-      template: { imodelId: masterIModelId, changeSetId: changeSetMasterState0 },
+      template: { imodelId: masterIModelId },
+      timeOutInMilliseconds: initializeIModelTimeout,
     });
     assert.isDefined(branchIModel2?.id);
     const branchIModelId2: GuidString = branchIModel2!.id!; // eslint-disable-line
@@ -419,6 +412,7 @@ describe("IModelTransformerHub (#integration)", () => {
     await deleteIModelByName(requestContext, projectId, replayedIModelName);
     const replayedIModel = await IModelHost.iModelClient.iModels.create(requestContext, projectId, replayedIModelName, {
       description: `Replay of ${masterIModelName}`,
+      timeOutInMilliseconds: initializeIModelTimeout,
     });
     assert.isDefined(replayedIModel?.id);
     const replayedIModelId: GuidString = replayedIModel!.id!; // eslint-disable-line
@@ -536,7 +530,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // test for consistency between `IModelHost.iModelClient.changeSets.get` and `BriefcaseManager.downloadChangeSets` (a real app would only call one or the other)
       let masterDbChangeSets = await IModelHost.iModelClient.changeSets.get(requestContext, masterIModelId); // returns changeSet info
-      assert.equal(masterDbChangeSets.length, 4);
+      assert.equal(masterDbChangeSets.length, 3);
       for (const masterDbChangeSet of masterDbChangeSets) {
         assert.isDefined(masterDbChangeSet.id);
         assert.isFalse(Guid.isGuid(masterDbChangeSet.id!) || Id64.isValidId64(masterDbChangeSet.id!)); // a changeSetId is a hash value based on the contents and its parentId
@@ -544,7 +538,7 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.isAbove(masterDbChangeSet.fileSizeNumber, 0);
       }
       masterDbChangeSets = await BriefcaseManager.downloadChangeSets(requestContext, masterIModelId, "", masterDb.changeSetId); // downloads actual changeSets
-      assert.equal(masterDbChangeSets.length, 4);
+      assert.equal(masterDbChangeSets.length, 3);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeSet of masterDbChangeSets) {
         assert.isDefined(masterDbChangeSet.id);
