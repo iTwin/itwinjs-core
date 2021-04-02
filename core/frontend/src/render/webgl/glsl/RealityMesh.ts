@@ -12,7 +12,7 @@ import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
-import { FeatureMode, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
+import { FeatureMode, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addVaryingColor } from "./Color";
@@ -138,7 +138,7 @@ const mixFeatureColor = `
   `;
 
 function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: TextureUnit) {
-  addNormalMatrix(builder.vert);
+  addNormalMatrix(builder.vert, IsInstanced.No);
   builder.vert.addFunction(octDecodeNormal);
   builder.vert.addGlobal("g_hillshadeIndex", VariableType.Float);
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
