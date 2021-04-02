@@ -120,8 +120,8 @@ class DynamicState {
       root.transition(new StaticState(root));
     });
 
-    const removeGeomListener = scope.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>, scope: GraphicalEditingScope) => {
-      assert(scope === scope);
+    const removeGeomListener = scope.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>, _scope: GraphicalEditingScope) => {
+      assert(scope === _scope);
       const elems = findElementChangesForModel(changes, root.tree.modelId);
       if (elems)
         this.rootTile.handleGeometryChanges(elems);
