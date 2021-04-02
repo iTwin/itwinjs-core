@@ -67,7 +67,7 @@ import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
-import { EditingSessionNotifications } from '@bentley/imodeljs-common';
+import { EditingScopeNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementGeometryChange } from '@bentley/imodeljs-common';
 import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
@@ -1633,12 +1633,12 @@ export interface BlankConnectionProps {
 // @public
 export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps);
-    // @beta
-    beginEditingSession(): Promise<InteractiveEditingSession>;
     close(): Promise<void>;
     get contextId(): GuidString;
     // @beta
-    get editingSession(): InteractiveEditingSession | undefined;
+    get editingScope(): GraphicalEditingScope | undefined;
+    // @beta
+    enterEditingScope(): Promise<GraphicalEditingScope>;
     // @beta (undocumented)
     hasPendingTxns(): Promise<boolean>;
     get iModelId(): GuidString;
@@ -1656,7 +1656,7 @@ export class BriefcaseConnection extends IModelConnection {
     // @beta (undocumented)
     saveChanges(description?: string): Promise<void>;
     // @beta
-    supportsInteractiveEditing(): Promise<boolean>;
+    supportsGraphicalEditing(): Promise<boolean>;
     // @beta
     readonly txns: BriefcaseTxns;
 }
@@ -3806,6 +3806,26 @@ export interface GpuMemoryLimits {
     nonMobile?: GpuMemoryLimit;
 }
 
+// @beta
+export class GraphicalEditingScope extends BriefcaseNotificationHandler implements EditingScopeNotifications {
+    // (undocumented)
+    get briefcaseChannelName(): IpcAppChannel;
+    // @internal
+    static enter(imodel: BriefcaseConnection): Promise<GraphicalEditingScope>;
+    exit(): Promise<void>;
+    getGeometryChanges(): Iterable<ModelGeometryChanges>;
+    getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined;
+    readonly iModel: BriefcaseConnection;
+    // @internal (undocumented)
+    get isDisposed(): boolean;
+    // @internal (undocumented)
+    notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
+    static readonly onEnter: BeEvent<(scope: GraphicalEditingScope) => void>;
+    readonly onExited: BeEvent<(scope: GraphicalEditingScope) => void>;
+    readonly onExiting: BeEvent<(scope: GraphicalEditingScope) => void>;
+    readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, scope: GraphicalEditingScope) => void>;
+}
+
 // @public
 export class GraphicBranch implements IDisposable {
     constructor(ownsEntries?: boolean);
@@ -4744,26 +4764,6 @@ export interface InstancedGraphicParams {
     readonly symbologyOverrides?: Uint8Array;
     readonly transformCenter: Point3d;
     readonly transforms: Float32Array;
-}
-
-// @beta
-export class InteractiveEditingSession extends BriefcaseNotificationHandler implements EditingSessionNotifications {
-    // @internal
-    static begin(imodel: BriefcaseConnection): Promise<InteractiveEditingSession>;
-    // (undocumented)
-    get briefcaseChannelName(): IpcAppChannel;
-    end(): Promise<void>;
-    getGeometryChanges(): Iterable<ModelGeometryChanges>;
-    getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined;
-    readonly iModel: BriefcaseConnection;
-    // @internal (undocumented)
-    get isDisposed(): boolean;
-    // @internal (undocumented)
-    notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
-    static readonly onBegin: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onEnded: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onEnding: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>;
 }
 
 // @public

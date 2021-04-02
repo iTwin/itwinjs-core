@@ -2122,7 +2122,7 @@ export class EdgeArgs {
 }
 
 // @internal
-export interface EditingSessionNotifications {
+export interface EditingScopeNotifications {
     // (undocumented)
     notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
@@ -4090,7 +4090,7 @@ export enum IpcAppChannel {
     // (undocumented)
     AppNotify = "ipcApp-notify",
     // (undocumented)
-    EditingSession = "editing-session",
+    EditingScope = "editing-session",
     // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
@@ -4108,7 +4108,7 @@ export interface IpcAppFunctions {
     getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
     hasPendingTxns: (key: string) => Promise<boolean>;
     // (undocumented)
-    isInteractiveEditingSupported: (key: string) => Promise<boolean>;
+    isGraphicalEditingSupported: (key: string) => Promise<boolean>;
     isRedoPossible: (key: string) => Promise<boolean>;
     isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
@@ -4125,7 +4125,7 @@ export interface IpcAppFunctions {
     reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
-    toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
+    toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
 }
 
 // @internal
