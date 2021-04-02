@@ -81,7 +81,8 @@ export interface MobileHostOpts extends NativeHostOpts {
     device?: MobileDevice;
     /** list of RPC interface definitions to register */
     rpcInterfaces?: RpcInterfaceDefinition[];
-
+    /** Authorization configuration */
+    authConfig?: NativeAppAuthorizationConfiguration;
   };
 }
 

@@ -52,18 +52,19 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
  * @beta
  */
 export class NativeAppAuthorization {
-  private _config: NativeAppAuthorizationConfiguration;
+  private _config?: NativeAppAuthorizationConfiguration;
   private _cachedToken?: AccessToken;
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
   public get hasSignedIn() { return this._cachedToken !== undefined; }
   public get isAuthorized(): boolean { return this.hasSignedIn && !this._cachedToken!.isExpired(this._expireSafety); }
 
-  public constructor(config: NativeAppAuthorizationConfiguration) {
+  /** ctor for NativeAppAuthorization
+   * @param config if present, overrides backend supplied configuration. Generally not necessary, should be supplied
+   * in [NativeHostOpts]($backend)
+   */
+  public constructor(config?: NativeAppAuthorizationConfiguration) {
     this._config = config;
-    if (config.expiryBuffer)
-      this._expireSafety = config.expiryBuffer;
-
     this.onUserStateChanged.addListener((token?: AccessToken) => {
       this._cachedToken = token;
     });
@@ -71,7 +72,7 @@ export class NativeAppAuthorization {
 
   /** Used to initialize the the backend authorization. Must be awaited before any other methods are called */
   public async initialize(props: SessionProps): Promise<void> {
-    return NativeApp.callNativeHost("initializeAuth", props, this._config);
+    this._expireSafety = await NativeApp.callNativeHost("initializeAuth", props, this._config);
   }
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
@@ -169,11 +170,9 @@ export class NativeApp {
     Config.App.merge(await this.callNativeHost("getConfig"));
     NativeApp.hookBrowserConnectivityEvents();
 
-    if (opts?.nativeApp?.authConfig) {
-      const auth = new NativeAppAuthorization(opts.nativeApp.authConfig);
-      IModelApp.authorizationClient = auth;
-      await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
-    }
+    const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig);
+    IModelApp.authorizationClient = auth;
+    await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
 
     // initialize current online state.
     if (window.navigator.onLine) {
