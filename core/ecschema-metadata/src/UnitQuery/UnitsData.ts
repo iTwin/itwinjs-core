@@ -22,7 +22,6 @@ export const UNIT_DATA: UnitDefinition[] = [
   { name: "Units.HR", altDisplayLabels: ["hr"] },
   { name: "Units.DAY", altDisplayLabels: ["day"] },
   { name: "Units.WEEK", altDisplayLabels: ["week"] },
-  // 1 sec = 1/31536000.0 yr
   { name: "Units.YR", altDisplayLabels: ["year"] },
   // conversion => specified unit to base unit of m
   { name: "Units.M", altDisplayLabels: ["meter"] },
@@ -35,11 +34,11 @@ export const UNIT_DATA: UnitDefinition[] = [
   { name: "Units.MICROINCH", altDisplayLabels: [] },
   { name: "Units.MILLIFOOT", altDisplayLabels: [] },
   { name: "Units.IN", altDisplayLabels: ["IN", "\""] },
-  { name: "Units.FT", altDisplayLabels: ["F", "FT", "'"] },
+  { name: "Units.FT", altDisplayLabels: ["F", "FT", "'"] }, // "'" conflicts with Units.ARC_MINUTE display label
   { name: "Units.CHAIN", altDisplayLabels: ["CHAIN"] },
   { name: "Units.YRD", altDisplayLabels: ["YRD", "yrd"] },
   { name: "Units.MILE", altDisplayLabels: ["mile", "Miles", "Mile"] },
-  { name: "Units.US_SURVEY_FT", altDisplayLabels: ["ft", "SF", "USF", "ft (US Survey)"] },
+  { name: "Units.US_SURVEY_FT", altDisplayLabels: ["ft", "SF", "USF", "ft (US Survey)"] }, // "ft" conflicts with Units.FT
   { name: "Units.US_SURVEY_YRD", altDisplayLabels: ["USY", "yards (US Survey)"] },
   { name: "Units.US_SURVEY_IN", altDisplayLabels: ["USI", "inches (US Survey)"] },
   { name: "Units.US_SURVEY_MILE", altDisplayLabels: ["miles (US Survey)", "mile (US Survey)", "USM"] },
@@ -52,5 +51,5 @@ export const UNIT_DATA: UnitDefinition[] = [
   { name: "Units.CUB_FT", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_US_SURVEY_FT", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_YRD", altDisplayLabels: ["cy"] },
-  { name: "Units.CUB_M", altDisplayLabels: ["cm"] },
+  { name: "Units.CUB_M", altDisplayLabels: ["cm"] }, // Conflicts with Units.CM
 ];

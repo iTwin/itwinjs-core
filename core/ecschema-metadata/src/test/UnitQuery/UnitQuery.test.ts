@@ -71,7 +71,6 @@ describe("Unit Querying tests", () => {
   it.only("should find units that belong to Units.LENGTH phenomenon", async () => {
     const filteredUnits: Unit[] = await query.findUnitsByPhenomenon("Units.LENGTH");
     for (const unit of filteredUnits) {
-      // console.log(unit.fullName);
       expect(unit.phenomenon?.fullName === "Units.LENGTH", `Phenomenon name should be Units.LENGTH and not ${unit.phenomenon?.fullName}`).to.be.true;
     }
   });
@@ -117,111 +116,150 @@ describe("Unit Querying tests", () => {
     }
   });
 
-  // Tests for findUnitsByDisplayLabel
+  // Tests for findUnitsByDisplayLabel of findUnit
   it.only("should find Units.DELTA_RANKINE with display label 'Δ°R'", async () => {
-    const units1: Unit[] = await query.findUnitsByDisplayLabel("Δ°R");
-    expect(units1.find((unit) => unit.fullName === "Units.DELTA_RANKINE") !== undefined, `Units array should contain Units.DELTA_RANKINE`).to.be.true;
-    expect(units1).to.have.lengthOf(1);
+    const unit = await query.findUnit("Δ°R");
+    expect(unit.fullName === "Units.DELTA_RANKINE", `Unit name should be Units.DELTA_RANKINE and not ${unit.fullName}`).to.be.true;
   });
 
-  it.only("should find Units.MILE and USUnits.MILE with display label 'mi'", async () => {
-    const units1: Unit[] = await query.findUnitsByDisplayLabel("mi");
-    expect(units1.find((unit) => unit.fullName === "Units.MILE") !== undefined, `Units array should contain Units.MILE`).to.be.true;
-    expect(units1.find((unit) => unit.fullName === "USUnits.MILE") !== undefined, `Units array should contain USUnits.MILE`).to.be.true;
-    expect(units1).to.have.lengthOf(2);
+  it.only("should find Units.MICROMOL_PER_CUB_DM with display label 'µmol/dm³'", async () => {
+    const unit = await query.findUnit("µmol/dm³");
+    expect(unit.fullName === "Units.MICROMOL_PER_CUB_DM", `Unit name should be Units>MICROMOL_PER_CUB_DM and not ${unit.fullName}`).to.be.true;
   });
 
-  it.only("should only find Units.MILE with display label 'mi' with schemaName 'Units'",async () => {
-    const units1: Unit[] = await query.findUnitsByDisplayLabel("mi", "Units");
-    expect(units1.find((unit) => unit.fullName === "Units.MILE") !== undefined, `Units array should contain Units.MILE`).to.be.true;
-    expect(units1).to.have.lengthOf(1);
+  // If there are multiple units with the same display label in the same context (Units.MILE and USUnits.MILE) in this case, the latter will be returned.
+  // Should specify the schemaName to query only from that particular schema
+  // Todo - maybe should throw error if duplicates encountered instead
+  it.only("should find USUnits.FT with display label 'ft'", async () => {
+    const unit = await query.findUnit("ft");
+    // expect(units1.find((unit) => unit.fullName === "Units.MILE") !== undefined, `Units array should contain Units.MILE`).to.be.true;
+    expect(unit.fullName === "USUnits.FT", `Unit name should be USUnits.MILE and not ${unit.fullName}`).to.be.true;
   });
 
-  it.only("should only find Units.FT for Units.LENGTH phenomena and USUnits.FT for SIUnits.LENGTH phenomena", async () => {
-    const units1: Unit[] = await query.findUnitsByDisplayLabel("ft", undefined, "Units.LENGTH");
-    expect(units1[0].fullName === "Units.FT", `Unit name should be Units.FT and not ${units1[0].fullName}`).to.be.true;
-    expect(units1).to.have.lengthOf(1);
-
-    const units2: Unit[] = await query.findUnitsByDisplayLabel("ft", undefined, "SIUnits.LENGTH");
-    expect(units2[0].fullName === "USUnits.FT", `Unit name should be USUnits.FT and not ${units2[0].fullName}`).to.be.true;
-    expect(units2).to.have.lengthOf(1);
+  it.only("should find Units.FT with display label 'ft' with schemaName 'Units'",async () => {
+    const unit = await query.findUnit("ft", "Units");
+    expect(unit.fullName === "Units.FT",  `Unit name should be Units.FT and not ${unit.fullName}`).to.be.true;
   });
 
-  it.only("should only find Units.FT for Units.USCUSTOM unitSystem and USUnits.FT for USUnits.USCUSTOM unitSystem", async () => {
-    const units1: Unit[] = await query.findUnitsByDisplayLabel("ft", undefined, undefined, "Units.USCUSTOM");
-    expect(units1[0].fullName === "Units.FT", `Unit name should be Units.FT and not ${units1[0].fullName}`).to.be.true;
-    expect(units1).to.have.lengthOf(1);
-
-    const units2: Unit[] = await query.findUnitsByDisplayLabel("ft", undefined, undefined, "USUnits.USCUSTOM");
-    expect(units2[0].fullName === "USUnits.FT", `Unit name should be USUnits.FT and not ${units2[0].fullName}`).to.be.true;
-    expect(units2).to.have.lengthOf(1);
+  it.only("should find Units.FT with display label 'ft' and Units.LENGTH phenomena", async () => {
+    const unit = await query.findUnit("ft", undefined, "Units.LENGTH");
+    expect(unit.fullName === "Units.FT", `Unit name should be Units.FT and not ${unit.fullName}`).to.be.true;
   });
+
+  it.only("should find USUnits.FT with display label 'ft' and SIUnits.LENGTH phenomena", async () => {
+    const unit = await query.findUnit("ft", undefined, "SIUnits.LENGTH");
+    expect(unit.fullName === "USUnits.FT",  `Unit name should be USUnits.FT and not ${unit.fullName}`).to.be.true;
+  });
+
+  it.only("should only find Units.FT with display label 'ft' for Units.USCUSTOM unitSystem", async () => {
+    const unit = await query.findUnit("ft", undefined, undefined, "Units.USCUSTOM");
+    expect(unit.fullName === "Units.FT", `Unit name should be Units.FT and not ${unit.fullName}`).to.be.true;
+  });
+
+  it.only("should only find USUnits.FT for USUnits.USCUSTOM unitSystem", async () => {
+    const unit = await query.findUnit("ft", undefined, undefined, "USUnits.USCUSTOM");
+    expect(unit.fullName === "USUnits.FT", `Unit name should be USUnits.FT and not ${unit.fullName}`).to.be.true;
+  });
+
+  // TODO - handle errors?
 
   // Tests for findUnitsByAltDisplayLabel
-  it.only("should find Units.MILE by corresponding alternate display label", async () => {
-    const units1: Unit[] = await query.findUnitsByAltDisplayLabel("mile");
-    expect(units1[0].fullName === "Units.MILE", `Unit name should be Units.MILE and not ${units1[0].fullName}`).to.be.true;
-    expect(units1).to.have.lengthOf(1);
+  it.only("should find Units.YRD by corresponding alternate display labels", async () => {
+    const unit1 = await query.findUnit("YRD");
+    expect(unit1.fullName === "Units.YRD", `Unit name should be Units.YRD and not ${unit1.fullName}`).to.be.true;
 
-    const units2: Unit[] = await query.findUnitsByAltDisplayLabel("Miles");
-    expect(units2[0].fullName === "Units.MILE", `Unit name should be Units.MILE and not ${units2[0].fullName}`).to.be.true;
-    expect(units2).to.have.lengthOf(1);
-
-    const units3: Unit[] = await query.findUnitsByAltDisplayLabel("Mile");
-    expect(units3[0].fullName === "Units.MILE", `Unit name should be Units.MILE and not ${units3[0].fullName}`).to.be.true;
-    expect(units3).to.have.lengthOf(1);
+    const unit2 = await query.findUnit("yrd");
+    expect(unit2.fullName === "Units.YRD", `Unit name should be Units.YRD and not ${unit2.fullName}`).to.be.true;
   });
 
-  it.only("should find Units.FT and Units.US_SURVEY_FT with 'FT' or 'ft'", async () => {
-    const units1: Unit[] = await query.findUnitsByAltDisplayLabel("FT");
-    expect(units1.find((unit) => unit.fullName === "Units.FT") !== undefined, `Units array should contain Units.FT`).to.be.true;
-    expect(units1.find((unit) => unit.fullName === "Units.US_SURVEY_FT") !== undefined, `Units array should contain Units.US_SURVEY_FT`).to.be.true;
-    expect(units1).to.have.lengthOf(2);
-
-    const units2: Unit[] = await query.findUnitsByAltDisplayLabel("ft");
-    expect(units2.find((unit) => unit.fullName === "Units.FT") !== undefined, `Units array should contain Units.FT`).to.be.true;
-    expect(units2.find((unit) => unit.fullName === "Units.US_SURVEY_FT") !== undefined, `Units array should contain Units.US_SURVEY_FT`).to.be.true;
-    expect(units2).to.have.lengthOf(2);
+  // If there are multiple units with the same alternate display label (Units.ARC_SECOND and Units.S) in this case, the former will be returned.
+  // Should specify unitSystem or phenomenon to get a particular unit
+  it.only("should find Units.ARC_SECOND with alternate display label 'sec'", async () => {
+    const unit = await query.findUnit("sec");
+    expect(unit.fullName === "Units.ARC_SECOND", `Unit name should be Units.ARC_SECOND and not ${unit.fullName}`).to.be.true;
   });
 
-  it.only("should only find Units.FT for USCUSTOM unitSystem and Units.US_SURVEY_FT for USSURVEY unitSystem", async () => {
-    const units1: Unit[] = await query.findUnitsByAltDisplayLabel("FT", "Units.LENGTH", "Units.USCUSTOM");
-    expect(units1[0].fullName === "Units.FT", `Unit name should be Units.FT and not ${units1[0].fullName}`).to.be.true;
-    expect(units1).to.have.lengthOf(1);
-
-    const units2: Unit[] = await query.findUnitsByAltDisplayLabel("FT", "Units.LENGTH", "Units.USSURVEY");
-    expect(units2[0].fullName === "Units.US_SURVEY_FT", `Unit name should be Units.US_SURVEY_FT and not ${units2[0].fullName}`).to.be.true;
-    expect(units2).to.have.lengthOf(1);
+  it.only("should find Units.S with alternate display label 'sec' and phenomenon Units.TIME", async () => {
+    const unit = await query.findUnit("sec", undefined, "Units.TIME");
+    expect(unit.fullName === "Units.S", `Unit name should be Units.S and not ${unit.fullName}`).to.be.true;
   });
 
-  it.only("should only find Units.CM for LENGTH phenomena and Units.CUB_M for VOLUME phenomena", async () => {
-    const units1: Unit[] = await query.findUnitsByAltDisplayLabel("cm", "Units.LENGTH");
-    expect(units1[0].fullName === "Units.CM", `Unit name should be Units.CM and not ${units1[0].fullName}`).to.be.true;
-    expect(units1).to.have.lengthOf(1);
-
-    const units2: Unit[] = await query.findUnitsByAltDisplayLabel("cm", "Units.VOLUME");
-    expect(units2[0].fullName === "Units.CUB_M", `Unit name should be Units.CUB_M and not ${units2[0].fullName}`).to.be.true;
-    expect(units2).to.have.lengthOf(1);
+  it.only("should find Units.S with alternate display label 'sec' and unitSystem Units.SI", async () => {
+    const unit = await query.findUnit("sec", undefined, undefined, "Units.SI");
+    expect(unit.fullName === "Units.S", `Unit name should be Units.S and not ${unit.fullName}`).to.be.true;
   });
 
-  it.only("should only find Units.CM for METRIC unitSystem and Units.CUB_M for SI unitSystem", async () => {
-    const units1: Unit[] = await query.findUnitsByAltDisplayLabel("cm", undefined, "Units.METRIC");
-    expect(units1[0].fullName === "Units.CM", `Unit name should be Units.CM and not ${units1[0].fullName}`).to.be.true;
-    expect(units1).to.have.lengthOf(1);
-
-    const units2: Unit[] = await query.findUnitsByAltDisplayLabel("cm", undefined, "Units.SI");
-    expect(units2[0].fullName === "Units.CUB_M", `Unit name should be Units.CUB_M and not ${units2[0].fullName}`).to.be.true;
-    expect(units2).to.have.lengthOf(1);
+  // Display labels have higher precedence than alternate display labels, so unit with display label will be returned instead
+  // of unit with alternate display label
+  it.only("should find Units.ARC_MINUTE with display label ''' ", async () => {
+    const unit = await query.findUnit("'");
+    expect(unit.fullName === "Units.ARC_MINUTE", `Unit name should be Units.ARC_MINUTE and not ${unit.fullName}`).to.be.true;
   });
 
-  it.only("should not find any units when alternate display label, phenomenon, or unitSystem is not found", async () => {
-    const units1: Unit[] = await query.findUnitsByAltDisplayLabel("MockAltDisplayLabel");
-    expect(units1).to.have.lengthOf(0);
+  it.only("should find Units.FT with alternate display label ''' and phenomenon Units.LENGTH", async () => {
+    const unit = await query.findUnit("'", undefined, "Units.LENGTH");
+    expect(unit.fullName === "Units.FT", `Unit name should be Units.FT and not ${unit.fullName}`).to.be.true;
+  });
 
-    const units2: Unit[] = await query.findUnitsByAltDisplayLabel("Units.M", "MockPhenomenon");
-    expect(units2).to.have.lengthOf(0);
+  it.only("should find Units.FT with alternate display label ''' and unitSystem Units.USCUSTOM", async () => {
+    const unit = await query.findUnit("'", undefined, undefined, "Units.USCUSTOM");
+    expect(unit.fullName === "Units.FT", `Unit name should be Units.FT and not ${unit.fullName}`).to.be.true;
+  });
 
-    const units3: Unit[] = await query.findUnitsByAltDisplayLabel("Units.M", "Units.LENGTH", "MockUnitSystem");
-    expect(units3).to.have.lengthOf(0);
+  it.only("should not find any units when unitLabel does not match any display labels or alternate display labels", async () => {
+    try {
+      await query.findUnit("MockUnitLabel");
+    } catch (err) {
+      expect(err).to.be.an("error");
+      expect(err.message).to.equal("Cannot find unit with label");
+    }
+  });
+
+  it.only("should not find any units when schemaName does not exist within context", async () => {
+    try {
+      await query.findUnit("ft", "MockSchema");
+    } catch (err) {
+      expect(err).to.be.an("error");
+      expect(err.message).to.equal("Cannot find unit with label");
+    }
+
+    try {
+      await query.findUnit("sec", "MockSchema");
+    } catch (err) {
+      expect(err).to.be.an("error");
+      expect(err.message).to.equal("Cannot find unit with label");
+    }
+  });
+
+  it.only("should not find any units when phenomenon does not match any unit", async () => {
+    try {
+      await query.findUnit("ft", undefined, "MockPhenomenon");
+    } catch (err) {
+      expect(err).to.be.an("error");
+      expect(err.message).to.equal("Cannot find unit with label");
+    }
+
+    try {
+      await query.findUnit("sec", undefined, "MockPhenomenon");
+    } catch (err) {
+      expect(err).to.be.an("error");
+      expect(err.message).to.equal("Cannot find unit with label");
+    }
+  });
+
+  it.only("should not find any units when unitSystem does not match any unit", async () => {
+    try {
+      await query.findUnit("ft", undefined, undefined, "MockUnitSystem");
+    } catch (err) {
+      expect(err).to.be.an("error");
+      expect(err.message).to.equal("Cannot find unit with label");
+    }
+
+    try {
+      await query.findUnit("sec", undefined, undefined, "MockUnitSystem");
+    } catch (err) {
+      expect(err).to.be.an("error");
+      expect(err.message).to.equal("Cannot find unit with label");
+    }
   });
 });
