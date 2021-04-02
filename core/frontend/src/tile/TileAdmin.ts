@@ -267,7 +267,7 @@ export class TileAdmin {
     // If unspecified skip one level before preloading  of parents of context tiles.
     this.contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
 
-    const removeEditingListener = GraphicalEditingScope.onBegin.addListener((scope) => {
+    const removeEditingListener = GraphicalEditingScope.onEnter.addListener((scope) => {
       const removeGeomListener = scope.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>) => this.onModelGeometryChanged(changes));
       scope.onExited.addOnce((sesh: GraphicalEditingScope) => {
         assert(sesh === scope);

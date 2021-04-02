@@ -142,7 +142,7 @@ export class BriefcaseConnection extends IModelConnection {
     if (this.editingScope)
       throw new Error("Cannot create an editing scope for an iModel that already has one");
 
-    this._editingScope = await GraphicalEditingScope.begin(this);
+    this._editingScope = await GraphicalEditingScope.enter(this);
     this._editingScope.onExited.addOnce(() => this._editingScope = undefined);
     return this._editingScope;
   }
