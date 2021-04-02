@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Guid, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
+import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
+import { AuthorizedFrontendRequestContext, IModelApp, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
@@ -15,6 +15,31 @@ import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
 
 export class TestUtility {
+  public static testContextName = "iModelJsIntegrationTest";
+  public static testIModelNames = {
+    noVersions: "NoVersionsTest",
+    stadium: "Stadium Dataset 1",
+    readOnly: "ReadOnlyTest",
+    readWrite: "ReadWriteTest",
+    connectionRead: "ConnectionReadTest",
+    smallTex: "SmallTex",
+    sectionDrawingLocations: "SectionDrawingLocations",
+    synchro: "SYNCHRO.UTK",
+  };
+
+  public static testSnapshotIModels = {
+    mirukuru: "mirukuru.ibim",
+  };
+
+  private static contextId: GuidString | undefined = undefined;
+  /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
+  public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
+    requestContext.enter();
+    if (undefined !== TestUtility.contextId)
+      return TestUtility.contextId;
+    return TestUtility.queryContextIdByName(TestUtility.testContextName);
+  }
+
   public static imodelCloudEnv: IModelCloudEnvironment;
 
   public static async getAuthorizedClientRequestContext(user: TestUserCredentials): Promise<AuthorizedClientRequestContext> {
@@ -22,7 +47,7 @@ export class TestUtility {
     return new AuthorizedClientRequestContext(accessToken);
   }
 
-  public static async initializeTestProject(testProjectName: string, user: TestUserCredentials): Promise<FrontendAuthorizationClient> {
+  public static async initializeTestProject(testContextName: string, user: TestUserCredentials): Promise<FrontendAuthorizationClient> {
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
     if (cloudParams.iModelBank) {
       this.imodelCloudEnv = new IModelBankCloudEnv(cloudParams.iModelBank.url, false);
@@ -40,48 +65,26 @@ export class TestUtility {
     }
     const accessToken = await authorizationClient.getAccessToken();
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {
-      await this.imodelCloudEnv.bootstrapIModelBankProject(new AuthorizedClientRequestContext(accessToken), testProjectName);
+      await this.imodelCloudEnv.bootstrapIModelBankProject(new AuthorizedClientRequestContext(accessToken), testContextName);
     }
 
     return authorizationClient;
   }
 
-  public static async getTestProjectId(projectName: string): Promise<string> {
+  public static async queryContextIdByName(contextName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const project: Project = await this.imodelCloudEnv.contextMgr.queryProjectByName(requestContext, projectName);
+    const project: Project = await this.imodelCloudEnv.contextMgr.queryProjectByName(requestContext, contextName);
     assert(project && project.wsgId);
     return project.wsgId;
   }
 
-  public static async getTestIModelId(projectId: string, iModelName: string): Promise<string> {
+  public static async queryIModelIdbyName(contextId: string, iModelName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
+    const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(requestContext, contextId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
 
     return iModels[0].wsgId;
-  }
-
-  public static async createIModel(name: string, contextId: string, deleteIfExists = false) {
-    return TestRpcInterface.getClient().createIModel(name, contextId, deleteIfExists);
-  }
-
-  public static async deleteIModel(id: string, contextId: string) {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    await this.imodelCloudEnv.imodelClient.iModels.delete(requestContext, contextId, id);
-  }
-
-  /** Generate a name (for an iModel) that's unique */
-  public static generateUniqueName(baseName: string) {
-    return `${baseName} - ${Guid.createValue()}`;
-  }
-
-  public static async getModelLockLevel(iModel: IModelConnection, modelId: Id64String): Promise<LockLevel> {
-    const req = new AuthorizedClientRequestContext(await IModelApp.authorizationClient!.getAccessToken());
-    const lockedModels = await IModelApp.iModelClient.locks.get(req, iModel.iModelId!, new LockQuery().byObjectId(modelId));
-    if (lockedModels.length === 0 || lockedModels[0].lockLevel === undefined)
-      return LockLevel.None;
-    return lockedModels[0].lockLevel;
   }
 
   /** Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded */
