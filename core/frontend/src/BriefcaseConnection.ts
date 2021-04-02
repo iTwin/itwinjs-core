@@ -7,20 +7,14 @@
  */
 
 import { Guid, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError, IModelVersionProps, OpenBriefcaseProps, StandaloneOpenOptions } from "@bentley/imodeljs-common";
+import {
+  IModelConnectionProps, IModelError, IModelVersionProps, OpenBriefcaseProps,
+  StandaloneOpenOptions,
+} from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
-import { IpcApp, NotificationHandler } from "./IpcApp";
+import { IpcApp } from "./IpcApp";
 import { InteractiveEditingSession } from "./InteractiveEditingSession";
-
-/**
- * Base class for notification handlers for events from the backend that are specific to a Briefcase.
- * @beta
- */
-export abstract class BriefcaseNotificationHandler extends NotificationHandler {
-  constructor(private _key: string) { super(); }
-  public abstract get briefcaseChannelName(): string;
-  public get channelName() { return `${this.briefcaseChannelName}:${this._key}`; }
-}
+import { BriefcaseTxns } from "./BriefcaseTxns";
 
 /** A connection to an editable briefcase on the backend. This class uses [Ipc]($docs/learning/IpcInterface.md) to communicate
  * to the backend and may only be used by [[IpcApp]]s.
@@ -29,12 +23,23 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
 export class BriefcaseConnection extends IModelConnection {
   private _editingSession?: InteractiveEditingSession;
   protected _isClosed?: boolean;
+  /** Provides notifications about changes to the iModel.
+   * @beta
+   */
+  public readonly txns: BriefcaseTxns;
 
   public isBriefcaseConnection(): this is BriefcaseConnection { return true; }
+
   /** The Guid that identifies the *context* that owns this iModel. */
   public get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+
+  protected constructor(props: IModelConnectionProps) {
+    super(props);
+    this.txns = new BriefcaseTxns(this);
+  }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
   public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {
@@ -44,9 +49,8 @@ export class BriefcaseConnection extends IModelConnection {
     return connection;
   }
 
-  /** Open a BriefcaseConnection to a StandaloneDb.
+  /** Open a BriefcaseConnection to a [StandaloneDb]($backend)
    * @note StandaloneDbs, by definition, may not push or pull changes. Attempting to do so will throw exceptions.
-   * @internal
    */
   public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection> {
     const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
@@ -60,7 +64,7 @@ export class BriefcaseConnection extends IModelConnection {
 
   /**
    * Close this BriefcaseConnection.
-   * @note make sure to call SaveChanges before calling this method. Unsaved local changes are abandoned.
+   * @note make sure to call [[saveChanges]] before calling this method. Unsaved local changes are abandoned.
    */
   public async close(): Promise<void> {
     if (this.isClosed)
@@ -72,6 +76,8 @@ export class BriefcaseConnection extends IModelConnection {
     }
 
     this.beforeClose();
+    this.txns.dispose();
+
     this._isClosed = true;
     await IpcApp.callIpcHost("closeIModel", this._fileKey);
   }
@@ -83,7 +89,7 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** @beta */
   public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
-    return IpcApp.callIpcHost("hasPendingTxns", this.key);
+    return this.txns.hasPendingTxns();
   }
 
   /** @beta */

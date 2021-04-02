@@ -514,7 +514,7 @@ export function bisectTileRange2d(range: Range3d, takeUpper: boolean): void;
 // @internal (undocumented)
 export function bisectTileRange3d(range: Range3d, takeUpper: boolean): void;
 
-// @internal
+// @public
 export class BoundingSphere {
     constructor(center?: Point3d, radius?: number);
     // (undocumented)
@@ -625,7 +625,9 @@ export enum BriefcaseIdValue {
     Illegal = 4294967295,
     LastValid = 16777205,
     Max = 16777216,
-    Standalone = 0
+    // @deprecated
+    Standalone = 0,
+    Unassigned = 0
 }
 
 // @beta
@@ -653,22 +655,22 @@ export interface BriefcasePushAndPullNotifications {
 
 export { BriefcaseStatus }
 
-// @beta
+// @public
 export function calculateSolarAngles(date: Date, location: Cartographic): {
     azimuth: number;
     elevation: number;
 };
 
-// @beta
+// @public
 export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d;
 
-// @beta
+// @public
 export function calculateSolarDirectionFromAngles(azimuthElevation: {
     azimuth: number;
     elevation: number;
 }): Vector3d;
 
-// @beta
+// @public
 export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date;
 
 // @public (undocumented)
@@ -808,6 +810,13 @@ export interface ChangedElements {
     properties?: Id64String[][];
     // (undocumented)
     type: number[];
+}
+
+// @beta
+export interface ChangedEntities {
+    deleted?: CompressedId64Set;
+    inserted?: CompressedId64Set;
+    updated?: CompressedId64Set;
 }
 
 // @internal (undocumented)
@@ -1480,7 +1489,7 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 // @internal
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
 
-// @internal
+// @alpha
 export enum ContentFlags {
     // (undocumented)
     AllowInstancing = 1,
@@ -1929,6 +1938,30 @@ export enum DownloadBriefcaseStatus {
 export type DPoint2dProps = number[];
 
 // @beta
+export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
+    // (undocumented)
+    readonly placement: Omit<Placement2dProps, "bbox">;
+    // (undocumented)
+    readonly type: "2d";
+}
+
+// @beta
+export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestProps {
+    // (undocumented)
+    readonly placement: Omit<Placement3dProps, "bbox">;
+    // (undocumented)
+    readonly type: "3d";
+}
+
+// @beta
+export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
+    readonly categoryId: Id64String;
+    readonly elementId?: Id64String;
+    readonly geometry: GeometryStreamProps;
+    readonly modelId?: Id64String;
+}
+
+// @public
 export const Easing: {
     Linear: {
         None: (k: number) => number;
@@ -1985,7 +2018,7 @@ export const Easing: {
     };
 };
 
-// @beta (undocumented)
+// @public (undocumented)
 export type EasingFunction = (k: number) => number;
 
 // @public
@@ -2086,6 +2119,12 @@ export class EdgeArgs {
     get isValid(): boolean;
     // (undocumented)
     get numEdges(): number;
+}
+
+// @internal
+export interface EditingSessionNotifications {
+    // (undocumented)
+    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
 
 // @public
@@ -2251,18 +2290,8 @@ export interface ElementGeometryUpdate {
     viewIndependent?: boolean;
 }
 
-// @internal
-export interface ElementGraphicsRequestProps {
-    readonly clipToProjectExtents?: boolean;
-    readonly contentFlags?: ContentFlags;
-    readonly elementId: Id64String;
-    readonly formatVersion: number;
-    readonly id: string;
-    readonly location?: TransformProps;
-    readonly omitEdges?: boolean;
-    readonly toleranceLog10: number;
-    readonly treeFlags?: TreeFlags;
-}
+// @beta
+export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps;
 
 // @alpha
 export interface ElementIdsAndRangesProps {
@@ -2292,13 +2321,6 @@ export interface ElementProps extends EntityProps {
     model: Id64String;
     parent?: RelatedElementProps;
     userLabel?: string;
-}
-
-// @alpha
-export interface ElementsChanged {
-    deleted?: CompressedId64Set;
-    inserted?: CompressedId64Set;
-    updated?: CompressedId64Set;
 }
 
 // @beta
@@ -3352,6 +3374,21 @@ export class GraphicParams {
     setLineTransparency(transparency: number): void;
 }
 
+// @beta
+export interface GraphicsRequestProps {
+    readonly clipToProjectExtents?: boolean;
+    // @alpha
+    readonly contentFlags?: ContentFlags;
+    // @alpha
+    readonly formatVersion?: number;
+    readonly id: string;
+    readonly location?: TransformProps;
+    readonly omitEdges?: boolean;
+    readonly toleranceLog10: number;
+    // @alpha
+    readonly treeFlags?: TreeFlags;
+}
+
 // @public
 export enum GridOrientationType {
     AuxCoord = 4,
@@ -3771,15 +3808,7 @@ export abstract class IModel implements IModelProps {
     toJSON(): IModelConnectionProps;
 }
 
-// @internal
-export interface IModelChangeNotifications {
-    // (undocumented)
-    notifyElementsChanged: (changes: ElementsChanged) => void;
-    // (undocumented)
-    notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
-}
-
-// @alpha (undocumented)
+// @public
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
 // @beta
@@ -3882,7 +3911,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 
 // @public
 export interface IModelRpcOpenProps {
-    changeSetId?: GuidString;
+    changeSetId?: string;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
     openMode?: OpenMode;
@@ -3935,7 +3964,7 @@ export interface IModelTileTreeProps extends TileTreeProps {
 
 // @public
 export class IModelVersion {
-    static asOfChangeSet(changeSetId: GuidString): IModelVersion;
+    static asOfChangeSet(changeSetId: string): IModelVersion;
     evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString>;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
@@ -3963,7 +3992,7 @@ export type IModelVersionProps = {
     afterChangeSetId?: never;
     versionName?: never;
 } | {
-    afterChangeSetId: GuidString;
+    afterChangeSetId: string;
     first?: never;
     latest?: never;
     versionName?: never;
@@ -4040,7 +4069,7 @@ export enum InternetConnectivityStatus {
     Online = 0
 }
 
-// @beta
+// @public
 export const Interpolation: {
     Linear: (v: any, k: number) => number;
     Bezier: (v: any, k: number) => number;
@@ -4053,7 +4082,7 @@ export const Interpolation: {
     };
 };
 
-// @beta (undocumented)
+// @public (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
 // @internal (undocumented)
@@ -4061,11 +4090,13 @@ export enum IpcAppChannel {
     // (undocumented)
     AppNotify = "ipcApp-notify",
     // (undocumented)
+    EditingSession = "editing-session",
+    // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
-    IModelChanges = "imodel-changes",
+    PushPull = "push-pull",
     // (undocumented)
-    PushPull = "push-pull"
+    Txns = "txns"
 }
 
 // @internal
@@ -4073,9 +4104,13 @@ export interface IpcAppFunctions {
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     closeIModel: (key: string) => Promise<void>;
+    getRedoString: (key: string) => Promise<string>;
+    getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
     hasPendingTxns: (key: string) => Promise<boolean>;
     // (undocumented)
     isInteractiveEditingSupported: (key: string) => Promise<boolean>;
+    isRedoPossible: (key: string) => Promise<boolean>;
+    isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
@@ -4087,7 +4122,7 @@ export interface IpcAppFunctions {
     // (undocumented)
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
-    reverseSingleTxn: (key: string) => Promise<IModelStatus>;
+    reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
     toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
@@ -4358,9 +4393,10 @@ export type LocalAlignedBox3d = Range3d;
 // @beta
 export interface LocalBriefcaseProps {
     briefcaseId: number;
-    changeSetId: GuidString;
+    changeSetId: string;
     contextId: GuidString;
     fileName: string;
+    fileSize: number;
     iModelId: GuidString;
 }
 
@@ -4657,6 +4693,12 @@ export interface ModelGeometryChangesProps {
     readonly inserted?: ElementIdsAndRangesProps;
     readonly range: Range3dProps;
     readonly updated?: ElementIdsAndRangesProps;
+}
+
+// @beta
+export interface ModelIdAndGeometryGuid {
+    guid: GuidString;
+    id: Id64String;
 }
 
 // @public
@@ -5109,6 +5151,11 @@ export interface PartReference {
     type: "partReference";
 }
 
+// @beta
+export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
+    readonly elementId: Id64String;
+}
+
 // @public
 export interface PhysicalElementProps extends GeometricElement3dProps {
     // (undocumented)
@@ -5481,8 +5528,10 @@ export class QParams2d {
     // (undocumented)
     copyFrom(src: QParams2d): void;
     static fromNormalizedRange(rangeScale?: number): QParams2d;
+    static fromOriginAndScale(ox: number, oy: number, sx: number, sy: number): QParams2d;
     static fromRange(range: Range2d, out?: QParams2d, rangeScale?: number): QParams2d;
     static fromZeroToOne(rangeScale?: number): QParams2d;
+    isQuantizable(point: Point2d): boolean;
     // (undocumented)
     readonly origin: Point2d;
     // (undocumented)
@@ -5490,6 +5539,7 @@ export class QParams2d {
     // (undocumented)
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
+    unquantize(x: number, y: number, out?: Point2d): Point2d;
 }
 
 // @internal
@@ -5502,6 +5552,7 @@ export class QParams3d {
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
     static fromRange(range: Range3d, out?: QParams3d, rangeScale?: number): QParams3d;
     static fromZeroToOne(rangeScale?: number): QParams3d;
+    isQuantizable(point: Point3d): boolean;
     // (undocumented)
     readonly origin: Point3d;
     // (undocumented)
@@ -5510,6 +5561,7 @@ export class QParams3d {
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
     setFromRange(range: Range3d, rangeScale?: number): void;
+    unquantize(x: number, y: number, z: number, out?: Point3d): Point3d;
 }
 
 // @internal
@@ -5712,7 +5764,7 @@ export interface RelatedElementProps {
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
-// @beta
+// @public
 export type RemoveFunction = () => void;
 
 // @beta
@@ -6983,7 +7035,7 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     modelSelectorId: Id64String;
 }
 
-// @beta
+// @public
 export type StandaloneOpenOptions = OpenDbKey;
 
 // @beta
@@ -7290,7 +7342,7 @@ export interface TextureProps extends DefinitionElementProps {
     width: number;
 }
 
-// @beta
+// @public
 export class ThematicDisplay {
     readonly axis: Vector3d;
     readonly displayMode: ThematicDisplayMode;
@@ -7300,34 +7352,31 @@ export class ThematicDisplay {
     static fromJSON(json?: ThematicDisplayProps): ThematicDisplay;
     readonly gradientSettings: ThematicGradientSettings;
     readonly range: Range1d;
-    // @alpha
     readonly sensorSettings: ThematicDisplaySensorSettings;
     readonly sunDirection: Vector3d;
     // (undocumented)
     toJSON(): ThematicDisplayProps;
 }
 
-// @beta
+// @public
 export enum ThematicDisplayMode {
     Height = 0,
     HillShade = 3,
-    // @alpha
     InverseDistanceWeightedSensors = 1,
     Slope = 2
 }
 
-// @beta
+// @public
 export interface ThematicDisplayProps {
     axis?: XYZProps;
     displayMode?: ThematicDisplayMode;
     gradientSettings?: ThematicGradientSettingsProps;
     range?: Range1dProps;
-    // @alpha
     sensorSettings?: ThematicDisplaySensorSettingsProps;
     sunDirection?: XYZProps;
 }
 
-// @alpha
+// @public
 export class ThematicDisplaySensor {
     // (undocumented)
     equals(other: ThematicDisplaySensor): boolean;
@@ -7339,13 +7388,13 @@ export class ThematicDisplaySensor {
     readonly value: number;
 }
 
-// @alpha
+// @public
 export interface ThematicDisplaySensorProps {
     position?: XYZProps;
     value?: number;
 }
 
-// @alpha
+// @public
 export class ThematicDisplaySensorSettings {
     readonly distanceCutoff: number;
     // (undocumented)
@@ -7357,29 +7406,23 @@ export class ThematicDisplaySensorSettings {
     toJSON(): ThematicDisplaySensorSettingsProps;
 }
 
-// @alpha
+// @public
 export interface ThematicDisplaySensorSettingsProps {
     distanceCutoff?: number;
     sensors?: ThematicDisplaySensorProps[];
 }
 
-// @beta (undocumented)
+// @public
 export enum ThematicGradientColorScheme {
-    // (undocumented)
     BlueRed = 0,
-    // (undocumented)
     Custom = 5,
-    // (undocumented)
     Monochrome = 2,
-    // (undocumented)
     RedBlue = 1,
-    // (undocumented)
     SeaMountain = 4,
-    // (undocumented)
     Topographic = 3
 }
 
-// @beta (undocumented)
+// @public
 export enum ThematicGradientMode {
     IsoLines = 3,
     Smooth = 0,
@@ -7387,7 +7430,7 @@ export enum ThematicGradientMode {
     SteppedWithDelimiter = 2
 }
 
-// @beta
+// @public
 export class ThematicGradientSettings {
     clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
     readonly colorMix: number;
@@ -7412,7 +7455,7 @@ export class ThematicGradientSettings {
     toJSON(): ThematicGradientSettingsProps;
 }
 
-// @beta (undocumented)
+// @public
 export interface ThematicGradientSettingsProps {
     colorMix?: number;
     colorScheme?: ThematicGradientColorScheme;
@@ -7601,7 +7644,7 @@ export interface TileVersionInfo {
     formatVersion: number;
 }
 
-// @internal
+// @alpha
 export enum TreeFlags {
     // (undocumented)
     EnforceDisplayPriority = 2,
@@ -7611,7 +7654,7 @@ export enum TreeFlags {
     UseProjectExtents = 1
 }
 
-// @beta
+// @public
 export class Tween {
     constructor(_group: Tweens, _object: any);
     // (undocumented)
@@ -7666,10 +7709,10 @@ export class Tween {
     yoyo(yoyo: boolean): this;
     }
 
-// @beta (undocumented)
+// @public (undocumented)
 export type TweenCallback = (obj: any) => void;
 
-// @beta
+// @public
 export class Tweens {
     // (undocumented)
     add(tween: Tween): void;
@@ -7696,6 +7739,36 @@ export class Tweens {
 }
 
 // @public
+export enum TxnAction {
+    Abandon = 2,
+    Commit = 1,
+    Merge = 5,
+    None = 0,
+    Reinstate = 4,
+    Reverse = 3
+}
+
+// @internal
+export interface TxnNotifications {
+    // (undocumented)
+    notifyAfterUndoRedo: (isUndo: boolean) => void;
+    // (undocumented)
+    notifyBeforeUndoRedo: (isUndo: boolean) => void;
+    // (undocumented)
+    notifyChangesApplied: () => void;
+    // (undocumented)
+    notifyCommit: () => void;
+    // (undocumented)
+    notifyCommitted: () => void;
+    // (undocumented)
+    notifyElementsChanged: (changes: ChangedEntities) => void;
+    // (undocumented)
+    notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
+    // (undocumented)
+    notifyModelsChanged: (changes: ChangedEntities) => void;
+}
+
+// @public
 export class TypeDefinition extends RelatedElement {
 }
 
@@ -7719,7 +7792,7 @@ export enum TypeOfChange {
     Property = 1
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
 
 // @beta

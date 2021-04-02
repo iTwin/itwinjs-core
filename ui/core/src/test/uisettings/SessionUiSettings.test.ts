@@ -3,24 +3,28 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { SessionUiSettings, UiSettingsStatus } from "../../ui-core";
+import { SessionSettingsStorage, SessionUiSettings, UiSettingsStatus } from "../../ui-core";
 
 import { storageMock } from "../TestUtils";
 
 describe("SessionUiSettings", () => {
   it("default constructor executes successfully", () => {
-    const initialSessionUiSettings = new SessionUiSettings();
+    const initialSessionUiSettings = new SessionUiSettings(); // eslint-disable-line deprecation/deprecation
+    expect(initialSessionUiSettings).to.not.be.undefined;
+  });
+  it("default SessionSettingsStorage constructor executes successfully", () => {
+    const initialSessionUiSettings = new SessionSettingsStorage(); // eslint-disable-line deprecation/deprecation
     expect(initialSessionUiSettings).to.not.be.undefined;
   });
   describe("saveSetting", () => {
-    const sessionSettings = new SessionUiSettings({ sessionStorage: storageMock() } as Window);
+    const sessionSettings = new SessionSettingsStorage({ sessionStorage: storageMock() } as Window);
     it("Should save setting correctly", async () => {
       const result = await sessionSettings.saveSetting("Testing", "TestData", { test123: "4567" });
       expect(result.status).to.equal(UiSettingsStatus.Success);
     });
   });
   describe("getSetting", async () => {
-    const sessionSettings = new SessionUiSettings({ sessionStorage: storageMock() } as Window);
+    const sessionSettings = new SessionSettingsStorage({ sessionStorage: storageMock() } as Window);
     await sessionSettings.saveSetting("Testing", "TestData", { test123: "4567" });
 
     it("Should load setting correctly", async () => {
@@ -35,7 +39,7 @@ describe("SessionUiSettings", () => {
     });
   });
   describe("deleteSetting", async () => {
-    const sessionSettings = new SessionUiSettings({ sessionStorage: storageMock() } as Window);
+    const sessionSettings = new SessionSettingsStorage({ sessionStorage: storageMock() } as Window);
     await sessionSettings.saveSetting("Testing", "TestData", { test123: "4567" });
 
     it("Should remove setting correctly", async () => {

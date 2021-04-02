@@ -23,7 +23,7 @@ export const enum TechniqueId {
   PointString,
   Edge,
   SilhouetteEdge,
-  TerrainMesh,
+  RealityMesh,
 
   // Techniques with a single associated shader that operates on the entire image
   CompositeHilite,

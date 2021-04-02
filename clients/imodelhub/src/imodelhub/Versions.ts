@@ -43,7 +43,7 @@ export class Version extends WsgInstance {
 
   /** Id of the [[ChangeSet]] that the named Version was created for. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetId")
-  public changeSetId?: GuidString;
+  public changeSetId?: string;
 
   /** Set to true, if named Version is hidden. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Hidden")

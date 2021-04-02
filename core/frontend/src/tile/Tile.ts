@@ -44,7 +44,6 @@ export function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: b
 const scratchWorldFrustum = new Frustum();
 const scratchRootFrustum = new Frustum();
 const scratchWorldSphere = new BoundingSphere();
-const scratchRootSphere = new BoundingSphere();
 const scratchPoint4d = Point4d.createZero();
 const scratchFrustum = new Frustum();
 
@@ -88,10 +87,12 @@ export abstract class Tile {
   public readonly parent: Tile | undefined;
   /** The depth of this tile within its [[TileTree]]. The root tile has a depth of zero. */
   public readonly depth: number;
+  /** The bounding sphere for this tile. */
+  public  readonly boundingSphere: BoundingSphere;
   /** The point at the center of this tile's volume. */
-  public readonly center: Point3d;
+  public get center(): Point3d { return this.boundingSphere.center; }
   /** The radius of a sphere fully encompassing this tile's volume - used for culling. */
-  public readonly radius: number;
+  public get radius(): number { return this.boundingSphere.radius; }
   /** Tracks the usage of this tile. After a period of disuse, the tile may be [[prune]]d to free up memory. */
   public readonly usageMarker = new TileUsageMarker();
 
@@ -131,8 +132,9 @@ export abstract class Tile {
     this._contentRange = params.contentRange;
     this._contentId = params.contentId;
 
-    this.center = this.range.low.interpolate(0.5, this.range.high);
-    this.radius = 0.5 * this.range.low.distance(this.range.high);
+    const center = this.range.low.interpolate(0.5, this.range.high);
+    const radius = 0.5 * this.range.low.distance(this.range.high);
+    this.boundingSphere = new BoundingSphere(center, radius);
 
     if (params.maximumSize <= 0)
       this.setIsReady();
@@ -367,8 +369,7 @@ export abstract class Tile {
 
   /** Returns true if this tile's bounding volume is culled by the frustum or clip volumes specified by `args`. */
   protected isRegionCulled(args: TileDrawArgs): boolean {
-    scratchRootSphere.init(this.center, this.radius);
-    return this.isCulled(this.range, args, true, scratchRootSphere);
+    return this.isCulled(this.range, args, true, this.boundingSphere);
   }
 
   /** Returns true if this tile's content bounding volume is culled by the frustum or clip volumes specified by `args`. */
@@ -418,7 +419,7 @@ export abstract class Tile {
         return TileVisibility.Visible;
     }
 
-    const pixelSize = args.getPixelSize(this);
+    const pixelSize = args.getPixelSize(this) * args.pixelSizeScaleFactor;
     const maxSize = this.maximumSize * args.tileSizeModifier;
 
     return pixelSize > maxSize ? TileVisibility.TooCoarse : TileVisibility.Visible;

@@ -39,12 +39,13 @@ export * from "./domains/GenericElements";
 export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
-export * from "./IpcHost";
-export * from "./NativeHost";
 export * from "./IModelExporter";
 export * from "./IModelImporter";
-export * from "./IModelTransformer";
 export * from "./IModelSchemaLoader";
+export * from "./IModelTransformer";
+export * from "./IpcHost";
+export * from "./NativeAppStorage";
+export * from "./NativeHost";
 export * from "./AutoPush";
 export * from "./BackendRequestContext";
 export * from "./CloudStorageBackend";
@@ -52,6 +53,7 @@ export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./LocalhostIpcHost";
+export * from "./ElementGraphics";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
@@ -150,4 +152,7 @@ export * from "./IModelDb"; // must be last
  * @docs-group-description Authentication
  * Classes for working with Authentication.
  */
-
+/**
+ * @docs-group-description Tiles
+ * APIs for working with tile graphics.
+ */

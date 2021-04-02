@@ -119,7 +119,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
   let globalEventSas: GlobalEventSAS;
   let projectId: string;
   const imodelName = "imodeljs-clients GlobalEvents test";
-  const imodelHubClient: IModelClient = utils.getDefaultClient();
+  let imodelHubClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
   let serviceAccountRequestContext: AuthorizedClientRequestContext;
   let serviceAccount1: TestUserCredentials;
@@ -128,6 +128,8 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
     projectId = await utils.getProjectId(requestContext);
+
+    imodelHubClient = utils.getDefaultClient();
 
     serviceAccount1 = {
       email: Config.App.getString("imjs_test_serviceAccount1_user_name"),

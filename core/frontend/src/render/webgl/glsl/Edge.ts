@@ -16,7 +16,7 @@ import { addShaderFlags } from "./Common";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addAdjustWidth, addLineCode } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
-import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import { addLineWeight, addModelViewMatrix, addModelViewProjectionMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 
 const decodeEndPointAndQuadIndices = `
@@ -62,16 +62,15 @@ const computePosition = `
   vec4  other = g_otherPos;
   float miterAdjust = 0.0;
   float weight = computeLineWeight();
-  float clipDist;
 
-  g_windowPos = modelToWindowCoordinates(rawPos, other, clipDist);
+  vec4 pos;
+  g_windowPos = modelToWindowCoordinates(rawPos, other, pos, v_eyeSpace);
   if (g_windowPos.w == 0.0) // Clipped out.
     return g_windowPos;
 
-  vec4 clipPos = rawPos + clipDist * (other - rawPos);
-  vec4 pos = MAT_MVP * clipPos;
-
-  vec4 projOther = modelToWindowCoordinates(other, rawPos, clipDist);
+  vec4 otherPos;
+  vec3 otherMvPos;
+  vec4 projOther = modelToWindowCoordinates(other, rawPos, otherPos, otherMvPos);
 
   g_windowDir = projOther.xy - g_windowPos.xy;
 
@@ -117,9 +116,10 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   vert.addGlobal("lineCodeEyePos", VariableType.Vec4);
   vert.addGlobal("lineCodeDist", VariableType.Float, "0.0");
 
-  addModelToWindowCoordinates(vert); // adds u_mvp, u_viewportTransformation
+  addModelToWindowCoordinates(vert); // adds u_mvp, u_viewportTransformation, and sets g_eyeSpace
   addProjectionMatrix(vert);
   addLineCode(builder, lineCodeArgs);
+  builder.addVarying("v_eyeSpace", VariableType.Vec3);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   builder.addVarying("v_lnInfo", VariableType.Vec4);
   addAdjustWidth(vert);
@@ -131,6 +131,7 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
 
   if (isSilhouette) {
     addNormalMatrix(vert);
+    addModelViewProjectionMatrix(vert);
     vert.set(VertexShaderComponent.CheckForEarlyDiscard, checkForSilhouetteDiscard);
     vert.addFunction(octDecodeNormal);
   }

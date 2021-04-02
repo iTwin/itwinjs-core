@@ -73,6 +73,7 @@ import { TimeDisplay } from '@bentley/ui-abstract';
 import { TimeFormat } from '@bentley/ui-core';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
+import { UiSettingsStorage } from '@bentley/ui-core';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
 import { Vector3d } from '@bentley/geometry-core';
@@ -1094,6 +1095,8 @@ export interface ControlledTreeProps extends CommonProps {
     noDataRenderer?: () => React.ReactElement;
     nodeHighlightingProps?: HighlightableTreeProps;
     nodeLoader: ITreeNodeLoader;
+    // @alpha
+    onItemsRendered?: (items: RenderedItemsRange) => void;
     selectionMode: SelectionMode;
     spinnerRenderer?: () => React.ReactElement;
     treeEvents: TreeEvents;
@@ -3105,7 +3108,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // (undocumented)
-    get hasFocus(): boolean;
+    hasFocus: boolean;
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
@@ -3116,6 +3119,8 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
 
 // @beta
 export class NumericInputPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesEnter(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
@@ -3734,6 +3739,18 @@ export interface QuantityProps extends CommonProps {
 // @public
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
     icon?: boolean;
+}
+
+// @alpha
+export interface RenderedItemsRange {
+    // (undocumented)
+    overscanStartIndex: number;
+    // (undocumented)
+    overscanStopIndex: number;
+    // (undocumented)
+    visibleStartIndex: number;
+    // (undocumented)
+    visibleStopIndex: number;
 }
 
 // @public
@@ -4525,9 +4542,11 @@ export interface TableProps extends CommonProps {
     scrollToRow?: number;
     selectionMode?: SelectionMode;
     settingsIdentifier?: string;
+    settingsStorage?: UiSettingsStorage;
     showHideColumns?: boolean;
     stripedRows?: boolean;
     tableSelectionTarget?: TableSelectionTarget;
+    // @deprecated
     uiSettings?: UiSettings;
 }
 
@@ -4921,6 +4940,9 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
     toolbarOpacitySetting?: ToolbarOpacitySetting;
     useDragInteraction?: boolean;
 }
+
+// @internal (undocumented)
+export function toRxjsObservable<T>(observable: Observable<T>): Observable_2<T>;
 
 // @internal (undocumented)
 export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;
@@ -5392,6 +5414,8 @@ export interface TreeRendererProps {
     // (undocumented)
     nodeLoader: ITreeNodeLoader;
     nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+    // @alpha
+    onItemsRendered?: (renderedItems: RenderedItemsRange) => void;
     // @internal
     onNodeEditorClosed?: () => void;
     // (undocumented)

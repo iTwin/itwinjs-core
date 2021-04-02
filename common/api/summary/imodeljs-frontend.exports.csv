@@ -43,8 +43,8 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
-beta;AsyncFunction = (...args: any) => Promise
-beta;AsyncMethodsOf
+public;AsyncFunction = (...args: any) => Promise
+public;AsyncMethodsOf
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -65,16 +65,17 @@ public;BeTouchEvent
 public;BeTouchEventProps 
 public;BeWheelEvent 
 public;BeWheelEventProps 
-internal;BingElevationProvider
-internal;BingLocationProvider
+public;BingElevationProvider
+public;BingLocationProvider
 internal;BingMapsImageryLayerProvider 
 public;BlankConnection 
 public;BlankConnectionProps
 public;BriefcaseConnection 
 beta;class BriefcaseNotificationHandler 
+beta;BriefcaseTxns 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
-internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
+public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
@@ -130,9 +131,9 @@ public;DrawingViewState
 internal;class DynamicIModelTile 
 public;DynamicsContext 
 alpha;EditingFunctions
+deprecated;EditingFunctions
 alpha;EditingFunctions
-deprecated;CategoryEditor
-deprecated;ModelEditor
+deprecated;EditingFunctions
 alpha;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
@@ -164,8 +165,6 @@ alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
 public;FeatureOverrideType
 public;FeatureSymbology
-deprecated;Appearance 
-deprecated;AppearanceProps 
 alpha;FeatureTrackingManager
 alpha;FeatureTrackingProps
 alpha;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
@@ -195,7 +194,7 @@ public;GeometricModel3dState
 public;class GeometricModelState 
 internal;GeoServices
 beta;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
-beta;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
+public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string
 internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise
 beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
@@ -203,9 +202,10 @@ internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
-alpha;GlobalLocation
-alpha;GlobalLocationArea
+public;GlobalLocation
+public;GlobalLocationArea
 internal;GlobeAnimator 
+internal;GltfMeshData
 internal;class GltfReader
 internal;GltfReaderProps
 internal;GltfReaderResult 
@@ -341,10 +341,10 @@ alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 alpha;ModifyElementSource
-alpha;NativeApp
-alpha;NativeAppAuthorization
+beta;NativeApp
+beta;NativeAppAuthorization
 internal;NativeAppLogger
-alpha;NativeAppOpts 
+beta;NativeAppOpts 
 internal;NoRenderApp
 beta;class NotificationHandler
 public;NotificationManager
@@ -354,6 +354,7 @@ internal;NullTarget
 internal;OffScreenTarget 
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
+deprecated;OidcBrowserClient 
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
@@ -386,7 +387,7 @@ beta;PlanarClipMaskState
 internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
-beta;PromiseReturnType
+public;PromiseReturnType
 internal;QuadId
 beta;QuantityFormatOverridesChangedArgs
 beta;QuantityFormatsChangedArgs
@@ -395,8 +396,9 @@ beta;QuantityType
 beta;QuantityTypeArg = QuantityType | string
 beta;QuantityTypeDefinition
 beta;QuantityTypeKey = string
-internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
+public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
+beta;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileClient
@@ -410,6 +412,7 @@ internal;RealityTileParams
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 public;RemoteBriefcaseConnection 
+deprecated;RemoteBriefcaseConnection 
 beta;class RenderClipVolume 
 public;RenderContext
 internal;RenderDiagnostics
@@ -418,6 +421,7 @@ public;class RenderGraphicOwner
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
+internal;class RenderRealityMeshGeometry 
 internal;RenderScheduleState
 public;class RenderSystem 
 public;RenderSystem
@@ -425,7 +429,6 @@ beta;Options
 beta;RenderSystemDebugControl
 internal;class RenderTarget 
 beta;RenderTargetDebugControl
-internal;class RenderTerrainMeshGeometry 
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 internal;RootIModelTile = Tile &
@@ -487,7 +490,7 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-alpha;Storage
+beta;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
@@ -591,10 +594,10 @@ beta;ViewCreator3d
 beta;ViewCreator3dOptions
 internal;viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight?: number, pitchAngleRadians?: number, location?: GlobalLocation): number
 internal;ViewGlobalLocationConstants
-beta;ViewGlobeBirdTool 
-beta;ViewGlobeIModelTool 
-beta;ViewGlobeLocationTool 
-beta;ViewGlobeSatelliteTool 
+public;ViewGlobeBirdTool 
+public;ViewGlobeIModelTool 
+public;ViewGlobeLocationTool 
+public;ViewGlobeSatelliteTool 
 internal;ViewHandleArray
 internal;ViewHandleType
 beta;ViewingSpace

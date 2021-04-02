@@ -55,10 +55,12 @@ import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DownloadBriefcaseStatus } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
+import { EditingSessionNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementAspectProps } from '@bentley/imodeljs-common';
 import { ElementGeometryRequest } from '@bentley/imodeljs-common';
 import { ElementGeometryUpdate } from '@bentley/imodeljs-common';
+import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
 import { ElementLoadProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
 import { EntityMetaData } from '@bentley/imodeljs-common';
@@ -92,7 +94,6 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
-import { IModelChangeNotifications } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
@@ -123,6 +124,7 @@ import { MapImageryProps } from '@bentley/imodeljs-common';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
+import { ModelIdAndGeometryGuid } from '@bentley/imodeljs-common';
 import { ModelLoadProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
@@ -179,6 +181,7 @@ import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StandaloneOpenOptions } from '@bentley/imodeljs-common';
 import { StandardViewIndex } from '@bentley/geometry-core';
 import { StatusCodeWithMessage } from '@bentley/bentleyjs-core';
+import { StorageValue } from '@bentley/imodeljs-common';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
@@ -191,6 +194,7 @@ import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
+import { TxnNotifications } from '@bentley/imodeljs-common';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
 import { UpgradeOptions } from '@bentley/imodeljs-common';
@@ -487,7 +491,7 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static getChangedElementsPathName(iModelId: GuidString): string;
     // @internal (undocumented)
-    static getChangeSetFolderNameFromId(changeSetId: GuidString): string;
+    static getChangeSetFolderNameFromId(changeSetId: string): string;
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
     // @internal @deprecated
@@ -588,11 +592,11 @@ export class ChangedElementsDb implements IDisposable {
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
     // (undocumented)
     dispose(): void;
-    getChangeData(startChangesetId: GuidString, endChangesetId: GuidString): ChangeData | undefined;
-    getChangedElements(startChangesetId: GuidString, endChangesetId: GuidString): ChangedElements | undefined;
-    getChangedModels(startChangesetId: GuidString, endChangesetId: GuidString): ChangedModels | undefined;
+    getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined;
+    getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
+    getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
     get isOpen(): boolean;
-    isProcessed(changesetId: GuidString): boolean;
+    isProcessed(changesetId: string): boolean;
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
@@ -687,13 +691,14 @@ export class CheckpointManager {
     // (undocumented)
     static readonly onDownload: BeEvent<(job: DownloadJob) => void>;
     static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
+    static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb): void;
     // (undocumented)
     static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean;
 }
 
 // @beta
 export interface CheckpointProps {
-    changeSetId: GuidString;
+    changeSetId: string;
     contextId: GuidString;
     // (undocumented)
     expectV2?: boolean;
@@ -1337,7 +1342,7 @@ export interface DownloadJob {
     status: DownloadBriefcaseStatus;
 }
 
-// @beta
+// @internal
 export interface DownloadRequest {
     aliasFiles?: string[];
     checkpoint: CheckpointProps;
@@ -2184,6 +2189,9 @@ export abstract class FunctionalType extends TypeDefinitionElement {
     static get className(): string;
 }
 
+// @internal
+export function generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise<Uint8Array | undefined>;
+
 // @public
 export class GenericDocument extends Document {
     constructor(props: ElementProps, iModel: IModelDb);
@@ -2528,6 +2536,8 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
+    // @beta
+    generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
     // @beta
@@ -2661,6 +2671,8 @@ export namespace IModelDb {
         tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined;
         tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined;
         tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined;
+        // @beta
+        updateGeometryGuid(modelId: Id64String): void;
         updateModel(props: UpdateModelOptions): void;
     }
     // @internal
@@ -2704,7 +2716,7 @@ export class IModelExporter {
     excludeElementClass(classFullName: string): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
-    exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
+    exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void>;
     exportChildElements(elementId: Id64String): Promise<void>;
     exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
     exportCodeSpecByName(codeSpecName: string): Promise<void>;
@@ -2975,7 +2987,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): Promise<void>;
-    processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
+    processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void>;
     processChildElements(sourceElementId: Id64String): Promise<void>;
     processCodeSpec(codeSpecName: string): Promise<void>;
     processCodeSpecs(): Promise<void>;
@@ -3100,11 +3112,13 @@ export class IpcHost {
     // (undocumented)
     static noStack: boolean;
     // @internal (undocumented)
-    static notifyIModelChanges<T extends keyof IModelChangeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<IModelChangeNotifications[T]>): void;
+    static notifyEditingSession<T extends keyof EditingSessionNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingSessionNotifications[T]>): void;
     // @internal (undocumented)
     static notifyIpcFrontend<T extends keyof IpcAppNotifications>(methodName: T, ...args: Parameters<IpcAppNotifications[T]>): void;
     // @internal (undocumented)
     static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>): void;
+    // @internal (undocumented)
+    static notifyTxns<T extends keyof TxnNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<TxnNotifications[T]>): void;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
     static shutdown(): Promise<void>;
@@ -3435,6 +3449,28 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
 }
 
 // @beta
+export class NativeAppStorage {
+    close(deleteFile?: boolean): void;
+    // @internal
+    static closeAll(): void;
+    static find(name: string): NativeAppStorage;
+    getBoolean(key: string): boolean | undefined;
+    getData(key: string): StorageValue | undefined;
+    getKeys(): string[];
+    getNumber(key: string): number | undefined;
+    // @internal (undocumented)
+    static getStorageNames(): string[];
+    getString(key: string): string | undefined;
+    getUint8Array(key: string): Uint8Array | undefined;
+    // (undocumented)
+    readonly id: string;
+    static open(name: string): NativeAppStorage;
+    removeAll(): void;
+    removeData(key: string): void;
+    setData(key: string, value: StorageValue): void;
+    }
+
+// @beta
 export class NativeHost {
     static get appSettingsCacheDir(): string;
     // @internal (undocumented)
@@ -3448,12 +3484,19 @@ export class NativeHost {
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
+    // (undocumented)
+    static get settingsStore(): NativeAppStorage;
     static shutdown(): Promise<void>;
     static startup(opt?: NativeHostOpts): Promise<void>;
 }
 
 // @beta (undocumented)
-export type NativeHostOpts = IpcHostOpts;
+export interface NativeHostOpts extends IpcHostOpts {
+    // (undocumented)
+    nativeHost?: {
+        applicationName?: string;
+    };
+}
 
 export { NativeLoggerCategory }
 
@@ -3794,6 +3837,9 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
     toJSON(): SectionLocationProps;
 }
 
+// @internal
+export function setMaxEntitiesPerEvent(max: number): number;
+
 // @public
 export class Sheet extends Document implements SheetProps {
     // @internal
@@ -4040,7 +4086,7 @@ export enum SqliteValueType {
     String = 3
 }
 
-// @internal
+// @public
 export class StandaloneDb extends IModelDb {
     get changeSetId(): undefined;
     static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
@@ -4233,7 +4279,7 @@ export class TitleText extends DetailingSymbol {
     static get className(): string;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export enum TxnAction {
     // (undocumented)
     Abandon = 2,
@@ -4250,7 +4296,7 @@ export enum TxnAction {
 }
 
 // @beta (undocumented)
-export interface TxnElementsChanged {
+export interface TxnChangedEntities {
     // (undocumented)
     deleted: OrderedId64Array;
     // (undocumented)
@@ -4279,23 +4325,35 @@ export class TxnManager {
     get hasLocalChanges(): boolean;
     get hasPendingTxns(): boolean;
     get hasUnsavedChanges(): boolean;
+    // @internal (undocumented)
+    get isDisposed(): boolean;
     get isRedoPossible(): boolean;
     isTxnIdValid(txnId: TxnIdString): boolean;
     get isUndoPossible(): boolean;
-    readonly onAfterUndoRedo: BeEvent<(_action: TxnAction) => void>;
+    readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
+    // @internal (undocumented)
+    protected _onAfterUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
     protected _onAllInputsHandled(elClassName: string, elId: Id64String): void;
     // @internal (undocumented)
     protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void;
-    readonly onBeforeUndoRedo: BeEvent<() => void>;
+    readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
+    // @internal (undocumented)
+    protected _onBeforeUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
     protected _onBeginValidate(): void;
     readonly onChangesApplied: BeEvent<() => void>;
+    // @internal (undocumented)
+    protected _onChangesApplied(): void;
     readonly onCommit: BeEvent<() => void>;
+    // @internal (undocumented)
+    protected _onCommit(): void;
     readonly onCommitted: BeEvent<() => void>;
     // @internal (undocumented)
+    protected _onCommitted(): void;
+    // @internal (undocumented)
     protected _onDeletedDependency(props: RelationshipProps): void;
-    readonly onElementsChanged: BeEvent<(changes: TxnElementsChanged) => void>;
+    readonly onElementsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal
     protected _onEndValidate(): void;
     // @internal (undocumented)
@@ -4304,8 +4362,10 @@ export class TxnManager {
     readonly onGeometryChanged: BeEvent<(models: ModelGeometryChangesProps[]) => void>;
     // @internal (undocumented)
     protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]): void;
-    // @internal
-    protected _onGeometryGuidsChanged(): void;
+    // @internal (undocumented)
+    protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
+    readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
+    readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     // @internal (undocumented)

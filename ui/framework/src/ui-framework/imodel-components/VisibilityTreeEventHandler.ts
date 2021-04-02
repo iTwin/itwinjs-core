@@ -14,7 +14,7 @@ import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { NodeKey } from "@bentley/presentation-common";
 import { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams } from "@bentley/presentation-components";
 import {
-  CheckBoxInfo, CheckboxStateChange, TreeCheckboxStateChangeEventArgs, TreeModelNode, TreeNodeItem,
+  CheckBoxInfo, CheckboxStateChange, toRxjsObservable, TreeCheckboxStateChangeEventArgs, TreeModelNode, TreeNodeItem,
   TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "@bentley/ui-components";
 import { CheckBoxState, isPromiseLike } from "@bentley/ui-core";
@@ -96,7 +96,7 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
   }
 
   public onSelectionModified({ modifications }: TreeSelectionModificationEventArgs) {
-    const filteredModification = from(modifications).pipe(
+    const filteredModification = toRxjsObservable(modifications).pipe(
       map(({ selectedNodeItems, deselectedNodeItems }) => {
         return {
           selectedNodeItems: this.filterSelectionItems(selectedNodeItems),
@@ -108,7 +108,7 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
   }
 
   public onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs) {
-    const filteredReplacements = from(replacements).pipe(
+    const filteredReplacements = toRxjsObservable(replacements).pipe(
       map(({ selectedNodeItems }) => {
         return {
           selectedNodeItems: this.filterSelectionItems(selectedNodeItems),

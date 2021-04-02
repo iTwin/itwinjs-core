@@ -21,6 +21,7 @@ public;BisCoreSchema
 public;BriefcaseDb 
 public;BriefcaseId = number
 public;BriefcaseIdValue
+deprecated;BriefcaseIdValue
 beta;BriefcaseManager
 public;CachedECSqlStatement
 internal;CachedSqliteStatement
@@ -76,10 +77,11 @@ public;DisplayStyle3d
 public;DisplayStyleCreationOptions 
 public;class Document 
 internal;class DocumentCarrier 
+deprecated;class DocumentCarrier 
 public;DocumentListModel 
 public;DocumentPartition 
 internal;DownloadJob
-beta;DownloadRequest
+internal;DownloadRequest
 internal;Downloads
 public;Drawing 
 public;DrawingCategory 
@@ -155,6 +157,7 @@ public;FunctionalModel
 public;FunctionalPartition 
 public;FunctionalSchema 
 public;class FunctionalType 
+internal;generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise
 public;GenericDocument 
 public;GenericGraphicalModel3d 
 public;GenericGraphicalType2d 
@@ -202,6 +205,7 @@ alpha;IModelSchemaLoader
 beta;IModelTransformer 
 beta;IModelTransformOptions
 internal;class InformationCarrierElement 
+deprecated;class InformationCarrierElement 
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -225,8 +229,9 @@ internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;class NativeAppAuthorizationBackend 
+beta;NativeAppStorage
 beta;NativeHost
-beta;NativeHostOpts = IpcHostOpts
+beta;NativeHostOpts 
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -263,6 +268,8 @@ public;SectionDrawing
 beta;SectionDrawingLocation 
 public;SectionDrawingModel 
 alpha;SectionLocation 
+deprecated;SectionLocation 
+internal;setMaxEntitiesPerEvent(max: number): number
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
@@ -283,7 +290,7 @@ internal;SqliteStatement
 internal;SqliteStatementCache
 internal;SqliteValue
 internal;SqliteValueType
-internal;StandaloneDb 
+public;StandaloneDb 
 internal;StringParam
 public;SubCategory 
 public;Subject 
@@ -303,7 +310,8 @@ public;Texture
 internal;TextureCreateProps 
 public;TitleText 
 public;TxnAction
-beta;TxnElementsChanged
+deprecated;TxnAction
+beta;TxnChangedEntities
 public;TxnIdString = string
 beta;TxnManager
 public;class TypeDefinitionElement 
