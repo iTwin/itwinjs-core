@@ -39,7 +39,7 @@ export class EditingScopeTool extends Tool {
 
     const scope = imodel.editingScope;
     if (scope)
-      await scope.end();
+      await scope.exit();
     else
       await imodel.enterEditingScope();
 
