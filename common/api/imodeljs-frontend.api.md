@@ -6444,7 +6444,7 @@ export class NativeApp {
 
 // @beta
 export class NativeAppAuthorization {
-    constructor(config: NativeAppAuthorizationConfiguration);
+    constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _expireSafety: number;
     getAccessToken(): Promise<AccessToken>;
