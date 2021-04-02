@@ -108,6 +108,8 @@ export interface NativeAppOpts extends IpcAppOptions {
   nativeApp?: {
     /** if present, [[IModelApp.authorizationClient]] will be set to an instance of NativeAppAuthorization and will be initialized. */
     authConfig?: NativeAppAuthorizationConfiguration;
+    /** if true, do not attempt to initialize AuthorizationClient */
+    noInitializeAuthClient?: boolean;
   };
 }
 
@@ -172,7 +174,8 @@ export class NativeApp {
 
     const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig);
     IModelApp.authorizationClient = auth;
-    await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
+    if (true !== opts?.nativeApp?.noInitializeAuthClient)
+      await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
 
     // initialize current online state.
     if (window.navigator.onLine) {
