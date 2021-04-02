@@ -52,14 +52,6 @@ The `QuantityFormatSettingsPage` is marked as alpha in this release and is subje
 
 The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
 
-## Incremental precompilation of shaders enabled by default
-
-To help prevent delays when a user interacts with a [Viewport]($frontend), the WebGL render system now by default precompiles shader programs used by the [RenderSystem]($frontend) before any Viewport is opened.
-
-Shader precompilation will cease once all shader programs have been compiled, or when a [Viewport]($frontend) is opened (registered with the [ViewManager]($frontend)).  As such, applications which do not open a [Viewport]($frontend) immediately upon startup stand to benefit - for example, if the user is first expected to select an iModel and/or a view through the user interface.
-
-To disable this functionality, set the `doIdleWork` property of the `RenderSystem.Options` object passed to `IModelApp.startup` to false.
-
 ## Added NativeHost.settingsStore for storing user-level settings for native applications
 
 The @beta class `NativeHost` now has a member [NativeHost.settingsStore]($backend) that may be used by native applications to store user-level data in a file in the [[NativeHost.appSettingsCacheDir]($backend) directory. It uses the [NativeAppStorage]($backend) api to store and load key/value pairs. Note that these settings are stored in a local file that may be deleted by the user, so it should only be used for a local cache of values that may be restored elsewhere.
@@ -78,18 +70,33 @@ It was, however, confusing from a usage and documentation perspective and needed
 ## Promoted APIs
 
 The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
+
 ### [@bentley/bentleyjs-core](https://www.itwinjs.org/reference/bentleyjs-core/)
-  * [assert]($bentleyjs-core) for asserting logic invariants.
-  * [ProcessDetector]($bentleyjs-core) for querying the type of executing Javascript process.
-  * [ObservableSet]($bentleyjs-core) for a [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents are modified.
-  * [ByteStream]($bentleyjs-core) for extracting data from binary streams.
-  * Types related to collections of [Id64String]($bentleyjs-core)s
-    * [OrderedId64Iterable]($bentleyjs-core) and [OrderedId64Array]($bentleyjs-core)
-    * [CompressedId64Set]($bentleyjs-core) and [MutableCompressedId64Set]($bentleyjs-core)
+
+* [assert]($bentleyjs-core) for asserting logic invariants.
+* [ProcessDetector]($bentleyjs-core) for querying the type of executing JavaScript process.
+* [ObservableSet]($bentleyjs-core) for a [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents are modified.
+* [ByteStream]($bentleyjs-core) for extracting data from binary streams.
+* Types related to collections of [Id64String]($bentleyjs-core)s
+  * [OrderedId64Iterable]($bentleyjs-core) and [OrderedId64Array]($bentleyjs-core)
+  * [CompressedId64Set]($bentleyjs-core) and [MutableCompressedId64Set]($bentleyjs-core)
 
 ### [@bentley/hypermodeling-frontend](https://www.itwinjs.org/reference/hypermodeling-frontend/)
 
 All hyper-modeling APIs are now public. [This interactive sample](https://www.itwinjs.org/sample-showcase/?group=Viewer&sample=hypermodeling-sample&imodel=House+Sample) demonstrates how to use hyper-modeling features.
+
+### [@bentley/imodeljs-common](https://www.itwinjs.org/reference/imodeljs-common/)
+
+* [ThematicDisplay]($common) for colorizing a [Viewport]($frontend)'s scene based on aspects of the rendered geometry. [This interactive sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=thematic-display-sample&imodel=CoffsHarborDemo) demonstrates the usage of thematic display.
+* [Tween]($common) for smooth interpolation of values (based on [Tween.js](https://github.com/tweenjs/tween.js/blob/master/docs/user_guide.md))
+
+### [@bentley/imodeljs-frontend](https://www.itwinjs.org/reference/imodeljs-frontend/)
+
+* [ViewGlobeSatelliteTool]($frontend), [ViewGlobeBirdTool]($frontend), [ViewGlobeLocationTool]($frontend), [ViewGlobeIModelTool]($frontend) for viewing the iModel in a global context.
+
+### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
+
+* [StandaloneDb]($backend) for opening Standalone iModels
 
 ## Breaking API changes
 
