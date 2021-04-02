@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-editor-backend
 
-This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Apr 2021 13:18:42 GMT and should not be manually modified.
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- Support working in world coords with ElementGeometry.Builder/Iterator. Place line string using ipc command.
+- Implement rotate about center/origin options.
 
 ## 2.13.0
 Tue, 09 Mar 2021 20:28:13 GMT

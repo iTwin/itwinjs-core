@@ -3,6 +3,7 @@ publish: false
 ---
 # NextVersion
 
+<<<<<<< HEAD
 ## Txn monitoring
 
 [TxnManager]($backend) now has additional events for monitoring changes to the iModel resulting from [Txns]($docs/learning/InteractiveEditing.md), including:
@@ -157,3 +158,5 @@ return <ControlledTree
   onItemsRendered={onItemsRendered}
 />;
 ```
+=======
+>>>>>>> b1c4f95409... 2.14.0
