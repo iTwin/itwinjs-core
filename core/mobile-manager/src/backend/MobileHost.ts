@@ -151,7 +151,7 @@ export class MobileHost {
     await NativeHost.startup(opt);
     if (IpcHost.isValid)
       MobileAppHandler.register();
-    IModelHost.authorizationClient = new MobileAuthorizationBackend();
+    IModelHost.authorizationClient = new MobileAuthorizationBackend(opt?.mobileHost?.authConfig);
 
     const rpcInterfaces = opt?.mobileHost?.rpcInterfaces ?? [
       IModelReadRpcInterface,
