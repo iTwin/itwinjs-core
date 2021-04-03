@@ -42,13 +42,10 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
       const severity = advisory.severity.toUpperCase();
       const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
 
-
-      // TODO: Temporarily lower the threshold of the immer security issue until we can consume a fix.  Id === 1603
-
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
-      if (advisory.id !== 1603 && (severity === "HIGH" || severity === "CRITICAL"))
+      if (severity === "HIGH" || severity === "CRITICAL")
         logBuildError(message);
-      else if (advisory.id === 1603 || severity === "MODERATE") // Only warn on Moderate severity items
+      else if (severity === "MODERATE") // Only warn on Moderate severity items
         logBuildWarning(message);
     }
   }
@@ -58,8 +55,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
     failBuild();
 
   if (jsonOut.metadata.vulnerabilities.high || jsonOut.metadata.vulnerabilities.critical) {
-    if ((1 < jsonOut.actions.length || jsonOut.actions[0].resolves[0].id !== 725) && jsonOut.actions[3].resolves[0].id !== 1603) {
-      console.log("log")
+    if (1 < jsonOut.actions.length) {
       failBuild();
     }
   }
@@ -78,10 +74,6 @@ function runPnpmAuditAsync(cwd) {
     const child = spawn(pnpmPath, ["audit", "--json"], { cwd, shell: true });
 
     let stdout = "";
-    let result = {
-      actions: [{ resolves: [], },],
-      advisories: {},
-    };
     child.stdout.on('data', (data) => {
       stdout += data;
     });
