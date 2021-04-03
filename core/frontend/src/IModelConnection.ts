@@ -12,7 +12,7 @@ import {
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap, FontMapProps,
-  GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
+  GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, IModelStatus, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
   SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
@@ -433,6 +433,16 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public async getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getGeometryContainment(this.getRpcProps(), requestProps); }
+
+  /** Obtain a summary of the geometry belonging to one or more [GeometricElement]($frontend)s suitable for debugging and diagnostics.
+   * @param requestProps Specifies the elements to query and options for how to format the output.
+   * @returns A string containing the summary, typically consisting of multiple lines.
+   * @note Trying to parse the output to programatically inspect an element's geometry is not recommended.
+   * @see [GeometryStreamIterator]($common) to more directly inspect a geometry stream.
+   */
+  public async getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getGeometrySummary(this.getRpcProps(), requestProps);
+  }
 
   /** Request a named texture image from the backend.
    * @param textureLoadProps The texture load properties which must contain a name property (a valid 64-bit integer identifier)

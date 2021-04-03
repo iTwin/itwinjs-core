@@ -62,9 +62,11 @@ export interface IModelTileTreeProps extends TileTreeProps {
  * @alpha
  */
 export interface TileVersionInfo {
-  /** The maximum exact version of the "iMdl" tile format supported by the backend. The backend can supply tiles of any earlier version of the format, but not newer than this maximum.
+  /** The exact version of the "iMdl" tile format used by the backend when generating tile content.
+   * Newer versions of the tile format remain backwards-compatible, but may fix bugs from previous versions and add new features.
+   * A frontend can request tiles of an earlier version than this, but should not of newer versions.
    * @note The version is represented as a 32-bit integer combining the 16-bit major and minor version numbers.
-   * @see [[CurrentImdlVersion]].
+   * @see [[CurrentImdlVersion]] to obtain the current version used by the frontend or backend.
    */
   formatVersion: number;
 }

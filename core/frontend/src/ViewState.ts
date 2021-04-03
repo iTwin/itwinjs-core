@@ -304,9 +304,7 @@ export abstract class ViewState extends ElementState {
     return !ovr.invisible;
   }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public abstract get details(): ViewDetails;
 
   /** Returns true if this ViewState is-a [[ViewState3d]] */
@@ -1139,9 +1137,7 @@ export abstract class ViewState3d extends ViewState {
    */
   public onRenderFrame(_viewport: Viewport): void { }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public get details(): ViewDetails3d {
     return this._details;
   }
@@ -2028,9 +2024,7 @@ export abstract class ViewState2d extends ViewState {
     return this.iModel.models.load(this.baseModelId);
   }
 
-  /** Provides access to optional detail settings for this view.
-   * @beta
-   */
+  /** Provides access to optional detail settings for this view. */
   public get details(): ViewDetails {
     return this._details;
   }
