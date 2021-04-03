@@ -172,6 +172,11 @@ export interface MobileHostOpts extends NativeHostOpts {
     // (undocumented)
     mobileHost?: {
         device?: MobileDevice;
+<<<<<<< HEAD
+=======
+        rpcInterfaces?: RpcInterfaceDefinition[];
+        authConfig?: NativeAppAuthorizationConfiguration;
+>>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
     };
 }
 

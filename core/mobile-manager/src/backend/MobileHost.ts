@@ -77,6 +77,13 @@ class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
 export interface MobileHostOpts extends NativeHostOpts {
   mobileHost?: {
     device?: MobileDevice;
+<<<<<<< HEAD
+=======
+    /** list of RPC interface definitions to register */
+    rpcInterfaces?: RpcInterfaceDefinition[];
+    /** Authorization configuration */
+    authConfig?: NativeAppAuthorizationConfiguration;
+>>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
   };
 }
 
@@ -145,6 +152,19 @@ export class MobileHost {
     await NativeHost.startup(opt);
     if (IpcHost.isValid)
       MobileAppHandler.register();
+<<<<<<< HEAD
     IModelHost.authorizationClient = new MobileAuthorizationBackend();
+=======
+    IModelHost.authorizationClient = new MobileAuthorizationBackend(opt?.mobileHost?.authConfig);
+
+    const rpcInterfaces = opt?.mobileHost?.rpcInterfaces ?? [
+      IModelReadRpcInterface,
+      IModelTileRpcInterface,
+      SnapshotIModelRpcInterface,
+      PresentationRpcInterface,
+    ];
+
+    MobileRpcManager.initializeImpl(rpcInterfaces);
+>>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
   }
 }

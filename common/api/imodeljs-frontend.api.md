@@ -6420,7 +6420,7 @@ export class NativeApp {
 
 // @alpha
 export class NativeAppAuthorization {
-    constructor(config: NativeAppAuthorizationConfiguration);
+    constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _expireSafety: number;
     getAccessToken(): Promise<AccessToken>;
@@ -6456,6 +6456,7 @@ export interface NativeAppOpts extends IpcAppOptions {
     // (undocumented)
     nativeApp?: {
         authConfig?: NativeAppAuthorizationConfiguration;
+        noInitializeAuthClient?: boolean;
     };
 }
 

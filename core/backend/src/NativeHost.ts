@@ -22,16 +22,15 @@ import { NativeAppStorage } from "./NativeAppStorage";
 /** @internal */
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
   protected _accessToken?: AccessToken;
-  protected _expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
-  protected _config?: NativeAppAuthorizationConfiguration;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-  public get config(): NativeAppAuthorizationConfiguration { return this._config!; }
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
   protected abstract refreshToken(): Promise<AccessToken>;
+  public config!: NativeAppAuthorizationConfiguration;
+  public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
   public get isAuthorized(): boolean {
-    return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety);
+    return undefined !== this._accessToken && !this._accessToken.isExpired(this.expireSafety);
   }
+
   public setAccessToken(token?: AccessToken) {
     if (token === this._accessToken)
       return;
@@ -43,11 +42,13 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
       this.setAccessToken(await this.refreshToken());
     return this._accessToken!;
   }
+
   public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
-  public async initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
-    this._config = config;
-    if (config.expiryBuffer)
-      this._expireSafety = config.expiryBuffer;
+  public async initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration) {
+    if (config)
+      this.config = config;
+    if (this.config.expiryBuffer)
+      this.expireSafety = this.config.expiryBuffer;
     IModelHost.session.applicationId = props.applicationId;
     IModelHost.applicationVersion = props.applicationVersion;
     IModelHost.sessionId = props.sessionId;
@@ -63,8 +64,9 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public async silentLogin(token: AccessTokenProps) {
     NativeHost.authorization.setAccessToken(AccessToken.fromJson(token));
   }
-  public async initializeAuth(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
-    return NativeHost.authorization.initialize(props, config);
+  public async initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number> {
+    await NativeHost.authorization.initialize(props, config);
+    return NativeHost.authorization.expireSafety;
   }
   public async signIn(): Promise<void> {
     return NativeHost.authorization.signIn();
@@ -176,7 +178,12 @@ export type NativeHostOpts = IpcHostOpts;
  */
 export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
+<<<<<<< HEAD
   private constructor() { }
+=======
+  private static _applicationName: string;
+  private constructor() { } // no instances - static methods only
+>>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
 
   /** @internal */
   public static get authorization() { return IModelHost.authorizationClient as NativeAppAuthorizationBackend; }
@@ -202,6 +209,13 @@ export class NativeHost {
 
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
+<<<<<<< HEAD
+=======
+  public static get applicationName() { return this._applicationName; }
+  public static get settingsStore() {
+    return NativeAppStorage.open(this.applicationName);
+  }
+>>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
 
   /**
    * Start the backend of a native app.

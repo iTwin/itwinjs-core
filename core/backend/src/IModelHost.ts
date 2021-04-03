@@ -266,10 +266,6 @@ export class IModelHost {
     return new AuthorizedClientRequestContext(await this.getAccessToken(), undefined, this.applicationId, this.applicationVersion, this.sessionId);
   }
 
-  private static get _isNativePlatformLoaded(): boolean {
-    return this._platform !== undefined;
-  }
-
   /** @internal */
   public static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void {
     const platform = Platform.load();
@@ -379,8 +375,8 @@ export class IModelHost {
     this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();
 
-    const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
-    if (!this._isNativePlatformLoaded) {
+    if (this._platform === undefined) {
+      const region = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
       try {
         this.loadNative(region, configuration.applicationType, configuration.imodelClient);
       } catch (error) {
@@ -389,8 +385,8 @@ export class IModelHost {
       }
     }
 
-    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
-      this._platform.setCrashReporting(configuration.crashReportingConfig);
+    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
+      this.platform.setCrashReporting(configuration.crashReportingConfig);
 
       Logger.logTrace(loggerCategory, "Configured crash reporting", () => ({
         enableCrashDumps: configuration.crashReportingConfig?.enableCrashDumps,
@@ -438,9 +434,7 @@ export class IModelHost {
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
 
-    if (undefined !== this._platform) {
-      this._platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
-    }
+    this.platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
 
     const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
     const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
