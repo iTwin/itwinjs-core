@@ -47,7 +47,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
       if (advisory.id !== 1603 && (severity === "HIGH" || severity === "CRITICAL"))
         logBuildError(message);
-      else if (advisory.id === 1603 || severity === "MODERATE") // Only warn on Moderate severity items
+      else if (advisory.id === 1603 || severity === "MODERATE")// Only warn on Moderate severity items
         logBuildWarning(message);
     }
   }
@@ -56,8 +56,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
     failBuild();
 
   if (jsonOut.metadata.vulnerabilities.high || jsonOut.metadata.vulnerabilities.critical) {
-    if ((1 < jsonOut.actions.length || jsonOut.actions[0].resolves[0].id !== 725) && jsonOut.actions[3].resolves[0].id !== 1603) {
-      console.log("log")
+    if ((1 < jsonOut.actions.length || jsonOut.actions[0].resolves[0].id !== 725) && jsonOut.actions[4].resolves[0].id !== 1603) {
       failBuild();
     }
   }
