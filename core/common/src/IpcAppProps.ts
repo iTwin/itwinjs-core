@@ -54,7 +54,7 @@ export enum IpcAppChannel {
   Functions = "ipc-app",
   AppNotify = "ipcApp-notify",
   Txns = "txns",
-  EditingScope = "editing-session",
+  EditingScope = "editing-scope",
   PushPull = "push-pull",
 }
 

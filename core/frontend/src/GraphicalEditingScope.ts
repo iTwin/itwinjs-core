@@ -69,7 +69,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
   public static readonly onEnter = new BeEvent<(scope: GraphicalEditingScope) => void>();
 
   /** Event raised when this scope is about to exit.
-   * @see [[onBEnteregin]] for the complementary event.
+   * @see [[onEnter]] for the complementary event.
    * @see [[onExited]] for an event raised after the scope exits.
    */
   public readonly onExiting = new BeEvent<(scope: GraphicalEditingScope) => void>();
