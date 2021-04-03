@@ -158,6 +158,7 @@ public;LoadingStatus
 public;LoadingStatusProps 
 public;LocalSettingsStorage 
 beta;LocalUiSettings 
+deprecated;LocalUiSettings 
 public;MainTabsProps 
 internal;mergeRefs
 public;MessageBox 
@@ -235,6 +236,7 @@ public;SelectOption
 public;SelectProps 
 public;SessionSettingsStorage 
 beta;SessionUiSettings 
+deprecated;SessionUiSettings 
 beta;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element
 beta;SettingsContainerProps
 beta;SettingsManager

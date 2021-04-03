@@ -9,7 +9,7 @@ import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, Proce
 import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
 import {
-  BriefcaseConnection, EditingFunctions, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, TileLoadPriority,
+  BriefcaseConnection, EditingFunctions, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { deleteElements, initializeEditTools, insertLineElement, makeLineSegment, transformElements } from "../Editing";
@@ -22,7 +22,7 @@ function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange { re
 function makeUpdate(id: Id64String, range?: Range3d): ElementGeometryChange { return { id, type: DbOpcode.Update, range: (range ?? dummyRange) }; }
 function makeDelete(id: Id64String): ElementGeometryChange { return { id, type: DbOpcode.Delete }; }
 
-describe("InteractiveEditingSession", () => {
+describe("GraphicalEditingScope", () => {
   if (ProcessDetector.isElectronAppFrontend) {
     let imodel: BriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
@@ -54,32 +54,32 @@ describe("InteractiveEditingSession", () => {
     it("should not be supported for read-only connections", async () => {
       imodel = await BriefcaseConnection.openStandalone(oldFilePath, OpenMode.Readonly);
       expect(imodel.openMode).to.equal(OpenMode.Readonly);
-      expect(await imodel.supportsInteractiveEditing()).to.be.false;
-      await expect(imodel.beginEditingSession()).to.be.rejectedWith(IModelError);
+      expect(await imodel.supportsGraphicalEditing()).to.be.false;
+      await expect(imodel.enterEditingScope()).to.be.rejectedWith(IModelError);
     });
 
     it("should not be supported for iModels with BisCore < 1.0.11", async () => {
       imodel = await BriefcaseConnection.openStandalone(oldFilePath);
       expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
-      expect(await imodel.supportsInteractiveEditing()).to.be.false;
-      await expect(imodel.beginEditingSession()).to.be.rejectedWith(IModelError);
+      expect(await imodel.supportsGraphicalEditing()).to.be.false;
+      await expect(imodel.enterEditingScope()).to.be.rejectedWith(IModelError);
     });
 
     it("should not be supported for read-only iModels with BisCore >= 1.0.11", async () => {
       imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.Readonly);
       expect(imodel.openMode).to.equal(OpenMode.Readonly);
-      expect(await imodel.supportsInteractiveEditing()).to.be.false;
-      await expect(imodel.beginEditingSession()).to.be.rejectedWith(IModelError);
+      expect(await imodel.supportsGraphicalEditing()).to.be.false;
+      await expect(imodel.enterEditingScope()).to.be.rejectedWith(IModelError);
     });
 
     it("should be supported for writable iModels with BisCore >= 1.0.11", async () => {
       imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
       expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
-      expect(await imodel.supportsInteractiveEditing()).to.be.true;
-      const session = await imodel.beginEditingSession();
-      expect(imodel.editingSession).to.equal(session);
-      await session.end();
-      expect(imodel.editingSession).to.be.undefined;
+      expect(await imodel.supportsGraphicalEditing()).to.be.true;
+      const scope = await imodel.enterEditingScope();
+      expect(imodel.editingScope).to.equal(scope);
+      await scope.exit();
+      expect(imodel.editingScope).to.be.undefined;
     });
 
     async function openWritable(): Promise<BriefcaseConnection> {
@@ -87,45 +87,45 @@ describe("InteractiveEditingSession", () => {
       return BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
     }
 
-    it("throws if begin is called repeatedly", async () => {
+    it("throws if enter is called repeatedly", async () => {
       imodel = await openWritable();
-      const session = await imodel.beginEditingSession();
-      await expect(imodel.beginEditingSession()).to.be.rejectedWith("Cannot create an editing session for an iModel that already has one");
-      await session.end();
+      const scope = await imodel.enterEditingScope();
+      await expect(imodel.enterEditingScope()).to.be.rejectedWith("Cannot create an editing scope for an iModel that already has one");
+      await scope.exit();
     });
 
-    it("throws if end is called repeatedly", async () => {
+    it("throws if exit is called repeatedly", async () => {
       imodel = await openWritable();
-      const session = await imodel.beginEditingSession();
-      await session.end();
-      await expect(session.end()).to.be.rejectedWith("Cannot end editing session after it is disconnected from the iModel");
+      const scope = await imodel.enterEditingScope();
+      await scope.exit();
+      await expect(scope.exit()).to.be.rejectedWith("Cannot exit editing scope after it is disconnected from the iModel");
     });
 
-    it("ends the session when closing the iModel", async () => {
+    it("exits the scope when closing the iModel", async () => {
       imodel = await openWritable();
-      const session = await imodel.beginEditingSession();
-      expect(imodel.editingSession).to.equal(session);
-      expect(session.isDisposed).to.be.false;
+      const scope = await imodel.enterEditingScope();
+      expect(imodel.editingScope).to.equal(scope);
+      expect(scope.isDisposed).to.be.false;
       await imodel.close();
-      expect(session.isDisposed).to.be.true;
-      expect(imodel.editingSession).to.be.undefined;
+      expect(scope.isDisposed).to.be.true;
+      expect(imodel.editingScope).to.be.undefined;
     });
 
-    it("dispatches events when sessions begin or end", async () => {
+    it("dispatches events when scopes enter or exit", async () => {
       imodel = await openWritable();
 
       let beginCount = 0;
-      const removeBeginListener = InteractiveEditingSession.onBegin.addListener((_: InteractiveEditingSession) => ++beginCount);
+      const removeBeginListener = GraphicalEditingScope.onEnter.addListener(() => ++beginCount);
 
-      const session = await imodel.beginEditingSession();
+      const scope = await imodel.enterEditingScope();
       expect(beginCount).to.equal(1);
 
       let endingCount = 0;
       let endCount = 0;
-      const removeEndingListener = session.onEnding.addListener((_: InteractiveEditingSession) => ++endingCount);
-      const removeEndListener = session.onEnded.addListener((_: InteractiveEditingSession) => ++endCount);
+      const removeEndingListener = scope.onExiting.addListener(() => ++endingCount);
+      const removeEndListener = scope.onExited.addListener(() => ++endCount);
 
-      const endPromise = session.end();
+      const endPromise = scope.exit();
       expect(endingCount).to.equal(1);
       expect(endCount).to.equal(0);
 
@@ -146,8 +146,8 @@ describe("InteractiveEditingSession", () => {
       const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, Guid.createValue(), { color: 0 });
       await imodel.saveChanges();
 
-      // Begin an editing session.
-      const session = await imodel.beginEditingSession();
+      // Enter an editing scope.
+      const scope = await imodel.enterEditingScope();
 
       let changedElements: ChangedEntities;
       imodel.txns.onElementsChanged.addListener((ch) => {
@@ -155,7 +155,7 @@ describe("InteractiveEditingSession", () => {
       });
 
       function expectChanges(expected: ElementGeometryChange[], compareRange = false): void {
-        const changes = session.getGeometryChangesForModel(modelId);
+        const changes = scope.getGeometryChangesForModel(modelId);
         expect(undefined === changes).to.equal(expected.length === 0);
         if (changes) {
           const actual = Array.from(changes).sort((x, y) => compareStrings(x.id, y.id));
@@ -172,7 +172,7 @@ describe("InteractiveEditingSession", () => {
       }
 
       // Insert a line element.
-      expect(session.getGeometryChangesForModel(modelId)).to.be.undefined;
+      expect(scope.getGeometryChangesForModel(modelId)).to.be.undefined;
       const elem1 = await insertLineElement(imodel, modelId, category);
       // Events not dispatched until changes saved.
       await imodel.saveChanges();
@@ -236,7 +236,7 @@ describe("InteractiveEditingSession", () => {
 
       await redo();
       expectChanges([deleteElem1, insertElem2]);
-      await session.end();
+      await scope.exit();
     });
 
     it("updates state of tile trees", async () => {
@@ -305,7 +305,7 @@ describe("InteractiveEditingSession", () => {
         }
       };
 
-      // No editing session currently active.
+      // No editing scope currently active.
       const tree1 = createTileTree();
       expect(tree1.range.isAlmostEqual(modelRange)).to.be.true;
       await expectTreeState(tree1, "static", 0, modelRange);
@@ -314,8 +314,8 @@ describe("InteractiveEditingSession", () => {
       tree0.dispose();
       await expectTreeState(tree0, "disposed", 0, modelRange);
 
-      // Begin an editing session.
-      let session = await imodel.beginEditingSession();
+      // Enter an editing scope.
+      let scope = await imodel.enterEditingScope();
       const trees = [tree1, createTileTree()];
       await expectTreeState(trees, "interactive", 0, modelRange);
       await expectTreeState(tree0, "disposed", 0, modelRange);
@@ -358,20 +358,20 @@ describe("InteractiveEditingSession", () => {
 
       // ###TODO: test undo/redo (no frontend API for that currently...)
 
-      // Terminate the session.
-      await session.end();
+      // Terminate the scope.
+      await scope.exit();
       trees.push(createTileTree());
       await expectTreeState(tree0, "disposed", 0, modelRange);
       await expectTreeState(trees, "static", 0, modelRange);
 
-      // Restart session then terminate with no changes.
-      session = await imodel.beginEditingSession();
+      // Restart scope then terminate with no changes.
+      scope = await imodel.enterEditingScope();
       const tree2 = trees.pop()!;
       await expectTreeState(tree0, "disposed", 0, modelRange);
       await expectTreeState(trees, "interactive", 0, modelRange);
       tree2.dispose();
       await expectTreeState(tree2, "disposed", 0, modelRange);
-      await session.end();
+      await scope.exit();
       await expectTreeState(trees, "static", 0, modelRange);
 
       for (const tree of trees) {

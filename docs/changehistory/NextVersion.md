@@ -48,7 +48,7 @@ export class AppSettingsTabsProvider implements SettingsTabsProvider {
 
 The `QuantityFormatSettingsPage` is marked as alpha in this release and is subject to minor modifications in future releases.
 
-## @bentley/imodeljs-quantity package
+## @bentley/imodeljs-quantity
 
 The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
 
@@ -100,21 +100,29 @@ All hyper-modeling APIs are now public. [This interactive sample](https://www.it
 
 ## Breaking API changes
 
-### @bentley/ui-core package
+### @bentley/imodeljs-frontend
+
+The beta class `InteractiveEditingSession` was renamed to [GraphicalEditingScope]($frontend), resulting in renaming of several related APIs:
+  * [GraphicalEditingScope.exit]($frontend) replaces `end`.
+  * [GraphicalEditingScope.onEnter]($frontend), [GraphicalEditingScope.onExiting]($frontend), and [GraphicalEditingScope.onExited]($frontend) replace `onBegin`, `onEnding`, and `onEnded` respectively.
+  * [BriefcaseConnection.editingScope]($frontend) and [BriefcaseConnection.enterEditingScope]($frontend) replace `editingSession` and `beginEditingSession`.
+  * [BriefcaseConnection.supportsGraphicalEditing]($frontend) replaces `supportsInteractiveEditing`.
+
+### @bentley/ui-core
 
 The beta class `SettingsProvider` was renamed to `SettingsTabsProvider`.
 
-### @bentley/ui-framework package
+### @bentley/ui-framework
 
 The beta class `QuantityFormatSettingsPanel` was renamed to `QuantityFormatSettingsPage`.
 
-### @bentley/imodeljs-quantity package
+### @bentley/imodeljs-quantity
 
 #### UnitProps property name change
 
 The interface [UnitProps]($quantity) property `unitFamily` has been renamed to `phenomenon` to be consistent with naming in `ecschema-metadata` package.
 
-### @bentley/presentation-components package
+### @bentley/presentation-components
 
 Return value of [usePresentationTreeNodeLoader]($presentation-components) hook was changed from
 
