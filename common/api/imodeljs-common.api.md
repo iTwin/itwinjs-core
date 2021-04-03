@@ -4090,7 +4090,7 @@ export enum IpcAppChannel {
     // (undocumented)
     AppNotify = "ipcApp-notify",
     // (undocumented)
-    EditingScope = "editing-session",
+    EditingScope = "editing-scope",
     // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
