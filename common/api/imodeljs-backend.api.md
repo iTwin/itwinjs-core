@@ -3425,17 +3425,15 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     protected _accessToken?: AccessToken;
     // (undocumented)
-    get config(): NativeAppAuthorizationConfiguration;
+    config: NativeAppAuthorizationConfiguration;
     // (undocumented)
-    protected _config?: NativeAppAuthorizationConfiguration;
-    // (undocumented)
-    protected _expireSafety: number;
+    expireSafety: number;
     // (undocumented)
     getAccessToken(): Promise<AccessToken>;
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
-    initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void>;
+    initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
     get isAuthorized(): boolean;
     // (undocumented)
@@ -3472,6 +3470,8 @@ export class NativeAppStorage {
 
 // @beta
 export class NativeHost {
+    // (undocumented)
+    static get applicationName(): string;
     static get appSettingsCacheDir(): string;
     // @internal (undocumented)
     static get authorization(): NativeAppAuthorizationBackend;
