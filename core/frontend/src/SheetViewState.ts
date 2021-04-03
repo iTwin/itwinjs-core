@@ -899,6 +899,8 @@ class RasterAttachment {
     this._viewport.setTileSizeModifier(context.viewport.tileSizeModifier);
 
     this._viewport.renderFrame();
+    if (this._graphics)
+      context.outputGraphic(this._graphics);
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet) {
