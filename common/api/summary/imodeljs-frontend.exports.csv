@@ -213,6 +213,7 @@ internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 beta;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
 beta;GpuMemoryLimits
+beta;GraphicalEditingScope 
 public;GraphicBranch 
 internal;GraphicBranchFrustum
 internal;GraphicBranchOptions
@@ -265,7 +266,6 @@ internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModel
 public;class InputCollector 
 public;InputSource
 internal;InstancedGraphicParams
-beta;InteractiveEditingSession 
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 

@@ -60,7 +60,7 @@ import { ElementSelectionListener } from "./favorites/ElementSelectionListener";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
 import { PlaceLineStringTool } from "./tools/editing/PlaceLineStringTool";
-import { EditingSessionTool } from "./tools/editing/PrimitiveToolEx";
+import { EditingScopeTool } from "./tools/editing/PrimitiveToolEx";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
@@ -229,7 +229,7 @@ export class SampleAppIModelApp {
 
     // Register editing tools
     if (this.allowWrite) {
-      EditingSessionTool.register(this.sampleAppNamespace);
+      EditingScopeTool.register(this.sampleAppNamespace);
       PlaceBlockTool.register(this.sampleAppNamespace);
       PlaceLineStringTool.register(this.sampleAppNamespace);
     }

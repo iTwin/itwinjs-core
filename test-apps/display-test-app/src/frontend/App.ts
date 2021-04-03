@@ -22,7 +22,7 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingSessionTool, PlaceLineStringTool } from "./EditingTools";
+import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { ChangeGridSettingsTool } from "./Grid";
@@ -205,7 +205,7 @@ export class DisplayTestApp {
       CreateWindowTool,
       DockWindowTool,
       DrawingAidTestTool,
-      EditingSessionTool,
+      EditingScopeTool,
       FenceClassifySelectedTool,
       FocusWindowTool,
       IncidentMarkerDemoTool,
