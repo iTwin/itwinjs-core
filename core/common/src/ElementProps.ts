@@ -245,7 +245,9 @@ export interface SheetTemplateProps extends ElementProps {
   border?: Id64String;
 }
 
-/** Properties of a [Sheet]($backend). */
+/** Properties of a [Sheet]($backend).
+ * @public
+ */
 export interface SheetProps extends ElementProps {
   width?: number;
   height?: number;

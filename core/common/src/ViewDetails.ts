@@ -13,6 +13,7 @@ import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
 /** Properties of a [[ViewDefinitionProps]] stored as JSON.
  * @see [[ViewDefinitionProps.jsonProperties]].
  * @see [[ViewDetails3dProps]] for additional properties specific to 3d views.
+ * @public
  */
 export interface ViewDetailsProps {
   /** Id of the aux coord system. Default: invalid. */
@@ -49,6 +50,7 @@ export enum GridOrientationType {
 
 /** Properties of a [[ViewDefinition3dProps]] stored as JSON.
  * @see [[ViewDefinition3dProps.jsonProperties]].
+ * @public
  */
 export interface ViewDetails3dProps extends ViewDetailsProps {
   /** Whether viewing tools are prohibited from operating in 3 dimensions on this view. Default: false. */
@@ -62,6 +64,7 @@ export interface ViewDetails3dProps extends ViewDetailsProps {
 /** Encapsulates access to optional view details stored in JSON properties.
  * @see [[ViewDetailsProps]] for the JSON representation.
  * @see [ViewDefinition.viewDetails]($backend) and [ViewState.viewDetails]($frontend).
+ * @public
  */
 export class ViewDetails {
   /** @internal */
@@ -160,6 +163,7 @@ export class ViewDetails {
 
 /** Encapsulates access to optional 3d view details stored in JSON properties.
  * @see [[ViewDetails3dProps]] for the JSON representation.
+ * @public
  */
 export class ViewDetails3d extends ViewDetails {
   private _modelClipGroups?: ModelClipGroups;

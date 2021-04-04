@@ -334,7 +334,7 @@ export class QPoint2dList {
 /** Parameters used for [[Quantization]] of 3d points such that the `x`, `y`, and `z` components are each quantized to 16-bit unsigned integers.
  * @see [[QPoint3d]] for the quantized representation of a [Point3d]($geometry-core).
  * @see [[QPoint3dList]] for a list of [[QPoint3d]]s quantized using a [[QParams3d]].
- * @internal
+ * @public
  */
 export class QParams3d {
   /** The origin of the quantization range. */

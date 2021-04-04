@@ -16,6 +16,7 @@ import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 
 /** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
  * @see [[SectionDrawingProps]]
+ * @public
  */
 export interface SectionDrawingViewProps {
   /** The Id of the spatial view from which the SectionDrawing was generated. */
