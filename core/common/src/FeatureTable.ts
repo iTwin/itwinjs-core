@@ -9,7 +9,7 @@
 import { assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap } from "@bentley/bentleyjs-core";
 import { GeometryClass } from "./GeometryParams";
 
-/** Describes a discrete entity within a batched [RenderGraphic]($frontend) that can be 
+/** Describes a discrete entity within a batched [RenderGraphic]($frontend) that can be
  * grouped with other such entities in a [[FeatureTable]].
  * Features roughly correlate to elements: a [Tile]($frontend)'s graphics combines geometry from every
  * [GeometricElement]($backend) that intersects the tile's volume, so each element produces at least one feature.
