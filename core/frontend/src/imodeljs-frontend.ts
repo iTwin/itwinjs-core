@@ -35,7 +35,7 @@ export * from "./ImageUtil";
 export * from "./IModelApp";
 export * from "./IModelConnection";
 export * from "./IModelRoutingContext";
-export * from "./InteractiveEditingSession";
+export * from "./GraphicalEditingScope";
 export * from "./IpcApp";
 export * from "./LinePlaneIntersect";
 export * from "./MarginPercent";
