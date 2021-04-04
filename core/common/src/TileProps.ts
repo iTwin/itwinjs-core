@@ -49,7 +49,7 @@ export interface TileTreeProps {
 export interface IModelTileTreeProps extends TileTreeProps {
   /** Optional namespace applied to tile content Ids for tiles belonging to this tree. */
   contentIdQualifier?: string;
-  /** The geometry guid used as a baseline for tile content. May not match the model's current geometry guid during an [InteractiveEditingSession]($frontend). */
+  /** The geometry guid used as a baseline for tile content. May not match the model's current geometry guid during a [GraphicalEditingScope]($frontend). */
   geometryGuid?: GuidString;
   /** If defined, specifies the number of levels of the tile tree that can be skipped when selecting tiles. */
   maxInitialTilesToSkip?: number;
