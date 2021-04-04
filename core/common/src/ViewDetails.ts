@@ -158,7 +158,7 @@ export class ViewDetails {
   }
 }
 
-/** Encapsulates access to optional 3d view details stored in JSON properties. */
+/** Encapsulates access to optional 3d view details stored in JSON properties.
  * @see [[ViewDetails3dProps]] for the JSON representation.
  */
 export class ViewDetails3d extends ViewDetails {

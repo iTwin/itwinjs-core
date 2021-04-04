@@ -476,7 +476,7 @@ export class QPoint3d {
   }
 
   /** Creates a quantized point from the supplied Point3d using the specified params */
-  public static create(pos: Point3d, params: QParams3d): void {
+  public static create(pos: Point3d, params: QParams3d): QPoint3d {
     const qpt = new QPoint3d();
     qpt.init(pos, params);
     return qpt;
@@ -662,10 +662,10 @@ export class QPoint3dList {
     return array;
   }
 
-  /** Create from a Uint16Array in which the first three elements specify the x, y, and z components of the first point, the second three elements specify the components
+  /** Reinitialize from a Uint16Array in which the first three elements specify the x, y, and z components of the first point, the second three elements specify the components
    * of the second point, and so on.
    */
-  public fromTypedArray(range: Range3d, array: Uint16Array): QPoint3dList {
+  public fromTypedArray(range: Range3d, array: Uint16Array): void {
     this.params.setFromRange(range);
     this._list.length = array.length / 3;
     for (let i = 0, j = 0; i < this.list.length; i++)

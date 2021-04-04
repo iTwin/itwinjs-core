@@ -15,7 +15,7 @@ function clamp(val: number, minVal: number, maxVal: number): number {
 }
 
 function clampUint8(val: number): number {
-  return this.roundUint16(0.5 + (this.clamp(val, -1, 1) * 0.5 + 0.5) * 255);
+  return roundUint16(0.5 + (clamp(val, -1, 1) * 0.5 + 0.5) * 255);
 }
 
 function roundUint16(val: number): number {
@@ -40,7 +40,7 @@ export class OctEncodedNormal {
    * @see [[fromVector]] to construct from a vector.
    */
   public constructor(val: number) {
-    this.value = OctEncodedNormal.roundUint16(val);
+    this.value = roundUint16(val);
   }
 
   /** Compute the encoded 16-bit value of the supplied normalized vector. */
@@ -51,10 +51,10 @@ export class OctEncodedNormal {
     if (vec.z < 0) {
       const x = rx;
       const y = ry;
-      rx = (1 - Math.abs(y)) * OctEncodedNormal.signNotZero(x);
-      ry = (1 - Math.abs(x)) * OctEncodedNormal.signNotZero(y);
+      rx = (1 - Math.abs(y)) * signNotZero(x);
+      ry = (1 - Math.abs(x)) * signNotZero(y);
     }
-    return this.clampUint8(ry) << 8 | this.clampUint8(rx);
+    return clampUint8(ry) << 8 | clampUint8(rx);
   }
 
   /** Create an OctEncodedNormal from a normalized vector. */
@@ -87,8 +87,8 @@ export class OctEncodedNormal {
     if (n.z < 0) {
       const x = n.x;
       const y = n.y;
-      n.x = (1 - Math.abs(y)) * OctEncodedNormal.signNotZero(x);
-      n.y = (1 - Math.abs(x)) * OctEncodedNormal.signNotZero(y);
+      n.x = (1 - Math.abs(y)) * signNotZero(x);
+      n.y = (1 - Math.abs(x)) * signNotZero(y);
     }
 
     n.normalizeInPlace();
