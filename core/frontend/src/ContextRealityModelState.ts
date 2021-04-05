@@ -134,7 +134,7 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
 }
 
 /** Query for reality data associated with an iTwin context.
- * @params criteria Criteria by which to query.
+ * @param criteria Criteria by which to query.
  * @returns Properties of reality data associated with the context, filtered according to the criteria.
  * @public
  */
