@@ -2122,7 +2122,7 @@ export class EdgeArgs {
 }
 
 // @internal
-export interface EditingSessionNotifications {
+export interface EditingScopeNotifications {
     // (undocumented)
     notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
@@ -4090,7 +4090,7 @@ export enum IpcAppChannel {
     // (undocumented)
     AppNotify = "ipcApp-notify",
     // (undocumented)
-    EditingSession = "editing-session",
+    EditingScope = "editing-scope",
     // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
@@ -4108,7 +4108,7 @@ export interface IpcAppFunctions {
     getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
     hasPendingTxns: (key: string) => Promise<boolean>;
     // (undocumented)
-    isInteractiveEditingSupported: (key: string) => Promise<boolean>;
+    isGraphicalEditingSupported: (key: string) => Promise<boolean>;
     isRedoPossible: (key: string) => Promise<boolean>;
     isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
@@ -4125,7 +4125,7 @@ export interface IpcAppFunctions {
     reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
-    toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
+    toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
 }
 
 // @internal
@@ -4751,7 +4751,7 @@ export interface NativeAppAuthorizationConfiguration {
     readonly expiryBuffer?: number;
     // (undocumented)
     issuerUrl?: string;
-    readonly redirectUri: string;
+    readonly redirectUri?: string;
     readonly scope: string;
 }
 
@@ -4769,8 +4769,7 @@ export interface NativeAppFunctions {
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
     getConfig: () => Promise<any>;
-    // (undocumented)
-    initializeAuth: (props: ClientRequestContextProps, config: NativeAppAuthorizationConfiguration) => Promise<void>;
+    initializeAuth: (props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration) => Promise<number>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
     signIn: () => Promise<void>;
