@@ -491,27 +491,29 @@ export class DecorateContext extends RenderContext {
   }
 }
 
-/** Context used to create the scene for a [[Viewport]]. The scene consists of a set of [[RenderGraphic]]s produced by the
- * [[TileTree]]s visible within the viewport. Creating the scene may result in the enqueueing of requests for [[Tile]]s which
+/** Context used to create the scene to be drawn in a [[Viewport]]. The scene consists of a set of [[RenderGraphic]]s produced by the
+ * [[TileTree]]s visible within the viewport. Creating the scene may result in the enqueueing of requests for [[Tile]] content which
  * should be displayed in the viewport but are not yet loaded.
- * @beta
+ * @public
  */
 export class SceneContext extends RenderContext {
   private _missingChildTiles = false;
   /** The graphics comprising the scene. */
   public readonly scene = new Scene();
+
   /** @internal */
   public readonly missingTiles = new Set<Tile>();
+
   /** @internal */
   public markChildrenLoading(): void {
     this._missingChildTiles = true;
   }
+
   /** @internal */
   public get hasMissingTiles(): boolean {
     return this._missingChildTiles || this.missingTiles.size > 0;
   }
 
-  /** @internal */
   private _viewingSpace?: ViewingSpace;
   private _graphicType: TileGraphicType = TileGraphicType.Scene;
 
@@ -519,6 +521,7 @@ export class SceneContext extends RenderContext {
     super(vp, frustum);
   }
 
+  /** The viewed volume containing the scene. */
   public get viewingSpace(): ViewingSpace {
     return undefined !== this._viewingSpace ? this._viewingSpace : this.viewport.viewingSpace;
   }
@@ -614,11 +617,11 @@ export class SceneContext extends RenderContext {
     this._graphicType = prevType;
   }
 
-  /** @internal */
+  /** The graphics in the scene that will be drawn with depth. */
   public get graphics() { return this.scene.foreground; }
-  /** @internal */
+  /** The graphics that will be drawn behind everything else in the scene. */
   public get backgroundGraphics() { return this.scene.background; }
-  /** @internal */
+  /** The graphics that will be drawn in front of everything else in the scene. */
   public get overlayGraphics() { return this.scene.overlay; }
   /** @internal */
   public get planarClassifiers() { return this.scene.planarClassifiers; }

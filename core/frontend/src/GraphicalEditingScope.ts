@@ -50,7 +50,7 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
  * @see [[BriefcaseConnection.enterEditingScope]] to create a scope for a briefcase.
  * @see [[BriefcaseConnection.editingScope]] to obtain a briefcase's current scope.
  * @see [[exit]] to terminate a scope.
- * @beta
+ * @public
  */
 export class GraphicalEditingScope extends BriefcaseNotificationHandler implements EditingScopeNotifications {
   public get briefcaseChannelName() { return IpcAppChannel.EditingScope; }

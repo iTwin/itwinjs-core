@@ -10,7 +10,11 @@ import { BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@bentley/geometry-core";
 import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
 
-/** @internal */
+/** Properties of a [[ViewDefinitionProps]] stored as JSON.
+ * @see [[ViewDefinitionProps.jsonProperties]].
+ * @see [[ViewDetails3dProps]] for additional properties specific to 3d views.
+ * @public
+ */
 export interface ViewDetailsProps {
   /** Id of the aux coord system. Default: invalid. */
   acs?: Id64String;
@@ -24,7 +28,7 @@ export interface ViewDetailsProps {
   gridSpaceX?: number;
   /** Default: same as gridSpaceX. */
   gridSpaceY?: number;
-  /** Clip applied to the view. */
+  /** Describes the [ClipVector]($geometry-core) applied to the view. */
   clip?: ClipVectorProps;
 }
 
@@ -44,16 +48,23 @@ export enum GridOrientationType {
   AuxCoord = 4,
 }
 
-/** @internal */
+/** Properties of a [[ViewDefinition3dProps]] stored as JSON.
+ * @see [[ViewDefinition3dProps.jsonProperties]].
+ * @public
+ */
 export interface ViewDetails3dProps extends ViewDetailsProps {
   /** Whether viewing tools are prohibited from operating in 3 dimensions on this view. Default: false. */
   disable3dManipulations?: boolean;
-  /** Defines how to clip groups of models. */
+  /** Defines how to clip groups of models.
+   * @beta
+   */
   modelClipGroups?: ModelClipGroupProps[];
 }
 
 /** Encapsulates access to optional view details stored in JSON properties.
- * @beta
+ * @see [[ViewDetailsProps]] for the JSON representation.
+ * @see [ViewDefinition.details]($backend) and [ViewState.details]($frontend).
+ * @public
  */
 export class ViewDetails {
   /** @internal */
@@ -79,9 +90,7 @@ export class ViewDetails {
     this._json.acs = Id64.isValidId64(id) ? id : undefined;
   }
 
-  /** Maximum aspect ratio skew. Apps can override this by changing its value.
-   * @internal
-   */
+  /** Maximum aspect ratio skew. Apps can override this by changing its value. */
   public static maxSkew = 25;
 
   /** The aspect ratio skew (x/y, usually 1.0) used to exaggerate the y axis of the view. */
@@ -153,7 +162,8 @@ export class ViewDetails {
 }
 
 /** Encapsulates access to optional 3d view details stored in JSON properties.
- * @beta
+ * @see [[ViewDetails3dProps]] for the JSON representation.
+ * @public
  */
 export class ViewDetails3d extends ViewDetails {
   private _modelClipGroups?: ModelClipGroups;
@@ -163,7 +173,7 @@ export class ViewDetails3d extends ViewDetails {
   }
 
   /** Event raised when just before assignment to the [[modelClipGroups]] property.
-   * @alpha
+   * @beta
    */
   public readonly onModelClipGroupsChanged = new BeEvent<(newGroups: ModelClipGroups) => void>();
 
@@ -172,9 +182,7 @@ export class ViewDetails3d extends ViewDetails {
     super(jsonProperties);
   }
 
-  /** Controls whether viewing tools are allowed to operate on the view in 3 dimensions.
-   * @beta
-   */
+  /** Controls whether viewing tools are allowed to operate on the view in 3 dimensions. */
   public get allow3dManipulations(): boolean {
     return !JsonUtils.asBool(this._json3d.disable3dManipulations, false);
   }
@@ -186,7 +194,7 @@ export class ViewDetails3d extends ViewDetails {
    * If `this.clipVector` is not undefined, then the view as a whole will be clipped by that clip; the per-model group clips will have no effect.
    * If the `clipVolume` [[ViewFlags]] is `false`, no clipping will be applied.
    * @note Do **not** modify the returned object directly. Instead, clone it, modify the clone, and pass the clone to the property setter.
-   * @alpha
+   * @beta
    */
   public get modelClipGroups(): ModelClipGroups {
     if (!this._modelClipGroups)
