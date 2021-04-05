@@ -8,7 +8,7 @@
 
 import { Viewport } from "./Viewport";
 
-/** Forms a bidirectional connection between two [[Viewports]] such that the [Frustum]($common)s of both Viewports are synchronized.
+/** Forms a bidirectional connection between two [[Viewport]]s such that the [Frustum]($common)s of both Viewports are synchronized.
  * For example, panning in one viewport will cause the other viewport to pan by the same distance.
  * @see [Multiple Viewport Sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=multi-viewport-sample&imodel=Metrostation+Sample)
  * for an interactive demonstration.

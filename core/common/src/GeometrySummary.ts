@@ -20,7 +20,7 @@ export enum GeometrySummaryVerbosity {
   Full = 30,
 }
 
-/** Describes what information to include in a [[GeometrySummaryRequsetProps]].
+/** Describes what information to include in a [[GeometrySummaryRequestProps]].
  * @public
  */
 export interface GeometrySummaryOptions {
