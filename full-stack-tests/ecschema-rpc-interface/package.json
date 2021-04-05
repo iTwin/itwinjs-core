@@ -11,10 +11,11 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/full-stack-tests/ecschema-rpc-interface"
   },
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2 && npm run webpack:frontend",
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "cover": "",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint -f visualstudio \"./**/*.ts\" 1>&2",
     "optest": "certa -r chrome --fgrep \"Operational: \"",
     "start:backend": "node ./lib/test/backend.js",
     "test": "",
