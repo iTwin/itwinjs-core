@@ -75,6 +75,8 @@ export interface ParticleProps extends XYAndZ {
  * such that the image is fully visible.
  *
  * Creating a particle collection using a ParticleCollectionBuilder is far more efficient (in both CPU and GPU usage) than doing so using a [[GraphicBuilder]].
+ * @see interactive demonstrations of [Snow and Rain](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=snow-rain-sample&imodel=Villa) and
+   * [Fire and Smoke](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=fire-sample&imodel=Villa) particle effects.
  * @see [SnowEffect]($frontend-devtools) for an example of a particle effect.
  * @public
  */

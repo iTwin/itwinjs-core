@@ -164,9 +164,9 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
 
   // Get set of URLs that are directly attached to the model.
   const modelRealityDataIds = new Set<string>();
-  if (criteria.iModel) {
+  if (criteria.filterIModel) {
     const query = { from: SpatialModelState.classFullName, wantPrivate: false };
-    const props = await criteria.iModel.models.queryProps(query);
+    const props = await criteria.filterIModel.models.queryProps(query);
     for (const prop of props)
       if (prop.jsonProperties !== undefined && prop.jsonProperties.tilesetUrl) {
         const realityDataId = client.getRealityDataIdFromUrl(prop.jsonProperties.tilesetUrl);

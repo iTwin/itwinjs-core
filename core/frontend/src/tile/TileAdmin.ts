@@ -26,7 +26,7 @@ import {
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
- * @alpha
+ * @internal
  */
 export interface ExternalTileStatistics {
   requested: number;
@@ -46,9 +46,7 @@ export interface SelectedAndReadyTiles {
    * current view, e.g., because sibling tiles are not yet ready to draw.
    */
   readonly ready: Set<Tile>;
-  /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles and tiles for view attachments.
-   * @alpha
-   */
+  /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles and tiles for view attachments. */
   readonly external: ExternalTileStatistics;
 }
 
@@ -102,7 +100,7 @@ export interface GpuMemoryLimits {
  * keeping track of and imposing limits upon the amount of GPU memory consumed by tiles; and notifying listeners of tile-related events.
  * @see [[IModelApp.tileAdmin]] to access the instance of the TileAdmin.
  * @see [[TileAdmin.Props]] to configure the TileAdmin at startup.
- * @beta
+ * @public
  */
 export class TileAdmin {
   public readonly channels: TileRequestChannels;
@@ -618,7 +616,7 @@ export class TileAdmin {
 
   /** Request graphics for a single element or geometry stream.
    * @see [[readElementGraphics]] to convert the result into a [[RenderGraphic]] for display.
-   * @beta
+   * @public
    */
   public async requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     this.initializeRpc();
@@ -659,24 +657,16 @@ export class TileAdmin {
     }
   }
 
-  /** Event raised when a request to load a tile's content completes.
-   * @internal
-   */
+  /** Event raised when a request to load a tile's content completes. */
   public readonly onTileLoad = new BeEvent<(tile: Tile) => void>();
 
-  /** Event raised when a request to load a tile tree completes.
-   * @internal
-   */
+  /** Event raised when a request to load a tile tree completes. */
   public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTreeOwner) => void>();
 
-  /** Event raised when a request to load a tile's child tiles completes.
-   * @internal
-   */
+  /** Event raised when a request to load a tile's child tiles completes. */
   public readonly onTileChildrenLoad = new BeEvent<(parentTile: Tile) => void>();
 
-  /** Subscribe to onTileLoad, onTileTreeLoad, and onTileChildrenLoad.
-   * @internal
-   */
+  /** Subscribe to [[onTileLoad]], [[onTileTreeLoad]], and [[onTileChildrenLoad]]. */
   public addLoadListener(callback: (imodel: IModelConnection) => void): () => void {
     const tileLoad = this.onTileLoad.addListener((tile) => callback(tile.tree.iModel));
     const treeLoad = this.onTileTreeLoad.addListener((tree) => callback(tree.iModel));
@@ -884,10 +874,10 @@ export class TileAdmin {
   }
 }
 
-/** @beta */
+/** @public */
 export namespace TileAdmin { // eslint-disable-line no-redeclare
   /** Statistics regarding the current and cumulative state of the [[TileAdmin]]. Useful for monitoring performance and diagnosing problems.
-   * @beta
+   * @public
    */
   export interface Statistics {
     /** The number of requests in the queue which have not yet been dispatched. */
@@ -920,9 +910,9 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     numPendingTileTreePropsRequests: number;
   }
 
-  /** Describes configuration of a [[TileAdmin]].
+  /** Describes the configuration of the [[TileAdmin]]. */
    * @see [[TileAdmin.create]]
-   * @beta
+   * @public
    */
   export interface Props {
     /** The maximum number of simultaneously active requests for IModelTileTreeProps. Requests are fulfilled in FIFO order.
@@ -959,7 +949,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * of geometry sent to the frontend.
      *
      * Default value: false
-     * @alpha
+     * @public
      */
     ignoreAreaPatterns?: boolean;
 
@@ -972,7 +962,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     /** The interval in milliseconds at which a request for tile content will be retried until a response is received.
      *
      * Default value: 1000 (1 second)
-     * @alpha
+     * @public
      */
     retryInterval?: number;
 
@@ -1019,7 +1009,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * Minimum value: 10 seconds.
      * Maximum value: 3600 seconds (1 hour).
      *
-     * @alpha
+     * @public
      */
     tileTreeExpirationTime?: number;
 
@@ -1041,7 +1031,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * Default value: 3.0
      * Minimum value: 1.0
      *
-     * @alpha
+     * @public
      */
     mobileRealityTileMinToleranceRatio?: number;
 
@@ -1099,7 +1089,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * different edge settings, because otherwise, toggling edge display may require loading completely new tiles.
      * However, edges require additional memory and bandwidth that may be wasted if they are never displayed.
      * Default value: false
-     * @beta
+     * @public
      */
     alwaysRequestEdges?: boolean;
 
@@ -1113,7 +1103,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * Applies only to spatial models, which model real-world assets on real-world scales.
      * A reasonable value is on the order of millimeters.
      * Default value: undefined
-     * @alpha
+     * @public
      */
     minimumSpatialTolerance?: number;
   }

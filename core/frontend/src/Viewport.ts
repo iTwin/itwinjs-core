@@ -935,9 +935,8 @@ export abstract class Viewport implements IDisposable {
     this.view.markModelSelectorChanged();
   }
 
-  /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
+  /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes. Chiefly for debugging.
    * @see [[TileBoundingBoxes]]
-   * @internal
    */
   public get debugBoundingBoxes(): TileBoundingBoxes { return this._debugBoundingBoxes; }
   public set debugBoundingBoxes(boxes: TileBoundingBoxes) {
