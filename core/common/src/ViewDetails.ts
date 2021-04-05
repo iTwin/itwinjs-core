@@ -63,7 +63,7 @@ export interface ViewDetails3dProps extends ViewDetailsProps {
 
 /** Encapsulates access to optional view details stored in JSON properties.
  * @see [[ViewDetailsProps]] for the JSON representation.
- * @see [ViewDefinition.viewDetails]($backend) and [ViewState.viewDetails]($frontend).
+ * @see [ViewDefinition.details]($backend) and [ViewState.details]($frontend).
  * @public
  */
 export class ViewDetails {

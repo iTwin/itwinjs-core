@@ -434,7 +434,7 @@ export abstract class IModelConnection extends IModel {
    */
   public async getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getGeometryContainment(this.getRpcProps(), requestProps); }
 
-  /** Obtain a summary of the geometry belonging to one or more [GeometricElement]($frontend)s suitable for debugging and diagnostics.
+  /** Obtain a summary of the geometry belonging to one or more [GeometricElement]($backend)s suitable for debugging and diagnostics.
    * @param requestProps Specifies the elements to query and options for how to format the output.
    * @returns A string containing the summary, typically consisting of multiple lines.
    * @note Trying to parse the output to programatically inspect an element's geometry is not recommended.
