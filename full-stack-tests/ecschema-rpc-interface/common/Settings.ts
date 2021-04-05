@@ -5,7 +5,7 @@
 import { LogLevel } from "@bentley/bentleyjs-core";
 import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
-import { ECSchemaRpcInterface } from "@bentley/schema-rpcinterface-common/lib/ECSchemaRpcInterface";
+import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common/lib/ECSchemaRpcInterface";
 
 export interface Backend {
   version: string;

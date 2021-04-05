@@ -720,7 +720,7 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "nyc",

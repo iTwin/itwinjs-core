@@ -31,5 +31,5 @@ void (async () => {
   const port = 5011;
   const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
-  console.log(`Web backend for schema-rpc-tests listening on port ${  port}`); // eslint-disable-line
+  console.log(`Web backend for schema-rpc-tests listening on port ${port}`); // eslint-disable-line
 })();
