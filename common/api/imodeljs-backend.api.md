@@ -176,6 +176,7 @@ import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StandaloneOpenOptions } from '@bentley/imodeljs-common';
 import { StandardViewIndex } from '@bentley/geometry-core';
 import { StatusCodeWithMessage } from '@bentley/bentleyjs-core';
+import { StorageValue } from '@bentley/imodeljs-common';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
@@ -3328,17 +3329,15 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     protected _accessToken?: AccessToken;
     // (undocumented)
-    get config(): NativeAppAuthorizationConfiguration;
+    config: NativeAppAuthorizationConfiguration;
     // (undocumented)
-    protected _config?: NativeAppAuthorizationConfiguration;
-    // (undocumented)
-    protected _expireSafety: number;
+    expireSafety: number;
     // (undocumented)
     getAccessToken(): Promise<AccessToken>;
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
-    initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void>;
+    initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
     get isAuthorized(): boolean;
     // (undocumented)
@@ -3353,6 +3352,8 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
 
 // @beta
 export class NativeHost {
+    // (undocumented)
+    static get applicationName(): string;
     static get appSettingsCacheDir(): string;
     // @internal (undocumented)
     static get authorization(): NativeAppAuthorizationBackend;
@@ -3365,6 +3366,8 @@ export class NativeHost {
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
+    // (undocumented)
+    static get settingsStore(): NativeAppStorage;
     static shutdown(): Promise<void>;
     static startup(opt?: NativeHostOpts): Promise<void>;
 }

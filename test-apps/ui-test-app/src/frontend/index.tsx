@@ -14,16 +14,15 @@ import { ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, P
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
-import {
-  BrowserAuthorizationClientConfiguration, isFrontendAuthorizationClient,
-} from "@bentley/frontend-authorization-client";
+import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcParams, IModelVersion, NativeAppAuthorizationConfiguration, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import {
-  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp,
-  NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOpts,
+  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection,
+  LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
+  WebViewerApp, WebViewerAppOpts,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
@@ -663,37 +662,18 @@ window.addEventListener("beforeunload", async () => { // eslint-disable-line @ty
   await SampleAppIModelApp.closeCurrentIModel();
 });
 
-function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | NativeAppAuthorizationConfiguration {
-  let redirectUri = "http://localhost:3000/signin-callback";
-  if (ProcessDetector.isMobileAppFrontend) {
-    redirectUri = "imodeljs://app/signin-callback";
-  }
-  const baseOidcScopes = [
-    "openid",
-    "email",
-    "profile",
-    "organization",
-    "imodelhub",
-    "context-registry-service:read-only",
-    "product-settings-service",
-    "projectwise-share",
-    "urlps-third-party",
-    "imodel-extension-service-api",
-  ];
-
-  return ProcessDetector.isElectronAppFrontend || ProcessDetector.isMobileAppFrontend
-    ? {
-      clientId: "imodeljs-electron-test",
-      redirectUri,
-      scope: baseOidcScopes.concat(["offline_access"]).join(" "),
-    }
-    : {
-      clientId: "imodeljs-spa-test",
-      redirectUri,
-      scope: baseOidcScopes.concat("imodeljs-router").join(" "),
-      responseType: "code",
-    };
-}
+const baseOidcScopes = [
+  "openid",
+  "email",
+  "profile",
+  "organization",
+  "imodelhub",
+  "context-registry-service:read-only",
+  "product-settings-service",
+  "projectwise-share",
+  "urlps-third-party",
+  "imodel-extension-service-api",
+];
 
 // main entry point.
 async function main() {
@@ -728,7 +708,6 @@ async function main() {
     rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
   }
 
-  const authConfig = getOidcConfiguration();
   const opts: WebViewerAppOpts & NativeAppOpts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
@@ -742,10 +721,19 @@ async function main() {
     },
     webViewerApp: {
       rpcParams,
-      authConfig,
+      authConfig: {
+        clientId: "imodeljs-spa-test",
+        redirectUri: "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.concat("imodeljs-router").join(" "),
+        responseType: "code",
+      },
     },
     nativeApp: {
-      authConfig,
+      authConfig: {
+        clientId: "imodeljs-electron-test",
+        redirectUri: ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.concat(["offline_access"]).join(" "),
+      },
     },
   };
 

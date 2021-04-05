@@ -4738,7 +4738,7 @@ export interface NativeAppAuthorizationConfiguration {
     readonly expiryBuffer?: number;
     // (undocumented)
     issuerUrl?: string;
-    readonly redirectUri: string;
+    readonly redirectUri?: string;
     readonly scope: string;
 }
 
@@ -4756,8 +4756,7 @@ export interface NativeAppFunctions {
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
     getConfig: () => Promise<any>;
-    // (undocumented)
-    initializeAuth: (props: ClientRequestContextProps, config: NativeAppAuthorizationConfiguration) => Promise<void>;
+    initializeAuth: (props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration) => Promise<number>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
     signIn: () => Promise<void>;

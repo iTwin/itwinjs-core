@@ -13,7 +13,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
-import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelError, IpcListener, IpcSocketBackend, NativeAppAuthorizationConfiguration, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
@@ -57,6 +57,9 @@ export interface ElectronHostOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** list of [IpcHandler]($common) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
+  /** Authorization configuration */
+  authConfig?: NativeAppAuthorizationConfiguration;
+  applicationName?: never; // this should be supplied in NativeHostOpts
 }
 
 /** @beta */
@@ -215,7 +218,7 @@ export class ElectronHost {
       ElectronAppHandler.register();
       opts.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
-    IModelHost.authorizationClient = new ElectronAuthorizationBackend();
+    IModelHost.authorizationClient = new ElectronAuthorizationBackend(opts.electronHost?.authConfig);
   }
 }
 

@@ -172,6 +172,8 @@ export interface MobileHostOpts extends NativeHostOpts {
     // (undocumented)
     mobileHost?: {
         device?: MobileDevice;
+        rpcInterfaces?: RpcInterfaceDefinition[];
+        authConfig?: NativeAppAuthorizationConfiguration;
     };
 }
 

@@ -13,6 +13,7 @@ import * as Url from "url";
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizationErrorJson, AuthorizationResponseJson } from "@openid/appauth";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
+import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
 type StateEventsPair = [string, ElectronAuthorizationEvents];
 
@@ -43,7 +44,6 @@ class AuthorizationState {
  * @internal
  */
 export class LoopbackWebServer {
-  private static _clientConfiguration: NativeAppAuthorizationConfiguration;
   private static _httpServer?: Http.Server;
   private static _authState: AuthorizationState = new AuthorizationState();
 
@@ -52,9 +52,8 @@ export class LoopbackWebServer {
     if (LoopbackWebServer._httpServer)
       return;
 
-    LoopbackWebServer._clientConfiguration = clientConfiguration;
     LoopbackWebServer._httpServer = Http.createServer(LoopbackWebServer.onBrowserRequest);
-    const urlParts: Url.UrlWithStringQuery = Url.parse(LoopbackWebServer._clientConfiguration.redirectUri);
+    const urlParts: Url.UrlWithStringQuery = Url.parse(clientConfiguration.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri);
     LoopbackWebServer._httpServer.listen(urlParts.port);
   }
 
