@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/schema-rpcinterface-impl",
+  "name": "@bentley/ecschema-rpcinterface-impl",
   "version": "2.15.0-dev.13",
   "description": "Schema RPC Interface backend implementation",
-  "main": "lib/MetadataRpcImpl.js",
-  "typings": "lib/MetadataRpcImpl",
+  "main": "lib/ECSchemaRpcImpl.js",
+  "typings": "lib/ECSchemaRpcImpl",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -34,7 +34,7 @@
     "@bentley/imodeljs-backend": "2.15.0-dev.13",
     "@bentley/imodeljs-common": "2.15.0-dev.13",
     "@bentley/itwin-client": "2.15.0-dev.13",
-    "@bentley/schema-rpcinterface-common": "2.15.0-dev.13"
+    "@bentley/ecschema-rpcinterface-common": "2.15.0-dev.13"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.15.0-dev.13",
@@ -46,7 +46,7 @@
     "@bentley/imodeljs-backend": "2.15.0-dev.13",
     "@bentley/imodeljs-common": "2.15.0-dev.13",
     "@bentley/itwin-client": "2.15.0-dev.13",
-    "@bentley/schema-rpcinterface-common": "2.15.0-dev.13",
+    "@bentley/ecschema-rpcinterface-common": "2.15.0-dev.13",
     "eslint": "^6.8.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0"

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { MetadataRpcInterface } from "@bentley/schema-rpcinterface-common";
+import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
 import * as backend from "@bentley/imodeljs-backend";
 import { SchemaProps } from "@bentley/ecschema-metadata";
@@ -19,12 +19,12 @@ interface SchemaNameRow {
  * Implementation of the SchemaRpcInterface.
  * @Internal
  */
-export class MetadataRpcImpl extends MetadataRpcInterface {
+export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
   /**
    * Registers the RPC interface with its corresponding implementation class.
    */
   public static register() {
-    RpcManager.registerImpl(MetadataRpcInterface, MetadataRpcImpl);
+    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
   }
 
   /**

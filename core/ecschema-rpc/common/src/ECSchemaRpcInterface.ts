@@ -12,19 +12,19 @@ import { SchemaProps } from "@bentley/ecschema-metadata";
  * or @see getSchemaXml to get the schemas as XML document.
  * @Internal
  */
-export abstract class MetadataRpcInterface extends RpcInterface {
+export abstract class ECSchemaRpcInterface extends RpcInterface {
   /** The version of the RPC Interface. */
   public static version = "1.0.0";
 
   public static readonly interfaceName = "SchemaRpcInterface";
-  public static interfaceVersion = MetadataRpcInterface.version;
+  public static interfaceVersion = ECSchemaRpcInterface.version;
 
   /**
    * Returns the RPC client instance for the frontend.
    * @returns                 A client to communicate with the RPC Interface.
    */
-  public static getClient(): MetadataRpcInterface {
-    return RpcManager.getClientForInterface(MetadataRpcInterface);
+  public static getClient(): ECSchemaRpcInterface {
+    return RpcManager.getClientForInterface(ECSchemaRpcInterface);
   }
 
   /**

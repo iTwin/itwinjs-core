@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/schema-rpcinterface-tests",
+  "name": "@bentley/ecschema-rpcinterface-tests",
   "version": "2.15.0-dev.13",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
@@ -42,7 +42,7 @@
     "@bentley/presentation-frontend": "2.15.0-dev.13",
     "@bentley/product-settings-client": "2.15.0-dev.13",
     "@bentley/rbac-client": "2.15.0-dev.13",
-    "@bentley/schema-rpcinterface-common": "2.15.0-dev.13",
+    "@bentley/ecschema-rpcinterface-common": "2.15.0-dev.13",
     "@bentley/ui-abstract": "2.15.0-dev.13",
     "@bentley/webgl-compatibility": "2.15.0-dev.13",
     "chai": "^4.1.2",

@@ -55,6 +55,14 @@
       "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
     },
     {
+      "name": "@bentley/ecschema-rpcinterface-common",
+      "allowedCategories": [ "backend", "common", "integration-testing" ]
+    },
+    {
+      "name": "@bentley/ecschema-rpcinterface-impl",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
       "name": "@bentley/electron-manager",
       "allowedCategories": [ "internal", "tools" ]
     },
@@ -217,14 +225,6 @@
     {
       "name": "@bentley/reality-data-client",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "@bentley/schema-rpcinterface-common",
-      "allowedCategories": [ "backend", "common", "integration-testing" ]
-    },
-    {
-      "name": "@bentley/schema-rpcinterface-impl",
-      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/telemetry-client",
