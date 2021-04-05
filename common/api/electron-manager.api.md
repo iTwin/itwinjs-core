@@ -55,12 +55,9 @@ export class ElectronHost {
 
 // @beta
 export interface ElectronHostOptions {
-<<<<<<< HEAD
-=======
     // (undocumented)
     applicationName?: never;
     authConfig?: NativeAppAuthorizationConfiguration;
->>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
     developmentServer?: boolean;
     frontendPort?: number;
     frontendURL?: string;

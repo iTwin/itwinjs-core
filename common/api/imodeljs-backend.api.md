@@ -176,6 +176,7 @@ import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StandaloneOpenOptions } from '@bentley/imodeljs-common';
 import { StandardViewIndex } from '@bentley/geometry-core';
 import { StatusCodeWithMessage } from '@bentley/bentleyjs-core';
+import { StorageValue } from '@bentley/imodeljs-common';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
@@ -3365,6 +3366,8 @@ export class NativeHost {
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
+    // (undocumented)
+    static get settingsStore(): NativeAppStorage;
     static shutdown(): Promise<void>;
     static startup(opt?: NativeHostOpts): Promise<void>;
 }
