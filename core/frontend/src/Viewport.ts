@@ -151,13 +151,15 @@ export interface ChangeViewedModel2dOptions {
  */
 export enum ViewUndoEvent { Undo = 0, Redo = 1 }
 
-/** @beta
- * Options for OpenStreetMap building display
+/** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
+ * @see [[Viewport.setOSMBuildingDisplay=]].
+   * @public
  */
 export interface OsmBuildingDisplayOptions {
   /**  If defined will turn the display of the OpenStreetMap buildings on or off by attaching or detaching the OSM reality model. */
+  /** If `true`, enables display of OpenStreetMap buildings within the viewport. */
   onOff?: boolean;
-  /** If defined will apply appearance overrides to to the OpenStreetMap building reality model. Has no effect if the OSM reality model is not displayed. */
+  /** If defined, overrides aspects of the appearance of the OpenStreetMap building meshes. */
   appearanceOverrides?: FeatureAppearance;
 }
 
@@ -431,7 +433,7 @@ export abstract class Viewport implements IDisposable {
       this.view.displayStyle.solarShadows = settings;
   }
 
-  /** @internal */
+  /** @public */
   public get viewingSpace(): ViewingSpace { return this._viewingSpace; }
 
   /** This viewport's rotation matrix. */
@@ -728,10 +730,8 @@ export abstract class Viewport implements IDisposable {
     return this.displayStyle.getRealityModelIndexFromTransientId(id);
   }
 
-  /** @beta
-   * Set the display of the OpenStreetMap worldwide building layer in this viewport by attaching or detaching the reality model displaying the buildings.
-   * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
-   * The options [[OsmBuildingDisplayOptions]] control the display and appearance overrides.
+  /** Change the display of worldwide [OpenStreetMap Building](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/) meshes within this viewport.
+   * The building meshes are supplied by [Cesium ION](https://cesium.com/content/cesium-osm-buildings/).
    */
   public setOSMBuildingDisplay(options: OsmBuildingDisplayOptions) {
     // ###TODO events from DisplayStyle
