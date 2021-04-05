@@ -82,14 +82,14 @@ export interface SelectedAndReadyTiles {
  * @see [[TileAdmin.Props.gpuMemoryLimits]] to configure the limit at startup.
  * @see [[TileAdmin.gpuMemoryLimit]] to adjust the limit after startup.
  * @see [[TileAdmin.totalTileContentBytes]] for the current amount of GPU memory being used for tile contents.
- * @beta
+ * @public
  */
 export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
 
 /** Defines separate [[GpuMemoryLimit]]s for mobile and desktop clients.
  * @see [[TileAdmin.Props.gpuMemoryLimits]] to configure the limit at startup.
  * @see [[GpuMemoryLimit]] for a description of how the available limits and how they are imposed.
- * @beta
+ * @public
  */
 export interface GpuMemoryLimits {
   /** Limits applied to clients running on mobile devices. Defaults to "default" if undefined. */
@@ -316,7 +316,6 @@ export class TileAdmin {
 
   /** The total number of bytes of GPU memory allocated to [[Tile]] contents.
    * @see [[gpuMemoryLimit]] to impose limits on how high this can grow.
-   * @beta
    */
   public get totalTileContentBytes(): number {
     return this._lruList.totalBytesUsed;
@@ -326,7 +325,6 @@ export class TileAdmin {
    * tiles are discarded until the total is below this limit or all undisplayed tiles' contents have been discarded.
    * @see [[totalTileContentBytes]] for the current GPU memory usage.
    * @see [[gpuMemoryLimit]] to adjust this maximum.
-   * @beta
    */
   public get maxTotalTileContentBytes(): number | undefined {
     return this._maxTotalTileContentBytes;
@@ -335,7 +333,6 @@ export class TileAdmin {
   /** The strategy for limiting the amount of GPU memory allocated to [[Tile]] graphics.
    * @see [[TileAdmin.Props.gpuMemoryLimits]] to configure this at startup.
    * @see [[maxTotalTileContentBytes]] for the limit as a maximum number of bytes.
-   * @beta
    */
   public get gpuMemoryLimit(): GpuMemoryLimit {
     return this._gpuMemoryLimit;
@@ -1033,7 +1030,6 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * Default value: `{ "mobile": "default" }`.
      *
      * @see [[GpuMemoryLimit]] for a description of the available limits and how they are imposed.
-     * @beta
      */
     gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
 
@@ -1126,7 +1122,6 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
    * @see [[TileAdmin.Props.gpuMemoryLimits]] to specify the limit at startup.
    * @see [[TileAdmin.gpuMemoryLimit]] to adjust the actual limit after startup.
    * @see [[TileAdmin.mobileMemoryLimits]] for mobile devices.
-   * @beta
    */
   export const nonMobileGpuMemoryLimits = {
     default: 1024 * 1024 * 1024, // 1 GB
@@ -1138,7 +1133,6 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
    * @see [[TileAdmin.Props.gpuMemoryLimits]] to specify the limit at startup.
    * @see [[TileAdmin.gpuMemoryLimit]] to adjust the actual limit after startup.
    * @see [[TileAdmin.nonMobileMemoryLimits]] for non-mobile devices.
-   * @beta
    */
   export const mobileGpuMemoryLimits = {
     default: 200 * 1024 * 1024, // 200 MB

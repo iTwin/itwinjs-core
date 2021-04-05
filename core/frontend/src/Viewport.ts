@@ -23,7 +23,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
-import { ChangeFlag, ChangeFlags } from "./ChangeFlags";
+import { ChangeFlag, ChangeFlags, MutableChangeFlags } from "./ChangeFlags";
 import { CoordSystem } from "./CoordSystem";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
@@ -145,7 +145,10 @@ export interface ChangeViewedModel2dOptions {
   doFit?: boolean;
 }
 
-/** @beta Event type for Viewport.onViewUndoRedo */
+/** Describes an undo or redo event for a [[Viewport]].
+ * @see [[Viewport.onViewUndoRedo]].
+ * @public
+ */
 export enum ViewUndoEvent { Undo = 0, Redo = 1 }
 
 /** @beta
@@ -199,49 +202,39 @@ export abstract class Viewport implements IDisposable {
    * @see [[onChangeView]] for an event raised specifically when a different [[ViewState]] becomes associated with the viewport.
    */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called after reversing the most recent change to the Viewport from the undo stack or reapplying the most recently undone change to the Viewport from the redo stack.
-   * @beta
+  /** Event called after reversing the most recent change to the Viewport from the undo stack or reapplying the
+   * most recently undone change to the Viewport from the redo stack.
    */
   public readonly onViewUndoRedo = new BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>();
-  /** Event called on the next frame after this viewport's set of always-drawn elements changes.
-   */
+  /** Event called on the next frame after this viewport's set of always-drawn elements changes. */
   public readonly onAlwaysDrawnChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's set of never-drawn elements changes.
-   */
+  /** Event called on the next frame after this viewport's set of never-drawn elements changes. */
   public readonly onNeverDrawnChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's [[DisplayStyleState]] or its members change.
    * Aspects of the display style include [ViewFlags]($common), [SubCategoryOverride]($common)s, and [[Environment]] settings.
    */
   public readonly onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's set of displayed categories changes.
-   */
+  /** Event called on the next frame after this viewport's set of displayed categories changes. */
   public readonly onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's set of [[PerModelCategoryVisibility.Overrides]] changes.
-   */
+  /** Event called on the next frame after this viewport's set of [[PerModelCategoryVisibility.Overrides]] changes. */
   public readonly onViewedCategoriesPerModelChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's set of displayed models changes.
-   */
+  /** Event called on the next frame after this viewport's set of displayed models changes. */
   public readonly onViewedModelsChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's [[FeatureOverrideProvider]] changes, or the internal state of the provider changes such that the overrides needed to be recomputed.
+  /** Event called on the next frame after this viewport's [[FeatureOverrideProvider]] changes,
+   * or the internal state of the provider changes such that the overrides needed to be recomputed.
    */
   public readonly onFeatureOverrideProviderChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's [[FeatureSymbology.Overrides]] change.
-   */
+  /** Event called on the next frame after this viewport's [[FeatureSymbology.Overrides]] change. */
   public readonly onFeatureOverridesChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after any of the viewport's [[ChangeFlags]] changes.
-   * @beta
-   */
+  /** Event called on the next frame after any of the viewport's [[ChangeFlags]] changes. */
   public readonly onViewportChanged = new BeEvent<(vp: Viewport, changed: ChangeFlags) => void>();
-  /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one.
-   */
+  /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one. */
   public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
   /** Event invoked immediately when the viewport is disposed.
    * @see [[Viewport.dispose]].
-   * @beta
    */
   public readonly onDisposed = new BeEvent<(vp: Viewport) => void>();
   /** Event invoked after [[renderFrame]] detects that the dimensions of the viewport's [[ViewRect]] have changed.
-   * @beta
    */
   public readonly onResized = new BeEvent<(vp: Viewport) => void>();
 
@@ -339,7 +332,7 @@ export abstract class Viewport implements IDisposable {
 
   private _animator?: Animator;
   /** @internal */
-  protected _changeFlags = new ChangeFlags();
+  protected _changeFlags = new MutableChangeFlags();
   private _selectionSetDirty = true;
   private readonly _perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   private _tileSizeModifier?: number;
@@ -1930,7 +1923,7 @@ export abstract class Viewport implements IDisposable {
   /** Set or clear the animator for this Viewport.
    * @param animator The new animator for this Viewport, or undefined to remove current animator.
    * @note current animator's `interrupt` method will be called (if it has not completed yet)
-   * @beta
+   * @public
    */
   public setAnimator(animator?: Animator) {
     this._animator?.interrupt();
@@ -2138,7 +2131,7 @@ export abstract class Viewport implements IDisposable {
   public renderFrame(): void {
     const changeFlags = this._changeFlags;
     if (changeFlags.hasChanges)
-      this._changeFlags = new ChangeFlags(ChangeFlag.None);
+      this._changeFlags = new MutableChangeFlags(ChangeFlag.None);
 
     const view = this.view;
     const target = this.target;
@@ -2857,6 +2850,7 @@ export class ScreenViewport extends Viewport {
     if (this._lastPose && this._currentBaseline)
       this.setAnimator(new FrustumAnimator(options ? options : {}, this, this._lastPose, this.view.savePose()));
   }
+
   /** Animate the view frustum from a starting frustum to the current view frustum. In other words,
    * save a starting frustum (presumably what the user is currently looking at), then adjust the view to
    * a different location and call synchWithView, then call this method. After the animation the viewport
@@ -2868,11 +2862,8 @@ export class ScreenViewport extends Viewport {
     this.animateFrustumChange(/* start, this.getFrustum(), */ options);
   }
 
-  /** Animate the view frustum to a destination location the earth from the current frustum.
-   * @internal
-   */
+  /** Animate the view frustum to a destination location the earth from the current frustum. */
   public async animateFlyoverToGlobalLocation(destination: GlobalLocation) {
-
     const animator = await GlobeAnimator.create(this, destination);
     this.setAnimator(animator);
   }
@@ -2933,6 +2924,7 @@ export class ScreenViewport extends Viewport {
     super.validateRenderPlan();
     this._lastPose = this.view.savePose();
   }
+
   /** Change the ViewState of this Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    * @param opts options for how the view change operation should work
