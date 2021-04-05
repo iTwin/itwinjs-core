@@ -910,7 +910,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     numPendingTileTreePropsRequests: number;
   }
 
-  /** Describes the configuration of the [[TileAdmin]]. */
+  /** Describes the configuration of the [[TileAdmin]].
    * @see [[TileAdmin.create]]
    * @public
    */

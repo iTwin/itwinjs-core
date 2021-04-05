@@ -19,7 +19,7 @@ import { PlanarClipMaskState } from "./imodeljs-frontend";
 import { SpatialModelState } from "./ModelState";
 import { SpatialClassifiers } from "./SpatialClassifiers";
 import {
-  createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils, TileTreeReference,
+  createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference,
 } from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
