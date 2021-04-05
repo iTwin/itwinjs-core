@@ -2440,7 +2440,7 @@ export abstract class Viewport implements IDisposable {
    * The effects are applied to the image in the order in which they appear in the list. Any names not corresponding to a registered effect are ignored.
    * This may have no effect if the Viewport's [[RenderTarget]] does not support screen-space effects.
    * @see [[RenderSystem.createScreenSpaceEffectBuilder]] to create and register new effects.
-   * @beta
+   * @public
    */
   public get screenSpaceEffects(): Iterable<string> {
     return this.target.screenSpaceEffects;
@@ -2452,7 +2452,7 @@ export abstract class Viewport implements IDisposable {
 
   /** Append a screen-space effect to the list of effects applied to this Viewport.
    * @see [[Viewport.screenSpaceEffects]].
-   * @beta
+   * @public
    */
   public addScreenSpaceEffect(effectName: string): void {
     this.screenSpaceEffects = [...this.screenSpaceEffects, effectName];
@@ -2460,7 +2460,7 @@ export abstract class Viewport implements IDisposable {
 
   /** Remove all screen-space effects from this Viewport.
    * @see [[Viewport.screenSpaceEffects]].
-   * @beta
+   * @public
    */
   public removeScreenSpaceEffects(): void {
     this.screenSpaceEffects = [];
