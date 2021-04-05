@@ -30,6 +30,7 @@ export enum ChangeFlag {
  * @public
  */
 export class ChangeFlags {
+  /** @internal */
   protected _flags: ChangeFlag;
 
   /** @internal */

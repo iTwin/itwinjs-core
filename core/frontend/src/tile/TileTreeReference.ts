@@ -161,7 +161,9 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
     return range;
   }
 
-  /** Return the clip volume applied to this reference's tile tree, if any. */
+  /** Return the clip volume applied to this reference's tile tree, if any.
+   * @beta
+   */
   protected getClipVolume(tree: TileTree): RenderClipVolume | undefined {
     return tree.clipVolume;
   }

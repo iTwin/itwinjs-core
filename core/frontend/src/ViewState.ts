@@ -1010,7 +1010,7 @@ export abstract class ViewState extends ElementState {
 
   /** Specify a provider of per-model display transforms. Intended chiefly for use by model alignment tools.
    * @note The transform supplied is used for display purposes **only**. Do not expect operations like snapping to account for the display transform.
-   * @public
+   * @beta
    */
   public get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined {
     return this._modelDisplayTransformProvider;

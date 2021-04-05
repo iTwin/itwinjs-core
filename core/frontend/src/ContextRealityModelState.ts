@@ -108,6 +108,7 @@ export class ContextRealityModelState {
 
 /** Criteria used to query for reality data associated with an iTwin context.
  * @see [[queryRealityData]].
+ * @public
  */
 export interface RealityDataQueryCriteria {
   /** The Id of the iTwin context. */
@@ -135,6 +136,7 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
 /** Query for reality data associated with an iTwin context.
  * @params criteria Criteria by which to query.
  * @returns Properties of reality data associated with the context, filtered according to the criteria.
+ * @public
  */
 export async function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]> {
   const contextId = criteria.contextId;

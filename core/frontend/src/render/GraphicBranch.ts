@@ -84,7 +84,9 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
  * @public
  */
 export interface GraphicBranchOptions {
-  /** Clip applied to the graphics in the branch. */
+  /** Clip applied to the graphics in the branch.
+   * @beta
+   */
   clipVolume?: RenderClipVolume;
   /** @internal */
   classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;

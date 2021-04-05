@@ -537,6 +537,7 @@ export abstract class Tile {
 
 /** Describes the current status of a [[Tile]]'s content. Tile content is loaded via an asynchronous [[TileRequest]].
  * @see [[Tile.loadStatus]].
+ * @public
  */
 export enum TileLoadStatus {
   /** No attempt to load the tile's content has been made, or the tile has since been unloaded. It currently has no graphics. */
