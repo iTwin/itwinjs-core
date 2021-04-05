@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Config } from "@bentley/bentleyjs-core";
 import { IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 
 export class IModelSession {

@@ -28,11 +28,11 @@ export abstract class ECSchemaRpcInterface extends RpcInterface {
   }
 
   /**
-   * Returns an array of schema names that exists in the current iModel context.
+   * Returns an array of SchemaKey that exists in the current iModel context.
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
-   * @returns                 An array of schema names.
+   * @returns                 An array of SchemaKey.
    */
-  public async getSchemaNames(_tokenProps: IModelRpcProps): Promise<SchemaKey[]> {
+  public async getSchemaKeys(_tokenProps: IModelRpcProps): Promise<SchemaKey[]> {
     return this.forward.apply(this, [arguments]) as Promise<SchemaKey[]>;
   }
 

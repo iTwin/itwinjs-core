@@ -180,7 +180,7 @@
     },
     {
       "name": "@bentley/orbitgt-core",
-      "allowedCategories": [ "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/perf-tools",
@@ -208,7 +208,7 @@
     },
     {
       "name": "@bentley/product-settings-client",
-      "allowedCategories": [ "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/projectshare-client",
@@ -232,7 +232,7 @@
     },
     {
       "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "edit", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/ui-components",
@@ -260,7 +260,7 @@
     },
     {
       "name": "@bentley/webgl-compatibility",
-      "allowedCategories": [ "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/webpack-tools-core",
@@ -716,7 +716,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "null-loader",

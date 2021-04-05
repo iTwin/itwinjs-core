@@ -43,14 +43,14 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
   }
 
   /**
-   * Returns an array of schema names that exists in the current iModel context.
+   * Returns an array of SchemaKey that exists in the current iModel context.
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
-   * @returns                 An array of schema names returned as SchemaKeys.
+   * @returns                 An array of SchemaKey.
    */
-  public async getSchemaNames(tokenProps: IModelRpcProps): Promise<SchemaKey[]> {
+  public async getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKey[]> {
     ClientRequestContext.current.enter();
 
-    const schemaNames: SchemaKey[] = [];
+    const schemaKeys: SchemaKey[] = [];
     const iModelDb = await this.getIModelDatabase(tokenProps);
 
     // Iterate over the rows returned from AsyncIterableIterator. The custom Query overload returns
@@ -61,9 +61,9 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
       const read = Number(schemaDefinitionRow.read);
       const write = Number(schemaDefinitionRow.write);
       const minor = Number(schemaDefinitionRow.minor);
-      schemaNames.push(new SchemaKey(schemaFullName, read, write, minor));
+      schemaKeys.push(new SchemaKey(schemaFullName, read, write, minor));
     }
-    return schemaNames;
+    return schemaKeys;
   }
 
   /**

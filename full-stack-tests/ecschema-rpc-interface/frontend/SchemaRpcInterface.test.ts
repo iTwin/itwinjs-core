@@ -11,7 +11,7 @@ chai.use(chaiAsPromised);
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common/lib/ECSchemaRpcInterface";
 import { TestContext } from "./setup/TestContext";
-import { SchemaKey } from "../../../core/backend/node_modules/@bentley/ecschema-metadata/lib/ecschema-metadata";
+import { SchemaKey } from "@bentley/ecschema-metadata";
 
 describe("Schema RPC Interface", () => {
 
@@ -23,17 +23,17 @@ describe("Schema RPC Interface", () => {
     iModel = await testContext.iModelWithChangesets!.getConnection();
   });
 
-  it("should get schema names", async () => {
-    let schemaNames: SchemaKey[] = [];
-    schemaNames = await ECSchemaRpcInterface.getClient().getSchemaNames(iModel.getRpcProps());
+  it("should get schema keys", async () => {
+    let schemaKeys: SchemaKey[] = [];
+    schemaKeys = await ECSchemaRpcInterface.getClient().getSchemaKeys(iModel.getRpcProps());
 
-    expect(schemaNames).to.not.be.undefined;
+    expect(schemaKeys).to.not.be.undefined;
   });
 
   it("should get schema JSON", async () => {
-    let schemaNames: SchemaKey[] = [];
-    schemaNames = await ECSchemaRpcInterface.getClient().getSchemaNames(iModel.getRpcProps());
-    const schemaJSON = await ECSchemaRpcInterface.getClient().getSchemaJSON(iModel.getRpcProps(), schemaNames[0].name);
+    let schemaKeys: SchemaKey[] = [];
+    schemaKeys = await ECSchemaRpcInterface.getClient().getSchemaKeys(iModel.getRpcProps());
+    const schemaJSON = await ECSchemaRpcInterface.getClient().getSchemaJSON(iModel.getRpcProps(), schemaKeys[0].name);
 
     expect(schemaJSON).to.not.be.undefined;
   });
