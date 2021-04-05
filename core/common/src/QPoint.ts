@@ -572,7 +572,7 @@ export class QPoint3dList {
   }
 
   /** Construct an empty list set up to quantize to the supplied range.
-   * @params The quantization parameters. If omitted, a null range will be used.
+   * @param The quantization parameters. If omitted, a null range will be used.
    */
   public constructor(params?: QParams3d) {
     this.params = params ? params.clone() : QParams3d.fromRange(Range3d.createNull());
