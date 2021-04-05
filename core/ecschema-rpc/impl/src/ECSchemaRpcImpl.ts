@@ -5,7 +5,7 @@
 import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
 import * as backend from "@bentley/imodeljs-backend";
-import { SchemaProps } from "@bentley/ecschema-metadata";
+import { SchemaKey, SchemaProps } from "@bentley/ecschema-metadata";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
 /**
@@ -13,6 +13,9 @@ import { ClientRequestContext } from "@bentley/bentleyjs-core";
  */
 interface SchemaNameRow {
   schemaName: string;
+  read: string;
+  write: string;
+  minor: string;
 }
 
 /**
@@ -42,20 +45,23 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
   /**
    * Returns an array of schema names that exists in the current iModel context.
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
-   * @returns                 An array of schema names.
+   * @returns                 An array of schema names returned as SchemaKeys.
    */
-  public async getSchemaNames(tokenProps: IModelRpcProps): Promise<string[]> {
+  public async getSchemaNames(tokenProps: IModelRpcProps): Promise<SchemaKey[]> {
     ClientRequestContext.current.enter();
 
-    const schemaNames: string[] = [];
+    const schemaNames: SchemaKey[] = [];
     const iModelDb = await this.getIModelDatabase(tokenProps);
 
     // Iterate over the rows returned from AsyncIterableIterator. The custom Query overload returns
     // a typed row instance instead of any.
-    const schemaNameQuery = `SELECT Name as schemaName FROM main.meta.ECSchemaDef`;
+    const schemaNameQuery = `SELECT Name as schemaName, VersionMajor as read, VersionWrite as write, VersionMinor as minor FROM main.meta.ECSchemaDef`;
     for await (const schemaDefinitionRow of iModelDb.query(schemaNameQuery) as AsyncIterableIterator<SchemaNameRow>) {
       const schemaFullName = schemaDefinitionRow.schemaName;
-      schemaNames.push(schemaFullName);
+      const read = Number(schemaDefinitionRow.read);
+      const write = Number(schemaDefinitionRow.write);
+      const minor = Number(schemaDefinitionRow.minor);
+      schemaNames.push(new SchemaKey(schemaFullName, read, write, minor));
     }
     return schemaNames;
   }

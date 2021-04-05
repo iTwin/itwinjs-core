@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
-import { SchemaProps } from "@bentley/ecschema-metadata";
+import { SchemaKey, SchemaProps } from "@bentley/ecschema-metadata";
 
 /***
  * Defines an RPC interface to get schema information from a given iModel context.
@@ -32,8 +32,8 @@ export abstract class ECSchemaRpcInterface extends RpcInterface {
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
    * @returns                 An array of schema names.
    */
-  public async getSchemaNames(_tokenProps: IModelRpcProps): Promise<string[]> {
-    return this.forward.apply(this, [arguments]) as Promise<string[]>;
+  public async getSchemaNames(_tokenProps: IModelRpcProps): Promise<SchemaKey[]> {
+    return this.forward.apply(this, [arguments]) as Promise<SchemaKey[]>;
   }
 
   /**
