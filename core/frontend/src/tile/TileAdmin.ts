@@ -18,7 +18,7 @@ import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
-import { InteractiveEditingSession } from "../InteractiveEditingSession";
+import { GraphicalEditingScope } from "../GraphicalEditingScope";
 import { GeometricModelState } from "../ModelState";
 import {
   DisclosedTileTreeSet, IModelTile, LRUTileList, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree, TileTreeOwner, TileUsageMarker,
@@ -267,12 +267,12 @@ export class TileAdmin {
     // If unspecified skip one level before preloading  of parents of context tiles.
     this.contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
 
-    const removeEditingListener = InteractiveEditingSession.onBegin.addListener((session) => {
-      const removeGeomListener = session.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>) => this.onModelGeometryChanged(changes));
-      session.onEnded.addOnce((sesh: InteractiveEditingSession) => {
-        assert(sesh === session);
+    const removeEditingListener = GraphicalEditingScope.onEnter.addListener((scope) => {
+      const removeGeomListener = scope.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>) => this.onModelGeometryChanged(changes));
+      scope.onExited.addOnce((sesh: GraphicalEditingScope) => {
+        assert(sesh === scope);
         removeGeomListener();
-        this.onSessionEnd(session);
+        this.onExitScope(scope);
       });
     });
 
@@ -619,7 +619,10 @@ export class TileAdmin {
     return { tokenProps, treeId, contentId, guid };
   }
 
-  /** @internal */
+  /** Request graphics for a single element or geometry stream.
+   * @see [[readElementGraphics]] to convert the result into a [[RenderGraphic]] for display.
+   * @beta
+   */
   public async requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
@@ -843,7 +846,7 @@ export class TileAdmin {
     }).catch(() => { });
   }
 
-  /** The geometry of one or models has changed during an [[InteractiveEditingSession]]. Invalidate the scenes and feature overrides of any viewports
+  /** The geometry of one or models has changed during an [[GraphicalEditingScope]]. Invalidate the scenes and feature overrides of any viewports
    * viewing any of those models.
    */
   private onModelGeometryChanged(changes: Iterable<ModelGeometryChanges>): void {
@@ -858,20 +861,20 @@ export class TileAdmin {
     }
   }
 
-  /** An interactive editing session has ended. Update geometry guid for affected models and invalidate scenes of affected viewports. */
-  private onSessionEnd(session: InteractiveEditingSession): void {
+  /** A graphical editing scope has ended. Update geometry guid for affected models and invalidate scenes of affected viewports. */
+  private onExitScope(scope: GraphicalEditingScope): void {
     // Updating model's geometry guid will cause TileTreeReference to request new TileTree if guid changed.
     const modelIds: Id64String[] = [];
-    for (const change of session.getGeometryChanges()) {
+    for (const change of scope.getGeometryChanges()) {
       modelIds.push(change.id);
-      const model = session.iModel.models.getLoaded(change.id);
+      const model = scope.iModel.models.getLoaded(change.id);
       if (model && model instanceof GeometricModelState)
         model.geometryGuid = change.geometryGuid;
     }
 
     // Invalidate scenes of all viewports viewing any affected model.
     for (const vp of this._viewports) {
-      if (vp.iModel !== session.iModel)
+      if (vp.iModel !== scope.iModel)
         continue;
 
       for (const modelId of modelIds) {

@@ -26,6 +26,7 @@ import { BentleyCloudRpcParams } from '@bentley/imodeljs-common';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import { BoundingSphere } from '@bentley/imodeljs-common';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { BrowserAuthorizationClientConfiguration } from '@bentley/frontend-authorization-client';
@@ -67,7 +68,7 @@ import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
-import { EditingSessionNotifications } from '@bentley/imodeljs-common';
+import { EditingScopeNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementGeometryChange } from '@bentley/imodeljs-common';
 import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
@@ -1562,33 +1563,24 @@ export interface BeWheelEventProps extends BeButtonEventProps {
     wheelDelta?: number;
 }
 
-// @internal (undocumented)
+// @public
 export class BingElevationProvider {
     constructor();
-    // (undocumented)
+    // @internal (undocumented)
     getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number>;
-    // (undocumented)
+    // @internal (undocumented)
     getGraphic(latLongRange: Range2d, corners: Point3d[], groundBias: number, texture: RenderTexture, system: RenderSystem): Promise<RenderGraphic | undefined>;
-    // (undocumented)
     getHeight(carto: Cartographic, geodetic?: boolean): Promise<any>;
-    // (undocumented)
     getHeightAverage(iModel: IModelConnection): Promise<number>;
-    // (undocumented)
     getHeightRange(iModel: IModelConnection): Promise<Range1d>;
-    // (undocumented)
-    getHeights(range: Range2d): Promise<any>;
-    // (undocumented)
     getHeightValue(point: Point3d, iModel: IModelConnection, geodetic?: boolean): Promise<number>;
     // (undocumented)
     protected _requestContext: ClientRequestContext;
     }
 
-// @internal (undocumented)
+// @public
 export class BingLocationProvider {
     constructor();
-    // (undocumented)
-    doLocalSearchByRadius(_center: Cartographic, _radius: number): Promise<{} | undefined>;
-    // (undocumented)
     getLocation(query: string): Promise<GlobalLocation | undefined>;
     // (undocumented)
     protected _requestContext: ClientRequestContext;
@@ -1633,12 +1625,12 @@ export interface BlankConnectionProps {
 // @public
 export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps);
-    // @beta
-    beginEditingSession(): Promise<InteractiveEditingSession>;
     close(): Promise<void>;
     get contextId(): GuidString;
     // @beta
-    get editingSession(): InteractiveEditingSession | undefined;
+    get editingScope(): GraphicalEditingScope | undefined;
+    // @beta
+    enterEditingScope(): Promise<GraphicalEditingScope>;
     // @beta (undocumented)
     hasPendingTxns(): Promise<boolean>;
     get iModelId(): GuidString;
@@ -1656,7 +1648,7 @@ export class BriefcaseConnection extends IModelConnection {
     // @beta (undocumented)
     saveChanges(description?: string): Promise<void>;
     // @beta
-    supportsInteractiveEditing(): Promise<boolean>;
+    supportsGraphicalEditing(): Promise<boolean>;
     // @beta
     readonly txns: BriefcaseTxns;
 }
@@ -1733,7 +1725,7 @@ export interface CachedIModelCoordinatesResponseProps {
     result: Array<PointWithStatus | undefined>;
 }
 
-// @internal (undocumented)
+// @public
 export function calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise<Transform | undefined>;
 
 // @public
@@ -3546,7 +3538,7 @@ export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?
     url?: string;
 }>;
 
-// @beta (undocumented)
+// @public
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string;
 
 // @internal (undocumented)
@@ -3570,7 +3562,7 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string;
 // @beta
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
-// @alpha
+// @public
 export interface GlobalLocation {
     // (undocumented)
     area?: GlobalLocationArea;
@@ -3578,7 +3570,7 @@ export interface GlobalLocation {
     center: Cartographic;
 }
 
-// @alpha
+// @public
 export interface GlobalLocationArea {
     // (undocumented)
     northeast: Cartographic;
@@ -3804,6 +3796,26 @@ export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | num
 export interface GpuMemoryLimits {
     mobile?: GpuMemoryLimit;
     nonMobile?: GpuMemoryLimit;
+}
+
+// @beta
+export class GraphicalEditingScope extends BriefcaseNotificationHandler implements EditingScopeNotifications {
+    // (undocumented)
+    get briefcaseChannelName(): IpcAppChannel;
+    // @internal
+    static enter(imodel: BriefcaseConnection): Promise<GraphicalEditingScope>;
+    exit(): Promise<void>;
+    getGeometryChanges(): Iterable<ModelGeometryChanges>;
+    getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined;
+    readonly iModel: BriefcaseConnection;
+    // @internal (undocumented)
+    get isDisposed(): boolean;
+    // @internal (undocumented)
+    notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
+    static readonly onEnter: BeEvent<(scope: GraphicalEditingScope) => void>;
+    readonly onExited: BeEvent<(scope: GraphicalEditingScope) => void>;
+    readonly onExiting: BeEvent<(scope: GraphicalEditingScope) => void>;
+    readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, scope: GraphicalEditingScope) => void>;
 }
 
 // @public
@@ -4744,26 +4756,6 @@ export interface InstancedGraphicParams {
     readonly symbologyOverrides?: Uint8Array;
     readonly transformCenter: Point3d;
     readonly transforms: Float32Array;
-}
-
-// @beta
-export class InteractiveEditingSession extends BriefcaseNotificationHandler implements EditingSessionNotifications {
-    // @internal
-    static begin(imodel: BriefcaseConnection): Promise<InteractiveEditingSession>;
-    // (undocumented)
-    get briefcaseChannelName(): IpcAppChannel;
-    end(): Promise<void>;
-    getGeometryChanges(): Iterable<ModelGeometryChanges>;
-    getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined;
-    readonly iModel: BriefcaseConnection;
-    // @internal (undocumented)
-    get isDisposed(): boolean;
-    // @internal (undocumented)
-    notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
-    static readonly onBegin: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onEnded: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onEnding: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>;
 }
 
 // @public
@@ -6444,7 +6436,7 @@ export class NativeApp {
 
 // @beta
 export class NativeAppAuthorization {
-    constructor(config: NativeAppAuthorizationConfiguration);
+    constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _expireSafety: number;
     getAccessToken(): Promise<AccessToken>;
@@ -6480,6 +6472,7 @@ export interface NativeAppOpts extends IpcAppOptions {
     // (undocumented)
     nativeApp?: {
         authConfig?: NativeAppAuthorizationConfiguration;
+        noInitializeAuthClient?: boolean;
     };
 }
 
@@ -7278,11 +7271,14 @@ export interface QuantityTypeDefinition {
 // @beta
 export type QuantityTypeKey = string;
 
-// @internal
+// @public
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
 
 // @internal
 export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined;
+
+// @beta
+export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise<RenderGraphic | undefined>;
 
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
@@ -8154,7 +8150,6 @@ export namespace RenderSystem {
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
-        // @public
         doIdleWork?: boolean;
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
@@ -9832,9 +9827,10 @@ export abstract class Tile {
     protected constructor(params: TileParams, tree: TileTree);
     // @internal (undocumented)
     protected addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void;
+    readonly boundingSphere: BoundingSphere;
     // @internal
     bytesUsed: number;
-    readonly center: Point3d;
+    get center(): Point3d;
     abstract get channel(): TileRequestChannel;
     get children(): Tile[] | undefined;
     protected _childrenLoadStatus: TileTreeLoadStatus;
@@ -9898,7 +9894,7 @@ export abstract class Tile {
     // @internal
     previous?: LRUTileListNode;
     produceGraphics(): RenderGraphic | undefined;
-    readonly radius: number;
+    get radius(): number;
     readonly range: ElementAlignedBox3d;
     // @internal (undocumented)
     protected get rangeGraphicColor(): ColorDef;
@@ -10018,7 +10014,6 @@ export class TileAdmin {
     registerViewport(vp: Viewport): void;
     // @internal (undocumented)
     requestCachedTileContent(tile: IModelTile): Promise<Uint8Array | undefined>;
-    // @internal (undocumented)
     requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     // @internal
     requestTiles(vp: Viewport, tiles: Set<Tile>): void;
@@ -11587,37 +11582,37 @@ export class ViewGlobalLocationConstants {
     static readonly satelliteHeightAboveEarthInMeters: number;
 }
 
-// @beta
+// @public
 export class ViewGlobeBirdTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot?: boolean, doAnimate?: boolean);
     // (undocumented)
     doAnimate: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     oneShot: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
     // (undocumented)
     static toolId: string;
 }
 
-// @beta
+// @public
 export class ViewGlobeIModelTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot?: boolean, doAnimate?: boolean);
     // (undocumented)
     doAnimate: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     oneShot: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
     // (undocumented)
     static toolId: string;
 }
 
-// @beta
+// @public
 export class ViewGlobeLocationTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot?: boolean, doAnimate?: boolean);
     // (undocumented)
@@ -11628,24 +11623,23 @@ export class ViewGlobeLocationTool extends ViewTool {
     static get minArgs(): number;
     // (undocumented)
     oneShot: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
-    // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     static toolId: string;
 }
 
-// @beta
+// @public
 export class ViewGlobeSatelliteTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot?: boolean, doAnimate?: boolean);
     // (undocumented)
     doAnimate: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     oneShot: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
     // (undocumented)
     static toolId: string;

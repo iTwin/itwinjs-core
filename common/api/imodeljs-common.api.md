@@ -514,7 +514,7 @@ export function bisectTileRange2d(range: Range3d, takeUpper: boolean): void;
 // @internal (undocumented)
 export function bisectTileRange3d(range: Range3d, takeUpper: boolean): void;
 
-// @internal
+// @public
 export class BoundingSphere {
     constructor(center?: Point3d, radius?: number);
     // (undocumented)
@@ -655,22 +655,22 @@ export interface BriefcasePushAndPullNotifications {
 
 export { BriefcaseStatus }
 
-// @beta
+// @public
 export function calculateSolarAngles(date: Date, location: Cartographic): {
     azimuth: number;
     elevation: number;
 };
 
-// @beta
+// @public
 export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d;
 
-// @beta
+// @public
 export function calculateSolarDirectionFromAngles(azimuthElevation: {
     azimuth: number;
     elevation: number;
 }): Vector3d;
 
-// @beta
+// @public
 export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date;
 
 // @public (undocumented)
@@ -1489,7 +1489,7 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 // @internal
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
 
-// @internal
+// @alpha
 export enum ContentFlags {
     // (undocumented)
     AllowInstancing = 1,
@@ -1937,6 +1937,30 @@ export enum DownloadBriefcaseStatus {
 // @beta
 export type DPoint2dProps = number[];
 
+// @beta
+export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
+    // (undocumented)
+    readonly placement: Omit<Placement2dProps, "bbox">;
+    // (undocumented)
+    readonly type: "2d";
+}
+
+// @beta
+export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestProps {
+    // (undocumented)
+    readonly placement: Omit<Placement3dProps, "bbox">;
+    // (undocumented)
+    readonly type: "3d";
+}
+
+// @beta
+export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
+    readonly categoryId: Id64String;
+    readonly elementId?: Id64String;
+    readonly geometry: GeometryStreamProps;
+    readonly modelId?: Id64String;
+}
+
 // @public
 export const Easing: {
     Linear: {
@@ -2098,7 +2122,7 @@ export class EdgeArgs {
 }
 
 // @internal
-export interface EditingSessionNotifications {
+export interface EditingScopeNotifications {
     // (undocumented)
     notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
@@ -2266,18 +2290,8 @@ export interface ElementGeometryUpdate {
     viewIndependent?: boolean;
 }
 
-// @internal
-export interface ElementGraphicsRequestProps {
-    readonly clipToProjectExtents?: boolean;
-    readonly contentFlags?: ContentFlags;
-    readonly elementId: Id64String;
-    readonly formatVersion: number;
-    readonly id: string;
-    readonly location?: TransformProps;
-    readonly omitEdges?: boolean;
-    readonly toleranceLog10: number;
-    readonly treeFlags?: TreeFlags;
-}
+// @beta
+export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps;
 
 // @alpha
 export interface ElementIdsAndRangesProps {
@@ -3360,6 +3374,21 @@ export class GraphicParams {
     setLineTransparency(transparency: number): void;
 }
 
+// @beta
+export interface GraphicsRequestProps {
+    readonly clipToProjectExtents?: boolean;
+    // @alpha
+    readonly contentFlags?: ContentFlags;
+    // @alpha
+    readonly formatVersion?: number;
+    readonly id: string;
+    readonly location?: TransformProps;
+    readonly omitEdges?: boolean;
+    readonly toleranceLog10: number;
+    // @alpha
+    readonly treeFlags?: TreeFlags;
+}
+
 // @public
 export enum GridOrientationType {
     AuxCoord = 4,
@@ -4061,7 +4090,7 @@ export enum IpcAppChannel {
     // (undocumented)
     AppNotify = "ipcApp-notify",
     // (undocumented)
-    EditingSession = "editing-session",
+    EditingScope = "editing-scope",
     // (undocumented)
     Functions = "ipc-app",
     // (undocumented)
@@ -4079,7 +4108,7 @@ export interface IpcAppFunctions {
     getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
     hasPendingTxns: (key: string) => Promise<boolean>;
     // (undocumented)
-    isInteractiveEditingSupported: (key: string) => Promise<boolean>;
+    isGraphicalEditingSupported: (key: string) => Promise<boolean>;
     isRedoPossible: (key: string) => Promise<boolean>;
     isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
@@ -4096,7 +4125,7 @@ export interface IpcAppFunctions {
     reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
-    toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
+    toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
 }
 
 // @internal
@@ -4722,7 +4751,7 @@ export interface NativeAppAuthorizationConfiguration {
     readonly expiryBuffer?: number;
     // (undocumented)
     issuerUrl?: string;
-    readonly redirectUri: string;
+    readonly redirectUri?: string;
     readonly scope: string;
 }
 
@@ -4740,8 +4769,7 @@ export interface NativeAppFunctions {
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
     getConfig: () => Promise<any>;
-    // (undocumented)
-    initializeAuth: (props: ClientRequestContextProps, config: NativeAppAuthorizationConfiguration) => Promise<void>;
+    initializeAuth: (props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration) => Promise<number>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
     signIn: () => Promise<void>;
@@ -5120,6 +5148,11 @@ export interface PartReference {
     };
     // (undocumented)
     type: "partReference";
+}
+
+// @beta
+export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
+    readonly elementId: Id64String;
 }
 
 // @public
@@ -7308,7 +7341,7 @@ export interface TextureProps extends DefinitionElementProps {
     width: number;
 }
 
-// @beta
+// @public
 export class ThematicDisplay {
     readonly axis: Vector3d;
     readonly displayMode: ThematicDisplayMode;
@@ -7318,34 +7351,31 @@ export class ThematicDisplay {
     static fromJSON(json?: ThematicDisplayProps): ThematicDisplay;
     readonly gradientSettings: ThematicGradientSettings;
     readonly range: Range1d;
-    // @alpha
     readonly sensorSettings: ThematicDisplaySensorSettings;
     readonly sunDirection: Vector3d;
     // (undocumented)
     toJSON(): ThematicDisplayProps;
 }
 
-// @beta
+// @public
 export enum ThematicDisplayMode {
     Height = 0,
     HillShade = 3,
-    // @alpha
     InverseDistanceWeightedSensors = 1,
     Slope = 2
 }
 
-// @beta
+// @public
 export interface ThematicDisplayProps {
     axis?: XYZProps;
     displayMode?: ThematicDisplayMode;
     gradientSettings?: ThematicGradientSettingsProps;
     range?: Range1dProps;
-    // @alpha
     sensorSettings?: ThematicDisplaySensorSettingsProps;
     sunDirection?: XYZProps;
 }
 
-// @alpha
+// @public
 export class ThematicDisplaySensor {
     // (undocumented)
     equals(other: ThematicDisplaySensor): boolean;
@@ -7357,13 +7387,13 @@ export class ThematicDisplaySensor {
     readonly value: number;
 }
 
-// @alpha
+// @public
 export interface ThematicDisplaySensorProps {
     position?: XYZProps;
     value?: number;
 }
 
-// @alpha
+// @public
 export class ThematicDisplaySensorSettings {
     readonly distanceCutoff: number;
     // (undocumented)
@@ -7375,29 +7405,23 @@ export class ThematicDisplaySensorSettings {
     toJSON(): ThematicDisplaySensorSettingsProps;
 }
 
-// @alpha
+// @public
 export interface ThematicDisplaySensorSettingsProps {
     distanceCutoff?: number;
     sensors?: ThematicDisplaySensorProps[];
 }
 
-// @beta (undocumented)
+// @public
 export enum ThematicGradientColorScheme {
-    // (undocumented)
     BlueRed = 0,
-    // (undocumented)
     Custom = 5,
-    // (undocumented)
     Monochrome = 2,
-    // (undocumented)
     RedBlue = 1,
-    // (undocumented)
     SeaMountain = 4,
-    // (undocumented)
     Topographic = 3
 }
 
-// @beta (undocumented)
+// @public
 export enum ThematicGradientMode {
     IsoLines = 3,
     Smooth = 0,
@@ -7405,7 +7429,7 @@ export enum ThematicGradientMode {
     SteppedWithDelimiter = 2
 }
 
-// @beta
+// @public
 export class ThematicGradientSettings {
     clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
     readonly colorMix: number;
@@ -7430,7 +7454,7 @@ export class ThematicGradientSettings {
     toJSON(): ThematicGradientSettingsProps;
 }
 
-// @beta (undocumented)
+// @public
 export interface ThematicGradientSettingsProps {
     colorMix?: number;
     colorScheme?: ThematicGradientColorScheme;
@@ -7619,7 +7643,7 @@ export interface TileVersionInfo {
     formatVersion: number;
 }
 
-// @internal
+// @alpha
 export enum TreeFlags {
     // (undocumented)
     EnforceDisplayPriority = 2,

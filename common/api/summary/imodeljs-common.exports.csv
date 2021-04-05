@@ -32,7 +32,7 @@ public;class BentleyCloudRpcProtocol
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
-internal;BoundingSphere
+public;BoundingSphere
 alpha;BRepCutProps
 beta;BRepEntity
 alpha;BRepGeometryCreate
@@ -47,10 +47,10 @@ beta;BriefcaseDownloader
 public;BriefcaseIdValue
 beta;BriefcaseProps
 internal;BriefcasePushAndPullNotifications
-beta;calculateSolarAngles(date: Date, location: Cartographic):
-beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
-beta;calculateSolarDirectionFromAngles(azimuthElevation:
-beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
+public;calculateSolarAngles(date: Date, location: Cartographic):
+public;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
+public;calculateSolarDirectionFromAngles(azimuthElevation:
+public;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
 public;CalloutProps 
 public;Camera 
 public;CameraProps
@@ -89,7 +89,7 @@ internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId):
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
-internal;ContentFlags
+alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModelProps
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
@@ -123,6 +123,9 @@ public;DisplayStyleSubCategoryProps
 beta;DomainOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
+beta;DynamicGraphicsRequest2dProps 
+beta;DynamicGraphicsRequest3dProps 
+beta;DynamicGraphicsRequestProps 
 public;Easing:
 public;EasingFunction = (k: number) => number
 public;EcefLocation 
@@ -131,7 +134,7 @@ public;ECJsNames
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
-internal;EditingSessionNotifications
+internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
@@ -144,7 +147,7 @@ alpha;ElementGeometryInfo
 alpha;ElementGeometryOpcode
 alpha;ElementGeometryRequest
 alpha;ElementGeometryUpdate
-internal;ElementGraphicsRequestProps
+beta;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 alpha;ElementIdsAndRangesProps
 public;ElementLoadProps
 public;ElementProps 
@@ -224,6 +227,7 @@ internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
 public;GraphicParams
+beta;GraphicsRequestProps
 public;GridOrientationType
 public;GroundPlane
 public;GroundPlaneProps
@@ -369,6 +373,7 @@ beta;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PartReference
+beta;PersistentGraphicsRequestProps 
 public;PhysicalElementProps 
 public;PhysicalTypeProps 
 public;Placement2d 
@@ -540,17 +545,17 @@ beta;TextureMapping
 beta;TextureMapProps
 beta;TextureMapUnits
 beta;TextureProps 
-beta;ThematicDisplay
-beta;ThematicDisplayMode
-beta;ThematicDisplayProps
-alpha;ThematicDisplaySensor
-alpha;ThematicDisplaySensorProps
-alpha;ThematicDisplaySensorSettings
-alpha;ThematicDisplaySensorSettingsProps
-beta;ThematicGradientColorScheme
-beta;ThematicGradientMode
-beta;ThematicGradientSettings
-beta;ThematicGradientSettingsProps
+public;ThematicDisplay
+public;ThematicDisplayMode
+public;ThematicDisplayProps
+public;ThematicDisplaySensor
+public;ThematicDisplaySensorProps
+public;ThematicDisplaySensorSettings
+public;ThematicDisplaySensorSettingsProps
+public;ThematicGradientColorScheme
+public;ThematicGradientMode
+public;ThematicGradientSettings
+public;ThematicGradientSettingsProps
 alpha;ThumbnailFormatProps
 alpha;ThumbnailProps 
 internal;TileContentDescription 
@@ -569,7 +574,7 @@ internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
 alpha;TileVersionInfo
-internal;TreeFlags
+alpha;TreeFlags
 public;Tween
 public;TweenCallback = (obj: any) => void
 public;Tweens

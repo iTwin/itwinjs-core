@@ -157,6 +157,7 @@ public;FunctionalModel
 public;FunctionalPartition 
 public;FunctionalSchema 
 public;class FunctionalType 
+internal;generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise
 public;GenericDocument 
 public;GenericGraphicalModel3d 
 public;GenericGraphicalType2d 

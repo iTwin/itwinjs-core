@@ -55,11 +55,12 @@ import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DownloadBriefcaseStatus } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
-import { EditingSessionNotifications } from '@bentley/imodeljs-common';
+import { EditingScopeNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementAspectProps } from '@bentley/imodeljs-common';
 import { ElementGeometryRequest } from '@bentley/imodeljs-common';
 import { ElementGeometryUpdate } from '@bentley/imodeljs-common';
+import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
 import { ElementLoadProps } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
 import { EntityMetaData } from '@bentley/imodeljs-common';
@@ -2188,6 +2189,9 @@ export abstract class FunctionalType extends TypeDefinitionElement {
     static get className(): string;
 }
 
+// @internal
+export function generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise<Uint8Array | undefined>;
+
 // @public
 export class GenericDocument extends Document {
     constructor(props: ElementProps, iModel: IModelDb);
@@ -2532,6 +2536,8 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
+    // @beta
+    generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
     // @beta
@@ -3106,7 +3112,7 @@ export class IpcHost {
     // (undocumented)
     static noStack: boolean;
     // @internal (undocumented)
-    static notifyEditingSession<T extends keyof EditingSessionNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingSessionNotifications[T]>): void;
+    static notifyEditingScope<T extends keyof EditingScopeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingScopeNotifications[T]>): void;
     // @internal (undocumented)
     static notifyIpcFrontend<T extends keyof IpcAppNotifications>(methodName: T, ...args: Parameters<IpcAppNotifications[T]>): void;
     // @internal (undocumented)
@@ -3419,17 +3425,15 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     protected _accessToken?: AccessToken;
     // (undocumented)
-    get config(): NativeAppAuthorizationConfiguration;
+    config: NativeAppAuthorizationConfiguration;
     // (undocumented)
-    protected _config?: NativeAppAuthorizationConfiguration;
-    // (undocumented)
-    protected _expireSafety: number;
+    expireSafety: number;
     // (undocumented)
     getAccessToken(): Promise<AccessToken>;
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
-    initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void>;
+    initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
     get isAuthorized(): boolean;
     // (undocumented)
@@ -3466,6 +3470,8 @@ export class NativeAppStorage {
 
 // @beta
 export class NativeHost {
+    // (undocumented)
+    static get applicationName(): string;
     static get appSettingsCacheDir(): string;
     // @internal (undocumented)
     static get authorization(): NativeAppAuthorizationBackend;

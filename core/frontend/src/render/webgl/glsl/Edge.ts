@@ -130,7 +130,7 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   addLineWeight(vert);
 
   if (isSilhouette) {
-    addNormalMatrix(vert);
+    addNormalMatrix(vert, instanced);
     addModelViewProjectionMatrix(vert);
     vert.set(VertexShaderComponent.CheckForEarlyDiscard, checkForSilhouetteDiscard);
     vert.addFunction(octDecodeNormal);
