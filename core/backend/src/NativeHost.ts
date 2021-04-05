@@ -178,12 +178,8 @@ export type NativeHostOpts = IpcHostOpts;
  */
 export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
-<<<<<<< HEAD
-  private constructor() { }
-=======
   private static _applicationName: string;
   private constructor() { } // no instances - static methods only
->>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
 
   /** @internal */
   public static get authorization() { return IModelHost.authorizationClient as NativeAppAuthorizationBackend; }
@@ -209,13 +205,10 @@ export class NativeHost {
 
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
-<<<<<<< HEAD
-=======
   public static get applicationName() { return this._applicationName; }
   public static get settingsStore() {
     return NativeAppStorage.open(this.applicationName);
   }
->>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
 
   /**
    * Start the backend of a native app.

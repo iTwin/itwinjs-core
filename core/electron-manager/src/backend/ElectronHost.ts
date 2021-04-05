@@ -57,12 +57,9 @@ export interface ElectronHostOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** list of [IpcHandler]($common) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
-<<<<<<< HEAD
-=======
   /** Authorization configuration */
   authConfig?: NativeAppAuthorizationConfiguration;
   applicationName?: never; // this should be supplied in NativeHostOpts
->>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
 }
 
 /** @beta */

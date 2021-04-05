@@ -5,10 +5,11 @@
 
 import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
-import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, NativeAppAuthorizationConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
-import { MobileAuthorizationBackend } from "../MobileBackend";
+import { MobileAuthorizationBackend, MobileRpcManager } from "../MobileBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
 
 /** @beta */
@@ -77,13 +78,10 @@ class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
 export interface MobileHostOpts extends NativeHostOpts {
   mobileHost?: {
     device?: MobileDevice;
-<<<<<<< HEAD
-=======
     /** list of RPC interface definitions to register */
     rpcInterfaces?: RpcInterfaceDefinition[];
     /** Authorization configuration */
     authConfig?: NativeAppAuthorizationConfiguration;
->>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
   };
 }
 
@@ -152,9 +150,6 @@ export class MobileHost {
     await NativeHost.startup(opt);
     if (IpcHost.isValid)
       MobileAppHandler.register();
-<<<<<<< HEAD
-    IModelHost.authorizationClient = new MobileAuthorizationBackend();
-=======
     IModelHost.authorizationClient = new MobileAuthorizationBackend(opt?.mobileHost?.authConfig);
 
     const rpcInterfaces = opt?.mobileHost?.rpcInterfaces ?? [
@@ -165,6 +160,5 @@ export class MobileHost {
     ];
 
     MobileRpcManager.initializeImpl(rpcInterfaces);
->>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
   }
 }

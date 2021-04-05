@@ -106,13 +106,8 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     // Create the authorization request
     const nativeConfig = this.config;
     const authReqJson: AuthorizationRequestJson = {
-<<<<<<< HEAD
-      client_id: nativeConfig.clientId, // eslint-disable-line @typescript-eslint/naming-convention
-      redirect_uri: nativeConfig.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
-=======
       client_id: nativeConfig.clientId,
       redirect_uri: this.redirectUri,
->>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
       scope: nativeConfig.scope,
       response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
       extras: { prompt: "consent", access_type: "offline" },

@@ -19,7 +19,6 @@ import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection,
   LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
@@ -37,17 +36,10 @@ import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
 import {
-<<<<<<< HEAD
   ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
   IModelAppUiSettings, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiSettingsProvider,
-=======
-  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw,
-  FrameworkReducer, FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
-  FrontstageManager, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME,
-  ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
->>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import { getSupportedRpcs } from "../common/rpcs";
@@ -70,7 +62,6 @@ import { DeleteElementTool } from "./tools/editing/DeleteElementTool";
 import { MoveElementTool } from "./tools/editing/MoveElementTool";
 import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
 import { PlaceLineStringTool } from "./tools/editing/PlaceLineStringTool";
-import { EditingScopeTool } from "./tools/editing/PrimitiveToolEx";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
@@ -292,27 +283,7 @@ export class SampleAppIModelApp {
     // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
     await MapLayersUI.initialize(false); // if false then add widget in FrontstageDef
 
-<<<<<<< HEAD
     AppSettingsProvider.initializeAppSettingProvider();
-=======
-    AppSettingsTabsProvider.initializeAppSettingProvider();
-
-    // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
-    const lastTheme = (window.localStorage && window.localStorage.getItem("uifw:defaultTheme")) ?? SYSTEM_PREFERRED_COLOR_THEME;
-    const defaults = {
-      colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
-      dragInteraction: false,
-      frameworkVersion: "2",
-      widgetOpacity: 0.8,
-    };
-
-    // initialize any settings providers that may need to have defaults set by iModelApp
-    UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
-
-    // go ahead and initialize settings before login or in case login is by-passed
-    await UiFramework.setUiSettingsStorage(SampleAppIModelApp.getUiSettingsStorage());
-
->>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
   }
@@ -623,13 +594,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
   private _onUserStateChanged = (_accessToken: AccessToken | undefined) => {
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-<<<<<<< HEAD
     this.setState({ authorized, uiSettings: this.getUiSettings(authorized) });
-=======
-    const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
-    await UiFramework.setUiSettingsStorage(uiSettingsStorage);
-    this.setState({ authorized, uiSettingsStorage });
->>>>>>> 10511a5e56... Allow authConfig to be supplied from either frontend or backend for Electron and mobile (#1105)
     this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 

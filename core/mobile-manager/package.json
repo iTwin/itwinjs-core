@@ -38,6 +38,7 @@
     "@bentley/imodeljs-backend": "^2.14.0",
     "@bentley/itwin-client": "^2.14.0",
     "@bentley/imodelhub-client": "^2.14.0",
+    "@bentley/presentation-common": "^2.14.0",
     "ws": "^7.2.0",
     "js-base64": "^2.4.5"
   },
