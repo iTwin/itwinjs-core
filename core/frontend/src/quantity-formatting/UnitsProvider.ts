@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BadUnit, BasicUnit, UnitConversion, UnitProps, UnitsProvider  } from "@bentley/imodeljs-quantity";
-import { SchemaContext, Unit, UnitConverter, UnitQuery } from "@bentley/ecschema-metadata";
-// import { SchemaContext, Unit, UnitConverter, UnitQuery } from "../../../ecschema-metadata/src/ecschema-metadata";
+// import { SchemaContext, Unit, UnitConverter, UnitQuery } from "@bentley/ecschema-metadata";
+import { SchemaContext, Unit, UnitConverter, UnitQuery } from "../../../ecschema-metadata/src/ecschema-metadata";
 import { UNIT_EXTRA_DATA } from "./UnitsData";
 
 /** Units provider that provides a limited number of UnitDefinitions that are needed to support basic tools.
