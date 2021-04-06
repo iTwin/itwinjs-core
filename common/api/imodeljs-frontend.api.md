@@ -5822,78 +5822,78 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 // @public (undocumented)
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
-// @public (undocumented)
+// @public
 export class MeasureAreaByPointsTool extends PrimitiveTool {
-    // (undocumented)
+    // @internal (undocumented)
     protected _acceptedMeasurement?: MeasureMarker;
-    // (undocumented)
+    // @internal (undocumented)
     protected allowView(vp: Viewport): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected _area: number;
-    // (undocumented)
+    // @internal (undocumented)
     protected _centroid: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     decorateSuspended(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected static enumAsOrientationMessage(str: string): string;
-    // (undocumented)
+    // @internal (undocumented)
     protected static _getEnumAsOrientationDescription: () => PropertyDescription;
     // (undocumented)
     protected getMarkerToolTip(): Promise<HTMLElement>;
-    // (undocumented)
+    // @internal (undocumented)
     protected getShapePoints(cursorPt: Point3d): Point3d[];
     // (undocumented)
     static iconSpec: string;
-    // (undocumented)
+    // @internal (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected _isComplete: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected _lastMotionPt?: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     protected _marker?: MeasureLabel;
-    // (undocumented)
+    // @internal (undocumented)
     protected _matrix?: Matrix3d;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onReinitialize(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onRestartTool(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
     onUnsuspend(): void;
     // @internal (undocumented)
     get orientation(): EditManipulator.RotationType;
     set orientation(option: EditManipulator.RotationType);
-    // (undocumented)
+    // @internal (undocumented)
     protected static _orientationName: string;
-    // (undocumented)
+    // @internal (undocumented)
     protected _perimeter: number;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _points: Point3d[];
     // (undocumented)
     protected reportMeasurements(): void;
-    // (undocumented)
+    // @internal (undocumented)
     requireWriteableTarget(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected setupAndPromptForNextAction(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected showPrompt(): void;
-    // (undocumented)
+    // @internal (undocumented)
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
@@ -5901,211 +5901,211 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     protected updateTotals(): Promise<void>;
 }
 
-// @public (undocumented)
+// @public
 export class MeasureAreaTool extends MeasureElementTool {
     // (undocumented)
     protected getOperation(): MassPropertiesOperation;
     // (undocumented)
     static iconSpec: string;
-    // (undocumented)
+    // @internal (undocumented)
     onRestartTool(): void;
     // (undocumented)
     static toolId: string;
 }
 
-// @public (undocumented)
+// @public
 export class MeasureDistanceTool extends PrimitiveTool {
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _acceptedSegments: Segment[];
-    // (undocumented)
+    // @internal (undocumented)
     protected acceptNewSegments(): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     protected allowView(vp: Viewport): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected createDecorations(context: DecorateContext, isSuspended: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     decorateSuspended(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected displayDelta(context: DecorateContext, seg: any): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected displayDynamicDistance(context: DecorateContext, points: Point3d[], adjustedPoints: Point3d[]): void;
-    // (undocumented)
+    // @internal (undocumented)
     getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
     // (undocumented)
     protected getMarkerToolTip(distance: number, slope: number, start: Point3d, end: Point3d, delta?: Vector3d): Promise<HTMLElement>;
-    // (undocumented)
+    // @internal (undocumented)
     protected getReferenceAxes(vp?: Viewport): Matrix3d;
-    // (undocumented)
+    // @internal (undocumented)
     protected getSnapPoints(): Point3d[] | undefined;
     // (undocumented)
     static iconSpec: string;
-    // (undocumented)
+    // @internal (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected _lastMotionAdjustedPt?: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     protected _lastMotionPt?: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _locationData: Location[];
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onRestartTool(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
     onUnsuspend(): void;
     // (undocumented)
     protected reportMeasurements(): void;
-    // (undocumented)
+    // @internal (undocumented)
     requireWriteableTarget(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected setupAndPromptForNextAction(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected showPrompt(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _snapGeomId?: string;
-    // (undocumented)
+    // @internal (undocumented)
     testDecorationHit(id: string): boolean;
     // (undocumented)
     static toolId: string;
-    // (undocumented)
+    // @internal (undocumented)
     protected _totalDistance: number;
-    // (undocumented)
+    // @internal (undocumented)
     protected _totalDistanceMarker?: MeasureLabel;
-    // (undocumented)
+    // @internal (undocumented)
     protected updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent, reopenToolTip: boolean): Promise<void>;
     // (undocumented)
     protected updateTotals(): Promise<void>;
 }
 
-// @public (undocumented)
+// @public
 export abstract class MeasureElementTool extends PrimitiveTool {
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _acceptedIds: Id64Array;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _acceptedMeasurements: MeasureMarker[];
-    // (undocumented)
+    // @internal (undocumented)
     protected allowView(vp: Viewport): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _checkedIds: Map<string, MassPropertiesResponseProps>;
-    // (undocumented)
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     decorateSuspended(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     doMeasureSelectedElements(viewport: Viewport): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
     // (undocumented)
     protected getMarkerToolTip(responseProps: MassPropertiesResponseProps): Promise<HTMLElement>;
     // (undocumented)
     protected abstract getOperation(): MassPropertiesOperation;
-    // (undocumented)
+    // @internal (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onCleanup(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onReinitialize(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
     onUnsuspend(): void;
     // (undocumented)
     protected reportMeasurements(): void;
-    // (undocumented)
+    // @internal (undocumented)
     requireWriteableTarget(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected setupAndPromptForNextAction(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected showPrompt(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _totalMarker?: MeasureLabel;
-    // (undocumented)
+    // @internal (undocumented)
     protected _totalValue: number;
     // (undocumented)
     protected updateTotals(selectionSetResult?: MassPropertiesResponseProps): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     protected _useSelection: boolean;
 }
 
-// @public (undocumented)
+// @public
 export class MeasureLengthTool extends MeasureElementTool {
     // (undocumented)
     protected getOperation(): MassPropertiesOperation;
     // (undocumented)
     static iconSpec: string;
-    // (undocumented)
+    // @internal (undocumented)
     onRestartTool(): void;
     // (undocumented)
     static toolId: string;
 }
 
-// @public (undocumented)
+// @public
 export class MeasureLocationTool extends PrimitiveTool {
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _acceptedLocations: MeasureMarker[];
-    // (undocumented)
+    // @internal (undocumented)
     protected allowView(vp: Viewport): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     decorateSuspended(context: DecorateContext): void;
     // (undocumented)
     protected getMarkerToolTip(point: Point3d): Promise<HTMLElement>;
     // (undocumented)
     static iconSpec: string;
-    // (undocumented)
+    // @internal (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onRestartTool(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
     onUnsuspend(): void;
     // (undocumented)
     protected reportMeasurements(): void;
-    // (undocumented)
+    // @internal (undocumented)
     requireWriteableTarget(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected setupAndPromptForNextAction(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected showPrompt(): void;
     // (undocumented)
     static toolId: string;
 }
 
-// @public (undocumented)
+// @public
 export class MeasureVolumeTool extends MeasureElementTool {
     // (undocumented)
     protected getOperation(): MassPropertiesOperation;
     // (undocumented)
     static iconSpec: string;
-    // (undocumented)
+    // @internal (undocumented)
     onRestartTool(): void;
     // (undocumented)
     static toolId: string;
@@ -11094,15 +11094,15 @@ export class ViewClipByElementTool extends ViewClipTool {
     protected _alwaysUseRange: boolean;
     // (undocumented)
     protected doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange?: boolean): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
     doClipToSelectedElements(viewport: Viewport): Promise<boolean>;
     // (undocumented)
     static iconSpec: string;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected showPrompt(): void;
     // (undocumented)
     static toolId: string;
@@ -11111,22 +11111,22 @@ export class ViewClipByElementTool extends ViewClipTool {
 // @public
 export class ViewClipByPlaneTool extends ViewClipTool {
     constructor(clipEventHandler?: ViewClipEventHandler, _clearExistingPlanes?: boolean);
-    // (undocumented)
+    // @internal (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     protected _clearExistingPlanes: boolean;
     // (undocumented)
     static iconSpec: string;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // @internal (undocumented)
     get orientation(): EditManipulator.RotationType;
     set orientation(option: EditManipulator.RotationType);
-    // (undocumented)
+    // @internal (undocumented)
     protected setupAndPromptForNextAction(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected showPrompt(): void;
-    // (undocumented)
+    // @internal (undocumented)
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
@@ -11134,23 +11134,23 @@ export class ViewClipByPlaneTool extends ViewClipTool {
 
 // @public
 export class ViewClipByRangeTool extends ViewClipTool {
-    // (undocumented)
+    // @internal (undocumented)
     protected _corner?: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
     protected getClipRange(range: Range3d, transform: Transform, ev: BeButtonEvent): boolean;
     // (undocumented)
     static iconSpec: string;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
     protected setupAndPromptForNextAction(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected showPrompt(): void;
     // (undocumented)
     static toolId: string;
@@ -11158,40 +11158,40 @@ export class ViewClipByRangeTool extends ViewClipTool {
 
 // @public
 export class ViewClipByShapeTool extends ViewClipTool {
-    // (undocumented)
+    // @internal (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
     protected getClipPoints(ev: BeButtonEvent): Point3d[];
     // (undocumented)
     static iconSpec: string;
-    // (undocumented)
+    // @internal (undocumented)
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected _matrix?: Matrix3d;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
     // @internal (undocumented)
     get orientation(): EditManipulator.RotationType;
     set orientation(option: EditManipulator.RotationType);
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _points: Point3d[];
-    // (undocumented)
+    // @internal (undocumented)
     protected setupAndPromptForNextAction(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected showPrompt(): void;
-    // (undocumented)
+    // @internal (undocumented)
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
-    // (undocumented)
+    // @internal (undocumented)
     protected _zHigh?: number;
-    // (undocumented)
+    // @internal (undocumented)
     protected _zLow?: number;
 }
 
@@ -11201,13 +11201,13 @@ export class ViewClipClearTool extends ViewClipTool {
     protected doClipClear(viewport: Viewport): boolean;
     // (undocumented)
     static iconSpec: string;
-    // (undocumented)
+    // @internal (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected showPrompt(): void;
     // (undocumented)
     static toolId: string;
@@ -11349,19 +11349,12 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
 
 // @public
 export interface ViewClipEventHandler {
-    // (undocumented)
     clearOnDeselect(): boolean;
-    // (undocumented)
     onClearClip(viewport: Viewport): void;
-    // (undocumented)
     onModifyClip(viewport: Viewport): void;
-    // (undocumented)
     onNewClip(viewport: Viewport): void;
-    // (undocumented)
     onNewClipPlane(viewport: Viewport): void;
-    // (undocumented)
     onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean;
-    // (undocumented)
     selectOnCreate(): boolean;
 }
 
@@ -11423,7 +11416,7 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
 // @public
 export class ViewClipTool extends PrimitiveTool {
     constructor(_clipEventHandler?: ViewClipEventHandler | undefined);
-    // (undocumented)
+    // @internal (undocumented)
     static addClipPlanesLoops(builder: GraphicBuilder, loops: GeometryQuery[], outline: boolean): void;
     // (undocumented)
     static areClipsEqual(clipA: ClipVector, clipB: ClipVector): boolean;
@@ -11447,47 +11440,47 @@ export class ViewClipTool extends PrimitiveTool {
     static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void;
     // (undocumented)
     static enableClipVolume(viewport: Viewport): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected static enumAsOrientationMessage(str: string): string;
-    // (undocumented)
+    // @internal (undocumented)
     static getClipRayTransformed(origin: Point3d, direction: Vector3d, transform?: Transform): Ray3d;
-    // (undocumented)
+    // @internal (undocumented)
     static getClipShapeExtents(shape: ClipShape, viewRange: Range3d): Range1d;
-    // (undocumented)
+    // @internal (undocumented)
     static getClipShapePoints(shape: ClipShape, z: number): Point3d[];
-    // (undocumented)
+    // @internal (undocumented)
     protected static _getEnumAsOrientationDescription: () => PropertyDescription;
-    // (undocumented)
+    // @internal (undocumented)
     static getOffsetValueTransformed(offset: number, transform?: Transform): number;
     // @internal (undocumented)
     static getPlaneInwardNormal(orientation: EditManipulator.RotationType, viewport: Viewport): Vector3d | undefined;
     // (undocumented)
     static hasClip(viewport: Viewport): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     static isSingleClipPlane(clip: ClipVector): ClipPlane | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     static isSingleClipShape(clip: ClipVector): ClipShape | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     static isSingleConvexClipPlaneSet(clip: ClipVector): ConvexClipPlaneSet | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstall(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     onRestartTool(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onUnsuspend(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected static _orientationName: string;
-    // (undocumented)
+    // @internal (undocumented)
     requireWriteableTarget(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
     static setViewClip(viewport: Viewport, clip?: ClipVector): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected showPrompt(): void;
 }
 
