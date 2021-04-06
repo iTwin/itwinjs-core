@@ -1,6 +1,13 @@
 # Change Log - @bentley/webgl-compatibility
 
-This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Apr 2021 13:18:42 GMT and should not be manually modified.
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- Replace detectIsMobile with ProcessDetector.isMobileBrowser.
 
 ## 2.13.0
 Tue, 09 Mar 2021 20:28:13 GMT
@@ -27,6 +34,8 @@ _Version update only_
 
 ## 2.12.0
 Thu, 18 Feb 2021 22:10:13 GMT
+
+_Version update only_
 
 ## 2.11.2
 Thu, 18 Feb 2021 02:50:59 GMT
