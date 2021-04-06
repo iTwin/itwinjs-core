@@ -67,12 +67,12 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
   }
 
   /**
-   * Gets the schema JSON for the current iModel context and returns the schema as props.
+   * Gets the schema JSON for the current iModel context and returns the schema as a string which the client can parse to SchemaProps.
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
    * @param schemaName        The name of the schema that shall be returned.
-   * @returns                 The SchemaProps as JSON objects.
+   * @returns                 The SchemaProps as a string.
    */
-  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps> {
+  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<string> {
     ClientRequestContext.current.enter();
 
     if (schemaName === undefined || schemaName.length < 1) {
@@ -90,6 +90,6 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
       throw new Error("Schema does not exists");
     }
 
-    return JSON.parse(schemaResult.result);
+    return schemaResult.result;
   }
 }
