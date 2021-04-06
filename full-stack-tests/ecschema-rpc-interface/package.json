@@ -16,7 +16,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "cover": "",
     "docs": "",
-    "lint": "eslint -f visualstudio \"./**/*.ts\" 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "optest": "certa -r chrome --fgrep \"Operational: \"",
     "start:backend": "node ./lib/test/backend.js",
     "test": "",

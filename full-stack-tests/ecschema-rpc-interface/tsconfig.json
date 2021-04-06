@@ -8,11 +8,11 @@
     "skipLibCheck": true
   },
   "include": [
-    "./**/*.ts",
-    "./**/*.json",
+    "src/**/*.ts",
+    "src/**/*.json"
   ],
   "exclude": [
-    "lib",
+    "./lib",
     "node_modules"
   ]
 }
