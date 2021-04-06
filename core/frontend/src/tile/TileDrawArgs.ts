@@ -247,7 +247,8 @@ export class TileDrawArgs {
     this._appearanceProvider = params.appearanceProvider;
     this.hiddenLineSettings = params.hiddenLineSettings;
 
-    if (undefined !== clipVolume && !clipVolume.hasOutsideClipColor)
+    // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
+    if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
       this.clipVolume = clipVolume;
 
     this.graphics.setViewFlagOverrides(viewFlagOverrides);

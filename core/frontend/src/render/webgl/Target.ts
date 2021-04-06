@@ -186,10 +186,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   private disposeAnimationBranches(): void {
-    if (this._animationBranches)
-      for (const branch of this._animationBranches.values())
-        branch.dispose();
-
     this._animationBranches = undefined;
   }
 

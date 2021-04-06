@@ -1173,9 +1173,6 @@ export abstract class ViewState3d extends ViewState {
   }
 
   private updateModelClips(groups: ModelClipGroups): void {
-    for (const clip of this._modelClips)
-      clip?.dispose();
-
     this._modelClips.length = 0;
     for (const group of groups.groups) {
       const clip = group.clip ? IModelApp.renderSystem.createClipVolume(group.clip) : undefined;

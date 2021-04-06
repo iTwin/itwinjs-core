@@ -112,11 +112,6 @@ export class AnimationBranchState {
     this.clip = clip;
     this.omit = omit;
   }
-
-  public dispose(): void {
-    if (this.clip)
-      this.clip.dispose();
-  }
 }
 
 /** Mapping from node/branch IDs to animation branch state
