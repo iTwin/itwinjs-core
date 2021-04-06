@@ -152,7 +152,9 @@ function adjustPoint(ev: BeButtonEvent, segments?: Array<Segment>, locations?: A
   return ev.point;
 }
 
-/** @public */
+/** Report distance between 2 points using current quantity formatter for length.
+ * @public
+ */
 export class MeasureDistanceTool extends PrimitiveTool {
   public static toolId = "Measure.Distance";
   public static iconSpec = "icon-measure-distance";
@@ -631,7 +633,9 @@ export class MeasureDistanceTool extends PrimitiveTool {
   }
 }
 
-/** @public */
+/** Report spatial coordinate at a point as well as cartegraphic location for geolocated models using current quantity formatters.
+ * @public
+ */
 export class MeasureLocationTool extends PrimitiveTool {
   public static toolId = "Measure.Location";
   public static iconSpec = "icon-measure-location";
@@ -766,7 +770,9 @@ export class MeasureLocationTool extends PrimitiveTool {
   }
 }
 
-/** @public */
+/** Report area defined by points using current quantity formatter for area.
+ * @public
+ */
 export class MeasureAreaByPointsTool extends PrimitiveTool {
   public static toolId = "Measure.AreaByPoints";
   public static iconSpec = "icon-measure-2d";
@@ -1126,7 +1132,9 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   }
 }
 
-/** @public */
+/** Base class for mass properties tools.
+ * @public
+ */
 export abstract class MeasureElementTool extends PrimitiveTool {
   protected readonly _checkedIds = new Map<Id64String, MassPropertiesResponseProps>();
   protected readonly _acceptedIds: Id64Array = [];
@@ -1446,7 +1454,9 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   }
 }
 
-/** @public */
+/** Report accumulated lengths of selected elements using the current quantity formatter for length.
+ * @public
+ */
 export class MeasureLengthTool extends MeasureElementTool {
   public static toolId = "Measure.Length";
   public static iconSpec = "icon-measure";
@@ -1459,7 +1469,9 @@ export class MeasureLengthTool extends MeasureElementTool {
   }
 }
 
-/** @public */
+/** Report accumulated areas of selected elements using the current quantity formatter for area.
+ * @public
+ */
 export class MeasureAreaTool extends MeasureElementTool {
   public static toolId = "Measure.Area";
   public static iconSpec = "icon-measure-area";
@@ -1472,7 +1484,9 @@ export class MeasureAreaTool extends MeasureElementTool {
   }
 }
 
-/** @public */
+/** Report accumulated volumes of selected elements using the current quantity formatter for volume.
+ * @public
+ */
 export class MeasureVolumeTool extends MeasureElementTool {
   public static toolId = "Measure.Volume";
   public static iconSpec = "icon-measure-3d";
