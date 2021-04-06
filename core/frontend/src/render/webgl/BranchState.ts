@@ -94,7 +94,7 @@ export class BranchState {
     // ###TODO still must update clip colors even if no view clip.
     if (this._opts.clipVolume) {
       // ###TODO change this - these should be uniforms independent of any ClipVolume.
-      this._opts.clipVolume.setClipColors(style.insideColor?.toColorDef(), style.outsideColor?.toColorDef());
+      this._opts.clipVolume.setClipColors(style.outsideColor?.toColorDef(), style.insideColor?.toColorDef());
     }
   }
 
