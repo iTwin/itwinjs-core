@@ -7,9 +7,8 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@bentley/geometry-core";
-import { HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
-import { ViewClipSettings } from "../ViewClipSettings";
+import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@bentley/geometry-core";
+import { ClipStyle, HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { BranchStack } from "./BranchStack";
@@ -142,8 +141,8 @@ export class BranchUniforms {
     this._stack.changeRenderPlan(vf, is3d, hline);
   }
 
-  public updateViewClip(settings: ViewClipSettings | undefined): void {
-    this._stack.updateViewClip(settings);
+  public updateViewClip(clip: ClipVector | undefined, style: ClipStyle): void {
+    this._stack.updateViewClip(clip, style);
   }
 
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {

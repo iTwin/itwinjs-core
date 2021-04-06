@@ -50,8 +50,7 @@ function expectCurrentClipVolume(target: Target, volume: ClipVolume | undefined)
 //  Clip info for any number of branches to be pushed;
 //  Expected active ClipVolume when each branch is on the top of the stack.
 function testClipVolumes(target: Target, viewClip: ClipVolume | undefined, enableViewClip: boolean, branches: ClipInfo[], expectedClips: Array<ClipVolume | undefined>): void {
-  const activeClipSettings = viewClip ? { clipVector: viewClip.clipVector } : undefined;
-  const plan: RenderPlan = { ...createEmptyRenderPlan(), activeClipSettings };
+  const plan: RenderPlan = { ...createEmptyRenderPlan(), clip: viewClip?.clipVector };
   plan.viewFlags.clipVolume = enableViewClip;
   target.changeRenderPlan(plan);
 

@@ -7,9 +7,8 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
-import { ViewClipSettings } from "../ViewClipSettings";
+import { ClipVector, Transform } from "@bentley/geometry-core";
+import { ClipStyle, HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { Branch } from "./Graphic";
@@ -72,9 +71,9 @@ export class BranchStack {
     this.top.changeRenderPlan(vf, is3d, hline);
   }
 
-  public updateViewClip(settings: ViewClipSettings | undefined): void {
+  public updateViewClip(clip: ClipVector | undefined, style: ClipStyle): void {
     assert(1 === this.length);
-    this.top.setViewClip(settings);
+    this.top.setViewClip(clip, style);
   }
 
   public setSymbologyOverrides(ovrs: FeatureSymbology.Overrides) {

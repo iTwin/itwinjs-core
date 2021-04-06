@@ -7,11 +7,12 @@
  */
 
 import { dispose } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { ClipVector, Transform } from "@bentley/geometry-core";
+import {
+  BatchType, ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags,
+} from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { ViewClipSettings } from "../ViewClipSettings";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { ClipVolume } from "./ClipVolume";
 import { Branch } from "./Graphic";
@@ -77,20 +78,24 @@ export class BranchState {
     this.edgeSettings.init(hline);
   }
 
-  public setViewClip(settings: ViewClipSettings | undefined): void {
-    if (undefined === settings) {
+  public setViewClip(clip: ClipVector | undefined, style: ClipStyle): void {
+    if (undefined === clip) {
       this._opts.clipVolume = dispose(this._opts.clipVolume);
+      // ###TODO still must update clip colors.
       return;
     }
 
     // ###TODO We currently assume that the active view's ClipVector is never mutated in place, so if we are given the same object, we assume our RenderClipVolume remains valid.
-    if (!this._opts.clipVolume || this._opts.clipVolume.clipVector !== settings.clipVector) {
+    if (!this._opts.clipVolume || this._opts.clipVolume.clipVector !== clip) {
       dispose(this._opts.clipVolume);
-      this._opts.clipVolume = IModelApp.renderSystem.createClipVolume(settings.clipVector) as ClipVolume | undefined;
+      this._opts.clipVolume = IModelApp.renderSystem.createClipVolume(clip) as ClipVolume | undefined;
     }
 
-    if (this._opts.clipVolume)
-      this._opts.clipVolume.setClipColors(settings.outsideColor, settings.insideColor);
+    // ###TODO still must update clip colors even if no view clip.
+    if (this._opts.clipVolume) {
+      // ###TODO change this - these should be uniforms independent of any ClipVolume.
+      this._opts.clipVolume.setClipColors(style.insideColor?.toColorDef(), style.outsideColor?.toColorDef());
+    }
   }
 
   /** Create a BranchState from a Branch. Any properties not explicitly specified by the new Branch are inherited from the previous BranchState. */
