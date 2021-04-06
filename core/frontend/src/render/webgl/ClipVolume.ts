@@ -317,24 +317,27 @@ const scratch = {
  * The clip planes are in view coordinates, so the data must be updated whenever the view
  * matrix changes.
  */
-abstract class BlipPlanesBuffer {
+class BlipPlanesBuffer {
   /** Most recently-applied view matrix. */
   private readonly _viewMatrix = Transform.createZero();
   /** For writing to the ArrayBuffer. */
   private readonly _view: DataView;
+  /** For inspecting the data in the ArrayBuffer. */
+  private readonly _data: Uint8Array;
   /** The current write position. */
   private _curPos = 0;
   private readonly _clips: UnionOfConvexClipPlaneSets[];
+  private readonly _append: (value: number) => void;
   /** The number of rows of data. Each row corresponds to a clipping plane, or to mark a boundary between two ClipPlaneSets or UnionOfConvexClipPlaneSets.
    * The final row is *always* a union boundary, to enable multiple clips to be concatenated - this is how nested clip volumes work.
    */
   public readonly numRows: number;
 
-  public getData(viewMatrix: Transform): ArrayBuffer {
+  public getData(viewMatrix: Transform): Uint8Array {
     if (!viewMatrix.isAlmostEqual(this._viewMatrix))
       this.updateData(viewMatrix);
 
-    return this._view.buffer;
+    return this._data;
   }
 
   public get byteLength(): number {
@@ -342,33 +345,37 @@ abstract class BlipPlanesBuffer {
   }
 
   public static create(clips: UnionOfConvexClipPlaneSets[], numRows: number): BlipPlanesBuffer {
-    return System.instance.capabilities.supportsTextureFloat ? new FloatPlanesBuffer(clips, numRows) : new PackedPlanesBuffer(clips, numRows);
+    assert(numRows > 1); // at least one plane, plus a union boundary.
+    return new BlipPlanesBuffer(clips, numRows);
   }
 
-  protected constructor(clips: UnionOfConvexClipPlaneSets[], numRows: number, buffer: ArrayBuffer) {
-    assert(numRows > 1); // at least one plane, plus a union boundary.
-    this._view = new DataView(buffer);
+  private constructor(clips: UnionOfConvexClipPlaneSets[], numRows: number) {
+    this._data = new Uint8Array(numRows * 4 * 4);
+    this._view = new DataView(this._data.buffer);
     this._clips = clips;
     this.numRows = numRows;
+
+    if (System.instance.capabilities.supportsTextureFloat)
+      this._append = (value: number) => this.appendFloat(value);
+    else
+      this._append = (value: number) => this.appendEncodedFloat(value);
   }
 
-  protected abstract append(value: number): void;
-
-  protected appendFloat(value: number): void {
+  private appendFloat(value: number): void {
     this._view.setFloat32(this._curPos, value, true);
     this.advance(4);
   }
 
-  protected appendUint8(value: number): void {
+  private appendUint8(value: number): void {
     this._view.setUint8(this._curPos, value);
     this.advance(1);
   }
 
   private appendValues(a: number, b: number, c: number, d: number): void {
-    this.append(a);
-    this.append(b);
-    this.append(c);
-    this.append(d);
+    this._append(a);
+    this._append(b);
+    this._append(c);
+    this._append(d);
   }
 
   private appendPlane(normal: Vector3d, distance: number): void {
@@ -381,6 +388,27 @@ abstract class BlipPlanesBuffer {
 
   private appendUnionBoundary(): void {
     this.appendValues(2, 2, 2, 0);
+  }
+
+  private appendEncodedFloat(value: number) {
+    const sign = value < 0 ? 1 : 0;
+    value = Math.abs(value);
+    const exponent = Math.floor(Math.log10(value)) + 1;
+    value = value / Math.pow(10, exponent);
+
+    const bias = 38;
+    let temp = value * 256;
+    const b0 = Math.floor(temp);
+    temp = (temp - b0) * 256;
+    const b1 = Math.floor(temp);
+    temp = (temp - b1) * 256;
+    const b2 = Math.floor(temp);
+    const b3 = (exponent + bias) * 2 + sign;
+
+    this.appendUint8(b0);
+    this.appendUint8(b1);
+    this.appendUint8(b2);
+    this.appendUint8(b3);
   }
 
   private advance(numBytes: number): void {
@@ -428,47 +456,6 @@ abstract class BlipPlanesBuffer {
   }
 }
 
-/** Writes clip data for a 32-bit floating-point texture. */
-class FloatPlanesBuffer extends BlipPlanesBuffer {
-  public constructor(clips: UnionOfConvexClipPlaneSets[], numRows: number) {
-    const data = new Float32Array(numRows * 4);
-    super(clips, numRows, data.buffer);
-  }
-
-  protected append(value: number): void {
-    this.appendFloat(value);
-  }
-}
-
-/** Writes clip data packed into an RGBA texture by encoding floating point values to RGBA values. */
-class PackedPlanesBuffer extends BlipPlanesBuffer {
-  public constructor(clips: UnionOfConvexClipPlaneSets[], numRows: number) {
-    const data = new Uint8Array(numRows * 4 * 4);
-    super(clips, numRows, data);
-  }
-
-  protected append(value: number) {
-    const sign = value < 0 ? 1 : 0;
-    value = Math.abs(value);
-    const exponent = Math.floor(Math.log10(value)) + 1;
-    value = value / Math.pow(10, exponent);
-
-    const bias = 38;
-    let temp = value * 256;
-    const b0 = Math.floor(temp);
-    temp = (temp - b0) * 256;
-    const b1 = Math.floor(temp);
-    temp = (temp - b1) * 256;
-    const b2 = Math.floor(temp);
-    const b3 = (exponent + bias) * 2 + sign;
-
-    this.appendUint8(b0);
-    this.appendUint8(b1);
-    this.appendUint8(b2);
-    this.appendUint8(b3);
-  }
-}
-
 /** A ClipVector encoded for transmission to the GPU as a texture.
  * @internal
  */
@@ -483,7 +470,7 @@ export class BlipVolume extends RenderClipVolume {
     return this._buffer.byteLength;
   }
 
-  public getData(viewMatrix: Transform): ArrayBuffer {
+  public getData(viewMatrix: Transform): Uint8Array {
     return this._buffer.getData(viewMatrix);
   }
 
