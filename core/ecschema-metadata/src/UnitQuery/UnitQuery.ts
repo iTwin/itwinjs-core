@@ -5,13 +5,19 @@
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, Unit } from "../ecschema-metadata";
 import { SchemaItemType } from "../ECObjects";
-import { UNIT_DATA } from "./UnitsData";
+
+interface UnitExtraData {
+  readonly name: string;
+  readonly altDisplayLabels: string[];
+}
 
 export class UnitQuery {
   /**
-   * @param _context
+   *
+   * @param _context SchemaContext that contains the Units from which querying takes place
+   * @param _unitExtraData Additional data like alternate display label not found in Units Schema to match with Units; Default to empty array
    */
-  constructor(private readonly _context: SchemaContext) {}
+  constructor(private readonly _context: SchemaContext, private _unitExtraData: UnitExtraData[] = []) {}
 
   /**
    * Find unit in a schema that has unitName
@@ -86,14 +92,28 @@ export class UnitQuery {
   }
 
   /**
-   * Finds Unit by unitLabel, which could be display label in schema or alternate display label defined in UNIT_DATA.
+   * Find alternate display labels associated with unitName, if any
+   * @param unitName Full name of Unit
+   */
+  public getAlternateDisplayLabels(unitName: string): Array<string> {
+    let alternateLabels: Array<string> = [];
+    for (const entry of this._unitExtraData) {
+      if (entry.name.toLowerCase() === unitName.toLowerCase()) {
+        alternateLabels = entry.altDisplayLabels;
+      }
+    }
+    return alternateLabels;
+  }
+
+  /**
+   * Finds Unit by unitLabel, which could be display label in schema or alternate display label defined in this._unitExtraData.
    * If there are duplicates of the same display label in context or same alternate display labels, specify schemaName,
    * phenomenon, or unitSystem to get a specific unit.
    *
    * @param unitLabel Display label or alternate display label to query unit by
    * @param schemaName Ensure Unit with unitLabel belongs to Schema with schemaName
-   * @param phenomenon Ensure Unit with unitLabel belongs to phenomenon
-   * @param unitSystem Ensure Unit with unitLabel belongs to unitSystem
+   * @param phenomenon Full name of phenomenon that Unit belongs to
+   * @param unitSystem Full name of unitSystem that Unit belongs to
    */
   public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<Unit> {
     const findLabel = unitLabel.toLowerCase();
@@ -145,7 +165,7 @@ export class UnitQuery {
    * Finds Unit by altDisplayLabel and it belongs to schemaName, phenomenon, and unitSystem if defined
    */
   private async findUnitByAltDisplayLabel(altDisplayLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<Unit> {
-    for (const entry of UNIT_DATA) {
+    for (const entry of this._unitExtraData) {
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
         if (entry.altDisplayLabels.findIndex((ref) => ref.toLowerCase() === altDisplayLabel) !== -1) {
           // Found altDisplayLabel that matches label to find

@@ -8,6 +8,7 @@ import { expect } from "chai";
 import { SchemaContext, Unit } from "../../ecschema-metadata";
 import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { UnitQuery } from "../../UnitQuery/UnitQuery";
+import { UNIT_EXTRA_DATA } from "./UnitData";
 
 describe("Unit Querying tests", () => {
   const context = new SchemaContext();
@@ -29,7 +30,8 @@ describe("Unit Querying tests", () => {
     const usSchemaFile = path.join(__dirname, "..", "assets", "USUnits.ecschema.xml");
     const usSchemaXml = fs.readFileSync(usSchemaFile, "utf-8");
     deserializeXmlSync(usSchemaXml, context);
-    query = new UnitQuery(context);
+
+    query = new UnitQuery(context, UNIT_EXTRA_DATA);
   });
 
   // Tests for findUnitByName

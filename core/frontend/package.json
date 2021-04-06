@@ -37,6 +37,7 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.15.0-dev.15",
+    "@bentley/ecschema-metadata": "^2.15.0-dev.19",
     "@bentley/frontend-authorization-client": "^2.15.0-dev.15",
     "@bentley/geometry-core": "^2.15.0-dev.15",
     "@bentley/imodelhub-client": "^2.15.0-dev.15",

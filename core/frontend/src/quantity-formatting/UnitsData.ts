@@ -2,13 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-interface UnitDefinition {
-  readonly name: string;
-  readonly altDisplayLabels: string[];
-}
 
-// Additional data not found in Units Schema
-export const UNIT_DATA: UnitDefinition[] = [
+// Additional data like alternate display label not found in Units Schema
+export const UNIT_EXTRA_DATA = [
   // Angles ( base unit radian )
   { name: "Units.RAD", altDisplayLabels: ["radian"] },
   // 1 rad = 180.0/PI °
@@ -34,11 +30,11 @@ export const UNIT_DATA: UnitDefinition[] = [
   { name: "Units.MICROINCH", altDisplayLabels: [] },
   { name: "Units.MILLIFOOT", altDisplayLabels: [] },
   { name: "Units.IN", altDisplayLabels: ["IN", "\""] },
-  { name: "Units.FT", altDisplayLabels: ["F", "FT", "'"] }, // "'" conflicts with Units.ARC_MINUTE display label
+  { name: "Units.FT", altDisplayLabels: ["F", "FT", "'"] },
   { name: "Units.CHAIN", altDisplayLabels: ["CHAIN"] },
   { name: "Units.YRD", altDisplayLabels: ["YRD", "yrd"] },
   { name: "Units.MILE", altDisplayLabels: ["mile", "Miles", "Mile"] },
-  { name: "Units.US_SURVEY_FT", altDisplayLabels: ["ft", "SF", "USF", "ft (US Survey)"] }, // "ft" conflicts with Units.FT
+  { name: "Units.US_SURVEY_FT", altDisplayLabels: ["ft", "SF", "USF", "ft (US Survey)"] },
   { name: "Units.US_SURVEY_YRD", altDisplayLabels: ["USY", "yards (US Survey)"] },
   { name: "Units.US_SURVEY_IN", altDisplayLabels: ["USI", "inches (US Survey)"] },
   { name: "Units.US_SURVEY_MILE", altDisplayLabels: ["miles (US Survey)", "mile (US Survey)", "USM"] },
@@ -51,5 +47,5 @@ export const UNIT_DATA: UnitDefinition[] = [
   { name: "Units.CUB_FT", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_US_SURVEY_FT", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_YRD", altDisplayLabels: ["cy"] },
-  { name: "Units.CUB_M", altDisplayLabels: ["cm"] }, // Conflicts with Units.CM
+  { name: "Units.CUB_M", altDisplayLabels: ["cm"] },
 ];
