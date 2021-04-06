@@ -182,16 +182,6 @@ export interface AnalysisStyleProps {
     scalarThematicSettings?: ThematicGradientSettingsProps;
 }
 
-// @internal (undocumented)
-export enum AntiAliasPref {
-    // (undocumented)
-    Detect = 0,
-    // (undocumented)
-    Off = 2,
-    // (undocumented)
-    On = 1
-}
-
 // @public
 export interface AreaFillProps {
     backgroundFill?: BackgroundFill;
@@ -873,7 +863,7 @@ export interface ClassifierTileTreeId {
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
 }
 
-// @beta
+// @public
 export class ClipStyle {
     static create(produceCutGeometry: boolean, cutStyle: CutStyle): ClipStyle;
     readonly cutStyle: CutStyle;
@@ -885,7 +875,7 @@ export class ClipStyle {
     toJSON(): ClipStyleProps | undefined;
 }
 
-// @beta
+// @public
 export interface ClipStyleProps {
     cutStyle?: CutStyleProps;
     produceCutGeometry?: boolean;
@@ -1591,7 +1581,7 @@ export interface CustomAttribute {
     };
 }
 
-// @beta
+// @public
 export class CutStyle {
     readonly appearance?: FeatureAppearance;
     static create(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance): CutStyle;
@@ -1604,7 +1594,7 @@ export class CutStyle {
     readonly viewflags: Readonly<ViewFlagOverrides>;
 }
 
-// @beta
+// @public
 export interface CutStyleProps {
     appearance?: FeatureAppearanceProps;
     hiddenLine?: HiddenLine.SettingsProps;
@@ -1630,7 +1620,7 @@ export interface DefinitionElementProps extends ElementProps {
     isPrivate?: boolean;
 }
 
-// @alpha
+// @public
 export interface DeletedElementGeometryChange {
     readonly id: Id64String;
     readonly type: DbOpcode.Delete;
@@ -1672,13 +1662,12 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     });
     get ambientOcclusionSettings(): AmbientOcclusion.Settings;
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
-    // @beta
+    // @internal
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     clearSunTime(): void;
     // @internal (undocumented)
     get environment(): EnvironmentProps;
     set environment(environment: EnvironmentProps);
-    // @beta
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
     get hiddenLineSettings(): HiddenLine.Settings;
     set hiddenLineSettings(hline: HiddenLine.Settings);
@@ -1687,20 +1676,17 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     // (undocumented)
     get lights(): LightSettings;
     set lights(lights: LightSettings);
-    // @beta
     get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined;
-    // @beta
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
     setSunTime(timePoint: number, location: IModel | Cartographic): void;
     get solarShadows(): SolarShadowSettings;
     set solarShadows(solarShadows: SolarShadowSettings);
     get sunTime(): number | undefined;
-    // @beta
     get thematic(): ThematicDisplay;
     set thematic(thematic: ThematicDisplay);
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
-    // @beta
+    // @internal
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps;
 }
 
@@ -1710,7 +1696,6 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     environment?: EnvironmentProps;
     hline?: HiddenLine.SettingsProps;
     lights?: LightSettingsProps;
-    // @beta
     planProjections?: {
         [modelId: string]: PlanProjectionSettingsProps;
     };
@@ -1719,7 +1704,6 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
         sunDir?: XYZProps;
     };
     solarShadows?: SolarShadowSettingsProps;
-    // @beta
     thematic?: ThematicDisplayProps;
 }
 
@@ -1734,7 +1718,7 @@ export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps
     modelId?: Id64String;
 }
 
-// @beta
+// @public
 export interface DisplayStyleOverridesOptions {
     includeAll?: true;
     includeBackgroundMap?: true;
@@ -1767,7 +1751,6 @@ export class DisplayStyleSettings {
     // @alpha
     get analysisStyle(): AnalysisStyle | undefined;
     set analysisStyle(style: AnalysisStyle | undefined);
-    // @beta
     applyOverrides(overrides: DisplayStyleSettingsProps): void;
     // @internal (undocumented)
     protected _applyOverrides(overrides: DisplayStyleSettingsProps): void;
@@ -1776,7 +1759,6 @@ export class DisplayStyleSettings {
     get backgroundMap(): BackgroundMapSettings;
     set backgroundMap(map: BackgroundMapSettings);
     clearExcludedElements(): void;
-    // @beta
     get clipStyle(): ClipStyle;
     set clipStyle(style: ClipStyle);
     // @internal (undocumented)
@@ -1819,11 +1801,9 @@ export class DisplayStyleSettings {
     readonly onAnalysisFractionChanged: BeEvent<(newFraction: number) => void>;
     // @alpha
     readonly onAnalysisStyleChanged: BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>;
-    // @beta
     readonly onApplyOverrides: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
-    // @beta
     readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
     readonly onEnvironmentChanged: BeEvent<(newProps: Readonly<EnvironmentProps>) => void>;
     readonly onExcludedElementsChanged: BeEvent<() => void>;
@@ -1834,9 +1814,7 @@ export class DisplayStyleSettings {
     readonly onModelAppearanceOverrideChanged: BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>;
     readonly onMonochromeColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onMonochromeModeChanged: BeEvent<(newMode: MonochromeMode) => void>;
-    // @beta
     readonly onOverridesApplied: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
-    // @beta
     readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>;
     // @beta
     readonly onRealityModelPlanarClipMaskChanged: BeEvent<(idOrIndex: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => void>;
@@ -1844,7 +1822,6 @@ export class DisplayStyleSettings {
     readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
     readonly onSubCategoryOverridesChanged: BeEvent<() => void>;
-    // @beta
     readonly onThematicChanged: BeEvent<(newThematic: ThematicDisplay) => void>;
     // @beta
     readonly onTimePointChanged: BeEvent<(newTimePoint: number | undefined) => void>;
@@ -1866,7 +1843,6 @@ export class DisplayStyleSettings {
     set timePoint(timePoint: number | undefined);
     // @internal (undocumented)
     toJSON(): DisplayStyleSettingsProps;
-    // @beta
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
@@ -1880,7 +1856,6 @@ export interface DisplayStyleSettingsProps {
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
     backgroundMap?: BackgroundMapProps;
-    // @beta
     clipStyle?: ClipStyleProps;
     contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64Array | CompressedId64Set;
@@ -2219,10 +2194,10 @@ export namespace ElementGeometry {
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
 }
 
-// @alpha
+// @public (undocumented)
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
-// @alpha
+// @public
 export namespace ElementGeometryChange {
     export function iterable(modelChanges: ModelGeometryChangesProps): Iterable<ElementGeometryChange>;
     export function iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange>;
@@ -2293,7 +2268,7 @@ export interface ElementGeometryUpdate {
 // @beta
 export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps;
 
-// @alpha
+// @public
 export interface ElementIdsAndRangesProps {
     readonly ids: CompressedId64Set;
     readonly ranges: Range3dProps[];
@@ -2303,7 +2278,6 @@ export interface ElementIdsAndRangesProps {
 export interface ElementLoadProps {
     // (undocumented)
     code?: CodeProps;
-    // @internal
     displayStyle?: DisplayStyleLoadProps;
     // (undocumented)
     federationGuid?: GuidString;
@@ -2385,7 +2359,7 @@ export interface EnvironmentProps {
     sky?: SkyBoxProps;
 }
 
-// @alpha
+// @public
 export interface ExtantElementGeometryChange {
     readonly id: Id64String;
     readonly range: Range3d;
@@ -2515,12 +2489,12 @@ export interface FeatureAppearanceProps {
     weight?: number;
 }
 
-// @beta
+// @public
 export interface FeatureAppearanceProvider {
     getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export namespace FeatureAppearanceProvider {
     export function chain(first: FeatureAppearanceProvider, second: FeatureAppearanceProvider): FeatureAppearanceProvider;
     export function supplement(supplementAppearance: (appearance: FeatureAppearance) => FeatureAppearance): FeatureAppearanceProvider;
@@ -2574,7 +2548,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     get alwaysDrawn(): Id64.Uint32Set;
     // @internal
     protected readonly _alwaysDrawn: Id64.Uint32Set;
-    // @beta
     alwaysDrawnIgnoresSubCategory: boolean;
     // @internal
     readonly animationNodeOverrides: Map<number, FeatureAppearance>;
@@ -2587,7 +2560,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     protected _dimensions: boolean;
     // @internal
     protected readonly _elementOverrides: Id64.Uint32Map<FeatureAppearance>;
-    // @alpha
     getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
     // @internal
     protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): FeatureAppearance | undefined;
@@ -2608,7 +2580,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     // @internal (undocumented)
     protected isAlwaysDrawn(idLo: number, idHi: number): boolean;
     isAlwaysDrawnExclusive: boolean;
-    // @internal (undocumented)
     isClassVisible(geomClass: GeometryClass): boolean;
     isFeatureVisible(feature: Feature): boolean;
     // @internal (undocumented)
@@ -2652,7 +2623,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     protected readonly _visibleSubCategories: Id64.Uint32Set;
     }
 
-// @beta
+// @public
 export class FeatureTable extends IndexMap<Feature> {
     constructor(maxFeatures: number, modelId?: Id64String, type?: BatchType);
     // @internal (undocumented)
@@ -3104,7 +3075,7 @@ export type GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRep
 // @public
 export type GeometryStreamProps = GeometryStreamEntryProps[];
 
-// @beta
+// @public
 export interface GeometrySummaryOptions {
     geometryVerbosity?: GeometrySummaryVerbosity;
     includePartReferences?: "2d" | "3d";
@@ -3112,13 +3083,13 @@ export interface GeometrySummaryOptions {
     verboseSymbology?: boolean;
 }
 
-// @beta
+// @public
 export interface GeometrySummaryRequestProps {
     elementIds: Id64Array;
     options?: GeometrySummaryOptions;
 }
 
-// @beta
+// @public
 export enum GeometrySummaryVerbosity {
     Basic = 10,
     Detailed = 20,
@@ -4634,42 +4605,36 @@ export class MeshPolylineList extends Array<MeshPolyline> {
     constructor(...args: MeshPolyline[]);
 }
 
-// @alpha
+// @beta
 export class ModelClipGroup {
-    clip?: ClipVector;
+    readonly clip?: ClipVector;
     clone(): ModelClipGroup;
     static create(clip: ClipVector | undefined, models?: Id64Array): ModelClipGroup;
-    // @internal (undocumented)
     static fromJSON(props: ModelClipGroupProps): ModelClipGroup;
     includesModel(modelId: Id64String): boolean;
-    models?: Id64Array;
-    // @internal (undocumented)
+    readonly models?: Id64Array;
     toJSON(): ModelClipGroupProps;
 }
 
-// @internal (undocumented)
+// @beta
 export interface ModelClipGroupProps {
-    // (undocumented)
     clip?: ClipVectorProps;
-    // (undocumented)
     models?: Id64Array;
 }
 
-// @alpha
+// @beta
 export class ModelClipGroups {
     constructor(groups?: ModelClipGroup[]);
     clone(): ModelClipGroups;
     findGroup(modelId: Id64String): ModelClipGroup | undefined;
     findGroupIndex(modelId: Id64String): number;
-    // @internal (undocumented)
     static fromJSON(props: ModelClipGroupProps[] | undefined): ModelClipGroups;
     getClipForModel(modelId: Id64String): ClipVector | undefined;
     readonly groups: ModelClipGroup[];
-    // @internal (undocumented)
     toJSON(): ModelClipGroupProps[];
 }
 
-// @alpha
+// @public
 export interface ModelGeometryChanges {
     readonly elements: Iterable<ElementGeometryChange>;
     readonly geometryGuid: GuidString;
@@ -4677,7 +4642,7 @@ export interface ModelGeometryChanges {
     readonly range: Range3d;
 }
 
-// @alpha
+// @public
 export namespace ModelGeometryChanges {
     export function findByModelId(changes: Iterable<ModelGeometryChanges>, modelId: Id64String): ModelGeometryChanges | undefined;
     export function fromJSON(props: ModelGeometryChangesProps): ModelGeometryChanges;
@@ -4685,7 +4650,7 @@ export namespace ModelGeometryChanges {
     export function iterator(modelChanges: ModelGeometryChangesProps[]): Iterator<ModelGeometryChanges>;
 }
 
-// @alpha
+// @public
 export interface ModelGeometryChangesProps {
     readonly deleted?: CompressedId64Set;
     readonly guid: GuidString;
@@ -4867,18 +4832,13 @@ export const NpcCenter: Point3d;
 // @public
 export const NpcCorners: Point3d[];
 
-// @internal (undocumented)
+// @public
 export class OctEncodedNormal {
     constructor(val: number);
-    // (undocumented)
-    decode(): Vector3d | undefined;
-    // (undocumented)
+    decode(): Vector3d;
     static decodeValue(val: number, result?: Vector3d): Vector3d;
-    // (undocumented)
     static encode(vec: XYAndZ): number;
-    // (undocumented)
     static fromVector(val: XYAndZ): OctEncodedNormal;
-    // (undocumented)
     readonly value: number;
 }
 
@@ -5273,8 +5233,9 @@ export class PlanarClipMaskSettings {
     readonly transparency?: number;
 }
 
-// @beta
+// @public
 export class PlanProjectionSettings {
+    // @internal
     constructor(props: PlanProjectionSettingsProps);
     clone(changedProps?: PlanProjectionSettingsProps): PlanProjectionSettings;
     readonly elevation?: number;
@@ -5287,7 +5248,7 @@ export class PlanProjectionSettings {
     readonly transparency?: number;
 }
 
-// @beta
+// @public
 export interface PlanProjectionSettingsProps {
     elevation?: number;
     enforceDisplayPriority?: boolean;
@@ -5520,70 +5481,58 @@ export interface PropertyMetaDataProps {
     structName?: string;
 }
 
-// @internal
+// @public
 export class QParams2d {
-    // (undocumented)
     clone(out?: QParams2d): QParams2d;
-    // (undocumented)
     copyFrom(src: QParams2d): void;
     static fromNormalizedRange(rangeScale?: number): QParams2d;
-    static fromOriginAndScale(ox: number, oy: number, sx: number, sy: number): QParams2d;
+    static fromOriginAndScale(originX: number, originY: number, scaleX: number, scaleY: number): QParams2d;
     static fromRange(range: Range2d, out?: QParams2d, rangeScale?: number): QParams2d;
     static fromZeroToOne(rangeScale?: number): QParams2d;
     isQuantizable(point: Point2d): boolean;
-    // (undocumented)
     readonly origin: Point2d;
-    // (undocumented)
+    // @internal (undocumented)
     get rangeDiagonal(): Vector2d;
-    // (undocumented)
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
     unquantize(x: number, y: number, out?: Point2d): Point2d;
 }
 
-// @internal
+// @public
 export class QParams3d {
-    // (undocumented)
     clone(out?: QParams3d): QParams3d;
-    // (undocumented)
     copyFrom(src: QParams3d): void;
     static fromNormalizedRange(rangeScale?: number): QParams3d;
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
     static fromRange(range: Range3d, out?: QParams3d, rangeScale?: number): QParams3d;
     static fromZeroToOne(rangeScale?: number): QParams3d;
     isQuantizable(point: Point3d): boolean;
-    // (undocumented)
     readonly origin: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     get rangeDiagonal(): Vector3d;
-    // (undocumented)
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
     setFromRange(range: Range3d, rangeScale?: number): void;
     unquantize(x: number, y: number, z: number, out?: Point3d): Point3d;
 }
 
-// @internal
+// @public
 export class QPoint2d {
     constructor();
-    // (undocumented)
     clone(out?: QPoint2d): QPoint2d;
-    // (undocumented)
     copyFrom(src: QPoint2d): void;
     static create(pos: Point2d, params: QParams2d): QPoint2d;
     static fromScalars(x: number, y: number): QPoint2d;
     init(pos: Point2d, params: QParams2d): void;
     setFromScalars(x: number, y: number): void;
     unquantize(params: QParams2d, out?: Point2d): Point2d;
-    // (undocumented)
     get x(): number;
     set x(x: number);
-    // (undocumented)
     get y(): number;
     set y(y: number);
     }
 
-// @internal
+// @public
 export class QPoint2dList {
     constructor(params: QParams2d);
     add(pt: Point2d): void;
@@ -5591,9 +5540,7 @@ export class QPoint2dList {
     static fromPoints(points: Point2d[], out?: QPoint2dList): QPoint2dList;
     fromTypedArray(range: Range2d, array: Uint16Array): void;
     get length(): number;
-    // (undocumented)
-    get list(): QPoint2d[];
-    // (undocumented)
+    get list(): ReadonlyArray<QPoint2d>;
     readonly params: QParams2d;
     push(qpt: QPoint2d): void;
     requantize(params: QParams2d): void;
@@ -5602,48 +5549,37 @@ export class QPoint2dList {
     unquantize(index: number, out?: Point2d): Point2d;
 }
 
-// @internal
+// @public
 export class QPoint3d {
-    // (undocumented)
+    constructor();
     clone(out?: QPoint3d): QPoint3d;
-    // (undocumented)
     compare(rhs: QPoint3d): number;
-    // (undocumented)
     copyFrom(src: QPoint3d): void;
     static create(pos: Point3d, params: QParams3d): QPoint3d;
-    // (undocumented)
     equals(other: QPoint3d): boolean;
     static fromScalars(x: number, y: number, z: number, out?: QPoint3d): QPoint3d;
     init(pos: Point3d, params: QParams3d): void;
     setFromScalars(x: number, y: number, z: number): void;
     unquantize(params: QParams3d, out?: Point3d): Point3d;
-    // (undocumented)
     get x(): number;
     set x(x: number);
-    // (undocumented)
     get y(): number;
     set y(y: number);
-    // (undocumented)
     get z(): number;
     set z(z: number);
     }
 
-// @internal
+// @public
 export class QPoint3dList {
-    // (undocumented)
     [Symbol.iterator](): IterableIterator<QPoint3d>;
-    constructor(paramsIn?: QParams3d);
+    constructor(params?: QParams3d);
     add(pt: Point3d): void;
     clear(): void;
-    // (undocumented)
     static createFrom(points: Point3d[], params: QParams3d): QPoint3dList;
     static fromPoints(points: Point3d[], out?: QPoint3dList): QPoint3dList;
-    // (undocumented)
     fromTypedArray(range: Range3d, array: Uint16Array): void;
     get length(): number;
-    // (undocumented)
-    get list(): QPoint3d[];
-    // (undocumented)
+    get list(): ReadonlyArray<QPoint3d>;
     readonly params: QParams3d;
     push(qpt: QPoint3d): void;
     requantize(params: QParams3d): void;
@@ -5652,23 +5588,20 @@ export class QPoint3dList {
     unquantize(index: number, out?: Point3d): Point3d;
 }
 
-// @internal
+// @public
 export namespace Quantization {
     const // (undocumented)
     rangeScale16 = 65535;
     const // (undocumented)
     rangeScale8 = 255;
-    // (undocumented)
     export function computeScale(extent: number, rangeScale?: number): number;
-    // (undocumented)
+    // @internal (undocumented)
     export function isInRange(qpos: number, rangeScale?: number): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     export function isQuantizable(pos: number, origin: number, scale: number, rangeScale?: number): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     export function isQuantized(qpos: number): boolean;
-    // (undocumented)
     export function quantize(pos: number, origin: number, scale: number, rangeScale?: number): number;
-    // (undocumented)
     export function unquantize(qpos: number, origin: number, scale: number): number;
 }
 
@@ -6684,12 +6617,12 @@ export enum SchemaState {
     UpToDate = 0
 }
 
-// @beta
+// @public
 export interface SectionDrawingLocationProps extends GeometricElement3dProps {
     sectionView?: RelatedElementProps;
 }
 
-// @beta
+// @public
 export interface SectionDrawingProps extends ElementProps {
     // (undocumented)
     jsonProperties?: {
@@ -6702,24 +6635,11 @@ export interface SectionDrawingProps extends ElementProps {
     spatialView?: RelatedElementProps;
 }
 
-// @beta
+// @public
 export interface SectionDrawingViewProps {
     displaySpatialView: boolean;
     drawingToSpatialTransform?: TransformProps;
     spatialView: Id64String;
-}
-
-// @alpha @deprecated
-export interface SectionLocationProps extends GeometricElement3dProps {
-    // (undocumented)
-    jsonProperties?: {
-        spatialViewId?: Id64String;
-        drawingViewId?: Id64String;
-        drawingToSpatialTransform?: TransformProps;
-        sheetToSpatialTransform?: TransformProps;
-    };
-    sectionType?: SectionType;
-    viewAttachment?: RelatedElementProps;
 }
 
 // @public
@@ -6782,7 +6702,7 @@ export interface SheetBorderTemplateProps extends ElementProps {
     width?: number;
 }
 
-// @beta
+// @public
 export interface SheetProps extends ElementProps {
     // (undocumented)
     attachments?: Id64String[];
@@ -7847,7 +7767,7 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
     camera: CameraProps;
     cameraOn: boolean;
     extents: XYZProps;
-    // @internal (undocumented)
+    // (undocumented)
     jsonProperties?: {
         viewDetails?: ViewDetails3dProps;
     };
@@ -7862,13 +7782,13 @@ export interface ViewDefinitionProps extends DefinitionElementProps {
     description?: string;
     // (undocumented)
     displayStyleId: Id64String;
-    // @internal (undocumented)
+    // (undocumented)
     jsonProperties?: {
         viewDetails?: ViewDetailsProps;
     };
 }
 
-// @beta
+// @public
 export class ViewDetails {
     // @internal
     constructor(jsonProperties: {
@@ -7890,12 +7810,11 @@ export class ViewDetails {
     set gridsPerRef(gridsPerRef: number);
     // @internal (undocumented)
     protected readonly _json: ViewDetailsProps;
-    // @internal
     static maxSkew: number;
     readonly onClipVectorChanged: BeEvent<(newClip: ClipVector | undefined) => void>;
 }
 
-// @beta
+// @public
 export class ViewDetails3d extends ViewDetails {
     // @internal
     constructor(jsonProperties: {
@@ -7905,20 +7824,21 @@ export class ViewDetails3d extends ViewDetails {
     set allow3dManipulations(allow: boolean);
     // @internal
     getJSON(): Readonly<ViewDetails3dProps>;
-    // @alpha
+    // @beta
     get modelClipGroups(): ModelClipGroups;
     set modelClipGroups(groups: ModelClipGroups);
-    // @alpha
+    // @beta
     readonly onModelClipGroupsChanged: BeEvent<(newGroups: ModelClipGroups) => void>;
 }
 
-// @internal (undocumented)
+// @public
 export interface ViewDetails3dProps extends ViewDetailsProps {
     disable3dManipulations?: boolean;
+    // @beta
     modelClipGroups?: ModelClipGroupProps[];
 }
 
-// @internal (undocumented)
+// @public
 export interface ViewDetailsProps {
     acs?: Id64String;
     aspectSkew?: number;
@@ -8206,11 +8126,8 @@ export interface ViewStateProps {
     modelExtents?: Range3dProps;
     // (undocumented)
     modelSelectorProps?: ModelSelectorProps;
-    // @beta
     sectionDrawing?: SectionDrawingViewProps;
-    // @beta (undocumented)
     sheetAttachments?: Id64Array;
-    // @beta (undocumented)
     sheetProps?: SheetProps;
     // (undocumented)
     viewDefinitionProps: ViewDefinitionProps;

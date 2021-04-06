@@ -167,7 +167,6 @@ import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
 import { SchemaState } from '@bentley/imodeljs-common';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
-import { SectionLocationProps } from '@bentley/imodeljs-common';
 import { SectionType } from '@bentley/imodeljs-common';
 import { SessionProps } from '@bentley/bentleyjs-core';
 import { SheetBorderTemplateProps } from '@bentley/imodeljs-common';
@@ -3826,17 +3825,6 @@ export class SectionDrawingModel extends DrawingModel {
     static get className(): string;
 }
 
-// @alpha @deprecated
-export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
-    // @internal
-    constructor(props: SectionLocationProps, iModel: IModelDb);
-    // @internal (undocumented)
-    static get className(): string;
-    sectionType: SectionType;
-    // @internal (undocumented)
-    toJSON(): SectionLocationProps;
-}
-
 // @internal
 export function setMaxEntitiesPerEvent(max: number): number;
 
@@ -4494,7 +4482,6 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @beta
     abstract get details(): ViewDetails;
     displayStyleId: Id64String;
     getAuxiliaryCoordinateSystemId(): Id64String;
@@ -4522,7 +4509,6 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     delta: Point2d;
-    // @beta
     get details(): ViewDetails;
     loadDisplayStyle2d(): DisplayStyle2d;
     origin: Point2d;
@@ -4539,7 +4525,6 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     cameraOn: boolean;
     // @internal (undocumented)
     static get className(): string;
-    // @beta
     get details(): ViewDetails3d;
     extents: Vector3d;
     loadDisplayStyle3d(): DisplayStyle3d;

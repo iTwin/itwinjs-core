@@ -23,11 +23,10 @@ import { BriefcaseTxns } from "./BriefcaseTxns";
 export class BriefcaseConnection extends IModelConnection {
   private _editingScope?: GraphicalEditingScope;
   protected _isClosed?: boolean;
-  /** Provides notifications about changes to the iModel.
-   * @beta
-   */
+  /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
 
+  /** @internal */
   public isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
   /** The Guid that identifies the *context* that owns this iModel. */
@@ -87,19 +86,21 @@ export class BriefcaseConnection extends IModelConnection {
       throw new IModelError(IModelStatus.WrongIModel, "iModel has no timeline");
   }
 
-  /** @beta */
+  /** Query if there are any pending Txns in this briefcase that are waiting to be pushed. */
   public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
     return this.txns.hasPendingTxns();
   }
 
-  /** @beta */
+  /** Commit pending changes to this briefcase.
+   * @param description Optional description of the changes.
+   */
   public async saveChanges(description?: string): Promise<void> {
     await IpcApp.callIpcHost("saveChanges", this.key, description);
   }
 
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
-   * @param version The version to pull changes to. If` undefined`, pull all changes.
-   * @beta */
+   * @param version The version to pull changes to. If `undefined`, pull all changes.
+   */
   public async pullAndMergeChanges(version?: IModelVersionProps): Promise<void> {
     this.requireTimeline();
     return IpcApp.callIpcHost("pullAndMergeChanges", this.key, version);
@@ -108,7 +109,7 @@ export class BriefcaseConnection extends IModelConnection {
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.
    * @param description The description for the changeset
    * @returns the changesetId of the pushed changes
-   * @beta */
+   */
   public async pushChanges(description: string): Promise<string> {
     this.requireTimeline();
     return IpcApp.callIpcHost("pushChanges", this.key, description);
@@ -116,7 +117,6 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** The current graphical editing scope, if one is in progress.
    * @see [[enterEditingScope]] to begin graphical editing.
-   * @beta
    */
   public get editingScope(): GraphicalEditingScope | undefined {
     return this._editingScope;
@@ -125,7 +125,6 @@ export class BriefcaseConnection extends IModelConnection {
   /** Return whether graphical editing is supported for this briefcase. It is not supported if the briefcase is read-only, or the briefcase contains a version of
    * the BisCore ECSchema older than v0.1.11.
    * @see [[enterEditingScope]] to enable graphical editing.
-   * @beta
    */
   public async supportsGraphicalEditing(): Promise<boolean> {
     return IpcApp.callIpcHost("isGraphicalEditingSupported", this.key);
@@ -136,7 +135,6 @@ export class BriefcaseConnection extends IModelConnection {
    * @see [[GraphicalEditingScope.exit]] to exit the scope.
    * @see [[supportsGraphicalEditing]] to determine whether this method should be expected to succeed.
    * @see [[editingScope]] to obtain the current editing scope, if one is in progress.
-   * @beta
    */
   public async enterEditingScope(): Promise<GraphicalEditingScope> {
     if (this.editingScope)

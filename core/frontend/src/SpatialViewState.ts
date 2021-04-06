@@ -24,7 +24,7 @@ import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
  * @public
  */
 export class SpatialViewState extends ViewState3d {
-  /** @internal */
+  /** @internal override */
   public static get className() { return "SpatialViewDefinition"; }
 
   private readonly _treeRefs: SpatialTileTreeReferences;
@@ -32,7 +32,7 @@ export class SpatialViewState extends ViewState3d {
   private readonly _unregisterModelSelectorListeners: VoidFunction[] = [];
 
   /** An event raised when the set of models viewed by this view changes, *only* if the view is attached to a [[Viewport]].
-   * @beta
+   * @public
    */
   public readonly onViewedModelsChanged = new BeEvent<() => void>();
 
@@ -62,7 +62,7 @@ export class SpatialViewState extends ViewState3d {
    * @param origin The origin for the new SpatialViewState
    * @param extents The extents for the new SpatialViewState
    * @param rotation The rotation of the new SpatialViewState. If undefined, use top view.
-   * @beta
+   * @public
    */
   public static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState {
     const blank = {} as any;
@@ -99,7 +99,7 @@ export class SpatialViewState extends ViewState3d {
     this._treeRefs = SpatialTileTreeReferences.create(this);
   }
 
-  /** @internal */
+  /** @internal override */
   public isSpatialView(): this is SpatialViewState { return true; }
 
   public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
@@ -167,26 +167,26 @@ export class SpatialViewState extends ViewState3d {
     }
   }
 
-  /** @internal */
+  /** @internal override */
   public forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
     for (const ref of this._treeRefs)
       func(ref);
   }
 
-  /** @internal */
+  /** @internal override */
   public createScene(context: SceneContext): void {
     super.createScene(context);
     context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
     context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
   }
 
-  /** @internal */
+  /** @internal override */
   public attachToViewport(): void {
     super.attachToViewport();
     this.registerModelSelectorListeners();
   }
 
-  /** @internal */
+  /** @internal override */
   public detachFromViewport(): void {
     super.detachFromViewport();
     this.unregisterModelSelectorListeners();
@@ -213,7 +213,7 @@ export class SpatialViewState extends ViewState3d {
  * @public
  */
 export class OrthographicViewState extends SpatialViewState {
-  /** @internal */
+  /** @internal override */
   public static get className() { return "OrthographicViewDefinition"; }
 
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
