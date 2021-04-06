@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ChangeFlags, EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, Viewport,
+  EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, MutableChangeFlags, SnapshotConnection, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { testOnScreenViewport } from "../TestViewport";
 
@@ -32,7 +32,7 @@ describe("FeatureOverrideProvider", () => {
   }
 
   function checkDirty(vp: Viewport, expectDirty: boolean): void {
-    const flags = (vp as any)._changeFlags as ChangeFlags;
+    const flags = (vp as any)._changeFlags as MutableChangeFlags;
     expect(flags.featureOverrideProvider).to.equal(expectDirty);
     flags.clear();
   }
