@@ -1846,7 +1846,7 @@ export class CheckpointConnection extends IModelConnection {
     static openRemote(contextId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
     }
 
-// @alpha
+// @public
 export enum ClipEventType {
     // (undocumented)
     Clear = 3,
@@ -2225,14 +2225,14 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     static toolId: string;
 }
 
-// @alpha
+// @public
 export interface DepthPointOptions {
     excludeDecorations?: boolean;
     excludeExternalIModels?: boolean;
     excludeNonLocatable?: boolean;
 }
 
-// @alpha
+// @public
 export enum DepthPointSource {
     ACS = 5,
     BackgroundMap = 2,
@@ -2475,7 +2475,7 @@ export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
     progressInterval?: number;
 };
 
-// @alpha
+// @internal
 export interface DrawClipOptions {
     color?: ColorDef;
     fill?: ColorDef;
@@ -2588,7 +2588,7 @@ export namespace EditingFunctions {
         }
 }
 
-// @alpha
+// @internal
 export namespace EditManipulator {
     // (undocumented)
     export enum EventType {
@@ -2668,7 +2668,6 @@ export namespace EditManipulator {
     }
     // (undocumented)
     export class HandleUtils {
-        // @internal
         static adjustForBackgroundColor(color: ColorDef, vp: Viewport): ColorDef;
         static getArrowShape(baseStart?: number, baseWidth?: number, tipStart?: number, tipEnd?: number, tipWidth?: number, flangeStart?: number, flangeWidth?: number): Point3d[];
         static getArrowTransform(vp: Viewport, base: Point3d, direction: Vector3d, sizeInches: number): Transform | undefined;
@@ -4456,10 +4455,8 @@ export abstract class IModelConnection extends IModel {
     protected _gcsDisabled: boolean;
     // @internal
     readonly geoServices: GeoServices;
-    // @beta
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string>;
-    // @beta
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // @alpha
     getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
@@ -4492,6 +4489,7 @@ export abstract class IModelConnection extends IModel {
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
     queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
+    // @internal
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     // @beta
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
@@ -5063,7 +5061,7 @@ export interface LRUTileListNode {
     viewportIds?: ViewportIdSet | undefined;
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export enum ManipulatorToolEvent {
     // (undocumented)
     Start = 1,
@@ -5824,7 +5822,7 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 // @public (undocumented)
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
-// @alpha (undocumented)
+// @public (undocumented)
 export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     protected _acceptedMeasurement?: MeasureMarker;
@@ -5878,7 +5876,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     onUndoPreviousStep(): Promise<boolean>;
     // (undocumented)
     onUnsuspend(): void;
-    // (undocumented)
+    // @internal (undocumented)
     get orientation(): EditManipulator.RotationType;
     set orientation(option: EditManipulator.RotationType);
     // (undocumented)
@@ -5903,7 +5901,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     protected updateTotals(): Promise<void>;
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export class MeasureAreaTool extends MeasureElementTool {
     // (undocumented)
     protected getOperation(): MassPropertiesOperation;
@@ -5915,7 +5913,7 @@ export class MeasureAreaTool extends MeasureElementTool {
     static toolId: string;
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedSegments: Segment[];
@@ -5991,7 +5989,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     protected updateTotals(): Promise<void>;
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export abstract class MeasureElementTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedIds: Id64Array;
@@ -6047,7 +6045,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
     protected _useSelection: boolean;
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export class MeasureLengthTool extends MeasureElementTool {
     // (undocumented)
     protected getOperation(): MassPropertiesOperation;
@@ -6059,7 +6057,7 @@ export class MeasureLengthTool extends MeasureElementTool {
     static toolId: string;
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export class MeasureLocationTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedLocations: MeasureMarker[];
@@ -6101,7 +6099,7 @@ export class MeasureLocationTool extends PrimitiveTool {
     static toolId: string;
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export class MeasureVolumeTool extends MeasureElementTool {
     // (undocumented)
     protected getOperation(): MassPropertiesOperation;
@@ -8506,7 +8504,6 @@ export class ScreenViewport extends Viewport {
     readonly parentDiv: HTMLDivElement;
     // @internal (undocumented)
     pickCanvasDecoration(pt: XAndY): import("./imodeljs-frontend").CanvasDecoration | undefined;
-    // @alpha
     pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): {
         plane: Plane3dByOriginAndUnitNormal;
         source: DepthPointSource;
@@ -8822,7 +8819,7 @@ export class SetupCameraTool extends PrimitiveTool {
     viewport?: ScreenViewport;
 }
 
-// @beta
+// @public
 export class SetupWalkCameraTool extends PrimitiveTool {
     // (undocumented)
     decorate(context: DecorateContext): void;
@@ -8856,7 +8853,7 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     onRestartTool(): void;
     // (undocumented)
     onUnsuspend(): void;
-    // (undocumented)
+    // @beta (undocumented)
     protected provideToolAssistance(): void;
     // (undocumented)
     requireWriteableTarget(): boolean;
@@ -10627,7 +10624,6 @@ export class ToolAdmin {
     get idleTool(): IdleTool;
     // (undocumented)
     get isLocateCircleOn(): boolean;
-    // @alpha
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
     // (undocumented)
     markupView?: ScreenViewport;
@@ -11091,7 +11087,7 @@ export interface ViewChangeOptions extends ViewAnimationOptions {
     onExtentsError?: (status: ViewStatus) => ViewStatus;
 }
 
-// @alpha
+// @public
 export class ViewClipByElementTool extends ViewClipTool {
     constructor(clipEventHandler?: ViewClipEventHandler, _alwaysUseRange?: boolean);
     // (undocumented)
@@ -11112,7 +11108,7 @@ export class ViewClipByElementTool extends ViewClipTool {
     static toolId: string;
 }
 
-// @alpha
+// @public
 export class ViewClipByPlaneTool extends ViewClipTool {
     constructor(clipEventHandler?: ViewClipEventHandler, _clearExistingPlanes?: boolean);
     // (undocumented)
@@ -11123,7 +11119,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
     static iconSpec: string;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     get orientation(): EditManipulator.RotationType;
     set orientation(option: EditManipulator.RotationType);
     // (undocumented)
@@ -11136,7 +11132,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
     static toolId: string;
 }
 
-// @alpha
+// @public
 export class ViewClipByRangeTool extends ViewClipTool {
     // (undocumented)
     protected _corner?: Point3d;
@@ -11160,7 +11156,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
     static toolId: string;
 }
 
-// @alpha
+// @public
 export class ViewClipByShapeTool extends ViewClipTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
@@ -11180,7 +11176,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
     get orientation(): EditManipulator.RotationType;
     set orientation(option: EditManipulator.RotationType);
     // (undocumented)
@@ -11199,7 +11195,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
     protected _zLow?: number;
 }
 
-// @alpha
+// @public
 export class ViewClipClearTool extends ViewClipTool {
     // (undocumented)
     protected doClipClear(viewport: Viewport): boolean;
@@ -11217,7 +11213,7 @@ export class ViewClipClearTool extends ViewClipTool {
     static toolId: string;
 }
 
-// @alpha
+// @internal
 export class ViewClipControlArrow {
     constructor(origin: Point3d, direction: Vector3d, sizeInches: number, fill?: ColorDef, outline?: ColorDef, name?: string);
     // (undocumented)
@@ -11236,7 +11232,7 @@ export class ViewClipControlArrow {
     sizeInches: number;
 }
 
-// @alpha
+// @internal
 export class ViewClipDecoration extends EditManipulator.HandleProvider {
     constructor(_clipView: ScreenViewport, _clipEventHandler?: ViewClipEventHandler | undefined);
     // (undocumented)
@@ -11317,7 +11313,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     protected updateDecorationListener(_add: boolean): void;
 }
 
-// @alpha
+// @public
 export class ViewClipDecorationProvider implements ViewClipEventHandler {
     // (undocumented)
     static clear(): void;
@@ -11351,7 +11347,7 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
     toggleDecoration(vp: ScreenViewport): void;
 }
 
-// @alpha
+// @public
 export interface ViewClipEventHandler {
     // (undocumented)
     clearOnDeselect(): boolean;
@@ -11369,7 +11365,7 @@ export interface ViewClipEventHandler {
     selectOnCreate(): boolean;
 }
 
-// @alpha
+// @internal
 export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[]);
     // (undocumented)
@@ -11408,7 +11404,7 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     protected _viewRange: Range3d;
 }
 
-// @alpha
+// @internal
 export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
     // (undocumented)
     protected drawViewClip(context: DecorateContext): void;
@@ -11416,7 +11412,7 @@ export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
     protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean;
 }
 
-// @alpha
+// @internal
 export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     // (undocumented)
     protected drawViewClip(context: DecorateContext): void;
@@ -11424,7 +11420,7 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean;
 }
 
-// @alpha
+// @public
 export class ViewClipTool extends PrimitiveTool {
     constructor(_clipEventHandler?: ViewClipEventHandler | undefined);
     // (undocumented)
@@ -11443,7 +11439,7 @@ export class ViewClipTool extends PrimitiveTool {
     static doClipToRange(viewport: Viewport, range: Range3d, transform?: Transform): boolean;
     // (undocumented)
     static doClipToShape(viewport: Viewport, xyPoints: Point3d[], transform?: Transform, zLow?: number, zHigh?: number): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     static drawClip(context: DecorateContext, clip: ClipVector, viewExtents?: Range3d, options?: DrawClipOptions): void;
     // (undocumented)
     static drawClipPlanesLoops(context: DecorateContext, loops: GeometryQuery[], color: ColorDef, weight: number, dashed?: boolean, fill?: ColorDef, id?: string): void;
@@ -11463,7 +11459,7 @@ export class ViewClipTool extends PrimitiveTool {
     protected static _getEnumAsOrientationDescription: () => PropertyDescription;
     // (undocumented)
     static getOffsetValueTransformed(offset: number, transform?: Transform): number;
-    // (undocumented)
+    // @internal (undocumented)
     static getPlaneInwardNormal(orientation: EditManipulator.RotationType, viewport: Viewport): Vector3d | undefined;
     // (undocumented)
     static hasClip(viewport: Viewport): boolean;

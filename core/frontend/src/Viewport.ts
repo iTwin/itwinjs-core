@@ -84,7 +84,7 @@ export interface ViewportDecorator {
   decorate(context: DecorateContext): void;
 }
 
-/** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
+/** @public Source of depth point returned by [[Viewport.pickDepthPoint]]. */
 export enum DepthPointSource {
   /** Depth point from geometry within specified radius of pick point */
   Geometry, // eslint-disable-line @typescript-eslint/no-shadow
@@ -104,7 +104,7 @@ export enum DepthPointSource {
   Map,
 }
 
-/** @alpha Options to control behavior of [[Viewport.pickDepthPoint]]. */
+/** @public Options to control behavior of [[Viewport.pickDepthPoint]]. */
 export interface DepthPointOptions {
   /** If true, geometry with the "non-locatable" flag set will not be selected. */
   excludeNonLocatable?: boolean;
@@ -2770,7 +2770,6 @@ export class ScreenViewport extends Viewport {
    * @param options Optional settings to control what can be selected.
    * @returns A plane with origin from closest geometry point or reference plane projection and the source of the depth point.
    * @note The result plane normal is valid when the source is not geometry or a reality model.
-   * @alpha
    */
   public pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): { plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, sourceId?: string } {
     if (!this.view.is3d())

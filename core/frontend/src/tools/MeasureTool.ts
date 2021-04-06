@@ -32,7 +32,7 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
 
 function translateBold(key: string) { return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `; }
 
-/** @alpha */
+/** @internal */
 class MeasureLabel implements CanvasDecoration {
   public worldLocation = new Point3d();
   public position = new Point3d();
@@ -75,7 +75,7 @@ class MeasureLabel implements CanvasDecoration {
   }
 }
 
-/** @alpha */
+/** @internal */
 class MeasureMarker extends Marker {
   public isSelected: boolean = false;
   constructor(label: string, title: HTMLElement, worldLocation: XYAndZ, size: XAndY) {
@@ -152,7 +152,7 @@ function adjustPoint(ev: BeButtonEvent, segments?: Array<Segment>, locations?: A
   return ev.point;
 }
 
-/** @alpha */
+/** @public */
 export class MeasureDistanceTool extends PrimitiveTool {
   public static toolId = "Measure.Distance";
   public static iconSpec = "icon-measure-distance";
@@ -631,7 +631,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
   }
 }
 
-/** @alpha */
+/** @public */
 export class MeasureLocationTool extends PrimitiveTool {
   public static toolId = "Measure.Location";
   public static iconSpec = "icon-measure-location";
@@ -766,7 +766,7 @@ export class MeasureLocationTool extends PrimitiveTool {
   }
 }
 
-/** @alpha */
+/** @public */
 export class MeasureAreaByPointsTool extends PrimitiveTool {
   public static toolId = "Measure.AreaByPoints";
   public static iconSpec = "icon-measure-2d";
@@ -781,6 +781,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   protected _acceptedMeasurement?: MeasureMarker;
   protected _lastMotionPt?: Point3d;
 
+  /** @internal */
   public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
@@ -1125,7 +1126,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   }
 }
 
-/** @alpha */
+/** @public */
 export abstract class MeasureElementTool extends PrimitiveTool {
   protected readonly _checkedIds = new Map<Id64String, MassPropertiesResponseProps>();
   protected readonly _acceptedIds: Id64Array = [];
@@ -1445,7 +1446,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   }
 }
 
-/** @alpha */
+/** @public */
 export class MeasureLengthTool extends MeasureElementTool {
   public static toolId = "Measure.Length";
   public static iconSpec = "icon-measure";
@@ -1458,7 +1459,7 @@ export class MeasureLengthTool extends MeasureElementTool {
   }
 }
 
-/** @alpha */
+/** @public */
 export class MeasureAreaTool extends MeasureElementTool {
   public static toolId = "Measure.Area";
   public static iconSpec = "icon-measure-area";
@@ -1471,7 +1472,7 @@ export class MeasureAreaTool extends MeasureElementTool {
   }
 }
 
-/** @alpha */
+/** @public */
 export class MeasureVolumeTool extends MeasureElementTool {
   public static toolId = "Measure.Volume";
   public static iconSpec = "icon-measure-3d";

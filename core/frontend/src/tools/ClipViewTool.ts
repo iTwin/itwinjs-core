@@ -29,7 +29,7 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
 
 // cSpell:ignore geti
 
-/** @alpha An object that can react to a view's clip being changed by tools or modify handles. */
+/** @public An object that can react to a view's clip being changed by tools or modify handles. */
 export interface ViewClipEventHandler {
   selectOnCreate(): boolean; // Add newly created clip geometry to selection set and show modify controls.
   clearOnDeselect(): boolean; // Stop displaying clip geometry when clip is removed from the selection set.
@@ -40,7 +40,7 @@ export interface ViewClipEventHandler {
   onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean; // Called when user right clicks on clip geometry or clip modify handle. Return true if event handled.
 }
 
-/** @alpha Options to control display for ViewClipTool.drawClip */
+/** @internal Options to control display for ViewClipTool.drawClip */
 export interface DrawClipOptions {
   /** Color to use for clip edges, uses white adjusted for background color if not specified. */
   color?: ColorDef;
@@ -60,7 +60,7 @@ export interface DrawClipOptions {
   id?: string;
 }
 
-/** @alpha A tool to define a clip volume for a view */
+/** @public A tool to define a clip volume for a view */
 export class ViewClipTool extends PrimitiveTool {
   constructor(protected _clipEventHandler?: ViewClipEventHandler) { super(); }
 
@@ -98,6 +98,7 @@ export class ViewClipTool extends PrimitiveTool {
 
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.onReinitialize(); return EventHandled.No; }
 
+  /** @internal */
   public static getPlaneInwardNormal(orientation: EditManipulator.RotationType, viewport: Viewport): Vector3d | undefined {
     const matrix = EditManipulator.HandleUtils.getRotation(orientation, viewport);
     if (undefined === matrix)
@@ -212,6 +213,7 @@ export class ViewClipTool extends PrimitiveTool {
     builder.addLineString(shapePtsHi);
   }
 
+  /** @internal */
   public static drawClip(context: DecorateContext, clip: ClipVector, viewExtents?: Range3d, options?: DrawClipOptions): void {
     const clipShape = ViewClipTool.isSingleClipShape(clip);
     const clipPlanes = (undefined === clipShape ? ViewClipTool.isSingleConvexClipPlaneSet(clip) : undefined);
@@ -397,7 +399,7 @@ export class ViewClipTool extends PrimitiveTool {
   }
 }
 
-/** @alpha A tool to remove a clip volume for a view */
+/** @public A tool to remove a clip volume for a view */
 export class ViewClipClearTool extends ViewClipTool {
   public static toolId = "ViewClip.Clear";
   public static iconSpec = "icon-section-tool";
@@ -430,13 +432,14 @@ export class ViewClipClearTool extends ViewClipTool {
   }
 }
 
-/** @alpha A tool to define a clip volume for a view by specifying a plane */
+/** @public A tool to define a clip volume for a view by specifying a plane */
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
   public static iconSpec = "icon-section-plane";
   private _orientationValue: DialogItemValue = { value: EditManipulator.RotationType.Face };
   constructor(clipEventHandler?: ViewClipEventHandler, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
 
+  /** @internal */
   public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
@@ -501,7 +504,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
   }
 }
 
-/** @alpha A tool to define a clip volume for a view by specifying a shape */
+/** @public A tool to define a clip volume for a view by specifying a shape */
 export class ViewClipByShapeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByShape";
   public static iconSpec = "icon-section-shape";
@@ -511,6 +514,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
   protected _zLow?: number;
   protected _zHigh?: number;
 
+  /** @internal */
   public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
@@ -715,7 +719,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
   }
 }
 
-/** @alpha A tool to define a clip volume for a view by specifying range corners */
+/** @public A tool to define a clip volume for a view by specifying range corners */
 export class ViewClipByRangeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByRange";
   public static iconSpec = "icon-section-range";
@@ -823,7 +827,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
   }
 }
 
-/** @alpha A tool to define a clip volume for a view by element(s) */
+/** @public A tool to define a clip volume for a view using the element aligned box or axis aligned box. */
 export class ViewClipByElementTool extends ViewClipTool {
   public static toolId = "ViewClip.ByElement";
   public static iconSpec = "icon-section-element";
@@ -939,7 +943,7 @@ export class ViewClipByElementTool extends ViewClipTool {
   }
 }
 
-/** @alpha Interactive tool base class to modify a view's clip */
+/** @internal Interactive tool base class to modify a view's clip */
 export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
   protected _anchorIndex: number;
   protected _ids: string[];
@@ -1047,7 +1051,7 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
   }
 }
 
-/** @alpha Interactive tool to modify a view's clip defined by a ClipShape */
+/** @internal Interactive tool to modify a view's clip defined by a ClipShape */
 export class ViewClipShapeModifyTool extends ViewClipModifyTool {
   protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean {
     const clipShape = ViewClipTool.isSingleClipShape(this._clip);
@@ -1119,7 +1123,7 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
   }
 }
 
-/** @alpha Interactive tool to modify a view's clip defined by a ConvexClipPlaneSet */
+/** @internal Interactive tool to modify a view's clip defined by a ConvexClipPlaneSet */
 export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
   protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean {
     const offset = this.getOffsetValue(ev);
@@ -1156,7 +1160,7 @@ export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
   }
 }
 
-/** @alpha Modify handle data to modify a view's clip */
+/** @internal Modify handle data to modify a view's clip */
 export class ViewClipControlArrow {
   public origin: Point3d;
   public direction: Vector3d;
@@ -1176,7 +1180,7 @@ export class ViewClipControlArrow {
   }
 }
 
-/** @alpha Controls to modify a view's clip */
+/** @internal Controls to modify a view's clip */
 export class ViewClipDecoration extends EditManipulator.HandleProvider {
   private static _decorator?: ViewClipDecoration;
   protected _clip?: ClipVector;
@@ -1717,10 +1721,10 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 }
 
-/** @alpha Event types for ViewClipDecorationProvider.onActiveClipChanged */
+/** @public Event types for ViewClipDecorationProvider.onActiveClipChanged */
 export enum ClipEventType { New, NewPlane, Modify, Clear }
 
-/** @alpha An implementation of ViewClipEventHandler that responds to new clips by presenting clip modification handles */
+/** @public An implementation of ViewClipEventHandler that responds to new clips by presenting clip modification handles */
 export class ViewClipDecorationProvider implements ViewClipEventHandler {
   private static _provider?: ViewClipDecorationProvider;
   public selectDecorationOnCreate = true;
