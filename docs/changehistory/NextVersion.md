@@ -93,6 +93,10 @@ All hyper-modeling APIs are now public. [This interactive sample](https://www.it
 ### [@bentley/imodeljs-frontend](https://www.itwinjs.org/reference/imodeljs-frontend/)
 
 * [ViewGlobeSatelliteTool]($frontend), [ViewGlobeBirdTool]($frontend), [ViewGlobeLocationTool]($frontend), [ViewGlobeIModelTool]($frontend) for viewing the iModel in a global context.
+* [MeasureLengthTool]($frontend), [MeasureAreaTool]($frontend), [MeasureVolumeTool]($frontend) for reporting element mass properties.
+* [MeasureLocationTool]($frontend), [MeasureDistanceTool]($frontend), [MeasureAreaByPointsTool]($frontend) for reporting point coordinates, point to point distance, and area defined by points.
+* [SetupWalkCameraTool]($frontend) to establish the starting position for the walk tool by identifying a point on the floor and look direction.
+* [ViewClipByPlaneTool]($frontend), [ViewClipByRangeTool]($frontend), [ViewClipByShapeTool]($frontend), [ViewClipByElementTool]($frontend), [ViewClipClearTool]($frontend) to section a view by a set of clip planes or clip volume.
 
 ### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
 

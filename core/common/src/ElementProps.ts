@@ -386,10 +386,11 @@ export interface ChannelRootAspectProps extends ElementAspectProps {
 }
 
 /** Properties of a [LineStyle]($backend)
- * @beta
+ * @public
  */
 export interface LineStyleProps extends DefinitionElementProps {
   description?: string;
+  /** The JSON string line style definition element data [LineStyleDefinition.StyleProps]($backend) */
   data: string;
 }
 

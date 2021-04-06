@@ -11,7 +11,7 @@ import { ViewFlagProps } from "./ViewFlags";
 import { ClipPlaneContainment } from "@bentley/geometry-core";
 
 /** Information required to request clip containment status for elements from the front end to the back end.
- * @beta
+ * @public
  */
 export interface GeometryContainmentRequestProps {
   candidates: Id64Array;
@@ -22,7 +22,7 @@ export interface GeometryContainmentRequestProps {
 }
 
 /** Information returned from the back end to the front end holding the result of the geometry containment query.
- * @beta
+ * @public
  */
 export interface GeometryContainmentResponseProps {
   status: BentleyStatus;
