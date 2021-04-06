@@ -33,13 +33,20 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
  * @public
  */
 export interface ViewClipEventHandler {
-  selectOnCreate(): boolean; // Add newly created clip geometry to selection set and show modify controls.
-  clearOnDeselect(): boolean; // Stop displaying clip geometry when clip is removed from the selection set.
-  onNewClip(viewport: Viewport): void; // Called by tools that set or replace the existing view clip with a new clip.
-  onNewClipPlane(viewport: Viewport): void; // Called by tools that add a single plane to the view clip. When there is more than one plane, the new plane is always last.
-  onModifyClip(viewport: Viewport): void; // Called by tools after modifying the view clip.
-  onClearClip(viewport: Viewport): void; // Called when the view clip is cleared from the view.
-  onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean; // Called when user right clicks on clip geometry or clip modify handle. Return true if event handled.
+  /** Add newly created clip geometry to selection set and show modify controls. */
+  selectOnCreate(): boolean;
+  /** Stop displaying clip geometry when clip is removed from the selection set. */
+  clearOnDeselect(): boolean;
+  /** Called by tools that set or replace the existing view clip with a new clip. */
+  onNewClip(viewport: Viewport): void;
+  /** Called by tools that add a single plane to the view clip. When there is more than one plane, the new plane is always last. */
+  onNewClipPlane(viewport: Viewport): void;
+  /** Called by tools after modifying the view clip. */
+  onModifyClip(viewport: Viewport): void;
+  /** Called when the view clip is cleared from the view. */
+  onClearClip(viewport: Viewport): void;
+  /** Called when user right clicks on clip geometry or clip modify handle. Return true if event handled. */
+  onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean;
 }
 
 /** @internal Options to control display for ViewClipTool.drawClip */
