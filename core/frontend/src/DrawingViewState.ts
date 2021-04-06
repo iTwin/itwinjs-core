@@ -336,7 +336,7 @@ export class DrawingViewState extends ViewState2d {
     this._attachment = dispose(this._attachment);
   }
 
-  /** @internal */
+  /** @internal override */
   public async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const props = await this.querySectionDrawingProps();
@@ -376,7 +376,7 @@ export class DrawingViewState extends ViewState2d {
     return { spatialView, displaySpatialView, drawingToSpatialTransform };
   }
 
-  /** @internal */
+  /** @internal override */
   public async load(): Promise<void> {
     assert(!this.isAttachedToViewport);
 
@@ -408,10 +408,10 @@ export class DrawingViewState extends ViewState2d {
     return this._modelLimits;
   }
 
-  /** @internal */
+  /** @internal override */
   public isDrawingView(): this is DrawingViewState { return true; }
 
-  /** @internal */
+  /** @internal override */
   public getOrigin() {
     const origin = super.getOrigin();
     if (this._attachment)
@@ -420,7 +420,7 @@ export class DrawingViewState extends ViewState2d {
     return origin;
   }
 
-  /** @internal */
+  /** @internal override */
   public getExtents() {
     const extents = super.getExtents();
     if (this._attachment)
@@ -429,14 +429,14 @@ export class DrawingViewState extends ViewState2d {
     return extents;
   }
 
-  /** @internal */
+  /** @internal override */
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     if (this._attachment)
       trees.disclose(this._attachment.viewport);
   }
 
-  /** @internal */
+  /** @internal override */
   public createScene(context: SceneContext): void {
     if (!DrawingViewState.hideDrawingGraphics)
       super.createScene(context);
@@ -445,12 +445,12 @@ export class DrawingViewState extends ViewState2d {
       this._attachment.addToScene(context);
   }
 
-  /** @internal */
+  /** @internal override */
   public get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachment || this._attachment.view.areAllTileTreesLoaded);
   }
 
-  /** @internal */
+  /** @internal override */
   public get secondaryViewports() {
     return this._attachment ? [ this._attachment.viewport ] : super.secondaryViewports;
   }

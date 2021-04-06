@@ -230,7 +230,9 @@ export class SpatialModelState extends GeometricModel3dState {
   /** Return true if this is a reality model (represented by a 3d tile set)
    * @beta
    */
-  public get isRealityModel(): boolean { return undefined !== this.jsonProperties.tilesetUrl; }
+  public get isRealityModel(): boolean {
+    return undefined !== this.jsonProperties.tilesetUrl;
+  }
 }
 
 /** Represents the front-end state of a [PhysicalModel]($backend).
