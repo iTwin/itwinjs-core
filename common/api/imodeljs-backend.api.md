@@ -55,7 +55,7 @@ import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DownloadBriefcaseStatus } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
-import { EditingSessionNotifications } from '@bentley/imodeljs-common';
+import { EditingScopeNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementAspectProps } from '@bentley/imodeljs-common';
 import { ElementGeometryRequest } from '@bentley/imodeljs-common';
@@ -167,7 +167,6 @@ import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
 import { SchemaState } from '@bentley/imodeljs-common';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
-import { SectionLocationProps } from '@bentley/imodeljs-common';
 import { SectionType } from '@bentley/imodeljs-common';
 import { SessionProps } from '@bentley/bentleyjs-core';
 import { SheetBorderTemplateProps } from '@bentley/imodeljs-common';
@@ -3112,7 +3111,7 @@ export class IpcHost {
     // (undocumented)
     static noStack: boolean;
     // @internal (undocumented)
-    static notifyEditingSession<T extends keyof EditingSessionNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingSessionNotifications[T]>): void;
+    static notifyEditingScope<T extends keyof EditingScopeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingScopeNotifications[T]>): void;
     // @internal (undocumented)
     static notifyIpcFrontend<T extends keyof IpcAppNotifications>(methodName: T, ...args: Parameters<IpcAppNotifications[T]>): void;
     // @internal (undocumented)
@@ -3425,17 +3424,15 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     protected _accessToken?: AccessToken;
     // (undocumented)
-    get config(): NativeAppAuthorizationConfiguration;
+    config: NativeAppAuthorizationConfiguration;
     // (undocumented)
-    protected _config?: NativeAppAuthorizationConfiguration;
-    // (undocumented)
-    protected _expireSafety: number;
+    expireSafety: number;
     // (undocumented)
     getAccessToken(): Promise<AccessToken>;
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
-    initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void>;
+    initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
     get isAuthorized(): boolean;
     // (undocumented)
@@ -3472,6 +3469,8 @@ export class NativeAppStorage {
 
 // @beta
 export class NativeHost {
+    // (undocumented)
+    static get applicationName(): string;
     static get appSettingsCacheDir(): string;
     // @internal (undocumented)
     static get authorization(): NativeAppAuthorizationBackend;
@@ -3824,17 +3823,6 @@ export class SectionDrawingLocation extends SpatialLocationElement {
 export class SectionDrawingModel extends DrawingModel {
     // @internal (undocumented)
     static get className(): string;
-}
-
-// @alpha @deprecated
-export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
-    // @internal
-    constructor(props: SectionLocationProps, iModel: IModelDb);
-    // @internal (undocumented)
-    static get className(): string;
-    sectionType: SectionType;
-    // @internal (undocumented)
-    toJSON(): SectionLocationProps;
 }
 
 // @internal
@@ -4494,7 +4482,6 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @beta
     abstract get details(): ViewDetails;
     displayStyleId: Id64String;
     getAuxiliaryCoordinateSystemId(): Id64String;
@@ -4522,7 +4509,6 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     delta: Point2d;
-    // @beta
     get details(): ViewDetails;
     loadDisplayStyle2d(): DisplayStyle2d;
     origin: Point2d;
@@ -4539,7 +4525,6 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     cameraOn: boolean;
     // @internal (undocumented)
     static get className(): string;
-    // @beta
     get details(): ViewDetails3d;
     extents: Vector3d;
     loadDisplayStyle3d(): DisplayStyle3d;

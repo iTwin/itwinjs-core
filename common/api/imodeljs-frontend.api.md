@@ -68,7 +68,7 @@ import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
-import { EditingSessionNotifications } from '@bentley/imodeljs-common';
+import { EditingScopeNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementGeometryChange } from '@bentley/imodeljs-common';
 import { ElementGraphicsRequestProps } from '@bentley/imodeljs-common';
@@ -105,6 +105,7 @@ import { GeometryContainmentRequestProps } from '@bentley/imodeljs-common';
 import { GeometryContainmentResponseProps } from '@bentley/imodeljs-common';
 import { GeometryQuery } from '@bentley/geometry-core';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
+import { GeometrySummaryRequestProps } from '@bentley/imodeljs-common';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GlobeMode } from '@bentley/imodeljs-common';
 import { GltfBufferData } from '@bentley/imodeljs-common';
@@ -1068,7 +1069,7 @@ export class AnimationBranchState {
 // @internal
 export type AnimationBranchStates = Map<string, AnimationBranchState>;
 
-// @beta
+// @public
 export interface Animator {
     animate(): boolean;
     interrupt(): void;
@@ -1625,35 +1626,27 @@ export interface BlankConnectionProps {
 // @public
 export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps);
-    // @beta
-    beginEditingSession(): Promise<InteractiveEditingSession>;
     close(): Promise<void>;
     get contextId(): GuidString;
-    // @beta
-    get editingSession(): InteractiveEditingSession | undefined;
-    // @beta (undocumented)
+    get editingScope(): GraphicalEditingScope | undefined;
+    enterEditingScope(): Promise<GraphicalEditingScope>;
     hasPendingTxns(): Promise<boolean>;
     get iModelId(): GuidString;
-    // (undocumented)
+    // @internal (undocumented)
     isBriefcaseConnection(): this is BriefcaseConnection;
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
-    // @beta
     pullAndMergeChanges(version?: IModelVersionProps): Promise<void>;
-    // @beta
     pushChanges(description: string): Promise<string>;
-    // @beta (undocumented)
     saveChanges(description?: string): Promise<void>;
-    // @beta
-    supportsInteractiveEditing(): Promise<boolean>;
-    // @beta
+    supportsGraphicalEditing(): Promise<boolean>;
     readonly txns: BriefcaseTxns;
 }
 
-// @beta
+// @public
 export abstract class BriefcaseNotificationHandler extends NotificationHandler {
     constructor(_key: string);
     // (undocumented)
@@ -1662,7 +1655,7 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
     get channelName(): string;
     }
 
-// @beta
+// @public
 export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNotifications {
     // @internal
     constructor(iModel: BriefcaseConnection);
@@ -1771,7 +1764,7 @@ export class CategorySelectorState extends ElementState {
     toJSON(): CategorySelectorProps;
 }
 
-// @beta
+// @internal
 export enum ChangeFlag {
     // (undocumented)
     All = 268435455,
@@ -1799,38 +1792,26 @@ export enum ChangeFlag {
     ViewState = 128
 }
 
-// @beta
+// @public
 export class ChangeFlags {
+    // @internal
     constructor(flags?: ChangeFlag);
     get alwaysDrawn(): boolean;
+    // @internal
     areAllSet(flags: ChangeFlag): boolean;
     get areFeatureOverridesDirty(): boolean;
-    clear(flags?: ChangeFlag): void;
     get displayStyle(): boolean;
     get featureOverrideProvider(): boolean;
+    // @internal (undocumented)
+    protected _flags: ChangeFlag;
     get hasChanges(): boolean;
+    // @internal
     isSet(flags: ChangeFlag): boolean;
     get neverDrawn(): boolean;
-    set(flags: ChangeFlag): void;
-    // (undocumented)
-    setAlwaysDrawn(): void;
-    // (undocumented)
-    setDisplayStyle(): void;
-    // (undocumented)
-    setFeatureOverrideProvider(): void;
-    // (undocumented)
-    setNeverDrawn(): void;
-    // (undocumented)
-    setViewedCategories(): void;
-    // (undocumented)
-    setViewedCategoriesPerModel(): void;
-    // (undocumented)
-    setViewedModels(): void;
-    // (undocumented)
-    setViewState(): void;
-    // (undocumented)
+    // @internal (undocumented)
     get value(): ChangeFlag;
     get viewedCategories(): boolean;
+    // @beta
     get viewedCategoriesPerModel(): boolean;
     get viewedModels(): boolean;
     get viewState(): boolean;
@@ -1924,7 +1905,6 @@ export class ContextRealityModelState {
     readonly description: string;
     // (undocumented)
     readonly iModel: IModelConnection;
-    intersectsProjectExtents(): Promise<boolean>;
     get isGlobal(): boolean;
     // (undocumented)
     matches(other: ContextRealityModelState): boolean;
@@ -2280,7 +2260,7 @@ export class DevTools {
     versions(): Promise<any>;
 }
 
-// @beta
+// @public
 export class DisclosedTileTreeSet implements Iterable<TileTree> {
     [Symbol.iterator](): Iterator<TileTree>;
     constructor(comparator?: OrderedComparator<TileTree, TileTree>);
@@ -2518,7 +2498,7 @@ export class DrawingViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps);
     // @internal
     static alwaysDisplaySpatialView: boolean;
-    // @internal (undocumented)
+    // @internal
     get areAllTileTreesLoaded(): boolean;
     // @internal
     get attachment(): Object | undefined;
@@ -2526,33 +2506,33 @@ export class DrawingViewState extends ViewState2d {
     get attachmentInfo(): Object;
     // @internal (undocumented)
     attachToViewport(): void;
-    // @internal (undocumented)
+    // @internal
     changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
-    // @internal (undocumented)
+    // @internal
     createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): ExtentLimits;
     // @internal (undocumented)
     detachFromViewport(): void;
-    // @internal (undocumented)
+    // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
-    // @internal (undocumented)
+    // @internal
     getExtents(): Vector3d;
-    // @internal (undocumented)
+    // @internal
     getOrigin(): import("@bentley/geometry-core").Point3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
     // @internal
     static hideDrawingGraphics: boolean;
-    // @internal (undocumented)
+    // @internal
     isDrawingView(): this is DrawingViewState;
-    // @internal (undocumented)
+    // @internal
     load(): Promise<void>;
-    // @internal (undocumented)
+    // @internal
     get secondaryViewports(): Iterable<import("./Viewport").Viewport>;
     // @internal
     get sectionDrawingInfo(): SectionDrawingInfo;
@@ -3124,7 +3104,7 @@ export class ExternalServerExtensionLoader implements ExtensionLoader {
     serverName: string;
 }
 
-// @alpha
+// @internal
 export interface ExternalTileStatistics {
     // (undocumented)
     ready: number;
@@ -3207,10 +3187,10 @@ export interface FeatureTrackingProps {
     ulasFeatureId?: string;
 }
 
-// @alpha
+// @internal @deprecated (undocumented)
 export function findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
 
-// @alpha
+// @internal @deprecated (undocumented)
 export function findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
 
 // @public
@@ -3409,12 +3389,12 @@ export namespace Frustum2d {
     export function depthFromDisplayPriority(priority: number): number;
 }
 
-// @internal
+// @public
 export class FrustumAnimator implements Animator {
     constructor(options: ViewAnimationOptions, viewport: ScreenViewport, begin: ViewPose, end: ViewPose);
-    // (undocumented)
+    // @internal (undocumented)
     animate(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     interrupt(): void;
     // (undocumented)
     options: ViewAnimationOptions;
@@ -3529,7 +3509,7 @@ export class GeoServices {
     getConverter(datum?: string): GeoConverter | undefined;
     }
 
-// @beta
+// @public
 export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
 
 // @internal (undocumented)
@@ -3547,7 +3527,7 @@ export function getCesiumOSMBuildingsUrl(): string;
 // @internal (undocumented)
 export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
 
-// @beta
+// @public
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
 
 // @internal
@@ -3578,16 +3558,15 @@ export interface GlobalLocationArea {
     southwest: Cartographic;
 }
 
-// @internal
+// @public
 export class GlobeAnimator implements Animator {
     protected constructor(viewport: ScreenViewport, destination: GlobalLocation, afterLanding: Frustum);
     // (undocumented)
     protected _afterLanding: Frustum;
-    // (undocumented)
+    // @internal (undocumented)
     animate(): boolean;
     // (undocumented)
     protected _columbusLine: Point3d[];
-    // (undocumented)
     static create(viewport: ScreenViewport, destination: GlobalLocation): Promise<GlobeAnimator | undefined>;
     // (undocumented)
     protected _ellipsoidArc?: Arc3d;
@@ -3607,11 +3586,10 @@ export class GlobeAnimator implements Animator {
     protected _flightLength: number;
     // (undocumented)
     protected _flightTweens: Tweens;
-    // (undocumented)
+    // @internal (undocumented)
     interrupt(): void;
     // (undocumented)
     protected _midHeight?: number;
-    // (undocumented)
     protected _moveFixToFraction(fract: number, interpolator: SmoothTransformBetweenFrusta): boolean;
     // (undocumented)
     protected _moveFlightToFraction(fraction: number): boolean;
@@ -3789,13 +3767,33 @@ export interface GLTimerResult {
 // @internal (undocumented)
 export type GLTimerResultCallback = (result: GLTimerResult) => void;
 
-// @beta
+// @public
 export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
 
-// @beta
+// @public
 export interface GpuMemoryLimits {
     mobile?: GpuMemoryLimit;
     nonMobile?: GpuMemoryLimit;
+}
+
+// @public
+export class GraphicalEditingScope extends BriefcaseNotificationHandler implements EditingScopeNotifications {
+    // (undocumented)
+    get briefcaseChannelName(): IpcAppChannel;
+    // @internal
+    static enter(imodel: BriefcaseConnection): Promise<GraphicalEditingScope>;
+    exit(): Promise<void>;
+    getGeometryChanges(): Iterable<ModelGeometryChanges>;
+    getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined;
+    readonly iModel: BriefcaseConnection;
+    // @internal (undocumented)
+    get isDisposed(): boolean;
+    // @internal (undocumented)
+    notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
+    static readonly onEnter: BeEvent<(scope: GraphicalEditingScope) => void>;
+    readonly onExited: BeEvent<(scope: GraphicalEditingScope) => void>;
+    readonly onExiting: BeEvent<(scope: GraphicalEditingScope) => void>;
+    readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, scope: GraphicalEditingScope) => void>;
 }
 
 // @public
@@ -3835,19 +3833,16 @@ export interface GraphicBranchFrustum {
     };
 }
 
-// @internal
+// @public
 export interface GraphicBranchOptions {
-    // (undocumented)
     appearanceProvider?: FeatureAppearanceProvider;
-    // (undocumented)
+    // @internal (undocumented)
     classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
-    // (undocumented)
+    // @beta
     clipVolume?: RenderClipVolume;
-    // (undocumented)
+    // @internal (undocumented)
     frustum?: GraphicBranchFrustum;
-    // (undocumented)
     hline?: HiddenLine.Settings;
-    // (undocumented)
     iModel?: IModelConnection;
 }
 
@@ -4463,6 +4458,7 @@ export abstract class IModelConnection extends IModel {
     readonly geoServices: GeoServices;
     // @beta
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
+    getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string>;
     // @beta
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // @alpha
@@ -4738,26 +4734,6 @@ export interface InstancedGraphicParams {
     readonly transforms: Float32Array;
 }
 
-// @beta
-export class InteractiveEditingSession extends BriefcaseNotificationHandler implements EditingSessionNotifications {
-    // @internal
-    static begin(imodel: BriefcaseConnection): Promise<InteractiveEditingSession>;
-    // (undocumented)
-    get briefcaseChannelName(): IpcAppChannel;
-    end(): Promise<void>;
-    getGeometryChanges(): Iterable<ModelGeometryChanges>;
-    getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined;
-    readonly iModel: BriefcaseConnection;
-    // @internal (undocumented)
-    get isDisposed(): boolean;
-    // @internal (undocumented)
-    notifyGeometryChanged(props: ModelGeometryChangesProps[]): void;
-    static readonly onBegin: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onEnded: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onEnding: BeEvent<(session: InteractiveEditingSession) => void>;
-    readonly onGeometryChanges: BeEvent<(changes: Iterable<ModelGeometryChanges>, session: InteractiveEditingSession) => void>;
-}
-
 // @public
 export abstract class InteractiveTool extends Tool {
     // @beta
@@ -4881,7 +4857,7 @@ export enum ItemField {
     Z_Item = 4
 }
 
-// @beta
+// @public
 export enum KeyinParseError {
     MismatchedQuotes = 4,
     ToolNotFound = 1
@@ -6348,7 +6324,7 @@ export interface ModalReturn {
     stop: (_ev: Event) => void;
 }
 
-// @alpha
+// @beta
 export interface ModelDisplayTransformProvider {
     // (undocumented)
     getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
@@ -6407,6 +6383,28 @@ export enum ModifyElementSource {
     Unknown = 0
 }
 
+// @internal
+export class MutableChangeFlags extends ChangeFlags {
+    constructor(flags?: ChangeFlag);
+    clear(flags?: ChangeFlag): void;
+    // (undocumented)
+    setAlwaysDrawn(): void;
+    // (undocumented)
+    setDisplayStyle(): void;
+    // (undocumented)
+    setFeatureOverrideProvider(): void;
+    // (undocumented)
+    setNeverDrawn(): void;
+    // (undocumented)
+    setViewedCategories(): void;
+    // (undocumented)
+    setViewedCategoriesPerModel(): void;
+    // (undocumented)
+    setViewedModels(): void;
+    // (undocumented)
+    setViewState(): void;
+}
+
 // @beta
 export class NativeApp {
     // (undocumented)
@@ -6436,7 +6434,7 @@ export class NativeApp {
 
 // @beta
 export class NativeAppAuthorization {
-    constructor(config: NativeAppAuthorizationConfiguration);
+    constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _expireSafety: number;
     getAccessToken(): Promise<AccessToken>;
@@ -6472,6 +6470,7 @@ export interface NativeAppOpts extends IpcAppOptions {
     // (undocumented)
     nativeApp?: {
         authConfig?: NativeAppAuthorizationConfiguration;
+        noInitializeAuthClient?: boolean;
     };
 }
 
@@ -6481,7 +6480,7 @@ export class NoRenderApp {
     static startup(opts?: IModelAppOptions): Promise<void>;
 }
 
-// @beta
+// @public
 export abstract class NotificationHandler {
     abstract get channelName(): string;
     static register(): RemoveFunction;
@@ -6754,13 +6753,13 @@ export namespace OrbitGtTileTree {
 // @public
 export class OrthographicViewState extends SpatialViewState {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
-    // @internal (undocumented)
+    // @internal
     static get className(): string;
     // (undocumented)
     supportsCamera(): boolean;
 }
 
-// @beta
+// @public
 export interface OsmBuildingDisplayOptions {
     appearanceOverrides?: FeatureAppearance;
     onOff?: boolean;
@@ -6830,7 +6829,7 @@ export class PanViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @beta
+// @public
 export enum ParseAndRunResult {
     BadArgumentCount = 2,
     FailedToRun = 3,
@@ -6839,23 +6838,23 @@ export enum ParseAndRunResult {
     ToolNotFound = 1
 }
 
-// @beta
+// @public
 export interface ParsedKeyin {
     args: string[];
     ok: true;
     tool: ToolType;
 }
 
-// @beta
+// @public
 export interface ParseKeyinError {
     error: KeyinParseError;
     ok: false;
 }
 
-// @beta
+// @public
 export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
 
-// @beta
+// @public
 export interface ParticleCollectionBuilder {
     addParticle: (particle: ParticleProps) => void;
     finish: () => RenderGraphic | undefined;
@@ -6863,12 +6862,12 @@ export interface ParticleCollectionBuilder {
     transparency: number;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export namespace ParticleCollectionBuilder {
     export function create(params: ParticleCollectionBuilderParams): ParticleCollectionBuilder;
 }
 
-// @beta
+// @public
 export interface ParticleCollectionBuilderParams {
     isViewCoords?: boolean;
     origin?: XYAndZ;
@@ -6879,7 +6878,7 @@ export interface ParticleCollectionBuilderParams {
     viewport: Viewport;
 }
 
-// @beta
+// @public
 export interface ParticleProps extends XYAndZ {
     size?: XAndY | number;
     transparency?: number;
@@ -6964,7 +6963,7 @@ export interface PingTestResult {
     min: number | undefined;
 }
 
-// @beta
+// @public
 export namespace Pixel {
     export interface Buffer {
         getPixel(x: number, y: number): Data;
@@ -6972,27 +6971,19 @@ export namespace Pixel {
     export class Data {
         // @internal
         constructor(feature?: Feature, distanceFraction?: number, type?: GeometryType, planarity?: Planarity, featureTable?: PackedFeatureTable, iModel?: IModelConnection, tileId?: string);
-        // (undocumented)
         readonly distanceFraction: number;
-        // (undocumented)
         get elementId(): Id64String | undefined;
-        // (undocumented)
         readonly feature?: Feature;
         // @internal (undocumented)
         readonly featureTable?: PackedFeatureTable;
-        // (undocumented)
         get geometryClass(): GeometryClass | undefined;
-        // @internal (undocumented)
         readonly iModel?: IModelConnection;
         // @internal (undocumented)
         get isClassifier(): boolean;
-        // (undocumented)
         readonly planarity: Planarity;
-        // (undocumented)
         get subCategoryId(): Id64String | undefined;
         // @internal (undocumented)
         readonly tileId?: string;
-        // (undocumented)
         readonly type: GeometryType;
     }
     export enum GeometryType {
@@ -7094,7 +7085,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     undoPreviousStep(): Promise<boolean>;
 }
 
-// @alpha
+// @internal
 export enum PrimitiveVisibility {
     All = 0,
     Instanced = 1,
@@ -7271,16 +7262,26 @@ export interface QuantityTypeDefinition {
 export type QuantityTypeKey = string;
 
 // @public
+export function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]>;
+
+// @public
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
 
 // @internal
 export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined;
 
-// @beta
+// @public
 export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean): Promise<RenderGraphic | undefined>;
 
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
+
+// @public
+export interface RealityDataQueryCriteria {
+    contextId: GuidString;
+    filterIModel?: IModelConnection;
+    range?: CartographicRange;
+}
 
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
@@ -8138,7 +8139,6 @@ export abstract class RenderSystem implements IDisposable {
 
 // @public
 export namespace RenderSystem {
-    // @beta
     export interface Options {
         antialiasSamples?: number;
         // @internal
@@ -8146,9 +8146,10 @@ export namespace RenderSystem {
         // @internal
         debugShaders?: boolean;
         devicePixelRatioOverride?: number;
-        // @internal
         disabledExtensions?: WebGLExtensionName[];
+        // @beta
         displaySolarShadows?: boolean;
+        // @beta
         doIdleWork?: boolean;
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
@@ -8157,11 +8158,8 @@ export namespace RenderSystem {
         // @internal
         filterMapTextures?: boolean;
         logarithmicDepthBuffer?: boolean;
-        // @internal
         planProjections?: boolean;
-        // @internal
         preserveShaderSourceCode?: boolean;
-        // @internal
         useWebGL2?: boolean;
     }
 }
@@ -8255,26 +8253,25 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     abstract get wantInvertBlackBackground(): boolean;
 }
 
-// @beta
+// @internal
 export interface RenderTargetDebugControl {
-    // @internal
     devicePixelRatioOverride?: number;
-    // @internal (undocumented)
+    // (undocumented)
     displayDrapeFrustum: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     displayRealityTilePreload: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     displayRealityTileRanges: boolean;
     drawForReadPixels: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     freezeRealityTiles: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     logRealityTiles: boolean;
-    // @alpha (undocumented)
+    // (undocumented)
     primitiveVisibility: PrimitiveVisibility;
-    // @internal (undocumented)
+    // (undocumented)
     readonly shadowFrustum: Frustum | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     vcSupportIntersectingVolumes: boolean;
 }
 
@@ -8355,7 +8352,7 @@ export class SavedState {
     state: CurrentState;
 }
 
-// @beta
+// @public
 export class Scene {
     readonly background: RenderGraphic[];
     readonly foreground: RenderGraphic[];
@@ -8368,20 +8365,18 @@ export class Scene {
     volumeClassifier?: SceneVolumeClassifier;
 }
 
-// @beta
+// @public
 export class SceneContext extends RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
     // @internal (undocumented)
     addBackgroundDrapedModel(drapedTreeRef: TileTreeReference, _heightRange: Range1d | undefined): RenderTextureDrape | undefined;
     // @internal (undocumented)
     addPlanarClassifier(classifiedModelId: Id64String, classifierTree?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): RenderPlanarClassifier | undefined;
-    // @internal (undocumented)
     get backgroundGraphics(): RenderGraphic[];
     // @internal (undocumented)
     getPlanarClassifierForModel(modelId: Id64String): RenderPlanarClassifier | undefined;
     // @internal (undocumented)
     getTextureDrapeForModel(modelId: Id64String): RenderTextureDrape | undefined;
-    // @internal (undocumented)
     get graphics(): RenderGraphic[];
     // @internal (undocumented)
     get graphicType(): TileGraphicType;
@@ -8394,7 +8389,6 @@ export class SceneContext extends RenderContext {
     readonly missingTiles: Set<Tile>;
     // @internal (undocumented)
     outputGraphic(graphic: RenderGraphic): void;
-    // @internal (undocumented)
     get overlayGraphics(): RenderGraphic[];
     // @internal (undocumented)
     get planarClassifiers(): Map<string, RenderPlanarClassifier>;
@@ -8405,7 +8399,6 @@ export class SceneContext extends RenderContext {
     setVolumeClassifier(classifier: SpatialClassificationProps.Classifier, modelId: Id64String): void;
     // @internal (undocumented)
     get textureDrapes(): Map<string, RenderTextureDrape>;
-    // (undocumented)
     get viewingSpace(): ViewingSpace;
     // @internal (undocumented)
     withGraphicType(type: TileGraphicType, func: () => void): void;
@@ -8419,7 +8412,7 @@ export interface SceneVolumeClassifier {
     modelId: Id64String;
 }
 
-// @beta
+// @public
 export interface ScreenSpaceEffectBuilder {
     addUniform: (params: UniformParams) => void;
     addUniformArray: (params: UniformArrayParams) => void;
@@ -8429,19 +8422,19 @@ export interface ScreenSpaceEffectBuilder {
     shouldApply?: (context: ScreenSpaceEffectContext) => boolean;
 }
 
-// @beta
+// @public
 export interface ScreenSpaceEffectBuilderParams {
     name: string;
     source: ScreenSpaceEffectSource;
     textureCoordFromPosition?: boolean;
 }
 
-// @beta
+// @public
 export interface ScreenSpaceEffectContext {
     viewport: Viewport;
 }
 
-// @beta
+// @public
 export interface ScreenSpaceEffectSource {
     fragment: string;
     sampleSourcePixel?: string;
@@ -8458,7 +8451,6 @@ export class ScreenViewport extends Viewport {
     protected addLogo(): void;
     // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
-    // @internal
     animateFlyoverToGlobalLocation(destination: GlobalLocation): Promise<void>;
     // @internal (undocumented)
     animateFrustumChange(options?: ViewAnimationOptions): void;
@@ -8583,7 +8575,6 @@ export interface SelectAddEvent {
 
 // @internal
 export interface SelectedAndReadyTiles {
-    // @alpha
     readonly external: ExternalTileStatistics;
     readonly ready: Set<Tile>;
     readonly selected: Set<Tile>;
@@ -8888,34 +8879,34 @@ export class SheetModelState extends GeometricModel2dState {
 // @public
 export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
-    // @internal (undocumented)
+    // @internal
     get areAllTileTreesLoaded(): boolean;
     // (undocumented)
     get attachmentIds(): Id64Array;
     // @internal
     get attachments(): Object[] | undefined;
-    // @internal (undocumented)
+    // @internal
     attachToViewport(): void;
-    // @internal (undocumented)
+    // @internal
     changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
+    // @internal
     collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
-    // @internal (undocumented)
+    // @internal
     computeFitRange(): Range3d;
     // (undocumented)
     static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState;
-    // @internal (undocumented)
+    // @internal
     createScene(context: SceneContext): void;
-    // @internal (undocumented)
+    // @internal
     decorate(context: DecorateContext): void;
-    // @internal (undocumented)
+    // @internal
     get defaultExtentLimits(): {
         min: number;
         max: number;
     };
-    // @internal (undocumented)
+    // @internal
     detachFromViewport(): void;
     // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
@@ -8923,13 +8914,13 @@ export class SheetViewState extends ViewState2d {
     getExtents(): import("@bentley/geometry-core").Vector3d;
     // (undocumented)
     getOrigin(): Point3d;
-    // @internal (undocumented)
+    // @internal
     getViewedExtents(): AxisAlignedBox3d;
-    // @internal (undocumented)
+    // @internal
     isDrawingView(): this is DrawingViewState;
     // @internal
     load(): Promise<void>;
-    // @internal (undocumented)
+    // @internal
     get secondaryViewports(): Iterable<Viewport>;
     readonly sheetSize: Point2d;
     // (undocumented)
@@ -9173,38 +9164,37 @@ export class SpatialViewState extends ViewState3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
     // (undocumented)
     addViewedModel(id: Id64String): void;
-    // @internal (undocumented)
+    // @internal
     attachToViewport(): void;
-    // @internal (undocumented)
+    // @internal
     static get className(): string;
     // (undocumented)
     clearViewedModels(): void;
     computeFitRange(): AxisAlignedBox3d;
     // (undocumented)
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
-    // @beta
     static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState;
-    // @internal (undocumented)
+    // @internal
     createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): {
         min: number;
         max: number;
     };
-    // @internal (undocumented)
+    // @internal
     detachFromViewport(): void;
     // (undocumented)
     equals(other: this): boolean;
     // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
-    // @internal (undocumented)
+    // @internal
     forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
     protected getDisplayedExtents(): AxisAlignedBox3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
-    // @internal (undocumented)
+    // @internal
     isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
@@ -9213,7 +9203,6 @@ export class SpatialViewState extends ViewState3d {
     // (undocumented)
     get modelSelector(): ModelSelectorState;
     set modelSelector(selector: ModelSelectorState);
-    // @beta
     readonly onViewedModelsChanged: BeEvent<() => void>;
     // (undocumented)
     removeViewedModel(id: Id64String): void;
@@ -9821,7 +9810,7 @@ export class ThreeAxes {
     readonly z: Vector3d;
 }
 
-// @beta
+// @public
 export abstract class Tile {
     protected constructor(params: TileParams, tree: TileTree);
     // @internal (undocumented)
@@ -9837,7 +9826,6 @@ export abstract class Tile {
     collectStatistics(stats: RenderMemory.Statistics, includeChildren?: boolean): void;
     // @internal
     protected _collectStatistics(_stats: RenderMemory.Statistics): void;
-    // @internal (undocumented)
     computeLoadPriority(_viewports: Iterable<Viewport>): number;
     computeVisibility(args: TileDrawArgs): TileVisibility;
     get contentId(): string;
@@ -9845,7 +9833,6 @@ export abstract class Tile {
     get contentRange(): ElementAlignedBox3d;
     // @internal (undocumented)
     protected _contentRange?: ElementAlignedBox3d;
-    // @internal (undocumented)
     countDescendants(): number;
     readonly depth: number;
     dispose(): void;
@@ -9858,7 +9845,6 @@ export abstract class Tile {
     freeMemory(): void;
     // @internal (undocumented)
     getRangeGraphic(context: SceneContext): RenderGraphic | undefined;
-    // @internal
     getSizeProjectionCorners(): Point3d[] | undefined;
     protected _graphic?: RenderGraphic;
     protected _hadGraphics: boolean;
@@ -9907,11 +9893,11 @@ export abstract class Tile {
     setContent(content: TileContent): void;
     // (undocumented)
     protected setGraphic(graphic: RenderGraphic | undefined): void;
-    // @internal (undocumented)
+    // (undocumented)
     setIsReady(): void;
-    // @internal (undocumented)
+    // (undocumented)
     setLeaf(): void;
-    // @internal (undocumented)
+    // (undocumented)
     setNotFound(): void;
     readonly tree: TileTree;
     readonly usageMarker: TileUsageMarker;
@@ -9919,13 +9905,12 @@ export abstract class Tile {
     viewportIds?: ViewportIdSet;
 }
 
-// @beta
+// @public
 export class TileAdmin {
     // @internal
     constructor(isMobile: boolean, rpcConcurrency: number | undefined, options?: TileAdmin.Props);
     // @internal
     addExternalTilesForViewport(vp: Viewport, statistics: ExternalTileStatistics): void;
-    // @internal
     addLoadListener(callback: (imodel: IModelConnection) => void): () => void;
     // @internal
     addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void;
@@ -9993,17 +9978,14 @@ export class TileAdmin {
     readonly mobileRealityTileMinToleranceRatio: number;
     // @internal (undocumented)
     onShutDown(): void;
-    // @internal
     readonly onTileChildrenLoad: BeEvent<(parentTile: Tile) => void>;
     // @internal
     onTileContentDisposed(tile: Tile): void;
     // @internal
     onTileContentLoaded(tile: Tile): void;
-    // @internal
     readonly onTileLoad: BeEvent<(tile: Tile) => void>;
     // @internal (undocumented)
     onTilesElided(numElided: number): void;
-    // @internal
     readonly onTileTreeLoad: BeEvent<(tileTree: TileTreeOwner) => void>;
     // @internal
     process(): void;
@@ -10035,7 +10017,7 @@ export class TileAdmin {
     readonly useProjectExtents: boolean;
     }
 
-// @beta (undocumented)
+// @public (undocumented)
 export namespace TileAdmin {
     export interface Props {
         alwaysRequestEdges?: boolean;
@@ -10052,7 +10034,6 @@ export namespace TileAdmin {
         enableImprovedElision?: boolean;
         enableInstancing?: boolean;
         gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
-        // @alpha
         ignoreAreaPatterns?: boolean;
         // @internal
         ignoreMinimumExpirationTimes?: boolean;
@@ -10062,14 +10043,10 @@ export namespace TileAdmin {
         maximumLevelsToSkip?: number;
         // @internal
         maximumMajorTileFormatVersion?: number;
-        // @alpha
         minimumSpatialTolerance?: number;
-        // @alpha
         mobileRealityTileMinToleranceRatio?: number;
-        // @alpha
         retryInterval?: number;
         tileExpirationTime?: number;
-        // @alpha
         tileTreeExpirationTime?: number;
         // @internal
         useProjectExtents?: boolean;
@@ -10115,7 +10092,7 @@ export class TileAvailability {
     static rectangleScratch: MapCartoRectangle;
     }
 
-// @internal
+// @public
 export enum TileBoundingBoxes {
     Both = 3,
     ChildVolumes = 4,
@@ -10125,61 +10102,50 @@ export enum TileBoundingBoxes {
     Volume = 1
 }
 
-// @beta
+// @public
 export interface TileContent {
     contentRange?: ElementAlignedBox3d;
     graphic?: RenderGraphic;
     isLeaf?: boolean;
 }
 
-// @beta
+// @public
 export interface TiledGraphicsProvider {
     addToScene?: (context: SceneContext) => void;
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
 }
 
-// @beta
+// @public
 export interface TileDrawArgParams {
-    // (undocumented)
     appearanceProvider?: FeatureAppearanceProvider;
-    // (undocumented)
+    // @beta
     clipVolume?: RenderClipVolume;
-    // (undocumented)
     context: SceneContext;
-    // (undocumented)
     hiddenLineSettings?: HiddenLine.Settings;
-    // (undocumented)
     intersectionClip?: ClipVector;
-    // (undocumented)
     location: Transform;
-    // (undocumented)
     now: BeTimePoint;
-    // (undocumented)
+    // @internal (undocumented)
     parentsAndChildrenExclusive: boolean;
-    // (undocumented)
     symbologyOverrides: FeatureSymbology.Overrides | undefined;
-    // (undocumented)
     tree: TileTree;
-    // (undocumented)
     viewFlagOverrides: ViewFlagOverrides;
 }
 
-// @beta
+// @public
 export class TileDrawArgs {
     constructor(params: TileDrawArgParams);
     addAppearanceProvider(provider: FeatureAppearanceProvider): void;
-    // @internal (undocumented)
     get appearanceProvider(): FeatureAppearanceProvider | undefined;
     // @internal (undocumented)
     get clip(): ClipVector | undefined;
+    // @beta
     clipVolume: RenderClipVolume | undefined;
     protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number;
     readonly context: SceneContext;
     // @internal (undocumented)
     drape?: RenderTextureDrape;
-    // @internal (undocumented)
     drawGraphics(): void;
-    // @internal (undocumented)
     drawGraphicsWithType(graphicType: TileGraphicType, graphics: GraphicBranch): void;
     get frustumPlanes(): FrustumPlanes;
     protected _frustumPlanes?: FrustumPlanes;
@@ -10197,7 +10163,6 @@ export class TileDrawArgs {
     insertMissing(tile: Tile): void;
     intersectionClip?: ClipVector;
     readonly location: Transform;
-    // @internal (undocumented)
     markChildrenLoading(): void;
     markReady(tile: Tile): void;
     markUsed(tile: Tile): void;
@@ -10217,24 +10182,22 @@ export class TileDrawArgs {
     produceGraphics(): RenderGraphic | undefined;
     readonly readyTiles: Set<Tile>;
     get symbologyOverrides(): FeatureSymbology.Overrides | undefined;
-    // @alpha
     get tileSizeModifier(): number;
     readonly tree: TileTree;
     readonly viewClip?: ClipVector;
     get viewFlagOverrides(): ViewFlagOverrides;
     viewingSpace: ViewingSpace;
-    // @internal (undocumented)
     get worldToViewMap(): Map4d;
 }
 
-// @beta
+// @public
 export enum TileGraphicType {
     BackgroundMap = 0,
     Overlay = 2,
     Scene = 1
 }
 
-// @beta
+// @public
 export enum TileLoadPriority {
     Classifier = 50,
     Context = 40,
@@ -10244,7 +10207,7 @@ export enum TileLoadPriority {
     Terrain = 10
 }
 
-// @beta
+// @public
 export enum TileLoadStatus {
     Abandoned = 5,
     Loading = 2,
@@ -10254,7 +10217,7 @@ export enum TileLoadStatus {
     Ready = 3
 }
 
-// @beta
+// @public
 export interface TileParams {
     contentId: string;
     contentRange?: ElementAlignedBox3d;
@@ -10267,30 +10230,29 @@ export interface TileParams {
 // @internal (undocumented)
 export type TilePatch = PlanarTilePatch | EllipsoidPatch;
 
-// @beta
+// @public
 export class TileRequest {
     constructor(tile: Tile, vp: Viewport);
+    // @internal
     addViewport(vp: Viewport): void;
+    // @internal
     cancel(): void;
     readonly channel: TileRequestChannel;
+    // @internal
     dispatch(onHttpResponse: () => void): Promise<void>;
     get isCanceled(): boolean;
-    // @internal (undocumented)
     get isQueued(): boolean;
     priority: number;
-    // @internal (undocumented)
     get state(): TileRequest.State;
     readonly tile: Tile;
-    // @internal (undocumented)
     get tree(): TileTree;
     viewports: ReadonlyViewportSet;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export namespace TileRequest {
     export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
     export type ResponseData = Uint8Array | ImageSource;
-    // @internal
     export enum State {
         Completed = 3,
         Dispatched = 1,
@@ -10300,7 +10262,7 @@ export namespace TileRequest {
     }
 }
 
-// @beta
+// @public
 export class TileRequestChannel {
     constructor(name: string, concurrency: number);
     // @internal
@@ -10342,7 +10304,7 @@ export class TileRequestChannel {
     swapPending(): void;
 }
 
-// @beta
+// @public
 export class TileRequestChannels {
     [Symbol.iterator](): Iterator<TileRequestChannel>;
     // @internal
@@ -10376,7 +10338,7 @@ export class TileRequestChannels {
     swapPending(): void;
 }
 
-// @beta
+// @public
 export class TileRequestChannelStatistics {
     // @internal (undocumented)
     addTo(stats: TileRequestChannelStatistics): void;
@@ -10393,8 +10355,9 @@ export class TileRequestChannelStatistics {
     totalUndisplayableTiles: number;
 }
 
-// @beta
+// @public
 export class Tiles {
+    // @internal
     constructor(iModel: IModelConnection);
     // @internal (undocumented)
     dispose(): void;
@@ -10409,6 +10372,7 @@ export class Tiles {
     get isDisposed(): boolean;
     // @internal (undocumented)
     onEcefChanged(): void;
+    // @internal
     purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void;
     // @internal (undocumented)
     purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
@@ -10416,7 +10380,7 @@ export class Tiles {
     reset(): void;
     }
 
-// @beta
+// @public
 export abstract class TileTree {
     protected constructor(params: TileTreeParams);
     // @internal (undocumented)
@@ -10444,12 +10408,10 @@ export abstract class TileTree {
     get isPointCloud(): boolean;
     // @internal (undocumented)
     protected _lastSelected: BeTimePoint;
-    // @internal (undocumented)
     get lastSelectedTime(): BeTimePoint;
     // @internal (undocumented)
     get loadPriority(): TileLoadPriority;
     abstract get maxDepth(): number | undefined;
-    // @internal (undocumented)
     readonly modelId: Id64String;
     // @internal (undocumented)
     get parentsAndChildrenExclusive(): boolean;
@@ -10461,12 +10423,12 @@ export abstract class TileTree {
     abstract get viewFlagOverrides(): ViewFlagOverrides;
 }
 
-// @beta
+// @public
 export interface TileTreeDiscloser {
     discloseTileTrees: (trees: DisclosedTileTreeSet) => void;
 }
 
-// @beta
+// @public
 export enum TileTreeLoadStatus {
     Loaded = 2,
     Loading = 1,
@@ -10474,7 +10436,7 @@ export enum TileTreeLoadStatus {
     NotLoaded = 0
 }
 
-// @beta
+// @public
 export interface TileTreeOwner {
     // @internal
     dispose(): void;
@@ -10485,8 +10447,9 @@ export interface TileTreeOwner {
     readonly tileTree: TileTree | undefined;
 }
 
-// @beta
+// @public
 export interface TileTreeParams {
+    // @beta
     clipVolume?: RenderClipVolume;
     contentRange?: ElementAlignedBox3d;
     expirationTime?: BeDuration;
@@ -10497,7 +10460,7 @@ export interface TileTreeParams {
     priority: TileLoadPriority;
 }
 
-// @beta
+// @public
 export abstract class TileTreeReference {
     // (undocumented)
     accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes): void;
@@ -10513,6 +10476,7 @@ export abstract class TileTreeReference {
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     draw(args: TileDrawArgs): void;
     protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined;
+    // @beta
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
     protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
@@ -10522,16 +10486,15 @@ export abstract class TileTreeReference {
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined>;
     protected getViewFlagOverrides(tree: TileTree): ViewFlagOverrides;
     get isGlobal(): boolean;
-    // @internal
     get isLoadingComplete(): boolean;
-    // @internal
     protected get _isLoadingComplete(): boolean;
+    // @alpha
     get planarclipMaskPriority(): number;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }
 
-// @beta
+// @public
 export interface TileTreeSupplier {
     compareTileTreeIds(lhs: any, rhs: any): number;
     createTileTree(id: any, iModel: IModelConnection): Promise<TileTree | undefined>;
@@ -10547,14 +10510,14 @@ export class TileUrlImageryProvider extends MapLayerImageryProvider {
     static validateUrlTemplate(template: string): MapLayerSourceValidation;
 }
 
-// @beta
+// @public
 export class TileUsageMarker {
     constructor();
     isExpired(expirationTime: BeTimePoint): boolean;
     mark(vp: Viewport, time: BeTimePoint): void;
     }
 
-// @beta
+// @public
 export enum TileVisibility {
     OutsideFrustum = 0,
     TooCoarse = 1,
@@ -10844,14 +10807,10 @@ export type ToolList = ToolType[];
 export class ToolRegistry {
     create(toolId: string, ...args: any[]): Tool | undefined;
     find(toolId: string): ToolType | undefined;
-    // @internal
     findExactMatch(keyin: string): ToolType | undefined;
-    // @internal
     findPartialMatches(keyin: string): FuzzySearchResults<ToolType>;
     getToolList(): ToolList;
-    // @beta
     parseAndRun(keyin: string): ParseAndRunResult;
-    // @beta
     parseKeyin(keyin: string): ParseKeyinResult;
     register(toolClass: ToolType, namespace?: I18NNamespace, i18n?: I18N): void;
     registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N): void;
@@ -11027,13 +10986,13 @@ export class TraversalSelectionContext {
 // @public
 export function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined>;
 
-// @beta
+// @public
 export class TwoWayViewportSync {
     connect(view1: Viewport, view2: Viewport): void;
     disconnect(): void;
     }
 
-// @beta
+// @public
 export interface Uniform {
     setUniform1f: (value: number) => void;
     setUniform1fv: (value: Float32Array | number[]) => void;
@@ -11044,24 +11003,24 @@ export interface Uniform {
     setUniform4fv: (value: Float32Array | number[]) => void;
 }
 
-// @beta
+// @public
 export interface UniformArrayParams extends UniformParams {
     length: number;
 }
 
-// @beta
+// @public
 export interface UniformContext {
     viewport: Viewport;
 }
 
-// @beta
+// @public
 export interface UniformParams {
     bind: (uniform: Uniform, context: UniformContext) => void;
     name: string;
     type: UniformType;
 }
 
-// @beta
+// @public
 export enum UniformType {
     Bool = 0,
     Float = 2,
@@ -11109,7 +11068,7 @@ export class UpsampledMapTile extends MapTile {
     get loadableTile(): RealityTile;
 }
 
-// @beta
+// @public
 export enum VaryingType {
     Float = 0,
     Vec2 = 1,
@@ -11712,11 +11671,10 @@ export enum ViewHandleType {
     Zoom = 16
 }
 
-// @beta
+// @public
 export class ViewingSpace {
     // (undocumented)
     calcNpcToView(): Map4d;
-    // @internal (undocumented)
     static createFromViewport(vp: Viewport): ViewingSpace | undefined;
     readonly eyePoint: Point3d | undefined;
     // @internal (undocumented)
@@ -11757,13 +11715,11 @@ export class ViewingSpace {
     viewToWorldArray(pts: Point3d[]): void;
     worldToNpc(pt: XYAndZ, out?: Point3d): Point3d;
     worldToNpcArray(pts: Point3d[]): void;
-    // @internal (undocumented)
     readonly worldToNpcMap: Map4d;
     worldToView(input: XYAndZ, out?: Point3d): Point3d;
     worldToView4d(input: XYAndZ, out?: Point4d): Point4d;
     worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void;
     worldToViewArray(pts: Point3d[]): void;
-    // @internal (undocumented)
     readonly worldToViewMap: Map4d;
     // @internal (undocumented)
     readonly zClipAdjusted: boolean;
@@ -12058,7 +12014,6 @@ export abstract class Viewport implements IDisposable {
     addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void;
     // @internal
     addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
-    // @beta
     addScreenSpaceEffect(effectName: string): void;
     // @beta
     addTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
@@ -12089,7 +12044,7 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     changeDynamics(dynamics: GraphicList | undefined): void;
     // @internal (undocumented)
-    protected _changeFlags: ChangeFlags;
+    protected _changeFlags: MutableChangeFlags;
     changeModelDisplay(models: Id64Arg, display: boolean): boolean;
     changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void;
     changeView(view: ViewState, _opts?: ViewChangeOptions): void;
@@ -12113,7 +12068,6 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     createSceneContext(): SceneContext;
     cssPixelsToDevicePixels(cssPixels: number): number;
-    // @internal
     get debugBoundingBoxes(): TileBoundingBoxes;
     set debugBoundingBoxes(boxes: TileBoundingBoxes);
     // @internal (undocumented)
@@ -12237,21 +12191,17 @@ export abstract class Viewport implements IDisposable {
     readonly onAlwaysDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onChangeView: BeEvent<(vp: Viewport, previousViewState: ViewState) => void>;
     readonly onDisplayStyleChanged: BeEvent<(vp: Viewport) => void>;
-    // @beta
     readonly onDisposed: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
-    // @beta
     readonly onResized: BeEvent<(vp: Viewport) => void>;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedModelsChanged: BeEvent<(vp: Viewport) => void>;
-    // @beta
     readonly onViewportChanged: BeEvent<(vp: Viewport, changed: ChangeFlags) => void>;
-    // @beta
     readonly onViewUndoRedo: BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>;
     // @beta
     get outsideClipColor(): ColorDef | undefined;
@@ -12276,7 +12226,6 @@ export abstract class Viewport implements IDisposable {
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
-    // @beta
     removeScreenSpaceEffects(): void;
     // @internal (undocumented)
     renderFrame(): void;
@@ -12291,14 +12240,12 @@ export abstract class Viewport implements IDisposable {
     get sceneValid(): boolean;
     // @internal (undocumented)
     protected _sceneValid: boolean;
-    // @beta
     get screenSpaceEffects(): Iterable<string>;
     set screenSpaceEffects(effects: Iterable<string>);
     scroll(screenDist: XAndY, options?: ViewChangeOptions): void;
     // @internal
     setAllValid(): void;
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
-    // @beta
     setAnimator(animator?: Animator): void;
     setFeatureOverrideProviderChanged(): void;
     // @internal
@@ -12308,7 +12255,6 @@ export abstract class Viewport implements IDisposable {
     // @internal
     setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void;
     setNeverDrawn(ids: Id64Set): void;
-    // @beta
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): void;
     // @internal @deprecated (undocumented)
     setRedrawPending(): void;
@@ -12354,7 +12300,7 @@ export abstract class Viewport implements IDisposable {
     set viewFlags(viewFlags: ViewFlags);
     // @alpha
     get viewingGlobe(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     get viewingSpace(): ViewingSpace;
     // @internal
     get viewportId(): number;
@@ -12544,7 +12490,6 @@ export abstract class ViewState extends ElementState {
     get analysisStyle(): AnalysisStyle | undefined;
     // @internal (undocumented)
     abstract applyPose(props: ViewPose): this;
-    // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // @internal
     attachToViewport(): void;
@@ -12579,7 +12524,6 @@ export abstract class ViewState extends ElementState {
     description?: string;
     // @internal
     detachFromViewport(): void;
-    // @beta
     abstract get details(): ViewDetails;
     // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
@@ -12595,7 +12539,7 @@ export abstract class ViewState extends ElementState {
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal
     abstract forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
-    // @internal (undocumented)
+    // @internal
     forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void;
     getAspectRatio(): number;
     getAspectRatioSkew(): number;
@@ -12609,7 +12553,7 @@ export abstract class ViewState extends ElementState {
     // (undocumented)
     getGridsPerRef(): number;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
-    // @internal (undocumented)
+    // @beta
     getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
     // @internal
     getModelElevation(_modelId: Id64String): number;
@@ -12629,11 +12573,9 @@ export abstract class ViewState extends ElementState {
     get globalScopeFactor(): number;
     // @internal
     get globeMode(): GlobeMode;
-    // @internal
     hasSameCoordinates(other: ViewState): boolean;
     is2d(): this is ViewState2d;
     abstract is3d(): this is ViewState3d;
-    // @alpha
     get isAttachedToViewport(): boolean;
     isCameraEnabled(): this is ViewState3d;
     abstract isDrawingView(): this is DrawingViewState;
@@ -12645,17 +12587,15 @@ export abstract class ViewState extends ElementState {
     load(): Promise<void>;
     lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: ViewChangeOptions): void;
     lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: ViewChangeOptions): void;
-    // @alpha
+    // @internal
     get maxGlobalScopeFactor(): number;
-    // @alpha
+    // @beta
     get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined;
     set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined);
     get name(): string;
-    // @beta
     readonly onDisplayStyleChanged: BeEvent<(newStyle: DisplayStyleState) => void>;
-    // @alpha
-    readonly onModelDisplayTransformProviderChanged: BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>;
     // @beta
+    readonly onModelDisplayTransformProviderChanged: BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>;
     readonly onViewedCategoriesChanged: BeEvent<() => void>;
     // @internal (undocumented)
     outputStatusMessage(status: ViewStatus): ViewStatus;
@@ -12682,7 +12622,6 @@ export abstract class ViewState extends ElementState {
     setStandardRotation(id: StandardViewId): void;
     setupFromFrustum(inFrustum: Frustum, opts?: ViewChangeOptions): ViewStatus;
     setViewClip(clip?: ClipVector): void;
-    // (undocumented)
     toJSON(): ViewDefinitionProps;
     toProps(): ViewStateProps;
     // @internal (undocumented)
@@ -12710,7 +12649,6 @@ export abstract class ViewState2d extends ViewState {
     get baseModelId(): Id64String;
     // (undocumented)
     protected _baseModelId: Id64String;
-    // @alpha
     changeViewedModel(newViewedModelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
@@ -12720,7 +12658,6 @@ export abstract class ViewState2d extends ViewState {
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     // (undocumented)
     readonly delta: Point2d;
-    // @beta
     get details(): ViewDetails;
     // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
@@ -12787,7 +12724,6 @@ export abstract class ViewState3d extends ViewState {
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     // (undocumented)
     decorate(context: DecorateContext): void;
-    // @beta
     get details(): ViewDetails3d;
     get displayStyle(): DisplayStyle3dState;
     set displayStyle(style: DisplayStyle3dState);
@@ -12841,9 +12777,7 @@ export abstract class ViewState3d extends ViewState {
     // (undocumented)
     get isGlobalView(): boolean;
     lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
-    // @alpha
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
-    // @alpha
     lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
     lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
@@ -12950,7 +12884,7 @@ export abstract class ViewTool extends InteractiveTool {
     viewport?: ScreenViewport | undefined;
 }
 
-// @beta
+// @public
 export enum ViewUndoEvent {
     // (undocumented)
     Redo = 1,
