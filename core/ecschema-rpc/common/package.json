@@ -10,6 +10,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-rpc/common"
   },
   "scripts": {
+    "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
