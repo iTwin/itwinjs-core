@@ -10,9 +10,6 @@
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
 
-/** @internal */
-export enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
-
 /** Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
  * Generally speaking,
  *  - Wireframe draws only edges.

@@ -16,7 +16,8 @@ import { MarginPercent } from "./MarginPercent";
  * The animator's animate() function will be invoked just prior to the rendering of each frame.
  * The animator may be removed in response to certain changes to the viewport - e.g., when
  * the viewport is closed, or viewing tools operate on it, etc.
- * @beta
+ * @see [[Viewport.setAnimator]] to apply an animator to a viewport.
+ * @public
  */
 export interface Animator {
   /** Apply animation to the viewport. Return true when animation is completed, causing the animator to be removed from the viewport. */
