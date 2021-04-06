@@ -113,7 +113,12 @@ export class ElectronHost {
     let assetPath = requestedUrl.substr(this._electronFrontend.length);
     if (assetPath.length === 0)
       assetPath = "index.html";
-    assetPath = assetPath.replace(/(#|\?).*$/, "");
+    let regexp = ["..", "#", "?", "*", "$"];
+    for (var i = 0; i < regexp.length; i++) {
+      while (assetPath.includes(regexp[i]))
+        assetPath = assetPath.replace(regexp[i], "");
+    }
+
 
     // NEEDS_WORK: Remove this after migration to DesktopAuthorizationClient
     assetPath = assetPath.replace("signin-callback", "index.html");
