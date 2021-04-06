@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ChangeFlag, ChangeFlags } from "../../../ChangeFlags";
+import { ChangeFlag, MutableChangeFlags } from "../../../ChangeFlags";
 
 describe("ChangeFlags", () => {
   it("should behave as expected", () => {
-    const f = new ChangeFlags();
+    const f = new MutableChangeFlags();
     expect(f.hasChanges).to.be.true;
     expect(f.value).to.equal(ChangeFlag.Initial);
     expect(f.areFeatureOverridesDirty).to.be.true;
@@ -18,7 +18,7 @@ describe("ChangeFlags", () => {
     expect(f.isSet(ChangeFlag.AlwaysDrawn)).to.be.false;
     expect(f.isSet(ChangeFlag.ViewedCategories)).to.be.true;
 
-    const f1 = new ChangeFlags(ChangeFlag.All);
+    const f1 = new MutableChangeFlags(ChangeFlag.All);
     expect(f1.hasChanges).to.be.true;
     expect(f1.value).to.equal(ChangeFlag.All);
     expect(f1.areFeatureOverridesDirty).to.be.true;
