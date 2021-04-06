@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/schema-rpcinterface-common",
-      "comment": "migrate rpc interface packages from imodeljs-internal",
+      "comment": "schema rpc interface initial release ",
       "type": "none"
     }
   ],
