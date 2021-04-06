@@ -2,8 +2,8 @@
   "name": "@bentley/ecschema-rpcinterface-common",
   "version": "2.15.0-dev.19",
   "description": "Schema RPC Interface common interface",
-  "main": "lib/ECSchemaRpcInterface.js",
-  "typings": "lib/ECSchemaRpcInterface",
+  "main": "lib/ecschema-rpc-interface.js",
+  "typings": "lib/ecschema-rpc-interface",
   "license": "MIT",
   "repository": {
     "type": "git",

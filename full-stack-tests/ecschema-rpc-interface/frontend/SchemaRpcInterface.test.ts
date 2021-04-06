@@ -9,7 +9,7 @@ import chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common/lib/ECSchemaRpcInterface";
+import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
 import { TestContext } from "./setup/TestContext";
 import { SchemaKey, SchemaProps } from "@bentley/ecschema-metadata";
 

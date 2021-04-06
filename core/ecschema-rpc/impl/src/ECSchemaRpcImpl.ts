@@ -5,7 +5,7 @@
 import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
 import * as backend from "@bentley/imodeljs-backend";
-import { SchemaKey, SchemaProps } from "@bentley/ecschema-metadata";
+import { SchemaKey } from "@bentley/ecschema-metadata";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
 /**
@@ -20,7 +20,7 @@ interface SchemaNameRow {
 
 /**
  * Implementation of the SchemaRpcInterface.
- * @Internal
+ * @internal
  */
 export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
   /**

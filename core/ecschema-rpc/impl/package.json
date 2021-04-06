@@ -2,8 +2,8 @@
   "name": "@bentley/ecschema-rpcinterface-impl",
   "version": "2.15.0-dev.19",
   "description": "Schema RPC Interface backend implementation",
-  "main": "lib/ECSchemaRpcImpl.js",
-  "typings": "lib/ECSchemaRpcImpl",
+  "main": "lib/ecschema-rpc-impl.js",
+  "typings": "lib/ecschema-rpc-impl",
   "license": "MIT",
   "repository": {
     "type": "git",
