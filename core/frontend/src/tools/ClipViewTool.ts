@@ -29,7 +29,9 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
 
 // cSpell:ignore geti
 
-/** @public An object that can react to a view's clip being changed by tools or modify handles. */
+/** An object that can react to a view's clip being changed by tools or modify handles.
+ * @public
+ */
 export interface ViewClipEventHandler {
   selectOnCreate(): boolean; // Add newly created clip geometry to selection set and show modify controls.
   clearOnDeselect(): boolean; // Stop displaying clip geometry when clip is removed from the selection set.
@@ -60,7 +62,9 @@ export interface DrawClipOptions {
   id?: string;
 }
 
-/** @public A tool to define a clip volume for a view */
+/** A tool to define a clip volume for a view
+ * @public
+ */
 export class ViewClipTool extends PrimitiveTool {
   constructor(protected _clipEventHandler?: ViewClipEventHandler) { super(); }
 
@@ -399,7 +403,9 @@ export class ViewClipTool extends PrimitiveTool {
   }
 }
 
-/** @public A tool to remove a clip volume for a view */
+/** A tool to remove a clip volume for a view
+ * @public
+ */
 export class ViewClipClearTool extends ViewClipTool {
   public static toolId = "ViewClip.Clear";
   public static iconSpec = "icon-section-tool";
@@ -432,7 +438,9 @@ export class ViewClipClearTool extends ViewClipTool {
   }
 }
 
-/** @public A tool to define a clip volume for a view by specifying a plane */
+/** A tool to define a clip volume for a view by specifying a plane
+ * @public
+ */
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
   public static iconSpec = "icon-section-plane";
@@ -504,7 +512,9 @@ export class ViewClipByPlaneTool extends ViewClipTool {
   }
 }
 
-/** @public A tool to define a clip volume for a view by specifying a shape */
+/** A tool to define a clip volume for a view by specifying a shape
+ * @public
+ */
 export class ViewClipByShapeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByShape";
   public static iconSpec = "icon-section-shape";
@@ -719,7 +729,9 @@ export class ViewClipByShapeTool extends ViewClipTool {
   }
 }
 
-/** @public A tool to define a clip volume for a view by specifying range corners */
+/** A tool to define a clip volume for a view by specifying range corners
+ * @public
+ */
 export class ViewClipByRangeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByRange";
   public static iconSpec = "icon-section-range";
@@ -827,7 +839,9 @@ export class ViewClipByRangeTool extends ViewClipTool {
   }
 }
 
-/** @public A tool to define a clip volume for a view using the element aligned box or axis aligned box. */
+/** A tool to define a clip volume for a view using the element aligned box or axis aligned box.
+ * @public
+ */
 export class ViewClipByElementTool extends ViewClipTool {
   public static toolId = "ViewClip.ByElement";
   public static iconSpec = "icon-section-element";
@@ -1721,10 +1735,14 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 }
 
-/** @public Event types for ViewClipDecorationProvider.onActiveClipChanged */
+/** Event types for ViewClipDecorationProvider.onActiveClipChanged \
+ * @public
+ */
 export enum ClipEventType { New, NewPlane, Modify, Clear }
 
-/** @public An implementation of ViewClipEventHandler that responds to new clips by presenting clip modification handles */
+/** An implementation of ViewClipEventHandler that responds to new clips by presenting clip modification handles
+ * @public
+ */
 export class ViewClipDecorationProvider implements ViewClipEventHandler {
   private static _provider?: ViewClipDecorationProvider;
   public selectDecorationOnCreate = true;

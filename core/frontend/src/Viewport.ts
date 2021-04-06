@@ -84,7 +84,9 @@ export interface ViewportDecorator {
   decorate(context: DecorateContext): void;
 }
 
-/** @public Source of depth point returned by [[Viewport.pickDepthPoint]]. */
+/** Source of depth point returned by [[Viewport.pickDepthPoint]].
+ * @public
+ */
 export enum DepthPointSource {
   /** Depth point from geometry within specified radius of pick point */
   Geometry, // eslint-disable-line @typescript-eslint/no-shadow
@@ -104,7 +106,9 @@ export enum DepthPointSource {
   Map,
 }
 
-/** @public Options to control behavior of [[Viewport.pickDepthPoint]]. */
+/** Options to control behavior of [[Viewport.pickDepthPoint]].
+ * @public
+ */
 export interface DepthPointOptions {
   /** If true, geometry with the "non-locatable" flag set will not be selected. */
   excludeNonLocatable?: boolean;
