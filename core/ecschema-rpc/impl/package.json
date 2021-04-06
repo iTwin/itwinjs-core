@@ -15,6 +15,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
+    "extract-api": "betools extract-api --entry=ecschema-rpc-impl",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
