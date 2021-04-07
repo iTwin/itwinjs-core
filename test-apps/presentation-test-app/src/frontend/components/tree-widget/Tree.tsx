@@ -20,7 +20,8 @@ interface Props {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Tree: React.FC<Props> = (props: Props) => {
-  const [diagnosticsOptions, setDiagnosticsOptions] = React.useState({ ruleDiagnostics: undefined, devDiagnostics: undefined } as DiagnosticsProps);
+  const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
+
 
   const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.imodel,
