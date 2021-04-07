@@ -415,6 +415,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
+      "name": "cross-fetch",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "cross-spawn",
       "allowedCategories": [ "tools" ]
     },
