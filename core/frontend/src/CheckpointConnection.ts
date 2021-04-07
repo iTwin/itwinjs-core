@@ -11,9 +11,11 @@ import {
   AxisAlignedBox3d, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, IModelWriteRpcInterface,
   RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, WipRpcInterface,
 } from "@bentley/imodeljs-common";
-import { IModelApp } from "./IModelApp";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { IModelRoutingContext } from "./IModelRoutingContext";
 import { IModelConnection } from "./IModelConnection";
-import { AuthorizedFrontendRequestContext, FrontendLoggerCategory, IModelRoutingContext } from "./imodeljs-frontend";
+import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
+
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
