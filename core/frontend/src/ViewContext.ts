@@ -9,8 +9,10 @@
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
   ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GridInViewContext, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
-  Point3d, Range1d, Range3d, Segment1d, Transform, Vector2d, Vector3d, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY} from "@bentley/geometry-core";
+  Point3d, Range1d, Range3d, Segment1d, Transform, Vector2d, Vector3d, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY,
+} from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
@@ -25,7 +27,6 @@ import { Scene } from "./render/Scene";
 import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
 import { ViewingSpace } from "./ViewingSpace";
 import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
-import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 
 /** @internal */
 export class GridDisplaySettings {
@@ -346,6 +347,11 @@ export class DecorateContext extends RenderContext {
   /** @internal */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
+    const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(),  { origin: gridOrigin, rMatrix, spacing, gridsPerRef } );
+    if (planarGrid) {
+      this.addDecoration(GraphicType.WorldDecoration, planarGrid);
+      return;
+    }
     if (vp.viewingGlobe)
       return;
     const eyePoint = vp.worldToViewMap.transform1.columnZ();

@@ -9,7 +9,7 @@
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import {
-  ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
+  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
 } from "@bentley/imodeljs-common";
 import { Capabilities, DepthType, WebGLContext } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
@@ -59,6 +59,8 @@ import { Techniques } from "./Technique";
 import { RealityMeshGeometry } from "./RealityMesh";
 import { Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
+import { PlanarGridProps } from "../primitives/PlanarGrid";
+import { PlanarGridGeometry } from "./PlanarGrid";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -506,6 +508,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public createMesh(params: MeshParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
     return MeshGraphic.create(params, instances);
+  }
+
+  public createPlanarGrid(frustum: Frustum, grid: PlanarGridProps): RenderGraphic | undefined {
+    const geom = PlanarGridGeometry.create (frustum, grid);
+    return geom ?  Primitive.create(() =>  geom) : undefined;
   }
 
   public createRealityMeshFromTerrain(terrainMesh: TerrainMeshPrimitive, transform?: Transform): RealityMeshGeometry | undefined {

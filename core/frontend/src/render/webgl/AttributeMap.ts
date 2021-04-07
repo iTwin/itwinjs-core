@@ -88,6 +88,10 @@ export class AttributeMap {
       ["a_norm", 1, VariableType.Vec2],
       ["a_uvParam", 2, VariableType.Vec2],
     ]);
+    const planarGrid = new AttributeMapEntry([
+      ["a_pos", 0, VariableType.Vec3],
+    ]);
+
     const screenPoints = new AttributeMapEntry([
       ["a_pos", 0, VariableType.Vec2],
     ]);
@@ -102,6 +106,7 @@ export class AttributeMap {
       [TechniqueId.PointCloud, pointCloud],
       [TechniqueId.VolClassCopyZ, screenPoints],
       [TechniqueId.RealityMesh, realityMesh],
+      [TechniqueId.PlanarGrid, planarGrid],
     ]);
   }
 

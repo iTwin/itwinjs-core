@@ -24,6 +24,7 @@ export const enum TechniqueId {
   Edge,
   SilhouetteEdge,
   RealityMesh,
+  PlanarGrid,
 
   // Techniques with a single associated shader that operates on the entire image
   CompositeHilite,
