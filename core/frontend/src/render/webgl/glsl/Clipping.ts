@@ -16,7 +16,7 @@ import { addModelViewMatrix } from "./Vertex";
 const getClipPlaneFloat = `
 vec4 getClipPlane(int index) {
   float x = 0.5;
-  float y = (float(index) + 0.5) / float(u_clipParams.z);
+  float y = (float(index) + 0.5) / float(u_clipParams[2]);
   return TEXTURE(s_clipSampler, vec2(x, y));
 }
 `;
@@ -38,7 +38,7 @@ float unpackFloat(vec4 v) {
 // ###TODO: oct-encode the normal to reduce # of samples from 4 to 2
 const unpackClipPlane = `
 vec4 getClipPlane(int index) {
-  float y = (float(index) + 0.5) / float(u_clipParams.z);
+  float y = (float(index) + 0.5) / float(u_clipParams[2]);
   float sx = 0.25;
   vec2 tc = vec2(0.125, y);
   float nx = unpackFloat(TEXTURE(s_clipSampler, tc));
@@ -65,13 +65,13 @@ const applyClipPlanesPrelude = `
 `;
 
 const applyClipPlanesLoopWebGL1 = `
-  for (int i = u_clipParams.x; i < MAX_CLIPPING_PLANES; i++) {
-    if (i >= u_clipParams.y)
+  for (int i = u_clipParams[0]; i < MAX_CLIPPING_PLANES; i++) {
+    if (i >= u_clipParams[1])
       break;
 `;
 
 const applyClipPlanesLoopWebGL2 = `
-  for (int i = u_clipParams.x; i < u_clipParams.z; i++) {
+  for (int i = u_clipParams[0]; i < u_clipParams[1]; i++) {
 `;
 
 const applyClipPlanesPostlude = `
@@ -111,7 +111,7 @@ const applyClipPlanesPostlude = `
 const applyClipPlanesWebGL1 = applyClipPlanesPrelude + applyClipPlanesLoopWebGL1 + applyClipPlanesPostlude;
 const applyClipPlanesWebGL2 = applyClipPlanesPrelude + applyClipPlanesLoopWebGL2 + applyClipPlanesPostlude;
 
-const clipParams = new Float32Array(3);
+const clipParams = new Int32Array(3);
 
 /** @internal */
 export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
@@ -121,7 +121,7 @@ export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
   addEyeSpace(prog);
 
   // x = index of first plane, y = index of last plane (one past the end), z = texture height.
-  prog.addUniform("u_clipParams", VariableType.Vec3, (program) => {
+  prog.addUniformArray("u_clipParams", VariableType.Int, 3, (program) => {
     program.addGraphicUniform("u_clipParams", (uniform, params) => {
       // Set this to false to visualize pre-shader culling of geometry.
       const doClipping = true;
@@ -131,7 +131,7 @@ export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
       clipParams[1] = stack.endIndex;
       clipParams[2] = doClipping ? stack.textureHeight : 0;
       assert(clipParams[2] > 0 || !doClipping);
-      uniform.setUniform3fv(clipParams);
+      uniform.setUniform1iv(clipParams);
     });
   });
 

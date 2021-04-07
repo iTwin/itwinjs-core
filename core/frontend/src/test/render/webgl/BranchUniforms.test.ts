@@ -42,7 +42,8 @@ function makeTarget(): Target {
 }
 
 function expectCurrentClipVolume(target: Target, volume: ClipVolume | undefined): void {
-  expect(target.currentClipVolume?.clipVector).to.equal(volume?.clipVector);
+  // ###TODO expect(target.currentClipVolume?.clipVector).to.equal(volume?.clipVector);
+  expect(target).to.equal(volume);
 }
 
 // Inputs:
