@@ -5,8 +5,9 @@
 
 import { DbResult, Id64, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
-  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions, PhysicalModel,
-  PhysicalPartition, Relationship, SubCategory,
+  BackendRequestContext, ECSqlStatement, Element, ElementRefersToElements, GeometryPart, IModelDb, IModelTransformer, IModelTransformOptions,
+  InformationPartitionElement,
+  PhysicalModel, PhysicalPartition, Relationship, SubCategory,
 } from "@bentley/imodeljs-backend";
 import { IModel } from "@bentley/imodeljs-common";
 
@@ -59,6 +60,7 @@ export class Transformer extends IModelTransformer {
   private initialize(): void {
     Logger.logInfo(progressLoggerCategory, `sourceDb=${this.sourceDb.pathName}`);
     Logger.logInfo(progressLoggerCategory, `targetDb=${this.targetDb.pathName}`);
+    this.logChangeTrackingMemoryUsed();
 
     // query for and log the number of source Elements that will be processed
     this._numSourceElements = this.sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
@@ -98,6 +100,9 @@ export class Transformer extends IModelTransformer {
    * @note Override of IModelExportHandler.shouldExportElement
    */
   protected shouldExportElement(sourceElement: Element): boolean {
+    if (sourceElement instanceof InformationPartitionElement) {
+      Logger.logInfo(progressLoggerCategory, `${sourceElement.classFullName} "${sourceElement.getDisplayLabel()}"`);
+    }
     if (this._numSourceElementsProcessed < this._numSourceElements) { // with deferred element processing, the number processed can be more than the total
       ++this._numSourceElementsProcessed;
     }
@@ -107,6 +112,13 @@ export class Transformer extends IModelTransformer {
     }
     return super.shouldExportElement(sourceElement);
   }
+
+  // protected onTransformElement(sourceElement: Element): ElementProps {
+  //   if (sourceElement.getDisplayLabel() === "L1.DS1-DC1-010-V-0001.ifc") {
+  //     Logger.logInfo(progressLoggerCategory, "Found problem element");
+  //   }
+  //   return super.onTransformElement(sourceElement);
+  // }
 
   protected shouldExportRelationship(relationship: Relationship): boolean {
     if (this._numSourceRelationshipsProcessed < this._numSourceRelationships) {
@@ -123,13 +135,22 @@ export class Transformer extends IModelTransformer {
       Logger.logInfo(progressLoggerCategory, `Processed ${this._numSourceRelationshipsProcessed} of ${this._numSourceRelationships} relationships`);
     }
     this.logElapsedTime();
-    this.targetDb.saveChanges();
+    this.logChangeTrackingMemoryUsed();
+    // this.targetDb.saveChanges();
     super.onProgress();
   }
 
   private logElapsedTime(): void {
     const elapsedTimeMinutes: number = (new Date().valueOf() - this._startTime.valueOf()) / 60000.0;
     Logger.logInfo(progressLoggerCategory, `Elapsed time: ${Math.round(100 * elapsedTimeMinutes) / 100.0} minutes`);
+  }
+
+  public logChangeTrackingMemoryUsed(): void {
+    if (this.targetDb.isBriefcase) {
+      const bytesUsed = this.targetDb.nativeDb.getChangeTrackingMemoryUsed(); // can't call this internal method unless targetDb has change tracking enabled
+      const mbUsed = Math.round((bytesUsed * 100) / (1024 * 1024)) / 100;
+      Logger.logInfo(progressLoggerCategory, `Change Tracking Memory Used: ${mbUsed} MB`);
+    }
   }
 
   private deleteUnusedGeometryParts(): void {
