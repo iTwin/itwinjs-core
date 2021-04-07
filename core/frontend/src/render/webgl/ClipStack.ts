@@ -10,7 +10,7 @@ import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture";
-import { ClipVolume } from "./ClipVolume";
+import { BlipVolume } from "./ClipVolume";
 import { GL } from "./GL";
 import { System } from "./System";
 
@@ -24,7 +24,7 @@ export class ClipStack {
   protected readonly _isFloatTexture: boolean
   protected _numTotalRows: number;
   protected _numRowsInUse: number;
-  protected readonly _stack: ClipVolume[] = [];
+  protected readonly _stack: BlipVolume[] = [];
   protected _isStackDirty = false;
   protected readonly _getTransform: () => Transform;
   protected readonly _wantInitialClip: () => boolean;
@@ -40,7 +40,7 @@ export class ClipStack {
   }
 
   public push(clip: RenderClipVolume): void {
-    assert(clip instanceof ClipVolume);
+    assert(clip instanceof BlipVolume);
 
     this._stack.push(clip);
     this._numRowsInUse += clip.numRows;

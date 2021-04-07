@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ClipPrimitive, ClipShape, ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets } from "@bentley/geometry-core";
-import { ClipVolume } from "../../../render/webgl/ClipVolume";
+import { BlipVolume, ClipVolume } from "../../../render/webgl/ClipVolume";
 import { ClipStack } from "../../../render/webgl/ClipStack";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { IModelApp } from "../../../IModelApp";
@@ -66,7 +66,7 @@ for (let i = 0; i < 2; i++) {
       public pushClip(offset = 0): void {
         const clip = ClipVector.createEmpty();
         clip.appendShape([ Point3d.create(offset + 1, 1, 0), Point3d.create(offset + 2, 1, 0), Point3d.create(offset + 2, 2, 0), Point3d.create(offset + 1, 2, 0)]);
-        const vol = ClipVolume.create(clip);
+        const vol = BlipVolume.create(clip);
         expect(vol).not.to.be.undefined;
         this.push(vol!);
       }
