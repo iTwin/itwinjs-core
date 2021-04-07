@@ -3169,7 +3169,7 @@ export class FitViewTool extends ViewTool {
 }
 
 /** A tool that views a location on the background map from a satellite's perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeSatelliteTool extends ViewTool {
   public static toolId = "View.GlobeSatellite";
@@ -3183,6 +3183,7 @@ export class ViewGlobeSatelliteTool extends ViewTool {
     this.doAnimate = doAnimate;
   }
 
+  /** @internal */
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
       return (await this._beginSatelliteView(ev.viewport, this.oneShot, this.doAnimate)) ? EventHandled.Yes : EventHandled.No;
@@ -3190,6 +3191,7 @@ export class ViewGlobeSatelliteTool extends ViewTool {
     return EventHandled.No;
   }
 
+  /** @internal */
   public onPostInstall() {
     super.onPostInstall();
     const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
@@ -3223,7 +3225,7 @@ export class ViewGlobeSatelliteTool extends ViewTool {
 }
 
 /** A tool that views a location on the background map from a bird's eye perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeBirdTool extends ViewTool {
   public static toolId = "View.GlobeBird";
@@ -3237,6 +3239,7 @@ export class ViewGlobeBirdTool extends ViewTool {
     this.doAnimate = doAnimate;
   }
 
+  /** @internal */
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
       return (await this._beginDoBirdView(ev.viewport, this.oneShot, this.doAnimate)) ? EventHandled.Yes : EventHandled.No;
@@ -3244,6 +3247,7 @@ export class ViewGlobeBirdTool extends ViewTool {
     return EventHandled.No;
   }
 
+  /** @internal */
   public onPostInstall() {
     super.onPostInstall();
     const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
@@ -3279,7 +3283,7 @@ export class ViewGlobeBirdTool extends ViewTool {
 /** A tool that views a location on the background map corresponding to a specified string.
  * This will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed.
  * Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeLocationTool extends ViewTool {
   private _globalLocation?: GlobalLocation;
@@ -3298,8 +3302,11 @@ export class ViewGlobeLocationTool extends ViewTool {
   public static get minArgs() { return 1; }
   public static get maxArgs() { return undefined; }
 
-  // arguments: latitude longitude | string
-  // the latitude and longitude arguments are specified in degrees
+  /** This runs the tool based on the provided location arguments.
+   * arguments: latitude longitude | string
+   * If specified, the latitude and longitude arguments are numbers specified in degrees.
+   * If specified, the string argument contains a location name. Examples of location name include named geographic areas like "Seattle, WA" or "Alaska", a specific address like "1600 Pennsylvania Avenue NW, Washington, DC 20500", or a place name like "Philadelphia Museum of Art".
+   **/
   public parseAndRun(...args: string[]): boolean {
     if (2 === args.length) { // try to parse latitude and longitude
       const latitude = parseFloat(args[0]);
@@ -3332,6 +3339,7 @@ export class ViewGlobeLocationTool extends ViewTool {
     return true;
   }
 
+  /** @internal */
   public onPostInstall() {
     super.onPostInstall();
     (async () => {
@@ -3352,7 +3360,7 @@ export class ViewGlobeLocationTool extends ViewTool {
 }
 
 /** A tool that views the current iModel on the background map so that the extent of the project is visible. Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeIModelTool extends ViewTool {
   public static toolId = "View.GlobeIModel";
@@ -3366,6 +3374,7 @@ export class ViewGlobeIModelTool extends ViewTool {
     this.doAnimate = doAnimate;
   }
 
+  /** @internal */
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
       return this._doIModelView() ? EventHandled.Yes : EventHandled.No;
@@ -3373,6 +3382,7 @@ export class ViewGlobeIModelTool extends ViewTool {
     return EventHandled.No;
   }
 
+  /** @internal */
   public onPostInstall() {
     super.onPostInstall();
     this._doIModelView();
@@ -4288,7 +4298,7 @@ export class SetupCameraTool extends PrimitiveTool {
 }
 
 /** A tool that sets a walk tool starting position by a floor point and look direction. This is a PrimitiveTool and not a ViewTool to allow the view to be panned, zoomed, and rotated while defining the points.
- * @beta
+ * @public
  */
 export class SetupWalkCameraTool extends PrimitiveTool {
   public static toolId = "View.SetupWalkCamera";

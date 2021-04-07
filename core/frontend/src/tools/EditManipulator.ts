@@ -23,7 +23,7 @@ import { ManipulatorToolEvent } from "./ToolAdmin";
 
 /** A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
  * Interactive modification is handled by installing an InputCollector tool.
- * @alpha
+ * @internal
  */
 export namespace EditManipulator {
   export enum EventType { Synch, Cancel, Accept }
@@ -292,7 +292,7 @@ export namespace EditManipulator {
       return shapePts;
     }
 
-    /** @internal Adjust for contrast against view background color when it's relevant */
+    /** Adjust for contrast against view background color when it's relevant */
     public static adjustForBackgroundColor(color: ColorDef, vp: Viewport): ColorDef {
       if (vp.view.is3d() && vp.view.getDisplayStyle3d().environment.sky.display)
         return color;

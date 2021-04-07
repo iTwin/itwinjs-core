@@ -15,7 +15,8 @@ import { IpcApp, NotificationHandler } from "./IpcApp";
 
 /**
  * Base class for notification handlers for events from the backend that are specific to a [[BriefcaseConnection]].
- * @beta
+ * @see [[BriefcaseTxns]].
+ * @public
  */
 export abstract class BriefcaseNotificationHandler extends NotificationHandler {
   constructor(private _key: string) { super(); }
@@ -26,7 +27,7 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
 /** Manages local changes to a [[BriefcaseConnection]] via [Txns]($docs/learning/InteractiveEditing.md).
  * @see [[BriefcaseConnection.txns]].
  * @see [TxnManager]($backend) for the backend counterpart.
- * @beta
+ * @public
  */
 export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNotifications {
   private readonly _iModel: BriefcaseConnection;
