@@ -127,6 +127,9 @@ export class ClipStack {
   }
 
   protected allocateGpuBuffer(): Texture2DData {
-    return new (this._isFloatTexture ? Float32Array : Uint8Array)(this._cpuBuffer.buffer);
+    if (this._isFloatTexture)
+      return new Float32Array(this._cpuBuffer.buffer);
+
+    return this._cpuBuffer;
   }
 }
