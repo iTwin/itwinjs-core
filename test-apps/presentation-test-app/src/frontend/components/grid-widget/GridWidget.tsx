@@ -25,7 +25,7 @@ export interface State {
 
 export default function GridWidget(props: Props) {
   const { imodel, rulesetId } = props;
-  const [diagnosticsOptions, setDiagnosticsOptions] = React.useState({ ruleDiagnostics: undefined, devDiagnostics: undefined } as DiagnosticsProps);
+  const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
 
   const dataProvider = useDisposable(React.useCallback(
     () => new PresentationTableDataProvider({ imodel, ruleset: rulesetId, ...diagnosticsOptions }),
