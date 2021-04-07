@@ -4298,7 +4298,7 @@ export class SetupCameraTool extends PrimitiveTool {
 }
 
 /** A tool that sets a walk tool starting position by a floor point and look direction. This is a PrimitiveTool and not a ViewTool to allow the view to be panned, zoomed, and rotated while defining the points.
- * @beta
+ * @public
  */
 export class SetupWalkCameraTool extends PrimitiveTool {
   public static toolId = "View.SetupWalkCamera";
