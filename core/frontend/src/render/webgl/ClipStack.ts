@@ -79,6 +79,7 @@ export class ClipStack {
     return this._texture;
   }
 
+  // ###TODO: We're keeping the extra trailing union boundary. Will shader ignore it?
   private updateTexture(): void {
     let bufferDirty = false;
     if (this._numTotalRows < this._numRowsInUse) {
