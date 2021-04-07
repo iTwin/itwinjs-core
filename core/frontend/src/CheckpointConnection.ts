@@ -17,7 +17,6 @@ import { IModelRoutingContext } from "./IModelRoutingContext";
 import { IModelConnection } from "./IModelConnection";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 
-
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
 /**
