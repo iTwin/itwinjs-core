@@ -29,14 +29,6 @@ export function getRpcInterfaces() {
   return rpcInterfaces;
 }
 
-function checkEnabled(envVariable: string | undefined): boolean {
-  if (undefined === envVariable)
-    return false;
-
-  const regex = /true/i;
-  return regex.test(envVariable);
-}
-
 export class Settings {
   private _backend: Backend = {} as Backend;
   public env: number = 0;
@@ -49,19 +41,7 @@ export class Settings {
   public logLevel?: number;
   public users: TestUserCredentials[] = [];
 
-  public iModels: IModelData[] = [];
-  public get iModel(): IModelData { return this.iModels[0]; }
-  public get writeIModel(): IModelData { return this.iModels[1]; }
   public get user(): TestUserCredentials { return this.users[0]; }
-
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  public get Backend(): Backend { return this._backend; }
-
-  public get runiModelTileRpcTests(): boolean { return checkEnabled(process.env.RPC_IMODELTILE_ENABLE); }
-  public get runPresentationRpcTests(): boolean { return checkEnabled(process.env.RPC_PRESENTATION_ENABLE); }
-  public get runiModelReadRpcTests(): boolean { return checkEnabled(process.env.RPC_IMODELREAD_ENABLE); }
-  public get runiModelWriteRpcTests(): boolean { return checkEnabled(process.env.RPC_IMODELWRITE_ENABLE); }
-  public get runDevToolsRpcTests(): boolean { return checkEnabled(process.env.RPC_DEVTOOLS_ENABLE); }
 
   constructor(env: NodeJS.ProcessEnv) {
     const isFrontend = (typeof (process) === "undefined");
@@ -114,28 +94,6 @@ export class Settings {
     if (undefined === process.env.IMODEL_IMODELID)
       throw new Error("Missing the 'IMODEL_IMODELID' setting.");
 
-    this.iModels.push({
-      projectId: process.env.IMODEL_PROJECTID,
-      id: process.env.IMODEL_IMODELID,
-      // Neither of the next 2 are needed but since they'll be undefined anyway, just always set it.
-      name: process.env.IMODEL_IMODELNAME,
-      changeSetId: process.env.IMODEL_CHANGESETID,
-    });
-
-    // If write rpc interface is defined expect a separate iModel to be used.
-    if (this.runiModelWriteRpcTests) {
-      if (undefined === process.env.IMODEL_WRITE_PROJECTID)
-        throw new Error("Missing the 'IMODEL_WRITE_PROJECTID' setting.");
-
-      if (undefined === process.env.IMODEL_WRITE_IMODELID)
-        throw new Error("Missing the 'IMODEL_WRITE_IMODELID' setting.");
-
-      this.iModels.push({
-        projectId: process.env.IMODEL_WRITE_PROJECTID,
-        id: process.env.IMODEL_WRITE_IMODELID,
-      });
-    }
-
     // Parse logging level
     if (undefined !== process.env.LOG_LEVEL) {
       const level = parseInt(process.env.LOG_LEVEL, 10);
@@ -166,17 +124,9 @@ export class Settings {
 
   public toString(): string {
     return `Configurations:
-      backend location: ${this.Backend.location},
-      backend name: ${this.Backend.name},
-      backend version: ${this.Backend.version},
       oidc client id: ${this.oidcClientId},
       oidc scopes: ${this.oidcScopes},
       applicationId: ${this.gprid},
-      log level: ${this.logLevel},
-      testing iModelTileRpcTests: ${this.runiModelTileRpcTests},
-      testing PresentationRpcTest: ${this.runPresentationRpcTests},
-      testing iModelReadRpcTests: ${this.runiModelReadRpcTests},
-      testing DevToolsRpcTests: ${this.runDevToolsRpcTests},
-      testing iModelWriteRpcTests: ${this.runiModelWriteRpcTests}`;
+      log level: ${this.logLevel}`;
   }
 }

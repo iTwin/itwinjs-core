@@ -8,8 +8,7 @@ import { SchemaKey } from "@bentley/ecschema-metadata";
 /***
  * Defines an RPC interface to get schema information from a given iModel context.
  * Method @see getSchemaNames will return the names of schemas that live in this iModel.
- * The actual schemas can be downloaded using @see getSchemaJSON to get the schema as JSON props
- * or @see getSchemaXml to get the schemas as XML document.
+ * The actual schemas can be downloaded using @see getSchemaJSON to get the schema as JSON props.
  * @internal
  */
 export abstract class ECSchemaRpcInterface extends RpcInterface {

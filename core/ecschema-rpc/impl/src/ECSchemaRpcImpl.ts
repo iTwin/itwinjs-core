@@ -72,7 +72,7 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
    * @param schemaName        The name of the schema that shall be returned.
    * @returns                 The SchemaProps as a string.
    */
-  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<string> {
+  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName?: string): Promise<string> {
     ClientRequestContext.current.enter();
 
     if (schemaName === undefined || schemaName.length < 1) {

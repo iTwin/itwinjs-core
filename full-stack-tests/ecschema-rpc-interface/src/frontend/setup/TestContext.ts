@@ -5,13 +5,12 @@
 
 import { expect } from "chai";
 import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
 import { NoRenderApp } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
 } from "@bentley/oidc-signin-tool/lib/frontend";
-import { getRpcInterfaces, Settings } from "../../common/Settings";
+import { Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
 
@@ -36,16 +35,8 @@ export class TestContext {
     return this._instance;
   }
 
-  /** Initialize configuration for the rpc interfaces used by the application. */
-  private initializeRpcInterfaces(info: OpenAPIInfo) {
-    // Url without trailing slash
-    const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
-    BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces());
-  }
-
   private async initialize() {
     expect(this.settings.users.length).to.be.gte(1, `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`);
-    expect(this.settings.iModels.length).to.be.gte(1, `Unexpected number of iModels found in settings - got ${this.settings.iModels.length}, expected at least 1`);
 
     // Print out the configuration
     console.log(this.settings.toString()); // eslint-disable-line
@@ -67,13 +58,6 @@ export class TestContext {
         scope: this.settings.oidcScopes,
       } as TestBrowserAuthorizationClientConfiguration);
     }
-
-    const iModelData = this.settings.iModel;
-    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line
-    this.contextId = iModelData.projectId;
-    this.iModelWithChangesets = new IModelSession(iModelData.id, this.contextId);
-
-    this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
     await NoRenderApp.startup({
       applicationId: this.settings.gprid,

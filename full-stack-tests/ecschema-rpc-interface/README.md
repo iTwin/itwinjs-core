@@ -1,4 +1,4 @@
-﻿# iTwin.js RPC Interface Integration Tests
+﻿# iTwin.js Schema RPC Interface Integration Tests
 
 Copyright © Bentley Systems, Incorporated. All rights reserved.
 

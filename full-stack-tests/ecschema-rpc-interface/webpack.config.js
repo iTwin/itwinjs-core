@@ -5,7 +5,6 @@
 
 const path = require("path");
 const glob = require("glob");
-const webpack = require("webpack");
 
 module.exports = {
   mode: "development",
@@ -45,10 +44,5 @@ module.exports = {
   },
   node: {
     process: false
-  },
-  plugins: [
-    new webpack.DefinePlugin({
-      "PACKAGE_VERSION": JSON.stringify(require(path.join(__dirname, "package.json")).version),
-    })
-  ]
+  }
 };
