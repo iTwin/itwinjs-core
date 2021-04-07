@@ -4,13 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:ignore Helmert
 
-/** This enum contains the list of additional transform supported. Currently there is only one
- *  but obviously others will likely be needed.
- *  @alpha
- */
-export type AdditionalTransformMethod =
-  "Helmert2DWithZOffset";
-
 /** An affine transformation with an additional Z Offset.
  *  The equations are:
  *  given a = scale * cos(rotation) and b = scale * sin(rotation)
