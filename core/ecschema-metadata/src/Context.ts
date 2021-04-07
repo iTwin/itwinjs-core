@@ -123,13 +123,13 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   /**
-   * Iterates through each schema in _schema SchemaMap, then getItems for each Schema, and executes forEachFunction
-   * @param forEachFunction Function to be executed for each SchemaItem of Context
+   * Generator function that can iterate through each schema in _schema SchemaMap and items for each Schema
    */
-  public iterateSchemaItems<T extends SchemaItem>(forEachFunction: (item: T) => void): void {
+  public* getSchemaItems(): IterableIterator<SchemaItem> {
     for (const schema of this._schema) {
-      const schemaItems = [...schema.getItems()] as T[];
-      schemaItems.forEach((schemaItem) => forEachFunction(schemaItem));
+      for (const schemaItem of schema.getItems()) {
+        yield (schemaItem as SchemaItem);
+      }
     }
   }
 }
@@ -251,11 +251,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     return schema.getItemSync<T>(schemaItemKey.name);
   }
 
-  /**
-   * Calls SchemaCache's iterateSchemaItems to access each Schema in Context
-   * @param forEachFunction Function passed along to be executed for each SchemaItem of Context
-   */
-  public iterateSchemaItems<T extends SchemaItem>(forEachFunction: (item: T) => void): void {
-    this._knownSchemas.iterateSchemaItems(forEachFunction);
+  public getSchemaItems(): IterableIterator<SchemaItem> {
+    return this._knownSchemas.getSchemaItems();
   }
 }

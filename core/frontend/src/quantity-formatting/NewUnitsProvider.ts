@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BadUnit, BasicUnit, UnitConversion, UnitProps, UnitsProvider  } from "@bentley/imodeljs-quantity";
-// import { SchemaContext, Unit, UnitConverter, UnitQuery } from "@bentley/ecschema-metadata";
-import { SchemaContext, Unit, UnitConverter, UnitQuery } from "../../../ecschema-metadata/src/ecschema-metadata";
+// import { SchemaContext, Unit, UnitConverter, UnitProvider } from "@bentley/ecschema-metadata";
+import { SchemaContext, Unit, UnitConverter, UnitProvider } from "../../../ecschema-metadata/src/ecschema-metadata";
 import { UNIT_EXTRA_DATA } from "./UnitsData";
 
 /** Units provider that provides a limited number of UnitDefinitions that are needed to support basic tools.
@@ -16,7 +16,7 @@ export class BasicUnitsProvider implements UnitsProvider {
   }
 
   public async getUnitPropsFromUnit(unit: Unit): Promise<UnitProps> {
-    const unitQuery = new UnitQuery(this._context, UNIT_EXTRA_DATA);
+    const unitQuery = new UnitProvider(this._context, UNIT_EXTRA_DATA);
     try {
       await this.findUnitByName(unit.fullName);
       return new BasicUnit(unit.fullName, unit.label ?? "", unit.phenomenon?.fullName ?? "", unitQuery.getAlternateDisplayLabels(unit.fullName), unit.unitSystem?.fullName ?? "");
@@ -27,9 +27,9 @@ export class BasicUnitsProvider implements UnitsProvider {
 
   /** Find a unit given the unitLabel. */
   public async findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
-    const unitQuery = new UnitQuery(this._context, UNIT_EXTRA_DATA);
+    const unitProvider = new UnitProvider(this._context, UNIT_EXTRA_DATA);
     try {
-      const unit = await unitQuery.findUnit(unitLabel, phenomenon, unitSystem);
+      const unit = await unitProvider.findUnit(unitLabel, phenomenon, unitSystem);
       return await this.getUnitPropsFromUnit(unit);
     } catch (err) {
       return new BadUnit();
@@ -38,9 +38,9 @@ export class BasicUnitsProvider implements UnitsProvider {
 
   /** Find all units given phenomenon */
   public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
-    const unitQuery = new UnitQuery(this._context, UNIT_EXTRA_DATA);
+    const unitProvider = new UnitProvider(this._context, UNIT_EXTRA_DATA);
     try {
-      const units = await unitQuery.findUnitsByPhenomenon(phenomenon);
+      const units = await unitProvider.findUnitsByPhenomenon(phenomenon);
       const unitPropsPromises = units.map(unit => this.getUnitPropsFromUnit(unit));
       return await Promise.all(unitPropsPromises);
     } catch (err) {
@@ -50,9 +50,9 @@ export class BasicUnitsProvider implements UnitsProvider {
 
   /** Find a unit given the unit's unique name. */
   public async findUnitByName(unitName: string): Promise<UnitProps> {
-    const unitQuery = new UnitQuery(this._context, UNIT_EXTRA_DATA);
+    const unitProvider = new UnitProvider(this._context, UNIT_EXTRA_DATA);
     try {
-      const unit = await unitQuery.findUnitByName(unitName);
+      const unit = await unitProvider.findUnitByName(unitName);
       return await this.getUnitPropsFromUnit(unit);
     } catch (err) {
       return new BadUnit();

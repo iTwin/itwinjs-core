@@ -11,7 +11,10 @@ interface UnitExtraData {
   readonly altDisplayLabels: string[];
 }
 
-export class UnitQuery {
+/**
+ * @alpha
+ */
+export class UnitProvider {
   /**
    *
    * @param _context SchemaContext that contains the Units from which querying takes place
@@ -80,13 +83,19 @@ export class UnitQuery {
         return { itemType: phenom.key.fullName };
       });
 
-    // Filter out schema items to find units' full name that match given phenomenon param
+    // Find units' full name that match given phenomenon param
     const filteredUnits: Array<Unit> = [];
-    this._context.iterateSchemaItems((schemaItem) => {
-      if (schemaItem.schemaItemType === SchemaItemType.Unit && (schemaItem as Unit).phenomenon?.fullName === phenomenon) {
-        filteredUnits.push(schemaItem as Unit);
+    const schemaItems = this._context.getSchemaItems();
+    let { value, done } = schemaItems.next();
+    while (!done) {
+      if (Unit.isUnit(value)) {
+        const foundPhenomenon = await value.phenomenon;
+        if (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon)) {
+          filteredUnits.push(value);
+        }
       }
-    });
+      ({ value, done } = schemaItems.next());
+    }
 
     return filteredUnits;
   }
@@ -102,6 +111,7 @@ export class UnitQuery {
         alternateLabels = entry.altDisplayLabels;
       }
     }
+
     return alternateLabels;
   }
 
@@ -138,23 +148,23 @@ export class UnitQuery {
   }
 
   /**
-   * Finds Unit by displayLabel and it belongs to schemaName, phenomenon, and unitSystem if defined
+   * Finds Unit by displayLabel and that it belongs to schemaName, phenomenon, and unitSystem if defined
+   * @internal
    */
   private async findUnitByDisplayLabel(displayLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<Unit> {
-    let foundUnit: Unit | undefined;
-    this._context.iterateSchemaItems((schemaItem) => {
-      if (schemaItem.schemaItemType === SchemaItemType.Unit && schemaItem.label?.toLowerCase() === displayLabel) {
-        if (!schemaName || schemaItem.schema.name.toLowerCase() === schemaName) {
-          if (!phenomenon || (schemaItem as Unit).phenomenon?.fullName.toLowerCase() === phenomenon) {
-            if (!unitSystem || (schemaItem as Unit).unitSystem?.fullName.toLowerCase() === unitSystem) {
-              foundUnit = schemaItem as Unit;
-            }
-          }
-        }
+    const schemaItems = this._context.getSchemaItems();
+    let { value, done } = schemaItems.next();
+    while (!done) {
+      if (Unit.isUnit(value) && value.label?.toLowerCase() === displayLabel) {
+        const foundPhenomenon = await value.phenomenon;
+        const foundUnitSystem = await value.unitSystem;
+        if (!schemaName || value.schema.name.toLowerCase() === schemaName)
+          if (!phenomenon || foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon))
+            if (!unitSystem || foundUnitSystem && foundUnitSystem.key.matchesFullName(unitSystem))
+              return value;
       }
-    });
-    if (foundUnit)
-      return foundUnit;
+      ({ value, done } = schemaItems.next());
+    }
 
     throw new BentleyError(BentleyStatus.ERROR, "Cannot find unit with display label", () => {
       return { displayLabel };
@@ -162,7 +172,8 @@ export class UnitQuery {
   }
 
   /**
-   * Finds Unit by altDisplayLabel and it belongs to schemaName, phenomenon, and unitSystem if defined
+   * Finds Unit by altDisplayLabel and that it belongs to schemaName, phenomenon, and unitSystem if defined
+   * @internal
    */
   private async findUnitByAltDisplayLabel(altDisplayLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<Unit> {
     for (const entry of this._unitExtraData) {
@@ -170,16 +181,12 @@ export class UnitQuery {
         if (entry.altDisplayLabels.findIndex((ref) => ref.toLowerCase() === altDisplayLabel) !== -1) {
           // Found altDisplayLabel that matches label to find
           const unit = await this.findUnitByName(entry.name);
-          if (schemaName && unit.schema.name.toLowerCase() !== schemaName)
-            continue;
-
-          if (phenomenon && unit.phenomenon?.fullName.toLowerCase() !== phenomenon)
-            continue;
-
-          if (unitSystem && unit.unitSystem?.fullName.toLowerCase() !== unitSystem)
-            continue;
-
-          return unit;
+          const foundPhenomenon = await unit.phenomenon;
+          const foundUnitSystem = await unit.unitSystem;
+          if (!schemaName || unit.schema.name.toLowerCase() === schemaName)
+            if (!phenomenon || foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon))
+              if (!unitSystem || foundUnitSystem && foundUnitSystem.key.matchesFullName(unitSystem))
+                return unit;
         }
       }
     }

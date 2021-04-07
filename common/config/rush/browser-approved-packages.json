@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "tools" ]
     },
     {
       "name": "@bentley/electron-manager",

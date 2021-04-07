@@ -41,7 +41,7 @@ export * from "./SchemaKey";
 export * from "./utils/FormatEnums";
 export * from "./UnitConversion/UnitConversion";
 export * from "./UnitConversion/UnitConverter";
-export * from "./UnitQuery/UnitQuery";
+export * from "./UnitProvider/UnitProvider";
 export * from "./Validation/Diagnostic";
 export * from "./Validation/DiagnosticReporter";
 export { DiagnosticCodes, Diagnostics, ECRuleSet } from "./Validation/ECRules";
