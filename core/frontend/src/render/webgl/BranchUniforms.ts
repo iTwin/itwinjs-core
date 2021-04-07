@@ -21,6 +21,7 @@ import { RenderCommands } from "./RenderCommands";
 import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
 import { ClipVolume } from "./ClipVolume";
+import { ClipStack } from "./ClipStack";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
   if (a === b)
@@ -40,6 +41,9 @@ function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
  * @internal
  */
 export class BranchUniforms {
+  public readonly clipStack: ClipStack;
+  private _viewClipEnabled = false;
+
   // The model-view and model-view-projection matrices depend on the frustum.
   public syncToken?: SyncToken;
   public syncKey = 0;
@@ -73,6 +77,10 @@ export class BranchUniforms {
 
   public constructor(target: Target) {
     this._target = target;
+    this.clipStack = new ClipStack(
+      () => target.uniforms.frustum.viewMatrix,
+      () => this._viewClipEnabled && this.top.viewFlags.clipVolume,
+    );
   }
 
   public createBatchState(): BatchState {
@@ -118,12 +126,17 @@ export class BranchUniforms {
   }
 
   public pushViewClip(): void {
+    assert(!this._viewClipEnabled);
+    this._viewClipEnabled = true;
+
     // Target.readPixels() pushes another BranchState before pushing view clip...
     assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
     this.updateClipVolume(this._stack.bottom);
   }
 
   public popViewClip(): void {
+    assert(this._viewClipEnabled);
+    this._viewClipEnabled = false;
     assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
     this._clipVolume = undefined;
   }
@@ -142,6 +155,7 @@ export class BranchUniforms {
   }
 
   public updateViewClip(clip: ClipVector | undefined, style: ClipStyle): void {
+    this.clipStack.setViewClip(clip, style);
     this._stack.updateViewClip(clip, style);
   }
 

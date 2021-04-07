@@ -123,6 +123,10 @@ export class ClipStack {
     return this.startIndex < this.endIndex;
   }
 
+  public get numClipPlanes(): number {
+    return this.endIndex - this.startIndex;
+  }
+
   public get startIndex(): number {
     assert(this._stack.length > 0);
     return this._wantViewClip() ? 0 : this._stack[0].numRows;
