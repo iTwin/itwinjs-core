@@ -20,6 +20,14 @@ export interface DiagnosticsOptions {
 }
 
 /** @alpha */
+export type DiagnosticsHandler = (logs: DiagnosticsScopeLogs[]) => void;
+
+/** @alpha */
+export interface DiagnosticsOptionsWithHandler extends DiagnosticsOptions {
+  handler: DiagnosticsHandler;
+}
+
+/** @alpha */
 export interface DiagnosticsLogMessage {
   severity: {
     dev?: DiagnosticsLoggerSeverity;
@@ -34,5 +42,18 @@ export interface DiagnosticsLogMessage {
 export interface DiagnosticsScopeLogs {
   scope: string;
   duration?: number;
-  logs?: Array<DiagnosticsLogMessage | DiagnosticsScopeLogs>;
+  logs?: DiagnosticsLogEntry[];
+}
+
+/** @alpha */
+export type DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs;
+
+/** @alpha */
+export namespace DiagnosticsLogEntry { // eslint-disable-line @typescript-eslint/no-redeclare
+  export function isMessage(entry: DiagnosticsLogEntry): entry is DiagnosticsLogMessage {
+    return !!(entry as any).message;
+  }
+  export function isScope(entry: DiagnosticsLogEntry): entry is DiagnosticsScopeLogs {
+    return !!(entry as any).scope;
+  }
 }
