@@ -40,7 +40,7 @@ export interface StringParam {
  * > Preparing a statement can be time-consuming. The best way to reduce the effect of this overhead is to cache and reuse prepared
  * > statements. A cached prepared statement may be used in different places in an app, as long as the statement is general enough.
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
- * @internal
+ * @public
  */
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
@@ -256,17 +256,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Calls step when called as an iterator.
    */
   public next(): IteratorResult<any> {
-    if (DbResult.BE_SQLITE_ROW === this.step()) {
-      return {
-        done: false,
-        value: this.getRow(),
-      };
-    } else {
-      return {
-        done: true,
-        value: undefined,
-      };
-    }
+    return DbResult.BE_SQLITE_ROW === this.step() ? { done: false, value: this.getRow() } : { done: true, value: undefined };
   }
 
   /** The iterator that will step through the results of this statement. */
@@ -278,7 +268,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
  * - [SqliteValue]($backend)
  * - [SqliteStatement]($backend)
  * - [SqliteStatement.getValue]($backend)
- * @internal
+ * @public
  */
 export enum SqliteValueType {
   // do not change the values of that enum. It must correspond to the respective
@@ -294,7 +284,7 @@ export enum SqliteValueType {
  * See also:
  * - [SqliteStatement]($backend)
  * - [SqliteStatement.getValue]($backend)
- * @internal
+ * @public
  */
 export class SqliteValue {
   private readonly _stmt: IModelJsNative.SqliteStatement;
