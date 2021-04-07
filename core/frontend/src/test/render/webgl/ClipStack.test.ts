@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ClipPrimitive, ClipShape, ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets } from "@bentley/geometry-core";
-import { BlipVolume, ClipVolume } from "../../../render/webgl/ClipVolume";
+import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { ClipStack } from "../../../render/webgl/ClipStack";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { IModelApp } from "../../../IModelApp";
@@ -71,7 +71,7 @@ for (let i = 0; i < 2; i++) {
 
       public pushClip(offset = 0): void {
         const clip = createClipVector(offset);
-        const vol = BlipVolume.create(clip);
+        const vol = ClipVolume.create(clip);
         expect(vol).not.to.be.undefined;
         this.push(vol!);
       }
@@ -132,7 +132,7 @@ for (let i = 0; i < 2; i++) {
       stack.setViewClip(clipVec, { });
       expect(stack.hasClip).to.be.true;
       expect(stack.stack[0]).not.to.equal(prevClip);
-      expect(stack.stack[0]).instanceof(BlipVolume);
+      expect(stack.stack[0]).instanceof(ClipVolume);
       expect(stack.isStackDirty).to.be.true;
       stack.getTexture();
 
@@ -150,7 +150,7 @@ for (let i = 0; i < 2; i++) {
 
       stack.setViewClip(undefined, { });
       expect(stack.hasClip).to.be.false;
-      expect(stack.stack[0] instanceof BlipVolume).to.be.false;
+      expect(stack.stack[0] instanceof ClipVolume).to.be.false;
       expect(stack.isStackDirty).to.be.true;
       stack.getTexture();
 

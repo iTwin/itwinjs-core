@@ -71,11 +71,6 @@ export class BranchStack {
     this.top.changeRenderPlan(vf, is3d, hline);
   }
 
-  public updateViewClip(clip: ClipVector | undefined, style: ClipStyle): void {
-    assert(1 === this.length);
-    this.top.setViewClip(clip, style);
-  }
-
   public setSymbologyOverrides(ovrs: FeatureSymbology.Overrides) {
     assert(1 === this.length);
     this.top.symbologyOverrides = ovrs;

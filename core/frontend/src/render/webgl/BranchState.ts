@@ -78,26 +78,6 @@ export class BranchState {
     this.edgeSettings.init(hline);
   }
 
-  public setViewClip(clip: ClipVector | undefined, style: ClipStyle): void {
-    if (undefined === clip) {
-      this._opts.clipVolume = dispose(this._opts.clipVolume);
-      // ###TODO still must update clip colors.
-      return;
-    }
-
-    // ###TODO We currently assume that the active view's ClipVector is never mutated in place, so if we are given the same object, we assume our RenderClipVolume remains valid.
-    if (!this._opts.clipVolume || this._opts.clipVolume.clipVector !== clip) {
-      dispose(this._opts.clipVolume);
-      this._opts.clipVolume = IModelApp.renderSystem.createClipVolume(clip) as ClipVolume | undefined;
-    }
-
-    // ###TODO still must update clip colors even if no view clip.
-    if (this._opts.clipVolume) {
-      // ###TODO change this - these should be uniforms independent of any ClipVolume.
-      this._opts.clipVolume.setClipColors(style.outsideColor?.toColorDef(), style.insideColor?.toColorDef());
-    }
-  }
-
   /** Create a BranchState from a Branch. Any properties not explicitly specified by the new Branch are inherited from the previous BranchState. */
   public static fromBranch(prev: BranchState, branch: Branch): BranchState {
     const viewFlags = branch.branch.getViewFlags(prev.viewFlags);

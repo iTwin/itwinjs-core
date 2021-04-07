@@ -57,7 +57,6 @@ export class BranchUniforms {
   // CPU state
   private readonly _mv = Matrix4d.createIdentity();
   private readonly _mvp = Matrix4d.createIdentity();
-  private _clipVolume?: ClipVolume;
 
   // GPU state
   private readonly _mv32 = new Matrix4();
@@ -106,23 +105,23 @@ export class BranchUniforms {
   public pushBranch(branch: Branch): void {
     desync(this);
     this._stack.pushBranch(branch);
-    this.updateClipVolume();
+    if (this.top.clipVolume)
+      this.clipStack.push(this.top.clipVolume);
   }
 
   public pushState(state: BranchState): void {
     desync(this);
     this._stack.pushState(state);
-    this.updateClipVolume();
+    if (this.top.clipVolume)
+      this.clipStack.push(this.top.clipVolume);
   }
 
   public pop(): void {
     desync(this);
-    this._stack.pop();
-    this.updateClipVolume();
-  }
+    if (this.top.clipVolume)
+      this.clipStack.pop();
 
-  public get clipVolume(): ClipVolume | undefined {
-    return this._clipVolume;
+    this._stack.pop();
   }
 
   public pushViewClip(): void {
@@ -131,23 +130,12 @@ export class BranchUniforms {
 
     // Target.readPixels() pushes another BranchState before pushing view clip...
     assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
-    this.updateClipVolume(this._stack.bottom);
   }
 
   public popViewClip(): void {
     assert(this._viewClipEnabled);
     this._viewClipEnabled = false;
     assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
-    this._clipVolume = undefined;
-  }
-
-  private updateClipVolume(state?: BranchState): void {
-    if (!state)
-      state = this.top;
-
-    this._clipVolume = undefined;
-    if (state.clipVolume && state.viewFlags.clipVolume && state.clipVolume.syncWithView(this._target.uniforms.frustum.viewMatrix))
-      this._clipVolume = state.clipVolume;
   }
 
   public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
@@ -156,7 +144,6 @@ export class BranchUniforms {
 
   public updateViewClip(clip: ClipVector | undefined, style: ClipStyle): void {
     this.clipStack.setViewClip(clip, style);
-    this._stack.updateViewClip(clip, style);
   }
 
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {

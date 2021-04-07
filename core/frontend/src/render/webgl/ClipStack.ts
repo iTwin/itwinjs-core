@@ -7,13 +7,13 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { ClipVector, Transform } from "@bentley/geometry-core";
+import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { RgbColor } from "@bentley/imodeljs-common";
 import { IModelApp } from "../../IModelApp";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { FloatRgba } from "./FloatRGBA";
 import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture";
-import { BlipVolume } from "./ClipVolume";
+import { ClipVolume } from "./ClipVolume";
 import { GL } from "./GL";
 import { System } from "./System";
 
@@ -27,6 +27,24 @@ const emptyClip = {
   numRows: 0,
   getData: () => emptyClipData,
 };
+
+const scratchRangeCorners = [
+  new Point3d(), new Point3d(), new Point3d(), new Point3d(),
+  new Point3d(), new Point3d(), new Point3d(), new Point3d(),
+];
+
+function getRangeCorners(r: Range3d): Point3d[] {
+  const p = scratchRangeCorners;
+  p[0].setFromPoint3d(r.low);
+  p[1].set(r.high.x, r.low.y, r.low.z);
+  p[2].set(r.low.x, r.high.y, r.low.z);
+  p[3].set(r.high.x, r.high.y, r.low.z);
+  p[4].set(r.low.x, r.low.y, r.high.z);
+  p[5].set(r.high.x, r.low.y, r.high.z);
+  p[6].set(r.low.x, r.high.y, r.high.z);
+  p[7].setFromPoint3d(r.high);
+  return p;
+}
 
 /** Maintains a stack of ClipVolumes. The volumes nest such that the stack represents the intersection of all the volumes.
  * The bottom of the stack represents the view's clip volume and is always present even if the view has no clip.
@@ -85,7 +103,7 @@ export class ClipStack {
       this._isStackDirty = true;
       return;
     } else {
-      assert(cur instanceof BlipVolume);
+      assert(cur instanceof ClipVolume);
       if (cur.clipVector === clip) {
         // We assume that the active view's ClipVector is never mutated in place, so if we are given the same ClipVector, we expect our RenderClipVolume to match it.
         return;
@@ -93,8 +111,7 @@ export class ClipStack {
     }
 
     // ClipVector has changed.
-    // ###TODO const newClip = IModelApp.renderSystem.createClipVolume(clip);
-    const newClip = BlipVolume.create(clip);
+    const newClip = IModelApp.renderSystem.createClipVolume(clip);
     if (!newClip) {
       this._isStackDirty = this._stack[0] !== emptyClip;
       this._stack[0] = emptyClip;
@@ -106,7 +123,7 @@ export class ClipStack {
   }
 
   public push(clip: RenderClipVolume): void {
-    assert(clip instanceof BlipVolume);
+    assert(clip instanceof ClipVolume);
 
     this._stack.push(clip);
     this._numRowsInUse += clip.numRows;
@@ -121,10 +138,6 @@ export class ClipStack {
 
   public get hasClip(): boolean {
     return this.startIndex < this.endIndex;
-  }
-
-  public get numClipPlanes(): number {
-    return this.endIndex - this.startIndex;
   }
 
   public get startIndex(): number {
@@ -143,6 +156,22 @@ export class ClipStack {
   public get texture(): TextureHandle | undefined {
     this.updateTexture();
     return this._texture;
+  }
+
+  public isRangeClipped(range: Range3d): boolean {
+    if (this.hasOutsideColor || !this.hasClip)
+      return false;
+
+    const corners = getRangeCorners(range);
+    const startIndex = this._wantViewClip() && emptyClip !== this._stack[0] ? 0 : 1;
+    for (let i = startIndex; i < this._stack.length; i++) {
+      const clip = this._stack[i];
+      assert(clip instanceof ClipVolume);
+      if (ClipPlaneContainment.StronglyOutside === clip.clipVector.classifyPointContainment(corners))
+        return true;
+    }
+
+    return false;
   }
 
   // ###TODO: We're keeping the extra trailing union boundary. Will shader ignore it?
