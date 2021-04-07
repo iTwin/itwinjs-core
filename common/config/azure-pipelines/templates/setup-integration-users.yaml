@@ -18,12 +18,14 @@ steps:
     echo "##vso[task.setvariable variable=imjs_agent_v1_test_service_user_password;]$agent_v1_service_user_password"
     echo "##vso[task.setvariable variable=imjs_delegation_test_client_secret;]$delegation_test_client_secret"
     echo "##vso[task.setvariable variable=imjs_qa_seq_api_key;]$qa_seq_api_key"
+    echo "##vso[task.setvariable variable=imjs_test_imodelhub_user_password;]$test_hub_password"
   displayName: 'Add config to environment'
   env:
     test_reg_password: $(imjs_regular_user_password)
     test_manager_password: $(imjs_manager_user_password)
     test_super_password: $(imjs_super_user_password)
     test_super_manager_password: $(imjs_super_manager_user_password)
+    test_hub_password: $(imjs_imodelhub_user_password)
     agent_v1_client_secret: $(imjs_agent_v1_client_secret)
     agent_v1_service_user_password: $(imjs_agent_v1_service_user_password)
     agent_client_secret: $(imjs_agent_client_secret)
