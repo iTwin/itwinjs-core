@@ -18,16 +18,16 @@ import { System } from "./System";
  * @internal
  */
 export class ClipStack {
-  private _cpuBuffer: Uint8Array;
-  private _gpuBuffer: Texture2DData;
-  private _texture?: Texture2DHandle;
-  private readonly _isFloatTexture: boolean
-  private _numTotalRows: number;
-  private _numRowsInUse: number;
-  private readonly _stack: BlipVolume[] = [];
-  private _isStackDirty = false;
-  private readonly _getTransform: () => Transform;
-  private readonly _wantInitialClip: () => boolean;
+  protected _cpuBuffer: Uint8Array;
+  protected _gpuBuffer: Texture2DData;
+  protected _texture?: Texture2DHandle;
+  protected readonly _isFloatTexture: boolean
+  protected _numTotalRows: number;
+  protected _numRowsInUse: number;
+  protected readonly _stack: BlipVolume[] = [];
+  protected _isStackDirty = false;
+  protected readonly _getTransform: () => Transform;
+  protected readonly _wantInitialClip: () => boolean;
 
   public constructor(getTransform: () => Transform, wantInitialClip: () => boolean) {
     this._getTransform = getTransform;
@@ -80,24 +80,26 @@ export class ClipStack {
   }
 
   // ###TODO: We're keeping the extra trailing union boundary. Will shader ignore it?
-  private updateTexture(): void {
-    let bufferDirty = false;
+  protected updateTexture(): void {
     if (this._numTotalRows < this._numRowsInUse) {
       // We need to resize the texture.
       assert(this._isStackDirty);
-      bufferDirty = true;
+      this._isStackDirty = true;
       this._texture = dispose(this._texture);
       this._numTotalRows = this._numRowsInUse;
       this._cpuBuffer = new Uint8Array(this._numTotalRows);
       this._gpuBuffer = this.allocateGpuBuffer();
     }
 
-    if (!this._isStackDirty && !bufferDirty)
-      return;
+    if (this._isStackDirty)
+      this.recomputeTexture();
 
     this._isStackDirty = false;
+  }
 
+  protected recomputeTexture(): void {
     // Copy each clip's data to the buffer, recording whether the buffer's contents actually changed.
+    let bufferDirty = false;
     const transform = this._getTransform();
     let bufferIndex = 0;
     for (const clip of this._stack) {
@@ -111,16 +113,20 @@ export class ClipStack {
 
     // If the contents have changed, upload the new texture data to the GPU.
     if (bufferDirty) {
-      if (this._texture) {
-        assert(this._texture.height === this._numTotalRows);
-        this._texture.replaceTextureData(this._gpuBuffer);
-      } else {
-        this._texture = Texture2DHandle.createForData(this._isFloatTexture ? 1 : 4, this._numTotalRows, this._gpuBuffer, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
-      }
+      this.uploadTexture();
     }
   }
 
-  private allocateGpuBuffer(): Texture2DData {
+  protected uploadTexture(): void {
+    if (this._texture) {
+      assert(this._texture.height === this._numTotalRows);
+      this._texture.replaceTextureData(this._gpuBuffer);
+    } else {
+      this._texture = Texture2DHandle.createForData(this._isFloatTexture ? 1 : 4, this._numTotalRows, this._gpuBuffer, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+    }
+  }
+
+  protected allocateGpuBuffer(): Texture2DData {
     return new (this._isFloatTexture ? Float32Array : Uint8Array)(this._cpuBuffer.buffer);
   }
 }

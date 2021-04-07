@@ -148,13 +148,3 @@ describe("BlipVolume", async () => {
       expect(data[i]).to.equal(expectedData[i]);
   });
 });
-
-describe("ClipStack", async () => {
-  before(async () => {
-    await IModelApp.startup();
-  });
-
-  after(async () => {
-    await IModelApp.shutdown();
-  });
-});
