@@ -105,17 +105,17 @@ describe("ClipStack", async () => {
     stack.pushClip();
     expect(stack.stack.length).to.equal(1);
     expect(stack.hasClip).to.be.true;
-    expect(stack.numTotalRows).to.equal(5);
+    expect(stack.numTotalRows).to.equal(0);
     expect(stack.numRowsInUse).to.equal(5);
     expect(stack.cpuBuffer.buffer).to.equal(stack.gpuBuffer.buffer);
-    expect(stack.cpuBuffer.byteLength).to.equal(20);
+    expect(stack.cpuBuffer.byteLength).to.equal(0);
     expect(stack.startIndex).to.equal(0);
     expect(stack.endIndex).to.equal(5);
-    expect(stack.textureHeight).to.equal(5);
+    expect(stack.textureHeight).to.equal(0);
 
     stack.wantInitialClip = false;
     expect(stack.hasClip).to.be.false;
-    expect(stack.numTotalRows).to.equal(5);
+    expect(stack.numTotalRows).to.equal(0);
     expect(stack.numRowsInUse).to.equal(5);
     expect(stack.startIndex).to.equal(5);
     expect(stack.endIndex).to.equal(5);
@@ -123,11 +123,11 @@ describe("ClipStack", async () => {
     stack.pushClip();
     expect(stack.stack.length).to.equal(2);
     expect(stack.hasClip).to.be.true;
-    expect(stack.numTotalRows).to.equal(10);
+    expect(stack.numTotalRows).to.equal(0);
     expect(stack.numRowsInUse).to.equal(10);
     expect(stack.startIndex).to.equal(5);
     expect(stack.endIndex).to.equal(10);
-    expect(stack.textureHeight).to.equal(10);
+    expect(stack.textureHeight).to.equal(0);
 
     stack.wantInitialClip = true;
     expect(stack.hasClip).to.be.true;
@@ -137,12 +137,12 @@ describe("ClipStack", async () => {
     stack.pop();
     expect(stack.stack.length).to.equal(1);
     expect(stack.hasClip).to.be.true;
-    expect(stack.numTotalRows).to.equal(10);
+    expect(stack.numTotalRows).to.equal(0);
     expect(stack.numRowsInUse).to.equal(5);
-    expect(stack.cpuBuffer.byteLength).to.equal(20);
+    expect(stack.cpuBuffer.byteLength).to.equal(0);
     expect(stack.startIndex).to.equal(0);
     expect(stack.endIndex).to.equal(5);
-    expect(stack.textureHeight).to.equal(10);
+    expect(stack.textureHeight).to.equal(0);
 
     stack.wantInitialClip = false;
     expect(stack.hasClip).to.be.false;
@@ -151,11 +151,23 @@ describe("ClipStack", async () => {
     stack.pop();
     expect(stack.stack.length).to.equal(0);
     expect(stack.hasClip).to.be.false;
-    expect(stack.numTotalRows).to.equal(10);
+    expect(stack.numTotalRows).to.equal(0);
     expect(stack.numRowsInUse).to.equal(0);
-    expect(stack.cpuBuffer.byteLength).to.equal(20);
+    expect(stack.cpuBuffer.byteLength).to.equal(0);
     expect(stack.startIndex).to.equal(0);
     expect(stack.endIndex).to.equal(0);
+    expect(stack.textureHeight).to.equal(0);
+
+    stack.pushClip();
+    stack.pushClip();
+    const texture = stack.texture!;
+    expect(texture).not.to.be.undefined;
+    expect(texture.width).to.equal(1);
+    expect(texture.height).to.equal(stack.textureHeight);
+    expect(texture.bytesUsed).to.equal(stack.cpuBuffer.byteLength);
+    expect(stack.numTotalRows).to.equal(10);
+    expect(stack.cpuBuffer.byteLength).to.equal(160); // 4 floats per plane * 4 bytes per float * 10 planes
+    expect(stack.gpuBuffer.buffer).to.equal(stack.cpuBuffer.buffer);
     expect(stack.textureHeight).to.equal(10);
   });
 

@@ -87,7 +87,7 @@ export class ClipStack {
       this._isStackDirty = true;
       this._texture = dispose(this._texture);
       this._numTotalRows = this._numRowsInUse;
-      this._cpuBuffer = new Uint8Array(this._numTotalRows);
+      this._cpuBuffer = new Uint8Array(this._numTotalRows * 4 * 4);
       this._gpuBuffer = this.allocateGpuBuffer();
     }
 
