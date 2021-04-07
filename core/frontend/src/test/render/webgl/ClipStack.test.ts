@@ -19,6 +19,12 @@ for (let i = 0; i < 2; i++) {
     };
   }
 
+  function createClipVector(offset = 0): ClipVector {
+    const clip = ClipVector.createEmpty();
+    clip.appendShape([ Point3d.create(offset + 1, 1, 0), Point3d.create(offset + 2, 1, 0), Point3d.create(offset + 2, 2, 0), Point3d.create(offset + 1, 2, 0)]);
+    return clip;
+  }
+
   describe(`ClipStack (${useFloat ? "floating point texture" : "encoded floats"})`, async () => {
     before(async () => {
       await IModelApp.startup({ renderSys });
@@ -37,7 +43,7 @@ for (let i = 0; i < 2; i++) {
 
     class Stack extends ClipStack {
       public transform = Transform.createIdentity();
-      public wantInitialClip = true;
+      public wantViewClip = true;
 
       public invoked: Invoked = {
         updateTexture: false,
@@ -47,7 +53,7 @@ for (let i = 0; i < 2; i++) {
       };
 
       public constructor() {
-        super(() => this.transform, () => this.wantInitialClip);
+        super(() => this.transform, () => this.wantViewClip);
 
         // Constructor invokes this method - must override afterward.
         this.allocateGpuBuffer = () => {
@@ -64,11 +70,15 @@ for (let i = 0; i < 2; i++) {
       public get isStackDirty() { return this._isStackDirty; }
 
       public pushClip(offset = 0): void {
-        const clip = ClipVector.createEmpty();
-        clip.appendShape([ Point3d.create(offset + 1, 1, 0), Point3d.create(offset + 2, 1, 0), Point3d.create(offset + 2, 2, 0), Point3d.create(offset + 1, 2, 0)]);
+        const clip = createClipVector(offset);
         const vol = BlipVolume.create(clip);
         expect(vol).not.to.be.undefined;
         this.push(vol!);
+      }
+
+      // This is primarily for forcing it to update the texture.
+      public getTexture() {
+        return this.texture;
       }
 
       public reset() {
@@ -107,9 +117,50 @@ for (let i = 0; i < 2; i++) {
       }
     }
 
+    it("sets the view clip", () => {
+      const stack = new Stack();
+      expect(stack.hasClip).to.be.false;
+      expect(stack.isStackDirty).to.be.false;
+
+      let prevClip = stack.stack[0];
+      stack.setViewClip(ClipVector.createEmpty(), { });
+      expect(stack.hasClip).to.be.false;
+      expect(stack.stack[0]).to.equal(prevClip);
+      expect(stack.isStackDirty).to.be.false;
+
+      const clipVec = createClipVector();
+      stack.setViewClip(clipVec, { });
+      expect(stack.hasClip).to.be.true;
+      expect(stack.stack[0]).not.to.equal(prevClip);
+      expect(stack.stack[0]).instanceof(BlipVolume);
+      expect(stack.isStackDirty).to.be.true;
+      stack.getTexture();
+
+      prevClip = stack.stack[0];
+      stack.setViewClip(clipVec, { });
+      expect(stack.hasClip).to.be.true;
+      expect(stack.stack[0]).to.equal(prevClip);
+      expect(stack.isStackDirty).to.be.false;
+
+      stack.setViewClip(createClipVector(1), { });
+      expect(stack.hasClip).to.be.true;
+      expect(stack.stack[0]).not.to.equal(prevClip);
+      expect(stack.isStackDirty).to.be.true;
+      stack.getTexture();
+
+      stack.setViewClip(undefined, { });
+      expect(stack.hasClip).to.be.false;
+      expect(stack.stack[0] instanceof BlipVolume).to.be.false;
+      expect(stack.isStackDirty).to.be.true;
+      stack.getTexture();
+
+      stack.setViewClip(undefined, { });
+      expect(stack.isStackDirty).to.be.false;
+    });
+
     it("updates state as clips are pushed and popped", () => {
       const stack = new Stack();
-      expect(stack.stack.length).to.equal(0);
+      expect(stack.stack.length).to.equal(1);
       expect(stack.hasClip).to.be.false;
       expect(stack.numTotalRows).to.equal(0);
       expect(stack.numRowsInUse).to.equal(0);
@@ -121,7 +172,7 @@ for (let i = 0; i < 2; i++) {
       expect(stack.endIndex).to.equal(0);
       expect(stack.textureHeight).to.equal(0);
 
-      stack.pushClip();
+      stack.setViewClip(createClipVector(), { });
       expect(stack.stack.length).to.equal(1);
       expect(stack.hasClip).to.be.true;
       expect(stack.numTotalRows).to.equal(0);
@@ -130,7 +181,7 @@ for (let i = 0; i < 2; i++) {
       expect(stack.endIndex).to.equal(5);
       expect(stack.textureHeight).to.equal(0);
 
-      stack.wantInitialClip = false;
+      stack.wantViewClip = false;
       expect(stack.hasClip).to.be.false;
       expect(stack.numTotalRows).to.equal(0);
       expect(stack.numRowsInUse).to.equal(5);
@@ -146,7 +197,7 @@ for (let i = 0; i < 2; i++) {
       expect(stack.endIndex).to.equal(10);
       expect(stack.textureHeight).to.equal(0);
 
-      stack.wantInitialClip = true;
+      stack.wantViewClip = true;
       expect(stack.hasClip).to.be.true;
       expect(stack.startIndex).to.equal(0);
       expect(stack.endIndex).to.equal(10);
@@ -161,12 +212,12 @@ for (let i = 0; i < 2; i++) {
       expect(stack.endIndex).to.equal(5);
       expect(stack.textureHeight).to.equal(0);
 
-      stack.wantInitialClip = false;
+      stack.wantViewClip = false;
       expect(stack.hasClip).to.be.false;
 
-      stack.wantInitialClip = true;
-      stack.pop();
-      expect(stack.stack.length).to.equal(0);
+      stack.wantViewClip = true;
+      stack.setViewClip(undefined, { });
+      expect(stack.stack.length).to.equal(1);
       expect(stack.hasClip).to.be.false;
       expect(stack.numTotalRows).to.equal(0);
       expect(stack.numRowsInUse).to.equal(0);
@@ -175,7 +226,7 @@ for (let i = 0; i < 2; i++) {
       expect(stack.endIndex).to.equal(0);
       expect(stack.textureHeight).to.equal(0);
 
-      stack.pushClip();
+      stack.setViewClip(createClipVector(), { });
       stack.pushClip();
       const texture = stack.texture!;
       expect(texture).not.to.be.undefined;
