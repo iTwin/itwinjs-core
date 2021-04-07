@@ -3,121 +3,169 @@ publish: false
 ---
 # NextVersion
 
-## New Settings UI Features
+## Txn monitoring
 
-The @bentley/ui-core package has added the [SettingsManager]($ui-core) class that allows any number of [SettingsProvider]($ui-core) classes to be registered. These providers provide [SettingsTabEntry]($ui-core) definitions used to populate the [SettingsContainer]($ui-core) UI component with setting pages used to manage application settings. These new classes are marked as beta in this release and are subject to minor modifications in future releases.
+[TxnManager]($backend) now has additional events for monitoring changes to the iModel resulting from [Txns]($docs/learning/InteractiveEditing.md), including:
 
-## Breaking Api Changes
+* [TxnManager.onModelsChanged]($backend) for changes to the properties of [Model]($backend)s and
+* [TxnManager.onModelGeometryChanged]($backend) for changes to the geometry contained within [GeometricModel]($backend)s.
 
-### @bentley/ui-abstract package
+[BriefcaseConnection.txns]($frontend) now exposes the same events provided by `TxnManager`, but on the frontend, via [BriefcaseTxns]($frontend).
 
-Property `onClick` in [LinkElementsInfo]($ui-abstract) was changed to be mandatory. Also, the first [PropertyRecord]($ui-abstract) argument was removed from the method. Suggested ways to resolve:
+## New settings UI features
 
-- If you have a function `myFunction(record: PropertyRecord, text: string)` and use the first argument, the issue can be resolved with a lambda:
+### Add settings tabs and pages to UI
 
-  ```ts
-  record.links = {
-    onClick: (text) => myFunction(record, text),
-  };
-  ```
+#### Quantity formatting settings
 
-- If you were omitting the `onClick` method to get the default behavior, it can still be achieved by not setting `PropertyRecord.links` at all. It's only valid to expect default click behavior when default matcher is used, but if a custom matcher is used, then the click handled can be as simple as this:
+The [QuantityFormatSettingsPage]($ui-framework) component has been added to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
 
-  ```ts
-  record.links = {
-    onClick: (text) => { window.open(text, "_blank"); },
-  };
-  ```
+#### User Interface Settings
 
-### @bentley/imodeljs-frontend package
+The [UiSettingsPage]($ui-framework) component has been to provide the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
 
-#### Initializing TileAdmin
+#### Registering settings
 
-The previously-`alpha` [IModelAppOptions.tileAdmin]($frontend) property has been promoted to `beta` and its type has changed from [TileAdmin]($frontend) to [TileAdmin.Props]($frontend). [TileAdmin.create]($frontend) has become `async`. Replace code like the following:
+Below is an example of registering the `QuantityFormatSettingsPage` with the `SettingsManager`.
 
 ```ts
-  IModelApp.startup({ tileAdmin: TileAdmin.create(props) });
-```
+// Sample settings provider that dynamically adds settings into the setting stage
+export class AppSettingsTabsProvider implements SettingsTabsProvider {
+  public readonly id = "AppSettingsTabsProvider";
 
-with:
-
-```ts
-  IModelApp.startup({ tileAdmin: props });
-```
-
-#### Tile request channels
-
-[Tile]($frontend)s are now required to report the [TileRequestChannel]($frontend) via which requests for their content should be executed, by implementing the new abstract [Tile.channel]($frontend) property. The channel needs to specify a name and a concurrency. The name must be unique among all registered channels, so choose something unlikely to conflict. The concurrency specifies the maximum number of requests that can be simultaneously active on the channel. For example, when using HTTP 1.1 modern browsers allow no more than 6 simultaneous connections to a given hostname, so 6 is a good concurrency for HTTP 1.1-based channels and the hostname is a decent choice for the channel's name.
-
-Typically all tiles in the same [TileTree]($frontend) use the same channel. Your implementation of `Tile.channel` will depend on the mechanism by which the content is obtained. If it uses HTTP, it's easy:
-
-```ts
-  public get channel() { return IModelApp.tileAdmin.getForHttp("my-unique-channel-name"); }
-```
-
-If your tile never requests content, you can implement like so:
-
-```ts
-  public get channel() { throw new Error("This tile never has content so this property should never be invoked"); }
-```
-
-If your tile uses the `alpha` `TileAdmin.requestElementGraphics` API, use the dedicated channel for such requests:
-
-```ts
-  public get channel() { return IModelApp.tileAdmin.channels.elementGraphicsRpc; }
-```
-
-Otherwise, you must register a channel ahead of time. Choose an appropriate concurrency:
-
-- If the tile requests content from some custom [RpcInterface]($common), use `IModelApp.tileAdmin.channels.rpcConcurrency`.
-- Otherwise, choose a reasonably small limit to prevent too much work from being done at one time. Remember that tile requests are frequently canceled shortly after they are enqueued as the user navigates the view. A concurrency somewhere around 6-10 is probably reasonable.
-
-To register a channel at startup:
-
-```ts
-  await IModelApp.startup();
-  const channel = new TileRequestChannel("my-unique-channel-name", IModelApp.tileAdmin.rpcConcurrency);
-  IModelApp.tileAdmin.channels.add(channel);
-```
-
-If you store `channel` from the above snippet in a global variable, you can implement your `channel` property to return it directly; otherwise you must look it up:
-
-```ts
-  public get channel() {
-    const channel = IModelApp.tileAdmin.channels.get("my-unique-channel-name");
-    assert(undefined !== channel);
-    return channel;
+  public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
+    return [
+      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
+      getUiSettingsManagerEntry(30, true),
+    ];
   }
-```
 
-### Authentication changes for Electron and Mobile apps
-
-For desktop and mobile applications, all authentication happens on the backend. The frontend process merely initiates the login process and waits for notification that it succeeds. Previously the steps required to set up the process were somewhat complicated.
-
-Now, to configure your electron or mobile application for authorization, pass the `authConfig` option to `ElectronApp.startup` or `IOSApp.startup` to specify your authorization configuration.
-
-Then, if you want a method that can be awaited for the user to sign in, use something like:
-
-```ts
-// returns `true` after successful login.
-async function signIn(): Promise<boolean> {
-  const auth = IModelApp.authorizationClient!;
-  if (auth.isAuthorized)
-    return true; // make sure not already signed in
-
-  return new Promise<boolean>((resolve, reject) => {
-    auth.onUserStateChanged.addOnce((token?: AccessToken) => resolve(token !== undefined)); // resolve Promise with `onUserStateChanged` event
-    auth.signIn().catch((err) => reject(err)); // initiate the sign in process (forwarded to the backend)
-  });
+  public static initializeAppSettingProvider() {
+    UiFramework.settingsManager.addSettingsProvider(new AppSettingsTabsProvider());
+  }
 }
 ```
 
-## Enhancements to exportGraphics
+The `QuantityFormatSettingsPage` is marked as alpha in this release and is subject to minor modifications in future releases.
 
-[IModelDb.exportGraphics]($imodeljs-backend) and [IModelDb.exportPartGraphics]($imodeljs-backend) have new options that provide more control
-over the amount of detail in their output. See `decimationTol` and `minLineStyleComponentSize` in [ExportGraphicsOptions]($imodeljs-backend)
-for details.
+## @bentley/imodeljs-quantity
 
-## Deprecation and removal of @bentley/forms-data-management-client
+The alpha classes, interfaces, and definitions in the package `@bentley/imodeljs-quantity` have been updated to beta.
 
-The current @bentley/forms-data-management-client package is being deprecated and immediately removed from the source. While this is technically a breaking change outside of the major release cycle, no one is able to use this client due to the required OIDC scopes not being published.
+## Added NativeHost.settingsStore for storing user-level settings for native applications
+
+The @beta class `NativeHost` now has a member [NativeHost.settingsStore]($backend) that may be used by native applications to store user-level data in a file in the [[NativeHost.appSettingsCacheDir]($backend) directory. It uses the [NativeAppStorage]($backend) api to store and load key/value pairs. Note that these settings are stored in a local file that may be deleted by the user, so it should only be used for a local cache of values that may be restored elsewhere.
+
+## NativeApp is now @beta
+
+The class [NativeApp]($frontend) has been promoted from @alpha to @beta. `NativeApp` is relevant for both Electron and mobile applications. Please provide feedback if you have issues or concerns on its use.
+
+## Properly declare changeSetId
+
+There were a number of places where *changeSetId* variables/parameters were incorrectly typed as [GuidString]($bentley) instead of `string`.
+A *changeSetId* is a string hash value based on the ChangeSet contents and parent. It is not a GUID.
+This is not a breaking change because `GuidString` is just a type alias for `string`.
+It was, however, confusing from a usage and documentation perspective and needed to be corrected.
+
+## Promoted APIs
+
+The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
+
+### [@bentley/bentleyjs-core](https://www.itwinjs.org/reference/bentleyjs-core/)
+
+* [assert]($bentleyjs-core) for asserting logic invariants.
+* [ProcessDetector]($bentleyjs-core) for querying the type of executing JavaScript process.
+* [ObservableSet]($bentleyjs-core) for a [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents are modified.
+* [ByteStream]($bentleyjs-core) for extracting data from binary streams.
+* Types related to collections of [Id64String]($bentleyjs-core)s
+  * [OrderedId64Iterable]($bentleyjs-core) and [OrderedId64Array]($bentleyjs-core)
+  * [CompressedId64Set]($bentleyjs-core) and [MutableCompressedId64Set]($bentleyjs-core)
+
+### [@bentley/hypermodeling-frontend](https://www.itwinjs.org/reference/hypermodeling-frontend/)
+
+All hyper-modeling APIs are now public. [This interactive sample](https://www.itwinjs.org/sample-showcase/?group=Viewer&sample=hypermodeling-sample&imodel=House+Sample) demonstrates how to use hyper-modeling features.
+
+### [@bentley/imodeljs-common](https://www.itwinjs.org/reference/imodeljs-common/)
+
+* [ThematicDisplay]($common) for colorizing a [Viewport]($frontend)'s scene based on aspects of the rendered geometry. [This interactive sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=thematic-display-sample&imodel=CoffsHarborDemo) demonstrates the usage of thematic display.
+* [Tween]($common) for smooth interpolation of values (based on [Tween.js](https://github.com/tweenjs/tween.js/blob/master/docs/user_guide.md))
+
+### [@bentley/imodeljs-frontend](https://www.itwinjs.org/reference/imodeljs-frontend/)
+
+* [ViewGlobeSatelliteTool]($frontend), [ViewGlobeBirdTool]($frontend), [ViewGlobeLocationTool]($frontend), [ViewGlobeIModelTool]($frontend) for viewing the iModel in a global context.
+* [MeasureLengthTool]($frontend), [MeasureAreaTool]($frontend), [MeasureVolumeTool]($frontend) for reporting element mass properties.
+* [MeasureLocationTool]($frontend), [MeasureDistanceTool]($frontend), [MeasureAreaByPointsTool]($frontend) for reporting point coordinates, point to point distance, and area defined by points.
+* [SetupWalkCameraTool]($frontend) to establish the starting position for the walk tool by identifying a point on the floor and look direction.
+* [ViewClipByPlaneTool]($frontend), [ViewClipByRangeTool]($frontend), [ViewClipByShapeTool]($frontend), [ViewClipByElementTool]($frontend), [ViewClipClearTool]($frontend) to section a view by a set of clip planes or clip volume.
+
+### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
+
+* [StandaloneDb]($backend) for opening Standalone iModels
+
+## Breaking API changes
+
+### @bentley/imodeljs-frontend
+
+The beta class `InteractiveEditingSession` was renamed to [GraphicalEditingScope]($frontend), resulting in renaming of several related APIs:
+  * [GraphicalEditingScope.exit]($frontend) replaces `end`.
+  * [GraphicalEditingScope.onEnter]($frontend), [GraphicalEditingScope.onExiting]($frontend), and [GraphicalEditingScope.onExited]($frontend) replace `onBegin`, `onEnding`, and `onEnded` respectively.
+  * [BriefcaseConnection.editingScope]($frontend) and [BriefcaseConnection.enterEditingScope]($frontend) replace `editingSession` and `beginEditingSession`.
+  * [BriefcaseConnection.supportsGraphicalEditing]($frontend) replaces `supportsInteractiveEditing`.
+
+### @bentley/ui-core
+
+The beta class `SettingsProvider` was renamed to `SettingsTabsProvider`.
+
+### @bentley/ui-framework
+
+The beta class `QuantityFormatSettingsPanel` was renamed to `QuantityFormatSettingsPage`.
+
+### @bentley/imodeljs-quantity
+
+#### UnitProps property name change
+
+The interface [UnitProps]($quantity) property `unitFamily` has been renamed to `phenomenon` to be consistent with naming in `ecschema-metadata` package.
+
+### @bentley/presentation-components
+
+Return value of [usePresentationTreeNodeLoader]($presentation-components) hook was changed from
+
+```ts
+PagedTreeNodeLoader<IPresentationTreeDataProvider>
+```
+
+to
+
+```ts
+{
+  nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+  onItemsRendered: (items: RenderedItemsRange) => void;
+}
+```
+
+Callback `onItemsRendered` returned from [usePresentationTreeNodeLoader]($presentation-components) hook should be passed to [ControlledTree]($ui-components) when property `enableHierarchyAutoUpdate` on [PresentationTreeNodeLoaderProps]($presentation-components) is set to true. If hierarchy auto update is not enabled replace:
+
+```ts
+const nodeLoader = usePresentationTreeNodeLoader(props);
+```
+
+With:
+
+```ts
+const { nodeLoader } = usePresentationTreeNodeLoader(props);
+```
+
+If hierarchy auto update is enabled replace:
+
+```ts
+const nodeLoader = usePresentationTreeNodeLoader(props);
+```
+
+With:
+
+```tsx
+const { nodeLoader, onItemsRendered } = usePresentationTreeNodeLoader(props);
+return <ControlledTree
+  onItemsRendered={onItemsRendered}
+/>;
+```

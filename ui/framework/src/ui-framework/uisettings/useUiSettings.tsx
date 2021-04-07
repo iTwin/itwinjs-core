@@ -1,39 +1,39 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module UiSettings
  */
 
 import * as React from "react";
-import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
+import { LocalSettingsStorage, UiSettingsStorage } from "@bentley/ui-core";
 
-/** @internal */
-export function useUiSettingsContext(): UiSettings {
+/** @beta */
+export function useUiSettingsStorageContext(): UiSettingsStorage {
   return React.useContext(UiSettingsContext);
 }
 
 /** @internal */
-export const UiSettingsContext = React.createContext<UiSettings>(new LocalUiSettings()); // eslint-disable-line @typescript-eslint/naming-convention
+export const UiSettingsContext = React.createContext<UiSettingsStorage>(new LocalSettingsStorage()); // eslint-disable-line @typescript-eslint/naming-convention
 UiSettingsContext.displayName = "uifw:UiSettingsContext";
 
 /** Properties for the [[UiSettingsProvider]] component.
- * @alpha
+ * @beta
  */
 export interface UiSettingsProviderProps {
   children?: React.ReactNode;
-  uiSettings: UiSettings;
+  settingsStorage: UiSettingsStorage;
 }
 
 /** Allows to provide a custom [[UiSettings]] implementation to persist UI settings.
- * @alpha
+ * @beta
  */
 export function UiSettingsProvider(props: UiSettingsProviderProps) {
   return (
     <UiSettingsContext.Provider
       children={props.children} // eslint-disable-line react/no-children-prop
-      value={props.uiSettings}
+      value={props.settingsStorage}
     />
   );
 }

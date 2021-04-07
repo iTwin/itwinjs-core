@@ -75,7 +75,7 @@ export interface SectionDrawingLocationStateData {
 }
 
 /** Represents a [ViewAttachment]($backend) that attaches a [[SectionDrawingLocationState]] to a [Sheet]($backend) model.
- * @beta
+ * @public
  */
 export interface SectionViewAttachment {
   /** The view attachment's element Id. */
@@ -92,7 +92,7 @@ export interface SectionViewAttachment {
 
 /** Represents a [SectionDrawingLocation]($backend), including data from related elements like [SectionDrawing]($backend) used in a hyper-modeling context.
  * @see [[SectionMarker]] for a widget that allows the user to interact with a section drawing location.
- * @beta
+ * @public
  */
 export class SectionDrawingLocationState {
   /** The iModel in which this section drawing location resides. */

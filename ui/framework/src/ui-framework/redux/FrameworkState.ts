@@ -11,7 +11,7 @@ import { combineReducers } from "./redux-ts";
 import { SessionState, SessionStateReducer } from "./SessionState";
 
 /** Interface combining all the Framework state interfaces.
- * @beta
+ * @public
  */
 export interface FrameworkState {
   configurableUiState: ConfigurableUiState;
@@ -19,7 +19,7 @@ export interface FrameworkState {
 }
 
 /** Framework reducer that combines the [[ConfigurableUiReducer]] and [[SessionStateReducer]].
- * @beta
+ * @public
  */
 export const FrameworkReducer = combineReducers({ // eslint-disable-line @typescript-eslint/naming-convention
   configurableUiState: ConfigurableUiReducer,

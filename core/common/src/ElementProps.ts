@@ -152,29 +152,8 @@ export enum SectionType {
   Plan = 6,
 }
 
-/** Properties that define a [SectionLocation]($backend)
- * @alpha
- * @deprecated Use [[SectionDrawingLocationProps]] instead.
- */
-export interface SectionLocationProps extends GeometricElement3dProps {
-  /** Section type */
-  sectionType?: SectionType;
-  /** Optional Id of the associated [[ViewAttachmentProps]]. */
-  viewAttachment?: RelatedElementProps;
-  jsonProperties?: {
-    /** The Id of the spatial view from which this section location was created. */
-    spatialViewId?: Id64String;
-    /** The Id of the drawing associated with this section location, if any. If both this and `viewAttachment` are defined, this is the same as the Id of the view attachment's view. */
-    drawingViewId?: Id64String;
-    /** Transform from drawing coordinates to spatial coordinates. */
-    drawingToSpatialTransform?: TransformProps;
-    /** Transform from sheet coordinates to spatial coordinates. */
-    sheetToSpatialTransform?: TransformProps;
-  };
-}
-
 /** Properties that define a [SectionDrawing]($backend).
- * @beta
+ * @public
  */
 export interface SectionDrawingProps extends ElementProps {
   /** The type of section used to generate the drawing. Default: Section. */
@@ -182,29 +161,22 @@ export interface SectionDrawingProps extends ElementProps {
   /** The spatial view from which the section was generated. */
   spatialView?: RelatedElementProps;
   jsonProperties?: {
-    /** A transform from the section drawing model's coordinates to spatial coordinates.
-     * @alpha
-     */
+    /** A transform from the section drawing model's coordinates to spatial coordinates. */
     drawingToSpatialTransform?: TransformProps;
-    /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment]($backend), a transform from the sheet's coordinates to spatial coordinates.
-     * @alpha
-     */
+    /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment]($backend), a transform from the sheet's coordinates to spatial coordinates. */
     sheetToSpatialTransform?: TransformProps;
     /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment]($backend), JSON representation of a [ClipVector]($geometry) to apply to
      * the sheet graphics when drawn in the context of the spatial view.
      * The ClipVector is in spatial coordinates.
-     * @alpha
      */
     drawingBoundaryClip?: ClipVectorProps;
-    /** If true, when displaying the section drawing as a [DrawingViewState]($frontend), the [[spatialView]] will also be displayed.
-     * @alpha
-     */
+    /** If true, when displaying the section drawing as a [DrawingViewState]($frontend), the [[spatialView]] will also be displayed. */
     displaySpatialView?: true;
   };
 }
 
 /** Properties that define a [SectionDrawingLocation]($backend)
- * @beta
+ * @public
  */
 export interface SectionDrawingLocationProps extends GeometricElement3dProps {
   /** The [ViewDefinition]($backend) to which this location refers. */
@@ -273,8 +245,8 @@ export interface SheetTemplateProps extends ElementProps {
   border?: Id64String;
 }
 
-/** Properties of a [Sheet]($backend)
- * @beta
+/** Properties of a [Sheet]($backend).
+ * @public
  */
 export interface SheetProps extends ElementProps {
   width?: number;
@@ -340,9 +312,7 @@ export interface ElementLoadProps {
   wantGeometry?: boolean;
   /** When including a geometry stream containing brep entries, whether to return the raw brep data or proxy geometry, false when undefined */
   wantBRepData?: boolean;
-  /** Properties to omit when loading a [[DisplayStyle]].
-   * @internal
-   */
+  /** Properties to omit when loading a [[DisplayStyle]]. */
   displayStyle?: DisplayStyleLoadProps;
 }
 
@@ -372,6 +342,39 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
   checksum?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
   jsonProperties?: any;
+  source?: RelatedElementProps;
+}
+
+/** Properties of an [ExternalSource]($backend)
+ * @beta
+ */
+export interface ExternalSourceProps extends ElementProps {
+  repository?: RelatedElementProps;
+  connectorName?: string;
+  connectorVersion?: string;
+}
+
+/** The role that an attached [ExternalSource]($backend) plays.
+ * @beta
+ */
+export enum ExternalSourceAttachmentRole {
+  /** The attached [ExternalSource]($backend) provides context. */
+  SpecifyContext = 0,
+  /** The attached [ExternalSource]($backend) models a part of the whole. */
+  SpecifyPart = 1,
+}
+
+/** Properties of an [ExternalSourceAttachment]($backend)
+ * @beta
+ */
+export interface ExternalSourceAttachmentProps extends ElementProps {
+  attaches?: RelatedElementProps;
+  role?: ExternalSourceAttachmentRole;
+  translation?: XYZProps;
+  yaw?: number;
+  pitch?: number;
+  roll?: number;
+  scale?: XYZProps;
 }
 
 /** Properties of an [ChannelRootAspect]($backend) that identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
@@ -383,10 +386,11 @@ export interface ChannelRootAspectProps extends ElementAspectProps {
 }
 
 /** Properties of a [LineStyle]($backend)
- * @beta
+ * @public
  */
 export interface LineStyleProps extends DefinitionElementProps {
   description?: string;
+  /** The JSON string line style definition element data [LineStyleDefinition.StyleProps]($backend) */
   data: string;
 }
 
@@ -440,4 +444,12 @@ export interface UrlLinkProps extends ElementProps {
  */
 export interface RepositoryLinkProps extends UrlLinkProps {
   repositoryGuid?: GuidString;
+  format?: string;
+}
+
+/** The properties of a [SynchronizationConfigLink]($backend)
+ * @beta
+ */
+export interface SynchronizationConfigLinkProps extends UrlLinkProps {
+  lastSuccessfulRun?: string;
 }

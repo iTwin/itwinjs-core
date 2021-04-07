@@ -125,5 +125,10 @@ spawn(require.resolve(".bin/api-extractor"), args).then((code) => {
   spawn("node", extractSummaryArgs).then((code) => {
     process.exit(code);
   });
+
+  if (process.env.GENERATE_FULL_API_REPORT)
+    spawn("node", [...extractSummaryArgs, "--gatherFullReport"]).then((code) => {
+      process.exit(code);
+    });
 });
 handleInterrupts();

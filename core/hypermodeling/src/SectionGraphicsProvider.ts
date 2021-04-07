@@ -330,11 +330,12 @@ class SectionGraphicsProvider implements TiledGraphicsProvider {
   }
 }
 
-/** Creates a TiledGraphicsProvider that can be associated with a [Viewport]($frontend) to display 2d section graphics and annotations in the context of a [SpatialViewState]($frontend). Typically used indirectly via [[HyperModelingDecorator]].
+/** Creates a TiledGraphicsProvider that can be associated with a [Viewport]($frontend) to display 2d section graphics and annotations in the context of a [SpatialViewState]($frontend).
+ * Typically used indirectly via [[HyperModelingDecorator]].
  * @param state The section drawing location specifying which section drawing to display.
  * @returns A provider suitable for passing to [Viewport.addTiledGraphicsProvider]($frontend).
  * @see [[HyperModelingDecorator.toggleAttachment]] to activate section graphics for a given [[SectionMarker]].
- * @beta
+ * @public
  */
 export async function createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise<TiledGraphicsProvider> {
   let attachment;

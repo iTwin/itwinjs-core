@@ -7,8 +7,8 @@
  */
 import { assert } from "@bentley/bentleyjs-core";
 import {
-  ArrayTypeDescription, DisplayValue, Field, Item, NestedContentField, NestedContentValue, PresentationError, PresentationStatus, PropertyValueFormat,
-  StructTypeDescription, TypeDescription, Value, ValuesDictionary,
+  ArrayTypeDescription, DisplayValue, DisplayValuesArray, DisplayValuesMap, Field, Item, NestedContentField, NestedContentValue,
+  PropertyValueFormat as PresentationPropertyValueFormat, StructTypeDescription, TypeDescription, Value, ValuesArray, ValuesDictionary, ValuesMap,
 } from "@bentley/presentation-common";
 import {
   ArrayValue, EnumerationChoicesInfo, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValue,
@@ -16,18 +16,11 @@ import {
 } from "@bentley/ui-abstract";
 import { Omit } from "@bentley/ui-core";
 
-const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: ArrayTypeDescription, values: Value[], displayValues: DisplayValue[]): ArrayValue => {
+const createArrayValue = (arrayDescription: ArrayTypeDescription, itemProps: CreatePropertyRecordProps, values: Value[], displayValues: DisplayValue[]): ArrayValue => {
   const records = new Array<PropertyRecord>();
   assert(values.length === displayValues.length);
   for (let i = 0; i < values.length; ++i) {
-    const memberDescription = {
-      name: propertyDescription.name,
-      displayLabel: propertyDescription.displayLabel,
-      typename: arrayDescription.memberType.typeName,
-    } as PropertyDescription;
-    const record = createRecord(memberDescription, arrayDescription.memberType,
-      values[i], displayValues[i], true, false);
-    records.push(record);
+    records.push(createRecord(itemProps, arrayDescription.memberType, values[i], displayValues[i]));
   }
   return {
     valueFormat: UiPropertyValueFormat.Array,
@@ -36,17 +29,11 @@ const createArrayValue = (propertyDescription: PropertyDescription, arrayDescrip
   };
 };
 
-const createStructValue = (description: StructTypeDescription, valueObj: ValuesDictionary<Value>, displayValueObj: ValuesDictionary<DisplayValue>): StructValue => {
+const createStructValue = (description: StructTypeDescription, memberProps: { [memberName: string]: CreatePropertyRecordProps}, valueObj: ValuesDictionary<Value>, displayValueObj: ValuesDictionary<DisplayValue>): StructValue => {
   const members: { [name: string]: PropertyRecord } = {};
   for (const memberTypeDescription of description.members) {
-    const memberPropertyDescription = {
-      name: memberTypeDescription.name,
-      displayLabel: memberTypeDescription.label,
-      typename: memberTypeDescription.type.typeName,
-    } as PropertyDescription;
-    const record = createRecord(memberPropertyDescription, memberTypeDescription.type,
-      valueObj[memberTypeDescription.name], displayValueObj[memberTypeDescription.name], true, false);
-    members[memberTypeDescription.name] = record;
+    const thisMemberProps = memberProps[memberTypeDescription.name];
+    members[memberTypeDescription.name] = createRecord(thisMemberProps, memberTypeDescription.type, valueObj[memberTypeDescription.name], displayValueObj[memberTypeDescription.name]);
   }
   return {
     valueFormat: UiPropertyValueFormat.Struct,
@@ -58,165 +45,73 @@ const createPrimitiveValue = (value: Value, displayValue: DisplayValue): Primiti
   return {
     valueFormat: UiPropertyValueFormat.Primitive,
     value,
-    displayValue,
+    displayValue: displayValue ?? "",
   } as PrimitiveValue;
 };
 
-const createValue = (propertyDescription: PropertyDescription, typeDescription: TypeDescription, isMerged: boolean, value: Value, displayValue: DisplayValue): PropertyValue => {
-  if (undefined === value && undefined === displayValue) {
-    return {
-      valueFormat: UiPropertyValueFormat.Primitive,
-      value,
-      displayValue: "",
-    };
-  }
-  if (!isMerged) {
-    if (typeDescription.valueFormat === PropertyValueFormat.Array) {
-      if (!Value.isArray(value) || !DisplayValue.isArray(displayValue))
-        throw new PresentationError(PresentationStatus.InvalidArgument, "value and displayValue should both be arrays");
-      return createArrayValue(propertyDescription, typeDescription, value, displayValue);
+const createValue = (props: CreatePropertyRecordProps, typeDescription: TypeDescription, value: Value, displayValue: DisplayValue): PropertyValue => {
+  if (value !== undefined && !props.isMerged) {
+    if (typeDescription.valueFormat === PresentationPropertyValueFormat.Array) {
+      assert(Value.isArray(value));
+      assert(DisplayValue.isArray(displayValue));
+      assert(props.items !== undefined);
+      return createArrayValue(typeDescription, props.items, value, displayValue);
     }
-    if (typeDescription.valueFormat === PropertyValueFormat.Struct) {
-      if (!Value.isMap(value) || !DisplayValue.isMap(displayValue))
-        throw new PresentationError(PresentationStatus.InvalidArgument, "value and displayValue should both be of map type");
-      return createStructValue(typeDescription, value, displayValue);
+    if (typeDescription.valueFormat === PresentationPropertyValueFormat.Struct) {
+      assert(Value.isMap(value));
+      assert(DisplayValue.isMap(displayValue));
+      assert(props.members !== undefined);
+      return createStructValue(typeDescription, props.members, value, displayValue);
     }
   }
   return createPrimitiveValue(value, displayValue);
 };
 
 const createRecordDescription = (typeDescription: TypeDescription, displayValue: Omit<DisplayValue, "undefined">): string | undefined => {
-  if (PropertyValueFormat.Array === typeDescription.valueFormat || PropertyValueFormat.Struct === typeDescription.valueFormat)
-    return undefined;
-  if (PropertyValueFormat.Primitive !== typeDescription.valueFormat || !DisplayValue.isPrimitive(displayValue))
-    throw new PresentationError(PresentationStatus.InvalidArgument, "displayValue is of wrong type");
+  assert(PresentationPropertyValueFormat.Primitive === typeDescription.valueFormat);
+  assert(DisplayValue.isPrimitive(displayValue));
   return displayValue.toString();
 };
 
-const createRecord = (propertyDescription: PropertyDescription, typeDescription: TypeDescription,
-  value: Value, displayValue: DisplayValue, isReadOnly: boolean, isMerged: boolean, extendedData?: { [key: string]: any }): PropertyRecord => {
-  const valueObj = createValue(propertyDescription, typeDescription, isMerged, value, displayValue);
-  const record = new PropertyRecord(valueObj, propertyDescription);
-  if (displayValue)
+const createRecord = (props: CreatePropertyRecordProps, typeDescription: TypeDescription, value: Value, displayValue: DisplayValue): PropertyRecord => {
+  const valueObj = createValue(props, typeDescription, value, displayValue);
+  const record = new PropertyRecord(valueObj, props.description);
+  if (displayValue && typeDescription.valueFormat === PresentationPropertyValueFormat.Primitive)
     record.description = createRecordDescription(typeDescription, displayValue);
-  if (isMerged)
+  if (props.isMerged)
     record.isMerged = true;
-  if (isReadOnly)
+  if (props.isReadonly)
     record.isReadonly = true;
-  if (extendedData)
-    record.extendedData = extendedData;
-  return record;
-};
-
-const createNestedStructRecord = (field: NestedContentField, nestedContent: NestedContentValue, props: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord | undefined => {
-  const exclusiveIncludePath = props.exclusiveIncludePath ? [...props.exclusiveIncludePath] : undefined;
-  let exclusiveIncludePathField: Field | undefined;
-  if (exclusiveIncludePath && 0 !== exclusiveIncludePath.length) {
-    exclusiveIncludePathField = exclusiveIncludePath.shift();
-  }
-
-  const item = new Item(nestedContent.primaryKeys, "", "",
-    field.contentClassInfo, nestedContent.values, nestedContent.displayValues, nestedContent.mergedFieldNames);
-
-  const namePrefix = applyOptionalPrefix(field.name, props.namePrefix);
-  const members: { [name: string]: PropertyRecord } = {};
-  let hasMembers = false;
-  for (const nestedField of field.nestedFields) {
-    if (exclusiveIncludePathField && exclusiveIncludePathField !== nestedField) {
-      // we know specific field that we want - skip if the current field doesn't match
-      continue;
-    }
-    let hiddenFieldPaths = props.hiddenFieldPaths;
-    if (hiddenFieldPaths) {
-      if (hiddenFieldPaths.some((path) => path.length === 1 && path[0] === nestedField)) {
-        // we know paths of fields that we want hidden - skip if the current field matches any of those paths
-        continue;
-      }
-      // pick all paths that start with current field
-      hiddenFieldPaths = filterMatchingFieldPaths(hiddenFieldPaths, nestedField);
-    }
-    const memberRecord = ContentBuilder.createPropertyRecord(nestedField, item, { ...props, exclusiveIncludePath, hiddenFieldPaths, namePrefix });
-    if (memberRecord) {
-      members[nestedField.name] = memberRecord;
-      hasMembers = true;
-    }
-  }
-
-  if (props.skipChildlessRecords && !hasMembers)
-    return undefined;
-
-  const value: StructValue = {
-    valueFormat: UiPropertyValueFormat.Struct,
-    members,
-  };
-  const record = new PropertyRecord(value, ContentBuilder.createPropertyDescription(field, props));
-  record.isReadonly = field.isReadonly;
-  record.isMerged = false;
-  return record;
-};
-
-const createNestedContentRecord = (field: NestedContentField, item: Item, props: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord | undefined => {
-  const isMerged = item.isFieldMerged(field.name);
-  let value: PropertyValue;
-
-  if (isMerged) {
-    const displayValue = item.displayValues[field.name];
-    if (!DisplayValue.isPrimitive(displayValue))
-      throw new PresentationError(PresentationStatus.Error, "displayValue should be primitive");
-    // if the value is merged, just take the display value
-    value = {
-      valueFormat: UiPropertyValueFormat.Primitive,
-      value: undefined,
-      displayValue: (undefined !== displayValue) ? displayValue.toString() : "",
-    };
-  } else {
-    const dictionaryValue = item.values[field.name];
-    if (!Value.isNestedContent(dictionaryValue))
-      throw new PresentationError(PresentationStatus.Error, "value should be nested content");
-    // nested content value is in NestedContent[] format
-    const nestedContentArray: NestedContentValue[] = dictionaryValue;
-    value = {
-      valueFormat: UiPropertyValueFormat.Array,
-      items: nestedContentArray.map((r) => createNestedStructRecord(field, r, props)).filter((r): r is PropertyRecord => !!r),
-      itemsTypeName: field.type.typeName,
-    };
-    // if array contains no values, return `undefined`
-    if (props.skipChildlessRecords && 0 === value.items.length)
-      return undefined;
-    // if array contains just one value, replace it with the value
-    if (1 === value.items.length)
-      value = value.items[0].value;
-  }
-
-  const record = new PropertyRecord(value, ContentBuilder.createPropertyDescription(field, props));
-  if (isMerged)
-    record.isMerged = true;
-  if (field.isReadonly || isMerged)
-    record.isReadonly = true;
-  if (field.autoExpand)
+  if (props.autoExpand)
     record.autoExpand = true;
-  if (item.extendedData)
-    record.extendedData = item.extendedData;
+  if (props.extendedData)
+    record.extendedData = props.extendedData;
   return record;
 };
 
 /** @internal */
-export interface NestedContentCreationProps {
-  /**
-   * A path of fields to be exclusively included in the record. Should not include the
-   * field the record is being created for.
-   */
-  exclusiveIncludePath?: Field[];
+export interface CreatePropertyRecordProps {
+  description: PropertyDescription;
+  isReadonly?: boolean;
+  isMerged?: boolean;
+  autoExpand?: boolean;
+  extendedData?: { [key: string]: any };
+  items?: CreatePropertyRecordProps;
+  members?: {
+    [name: string]: CreatePropertyRecordProps;
+  };
+}
 
-  /**
-   * Paths of fields which should be omitted from the nested content
-   */
-  hiddenFieldPaths?: Field[][];
+/** @internal */
+export interface FieldHierarchy {
+  field: Field;
+  childFields?: FieldHierarchy[];
+}
 
-  /**
-   * Should a struct or array record be skipped if it has no members / items.
-   */
-  skipChildlessRecords?: boolean;
+/** @internal */
+export interface FieldRecord {
+  record: PropertyRecord;
+  field: Field;
 }
 
 /** @internal */
@@ -232,18 +127,54 @@ export interface PropertyDescriptionCreationProps {
 export class ContentBuilder {
   /**
    * Create a property record for specified field and item
-   * @param field Content field to create the record for
-   * @param item Content item containing the values for `field`
-   * @param props Parameters for creating the record
+   * @param fieldHierarchy Content fields hierarchy to create the record for
+   * @param item Content item containing the values
+   *
+   * @note The resulting [[PropertyRecord]] may be associated with `fieldHierarchy.field` or one its
+   * ancestors, in case one of them are merged.
    */
-  public static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord | undefined {
-    if (field.isNestedContentField())
-      return createNestedContentRecord(field, item, props ? props : {});
+  public static createPropertyRecord(fieldHierarchy: FieldHierarchy, item: Item): FieldRecord {
+    const rootToThisField = createFieldPath(fieldHierarchy.field);
 
-    const isValueReadOnly = field.isReadonly || item.isFieldMerged(field.name);
-    return createRecord(ContentBuilder.createPropertyDescription(field, props), field.type,
-      item.values[field.name], item.displayValues[field.name],
-      isValueReadOnly, item.isFieldMerged(field.name), item.extendedData);
+    let namePrefix: string | undefined;
+    const pathUpToField = rootToThisField.slice(undefined, -1); // need to remove the last element because the Field information is in `field`
+    for (let i = 0; i < pathUpToField.length; ++i) {
+      const parentField = pathUpToField[i] as NestedContentField;
+      const nextField = rootToThisField[i + 1];
+
+      if (item.isFieldMerged(parentField.name))
+        return createMergedFieldRecord(parentField, item.values[parentField.name], item.displayValues[parentField.name], namePrefix);
+
+      item = convertNestedContentItemToStructArrayItem(item, parentField, nextField);
+      namePrefix = applyOptionalPrefix(parentField.name, namePrefix);
+    }
+
+    if (item.isFieldMerged(fieldHierarchy.field.name))
+      return createMergedFieldRecord(fieldHierarchy.field, item.values[fieldHierarchy.field.name], item.displayValues[fieldHierarchy.field.name], namePrefix);
+
+    if (fieldHierarchy.field.isNestedContentField()) {
+      fieldHierarchy = convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy, namePrefix);
+      item = convertNestedContentFieldHierarchyItemToStructArrayItem(item, fieldHierarchy);
+    } else if (pathUpToField.length > 0) {
+      fieldHierarchy = {
+        ...fieldHierarchy,
+        field: Object.assign(fieldHierarchy.field.clone(), {
+          type: {
+            valueFormat: PresentationPropertyValueFormat.Array,
+            typeName: `${fieldHierarchy.field.type.typeName}[]`,
+            memberType: fieldHierarchy.field.type,
+          },
+        }),
+      };
+    }
+
+    const recordProps = createPropertyRecordPropsFromFieldHierarchy(fieldHierarchy, item.isFieldMerged(fieldHierarchy.field.name), namePrefix);
+    recordProps.extendedData = item.extendedData;
+
+    return {
+      record: createRecord(recordProps, fieldHierarchy.field.type, item.values[fieldHierarchy.field.name], item.displayValues[fieldHierarchy.field.name]),
+      field: fieldHierarchy.field,
+    };
   }
 
   /**
@@ -255,7 +186,7 @@ export class ContentBuilder {
     const descr: PropertyDescription = {
       name: applyOptionalPrefix(field.name, props ? props.namePrefix : undefined),
       displayLabel: field.label,
-      typename: field.type.typeName.toLowerCase(),
+      typename: field.isNestedContentField() ? field.type.typeName : field.type.typeName.toLowerCase(),
     };
 
     if (field.renderer) {
@@ -266,7 +197,7 @@ export class ContentBuilder {
       descr.editor = { name: field.editor.name, params: [] } as PropertyEditorInfo;
     }
 
-    if (field.type.valueFormat === PropertyValueFormat.Primitive && "enum" === field.type.typeName && field.isPropertiesField() && field.properties[0].property.enumerationInfo) {
+    if (field.type.valueFormat === PresentationPropertyValueFormat.Primitive && "enum" === field.type.typeName && field.isPropertiesField() && field.properties[0].property.enumerationInfo) {
       const enumInfo = field.properties[0].property.enumerationInfo;
       descr.enum = {
         choices: enumInfo.choices,
@@ -278,12 +209,164 @@ export class ContentBuilder {
 }
 
 /** @internal */
-export const filterMatchingFieldPaths = (paths: Field[][], start: Field) => paths
-  .filter((path) => path.length > 1 && path[0] === start)
-  .map((path) => path.slice(1));
-
-/** @internal */
 export const FIELD_NAMES_SEPARATOR = "$";
 
 /** @internal */
 export const applyOptionalPrefix = (str: string, prefix?: string) => (prefix ? `${prefix}${FIELD_NAMES_SEPARATOR}${str}` : str);
+
+function createMergedFieldRecord(field: Field, value: Value, displayValue: DisplayValue, namePrefix: string | undefined) {
+  return {
+    record: createRecord({
+      description: ContentBuilder.createPropertyDescription(field, { namePrefix }),
+      isMerged: true,
+      isReadonly: true,
+      autoExpand: field.isNestedContentField() && field.autoExpand,
+    }, field.type, value, displayValue),
+    field,
+  };
+}
+
+function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: Field, nextField: Field) {
+  const value = item.values[field.name] ?? [];
+  assert(Value.isNestedContent(value));
+  const nextFieldValues: { raw: ValuesArray, display: DisplayValuesArray } = { raw: [], display: [] };
+  value.forEach((ncv) => {
+    const nextRawValue = ncv.values[nextField.name];
+    const nextDisplayValue = ncv.displayValues[nextField.name];
+    if (nextField.isNestedContentField()) {
+      if (nextRawValue) {
+        assert(Value.isNestedContent(nextRawValue));
+        nextFieldValues.raw.push(...nextRawValue);
+      }
+    } else {
+      nextFieldValues.raw.push(nextRawValue);
+      nextFieldValues.display.push(nextDisplayValue);
+    }
+  });
+  return new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, { [nextField.name]: nextFieldValues.raw }, { [nextField.name]: nextFieldValues.display }, item.mergedFieldNames, item.extendedData);
+}
+
+function convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy: FieldHierarchy, ncvs: ReadonlyArray<NestedContentValue>) {
+  const result: { raw: ValuesArray, display: DisplayValuesArray } = { raw: [], display: [] };
+  ncvs.forEach((ncv) => {
+    const values: ValuesMap = { ...ncv.values };
+    const displayValues: DisplayValuesMap = { ...ncv.displayValues };
+    fieldHierarchy.childFields?.forEach((childFieldHierarchy) => {
+      const childFieldName = childFieldHierarchy.field.name;
+      if (childFieldHierarchy.field.isNestedContentField()) {
+        const value = values[childFieldName];
+        assert(Value.isNestedContent(value));
+        const convertedValues = convertNestedContentValuesToStructArrayValuesRecursive(childFieldHierarchy, value);
+        values[childFieldName] = convertedValues.raw;
+        displayValues[childFieldName] = convertedValues.display;
+      }
+    });
+    result.raw.push(values);
+    result.display.push(displayValues);
+  });
+  return result;
+}
+
+function convertNestedContentFieldHierarchyItemToStructArrayItem(item: Readonly<Item>, fieldHierarchy: FieldHierarchy): Item {
+  const fieldName = fieldHierarchy.field.name;
+  const rawValue = item.values[fieldName];
+  assert(Value.isNestedContent(rawValue));
+  const converted = convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy, rawValue);
+  return new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, { [fieldName]: converted.raw }, { [fieldName]: converted.display }, item.mergedFieldNames, item.extendedData);
+}
+
+function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy: FieldHierarchy, namePrefix: string | undefined) {
+  const fieldName = fieldHierarchy.field.name;
+  const convertedChildFieldHierarchies = fieldHierarchy.childFields?.map((child) => {
+    if (child.field.isNestedContentField())
+      return convertNestedContentFieldHierarchyToStructArrayHierarchy(child, applyOptionalPrefix(fieldName, namePrefix));
+    return child;
+  });
+  const convertedFieldHierarchy: FieldHierarchy = {
+    field: Object.assign(fieldHierarchy.field.clone(), {
+      type: {
+        valueFormat: PresentationPropertyValueFormat.Array,
+        typeName: `${fieldHierarchy.field.type.typeName}[]`,
+        memberType: {
+          valueFormat: PresentationPropertyValueFormat.Struct,
+          typeName: fieldHierarchy.field.type.typeName,
+          members: convertedChildFieldHierarchies?.map((member) => ({
+            name: member.field.name,
+            label: member.field.label,
+            type: member.field.type,
+          })) ?? [],
+        },
+      } as TypeDescription,
+    }),
+    childFields: convertedChildFieldHierarchies,
+  };
+  return convertedFieldHierarchy;
+}
+
+function createPropertyRecordPropsFromFieldInfo(fieldType: TypeDescription, name: string, label: string, isReadonly?: boolean): CreatePropertyRecordProps {
+  const props: CreatePropertyRecordProps = {
+    description: {
+      typename: fieldType.typeName,
+      displayLabel: label,
+      name,
+    },
+  };
+  if (fieldType.valueFormat === PresentationPropertyValueFormat.Array) {
+    props.items = createPropertyRecordPropsFromFieldInfo(fieldType.memberType, name, label, isReadonly);
+  } else if (fieldType.valueFormat === PresentationPropertyValueFormat.Struct) {
+    props.members = fieldType.members.reduce((map, memberDescription) => {
+      map[memberDescription.name] = createPropertyRecordPropsFromFieldInfo(memberDescription.type, memberDescription.name, memberDescription.label, isReadonly);
+      return map;
+    }, {} as { [memberName: string]: CreatePropertyRecordProps });
+  }
+  if (isReadonly)
+    props.isReadonly = isReadonly;
+  return props;
+}
+
+function createPropertyRecordPropsFromFieldHierarchy(fieldHierarchy: FieldHierarchy, isFieldMerged: boolean, namePrefix: string | undefined): CreatePropertyRecordProps {
+  const props: CreatePropertyRecordProps = {
+    ...createPropertyRecordPropsFromFieldInfo(fieldHierarchy.field.type, applyOptionalPrefix(fieldHierarchy.field.name, namePrefix), fieldHierarchy.field.label, fieldHierarchy.field.isReadonly || isFieldMerged),
+    description: ContentBuilder.createPropertyDescription(fieldHierarchy.field, { namePrefix }),
+    isMerged: isFieldMerged,
+    autoExpand: fieldHierarchy.field.parent?.autoExpand,
+  };
+
+  if (fieldHierarchy.field.isNestedContentField()) {
+    assert(fieldHierarchy.field.type.valueFormat === PresentationPropertyValueFormat.Array);
+    return {
+      description: {
+        typename: props.description.typename,
+        displayLabel: props.description.displayLabel,
+        name: props.description.name,
+      },
+      isReadonly: true,
+      autoExpand: fieldHierarchy.field.autoExpand,
+      items: {
+        ...props,
+        description: {
+          ...props.description,
+          typename: fieldHierarchy.field.type.memberType.typeName,
+        },
+        members: fieldHierarchy.childFields?.reduce((members, childFieldHierarchy) => {
+          members[childFieldHierarchy.field.name] = createPropertyRecordPropsFromFieldHierarchy(childFieldHierarchy, false, applyOptionalPrefix(fieldHierarchy.field.name, namePrefix));
+          return members;
+        }, {} as { [fieldName: string]: CreatePropertyRecordProps }) ?? {},
+        autoExpand: fieldHierarchy.field.autoExpand,
+      },
+    };
+  }
+
+  return props;
+}
+
+const createFieldPath = (field: Field): Field[] => {
+  const path = [field];
+  let currField = field;
+  while (currField.parent) {
+    currField = currField.parent;
+    path.push(currField);
+  }
+  path.reverse();
+  return path;
+};

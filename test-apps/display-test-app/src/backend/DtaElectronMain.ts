@@ -9,24 +9,25 @@ import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 import { IpcHandler } from "@bentley/imodeljs-backend";
 
+const mainWindowName = "mainWindow";
 const getWindowSize = () => {
-  let width = 1280;
-  let height = 800;
   const sizeStr = process.env.SVT_WINDOW_SIZE;
   if (typeof sizeStr === "string") {
     const parts = sizeStr.split(",");
     if (parts.length === 2) {
-      const w = Number.parseInt(parts[0], 10);
-      const h = Number.parseInt(parts[1], 10);
+      let width = Number.parseInt(parts[0], 10);
+      let height = Number.parseInt(parts[1], 10);
 
-      if (!Number.isNaN(w))
-        width = w;
+      if (Number.isNaN(width))
+        width = 1280;
 
-      if (!Number.isNaN(h))
-        height = h;
+      if (Number.isNaN(height))
+        height = 1024;
+      return { width, height, x: 100, y: 100 };
     }
   }
-  return { width, height };
+
+  return ElectronHost.getWindowSizeSetting(mainWindowName);
 };
 
 class DtaHandler extends IpcHandler implements DtaIpcInterface {
@@ -48,15 +49,20 @@ const dtaElectronMain = async () => {
     rpcInterfaces: getRpcInterfaces(),
     ipcHandlers: [DtaHandler],
     developmentServer: process.env.NODE_ENV === "development",
+    authConfig: {
+      clientId: "imodeljs-electron-test",
+      scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api offline_access",
+    },
   };
 
   await initializeDtaBackend(opts);
 
-  const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
-  const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
+  // Restore previous window size, position and maximized state
+  const sizeAndPosition = getWindowSize();
+  const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
 
   // after backend is initialized, start display-test-app frontend process and open the window
-  await ElectronHost.openMainWindow({ ...getWindowSize(), show: !maximizeWindow, title: "Display Test App" });
+  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: "Display Test App", storeWindowName: mainWindowName });
   assert(ElectronHost.mainWindow !== undefined);
 
   if (maximizeWindow) {
@@ -64,7 +70,7 @@ const dtaElectronMain = async () => {
     ElectronHost.mainWindow.show();
   }
 
-  if (autoOpenDevTools)
+  if (undefined === process.env.SVT_NO_DEV_TOOLS)
     ElectronHost.mainWindow.webContents.toggleDevTools();
 
   // Handle custom keyboard shortcuts

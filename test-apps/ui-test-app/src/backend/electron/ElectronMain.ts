@@ -2,24 +2,31 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
-import { getSupportedRpcs } from "../../common/rpcs";
-/**
- * Initializes Electron backend
- */
-const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
-const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
+import { join } from "path";
+import { assert } from "@bentley/bentleyjs-core";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import { getSupportedRpcs } from "../../common/rpcs";
+
+const mainWindowName = "mainWindow";
+
+/** Initializes Electron backend */
 export async function initializeElectron() {
-  const electronHost: ElectronHostOptions = {
-    webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
-    rpcInterfaces: getSupportedRpcs(),
-    developmentServer: process.env.NODE_ENV === "development",
+
+  const opt = {
+    electronHost: {
+      webResourcesPath: join(__dirname, "..", "..", "..", "build"),
+      developmentServer: process.env.NODE_ENV === "development",
+      rpcInterfaces: getSupportedRpcs(),
+    },
+    nativeHost: {
+      applicationName: "ui-test-app",
+    },
   };
 
-  await ElectronHost.startup({ electronHost });
+  await ElectronHost.startup(opt);
+  EditCommandAdmin.register(BasicManipulationCommand);
 
   // Handle custom keyboard shortcuts
   ElectronHost.app.on("web-contents-created", (_e, wc) => {
@@ -34,13 +41,18 @@ export async function initializeElectron() {
     });
   });
 
-  await ElectronHost.openMainWindow({ width: 800, height: 650, show: !maximizeWindow, title: "Ui Test App" });
+  // Restore previous window size, position and maximized state
+  const sizeAndPosition = ElectronHost.getWindowSizeSetting(mainWindowName);
+  const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
+
+  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: "Ui Test App", storeWindowName: mainWindowName });
   assert(ElectronHost.mainWindow !== undefined);
 
   if (maximizeWindow) {
     ElectronHost.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
     ElectronHost.mainWindow.show();
   }
-  if (autoOpenDevTools)
+
+  if ((undefined === process.env.imjs_TESTAPP_NO_DEV_TOOLS))
     ElectronHost.mainWindow.webContents.toggleDevTools();
 }

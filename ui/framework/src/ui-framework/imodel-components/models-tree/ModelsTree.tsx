@@ -48,6 +48,7 @@ export interface ModelsTreeProps {
   selectionPredicate?: ModelsTreeSelectionPredicate;
   /**
    * Start loading hierarchy as soon as the component is created
+   * @deprecated Going to be removed due to too high pressure on the backend
    */
   enablePreloading?: boolean;
   /**
@@ -96,33 +97,21 @@ export interface ModelsTreeProps {
  * @public
  */
 export function ModelsTree(props: ModelsTreeProps) {
-  const nodeLoader = usePresentationTreeNodeLoader({
-    imodel: props.iModel,
-    dataProvider: props.dataProvider,
-    ruleset: (!props.enableElementsClassGrouping) ? RULESET_MODELS : /* istanbul ignore next */ RULESET_MODELS_GROUPED_BY_CLASS,
-    appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
-    pagingSize: PAGING_SIZE,
-    enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
-  });
-  const searchNodeLoader = usePresentationTreeNodeLoader({
-    imodel: props.iModel,
-    dataProvider: props.dataProvider,
-    ruleset: RULESET_MODELS_SEARCH,
-    pagingSize: PAGING_SIZE,
-    preloadingEnabled: props.enablePreloading,
-    enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
-  });
-
-  const nodeLoaderInUse = props.filterInfo?.filter ? searchNodeLoader : nodeLoader;
-  const { filteredNodeLoader, isFiltering, nodeHighlightingProps } = useVisibilityTreeFiltering(nodeLoaderInUse, props.filterInfo, props.onFilterApplied);
-  const filterApplied = filteredNodeLoader !== nodeLoaderInUse;
+  const { nodeLoader, onItemsRendered } = useModelsTreeNodeLoader(props);
+  const { filteredNodeLoader, isFiltering, nodeHighlightingProps } = useVisibilityTreeFiltering(nodeLoader, props.filterInfo, props.onFilterApplied);
+  const filterApplied = filteredNodeLoader !== nodeLoader;
 
   const { activeView, modelsVisibilityHandler, selectionPredicate } = props;
   const nodeSelectionPredicate = React.useCallback((key: NodeKey, node: TreeNodeItem) => {
     return !selectionPredicate ? true : selectionPredicate(key, ModelsVisibilityHandler.getNodeType(node, nodeLoader.dataProvider));
   }, [selectionPredicate, nodeLoader.dataProvider]);
 
-  const visibilityHandler = useVisibilityHandler(nodeLoaderInUse.dataProvider.rulesetId, activeView, modelsVisibilityHandler, getFilteredDataProvider(filteredNodeLoader.dataProvider));
+  const visibilityHandler = useVisibilityHandler(
+    nodeLoader.dataProvider.rulesetId,
+    activeView,
+    modelsVisibilityHandler,
+    getFilteredDataProvider(filteredNodeLoader.dataProvider),
+    props.enableHierarchyAutoUpdate);
   const eventHandler = useDisposable(React.useCallback(() => new VisibilityTreeEventHandler({
     nodeLoader: filteredNodeLoader,
     visibilityHandler,
@@ -153,6 +142,7 @@ export function ModelsTree(props: ModelsTreeProps) {
         treeRenderer={treeRenderer}
         nodeHighlightingProps={nodeHighlightingProps}
         noDataRenderer={filterApplied ? noFilteredDataRenderer : undefined}
+        onItemsRendered={onItemsRendered}
       />
       {overlay}
     </div>
@@ -166,10 +156,39 @@ export function ModelsTree(props: ModelsTreeProps) {
  */
 export const IModelConnectedModelsTree = connectIModelConnection(null, null)(ModelsTree); // eslint-disable-line @typescript-eslint/naming-convention
 
-const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibilityHandler?: ModelsVisibilityHandler, filteredDataProvider?: IFilteredPresentationTreeDataProvider) => {
+function useModelsTreeNodeLoader(props: ModelsTreeProps) {
+  const { nodeLoader, onItemsRendered } = usePresentationTreeNodeLoader({
+    imodel: props.iModel,
+    dataProvider: props.dataProvider,
+    ruleset: (!props.enableElementsClassGrouping) ? RULESET_MODELS : /* istanbul ignore next */ RULESET_MODELS_GROUPED_BY_CLASS,
+    appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
+    pagingSize: PAGING_SIZE,
+    enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
+  });
+  const { nodeLoader: searchNodeLoader, onItemsRendered: onSeachItemsRendered } = usePresentationTreeNodeLoader({
+    imodel: props.iModel,
+    dataProvider: props.dataProvider,
+    ruleset: RULESET_MODELS_SEARCH,
+    pagingSize: PAGING_SIZE,
+    enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
+  });
+
+  return {
+    nodeLoader: props.filterInfo?.filter ? searchNodeLoader : nodeLoader,
+    onItemsRendered: props.filterInfo?.filter ? onSeachItemsRendered : onItemsRendered,
+  };
+}
+
+function useVisibilityHandler(
+  rulesetId: string,
+  activeView?: Viewport,
+  visibilityHandler?: ModelsVisibilityHandler,
+  filteredDataProvider?: IFilteredPresentationTreeDataProvider,
+  hierarchyAutoUpdateEnabled?: boolean,
+) {
   const defaultVisibilityHandler = useOptionalDisposable(React.useCallback(() => {
-    return visibilityHandler ? undefined : createVisibilityHandler(rulesetId, activeView);
-  }, [visibilityHandler, rulesetId, activeView]));
+    return visibilityHandler ? undefined : createVisibilityHandler(rulesetId, activeView, hierarchyAutoUpdateEnabled);
+  }, [visibilityHandler, rulesetId, activeView, hierarchyAutoUpdateEnabled]));
 
   const handler = visibilityHandler ?? defaultVisibilityHandler;
 
@@ -178,11 +197,11 @@ const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibili
   }, [handler, filteredDataProvider]);
 
   return handler;
-};
+}
 
-const createVisibilityHandler = (rulesetId: string, activeView?: Viewport): ModelsVisibilityHandler | undefined => {
+const createVisibilityHandler = (rulesetId: string, activeView?: Viewport, hierarchyAutoUpdateEnabled?: boolean): ModelsVisibilityHandler | undefined => {
   // istanbul ignore next
-  return activeView ? new ModelsVisibilityHandler({ rulesetId, viewport: activeView }) : undefined;
+  return activeView ? new ModelsVisibilityHandler({ rulesetId, viewport: activeView, hierarchyAutoUpdateEnabled }) : undefined;
 };
 
 const isFilteredDataProvider = (dataProvider: IPresentationTreeDataProvider | IFilteredPresentationTreeDataProvider): dataProvider is IFilteredPresentationTreeDataProvider => {

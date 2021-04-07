@@ -7,7 +7,7 @@
  */
 
 /** Properties for an item provided by UiItemsProvider
- * @beta
+ * @public
  */
 export interface ProvidedItem {
   /** id of UiItemsProvider */

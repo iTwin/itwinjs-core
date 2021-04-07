@@ -9,8 +9,8 @@
 import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform, TransformProps, Vector3d } from "@bentley/geometry-core";
 import {
-  BatchType, ColorDef, Feature,
-  FeatureTable, Frustum, FrustumPlanes, OrbitGtBlobProps, PackedFeatureTable, QParams3d, Quantization,
+  BatchType, Cartographic, ColorDef, Feature,
+  FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d, Quantization,
   ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import {
@@ -18,6 +18,7 @@ import {
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@bentley/orbitgt-core";
+import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -371,11 +372,34 @@ export namespace OrbitGtTileTree {
       await CRSManager.ENGINE.prepareForArea(pointCloudCRS, pointCloudBounds);
       const wgs84CRS = "4978";
       await CRSManager.ENGINE.prepareForArea(wgs84CRS, new OrbitGtBounds());
-      const pointCloudToEcef = transformFromOrbitGt(CRSManager.createTransform(pointCloudCRS, pointCloudBounds.min, wgs84CRS));
+      const pointCloudToEcef = transformFromOrbitGt(CRSManager.createTransform(pointCloudCRS, new OrbitGtCoordinate(pointCloudCenter.x, pointCloudCenter.y, pointCloudCenter.z), wgs84CRS));
       const pointCloudCenterToEcef = pointCloudToEcef.multiplyTransformTransform(addCloudCenter);
-      const ecefLocation = iModel.ecefLocation;
-      if (ecefLocation === undefined) return undefined;
-      const ecefToDb = ecefLocation.getTransform().inverse()!;
+
+      let ecefToDb = iModel.backgroundMapLocation.getMapEcefToDb(0);
+      // In initial publishing version the iModel ecef Transform was used to locate the reality model.
+      // This would work well only for tilesets published from that iModel but for iModels the ecef transform is calculated
+      // at the center of the project extents and the reality model location may differ greatly, and the curvature of the earth
+      // could introduce significant errors.
+      // The publishing was modified to calculate the ecef transform at the reality model range center and at the same time the "iModelPublishVersion"
+      // member was added to the root object.
+      const ecefOrigin = pointCloudCenterToEcef.getOrigin();
+      const dbOrigin = ecefToDb.multiplyPoint3d(ecefOrigin);
+      const realityOriginToProjectDistance = iModel.projectExtents.distanceToPoint(dbOrigin);
+      const maxProjectDistance = 1E5;     // Only use the project GCS projection if within 100KM of the project.   Don't attempt to use GCS if global reality model or in another locale - Results will be unreliable.
+      if (realityOriginToProjectDistance < maxProjectDistance) {
+        const cartographicOrigin = Cartographic.fromEcef(ecefOrigin);
+        const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
+        if (cartographicOrigin !== undefined && geoConverter !== undefined) {
+          const geoOrigin = Point3d.create(cartographicOrigin.longitudeDegrees, cartographicOrigin.latitudeDegrees, cartographicOrigin.height);
+          const response = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoOrigin]);
+          if (response.iModelCoords[0].s === GeoCoordStatus.Success) {
+            const ecefToDbOrigin = await calculateEcefToDbTransformAtLocation(Point3d.fromJSON(response.iModelCoords[0].p), iModel);
+            if (ecefToDbOrigin)
+              ecefToDb = ecefToDbOrigin;
+          }
+        }
+      }
+
       pointCloudCenterToDb = ecefToDb.multiplyTransformTransform(pointCloudCenterToEcef);
     }
     const params = new OrbitGtTileTreeParams(props, iModel, modelId, pointCloudCenterToDb);
