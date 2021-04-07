@@ -63,23 +63,31 @@ for (let i = 0; i < 2; i++) {
       public get stack() { return this._stack; }
       public get isStackDirty() { return this._isStackDirty; }
 
-      public pushClip(): void {
+      public pushClip(offset = 0): void {
         const clip = ClipVector.createEmpty();
-        clip.appendShape([ Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0), Point3d.create(1, 2, 0)]);
+        clip.appendShape([ Point3d.create(offset + 1, 1, 0), Point3d.create(offset + 2, 1, 0), Point3d.create(offset + 2, 2, 0), Point3d.create(offset + 1, 2, 0)]);
         const vol = BlipVolume.create(clip);
         expect(vol).not.to.be.undefined;
         this.push(vol!);
       }
 
       public reset() {
-        this.invoked.uploadTexture = this.invoked.allocateGpuBuffer = this.invoked.updateTexture = false;
+        this.invoked.uploadTexture = this.invoked.allocateGpuBuffer = this.invoked.updateTexture = this.invoked.recomputeTexture = false;
       }
 
       public expectInvoked(expected: Partial<Invoked>) {
-        expect(this.invoked.uploadTexture).to.equal(expected.uploadTexture ?? false);
-        expect(this.invoked.allocateGpuBuffer).to.equal(expected.allocateGpuBuffer ?? false);
-        expect(this.invoked.updateTexture).to.equal(expected.updateTexture ?? false);
-        expect(this.invoked.recomputeTexture).to.equal(expected.recomputeTexture ?? false);
+        if (undefined !== expected.uploadTexture)
+          expect(this.invoked.uploadTexture).to.equal(expected.uploadTexture);
+
+        if (undefined !== expected.updateTexture)
+          expect(this.invoked.updateTexture).to.equal(expected.updateTexture);
+
+        if (undefined !== expected.allocateGpuBuffer)
+          expect(this.invoked.allocateGpuBuffer).to.equal(expected.allocateGpuBuffer);
+
+        if (undefined !== expected.recomputeTexture)
+          expect(this.invoked.recomputeTexture).to.equal(expected.recomputeTexture);
+
         this.reset();
       }
 
@@ -198,18 +206,99 @@ for (let i = 0; i < 2; i++) {
       stack.pop();
       stack.pop();
       expect(stack.isStackDirty).to.be.false;
+
+      stack.pushClip();
+      expect(stack.isStackDirty).to.be.true;
     });
 
     it("only recomputes data when dirty", () => {
+      const stack = new Stack();
+      expect(stack.isStackDirty).to.be.false;
+
+      const tex1 = stack.texture;
+      expect(tex1).to.be.undefined;
+      stack.expectInvoked({ allocateGpuBuffer: false, uploadTexture: false, updateTexture: true, recomputeTexture: false });
+
+      stack.pushClip();
+      const tex2 = stack.texture;
+      expect(tex2).not.to.be.undefined;
+      stack.expectInvoked({ allocateGpuBuffer: true, uploadTexture: true, updateTexture: true, recomputeTexture: true });
+
+      const tex3 = stack.texture;
+      expect(tex3).to.equal(tex2);
+      stack.expectInvoked({ allocateGpuBuffer: false, uploadTexture: false, updateTexture: true, recomputeTexture: false });
     });
 
     it("recreates texture only when size increases", () => {
+      const stack = new Stack();
+      stack.expectInvoked({ allocateGpuBuffer: false, uploadTexture: false, updateTexture: false, recomputeTexture: false });
+
+      stack.pushClip();
+      stack.expectInvoked({ uploadTexture: false, updateTexture: false, allocateGpuBuffer: false, recomputeTexture: false });
+
+      const tex1 = stack.texture!;
+      expect(tex1).not.to.be.undefined;
+      stack.expectInvoked({ uploadTexture: true, updateTexture: true, allocateGpuBuffer: true, recomputeTexture: true });
+
+      stack.pop();
+      stack.pushClip();
+      const tex2 = stack.texture!;
+      expect(tex2).to.equal(tex1);
+      stack.expectInvoked({ uploadTexture: false, updateTexture: true, allocateGpuBuffer: false, recomputeTexture: true });
+
+      stack.pushClip();
+      const tex3 = stack.texture!;
+      expect(tex3).not.to.equal(tex1);
+      stack.expectInvoked({ uploadTexture: true, updateTexture: true, allocateGpuBuffer: true, recomputeTexture: true });
+
+      stack.pop();
+      stack.pop();
+      stack.pushClip(1);
+      stack.pushClip(2);
+      const tex4 = stack.texture!;
+      expect(tex4).to.equal(tex3);
+      stack.expectInvoked({ uploadTexture: true, updateTexture: true, allocateGpuBuffer: false, recomputeTexture: true });
     });
 
     it("uploads texture data only after it has changed", () => {
+      const stack = new Stack();
+
+      stack.pushClip(1);
+      const tex1 = stack.texture;
+      stack.expectInvoked({ allocateGpuBuffer: true, uploadTexture: true, updateTexture: true, recomputeTexture: true });
+
+      stack.pop();
+      stack.pushClip(1);
+      const tex2 = stack.texture;
+      expect(tex2).to.equal(tex1);
+      stack.expectInvoked({ allocateGpuBuffer: false, uploadTexture: false, updateTexture: true, recomputeTexture: true });
+
+      stack.pop();
+      stack.pushClip(2);
+      const tex3 = stack.texture;
+      expect(tex3).to.equal(tex2);
+      stack.expectInvoked({ allocateGpuBuffer: false, uploadTexture: true, updateTexture: true, recomputeTexture: true });
     });
 
     it("updates texture when transform changes", () => {
+      const stack = new Stack();
+
+      stack.pushClip();
+      const tex1 = stack.texture;
+      stack.expectInvoked({ allocateGpuBuffer: true, uploadTexture: true, updateTexture: true, recomputeTexture: true });
+
+      stack.pop();
+      stack.transform.origin.x += 1;
+      stack.pushClip();
+      const tex2 = stack.texture;
+      expect(tex2).to.equal(tex1);
+      stack.expectInvoked({ allocateGpuBuffer: false, uploadTexture: true, updateTexture: true, recomputeTexture: true });
+
+      stack.pop();
+      stack.pushClip();
+      const tex3 = stack.texture;
+      expect(tex3).to.equal(tex2);
+      stack.expectInvoked({ allocateGpuBuffer: false, uploadTexture: false, updateTexture: true, recomputeTexture: true });
     });
   });
 }

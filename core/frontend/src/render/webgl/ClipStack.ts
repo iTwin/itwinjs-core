@@ -73,9 +73,7 @@ export class ClipStack {
   }
 
   public get texture(): TextureHandle | undefined {
-    if (this._isStackDirty)
-      this.updateTexture();
-
+    this.updateTexture();
     return this._texture;
   }
 
@@ -91,10 +89,10 @@ export class ClipStack {
       this._gpuBuffer = this.allocateGpuBuffer();
     }
 
-    if (this._isStackDirty)
+    if (this._isStackDirty) {
+      this._isStackDirty = false;
       this.recomputeTexture();
-
-    this._isStackDirty = false;
+    }
   }
 
   protected recomputeTexture(): void {
