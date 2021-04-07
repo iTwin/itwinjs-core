@@ -10,7 +10,7 @@ import { SchemaKey } from '@bentley/ecschema-metadata';
 
 // @internal
 export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
-    getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<string>;
+    getSchemaJSON(tokenProps: IModelRpcProps, schemaName?: string): Promise<string>;
     getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKey[]>;
     static register(): void;
 }
