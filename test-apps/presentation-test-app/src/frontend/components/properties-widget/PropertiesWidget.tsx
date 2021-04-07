@@ -32,7 +32,7 @@ export interface Props {
 
 export function PropertiesWidget(props: Props) {
   const { imodel, rulesetId, onFindSimilar: onFindSimilarProp } = props;
-  const [diagnosticsOptions, setDiagnosticsOptions] = React.useState({ ruleDiagnostics: undefined, devDiagnostics: undefined } as DiagnosticsProps);
+  const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
 
   const dataProvider = useDisposable(React.useCallback(
     () => {
