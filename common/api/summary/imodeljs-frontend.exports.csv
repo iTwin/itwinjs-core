@@ -86,7 +86,7 @@ public;ChangeFlags
 public;ChangeViewedModel2dOptions
 beta;CheckboxFormatPropEditorSpec 
 public;CheckpointConnection 
-alpha;ClipEventType
+public;ClipEventType
 public;Cluster
 internal;CompassMode
 internal;ContextMode
@@ -115,8 +115,8 @@ public;Decorator
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
 internal;DefineACSByPointsTool 
-alpha;DepthPointOptions
-alpha;DepthPointSource
+public;DepthPointOptions
+public;DepthPointSource
 public;DepthRangeNpc
 internal;DevTools
 public;DisclosedTileTreeSet 
@@ -125,7 +125,7 @@ public;DisplayStyle3dState
 public;class DisplayStyleState 
 beta;DownloadBriefcaseId =
 beta;DownloadBriefcaseOptions = DownloadBriefcaseId &
-alpha;DrawClipOptions
+internal;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
 internal;class DynamicIModelTile 
@@ -134,7 +134,7 @@ alpha;EditingFunctions
 deprecated;EditingFunctions
 alpha;EditingFunctions
 deprecated;EditingFunctions
-alpha;EditManipulator
+internal;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
 public;ElementLocateManager
@@ -296,7 +296,7 @@ beta;LookAndMoveTool
 public;LookViewTool 
 internal;LRUTileList
 internal;LRUTileListNode
-alpha;ManipulatorToolEvent
+public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 internal;MapCartoRectangle 
 internal;MapLayerFormat
@@ -325,13 +325,13 @@ public;MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | I
 public;class MarkerSet
 public;MarkerTextAlign = "left" | "right" | "center" | "start" | "end"
 public;MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom"
-alpha;MeasureAreaByPointsTool 
-alpha;MeasureAreaTool 
-alpha;MeasureDistanceTool 
-alpha;class MeasureElementTool 
-alpha;MeasureLengthTool 
-alpha;MeasureLocationTool 
-alpha;MeasureVolumeTool 
+public;MeasureAreaByPointsTool 
+public;MeasureAreaTool 
+public;MeasureDistanceTool 
+public;class MeasureElementTool 
+public;MeasureLengthTool 
+public;MeasureLocationTool 
+public;MeasureVolumeTool 
 public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
@@ -465,7 +465,7 @@ internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
 alpha;SetupCameraTool 
-beta;SetupWalkCameraTool 
+public;SetupWalkCameraTool 
 public;SheetModelState 
 public;SheetViewState 
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
@@ -578,19 +578,19 @@ internal;UpsampledMapTile
 public;VaryingType
 public;ViewAnimationOptions
 public;ViewChangeOptions 
-alpha;ViewClipByElementTool 
-alpha;ViewClipByPlaneTool 
-alpha;ViewClipByRangeTool 
-alpha;ViewClipByShapeTool 
-alpha;ViewClipClearTool 
-alpha;ViewClipControlArrow
-alpha;ViewClipDecoration 
-alpha;ViewClipDecorationProvider 
-alpha;ViewClipEventHandler
-alpha;class ViewClipModifyTool 
-alpha;ViewClipPlanesModifyTool 
-alpha;ViewClipShapeModifyTool 
-alpha;ViewClipTool 
+public;ViewClipByElementTool 
+public;ViewClipByPlaneTool 
+public;ViewClipByRangeTool 
+public;ViewClipByShapeTool 
+public;ViewClipClearTool 
+internal;ViewClipControlArrow
+internal;ViewClipDecoration 
+public;ViewClipDecorationProvider 
+public;ViewClipEventHandler
+internal;class ViewClipModifyTool 
+internal;ViewClipPlanesModifyTool 
+internal;ViewClipShapeModifyTool 
+public;ViewClipTool 
 beta;ViewCreator2d
 beta;ViewCreator2dOptions
 beta;ViewCreator3d

@@ -2,11 +2,11 @@
 
 ## New Settings UI Features
 
-The @bentley/ui-core package has added the [SettingsManager]($ui-core) class that allows any number of [SettingsProvider]($ui-core) classes to be registered. These providers provide [SettingsTabEntry]($ui-core) definitions used to populate the [SettingsContainer]($ui-core) UI component with setting pages used to manage application settings. These new classes are marked as beta in this release and are subject to minor modifications in future releases.
+The @bentley/ui-core package has added the [SettingsManager]($ui-core) class that allows any number of `SettingsProvider` classes to be registered. These providers provide [SettingsTabEntry]($ui-core) definitions used to populate the [SettingsContainer]($ui-core) UI component with setting pages used to manage application settings. These new classes are marked as beta in this release and are subject to minor modifications in future releases.
 
 ### Add Settings Page to set Quantity Formatting Overrides
 
-The [QuantityFormatSettingsPanel]($ui-framework) component has been added to the @bentley/ui-framework package to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This panel can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core). Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
+The `QuantityFormatSettingsPanel` component has been added to the @bentley/ui-framework package to provide the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This panel can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core). Below is an example of registering the `QuantityFormatSettingsPanel` with the `SettingsManager`.
 
 ```ts
 // Sample settings provider that dynamically adds settings into the setting stage
