@@ -33,11 +33,25 @@ _jq2() {
   echo ${status} | base64 --decode | jq -r ${1}
 }
 
+_jq3() {
+  echo ${1} | base64 --decode | jq -r ${2}
+}
+
 function log() {
   if [[ $shouldDebug == true  ]]; then
     echo "${1}"
   fi
 }
+
+# Get head sha on master branch
+masterCommit=$(curl -s \
+  -H "Accept: application/vnd.github.v3+json" \
+  -H "Authorization: token $oauth" \
+  https://api.github.com/repos/imodeljs/imodeljs/commits/master)
+
+masterHeadCommit=$(echo ${masterCommit} | jq -r '. | @base64')
+masterSha=$(_jq3 ${masterHeadCommit} '.sha')
+echo ${masterSha}
 
 for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
   #echo ${pr} | base64 --decode
@@ -46,6 +60,31 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
   if [[ "open" != $(_jq '.state') ]] || [[ "true" == $(_jq '.draft') ]]; then
     log "  Skipping due to state=$(_jq '.state') and draft=$(_jq '.draft')."
     continue
+  fi
+
+  ref=$(_jq '.base.ref')
+  sha=$(_jq '.base.sha')
+
+  if [[ "master" != $ref ]]
+  then
+    refCommit=$(curl -s \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token $oauth" \
+              https://api.github.com/repos/imodeljs/imodeljs/commits/${ref})
+    refHeadCommit=$(echo ${refCommit} | jq -r '. | @base64')
+    refSha=$(_jq3 ${refHeadCommit} '.sha')
+    log "  REF sha is ${refSha}"
+    if [[ $refSha == $sha ]]
+    then
+      log "  Skipping since it is up-to-date with the ref branch, ${ref}."
+      continue
+    fi
+  else
+    if [[ $masterSha == $sha ]]
+    then
+      log "  Skipping since it is up-to-date with the master branch."
+      continue
+    fi
   fi
 
   log "  Last updated at $(_jq '.updated_at')."
@@ -93,5 +132,6 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
     #   $updateUrl \
     #   -d '{"state":"failure","target_url":"'$(_jq2 '.target_url')'","description":"The build hit the 3 hour threshold. Please re-queue the build.","context":"'$(_jq2 '.context')'"}'
 
+    break
   done
 done
