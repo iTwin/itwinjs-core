@@ -62,7 +62,6 @@ export class BranchState {
   public get is3d() { return this._opts.is3d; }
   public get frustumScale() { return this._opts.frustumScale!; }
   public get appearanceProvider() { return this._opts.appearanceProvider; }
-  public get showClipVolume(): boolean { return this.viewFlags.clipVolume; }
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -86,7 +85,7 @@ export class BranchState {
     const iModel = branch.iModel ?? prev.iModel;
     const planarClassifier = (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier;
     const textureDrape = branch.textureDrape ?? prev.textureDrape;
-    const clipVolume = viewFlags.clipVolume ? (branch.clips ?? prev.clipVolume) : undefined;
+    const clipVolume = branch.clips;
     const edgeSettings = branch.edgeSettings ?? prev.edgeSettings;
     const is3d = branch.frustum?.is3d ?? prev.is3d;
     const frustumScale = branch.frustum?.scale ?? prev.frustumScale;
