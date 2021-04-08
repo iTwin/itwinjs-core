@@ -262,6 +262,14 @@ export class IModelTestUtils {
     }
   }
 
+  public static generateChangeSetId(): string {
+    let result = "";
+    for (let i = 0; i < 20; ++i) {
+      result += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
+    }
+    return result;
+  }
+
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
   public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
     const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;

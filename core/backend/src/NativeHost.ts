@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import * as path from "path";
+import { join } from "path";
 import { BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
@@ -22,30 +22,33 @@ import { NativeAppStorage } from "./NativeAppStorage";
 /** @internal */
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
   protected _accessToken?: AccessToken;
-  protected _expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
-  protected _config?: NativeAppAuthorizationConfiguration;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-  public get config(): NativeAppAuthorizationConfiguration { return this._config!; }
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
   protected abstract refreshToken(): Promise<AccessToken>;
+  public config!: NativeAppAuthorizationConfiguration;
+  public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
   public get isAuthorized(): boolean {
-    return undefined !== this._accessToken && !this._accessToken.isExpired(this._expireSafety);
+    return undefined !== this._accessToken && !this._accessToken.isExpired(this.expireSafety);
   }
+
   public setAccessToken(token?: AccessToken) {
+    if (token === this._accessToken)
+      return;
     this._accessToken = token;
-    NativeHost.onUserStateChanged.raiseEvent(this._accessToken);
+    NativeHost.onUserStateChanged.raiseEvent(token);
   }
   public async getAccessToken(): Promise<AccessToken> {
     if (!this.isAuthorized)
       this.setAccessToken(await this.refreshToken());
     return this._accessToken!;
   }
+
   public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
-  public async initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
-    this._config = config;
-    if (config.expiryBuffer)
-      this._expireSafety = config.expiryBuffer;
+  public async initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration) {
+    if (config)
+      this.config = config;
+    if (this.config.expiryBuffer)
+      this.expireSafety = this.config.expiryBuffer;
     IModelHost.session.applicationId = props.applicationId;
     IModelHost.applicationVersion = props.applicationVersion;
     IModelHost.sessionId = props.sessionId;
@@ -61,8 +64,9 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public async silentLogin(token: AccessTokenProps) {
     NativeHost.authorization.setAccessToken(AccessToken.fromJson(token));
   }
-  public async initializeAuth(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
-    return NativeHost.authorization.initialize(props, config);
+  public async initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number> {
+    await NativeHost.authorization.initialize(props, config);
+    return NativeHost.authorization.expireSafety;
   }
   public async signIn(): Promise<void> {
     return NativeHost.authorization.signIn();
@@ -166,6 +170,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 /** @beta */
 export interface NativeHostOpts extends IpcHostOpts {
   nativeHost?: {
+    /** Application named. Used to name settings file */
     applicationName?: string;
   };
 }
@@ -177,7 +182,7 @@ export interface NativeHostOpts extends IpcHostOpts {
 export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
   private static _applicationName: string;
-  private constructor() { }
+  private constructor() { } // no instances - static methods only
 
   /** @internal */
   public static get authorization() { return IModelHost.authorizationClient as NativeAppAuthorizationBackend; }
@@ -191,9 +196,8 @@ export class NativeHost {
 
   /** Get the local cache folder for application settings */
   public static get appSettingsCacheDir(): string {
-    if (this._appSettingsCacheDir === undefined) {
-      this._appSettingsCacheDir = path.join(IModelHost.cacheDir, "appSettings");
-    }
+    if (this._appSettingsCacheDir === undefined)
+      this._appSettingsCacheDir = join(IModelHost.cacheDir, "appSettings");
     return this._appSettingsCacheDir;
   }
 
@@ -203,9 +207,9 @@ export class NativeHost {
 
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
-
+  public static get applicationName() { return this._applicationName; }
   public static get settingsStore() {
-    return NativeAppStorage.open(this._applicationName);
+    return NativeAppStorage.open(this.applicationName);
   }
 
   /**

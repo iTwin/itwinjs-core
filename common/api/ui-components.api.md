@@ -1095,6 +1095,8 @@ export interface ControlledTreeProps extends CommonProps {
     noDataRenderer?: () => React.ReactElement;
     nodeHighlightingProps?: HighlightableTreeProps;
     nodeLoader: ITreeNodeLoader;
+    // @alpha
+    onItemsRendered?: (items: RenderedItemsRange) => void;
     selectionMode: SelectionMode;
     spinnerRenderer?: () => React.ReactElement;
     treeEvents: TreeEvents;
@@ -3739,6 +3741,18 @@ export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
     icon?: boolean;
 }
 
+// @alpha
+export interface RenderedItemsRange {
+    // (undocumented)
+    overscanStartIndex: number;
+    // (undocumented)
+    overscanStopIndex: number;
+    // (undocumented)
+    visibleStartIndex: number;
+    // (undocumented)
+    visibleStopIndex: number;
+}
+
 // @public
 export class ResultSelector extends React.PureComponent<ResultSelectorProps, ResultSelectorState> {
     // @internal
@@ -4928,6 +4942,9 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
 }
 
 // @internal (undocumented)
+export function toRxjsObservable<T>(observable: Observable<T>): Observable_2<T>;
+
+// @internal (undocumented)
 export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;
 
 // @beta
@@ -5397,6 +5414,8 @@ export interface TreeRendererProps {
     // (undocumented)
     nodeLoader: ITreeNodeLoader;
     nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+    // @alpha
+    onItemsRendered?: (renderedItems: RenderedItemsRange) => void;
     // @internal
     onNodeEditorClosed?: () => void;
     // (undocumented)

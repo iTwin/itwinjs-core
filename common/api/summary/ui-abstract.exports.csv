@@ -2,13 +2,13 @@ sep=;
 Release Tag;API Item
 beta;AbstractActionItemProps 
 beta;AbstractMenuItemProps 
-beta;AbstractStatusBarActionItem 
-beta;AbstractStatusBarCustomItem 
-beta;AbstractStatusBarItem 
-beta;AbstractStatusBarItemUtilities
-beta;AbstractStatusBarLabelItem 
+public;AbstractStatusBarActionItem 
+public;AbstractStatusBarCustomItem 
+public;AbstractStatusBarItem 
+public;AbstractStatusBarItemUtilities
+public;AbstractStatusBarLabelItem 
 beta;AbstractToolbarProps
-beta;AbstractWidgetProps 
+public;AbstractWidgetProps 
 alpha;AccuDrawField
 alpha;AccuDrawGrabInputFocusEvent 
 alpha;AccuDrawMode
@@ -23,16 +23,16 @@ alpha;AccuDrawSetFieldValueToUiEventArgs
 alpha;AccuDrawSetModeEvent 
 alpha;AccuDrawSetModeEventArgs
 alpha;AccuDrawUiAdmin
-beta;ActionButton 
+public;ActionButton 
 beta;AlternateDateFormats
 beta;ArrayValue 
-beta;BackstageActionItem 
-beta;BackstageItem = BackstageActionItem | BackstageStageLauncher
+public;BackstageActionItem 
+public;BackstageItem = BackstageActionItem | BackstageStageLauncher
 internal;BackstageItemsChangedArgs
 internal;BackstageItemsManager
-beta;BackstageItemType
-beta;BackstageItemUtilities
-beta;BackstageStageLauncher 
+public;BackstageItemType
+public;BackstageItemUtilities
+public;BackstageStageLauncher 
 public;BadgeType
 beta;BaseDialogItem
 beta;BasePropertyEditorParams
@@ -42,15 +42,15 @@ beta;ButtonGroupEditorParams
 internal;enum CharCode
 beta;ColorEditorParams 
 beta;CommandHandler
-beta;CommonBackstageItem 
+public;CommonBackstageItem 
 beta;CommonItemProps
-beta;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
-beta;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
+public;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
+public;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
 public;ConditionalBooleanValue
-beta;ConditionalStringValue
+public;ConditionalStringValue
 internal;convertSimple2RegExpPattern(pattern: string): string
 internal;createMatches(score: undefined | FuzzyScore): IMatch[]
-beta;CustomButtonDefinition 
+public;CustomButtonDefinition 
 beta;CustomFormattedNumberParams 
 beta;DateFormatter
 public;DialogButtonDef
@@ -78,7 +78,7 @@ internal;FuzzyScorer = (pattern: string, lowPattern: string, patternPos: number,
 beta;GenericUiEvent 
 beta;GenericUiEventArgs
 internal;getClassName: (obj: any) => string
-beta;GroupButton 
+public;GroupButton 
 beta;IconDefinition
 beta;IconEditorParams 
 beta;IconListEditorParams 
@@ -87,10 +87,10 @@ internal;IFilter = (word: string, wordToMatchAgainst: string) => IMatch[] | null
 beta;ImageCheckBoxParams 
 public;IMatch
 beta;InputEditorSizeParams 
-beta;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
-beta;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
-beta;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
-beta;isActionItem: (item: BackstageItem) => item is BackstageActionItem
+public;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
+public;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
+public;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
+public;isActionItem: (item: BackstageItem) => item is BackstageActionItem
 public;isArrowKey(key: string): boolean
 beta;isButtonGroupEditorParams: (item: BasePropertyEditorParams) => item is ButtonGroupEditorParams
 beta;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEditorParams
@@ -100,7 +100,7 @@ beta;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputE
 alpha;isLetter(char: string): boolean
 internal;isLowerAsciiLetter(code: number): boolean
 internal;isPatternInWord(patternLow: string, patternPos: number, patternLen: number, wordLow: string, wordPos: number, wordLen: number): boolean
-beta;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
+public;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
 beta;isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams
 internal;isUpperAsciiLetter(code: number): boolean
 beta;LinkElementsInfo
@@ -133,45 +133,45 @@ beta;PropertyRecord
 beta;PropertyRendererInfo
 beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
 beta;PropertyValueFormat
-beta;ProvidedItem
+public;ProvidedItem
 beta;RangeEditorParams 
 public;RelativePosition
 beta;SliderEditorParams 
 public;SpecialKey
-beta;StagePanelLocation
-beta;StagePanelSection
+public;StagePanelLocation
+public;StagePanelSection
 beta;StageUsage
 beta;StandardEditorNames
 beta;StandardTypeNames
 internal;startsWithIgnoreCase(str: string, candidate: string): boolean
-beta;StatusBarItemId = CommonStatusBarItem["id"]
+public;StatusBarItemId = CommonStatusBarItem["id"]
 internal;StatusBarItemsChangedArgs
 internal;StatusBarItemsManager
-beta;StatusBarLabelSide
-beta;StatusBarSection
+public;StatusBarLabelSide
+public;StatusBarSection
 beta;StringGetter = () => string
 beta;StructValue 
 beta;SuppressLabelEditorParams 
 beta;SyncPropertiesChangeEvent 
 beta;SyncPropertiesChangeEventArgs
 beta;TimeDisplay
-beta;ToolbarItem 
-beta;ToolbarItemId = CommonToolbarItem["id"]
+public;ToolbarItem 
+public;ToolbarItemId = CommonToolbarItem["id"]
 internal;ToolbarItemsChangedArgs
 internal;ToolbarItemsManager
-beta;ToolbarItemUtilities
-beta;ToolbarOrientation
-beta;ToolbarUsage
+public;ToolbarItemUtilities
+public;ToolbarOrientation
+public;ToolbarUsage
 public;UiAbstract
 beta;UiAdmin
 beta;class UiDataProvider
 public;UiError 
 beta;UiFlags
-beta;UiItemProviderRegisteredEventArgs
+public;UiItemProviderRegisteredEventArgs
 beta;UiItemsApplication
-beta;UiItemsApplicationAction
+public;UiItemsApplicationAction
 beta;UiItemsArbiter
-beta;UiItemsManager
-beta;UiItemsProvider
+public;UiItemsManager
+public;UiItemsProvider
 beta;class UiLayoutDataProvider 
-beta;WidgetState
+public;WidgetState

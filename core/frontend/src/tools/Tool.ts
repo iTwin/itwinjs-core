@@ -730,7 +730,7 @@ export abstract class InputCollector extends InteractiveTool {
 }
 
 /** The result type of [[ToolRegistry.parseAndRun]].
- * @beta
+ * @public
  */
 export enum ParseAndRunResult {
   /** The tool's `parseAndRun` method was invoked and returned `true`. */
@@ -746,7 +746,7 @@ export enum ParseAndRunResult {
 }
 
 /** Possible errors resulting from [[ToolRegistry.parseKeyin]].
- * @beta
+ * @public
  */
 export enum KeyinParseError {
   /** No registered tool matching the keyin was found. */
@@ -756,7 +756,7 @@ export enum KeyinParseError {
 }
 
 /** Possible errors form [[ToolRegistry.parseKeyin]].
- * @beta
+ * @public
  */
 export interface ParseKeyinError {
   /** Union discriminator for [[ParseKeyinResult]]. */
@@ -766,7 +766,7 @@ export interface ParseKeyinError {
 }
 
 /** Successful result from [[ToolRegistry.parseKeyin]].
- * @beta
+ * @public
  */
 export interface ParsedKeyin {
   /** Union discriminator for [[ParseKeyinResult]]. */
@@ -778,7 +778,7 @@ export interface ParsedKeyin {
 }
 
 /** The result type of [[ToolRegistry.parseKeyin]].
- * @beta
+ * @public
  */
 export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
 
@@ -941,7 +941,7 @@ export class ToolRegistry {
    *  - `my keyin "abc""def"` => one argument: `abc"def`.
    * @param keyin A string consisting of a toolId followed by any number of arguments. The arguments are separated by whitespace.
    * @returns The tool, if found, along with an array of parsed arguments.
-   * @beta
+   * @public
    */
   public parseKeyin(keyin: string): ParseKeyinResult {
     const tools = this.getToolList();
@@ -999,7 +999,7 @@ export class ToolRegistry {
    * @returns A status indicating whether the keyin was successfully parsed and executed.
    * @see [[parseKeyin]] to parse the keyin string and for a detailed description of the syntax.
    * @throws any Error thrown by the tool's `parseAndRun` method.
-   * @beta
+   * @public
    */
   public parseAndRun(keyin: string): ParseAndRunResult {
     const parsed = this.parseKeyin(keyin);
@@ -1023,7 +1023,7 @@ export class ToolRegistry {
    * Find a tool by its localized keyin using a FuzzySearch
    * @param keyin the localized keyin string of the Tool.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
-   * @internal
+   * @public
    */
   public findPartialMatches(keyin: string): FuzzySearchResults<ToolType> {
     return new FuzzySearch<ToolType>().search(this.getToolList(), ["keyin"], keyin.toLowerCase());
@@ -1034,7 +1034,7 @@ export class ToolRegistry {
    * @param keyin the localized keyin string of the Tool.
    * @returns the Tool class, if an exact match is found, otherwise returns undefined.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
-   * @internal
+   * @public
    */
   public findExactMatch(keyin: string): ToolType | undefined {
     keyin = keyin.toLowerCase();

@@ -17,7 +17,7 @@ import { ActionsUnion, createAction, DeepReadonly } from "./redux-ts";
 
 /** PresentationSelectionScope holds the id and the localized label for a selection scope supported for a specific iModel.
  * Added to avoid an api-extract error caused by using SelectionScope.
- * @beta
+ * @public
  */
 export interface PresentationSelectionScope {
   id: string;
@@ -26,7 +26,7 @@ export interface PresentationSelectionScope {
 
 /** Definition of data added to Redux store to define cursor menu.  If menuItems are empty the menu control is not displayed.
  * To close the menu clear the menuItems or pass in undefined as the CursorData.
- * @beta
+ * @public
  */
 export interface CursorMenuData {
   items: MenuItemProps[];
@@ -35,7 +35,7 @@ export interface CursorMenuData {
 
 /** Action Ids used by Redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  *  Since these are also used as sync ids they should be in lowercase.
- * @beta
+ * @public
  */
 export enum SessionStateActionId {
   SetNumItemsSelected = "sessionstate:set-num-items-selected",
@@ -51,7 +51,7 @@ export enum SessionStateActionId {
 }
 
 /** The portion of state managed by the SessionStateReducer.
- * @beta
+ * @public
  */
 export interface SessionState {
   numItemsSelected: number;
@@ -103,7 +103,7 @@ export interface SessionStateActionsProps {
 }
 
 /** An object with a function that creates each SessionStateReducer that can be handled by our reducer.
- * @beta
+ * @public
  */
 export const SessionStateActions = {  // eslint-disable-line @typescript-eslint/naming-convention
   setUserInfo:
@@ -140,12 +140,12 @@ export const SessionStateActions = {  // eslint-disable-line @typescript-eslint/
 export const sessionStateMapDispatchToProps = { ...SessionStateActions };
 
 /** Union of SessionState Redux actions
- * @beta
+ * @public
  */
 export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
 
 /** Handles actions to update SessionState.
- * @beta
+ * @public
  */
 export function SessionStateReducer(state: SessionState = initialState, action: SessionStateActionsUnion): DeepReadonly<SessionState> {
   switch (action.type) {

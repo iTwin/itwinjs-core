@@ -55,7 +55,7 @@ describe("UseExpandedNodesTracking", () => {
     initialProps = {
       modelSource,
       dataProvider: dataProviderMock.object,
-      enableAutoUpdate: true,
+      enableNodesTracking: true,
     };
 
     const presentationMocks = mockPresentationManager();
@@ -68,11 +68,11 @@ describe("UseExpandedNodesTracking", () => {
     Presentation.terminate();
   });
 
-  it("does not add 'onModelChange' event listener if auto update is disabled", () => {
+  it("does not add 'onModelChange' event listener if nodes tracking is disabled", () => {
     const addListenerSpy = sinon.spy(modelSource.onModelChanged, "addListener");
     renderHook(
       useExpandedNodesTracking,
-      { initialProps: { ...initialProps, enableAutoUpdate: false } },
+      { initialProps: { ...initialProps, enableNodesTracking: false } },
     );
 
     expect(addListenerSpy).to.be.not.called;
@@ -124,6 +124,7 @@ describe("UseExpandedNodesTracking", () => {
       { initialProps },
     );
 
+    stateTrackerMock.reset();
     stateTrackerMock.setup(async (x) => x.onExpandedNodesChanged(imodelMock.object, rulesetId, moq.It.isAnyString(), [])).verifiable(moq.Times.once());
     modelSource.modifyModel((model) => {
       model.setChildren(undefined, [createTreeModelInput(node, false)], 0);

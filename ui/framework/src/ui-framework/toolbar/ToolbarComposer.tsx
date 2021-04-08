@@ -225,7 +225,7 @@ const useProximityOpacitySetting = () => {
 };
 
 /** Properties for the [[ToolbarComposer]] React components
- * @beta
+ * @public
  */
 export interface ExtensibleToolbarProps {
   items: CommonToolbarItem[];
@@ -236,7 +236,7 @@ export interface ExtensibleToolbarProps {
 
 /**
  * Toolbar that is populated and maintained by item managers.
- * @beta
+ * @public
  */
 export function ToolbarComposer(props: ExtensibleToolbarProps) {
   const { usage, orientation } = props;

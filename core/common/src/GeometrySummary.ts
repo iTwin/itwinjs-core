@@ -8,11 +8,11 @@
 
 import { Id64Array } from "@bentley/bentleyjs-core";
 
-/** Describes the level of detail with which to report each geometric primitive in a geometrysummary.
- * @beta
+/** Describes the level of detail with which to report each geometric primitive in a [[GeometrySummaryRequestProps]].
+ * @public
  */
 export enum GeometrySummaryVerbosity {
-  /** Simply output the type of geometry. */
+  /** Simply output the type of geometry as a string. */
   Basic = 10,
   /** Output some details of the geometry. e.g., for a sphere, include the center and radius; for a line string, the number of points; etc. */
   Detailed = 20,
@@ -20,8 +20,8 @@ export enum GeometrySummaryVerbosity {
   Full = 30,
 }
 
-/** Describes what information will be returned by a geometry summary.
- * @beta
+/** Describes what information to include in a [[GeometrySummaryRequestProps]].
+ * @public
  */
 export interface GeometrySummaryOptions {
   /** If true, include detailed description of each symbology change (e.g., output material Id, line/fill color, etc). */
@@ -31,20 +31,21 @@ export interface GeometrySummaryOptions {
   /** The level of detail with which to summarize each geometric primitive. Default: Basic. */
   geometryVerbosity?: GeometrySummaryVerbosity;
   /** If defined, for each geometry part, output a list of all geometric elements that reference that part in their geometry streams.
-   * WARNING: This requires an exhaustive search through every geometric element in the iModel and may be extremely slow.
+   * @note This requires an exhaustive search through every geometric element in the iModel and may be extremely slow.
    */
   includePartReferences?: "2d" | "3d";
 }
 
 /** Describes the elements for which to generate an array of geometry summaries and the options controlling the contents of each summary.
- * @beta
+ * @see [IModelConnection.getGeometrySummary]($frontend).
+ * @public
  */
 export interface GeometrySummaryRequestProps {
-  /** The Ids of the elements whose geometry is to be summarized. Can include 2d or 3d geometric elements as well as geometry parts.
-   * The response array will include an entry for each element Id.
+  /** The Ids of the elements whose geometry is to be summarized. This can include the Ids of [GeometricElement]($backend)s and [GeometryPart]($backend)s.
+   * The response will include an entry for each element Id.
    */
   elementIds: Id64Array;
 
-  /** Options controlling the contents of each summary. */
+  /** Options controlling the contents of the summary. */
   options?: GeometrySummaryOptions;
 }

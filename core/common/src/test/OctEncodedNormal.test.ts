@@ -29,10 +29,10 @@ function _roundTrip(vec: Vector3d, normalized: boolean = true, tolerance: number
 
   const oen = OctEncodedNormal.fromVector(vec);
   const out = oen.decode();
-  expectPointsEqual(vec, out!, tolerance);
-  expectSignsEqual(vec, out!);
+  expectPointsEqual(vec, out, tolerance);
+  expectSignsEqual(vec, out);
 
-  const rep = OctEncodedNormal.fromVector(out!);
+  const rep = OctEncodedNormal.fromVector(out);
   assert.isTrue(rep.value === oen.value);
 }
 

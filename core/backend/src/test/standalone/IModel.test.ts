@@ -64,14 +64,6 @@ function exerciseGc() {
   }
 }
 
-function generateChangeSetId(): string {
-  let result = "";
-  for (let i = 0; i < 20; ++i) {
-    result += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
-  }
-  return result;
-}
-
 describe("iModel", () => {
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
@@ -207,6 +199,7 @@ describe("iModel", () => {
     }
 
     stmt.dispose();
+    Logger.initializeToConsole(); // reset back to console so future tests will log correctly
   });
 
   it("should be able to get properties of an iIModel", () => {
@@ -1708,7 +1701,7 @@ describe("iModel", () => {
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
-    const changeSetId = generateChangeSetId();
+    const changeSetId = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
@@ -1761,7 +1754,7 @@ describe("iModel", () => {
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
     const contextId = Guid.createValue();
-    const changeSetId = generateChangeSetId();
+    const changeSetId = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId);
     snapshot.saveChanges();
@@ -1796,7 +1789,7 @@ describe("iModel", () => {
   it("should throw when opening checkpoint without blockcache dir env", async () => {
     process.env.BLOCKCACHE_DIR = "";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
+    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
@@ -1807,11 +1800,11 @@ describe("iModel", () => {
     sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
@@ -1961,7 +1954,7 @@ describe("iModel", () => {
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
-    assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(standaloneDb1.pathName, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneDb1.key), "Should be in the list of open StandaloneDbs");
     assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
@@ -1999,10 +1992,10 @@ describe("iModel", () => {
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");
-    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(snapshotDb1.pathName, snapshotFile1);
     assert.equal(snapshotDb2.pathName, snapshotFile2);
     assert.equal(snapshotDb3.pathName, snapshotFile3);
@@ -2082,7 +2075,7 @@ describe("iModel", () => {
 
     // create snapshot from scratch without a password, then unnecessarily specify a password to open
     let snapshotDb1 = SnapshotDb.createFrom(imodel1, snapshotFile1);
-    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     snapshotDb1.close();
     snapshotDb1 = SnapshotDb.openFile(snapshotFile1, { password: "unnecessaryPassword" });
     assert.isTrue(snapshotDb1.isSnapshotDb());
@@ -2093,7 +2086,7 @@ describe("iModel", () => {
 
     // create snapshot from scratch and give it a password
     let snapshotDb2 = SnapshotDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password", createClassViews: true });
-    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     const subjectName2 = "TestSubject2";
     const subjectId2: Id64String = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
     assert.isTrue(Id64.isValidId64(subjectId2));
@@ -2108,7 +2101,7 @@ describe("iModel", () => {
 
     // create a new snapshot from a non-password-protected snapshot and then give it a password
     let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { password: "password" });
-    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     snapshotDb3.close();
     snapshotDb3 = SnapshotDb.openFile(snapshotFile3, { password: "password" });
     assert.isTrue(snapshotDb3.isSnapshotDb());

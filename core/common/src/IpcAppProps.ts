@@ -54,7 +54,7 @@ export enum IpcAppChannel {
   Functions = "ipc-app",
   AppNotify = "ipcApp-notify",
   Txns = "txns",
-  EditingSession = "editing-session",
+  EditingScope = "editing-scope",
   PushPull = "push-pull",
 }
 
@@ -83,10 +83,10 @@ export interface TxnNotifications {
 }
 
 /**
- * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel during an [InteractiveEditingSession]($frontend).
+ * Interface registered by the frontend [NotificationHandler]($common) to be notified of changes to an iModel during an [GraphicalEditingScope]($frontend).
  * @internal
  */
-export interface EditingSessionNotifications {
+export interface EditingScopeNotifications {
   notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
 
@@ -142,8 +142,8 @@ export interface IpcAppFunctions {
    */
   cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
 
-  toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
-  isInteractiveEditingSupported: (key: string) => Promise<boolean>;
+  toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
+  isGraphicalEditingSupported: (key: string) => Promise<boolean>;
 
   reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
   reverseAllTxn: (key: string) => Promise<IModelStatus>;

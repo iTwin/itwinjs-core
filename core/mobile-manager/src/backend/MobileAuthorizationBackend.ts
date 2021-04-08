@@ -7,7 +7,7 @@
  */
 
 import { ClientRequestContext, SessionProps } from "@bentley/bentleyjs-core";
-import { NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
+import { NativeAppAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
@@ -16,9 +16,19 @@ import { MobileHost } from "./MobileHost";
  * @internal
  */
 export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
+  public static defaultRedirectUri = "imodeljs://app/signin-callback";
+  public get redirectUri() { return this.config.redirectUri ?? MobileAuthorizationBackend.defaultRedirectUri; }
+
+  public constructor(config?: NativeAppAuthorizationConfiguration) {
+    super();
+    this.config = config ?? {
+      clientId: NativeHost.applicationName ?? "mobile-app",
+      scope: "openid email profile organization offline_access",
+    };
+  }
 
   /** Used to initialize the client - must be awaited before any other methods are called */
-  public async initialize(props: SessionProps, config: NativeAppAuthorizationConfiguration): Promise<void> {
+  public async initialize(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<void> {
     await super.initialize(props, config);
 
     const requestContext = ClientRequestContext.fromJSON(props);
@@ -41,7 +51,7 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
     };
 
     return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authInit(requestContext, config, (err?: string) => {
+      MobileHost.device.authInit(requestContext, this.config, (err?: string) => {
         if (!err) {
           resolve();
         } else {

@@ -91,7 +91,7 @@ interface NavigationTreeProps {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProps) => {
-  const nodeLoader = usePresentationTreeNodeLoader({
+  const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.iModelConnection,
     ruleset: props.rulesetId,
     pagingSize: 20,

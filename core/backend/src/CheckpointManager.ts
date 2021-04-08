@@ -37,8 +37,10 @@ export interface CheckpointProps {
   /** Id of the iModel */
   iModelId: GuidString;
 
-  /** Id of the change set */
-  changeSetId: GuidString;
+  /** Id of the change set
+   * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
+   */
+  changeSetId: string;
 
   requestContext: AuthorizedClientRequestContext;
 }
@@ -48,7 +50,7 @@ export interface CheckpointProps {
 export type ProgressFunction = (loaded: number, total: number) => number;
 
 /** The parameters that specify a request to download a checkpoint file from iModelHub.
- * @beta
+ * @internal
  */
 export interface DownloadRequest {
   /** name of local file to hold the downloaded data. */
@@ -262,8 +264,8 @@ export class V1CheckpointManager {
         nativeDb.deleteAllTxns();
       }
 
-      if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Standalone)
-        nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
+      if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned)
+        nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
       // Validate the native briefcase against the checkpoint meta-data
       try {
