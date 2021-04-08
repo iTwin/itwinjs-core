@@ -212,7 +212,6 @@ export class ClipStack {
     return emptyClip;
   }
 
-  // ###TODO: We're keeping the extra trailing union boundary. Will shader ignore it?
   protected updateTexture(): void {
     if (this._numTotalRows > 0 && (!this._texture || this._texture.height < this._numTotalRows)) {
       // We need to resize the texture.
