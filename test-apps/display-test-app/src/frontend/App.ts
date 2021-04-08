@@ -176,13 +176,6 @@ export class DisplayTestApp {
       localhostIpcApp: {
         socketPort: 3002,
       },
-      nativeApp: {
-        authConfig: {
-          clientId: "imodeljs-electron-test",
-          redirectUri: "imodeljs://app/signin-callback",
-          scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api imodeljs-router offline_access",
-        },
-      }
     };
 
     if (ProcessDetector.isElectronAppFrontend) {

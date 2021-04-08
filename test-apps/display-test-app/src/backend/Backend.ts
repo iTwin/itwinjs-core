@@ -14,7 +14,7 @@ import {
   IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
-import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
+import { AndroidHost, IOSHost, MobileHostOpts } from "@bentley/mobile-manager/lib/MobileBackend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
@@ -224,7 +224,7 @@ const setupStandaloneConfiguration = () => {
   return configuration;
 };
 
-export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) => {
+export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
   const dtaConfig = setupStandaloneConfiguration();
 
   const iModelHost = new IModelHostConfiguration();
@@ -245,15 +245,14 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
     if (undefined !== logLevelEnv)
       logLevel = Logger.parseLogLevel(logLevelEnv);
   }
+
   const opts = {
     iModelHost,
-    electronHost,
+    electronHost: hostOpts,
     nativeHost: {
       applicationName: "display-test-app",
     },
-    mobileHost: {
-      rpcInterfaces: electronHost?.rpcInterfaces,
-    },
+    mobileHost: hostOpts!.mobileHost,
   };
 
   /** register the implementation of our RPCs. */
