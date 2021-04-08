@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Core
+ */
+
 import { DiagnosticsHandler, DiagnosticsLoggerSeverity, DiagnosticsOptions, DiagnosticsOptionsWithHandler } from "@bentley/presentation-common";
 import { createCombinedDiagnosticsHandler } from "@bentley/presentation-frontend";
 
