@@ -1182,10 +1182,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** @internal */
   public getModelClip(modelId: Id64String): RenderClipVolume | undefined {
-    // If the view has a clip, or clipping is turned off, the model clips are ignored.
-    if (undefined !== this.getViewClip() || !this.viewFlags.clipVolume)
-      return undefined;
-
+    // ###TODO: ViewFlags.clipVolume is for the *view clip* only. Some tiles will want to ignore *all* clips (i.e., section-cut tiles).
     const index = this.details.modelClipGroups.findGroupIndex(modelId);
     return -1 !== index ? this._modelClips[index] : undefined;
   }
