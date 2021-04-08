@@ -41,9 +41,7 @@ export interface TileDrawArgParams {
   now: BeTimePoint;
   /** Overrides to apply to the view's [ViewFlags]($common) when drawing the tiles. */
   viewFlagOverrides: ViewFlagOverrides;
-  /** Clip volume used to clip the tiles.
-   * @beta
-   */
+  /** Clip volume used to clip the tiles. */
   clipVolume?: RenderClipVolume;
   /** @internal */
   parentsAndChildrenExclusive: boolean;
@@ -67,8 +65,7 @@ export class TileDrawArgs {
   public readonly location: Transform;
   /** The tile tree being drawn. */
   public readonly tree: TileTree;
-  /** Optional clip volume applied to the tiles.
-   * @beta
+  /** Optional clip volume applied to the tiles. */
    */
   public clipVolume: RenderClipVolume | undefined;
   /** The context in which the tiles will be drawn, exposing, e.g., the [[Viewport]] and accepting [[RenderGraphic]]s to be drawn. */

@@ -187,8 +187,8 @@ export class ViewDetails3d extends ViewDetails {
   }
 
   /** Groups of models associated with [ClipVector]($geometry-core)s by which those models should be clipped.
-   * If `this.clipVector` is not undefined, then the view as a whole will be clipped by that clip; the per-model group clips will have no effect.
-   * If the `clipVolume` [[ViewFlags]] is `false`, no clipping will be applied.
+   * If the view and the model both have a clip vector defined, geometry in the model will be clipped by the intersection of the two clip vectors.
+   * [[ViewFlags.clipVolume]] has no effect on model clips, only the view clip - model clips are always applied.
    * @note Do **not** modify the returned object directly. Instead, clone it, modify the clone, and pass the clone to the property setter.
    */
   public get modelClipGroups(): ModelClipGroups {
