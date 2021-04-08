@@ -113,12 +113,6 @@ export class ElectronHost {
     let assetPath = requestedUrl.substr(this._electronFrontend.length);
     if (assetPath.length === 0)
       assetPath = "index.html";
-    let regexp = ["..", "#", "?", "*", "$"];
-    for (var i = 0; i < regexp.length; i++) {
-      while (assetPath.includes(regexp[i]))
-        assetPath = assetPath.replace(regexp[i], "");
-    }
-
 
     // NEEDS_WORK: Remove this after migration to DesktopAuthorizationClient
     assetPath = assetPath.replace("signin-callback", "index.html");
@@ -132,6 +126,8 @@ export class ElectronHost {
       // eslint-disable-next-line no-console
       // console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
     }
+    if (!assetPath.startsWith(this.webResourcesPath))
+      throw new Error("Access outside that path is prohibited");
     return assetPath;
   }
 
