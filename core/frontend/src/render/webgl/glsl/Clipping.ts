@@ -120,7 +120,9 @@ export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
 
   addEyeSpace(prog);
 
-  // x = index of first plane, y = index of last plane (one past the end), z = texture height.
+  // [0] = index of first plane
+  // [1] = index of last plane (one past the end)
+  // [2] = texture height
   prog.addUniformArray("u_clipParams", VariableType.Int, 3, (program) => {
     program.addGraphicUniform("u_clipParams", (uniform, params) => {
       // Set this to false to visualize pre-shader culling of geometry.
