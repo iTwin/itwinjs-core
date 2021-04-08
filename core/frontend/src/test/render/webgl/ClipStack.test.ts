@@ -170,20 +170,18 @@ for (let i = 0; i < 2; i++) {
       expect(stack.cpuBuffer === stack.gpuBuffer).to.equal(!useFloat);
       expect(stack.startIndex).to.equal(0);
       expect(stack.endIndex).to.equal(0);
-      expect(stack.textureHeight).to.equal(0);
 
       stack.setViewClip(createClipVector(), { });
       expect(stack.stack.length).to.equal(1);
       expect(stack.hasClip).to.be.true;
-      expect(stack.numTotalRows).to.equal(0);
+      expect(stack.numTotalRows).to.equal(5);
       expect(stack.numRowsInUse).to.equal(5);
       expect(stack.startIndex).to.equal(0);
       expect(stack.endIndex).to.equal(5);
-      expect(stack.textureHeight).to.equal(0);
 
       stack.wantViewClip = false;
       expect(stack.hasClip).to.be.false;
-      expect(stack.numTotalRows).to.equal(0);
+      expect(stack.numTotalRows).to.equal(5);
       expect(stack.numRowsInUse).to.equal(5);
       expect(stack.startIndex).to.equal(5);
       expect(stack.endIndex).to.equal(5);
@@ -191,11 +189,10 @@ for (let i = 0; i < 2; i++) {
       stack.pushClip();
       expect(stack.stack.length).to.equal(2);
       expect(stack.hasClip).to.be.true;
-      expect(stack.numTotalRows).to.equal(0);
+      expect(stack.numTotalRows).to.equal(10);
       expect(stack.numRowsInUse).to.equal(10);
       expect(stack.startIndex).to.equal(5);
       expect(stack.endIndex).to.equal(10);
-      expect(stack.textureHeight).to.equal(0);
 
       stack.wantViewClip = true;
       expect(stack.hasClip).to.be.true;
@@ -205,12 +202,11 @@ for (let i = 0; i < 2; i++) {
       stack.pop();
       expect(stack.stack.length).to.equal(1);
       expect(stack.hasClip).to.be.true;
-      expect(stack.numTotalRows).to.equal(0);
+      expect(stack.numTotalRows).to.equal(10);
       expect(stack.numRowsInUse).to.equal(5);
       expect(stack.cpuBuffer.byteLength).to.equal(0);
       expect(stack.startIndex).to.equal(0);
       expect(stack.endIndex).to.equal(5);
-      expect(stack.textureHeight).to.equal(0);
 
       stack.wantViewClip = false;
       expect(stack.hasClip).to.be.false;
@@ -219,12 +215,11 @@ for (let i = 0; i < 2; i++) {
       stack.setViewClip(undefined, { });
       expect(stack.stack.length).to.equal(1);
       expect(stack.hasClip).to.be.false;
-      expect(stack.numTotalRows).to.equal(0);
+      expect(stack.numTotalRows).to.equal(10);
       expect(stack.numRowsInUse).to.equal(0);
       expect(stack.cpuBuffer.byteLength).to.equal(0);
       expect(stack.startIndex).to.equal(0);
       expect(stack.endIndex).to.equal(0);
-      expect(stack.textureHeight).to.equal(0);
 
       stack.setViewClip(createClipVector(), { });
       stack.pushClip();
