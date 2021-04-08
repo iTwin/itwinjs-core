@@ -62,7 +62,7 @@ export class ClipColorTool extends Tool {
     }
 
     const which = args[0];
-    if (which === "inside" || which == "outside")
+    if (which === "inside" || which === "outside")
       this.setClipColor(args[1], "inside" === which ? "insideColor" : "outsideColor");
 
     return true;

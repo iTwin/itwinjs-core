@@ -8,7 +8,7 @@
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";

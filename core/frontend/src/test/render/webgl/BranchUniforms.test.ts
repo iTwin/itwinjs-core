@@ -7,7 +7,7 @@ import { dispose } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { IModelApp } from "../../../IModelApp";
 import { ViewRect } from "../../../ViewRect";
-import { createEmptyRenderPlan, RenderPlan } from "../../../render/RenderPlan";
+import { createEmptyRenderPlan } from "../../../render/RenderPlan";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Branch } from "../../../render/webgl/Graphic";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
@@ -85,7 +85,7 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
   expect(uniforms.clipStack.hasClip).to.equal(expectViewClip || expectedClips.length > 1);
   expectClipStack(target, expectedClips);
 
-  for (let i = 0; i < branches.length; i++)
+  for (const _branch of branches)
     target.popBranch();
 
   expect(uniforms.clipStack.hasViewClip).to.equal(hadViewClip);
