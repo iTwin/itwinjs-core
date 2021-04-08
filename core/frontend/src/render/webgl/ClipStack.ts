@@ -52,18 +52,29 @@ function getRangeCorners(r: Range3d): Point3d[] {
  * @internal
  */
 export class ClipStack {
+  /** Encoded data for all clips on the stack, update when the stack or the transform changes. */
   protected _cpuBuffer: Uint8Array;
+  /** A view of the encoded buffer in the format expected by the GPU. */
   protected _gpuBuffer: Texture2DData;
   protected _texture?: Texture2DHandle;
   protected readonly _isFloatTexture: boolean
+  /** The maximum number of rows we have ever required. Determines the texture height. Grows as needed, reallocating a larger texture, but never shrinks. */
   protected _numTotalRows: number;
+  /** The number of rows in the texture actually required to encode the current contents of the stack. */
   protected _numRowsInUse: number;
+  /** The first entry always represents the view clip. The rest are pushed and popped with GraphicBranches. */
   protected readonly _stack: Clip[] = [ emptyClip ];
+  /** True if we need to recompute the texture. */
   protected _isStackDirty = false;
+  /** Obtain the transform to be applied to the clips - i.e., the view matrix. */
   protected readonly _getTransform: () => Transform;
+  /** If this returns false, the clip at the bottom of the stack is ignored. */
   protected readonly _wantViewClip: () => boolean;
+  /** If alpha is 1 then geometry inside the clip will be drawn in this color. */
   protected readonly _insideColor = FloatRgba.from(0, 0, 0, 0);
+  /** If alpha is 1 then geometry outside the clip will be drawn in this color. */
   protected readonly _outsideColor = FloatRgba.from(0, 0, 0, 0);
+  /** For detecting whether the transform changed from one invocation of setViewClip to the next. */
   protected readonly _prevTransform = Transform.createZero();
 
   public constructor(getTransform: () => Transform, wantViewClip: () => boolean) {
