@@ -5,7 +5,6 @@
 import { expect } from "chai";
 import { ClipPrimitive, ClipShape, ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets } from "@bentley/geometry-core";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
-import { ClipStack } from "../../../render/webgl/ClipStack";
 import { IModelApp } from "../../../IModelApp";
 
 describe("ClipVolume", async () => {
@@ -70,7 +69,7 @@ describe("ClipVolume", async () => {
 
     const planesData = [0, 1, 0, -1, -1, 0, 0, 2, 0, -1, 0, 2, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, -1, 2];
     const boundaryData = [2, 2, 2, 0];
-    let expectedData = planesData.concat(boundaryData, planesData).concat(boundaryData);
+    const expectedData = planesData.concat(boundaryData, planesData).concat(boundaryData);
 
     const data = new Float32Array(vol.getData(Transform.createIdentity()).buffer);
     expect(data.length).to.equal(expectedData.length);

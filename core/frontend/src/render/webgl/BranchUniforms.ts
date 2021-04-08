@@ -20,7 +20,6 @@ import { Matrix3, Matrix4 } from "./Matrix";
 import { RenderCommands } from "./RenderCommands";
 import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
-import { ClipVolume } from "./ClipVolume";
 import { ClipStack } from "./ClipStack";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {

@@ -7,8 +7,8 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ClipVector, Transform } from "@bentley/geometry-core";
-import { ClipStyle, HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
+import { Transform } from "@bentley/geometry-core";
+import { HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { Branch } from "./Graphic";

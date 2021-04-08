@@ -57,7 +57,7 @@ export class ClipStack {
   /** A view of the encoded buffer in the format expected by the GPU. */
   protected _gpuBuffer: Texture2DData;
   protected _texture?: Texture2DHandle;
-  protected readonly _isFloatTexture: boolean
+  protected readonly _isFloatTexture: boolean;
   /** The maximum number of rows we have ever required. Determines the texture height. Grows as needed, reallocating a larger texture, but never shrinks. */
   protected _numTotalRows: number;
   /** The number of rows in the texture actually required to encode the current contents of the stack. */
@@ -254,6 +254,6 @@ export class ClipStack {
   protected updateColor(rgb: RgbColor | undefined, rgba: FloatRgba): void {
     rgba.alpha = undefined !== rgb ? 1 : 0;
     if (rgb)
-      rgba.setRgbColor(rgb)
+      rgba.setRgbColor(rgb);
   }
 }

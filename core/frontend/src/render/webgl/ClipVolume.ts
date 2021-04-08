@@ -6,18 +6,12 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import {
   ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets, Vector3d,
 } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
 import { RenderClipVolume } from "../RenderClipVolume";
-import { RenderMemory } from "../RenderMemory";
-import { WebGLDisposable } from "./Disposable";
-import { FloatRgba } from "./FloatRGBA";
-import { GL } from "./GL";
 import { System } from "./System";
-import { Texture2DData, Texture2DHandle } from "./Texture";
 
 const scratch = {
   normal: new Vector3d(),
@@ -137,35 +131,34 @@ class ClipPlanesBuffer {
     transform.clone(this._viewMatrix);
 
     const { normal, dir, pos, v0 } = { ...scratch };
-      for (let i = 0; i < this._clips.length; i++) {
-        const clip = this._clips[i];
-        for (let j = 0; j < clip.convexSets.length; j++) {
-          const set = clip.convexSets[j];
-          if (0 === set.planes.length)
-            continue;
+    for (const clip of this._clips) {
+      for (let j = 0; j < clip.convexSets.length; j++) {
+        const set = clip.convexSets[j];
+        if (0 === set.planes.length)
+          continue;
 
-          if (j > 0)
-            this.appendSetBoundary();
+        if (j > 0)
+          this.appendSetBoundary();
 
-          for (const plane of set.planes) {
-            plane.inwardNormalRef.clone(normal);
-            let distance = plane.distance;
+        for (const plane of set.planes) {
+          plane.inwardNormalRef.clone(normal);
+          let distance = plane.distance;
 
-            const norm = normal;
-            transform.matrix.multiplyVector(norm, dir);
-            dir.normalizeInPlace();
+          const norm = normal;
+          transform.matrix.multiplyVector(norm, dir);
+          dir.normalizeInPlace();
 
-            transform.multiplyPoint3d(norm.scale(distance, v0), pos);
-            v0.setFromPoint3d(pos);
+          transform.multiplyPoint3d(norm.scale(distance, v0), pos);
+          v0.setFromPoint3d(pos);
 
-            normal.set(dir.x, dir.y, dir.z);
-            distance = -v0.dotProduct(dir);
-            this.appendPlane(normal, distance);
-          }
+          normal.set(dir.x, dir.y, dir.z);
+          distance = -v0.dotProduct(dir);
+          this.appendPlane(normal, distance);
         }
-
-        this.appendUnionBoundary();
       }
+
+      this.appendUnionBoundary();
+    }
   }
 }
 

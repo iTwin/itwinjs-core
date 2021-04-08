@@ -6,13 +6,11 @@
  * @module WebGL
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
-import { ClipVector, Transform } from "@bentley/geometry-core";
+import { Transform } from "@bentley/geometry-core";
 import {
-  BatchType, ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags,
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { ClipVolume } from "./ClipVolume";
 import { Branch } from "./Graphic";

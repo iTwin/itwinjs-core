@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipPlaneContainment, ClipUtilities, Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
 import { AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassificationProps, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
@@ -29,7 +29,6 @@ import { ScreenSpaceEffectContext } from "../ScreenSpaceEffectBuilder";
 import { Scene } from "../Scene";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
-import { ClipVolume } from "./ClipVolume";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
