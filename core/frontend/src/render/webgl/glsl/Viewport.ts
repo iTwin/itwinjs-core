@@ -46,8 +46,11 @@ vec4 modelToWindowCoordinates(vec4 position, vec4 next, out vec4 clippedMvpPos, 
   vec4  n = MAT_MV * next;
 
   if (q.z > s_maxZ) {
-    if (n.z > s_maxZ)
+    if (n.z > s_maxZ) {
+      clippedMvPos = vec3(0.0, 0.0, 1.0);
+      clippedMvpPos = vec4(0.0, 0.0, 1.0, 0.0);
       return vec4(0.0, 0.0, 1.0, 0.0);    // Entire segment behind front clip plane.
+    }
 
     float t = (s_maxZ - q.z) / (n.z - q.z);
 
