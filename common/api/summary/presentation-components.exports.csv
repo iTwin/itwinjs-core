@@ -4,12 +4,13 @@ public;CacheInvalidationProps
 public;CacheInvalidationProps
 internal;ContentBuilder
 public;ContentDataProvider 
-public;ContentDataProviderProps
+public;ContentDataProviderProps 
 beta;ControlledTreeFilteringProps
 beta;ControlledTreeWithFilteringSupportProps
 deprecated;ControlledTreeWithFilteringSupportProps
 beta;ControlledTreeWithVisibleNodesProps 
 deprecated;ControlledTreeWithVisibleNodesProps 
+alpha;createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined
 public;DataProvidersFactory
 public;DataProvidersFactoryProps
 beta;DEFAULT_PROPERTY_GRID_RULESET: Ruleset
@@ -21,6 +22,7 @@ public;DEPRECATED_treeWithFilteringSupport
 deprecated;DEPRECATED_treeWithFilteringSupport
 public;DEPRECATED_treeWithUnifiedSelection
 deprecated;DEPRECATED_treeWithUnifiedSelection
+public;DiagnosticsProps
 alpha;FavoritePropertiesDataFilterer 
 alpha;FavoritePropertiesDataFiltererProps
 beta;FavoritePropertiesDataProvider 
@@ -38,12 +40,12 @@ beta;PresentationComponentsLoggerCategory
 public;PresentationLabelsProvider 
 public;PresentationLabelsProviderProps
 public;PresentationPropertyDataProvider 
-public;PresentationPropertyDataProviderProps
+public;PresentationPropertyDataProviderProps 
 public;PresentationTableDataProvider 
-public;PresentationTableDataProviderProps
+public;PresentationTableDataProviderProps 
 public;PresentationTreeDataProvider 
 alpha;PresentationTreeDataProviderDataSourceEntryPoints
-public;PresentationTreeDataProviderProps
+public;PresentationTreeDataProviderProps 
 beta;PresentationTreeNodeLoaderProps 
 beta;PropertyDataProviderWithUnifiedSelectionProps
 public;propertyGridWithUnifiedSelection
