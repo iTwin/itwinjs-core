@@ -99,6 +99,10 @@ export class ClipStack {
     return this.outsideColor.alpha !== 0;
   }
 
+  public get bytesUsed(): number {
+    return this._texture ? this._texture.bytesUsed : 0;
+  }
+
   public setViewClip(clip: ClipVector | undefined, style: { insideColor?: RgbColor, outsideColor?: RgbColor }): void {
     assert(this._stack.length === 1);
 

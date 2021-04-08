@@ -1032,6 +1032,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     const thematicBytes = this.uniforms.thematic.bytesUsed;
     if (0 < thematicBytes)
       stats.addThematicTexture(thematicBytes);
+
+    const clipBytes = this.uniforms.branch.clipStack.bytesUsed;
+    if (clipBytes)
+      stats.addClipVolume(clipBytes);
   }
 
   protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect {
