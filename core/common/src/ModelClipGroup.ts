@@ -20,7 +20,7 @@ export interface ModelClipGroupProps {
 }
 
 /** Describes how to clip a group of models in the context of a [ViewDefinition3d]($backend) by applying a single [ClipVector]($geometry-core] to each model in the group.
- * @see [[ModelClipGroups]].
+ * @see [[ModelClipGroups]] to define multiple groups of models with different clip vectors.
  * @public
  */
 export class ModelClipGroup {
