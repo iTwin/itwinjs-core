@@ -8,7 +8,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { AxisOrder, LinearSweep, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, ElementGeometry, GeometryStreamBuilder, LinePixels, PhysicalElementProps } from "@bentley/imodeljs-common";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistance,
+  AccuDrawHintBuilder, BeButtonEvent, ContextRotationId, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistance,
   ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { PrimitiveToolEx } from "./PrimitiveToolEx";
@@ -76,14 +76,14 @@ export class PlaceBlockTool extends PrimitiveToolEx {
     const hints = new AccuDrawHintBuilder();
     hints.setOrigin(this._points[this._points.length - 1]);
     if (1 === this._points.length) {
-      hints.setRotation(this._matrix!.inverse()!);
+      hints.setMatrix(this._matrix!);
       hints.setModeRectangular();
     } else if (this._points.length > 1 && !(this._points[this._points.length - 1].isAlmostEqual(this._points[this._points.length - 2]))) {
       const xVec = Vector3d.createStartEnd(this._points[this._points.length - 2], this._points[this._points.length - 1]);
       const zVec = this._matrix!.getColumn(2);
       const matrix = Matrix3d.createRigidFromColumns(xVec, zVec, AxisOrder.XZY);
       if (undefined !== matrix)
-        hints.setRotation(matrix.inverse()!); // Rotate AccuDraw x axis to last segment preserving current up vector...
+        hints.setMatrix(matrix); // Rotate AccuDraw x axis to last segment preserving current up vector...
     }
     hints.setLockZ = true;
     hints.sendHints();
@@ -100,14 +100,14 @@ export class PlaceBlockTool extends PrimitiveToolEx {
       return points;
 
     const normal = this._matrix!.getColumn(2);
-    let currentPt = EditManipulator.HandleUtils.projectPointToPlaneInView(ev.point, points[0], normal, ev.viewport!, true);
+    let currentPt = AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, points[0], normal, ev.viewport!, true);
     if (undefined === currentPt)
       currentPt = ev.point.clone();
     if (2 === points.length && !ev.isControlKey) {
       const xDir = Vector3d.createStartEnd(points[0], points[1]);
       const xLen = xDir.magnitude(); xDir.normalizeInPlace();
       const yDir = xDir.crossProduct(normal); yDir.normalizeInPlace();
-      const cornerPt = EditManipulator.HandleUtils.projectPointToLineInView(currentPt, points[1], yDir, ev.viewport!, true);
+      const cornerPt = AccuDrawHintBuilder.projectPointToLineInView(currentPt, points[1], yDir, ev.viewport!, true);
       if (undefined !== cornerPt) {
         points.push(cornerPt);
         cornerPt.plusScaled(xDir, -xLen, currentPt);
@@ -215,13 +215,13 @@ export class PlaceBlockTool extends PrimitiveToolEx {
       return EventHandled.No;
     }
 
-    // TODO: Get orientation from AccuDraw.getCurrentOrientation ...
-    if (undefined === this._matrix && undefined === (this._matrix = EditManipulator.HandleUtils.getRotation(EditManipulator.RotationType.Top, this.targetView)))
+    // TODO: Get orientation from AccuDrawHintBuilder.getCurrentRotation...
+    if (undefined === this._matrix && undefined === (this._matrix = AccuDrawHintBuilder.getContextRotation(ContextRotationId.Top, this.targetView)))
       return EventHandled.No;
 
     const currPt = ev.point.clone();
     if (this._points.length > 0) {
-      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), this.targetView, true);
+      const planePt = AccuDrawHintBuilder.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), this.targetView, true);
       if (undefined !== planePt)
         currPt.setFrom(planePt);
     }
