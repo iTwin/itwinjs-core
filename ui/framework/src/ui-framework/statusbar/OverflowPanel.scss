@@ -15,4 +15,7 @@
 .uifw-statusbar-overflow-items-container {
   display: flex;
   flex-direction: column;
+  > .nz-footer-separator {
+    display: none;
+  }
 }
