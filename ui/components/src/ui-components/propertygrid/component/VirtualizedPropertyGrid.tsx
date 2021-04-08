@@ -55,6 +55,8 @@ interface VirtualizedPropertyGridState {
   width: number;
   /** Keeps record of dynamic node heights */
   dynamicNodeHeights: Map<string, number>;
+  /** When resetting node height cache, marks the point at which heights have become stale */
+  resetIndex: number;
 }
 
 /**
@@ -135,11 +137,12 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
       orientation: this.getPreferredOrientation(),
       width: 0,
       dynamicNodeHeights: new Map(),
+      resetIndex: 0,
     };
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: VirtualizedPropertyGridProps) {
+  public componentDidUpdate(prevProps: VirtualizedPropertyGridProps, prevState: VirtualizedPropertyGridState) {
     if (this.props.orientation !== prevProps.orientation
       || this.props.isOrientationFixed !== prevProps.isOrientationFixed
       || this.props.horizontalOrientationMinWidth !== prevProps.horizontalOrientationMinWidth)
@@ -166,6 +169,12 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
         // istanbul ignore else
         if (this._listRef.current)
           this._listRef.current.scrollToItem(index);
+      }
+    }
+
+    if (this.state.dynamicNodeHeights !== prevState.dynamicNodeHeights) {
+      if (this._listRef.current) {
+        this._listRef.current.resetAfterIndex(this.state.resetIndex);
       }
     }
   }
@@ -248,13 +257,11 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
       return;
     }
 
-    assert(this._listRef.current !== null);
-    this._listRef.current.resetAfterIndex(index);
-
     this.setState((state) => {
       return {
         ...state,
         dynamicNodeHeights: new Map(state.dynamicNodeHeights).set(key, newHeight),
+        resetIndex: index,
       };
     });
   };

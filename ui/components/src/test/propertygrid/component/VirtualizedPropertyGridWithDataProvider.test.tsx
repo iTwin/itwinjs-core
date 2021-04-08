@@ -408,7 +408,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
   describe("dynamic node heights", () => {
     const StubComponent: React.FC<FlatPropertyRendererExports.FlatPropertyRendererProps> = (props) => {
-      React.useEffect(() => props.onHeightChanged!(15));
+      React.useLayoutEffect(() => props.onHeightChanged!(15));
       return <>Stub Component</>;
     };
 
