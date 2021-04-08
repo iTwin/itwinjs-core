@@ -23,7 +23,7 @@ export type ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInst
 
 /**
  * @public
- * @deprecated Use `ContentRelatedInstancesSpecificationNew`. Will be removed in iModel.js 3.0
+ * @deprecated Use [[ContentRelatedInstancesSpecificationNew]]. Will be removed in iModel.js 3.0
  */
 export interface DEPRECATED_ContentRelatedInstancesSpecification extends ContentSpecificationBase { // eslint-disable-line @typescript-eslint/naming-convention
   /** Used for serializing to JSON. */

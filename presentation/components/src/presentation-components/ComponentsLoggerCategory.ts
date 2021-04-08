@@ -10,7 +10,7 @@
  * Logger categories used by this package
  * @note All logger categories in this package start with the `presentation-components` prefix.
  * @see [Logger]($bentley)
- * @beta
+ * @public
  */
 export enum PresentationComponentsLoggerCategory {
   Package = "presentation-components",

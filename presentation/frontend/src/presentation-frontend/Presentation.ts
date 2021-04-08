@@ -165,7 +165,7 @@ export class Presentation {
 
   /**
    * The singleton [[FavoritePropertiesManager]]
-   * @beta
+   * @public
    */
   public static get favoriteProperties(): FavoritePropertiesManager {
     if (!favoritePropertiesManager)

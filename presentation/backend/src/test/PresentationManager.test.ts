@@ -15,10 +15,10 @@ import {
   ArrayTypeDescription, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
   ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory,
-  HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyRequestOptions, InstanceKey, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
-  LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationDataCompareOptions, PresentationError,
-  PresentationUnitSystem, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset,
-  SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, ItemJSON, KeySet, KindOfQuantityInfo,
+  LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PresentationUnitSystem,
+  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset, SelectClassInfoJSON,
+  SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
 import {
   createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKey,
@@ -1181,7 +1181,7 @@ describe("PresentationManager", () => {
         const addonResponse = setup(unprocessedResponse);
 
         // test
-        const options: PresentationDataCompareOptions<IModelDb, NodeKey> = {
+        const options: HierarchyCompareOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           prev: {
             rulesetOrId: "test",
@@ -1223,7 +1223,7 @@ describe("PresentationManager", () => {
         const addonResponse = setup(unprocessedResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1261,7 +1261,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1300,7 +1300,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1327,7 +1327,7 @@ describe("PresentationManager", () => {
 
       it("throws when trying to compare hierarchies with different ruleset ids", async () => {
         nativePlatformMock.reset();
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1363,7 +1363,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1399,7 +1399,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {

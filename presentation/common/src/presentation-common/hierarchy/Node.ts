@@ -72,10 +72,18 @@ export interface NodeJSON {
   };
 }
 
-/** @alpha */
+/**
+ * Partial node definition.
+ * @public
+ */
 export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
-/** @alpha */
+
+/**
+ * Serialized [[PartialNode]] JSON representation.
+ * @public
+ */
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
+
 type AllOrNone<T, P extends keyof T> = Omit<T, P> & ({ [K in P]?: never } | Required<Pick<T, P>>);
 
 /** @public */

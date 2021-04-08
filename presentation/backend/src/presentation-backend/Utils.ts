@@ -8,7 +8,7 @@
 
 import { ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Element, IModelDb } from "@bentley/imodeljs-backend";
-import { DiagnosticsOptionsWithHandler, InstanceKey } from "@bentley/presentation-common";
+import { InstanceKey } from "@bentley/presentation-common";
 
 /** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
@@ -26,11 +26,9 @@ export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | u
 
 /**
  * A type that injects [[ClientRequestContext]] attribute into another given type. *
- * @beta
+ * @public
  */
 export type WithClientRequestContext<T> = T & {
   /** Context of a client request */
   requestContext: ClientRequestContext;
-  /** @alpha */
-  diagnostics?: DiagnosticsOptionsWithHandler;
 };

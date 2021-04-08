@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -13,8 +14,8 @@ import {
   DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions,
   DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedContentRpcRequestOptions,
   ExtendedHierarchyRequestOptions, ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyCompareInfo,
-  HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions,
-  PresentationDataCompareOptions, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus,
+  HierarchyCompareOptions, HierarchyCompareRpcOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, KeySetJSON,
+  Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus,
   SelectionScopeRequestOptions, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -1590,14 +1591,14 @@ describe("PresentationRpcImpl", () => {
             target: createRandomECInstancesNode().key,
           }],
         };
-        const rpcOptions: PresentationDataCompareRpcOptions = {
+        const rpcOptions: HierarchyCompareRpcOptions = {
           ...defaultRpcParams,
           prev: {
             rulesetOrId: "1",
           },
           rulesetOrId: "2",
         };
-        const managerOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const managerOptions: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: testData.imodelMock.object,
           prev: rpcOptions.prev,
@@ -1618,7 +1619,7 @@ describe("PresentationRpcImpl", () => {
             target: createRandomECInstancesNode().key,
           }],
         };
-        const rpcOptions: PresentationDataCompareRpcOptions = {
+        const rpcOptions: HierarchyCompareRpcOptions = {
           ...defaultRpcParams,
           prev: {
             rulesetVariables: [{ id: "test", type: VariableValueTypes.Int, value: 123 }],
@@ -1626,7 +1627,7 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: "2",
           expandedNodeKeys: [createRandomECInstancesNodeKeyJSON()],
         };
-        const managerOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const managerOptions: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: testData.imodelMock.object,
           prev: rpcOptions.prev,
@@ -1652,7 +1653,7 @@ describe("PresentationRpcImpl", () => {
             target: createRandomECInstancesNode().key,
           }],
         };
-        const rpcOptions: PresentationDataCompareRpcOptions = {
+        const rpcOptions: HierarchyCompareRpcOptions = {
           ...defaultRpcParams,
           prev: {
             rulesetOrId: "1",
@@ -1660,7 +1661,7 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: "2",
           resultSetSize: 10,
         };
-        const managerOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const managerOptions: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: testData.imodelMock.object,
           prev: rpcOptions.prev,
@@ -1682,7 +1683,7 @@ describe("PresentationRpcImpl", () => {
             target: createRandomECInstancesNode().key,
           }],
         };
-        const rpcOptions: PresentationDataCompareRpcOptions = {
+        const rpcOptions: HierarchyCompareRpcOptions = {
           ...defaultRpcParams,
           prev: {
             rulesetVariables: [{ id: "test", type: VariableValueTypes.Int, value: 123 }],
@@ -1691,7 +1692,7 @@ describe("PresentationRpcImpl", () => {
           expandedNodeKeys: [createRandomECInstancesNodeKeyJSON()],
           resultSetSize: 10,
         };
-        const managerOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const managerOptions: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: testData.imodelMock.object,
           prev: rpcOptions.prev,
@@ -1714,7 +1715,7 @@ describe("PresentationRpcImpl", () => {
             target: createRandomECInstancesNode().key,
           }],
         };
-        const rpcOptions: PresentationDataCompareRpcOptions = {
+        const rpcOptions: HierarchyCompareRpcOptions = {
           ...defaultRpcParams,
           prev: {
             rulesetVariables: [{ id: "test", type: VariableValueTypes.Int, value: 123 }],
@@ -1722,7 +1723,7 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: "2",
           expandedNodeKeys: [createRandomECInstancesNodeKeyJSON()],
         };
-        const managerOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const managerOptions: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: testData.imodelMock.object,
           prev: rpcOptions.prev,

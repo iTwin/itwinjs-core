@@ -27,7 +27,7 @@ import { FAVORITES_CATEGORY_NAME, getFavoritesCategory } from "../favorite-prope
  * Default presentation ruleset used by [[PresentationPropertyDataProvider]]. The ruleset just gets properties
  * of the selected elements.
  *
- * @beta
+ * @public
  */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset = require("./DefaultPropertyGridRules.json");
@@ -171,10 +171,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     this.invalidateCache({ content: true });
   }
 
-  /**
-   * Is nested property categories enabled
-   * @beta
-   */
+  /** Is nested property categories enabled */
   public get isNestedPropertyCategoryGroupingEnabled(): boolean { return this._isNestedPropertyCategoryGroupingEnabled; }
   public set isNestedPropertyCategoryGroupingEnabled(value: boolean) {
     if (this._isNestedPropertyCategoryGroupingEnabled === value)

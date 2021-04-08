@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { IPresentationTreeDataProvider, useControlledTreeFiltering } from "@bentley/presentation-components";
+import { IPresentationTreeDataProvider, useControlledPresentationTreeFiltering } from "@bentley/presentation-components";
 import {
   AbstractTreeNodeLoaderWithProvider, TreeImageLoader, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps,
 } from "@bentley/ui-components";
@@ -75,7 +75,7 @@ export const useVisibilityTreeFiltering = (
     isFiltering,
     matchesCount,
     nodeHighlightingProps,
-  } = useControlledTreeFiltering({ nodeLoader, filter, activeMatchIndex });
+  } = useControlledPresentationTreeFiltering({ nodeLoader, filter, activeMatchIndex });
 
   React.useEffect(
     () => {

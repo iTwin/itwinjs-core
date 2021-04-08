@@ -9,13 +9,12 @@
 import * as immer from "immer";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  HierarchyUpdateRecord, PageOptions, PartialHierarchyModification, RegisteredRuleset,
-  Ruleset, UPDATE_FULL, VariableValue,
+  HierarchyUpdateRecord, PageOptions, PartialHierarchyModification, RegisteredRuleset, Ruleset, UPDATE_FULL, VariableValue,
 } from "@bentley/presentation-common";
 import { IModelHierarchyChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import {
-  isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange, Subscription, TreeModel,
-  TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, TreeNodeItemData, usePagedTreeNodeLoader, VisibleTreeNodes,
+  isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange, Subscription,
+  TreeModel, TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, TreeNodeItemData, usePagedTreeNodeLoader, VisibleTreeNodes,
 } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
@@ -25,7 +24,7 @@ import { getExpandedNodeItems, useExpandedNodesTracking } from "./UseExpandedNod
 
 /**
  * Properties for [[usePresentationTreeNodeLoader]] hook.
- * @beta
+ * @public
  */
 export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataProviderProps {
   /**
@@ -61,7 +60,7 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
  * Custom hooks which creates PagedTreeNodeLoader with PresentationTreeDataProvider using
  * supplied imodel and ruleset.
  *
- * @beta
+ * @public
  */
 export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps) {
   interface Info {

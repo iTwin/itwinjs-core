@@ -17,7 +17,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
  * no immediate parent instance node it will go up until it finds one.
  *
  * @public
- * @deprecated Use `RelatedInstanceNodesSpecification`. Will be removed in iModel.js 3.0
+ * @deprecated Use [[RelatedInstanceNodesSpecification]]. Will be removed in iModel.js 3.0
  */
 export interface DEPRECATED_AllRelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer { // eslint-disable-line @typescript-eslint/naming-convention
   /** Used for serializing to JSON. */

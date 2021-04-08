@@ -9,8 +9,8 @@ beta;HierarchyCacheMode
 beta;HybridCacheConfig 
 beta;MemoryHierarchyCacheConfig 
 public;Presentation
-beta;PresentationBackendLoggerCategory
-beta;PresentationBackendNativeLoggerCategory
+public;PresentationBackendLoggerCategory
+public;PresentationBackendNativeLoggerCategory
 public;PresentationManager
 public;PresentationManagerMode
 public;PresentationManagerProps
@@ -22,4 +22,4 @@ beta;RulesetEmbedder
 public;RulesetEmbedderProps
 public;RulesetManager
 public;RulesetVariablesManager
-beta;WithClientRequestContext
+public;WithClientRequestContext

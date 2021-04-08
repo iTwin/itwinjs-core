@@ -22,7 +22,7 @@ import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider"
 
 /**
  * Data structure that describes parameters for UnifiedSelectionTreeEventHandler
- * @beta
+ * @public
  */
 export interface UnifiedSelectionTreeEventHandlerParams {
   /** Node loader used to load children when node is expanded. */
@@ -53,7 +53,7 @@ export interface UnifiedSelectionTreeEventHandlerParams {
  * **Note:** conditions used to determine if node is selected and nodes that should be added to
  * unified selection can be controlled by overriding 'shouldSelectNode' and 'createKeysForSelection' methods.
  *
- * @beta
+ * @public
  */
 export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implements IDisposable {
   private _selectionHandler: SelectionHandler;
@@ -225,8 +225,8 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
 }
 
 /**
- * A custom hook which creates and disposes `UnifiedSelectionTreeEventHandler`
- * @beta
+ * A custom hook which creates and disposes [[UnifiedSelectionTreeEventHandler]]
+ * @public
  */
 export function useUnifiedSelectionTreeEventHandler(props: UnifiedSelectionTreeEventHandlerParams) {
   return useDisposable(useCallback(

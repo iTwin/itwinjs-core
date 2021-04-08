@@ -20,7 +20,7 @@ const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo
 
 /**
  * Stores user settings for favorite properties.
- * @beta
+ * @public
  */
 export interface IFavoritePropertiesStorage {
   /** Load Favorite properties from user-specific settings.

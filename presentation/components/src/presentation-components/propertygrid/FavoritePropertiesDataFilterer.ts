@@ -14,7 +14,7 @@ import { IPresentationPropertyDataProvider } from "../../presentation-components
 
 /**
  * Props for [[FavoritePropertiesDataFilterer]].
- * @alpha
+ * @beta
  */
 export interface FavoritePropertiesDataFiltererProps {
   /** Source properties data provider */
@@ -32,7 +32,7 @@ export interface FavoritePropertiesDataFiltererProps {
 
 /**
  * [[IPropertyDataFilterer]] implementation which filters favorite properties
- * @alpha
+ * @beta
  */
 export class FavoritePropertiesDataFilterer extends PropertyDataFiltererBase {
   private _source: IPresentationPropertyDataProvider;

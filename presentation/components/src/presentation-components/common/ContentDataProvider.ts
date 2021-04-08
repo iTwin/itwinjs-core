@@ -10,8 +10,8 @@ import memoize from "micro-memoize";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, ContentRequestOptions, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, DiagnosticsOptionsWithHandler, Field, KeySet, PageOptions,
-  RegisteredRuleset, Ruleset, SelectionInfo,
+  Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, DiagnosticsOptionsWithHandler, Field, KeySet, PageOptions, RegisteredRuleset,
+  RequestOptionsWithRuleset, Ruleset, SelectionInfo,
 } from "@bentley/presentation-common";
 import { IModelContentChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
@@ -246,7 +246,7 @@ export class ContentDataProvider implements IContentDataProvider {
     }
   }
 
-  private createRequestOptions(): ContentRequestOptions<IModelConnection> {
+  private createRequestOptions(): RequestOptionsWithRuleset<IModelConnection> {
     return {
       imodel: this._imodel,
       rulesetOrId: this._rulesetRegistration.rulesetId,

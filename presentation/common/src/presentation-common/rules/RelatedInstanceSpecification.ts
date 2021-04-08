@@ -71,7 +71,7 @@ export type RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecificati
 /**
  * Deprecated [[RelatedInstanceSpecification]] specification.
  * @public
- * @deprecated Use `RelatedInstanceSpecificationNew`. Will be removed in iModel.js 3.0
+ * @deprecated Use [[RelatedInstanceSpecificationNew]]. Will be removed in iModel.js 3.0
  */
 export interface DEPRECATED_RelatedInstanceSpecification { // eslint-disable-line @typescript-eslint/naming-convention
   /** Specification of the relationship to use for joining the related instance */

@@ -15,7 +15,7 @@ import { Keys, KeySet } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 
 /**
- * Interface for accessing and modifying Unified Selection whithin React components.
+ * Interface for accessing and modifying Unified Selection within React components.
  * @beta
  */
 export interface UnifiedSelectionContext {

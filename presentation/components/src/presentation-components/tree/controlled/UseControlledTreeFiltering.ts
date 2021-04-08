@@ -8,8 +8,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider,
-  PagedTreeNodeLoader, TreeModelSource, useDebouncedAsyncValue,
+  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, PagedTreeNodeLoader, TreeModelSource,
+  useDebouncedAsyncValue,
 } from "@bentley/ui-components";
 import { FilteredPresentationTreeDataProvider, IFilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
@@ -17,10 +17,16 @@ import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider"
 const FILTERED_DATA_PAGE_SIZE = 20;
 
 /**
- * Parameters for `useControlledTreeFiltering` hook
+ * Parameters for [[useControlledTreeFiltering]] hook
  * @beta
+ * @deprecated Use [[ControlledPresentationTreeFilteringProps]]
  */
-export interface ControlledTreeFilteringProps {
+export type ControlledTreeFilteringProps = ControlledPresentationTreeFilteringProps;
+/**
+ * Parameters for [[useControlledPresentationTreeFiltering]] hook
+ * @public
+ */
+export interface ControlledPresentationTreeFilteringProps {
   nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
   filter?: string;
   activeMatchIndex?: number;
@@ -31,10 +37,19 @@ export interface ControlledTreeFilteringProps {
  * If filter string is not provided or filtering is still in progress it returns supplied
  * model source and node loader.
  *
- * @note it is required for the tree to use [[IPresentationTreeDataProvider]].
+ * @note It is required for the tree to use [[IPresentationTreeDataProvider]].
  * @beta
+ * @deprecated Use [[useControlledPresentationTreeFiltering]]
  */
-export function useControlledTreeFiltering(props: ControlledTreeFilteringProps) {
+export const useControlledTreeFiltering = useControlledPresentationTreeFiltering;
+/**
+ * A custom hook that creates filtered model source and node loader for supplied filter.
+ * If filter string is not provided or filtering is still in progress it returns supplied
+ * model source and node loader.
+ *
+ * @public
+ */
+export function useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps) {
   const { filteredNodeLoader, isFiltering, matchesCount } = useFilteredNodeLoader(props.nodeLoader, props.filter);
   const nodeHighlightingProps = useNodeHighlightingProps(props.filter, filteredNodeLoader, props.activeMatchIndex);
   return {

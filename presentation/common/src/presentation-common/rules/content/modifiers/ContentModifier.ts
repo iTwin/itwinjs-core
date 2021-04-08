@@ -31,20 +31,20 @@ export interface ContentModifiersList {
 
   /**
    * Specifications for customizing property display by hiding / showing them
-   * @deprecated Use `propertyOverrides` attribute instead. Will be removed in iModel.js 3.0
+   * @deprecated Use [[propertyOverrides]] attribute instead. Will be removed in iModel.js 3.0
    */
   propertiesDisplay?: DEPRECATED_PropertiesDisplaySpecification[]; // eslint-disable-line deprecation/deprecation
 
   /**
    * Specifications for assigning property editors
-   * @deprecated Use `propertyOverrides` attribute instead. Will be removed in iModel.js 3.0
+   * @deprecated Use [[propertyOverrides]] attribute instead. Will be removed in iModel.js 3.0
    */
   propertyEditors?: DEPRECATED_PropertyEditorsSpecification[]; // eslint-disable-line deprecation/deprecation
 
   /**
    * Specifications for custom categories. Simply defining the categories does
-   * nothing - they have to be referenced from `PropertySpecification` defined in
-   * `propertyOverrides` by `id`.
+   * nothing - they have to be referenced from [[PropertySpecification]] defined in
+   * [[propertyOverrides]] by `id`.
    */
   propertyCategories?: PropertyCategorySpecification[];
 
