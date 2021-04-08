@@ -48,7 +48,7 @@ export abstract class FloatColor {
   }
 
   public setRgbColor(rgb: RgbColor) {
-    this.setTbgr(computeTbgr(rgb.r, rgb.g, rgb.b, 1));
+    this.setTbgr(computeTbgr(rgb.r / 255, rgb.g / 255, rgb.b / 255, 1));
   }
 
   public setTbgr(tbgr: number) {
@@ -99,7 +99,7 @@ export class FloatRgb extends FloatColor {
   }
 
   public static fromRgbColor(rgb: RgbColor): FloatRgb {
-    return FloatRgb.from(rgb.r, rgb.g, rgb.b);
+    return FloatRgb.from(rgb.r / 255, rgb.g / 255, rgb.b / 255);
   }
 
   public static from(r: number, g: number, b: number): FloatRgb {
