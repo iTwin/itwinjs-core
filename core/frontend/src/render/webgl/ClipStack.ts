@@ -64,6 +64,7 @@ export class ClipStack {
   protected readonly _wantViewClip: () => boolean;
   protected readonly _insideColor = FloatRgba.from(0, 0, 0, 0);
   protected readonly _outsideColor = FloatRgba.from(0, 0, 0, 0);
+  protected readonly _prevTransform = Transform.createZero();
 
   public constructor(getTransform: () => Transform, wantViewClip: () => boolean) {
     this._getTransform = getTransform;
@@ -92,6 +93,12 @@ export class ClipStack {
 
     this.updateColor(style.insideColor, this._insideColor);
     this.updateColor(style.outsideColor, this._outsideColor);
+
+    const transform = this._getTransform();
+    if (!transform.isAlmostEqual(this._prevTransform)) {
+      transform.clone(this._prevTransform);
+      this._isStackDirty = true;
+    }
 
     const cur = this._stack[0];
     if (cur === emptyClip) {
@@ -159,10 +166,11 @@ export class ClipStack {
     return this._texture;
   }
 
-  public isRangeClipped(range: Range3d): boolean {
+  public isRangeClipped(range: Range3d, transform: Transform): boolean {
     if (this.hasOutsideColor || !this.hasClip)
       return false;
 
+    range = transform.multiplyRange(range, range);
     const corners = getRangeCorners(range);
     const startIndex = this._wantViewClip() && emptyClip !== this._stack[0] ? 0 : 1;
     for (let i = startIndex; i < this._stack.length; i++) {

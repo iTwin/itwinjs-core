@@ -319,7 +319,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   /** @internal */
   public isRangeOutsideActiveVolume(range: Range3d): boolean {
-    return this.uniforms.branch.clipStack.isRangeClipped(range);
+    return this.uniforms.branch.clipStack.isRangeClipped(range, this.currentTransform);
   }
 
   private readonly _scratchRange = new Range3d();
