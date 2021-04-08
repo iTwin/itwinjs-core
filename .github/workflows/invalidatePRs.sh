@@ -35,7 +35,7 @@ function log() {
   fi
 }
 
-declare -A listSHA
+declare -A listSha
 
 # Get head sha on master branch
 masterCommit=$(curl -s \
@@ -46,8 +46,8 @@ masterCommit=$(curl -s \
 masterHeadCommit=$(echo ${masterCommit} | jq -r '. | @base64')
 masterSha=$(_jq  ${masterHeadCommit} '.sha')
 
-listSHA["master"]=${masterSha}
-echo "Master SHA is ${listSHA["master"]}"
+listSha["master"]=${masterSha}
+echo "Master SHA is ${listSha["master"]}"
 
 for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
   log "$(_jq ${pr} '.title') (#$(_jq ${pr} '.number'))"
@@ -60,7 +60,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
   ref=$(_jq ${pr} '.base.ref')
   sha=$(_jq ${pr} '.base.sha')
 
-  shaToCompare=${listSHA[${ref}]}
+  shaToCompare=${listSha[${ref}]}
 
   # Keep the list of branch head sha
   if [[ $shaToCompare == "" ]]
@@ -71,7 +71,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
               https://api.github.com/repos/imodeljs/imodeljs/commits/${ref})
     refHeadCommit=$(echo ${refCommit} | jq -r '. | @base64')
     refHeadSha=$(_jq  ${refHeadCommit} '.sha')
-    listSHA[${ref}]=${refHeadSha}
+    listSha[${ref}]=${refHeadSha}
     shaToCompare=$refHeadSha
   fi
 
