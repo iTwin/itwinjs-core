@@ -6,19 +6,23 @@
  * @module Tools
  */
 
+// cSpell: ignore popout
+
 import * as React from "react";
-import { Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
-  ConditionalStringValue, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  ActionCreatorsObject, ActionsUnion, createAction, ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
+  ActionCreatorsObject, ActionsUnion, createAction, ModelSelectorWidget, ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
+import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
+import { PopoutWindowLocationProps } from "../appui/widgets/popout/PopoutManager";
 
 // Simulate redux state being added via a extension
 interface SampleExtensionState {
@@ -189,5 +193,53 @@ export class UiProviderTool extends Tool {
     }
 
     return true;
+  }
+}
+
+/** If an editing scope is currently in progress, end it; otherwise, begin a new one. */
+export class OpenPopoutTool extends Tool {
+  public static toolId = "OpenPopout";
+  public static iconSpec = IconSpecUtilities.createSvgIconSpec(toolIconSvg);
+
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 0; }
+
+  public run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._run();
+    return true;
+  }
+
+  private async _run(): Promise<void> {
+    const location: PopoutWindowLocationProps = {
+      width: 300,
+      height: 600,
+      left: 0,
+      top: 0,
+    };
+    const connection = UiFramework.getIModelConnection();
+    if (connection)
+      SampleAppIModelApp.popoutManager.openPopout("VisibilityTreeWidget", "VisibilityTreeWidget", <ModelSelectorWidget iModelConnection={connection} />, location);
+  }
+
+  public static get flyover(): string {
+    return "open popout";
+  }
+
+  // if supporting localized key-ins return a localized string
+  public static get keyin(): string {
+    return "open popout";
+  }
+
+  public static get englishKeyin(): string {
+    return "open popout";
+  }
+
+  public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
+    const overrides = {
+      groupPriority,
+    };
+    return ToolbarItemUtilities.createActionButton(OpenPopoutTool.toolId, itemPriority, OpenPopoutTool.iconSpec, OpenPopoutTool.flyover,
+      () => { IModelApp.tools.run(OpenPopoutTool.toolId); }, overrides);
   }
 }

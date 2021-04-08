@@ -65,7 +65,8 @@ import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
-import { UiProviderTool } from "./tools/UiProviderTool";
+import { OpenPopoutTool, UiProviderTool } from "./tools/UiProviderTool";
+import { PopoutManager } from "./appui/widgets/popout/PopoutManager";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -155,7 +156,12 @@ export class SampleAppIModelApp {
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
   private static _localUiSettings = new LocalSettingsStorage();
+  private static _popoutManager = new PopoutManager();
   private static _UserUiSettingsStorage = new UserSettingsStorage();
+
+  public static get popoutManager(): PopoutManager {
+    return SampleAppIModelApp._popoutManager;
+  }
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
@@ -226,6 +232,7 @@ export class SampleAppIModelApp {
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
     ToolWithDynamicSettings.register(this.sampleAppNamespace);
+    OpenPopoutTool.register(this.sampleAppNamespace);
 
     // Register editing tools
     if (this.allowWrite) {

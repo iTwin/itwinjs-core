@@ -48,6 +48,7 @@ import { ViewportWidget } from "../widgets/ViewportWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
+import { OpenPopoutTool } from "../../tools/UiProviderTool";
 
 /* eslint-disable react/jsx-key */
 
@@ -252,11 +253,12 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={250}
             widgets={
               [
+                /*
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
                   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
                   syncEventIds={[SampleAppUiActionId.setTestProperty]}
                   stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-                />,
+                />, */
               ]}
           />
         }
@@ -812,5 +814,5 @@ class AdditionalTools {
       ],
       badgeType: BadgeType.TechnicalPreview,
     }),
-  ], 100, { groupPriority: 20 }), this.getMiscGroupItem()];
+  ], 100, { groupPriority: 20 }), this.getMiscGroupItem(), OpenPopoutTool.getActionButtonDef(400, 30)];
 }
