@@ -3216,7 +3216,7 @@ export class AccuDrawHintBuilder {
     return EditManipulator.HandleUtils.projectPointToLineInView(spacePt, linePt, lineDirection, vp, checkAccuDraw, checkACS);
   }
 
-  /** Return a [[Matrix3d]] representing the current working plane specified by AccuDraw, the view's ACS, or view rotation. */
+  /** Return a [[Matrix3d]] representing the current working plane specified by AccuDraw, [[Viewport.auxCoordSystem]], or [[Viewport.rotation]]. */
   public static getCurrentRotation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, matrix?: Matrix3d): Matrix3d | undefined {
     const current = AccuDraw.getCurrentOrientation(vp, checkAccuDraw, checkACS, matrix);
     return (undefined !== current ? current.inverse() : undefined);
@@ -3224,7 +3224,7 @@ export class AccuDrawHintBuilder {
 
   /** Return a [[Matrix3d]] corresponding to the supplied [[ContextRotationId]].
    * A [[ContextRotationId]] that corresponds to a standard view, "Top", "Front", etc. will return a [[Matrix3d]] that
-   * is relative to the current view's ACS when ACS context lock is enabled.
+   * is relative to the current [[Viewport.auxCoordSystem]] when ACS context lock is enabled.
    * @see [[ToolAdmin.acsContextLock]]
    */
   public static getContextRotation(id: ContextRotationId, vp: Viewport): Matrix3d | undefined {
