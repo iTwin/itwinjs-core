@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Introduced Additional Transform for Geographic Coordinate Systems",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "73677355+AlainRobertAtBentley@users.noreply.github.com"
+}
