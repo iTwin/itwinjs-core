@@ -60,10 +60,10 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
   ref=$(_jq ${pr} '.base.ref')
   sha=$(_jq ${pr} '.base.sha')
 
-  ShaToCompare=${listSHA[${ref}]}
+  shaToCompare=${listSHA[${ref}]}
 
   # Keep the list of branch head sha
-  if [[ $ShaToCompare == "" ]]
+  if [[ $shaToCompare == "" ]]
   then
     refCommit=$(curl -s \
               -H "Accept: application/vnd.github.v3+json" \
@@ -72,12 +72,12 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
     refHeadCommit=$(echo ${refCommit} | jq -r '. | @base64')
     refHeadSha=$(_jq  ${refHeadCommit} '.sha')
     listSHA[${ref}]=${refHeadSha}
-    ShaToCompare=$refHeadSha
+    shaToCompare=$refHeadSha
   fi
 
   # Compare base sha with the target branch head sha
-  log "  Head sha at ${ref} branch is ${ShaToCompare} and base sha is ${sha}"
-  if [[ $ShaToCompare == $sha ]]
+  log "  Head sha at ${ref} branch is ${shaToCompare} and base sha is ${sha}"
+  if [[ $shaToCompare == $sha ]]
     then
     log "  Skipping since it is up-to-date with the target branch, ${ref}."
     continue
