@@ -12,6 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
+  AccuDrawHintBuilder,
   AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem,
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
@@ -56,7 +57,7 @@ class DisplayTestAppAccuSnap extends AccuSnap {
 class DisplayTestAppToolAdmin extends ToolAdmin {
   /** Process shortcut key events */
   public processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
-    if (wentDown && IModelApp.accuDraw.isEnabled)
+    if (wentDown && AccuDrawHintBuilder.isEnabled)
       return AccuDrawShortcuts.processShortcutKey(keyEvent);
     return false;
   }

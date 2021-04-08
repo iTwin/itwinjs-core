@@ -108,6 +108,7 @@ export abstract class IModelDb extends IModel {
   protected _fontMap?: FontMap;
   protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
+  private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
@@ -143,14 +144,17 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
-    IModelHost.onBeforeShutdown.addListener(() => {
-      if (this.isOpen) {
-        try {
-          this.abandonChanges();
-          this.close();
-        } catch { }
-      }
-    });
+
+    if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
+      IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
+        IModelDb._openDbs.forEach((db) => { // N.B.: db.close() removes from _openedDbs
+          try {
+            db.abandonChanges();
+            db.close();
+          } catch { }
+        });
+      });
+    }
   }
 
   /** Close this IModel, if it is currently open. */
