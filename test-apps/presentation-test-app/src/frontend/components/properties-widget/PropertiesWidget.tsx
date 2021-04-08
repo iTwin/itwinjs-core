@@ -8,7 +8,8 @@ import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field } from "@bentley/presentation-common";
 import {
-  FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
+  DiagnosticsProps, FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, PresentationPropertyDataProvider,
+  usePropertyDataProviderWithUnifiedSelection,
 } from "@bentley/presentation-components";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
@@ -19,6 +20,7 @@ import {
 } from "@bentley/ui-components";
 import { HighlightInfo } from "@bentley/ui-components/lib/ui-components/common/HighlightingComponentProps";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, Toggle, useDisposable } from "@bentley/ui-core";
+import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 
 const FAVORITES_SCOPE = FavoritePropertiesScope.IModel;
 
@@ -29,7 +31,15 @@ export interface Props {
 }
 
 export function PropertiesWidget(props: Props) {
-  const dataProvider = React.useMemo(() => createDataProvider(props.imodel, props.rulesetId), [props.imodel, props.rulesetId]);
+  const { imodel, rulesetId, onFindSimilar: onFindSimilarProp } = props;
+  const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
+
+  const dataProvider = useDisposable(React.useCallback(
+    () => {
+      const provider = new AutoExpandingPropertyDataProvider({ imodel, ruleset: rulesetId, ...diagnosticsOptions });
+      provider.isNestedPropertyCategoryGroupingEnabled = true;
+      return provider;
+    }, [imodel, rulesetId, diagnosticsOptions]));
 
   const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
   const [filteringProvDataChanged, setFilteringProvDataChanged] = React.useState({});
@@ -48,7 +58,6 @@ export function PropertiesWidget(props: Props) {
     setContextMenuArgs(undefined);
   }, []);
 
-  const { onFindSimilar: onFindSimilarProp } = props;
   const onFindSimilar = React.useCallback((property: PropertyRecord) => {
     if (onFindSimilarProp)
       onFindSimilarProp(dataProvider, property);
@@ -120,6 +129,7 @@ export function PropertiesWidget(props: Props) {
   return (
     <div className="PropertiesWidget">
       <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
+      <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
       <div className="SearchBar" >
         <FilteringInput
           onFilterCancel={() => { setFilter(""); }}
@@ -273,10 +283,4 @@ class AutoExpandingPropertyDataProvider extends PresentationPropertyDataProvider
         this.expandCategories(category.childCategories);
     });
   }
-}
-
-function createDataProvider(imodel: IModelConnection, rulesetId: string): PresentationPropertyDataProvider {
-  const provider = new AutoExpandingPropertyDataProvider({ imodel, ruleset: rulesetId });
-  provider.isNestedPropertyCategoryGroupingEnabled = true;
-  return provider;
 }

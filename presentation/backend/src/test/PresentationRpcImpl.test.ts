@@ -179,9 +179,9 @@ describe("PresentationRpcImpl", () => {
             perf: true,
           } as any,
         };
-        const diagnosticsResult: DiagnosticsScopeLogs = { scope: "test" };
+        const diagnosticsResult: DiagnosticsScopeLogs[] = [{ scope: "test" }];
         presentationManagerMock.setup((x) => x.getNodesCount(moq.It.is((actualManagerOptions) => sinon.match(managerOptions).test(actualManagerOptions))))
-          .callback((options) => { options.diagnostics.listener(diagnosticsResult); })
+          .callback((options) => { options.diagnostics.handler(diagnosticsResult); })
           .returns(async () => 999)
           .verifiable();
         const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
@@ -189,7 +189,7 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult).to.deep.eq({
           statusCode: PresentationStatus.Success,
           result: 999,
-          diagnostics: [diagnosticsResult],
+          diagnostics: diagnosticsResult,
         });
       });
 

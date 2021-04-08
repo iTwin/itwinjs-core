@@ -11,7 +11,6 @@ import {
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDraw,
   AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext,
   EventHandled, GraphicType, HitDetail, IModelApp, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, Tool,
 } from "@bentley/imodeljs-frontend";
@@ -170,8 +169,8 @@ export class PlaceLineStringTool extends PrimitiveTool {
     const origin = this._points[0];
     const angles = new YawPitchRollAngles();
 
-    const matrix = AccuDraw.getCurrentOrientation(vp, true, true);
-    ElementGeometry.Builder.placementAnglesFromPoints(this._points, matrix?.getRow(2), angles);
+    const matrix = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
+    ElementGeometry.Builder.placementAnglesFromPoints(this._points, matrix?.getColumn(2), angles);
 
     try {
       this._startedCmd = await this.startCommand();

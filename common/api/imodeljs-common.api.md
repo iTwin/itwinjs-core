@@ -523,7 +523,7 @@ export interface BRepCutProps {
     distance?: number;
 }
 
-// @beta (undocumented)
+// @public
 export namespace BRepEntity {
     export interface DataProps {
         data?: Base64EncodedString;
@@ -1603,7 +1603,7 @@ export interface CutStyleProps {
 
 export { DbResult }
 
-// @beta
+// @internal
 export interface DecorationGeometryProps {
     // (undocumented)
     readonly geometryStream: GeometryStreamProps;
@@ -2903,7 +2903,7 @@ export enum GeometryClass {
     Primary = 0
 }
 
-// @beta
+// @public
 export interface GeometryContainmentRequestProps {
     // (undocumented)
     allowOverlaps?: boolean;
@@ -2917,7 +2917,7 @@ export interface GeometryContainmentRequestProps {
     viewFlags?: ViewFlagProps;
 }
 
-// @beta
+// @public
 export interface GeometryContainmentResponseProps {
     // (undocumented)
     candidatesContainment?: ClipPlaneContainment[];
@@ -3012,7 +3012,7 @@ export class GeometryStreamBuilder {
 export interface GeometryStreamEntryProps extends IModelJson.GeometryProps {
     // (undocumented)
     appearance?: GeometryAppearanceProps;
-    // @beta (undocumented)
+    // (undocumented)
     brep?: BRepEntity.DataProps;
     // (undocumented)
     fill?: AreaFillProps;
@@ -3020,7 +3020,7 @@ export interface GeometryStreamEntryProps extends IModelJson.GeometryProps {
     geomPart?: GeometryPartInstanceProps;
     // (undocumented)
     header?: GeometryStreamHeaderProps;
-    // @beta (undocumented)
+    // (undocumented)
     image?: ImageGraphicProps;
     // (undocumented)
     material?: MaterialProps;
@@ -3628,7 +3628,7 @@ export enum ImageBufferFormat {
     Rgba = 0
 }
 
-// @beta
+// @public
 export class ImageGraphic {
     constructor(corners: ImageGraphicCorners, textureId: Id64String, hasBorder?: boolean);
     // (undocumented)
@@ -3646,7 +3646,7 @@ export class ImageGraphic {
     transformInPlace(transform: Transform): void;
 }
 
-// @beta
+// @public
 export class ImageGraphicCorners {
     // (undocumented)
     readonly 0: Point3d;
@@ -3667,10 +3667,10 @@ export class ImageGraphicCorners {
     toJSON(): ImageGraphicCornersProps;
 }
 
-// @beta
+// @public
 export type ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps];
 
-// @beta
+// @public
 export interface ImageGraphicProps {
     corners: ImageGraphicCornersProps;
     hasBorder: boolean;
@@ -3826,7 +3826,7 @@ export interface IModelProps {
 
 // @internal
 export abstract class IModelReadRpcInterface extends RpcInterface {
-    // @beta (undocumented)
+    // (undocumented)
     cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void>;
     // (undocumented)
     close(_iModelToken: IModelRpcProps): Promise<boolean>;
@@ -3842,13 +3842,13 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
     // @beta (undocumented)
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps>;
-    // @beta (undocumented)
+    // (undocumented)
     getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta (undocumented)
     getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string>;
     // @beta (undocumented)
     getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<IModelCoordinatesResponseProps>;
-    // @beta (undocumented)
+    // (undocumented)
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
@@ -3876,7 +3876,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse>;
     // (undocumented)
     readFontJson(_iModelToken: IModelRpcProps): Promise<any>;
-    // @beta (undocumented)
+    // (undocumented)
     requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps>;
 }
 
@@ -4350,9 +4350,8 @@ export namespace LineStyle {
     }
 }
 
-// @beta
+// @public
 export interface LineStyleProps extends DefinitionElementProps {
-    // (undocumented)
     data: string;
     // (undocumented)
     description?: string;
@@ -4519,14 +4518,14 @@ export namespace MarshalingBinaryMarker {
     export function createDefault(): MarshalingBinaryMarker;
 }
 
-// @beta
+// @public
 export enum MassPropertiesOperation {
     AccumulateAreas = 1,
     AccumulateLengths = 0,
     AccumulateVolumes = 2
 }
 
-// @beta
+// @public
 export interface MassPropertiesRequestProps {
     // (undocumented)
     candidates?: Id64Array;
@@ -4534,7 +4533,7 @@ export interface MassPropertiesRequestProps {
     operation: MassPropertiesOperation;
 }
 
-// @beta
+// @public
 export interface MassPropertiesResponseProps {
     // (undocumented)
     area?: number;
@@ -6776,7 +6775,7 @@ export interface SkyCubeProps {
     top?: Id64String;
 }
 
-// @beta
+// @internal
 export interface SnapRequestProps {
     // (undocumented)
     closePoint: XYZProps;
@@ -6804,7 +6803,7 @@ export interface SnapRequestProps {
     worldToView: Matrix4dProps;
 }
 
-// @beta
+// @internal
 export interface SnapResponseProps {
     // (undocumented)
     curve?: any;
