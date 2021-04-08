@@ -163,6 +163,10 @@ export class ClipStack {
     return this.startIndex < this.endIndex;
   }
 
+  public get hasViewClip(): boolean {
+    return emptyClip !== this._stack[0] && this._wantViewClip();
+  }
+
   public get startIndex(): number {
     assert(this._stack.length > 0);
     return this._wantViewClip() ? 0 : this._stack[0].numRows;
@@ -196,6 +200,16 @@ export class ClipStack {
     }
 
     return false;
+  }
+
+  /** Exposed strictly for tests. */
+  public get clips(): ReadonlyArray<{ numRows: number }> {
+    return this._stack;
+  }
+
+  /** Exposed strictly for tests. */
+  public static get emptyViewClip() {
+    return emptyClip;
   }
 
   // ###TODO: We're keeping the extra trailing union boundary. Will shader ignore it?
