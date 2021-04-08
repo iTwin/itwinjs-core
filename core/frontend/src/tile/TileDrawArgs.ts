@@ -66,7 +66,6 @@ export class TileDrawArgs {
   /** The tile tree being drawn. */
   public readonly tree: TileTree;
   /** Optional clip volume applied to the tiles. */
-   */
   public clipVolume: RenderClipVolume | undefined;
   /** The context in which the tiles will be drawn, exposing, e.g., the [[Viewport]] and accepting [[RenderGraphic]]s to be drawn. */
   public readonly context: SceneContext;
