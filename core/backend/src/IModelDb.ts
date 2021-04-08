@@ -18,7 +18,7 @@ import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-clien
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
   CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
+  ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,
   IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelTileTreeProps, IModelVersion, LocalBriefcaseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
@@ -46,6 +46,7 @@ import { Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { generateElementGraphics } from "./ElementGraphics";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -689,15 +690,12 @@ export abstract class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
   public saveChanges(description?: string): void {
-    if (this.openMode === OpenMode.Readonly) {
-      throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError, loggerCategory);
-    }
+    if (this.openMode === OpenMode.Readonly)
+      throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
     const stat = this.nativeDb.saveChanges(description);
-
-    if (DbResult.BE_SQLITE_OK !== stat) {
-      throw new IModelError(stat, "Problem saving changes", Logger.logError, loggerCategory);
-    }
+    if (DbResult.BE_SQLITE_OK !== stat)
+      throw new IModelError(stat, `Could not save changes (${description})`);
   }
 
   /** Abandon pending changes in this iModel. You might also want to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase and you want to relinquish locks or codes that you acquired preemptively. */
@@ -727,16 +725,15 @@ export abstract class IModelDb extends IModel {
     requestContext.enter();
     if (this.isSnapshot || this.isStandalone) {
       const status = this.nativeDb.importSchemas(schemaFileNames);
-      if (DbResult.BE_SQLITE_OK !== status) {
+      if (DbResult.BE_SQLITE_OK !== status)
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
-      }
       this.clearCaches();
       return;
     }
 
-    if (!(requestContext instanceof AuthorizedClientRequestContext)) {
+    if (!(requestContext instanceof AuthorizedClientRequestContext))
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
-    }
+
     if (this.isBriefcaseDb() && this.allowLocalChanges) {
       await this.concurrencyControl.locks.lockSchema(requestContext);
       requestContext.enter();
@@ -1249,6 +1246,14 @@ export abstract class IModelDb extends IModel {
   public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
     return this.nativeDb.createBRepGeometry(createProps);
   }
+
+  /** Generate graphics for an element or geometry stream.
+   * @see [readElementGraphics]($frontend) to convert the result to a [RenderGraphic]($frontend) for display.
+   * @beta
+   */
+  public async generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
+    return generateElementGraphics(request, this);
+  }
 }
 
 /** @public */
@@ -1486,9 +1491,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
       const elementProps: T | undefined = this.tryGetElementJson(elementId);
-      if (undefined === elementProps) {
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
-      }
+      if (undefined === elementProps)
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`);
       return elementProps;
     }
 
@@ -1501,10 +1505,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getElement(loadProps);
       if (undefined !== val.error) {
-        if (IModelStatus.NotFound === val.error.status) {
+        if (IModelStatus.NotFound === val.error.status)
           return undefined;
-        }
-        throw new IModelError(IModelStatus.NotFound, `reading element=${loadProps}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${loadProps}`);
       }
       return val.result as T;
     }
@@ -1515,9 +1518,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
       const elementProps = this.tryGetElementProps<T>(elementId);
-      if (undefined === elementProps) {
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
-      }
+      if (undefined === elementProps)
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`);
       return elementProps;
     }
 
@@ -1544,9 +1546,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
       const element = this.tryGetElement<T>(elementId, elementClass);
-      if (undefined === element) {
-        throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`, Logger.logWarning, loggerCategory);
-      }
+      if (undefined === element)
+        throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
       return element;
     }
 
@@ -1611,10 +1612,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const sql = `SELECT LastMod FROM ${Element.classFullName} WHERE ECInstanceId=:elementId`;
       return this._iModel.withPreparedStatement<string>(sql, (statement: ECSqlStatement): string => {
         statement.bindId("elementId", elementId);
-        if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        if (DbResult.BE_SQLITE_ROW === statement.step())
           return statement.getValue(0).getDateTime();
-        }
-        throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Element ${elementId}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Element ${elementId}`);
       });
     }
 

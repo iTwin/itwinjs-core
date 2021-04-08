@@ -17,7 +17,7 @@ interface Props {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Tree: React.FC<Props> = (props: Props) => {
-  const nodeLoader = usePresentationTreeNodeLoader({
+  const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.imodel,
     ruleset: props.rulesetId,
     pagingSize: PAGING_SIZE,
@@ -33,7 +33,7 @@ export const Tree: React.FC<Props> = (props: Props) => {
     matchesCount,
     nodeHighlightingProps,
   } = useControlledTreeFiltering({ nodeLoader, filter, activeMatchIndex });
-  const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader: filteredNodeLoader ?? nodeLoader, collapsedChildrenDisposalEnabled: true, name: "TreeWithHooks" });
+  const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader: filteredNodeLoader, collapsedChildrenDisposalEnabled: true, name: "TreeWithHooks" });
   const visibleNodes = useVisibleTreeNodes(filteredModelSource);
 
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : null;

@@ -26,7 +26,7 @@ class TileRequestQueue extends PriorityQueue<TileRequest> {
  * @see [[TileRequestChannel.statistics]] for a specific channel's statistics.
  * @see [[TileRequestChannels.statistics]] for statistics from all channels.
  * @see [[TileAdmin.statistics]] for additional statistics.
- * @beta
+ * @public
  */
 export class TileRequestChannelStatistics {
   /** The number of queued requests that have not yet been dispatched. */
@@ -77,7 +77,7 @@ export class TileRequestChannelStatistics {
  * @see [[TileRequestChannels.getForHttp]] to obtain (and register if not already registered) an HTTP-based channel.
  * @see [[TileAdmin.channels]] for the channels configured for use with the iTwin.js display system.
  * @see [[Tile.channel]] to specify the channel to be used to request a given tile's content.
- * @beta
+ * @public
  */
 export class TileRequestChannel {
   /** The channel's name. It must be unique among all registered [[TileRequestChannels]]. */
@@ -136,17 +136,23 @@ export class TileRequestChannel {
     this._statistics = new TileRequestChannelStatistics();
   }
 
-  /** Invoked by [[TileRequest]] when a request times out. @internal */
+  /** Invoked by [[TileRequest]] when a request times out.
+   * @internal
+   */
   public recordTimeout(): void {
     ++this._statistics.totalTimedOutRequests;
   }
 
-  /** Invoked by [[TileRequest]] when a request fails to produce a response. @internal */
+  /** Invoked by [[TileRequest]] when a request fails to produce a response.
+   * @internal
+   */
   public recordFailure(): void {
     ++this._statistics.totalFailedRequests;
   }
 
-  /** Invoked by [[TileRequest]] after a request completes. @internal */
+  /** Invoked by [[TileRequest]] after a request completes.
+   * @internal
+   */
   public recordCompletion(tile: Tile): void {
     ++this._statistics.totalCompletedRequests;
     if (tile.isEmpty)
@@ -155,7 +161,9 @@ export class TileRequestChannel {
       ++this._statistics.totalUndisplayableTiles;
   }
 
-  /** Invoked by [[TileRequestChannels.swapPending]] when [[TileAdmin]] is about to start enqueuing new requests. @internal */
+  /** Invoked by [[TileRequestChannels.swapPending]] when [[TileAdmin]] is about to start enqueuing new requests.
+   * @internal
+   */
   public swapPending(): void {
     const previouslyPending = this._pending;
     this._pending = this._previouslyPending;
@@ -170,7 +178,9 @@ export class TileRequestChannel {
     this._pending.append(request);
   }
 
-  /** Invoked by [[TileRequestChannels.process]] to process the active and pending requests. @internal */
+  /** Invoked by [[TileRequestChannels.process]] to process the active and pending requests.
+   * @internal
+   */
   public process(): void {
     this._statistics.numCanceled = 0;
 
@@ -207,7 +217,9 @@ export class TileRequestChannel {
     }
   }
 
-  /** Cancel all active and queued requests and clear the active set and queue. @internal */
+  /** Cancel all active and queued requests and clear the active set and queue.
+   * @internal
+   */
   public cancelAndClearAll(): void {
     for (const active of this._active)
       active.cancel();
@@ -246,7 +258,9 @@ export class TileRequestChannel {
     return tile.requestContent(isCanceled);
   }
 
-  /** Protected only for tests - do not override. @internal */
+  /** Protected only for tests - do not override.
+   * @internal
+   */
   protected dispatch(request: TileRequest): void {
     ++this._statistics.totalDispatchedRequests;
     this._active.add(request);
@@ -257,13 +271,17 @@ export class TileRequestChannel {
     });
   }
 
-  /** Protected only for tests - do not override. @internal */
+  /** Protected only for tests - do not override.
+   * @internal
+   */
   protected cancel(request: TileRequest): void {
     request.cancel();
     ++this._statistics.numCanceled;
   }
 
-  /** Protected only for tests - do not override. @internal */
+  /** Protected only for tests - do not override.
+   * @internal
+   */
   protected dropActiveRequest(request: TileRequest): void {
     assert(this._active.has(request) || request.isCanceled);
     this._active.delete(request);
@@ -356,7 +374,7 @@ class ElementGraphicsChannel extends TileRequestChannel {
 /** A set of named [[TileRequestChannel]]s via which content for [[Tile]]s can be requested.
  * @see [[TileAdmin.channels]] for the channels configured for use with the iTwin.js display system.
  * @see [[TileRequestChannels.getForHttp]] for the most typical way of obtaining or registering a channel.
- * @beta
+ * @public
  */
 export class TileRequestChannels {
   private _cloudStorageCache?: TileRequestChannel;
@@ -402,7 +420,9 @@ export class TileRequestChannels {
     return this._cloudStorageCache;
   }
 
-  /** Lazily called by [[TileAdmin]] once it can determine whether a cloud storage cache is configured. @internal */
+  /** Lazily called by [[TileAdmin]] once it can determine whether a cloud storage cache is configured.
+   * @internal
+   */
   public enableCloudStorageCache(): void {
     assert(undefined === this._cloudStorageCache);
     if (!this._cloudStorageCache)
@@ -470,7 +490,9 @@ export class TileRequestChannels {
     return this._rpcConcurrency;
   }
 
-  /** Chiefly for debugging. @internal */
+  /** Chiefly for debugging.
+   * @internal
+   */
   public setRpcConcurrency(concurrency: number): void {
     this._rpcConcurrency = concurrency;
     this.iModelTileRpc.concurrency = concurrency;
@@ -492,25 +514,33 @@ export class TileRequestChannels {
       channel.resetStatistics();
   }
 
-  /** Invoked by [[TileAdmin.processQueue]] when it is about to start enqueuing new requests. @internal */
+  /** Invoked by [[TileAdmin.processQueue]] when it is about to start enqueuing new requests.
+   * @internal
+   */
   public swapPending(): void {
     for (const channel of this)
       channel.swapPending();
   }
 
-  /** Invoked by [[TileAdmin.processQueue]] when it is about to start enqueuing new requests. @internal */
+  /** Invoked by [[TileAdmin.processQueue]] when it is about to start enqueuing new requests.
+   * @internal
+   */
   public process(): void {
     for (const channel of this)
       channel.process();
   }
 
-  /** Invoked by [[TileAdmin.onIModelClosed]]. @internal */
+  /** Invoked by [[TileAdmin.onIModelClosed]].
+   * @internal
+   */
   public onIModelClosed(iModel: IModelConnection): void {
     for (const channel of this)
       channel.onIModelClosed(iModel);
   }
 
-  /** Invoked by [[TileAdmin.onShutDown]]. @internal */
+  /** Invoked by [[TileAdmin.onShutDown]].
+   * @internal
+   */
   public onShutDown(): void {
     for (const channel of this)
       channel.cancelAndClearAll();

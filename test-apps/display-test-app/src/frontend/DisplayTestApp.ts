@@ -61,7 +61,7 @@ async function openIModel(filename: string, writable: boolean): Promise<IModelCo
 // @return Promise that resolves to true after signIn is complete
 async function signIn(): Promise<boolean> {
   if (!NativeApp.isValid) // for browser, frontend handles redirect. For native apps, backend handles it
-    await BrowserAuthorizationCallbackHandler.handleSigninCallback(DisplayTestApp.getAuthConfig().redirectUri);
+    await BrowserAuthorizationCallbackHandler.handleSigninCallback("http://localhost:3000/signin-callback");
 
   const auth = IModelApp.authorizationClient!;
   if (auth.isAuthorized)

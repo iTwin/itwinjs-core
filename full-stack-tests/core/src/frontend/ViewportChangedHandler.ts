@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import {
-  ChangeFlag, ChangeFlags, Viewport,
+  ChangeFlag, ChangeFlags, MutableChangeFlags, Viewport,
 } from "@bentley/imodeljs-frontend";
 
 /** Aspects of a Viewport that can become invalidated when its state changes. */
@@ -25,7 +25,7 @@ export class ViewportChangedHandler {
   protected readonly _vp: Viewport;
   protected readonly _removals: Array<() => void> = [];
   // Flags set by individual event callbacks
-  protected readonly _eventFlags = new ChangeFlags(ChangeFlag.None);
+  protected readonly _eventFlags = new MutableChangeFlags(ChangeFlag.None);
   // Flags received by onViewportChanged callback
   protected _changeFlags?: ChangeFlags;
   protected _featureOverridesDirty = false;
