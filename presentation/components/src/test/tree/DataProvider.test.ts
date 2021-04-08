@@ -48,6 +48,10 @@ describe("TreeDataProvider", () => {
     provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId });
   });
 
+  afterEach(() => {
+    provider.dispose();
+  });
+
   describe("dispose", () => {
 
     it("disposes registered ruleset", async () => {
@@ -284,6 +288,28 @@ describe("TreeDataProvider", () => {
       await provider.getFilteredNodePaths("test");
       presentationManagerMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
       expect(override).to.be.calledOnce;
+    });
+
+  });
+
+  describe("diagnostics", () => {
+
+    it("passes diagnostics options to presentation manager", async () => {
+      const diagnosticsHandler = sinon.stub();
+
+      provider.dispose();
+      provider = new PresentationTreeDataProvider({
+        imodel: imodelMock.object,
+        ruleset: rulesetId,
+        ruleDiagnostics: { severity: "error", handler: diagnosticsHandler },
+      });
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, diagnostics: { editor: "error", handler: diagnosticsHandler } }))
+        .returns(async () => 0)
+        .verifiable();
+      await provider.getNodesCount();
+      presentationManagerMock.verifyAll();
     });
 
   });

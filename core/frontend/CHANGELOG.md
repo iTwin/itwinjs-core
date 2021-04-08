@@ -1,6 +1,21 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 02 Apr 2021 13:18:42 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Apr 2021 14:30:09 GMT and should not be manually modified.
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+### Updates
+
+- fix imports in CheckpointConnection.ts to not reference own barrel
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+### Updates
+
+- Fix raster view attachments using black background color.
+- Fix delay before raster view attachments appear in a sheet view.
 
 ## 2.14.0
 Fri, 02 Apr 2021 13:18:42 GMT
