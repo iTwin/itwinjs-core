@@ -26,14 +26,6 @@ prs=$(curl -s \
   https://api.github.com/repos/imodeljs/imodeljs/pulls)
 
 _jq() {
-  echo ${pr} | base64 --decode | jq -r ${1}
-}
-
-_jq2() {
-  echo ${status} | base64 --decode | jq -r ${1}
-}
-
-_jq3() {
   echo ${1} | base64 --decode | jq -r ${2}
 }
 
@@ -43,6 +35,8 @@ function log() {
   fi
 }
 
+declare -A listSHA
+
 # Get head sha on master branch
 masterCommit=$(curl -s \
   -H "Accept: application/vnd.github.v3+json" \
@@ -50,47 +44,49 @@ masterCommit=$(curl -s \
   https://api.github.com/repos/imodeljs/imodeljs/commits/master)
 
 masterHeadCommit=$(echo ${masterCommit} | jq -r '. | @base64')
-masterSha=$(_jq3 ${masterHeadCommit} '.sha')
-echo ${masterSha}
+masterSha=$(_jq  ${masterHeadCommit} '.sha')
+
+listSHA["master"]=${masterSha}
+echo "Master SHA is ${listSHA["master"]}"
 
 for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
-  #echo ${pr} | base64 --decode
-  log "$(_jq '.title') (#$(_jq '.number'))"
+  log "$(_jq ${pr} '.title') (#$(_jq ${pr} '.number'))"
 
-  if [[ "open" != $(_jq '.state') ]] || [[ "true" == $(_jq '.draft') ]]; then
-    log "  Skipping due to state=$(_jq '.state') and draft=$(_jq '.draft')."
+  if [[ "open" != $(_jq ${pr} '.state') ]] || [[ "true" == $(_jq ${pr} '.draft') ]]; then
+    log "  Skipping due to state=$(_jq ${pr} '.state') and draft=$(_jq ${pr} '.draft')."
     continue
   fi
 
-  ref=$(_jq '.base.ref')
-  sha=$(_jq '.base.sha')
+  ref=$(_jq ${pr} '.base.ref')
+  sha=$(_jq ${pr} '.base.sha')
 
-  if [[ "master" != $ref ]]
+  ShaToCompare=${listSHA[${ref}]}
+
+  # Keep the list of branch head sha
+  if [[ $ShaToCompare == "" ]]
   then
     refCommit=$(curl -s \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Authorization: token $oauth" \
               https://api.github.com/repos/imodeljs/imodeljs/commits/${ref})
     refHeadCommit=$(echo ${refCommit} | jq -r '. | @base64')
-    refSha=$(_jq3 ${refHeadCommit} '.sha')
-    log "  REF sha is ${refSha}"
-    if [[ $refSha == $sha ]]
-    then
-      log "  Skipping since it is up-to-date with the ref branch, ${ref}."
-      continue
-    fi
-  else
-    if [[ $masterSha == $sha ]]
-    then
-      log "  Skipping since it is up-to-date with the master branch."
-      continue
-    fi
+    refHeadSha=$(_jq  ${refHeadCommit} '.sha')
+    listSHA[${ref}]=${refHeadSha}
+    ShaToCompare=$refHeadSha
   fi
 
-  log "  Last updated at $(_jq '.updated_at')."
+  # Compare base sha with the target branch head sha
+  log "  Head sha at ${ref} branch is ${ShaToCompare} and base sha is ${sha}"
+  if [[ $ShaToCompare == $sha ]]
+    then
+    log "  Skipping since it is up-to-date with the target branch, ${ref}."
+    continue
+  fi
+
+  log "  Last updated at $(_jq ${pr} '.updated_at')."
 
   ## Check if the PR is even 3 hours old. If so, no reason to check statuses.
-  lastUpdatedTime=$(_jq '.updated_at')
+  lastUpdatedTime=$(_jq ${pr} '.updated_at')
   currentTime=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   tooOld=$(node -e "const lutPlus3=new Date('$lastUpdatedTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
   if [[ $tooOld == false ]]; then
@@ -103,34 +99,32 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
   statuses=$(curl -s \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Authorization: token $oauth" \
-              $(_jq '.statuses_url'))
+              $(_jq ${pr} '.statuses_url'))
 
   for status in $(echo "${statuses}" | jq -r '.[] | @base64'); do
-    if [[ "success" != $(_jq2 '.state') ]] || [[ "license/cla" == $(_jq2 '.context') ]]; then
-      log "  Skipping $(_jq2 '.context') with state $(_jq2 '.state')."
+    if [[ "success" != $(_jq  ${status} '.state') ]] || [[ "license/cla" == $(_jq  ${status} '.context') ]]; then
+      log "  Skipping $(_jq  ${status} '.context') with state $(_jq  ${status} '.state')."
       continue
     fi
 
-    prUpdatedTime=$(_jq2 '.updated_at')
+    prUpdatedTime=$(_jq  ${status} '.updated_at')
     tooOld=$(node -e "const lutPlus3=new Date('$prUpdatedTime'); lutPlus3.setHours(lutPlus3.getHours()+3); console.log((new Date('$currentTime') - lutPlus3) > 0)")
     if [[ $tooOld == false ]]; then
-      log "  Skipping $(_jq2 '.context') it was updated within the past 3 hours."
+      log "  Skipping $(_jq  ${status} '.context') it was updated within the past 3 hours."
       continue
     fi
 
-    # echo ${status} | base64 --decode
+    echo "  The PR $(_jq ${pr} '.title') has build $(_jq  ${status} '.context') that is older than 3 hours. Invalidating..."
 
-    echo "  The PR $(_jq '.title') has build $(_jq2 '.context') that is older than 3 hours. Invalidating..."
-
-    updateUrl=https://api.github.com/repos/imodeljs/imodeljs/statuses/$(_jq '.head.sha')
-    target_url=$(_jq2 '.target_url')
+    updateUrl=https://api.github.com/repos/imodeljs/imodeljs/statuses/$(_jq ${pr} '.head.sha')
+    target_url=$(_jq  ${status} '.target_url')
 
     # curl \
     #   -X POST \
     #   -H "Accept: application/vnd.github.v3+json" \
     #   -H "Authorization: token $oauth" \
     #   $updateUrl \
-    #   -d '{"state":"failure","target_url":"'$(_jq2 '.target_url')'","description":"The build hit the 3 hour threshold. Please re-queue the build.","context":"'$(_jq2 '.context')'"}'
+    #   -d '{"state":"failure","target_url":"'$(_jq  ${status} '.target_url')'","description":"The build hit the 3 hour threshold. Please re-queue the build.","context":"'$(_jq  ${status} '.context')'"}'
 
     break
   done
