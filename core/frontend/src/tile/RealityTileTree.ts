@@ -8,7 +8,7 @@
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -132,7 +132,7 @@ export class RealityTileTree extends TileTree {
   public get isTransparent() { return false; }
 
   protected _selectTiles(args: TileDrawArgs): Tile[] { return this.selectRealityTiles(args, []); }
-  public get viewFlagOverrides() { return this.loader.viewFlagOverrides; }
+  public get viewFlagOverrides(): ViewFlagOverrides { return this.loader.viewFlagOverrides; }
   public get parentsAndChildrenExclusive() { return this.loader.parentsAndChildrenExclusive; }
 
   public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
