@@ -147,7 +147,7 @@ export abstract class IModelDb extends IModel {
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
-        [...IModelDb._openDbs.values()].forEach((db) => {// note: db.close() removes from _openedDbs, so we can't iterate over that
+        IModelDb._openDbs.forEach((db) => { // N.B.: db.close() removes from _openedDbs
           try {
             db.abandonChanges();
             db.close();
