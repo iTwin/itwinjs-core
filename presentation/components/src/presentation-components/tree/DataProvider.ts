@@ -55,7 +55,7 @@ export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
   appendChildrenCountForGroupingNodes?: boolean;
 
   /**
-   * By default the provider uses [[PresentationManager]] accessed through `Presentation.presentation` to request
+   * By default the provider uses [PresentationManager]($presentation-frontend) accessed through `Presentation.presentation` to request
    * node counts, nodes and filter them. The overrides allow swapping some or all of the data source entry points thus
    * making the provider request data from custom sources.
    * @beta

@@ -46,7 +46,7 @@ export interface TreeWithUnifiedSelectionProps {
  * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]]
  *
  * @public
- * @deprecated Use [[useUnifiedSelectionEventHandler]] instead. Will be removed in iModel.js 3.0.
+ * @deprecated Use [[useUnifiedSelectionTreeEventHandler]] instead. Will be removed in iModel.js 3.0.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>) {
