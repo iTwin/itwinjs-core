@@ -3,13 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { UnitExtraData } from "@bentley/imodeljs-quantity";
 import { SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, Unit } from "../ecschema-metadata";
 import { SchemaItemType } from "../ECObjects";
-
-interface UnitExtraData {
-  readonly name: string;
-  readonly altDisplayLabels: string[];
-}
 
 /**
  * @alpha

@@ -128,7 +128,7 @@ export class SchemaCache implements ISchemaLocater {
   public* getSchemaItems(): IterableIterator<SchemaItem> {
     for (const schema of this._schema) {
       for (const schemaItem of schema.getItems()) {
-        yield (schemaItem as SchemaItem);
+        yield schemaItem;
       }
     }
   }

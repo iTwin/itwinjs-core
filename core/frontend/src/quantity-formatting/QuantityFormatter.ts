@@ -10,9 +10,11 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import {
   Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
+import { SchemaContext } from "@bentley/ecschema-metadata";
 import { IModelApp } from "../IModelApp";
-import { BasicUnitsProvider } from "./BasicUnitsProvider";
 import { IModelConnection } from "../imodeljs-frontend";
+import { NewUnitsProvider } from "./NewUnitsProvider";
+import { UNIT_EXTRA_DATA } from "./UnitsData";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
 
@@ -303,7 +305,8 @@ export interface UnitFormattingSettingsProvider {
  * @beta
  */
 export class QuantityFormatter implements UnitsProvider {
-  private _unitsProvider: UnitsProvider = new BasicUnitsProvider();
+  private _context: SchemaContext = new SchemaContext();
+  private _unitsProvider: UnitsProvider = new NewUnitsProvider(this._context, UNIT_EXTRA_DATA);
   protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition> = new Map<QuantityTypeKey, QuantityTypeDefinition>();
   protected _activeUnitSystem: UnitSystemKey = "imperial";
   protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
