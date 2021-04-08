@@ -28,6 +28,11 @@ import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStat
 import { ViewingSpace } from "./ViewingSpace";
 import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
 
+// eslint-disable-next-line prefer-const
+let drawRasterGrid = true;
+// eslint-disable-next-line prefer-const
+let drawVectorGrid = false;
+
 /** @internal */
 export class GridDisplaySettings {
   /** Grid plane fill transparency */
@@ -347,11 +352,14 @@ export class DecorateContext extends RenderContext {
   /** @internal */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
-    const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(),  { origin: gridOrigin, rMatrix, spacing, gridsPerRef } );
-    if (planarGrid) {
-      this.addDecoration(GraphicType.WorldDecoration, planarGrid);
-      return;
+    if (drawRasterGrid) {
+      const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(),  { origin: gridOrigin, rMatrix, spacing, gridsPerRef } );
+      if (planarGrid)
+        this.addDecoration(GraphicType.WorldDecoration, planarGrid);
     }
+    if (!drawVectorGrid)
+      return;
+
     if (vp.viewingGlobe)
       return;
     const eyePoint = vp.worldToViewMap.transform1.columnZ();

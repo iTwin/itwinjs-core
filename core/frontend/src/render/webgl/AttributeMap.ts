@@ -90,6 +90,7 @@ export class AttributeMap {
     ]);
     const planarGrid = new AttributeMapEntry([
       ["a_pos", 0, VariableType.Vec3],
+      ["a_uvParam", 1, VariableType.Vec2],
     ]);
 
     const screenPoints = new AttributeMapEntry([
