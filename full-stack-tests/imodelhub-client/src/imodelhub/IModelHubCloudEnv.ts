@@ -29,8 +29,6 @@ class TestContextManagerClient implements ContextManagerClient {
   }
 }
 
-
-
 export class TestIModelHubCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return true; }
   public readonly contextMgr = new TestContextManagerClient();

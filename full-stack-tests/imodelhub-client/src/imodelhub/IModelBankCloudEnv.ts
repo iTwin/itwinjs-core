@@ -43,9 +43,9 @@ const authorizationClientFactory = (authScheme: string, userInfo: UserInfo | und
     case "bearer":
       return new TestIModelHubOidcAuthorizationClient(userInfo, userCredentials);
     case "basic":
-      return new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
+      return new IModelBankBasicAuthorizationClient(userInfo, userCredentials);
     default:
-      return new IModelBankDummyAuthorizationClient(userInfo, userCredentials)
+      return new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
   }
 };
 
