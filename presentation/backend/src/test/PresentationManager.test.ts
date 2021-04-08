@@ -28,6 +28,7 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
+import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import {
   HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
 } from "../presentation-backend/PresentationManager";
@@ -36,7 +37,6 @@ import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVari
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { WithClientRequestContext } from "../presentation-backend/Utils";
-import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 describe("PresentationManager", () => {
@@ -581,7 +581,7 @@ describe("PresentationManager", () => {
       addonMock.verifyAll();
     });
 
-    it("sends diagnostic options to native platform and invokes listener with diagnostic results", async () => {
+    it("sends diagnostic options to native platform and invokes handler with diagnostic results", async () => {
       const diagnosticOptions: DiagnosticsOptions = {
         perf: true,
         editor: "info",
@@ -596,9 +596,9 @@ describe("PresentationManager", () => {
         .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics))))
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, listener: diagnosticsListener } });
+      await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
       addonMock.verifyAll();
-      expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
+      expect(diagnosticsListener).to.be.calledOnceWith([diagnosticsResult]);
     });
 
   });
