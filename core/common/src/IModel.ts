@@ -60,7 +60,7 @@ export interface RootSubjectProps {
   description?: string;
 }
 
-/** Properties that are about an iModel.
+/** Properties of an iModel that are always held in memory whenever one is opened, both on the frontend and on the backend .
  * @public
  */
 export interface IModelProps {
@@ -78,7 +78,11 @@ export interface IModelProps {
   name?: string;
 }
 
-/** @alpha */
+/**
+ * The properties returned by the backend when creating a new [[IModelConnection]] from the frontend, either with Rpc or with Ipc.
+ * These properties describe the iModel held on the backend for thew newly formed connection and are used to construct a new
+ * [[IModelConnection]] instance on the frontend to access it.
+ * @public */
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
 /** The properties that can be supplied when creating a *new* iModel.
@@ -104,7 +108,7 @@ export interface IModelEncryptionProps {
 }
 
 /**
- * A key used to identify an opened IModelDb between the frontend and backend for RPC communications.
+ * A key used to identify an opened [IModelDb]($backend) between the frontend and backend for Rpc and Ipc communications.
  * Keys must be unique - that is there can never be two IModelDbs opened with the same key at any given time.
  * If no key is supplied in a call to open an IModelDb, one is generated and returned.
  * It is only necessary to supply a key if you have some reason to assign a specific value to identify an IModelDb.
@@ -115,7 +119,7 @@ export interface OpenDbKey {
   key?: string;
 }
 
-/** Options that can be supplied when opening an existing SnapshotDb.
+/** Options to open a [SnapshotDb]($backend).
  * @public
  */
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
@@ -125,8 +129,9 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   autoUploadBlocks?: boolean;
 }
 
-/** Options that can be supplied when opening an existing StandaloneDb.
- * @beta
+/** Options to open a [StandaloneDb]($backend) via [StandaloneDb.openFile]($backend) from the backend,
+ * or [BriefcaseConnection.openStandalone]($frontend) from the frontend.
+ * @public
  */
 export type StandaloneOpenOptions = OpenDbKey;
 

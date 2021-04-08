@@ -13,7 +13,7 @@ import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 
 /** Wire format describing a [[CutStyle]] applied to section-cut geometry produced at intersections with a view's [ClipVector]($geometry-core).
  * @see [[ClipStyleProps.cutStyle]].
- * @beta
+ * @public
  */
 export interface CutStyleProps {
   /** If defined, overrides aspects of the view's [[ViewFlags]] when drawing the cut geometry. */
@@ -26,7 +26,7 @@ export interface CutStyleProps {
 
 /** As part of a [[ClipStyle]], describes how section-cut graphics should be displayed.
  * @note Section-cut graphics are only produced if [[ClipStyle.produceCutGeometry]] is `true`.
- * @beta
+ * @public
  */
 export class CutStyle {
   /** Selectively overrides some of the view's [[ViewFlags]] when drawing the section-cut graphics. */
@@ -97,7 +97,7 @@ export class CutStyle {
 
 /** Wire format describing a [[ClipStyle]].
  * @see [[DisplayStyleSettingsProps.clipStyle]].
- * @beta
+ * @public
  */
 export interface ClipStyleProps {
   /** If `true`, geometry will be produced at the clip planes in a 3d view.
@@ -112,7 +112,7 @@ export interface ClipStyleProps {
 
 /** Describes symbology and behavior applied to a [ClipVector]($geometry-core) when applied to a [ViewState]($frontend) or [[ModelClipGroup]].
  * @see [[DisplayStyleSettings.clipStyle]].
- * @beta
+ * @public
  */
 export class ClipStyle {
   /** If `true`, geometry will be produced at the clip planes.

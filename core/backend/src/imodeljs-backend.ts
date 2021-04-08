@@ -53,6 +53,7 @@ export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./LocalhostIpcHost";
+export * from "./ElementGraphics";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
@@ -124,6 +125,10 @@ export * from "./IModelDb"; // must be last
  * Classes for working with [ECSQL]($docs/learning/ECSQL.md)
  */
 /**
+ * @docs-group-description SQLite
+ * Classes for working directly with SQLite
+ */
+/**
  * @docs-group-description Portability
  * Classes to help write [portable apps]($docs/learning/Portability.md) and libraries that will run on any platform, including web apps, node services, Electron desktops apps, and mobile apps.
  */
@@ -151,4 +156,7 @@ export * from "./IModelDb"; // must be last
  * @docs-group-description Authentication
  * Classes for working with Authentication.
  */
-
+/**
+ * @docs-group-description Tiles
+ * APIs for working with tile graphics.
+ */

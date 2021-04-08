@@ -13,6 +13,9 @@ import { ControlledTreeProps } from '@bentley/ui-components';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { DiagnosticsHandler } from '@bentley/presentation-common';
+import { DiagnosticsLoggerSeverity } from '@bentley/presentation-common';
+import { DiagnosticsOptionsWithHandler } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { FavoritePropertiesScope } from '@bentley/presentation-frontend';
 import { Field } from '@bentley/presentation-common';
@@ -44,6 +47,7 @@ import { PropertyGridProps } from '@bentley/ui-components';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyValueRendererContext } from '@bentley/ui-components';
 import * as React from 'react';
+import { RenderedItemsRange } from '@bentley/ui-components';
 import { RowItem } from '@bentley/ui-components';
 import { Ruleset } from '@bentley/presentation-common';
 import { RulesetsFactory } from '@bentley/presentation-common';
@@ -116,7 +120,7 @@ export class ContentDataProvider implements IContentDataProvider {
 }
 
 // @public
-export interface ContentDataProviderProps {
+export interface ContentDataProviderProps extends DiagnosticsProps {
     displayType: string;
     // @alpha
     enableContentAutoUpdate?: boolean;
@@ -150,6 +154,9 @@ export interface ControlledTreeWithVisibleNodesProps extends Omit<ControlledTree
     nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
 }
 
+// @alpha
+export function createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined;
+
 // @public
 export class DataProvidersFactory {
     constructor(props?: DataProvidersFactoryProps);
@@ -170,13 +177,28 @@ export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset;
 export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
 
 // @beta @deprecated
-export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithVisibleNodesProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | Exclude<keyof P, "visibleNodes">>>;
+export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithVisibleNodesProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | "onItemsRendered" | Exclude<keyof P, "visibleNodes">>>;
 
 // @public @deprecated
 export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps>;
 
 // @public @deprecated
 export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>): React.ForwardRefExoticComponent<React.PropsWithoutRef<P & TreeWithUnifiedSelectionProps> & React.RefAttributes<React.Component<P, any, any>>>;
+
+// @public
+export interface DiagnosticsProps {
+    // @internal
+    devDiagnostics?: {
+        severity?: DiagnosticsLoggerSeverity;
+        perf?: boolean;
+        handler: DiagnosticsHandler;
+    };
+    // @alpha
+    ruleDiagnostics?: {
+        severity?: DiagnosticsLoggerSeverity;
+        handler: DiagnosticsHandler;
+    };
+}
 
 // @alpha
 export class FavoritePropertiesDataFilterer extends PropertyDataFiltererBase {
@@ -321,7 +343,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     }
 
 // @public
-export interface PresentationPropertyDataProviderProps {
+export interface PresentationPropertyDataProviderProps extends DiagnosticsProps {
     // @alpha
     disableFavoritesCategory?: boolean;
     // @alpha
@@ -355,7 +377,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     }
 
 // @public
-export interface PresentationTableDataProviderProps {
+export interface PresentationTableDataProviderProps extends DiagnosticsProps {
     cachedPagesCount?: number;
     displayType?: string;
     // @alpha
@@ -395,7 +417,7 @@ export interface PresentationTreeDataProviderDataSourceEntryPoints {
 }
 
 // @public
-export interface PresentationTreeDataProviderProps {
+export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
     // @beta
     appendChildrenCountForGroupingNodes?: boolean;
     // @alpha
@@ -529,7 +551,10 @@ export function useControlledTreeFiltering(props: ControlledTreeFilteringProps):
 };
 
 // @beta
-export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): {
+    nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+    onItemsRendered: (items: RenderedItemsRange) => void;
+};
 
 // @beta
 export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): {
