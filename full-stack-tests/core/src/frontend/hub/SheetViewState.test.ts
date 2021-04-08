@@ -9,21 +9,20 @@ import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "./TestUtility";
 
 describe("Sheet views (#integration)", () => {
-  const projectName = "iModelJsIntegrationTest";
   let imodel: CheckpointConnection;
   const sheetViewId = "0x96";
   const attachmentCategoryId = "0x93";
 
   before(async () => {
     await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
+      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
 
-    const projectId = await TestUtility.getTestProjectId(projectName);
-    const iModelId = await TestUtility.getTestIModelId(projectId, "SectionDrawingLocations");
-    imodel = await CheckpointConnection.openRemote(projectId, iModelId);
+    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.sectionDrawingLocations);
+    imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
   after(async () => {

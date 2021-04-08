@@ -32,7 +32,7 @@ export type ColorDefProps = number;
  *  1. The ordering of the Red, Green, Blue bytes; and
  *  2. Whether to specify transparency or opacity (sometimes referred to as "alpha").
  *
- * Generally, iModel.js prefers to use `0xTTBBGGRR` (red in the low byte. 0==fully opaque in high byte), but this class provides methods
+ * ColorDef uses `0xTTBBGGRR` (red in the low byte. 0==fully opaque in high byte) internally, but it also provides methods
  * to convert to `0xRRGGBB` (see [[getRgb]]) and `0xAABBGGRR` (red in the low byte, 0==fully transparent in high byte. see [[getAbgr]]).
  *
  * The [[create]] method also accepts strings in the common HTML formats.

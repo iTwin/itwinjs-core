@@ -1,6 +1,25 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Apr 2021 14:30:09 GMT and should not be manually modified.
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+_Version update only_
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- Added frontend 'StateTracker' for ipc apps. It allows to track and store on the backend expanded nodes for faster updates in trees using usePresentationTreeNodeLoader
+- Fix hilite rules for functional elements
+- Changed ruleset variables storing to store them on backend in IpcApps
 
 ## 2.13.0
 Tue, 09 Mar 2021 20:28:13 GMT
@@ -8,7 +27,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 ### Updates
 
 - Fixed broken double angle bracket link syntax
-- Changed 'compareHierarchy' to build result in pages for massive result sets.
+- Changed 'compareHierarchy' to build result in pages for massive result sets. 
 - HiliteSetProvider: return geometric elements grouped by BisCore.GroupInformationElement
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
@@ -451,7 +470,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Do not include transient element IDs when syncing with logical selection
 - Always compute selection when syncing tool selection with logical selection - that's necessary to determine concrete element class names. Without that, we're adding keys with "BisCore:Element" class to selection and then our keys compare fails (presentation components like the table always have concrete class names). This can cause rows / nodes not to be highlighted in components.
 - Remove IModelApp subclasses
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

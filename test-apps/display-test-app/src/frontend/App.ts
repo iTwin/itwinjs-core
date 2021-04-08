@@ -12,6 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
+  AccuDrawHintBuilder,
   AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem,
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
@@ -22,7 +23,7 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingSessionTool, PlaceLineStringTool } from "./EditingTools";
+import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { ChangeGridSettingsTool } from "./Grid";
@@ -56,7 +57,7 @@ class DisplayTestAppAccuSnap extends AccuSnap {
 class DisplayTestAppToolAdmin extends ToolAdmin {
   /** Process shortcut key events */
   public processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
-    if (wentDown && IModelApp.accuDraw.isEnabled)
+    if (wentDown && AccuDrawHintBuilder.isEnabled)
       return AccuDrawShortcuts.processShortcutKey(keyEvent);
     return false;
   }
@@ -143,26 +144,8 @@ export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
-  public static getAuthConfig() {
-    const redirectUri = ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
-    const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
-
-    return ProcessDetector.isNativeAppFrontend
-      ? {
-        clientId: "imodeljs-electron-test",
-        redirectUri,
-        scope: `${baseOidcScope} offline_access`,
-      }
-      : {
-        clientId: "imodeljs-spa-test",
-        redirectUri,
-        scope: `${baseOidcScope} imodeljs-router`,
-        responseType: "code",
-      };
-  }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
-    const authConfig = this.getAuthConfig();
     const opts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
@@ -184,13 +167,15 @@ export class DisplayTestApp {
           uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001",
           info: { title: "DisplayTestApp", version: "v1.0" },
         },
-        authConfig,
+        authConfig: {
+          clientId: "imodeljs-spa-test",
+          redirectUri: "http://localhost:3000/signin-callback",
+          scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api imodeljs-router",
+          responseType: "code",
+        },
       },
       localhostIpcApp: {
         socketPort: 3002,
-      },
-      nativeApp: {
-        authConfig,
       },
     };
 
@@ -221,7 +206,7 @@ export class DisplayTestApp {
       CreateWindowTool,
       DockWindowTool,
       DrawingAidTestTool,
-      EditingSessionTool,
+      EditingScopeTool,
       FenceClassifySelectedTool,
       FocusWindowTool,
       IncidentMarkerDemoTool,

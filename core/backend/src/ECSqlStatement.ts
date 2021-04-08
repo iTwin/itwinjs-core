@@ -6,7 +6,7 @@
  * @module ECSQL
  */
 
-import { Config, DbResult, GuidString, Id64String, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, Id64String, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -56,14 +56,9 @@ export class ECSqlInsertResult {
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
-  private _isShared: boolean = false;
+  private _sql: string | undefined;
 
-  /** @internal - used by statement cache */
-  public setIsShared(b: boolean) { this._isShared = b; }
-
-  /** @internal - used by statement cache */
-  public get isShared(): boolean { return this._isShared; }
-
+  public get sql() { return this._sql!; }
   /** Check if this statement has been prepared successfully or not */
   public get isPrepared(): boolean { return !!this._stmt; }
 
@@ -75,7 +70,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @internal
    */
   public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string): void {
-    const stat: StatusCodeWithMessage<DbResult> = this.tryPrepare(db, ecsql);
+    const stat = this.tryPrepare(db, ecsql);
     if (stat.status !== DbResult.BE_SQLITE_OK) {
       throw new IModelError(stat.status, stat.message);
     }
@@ -88,30 +83,23 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @internal
    */
   public tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string): StatusCodeWithMessage<DbResult> {
-    if (this.isPrepared) {
+    if (this.isPrepared)
       throw new Error("ECSqlStatement is already prepared");
-    }
+    this._sql = ecsql;
     this._stmt = new IModelHost.platform.ECSqlStatement();
     return this._stmt.prepare(db, ecsql);
   }
 
-  /** Reset this statement so that the next call to step will return the first row, if any.
-   */
+  /** Reset this statement so that the next call to step will return the first row, if any. */
   public reset(): void {
-    if (!this._stmt)
-      throw new Error("ECSqlStatement is not prepared");
-
-    this._stmt.reset();
+    this._stmt!.reset();
   }
 
   /** Get the Native SQL statement
    * @internal
    */
   public getNativeSql(): string {
-    if (!this._stmt)
-      throw new Error("ECSqlStatement is not prepared");
-
-    return this._stmt.getNativeSql();
+    return this._stmt!.getNativeSql();
   }
 
   /** Call this function when finished with this statement. This releases the native resources held by the statement.
@@ -119,12 +107,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * > Do not call this method directly on a statement that is being managed by a statement cache.
    */
   public dispose(): void {
-    if (this.isShared)
-      throw new Error("you can't dispose an ECSqlStatement that is shared with others (e.g., in a cache)");
-    if (!this.isPrepared)
-      return;
-    this._stmt!.dispose(); // Tell the peer JS object to free its native resources immediately
-    this._stmt = undefined; // discard the peer JS object as garbage
+    if (this._stmt) {
+      this._stmt.dispose(); // free native statement
+      this._stmt = undefined;
+    }
   }
 
   /** Binds the specified value to the specified ECSQL parameter.
@@ -972,115 +958,4 @@ class ECSqlTypeHelper {
   public static isLowAndHighXYZ(arg: any): arg is LowAndHighXYZ { return arg.low !== undefined && ECSqlTypeHelper.isXYAndZ(arg.low) && arg.high !== undefined && ECSqlTypeHelper.isXYAndZ(arg.high); }
 
   public static isNavigationBindingValue(val: any): val is NavigationBindingValue { return val.id !== undefined && typeof (val.id) === "string"; }
-}
-
-/** A cached ECSqlStatement. See [ECSqlStatementCache]($backend) for details.
- * @public
- */
-export class CachedECSqlStatement {
-  public statement: ECSqlStatement;
-  public useCount: number;
-
-  /** @internal - used by statement cache */
-  public constructor(stmt: ECSqlStatement) {
-    this.statement = stmt;
-    this.useCount = 1;
-  }
-}
-/** A cache for ECSqlStatements.
- *
- * Preparing [ECSqlStatement]($backend)s can be costly. This class provides a way to
- * save previously prepared ECSqlStatements for reuse.
- *
- * > Both [IModelDb]($backend)s and [ECDb]($backend)s have a built-in ECSqlStatementCache.
- * > So normally you do not have to maintain your own cache.
- * @public
- */
-export class ECSqlStatementCache {
-  private readonly _statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
-  public readonly maxCount: number;
-
-  public constructor(maxCount = Config.App.getNumber("imjs_ecsql_cache_size", 40)) { this.maxCount = maxCount; }
-
-  public add(str: string, stmt: ECSqlStatement): void {
-    const existing = this._statements.get(str);
-    if (existing !== undefined) {
-      throw new Error("you should only add a statement if all existing copies of it are in use.");
-    }
-    const cs = new CachedECSqlStatement(stmt);
-    cs.statement.setIsShared(true);
-    this._statements.set(str, cs);
-  }
-
-  public getCount(): number { return this._statements.size; }
-
-  public find(str: string): CachedECSqlStatement | undefined {
-    return this._statements.get(str);
-  }
-
-  public replace(str: string, stmt: ECSqlStatement) {
-    if (stmt.isShared) {
-      throw new Error("expecting a unshared statement");
-    }
-    const existingCS = this.find(str);
-    if (existingCS) {
-      existingCS.statement.setIsShared(false);
-      this._statements.delete(str);
-    }
-    const newCS = new CachedECSqlStatement(stmt);
-    newCS.statement.setIsShared(true);
-    this._statements.set(str, newCS);
-  }
-
-  public release(stmt: ECSqlStatement): void {
-    for (const cs of this._statements) {
-      const css = cs[1];
-      if (css.statement === stmt) {
-        if (css.useCount > 0) {
-          css.useCount--;
-          if (css.useCount === 0) {
-            css.statement.reset();
-            css.statement.clearBindings();
-          }
-        } else {
-          throw new Error("double-release of cached statement");
-        }
-        // leave the statement in the cache, even if its use count goes to zero. See removeUnusedStatements and clearOnClose.
-        // *** TODO: we should remove it if it is a duplicate of another unused statement in the cache. The trouble is that we don't have the ecsql for the statement,
-        //           so we can't check for other equivalent statements.
-        break;
-      }
-    }
-  }
-
-  public removeUnusedStatementsIfNecessary(): void {
-    if (this.getCount() <= this.maxCount)
-      return;
-
-    const keysToRemove = [];
-    for (const cs of this._statements) {
-      const css = cs[1];
-      if (css.useCount === 0) {
-        css.statement.setIsShared(false);
-        css.statement.dispose();
-        keysToRemove.push(cs[0]);
-        if (keysToRemove.length >= this.maxCount)
-          break;
-      }
-    }
-    for (const k of keysToRemove) {
-      this._statements.delete(k);
-    }
-  }
-
-  public clear() {
-    for (const cs of this._statements) {
-      const stmt = cs[1].statement;
-      if (stmt !== undefined) {
-        stmt.setIsShared(false);
-        stmt.dispose();
-      }
-    }
-    this._statements.clear();
-  }
 }

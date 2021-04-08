@@ -214,15 +214,15 @@ display-test-app supplies minimal features for editing the contents of an iModel
 * Set SVT_READ_WRITE=1 in the environment.
 * Open an editable standalone iModel.
 * Use the key-ins below to make changes; typically:
-  * `dta edit` to begin an interactive session;
+  * `dta edit` to begin an editing scope;
   * key-ins to delete/move/insert elements and undo/redo those changes;
-  * `dta edit` to end the interactive session.
+  * `dta edit` to end the editing scope.
 
-Using an editing session is optional, but outside of a session, the viewport's graphics will not remain in sync with your changes. In the context of a session, the graphics will update immediately to reflect your changes; when the session ends, new tiles will be produced reflecting the sum of those changes.
+Using an editing scope is optional, but outside of a scope, the viewport's graphics will not remain in sync with your changes. In the context of a scope, the graphics will update immediately to reflect your changes; when the scope ends, new tiles will be produced reflecting the sum of those changes.
 
 ### Editing key-ins
 
 display-test-app has access to all key-ins defined in the imodeljs-editor-frontend package. It also provides the following additional key-ins.
 
-* `dta edit` - begin a new editing session, or end the current editing session. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing session, or "[EDIT]" indicating an active editing session.
+* `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.

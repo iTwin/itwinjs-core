@@ -20,8 +20,9 @@ export interface SceneVolumeClassifier {
   modelId: Id64String;
 }
 
-/** Holds a collection of objects comprising a [[Viewport]]'s scene.
- * @beta
+/** Holds a collection of objects comprising the scene to be drawn by a [[Viewport]]'s.
+ * @see [[SceneContext]] for the context in which the scene is created.
+ * @public
  */
 export class Scene {
   /** Graphics to be drawn as a "normal" part of the scene - that is, with depth. */

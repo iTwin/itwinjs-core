@@ -33,7 +33,7 @@ import { Omit, PagedResponse } from "./Utils";
  * Base options for all presentation RPC requests.
  * @public
  */
-export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel"> & {
+export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel" | "diagnostics"> & {
   /** ID of the client requesting data */
   clientId?: string;
   /** @alpha */

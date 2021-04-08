@@ -1,6 +1,5 @@
 sep=;
 Release Tag;API Item
-alpha;BackendDiagnosticsOptions 
 beta;DiskHierarchyCacheConfig 
 beta;DuplicateRulesetHandlingStrategy
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined

@@ -127,8 +127,10 @@ export interface LocalBriefcaseProps {
   /** The briefcaseId. */
   briefcaseId: number;
 
-  /** The current changeSetId. */
-  changeSetId: GuidString;
+  /** The current changeSetId.
+   * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
+   */
+  changeSetId: string;
 
   /** Size of the briefcase file in bytes  */
   fileSize: number;

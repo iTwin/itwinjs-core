@@ -27,7 +27,7 @@
  * like the global object `TWEEN` in tween.js. You must create an instance of this class, and then create [[Tween]]s by
  * calling [[Tweens.create]] or by calling `new Tween()` and pass your Group as its first argument.
  * @see The [tween.js users guide](https://github.com/tweenjs/tween.js/blob/master/docs/user_guide.md)
- * @beta
+ * @public
  */
 export class Tweens {
   private _tweens: any = {};
@@ -113,18 +113,18 @@ export class Tweens {
   }
 }
 
-/** @beta */
+/** @public */
 export type TweenCallback = (obj: any) => void;
-/** @beta */
+/** @public */
 export type UpdateCallback = (obj: any, t: number) => void;
-/** @beta */
+/** @public */
 export type EasingFunction = (k: number) => number;
-/** @beta */
+/** @public */
 export type InterpolationFunction = (v: any, k: number) => number;
 
 /** A Tween for interpolating values of an object. Instances of this class are owned by a `Tweens` group.
  * @see The [tween.js users guide](https://github.com/tweenjs/tween.js/blob/master/docs/user_guide.md)
- * @beta
+ * @public
  */
 export class Tween {
   private _isPaused = false;
@@ -426,7 +426,7 @@ export class Tween {
 }
 
 /** Easing functions from tween.js
- * @beta
+ * @public
  */
 export const Easing = {
   Linear: {
@@ -642,7 +642,7 @@ export const Easing = {
 };
 
 /** Interpolation functions from tween.js
- *  @beta
+ *  @public
  */
 export const Interpolation = {
 

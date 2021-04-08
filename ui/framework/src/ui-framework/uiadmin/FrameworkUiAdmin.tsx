@@ -26,7 +26,7 @@ import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
 import { UiDataProvidedDialog } from "../dialog/UiDataProvidedDialog";
 
 /** Controls whether localized and/or non-localized key-in strings appear in a KeyinField's auto-completion list.
- * @beta
+ * @public
  */
 export enum KeyinFieldLocalization {
   /** Include only non-localized key-in strings. */
@@ -38,7 +38,7 @@ export enum KeyinFieldLocalization {
 }
 
 /** Defines a keyin entry to show/filter in UI
- * @beta
+ * @public
 */
 export interface KeyinEntry {
   /** string that matched a filter string */
@@ -50,7 +50,7 @@ export interface KeyinEntry {
 }
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
- * @beta
+ * @public
  */
 export class FrameworkUiAdmin extends UiAdmin {
   private _localizedKeyinPreference: KeyinFieldLocalization = KeyinFieldLocalization.NonLocalized;

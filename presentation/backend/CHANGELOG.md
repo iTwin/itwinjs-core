@@ -1,6 +1,25 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Tue, 09 Mar 2021 20:28:13 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Apr 2021 14:30:09 GMT and should not be manually modified.
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+_Version update only_
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- Added Ipc method 'updateHierarchyState' to allow storing hierarchy state on backend
+- Added Ipc handler to allow setting ruleset variables on backend in IpcApps
+- Show `UserLabel` and `CodeValue` properties for `PhysicalType` and `SpatialLocationType` elements
 
 ## 2.13.0
 Tue, 09 Mar 2021 20:28:13 GMT
@@ -466,7 +485,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Fixed `PresentationRpcImpl.computeSelection` for "model", "category" and "element" scope to return specific class names instead of "BisCore:Model", "BisCore:Category" or "BisCore:Element"
 - Allow requesting content with descriptor overrides instead of descriptor. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content
 - Do not attempt to handle transient element ids when computing selection based on scope
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
