@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "fix imports in CheckpointConnection.ts to not reference own barrel",
+      "comment": "Fix iOS shader bugs",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-frontend",
-  "email": "jasoncrow@users.noreply.github.com"
+  "email": "47000437+markschlosseratbentley@users.noreply.github.com"
 }

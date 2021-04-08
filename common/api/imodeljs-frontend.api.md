@@ -609,46 +609,36 @@ export enum AccuDrawFlags {
     UpdateRotation = 8388608
 }
 
-// @beta
+// @public
 export class AccuDrawHintBuilder {
-    // (undocumented)
     static activate(): void;
-    // (undocumented)
     static deactivate(): void;
-    // (undocumented)
     enableSmartRotation: boolean;
+    static getBoresite(spacePt: Point3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Ray3d;
+    static getContextRotation(id: ContextRotationId, vp: Viewport): Matrix3d | undefined;
+    static getCurrentRotation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, matrix?: Matrix3d): Matrix3d | undefined;
+    static get isActive(): boolean;
+    static get isEnabled(): boolean;
+    static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
+    static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
     sendHints(activate?: boolean): boolean;
-    // (undocumented)
     setAngle(angle: number): void;
-    // (undocumented)
     setDistance(distance: number): void;
-    // (undocumented)
     setLockAngle: boolean;
-    // (undocumented)
     setLockDistance: boolean;
-    // (undocumented)
     setLockX: boolean;
-    // (undocumented)
     setLockY: boolean;
-    // (undocumented)
     setLockZ: boolean;
-    // (undocumented)
+    setMatrix(matrix: Matrix3d): boolean;
     setModePolar(): void;
-    // (undocumented)
     setModeRectangular(): void;
-    // (undocumented)
     setNormal(normal: Vector3d): void;
-    // (undocumented)
     setOrigin(origin: Point3d): void;
-    // (undocumented)
     setOriginAlways: boolean;
-    // (undocumented)
     setOriginFixed: boolean;
-    // (undocumented)
-    setRotation(rMatrix: Matrix3d): void;
-    // (undocumented)
+    // @internal
+    setRotation(rowMatrix: Matrix3d): void;
     setXAxis(xAxis: Vector3d): void;
-    // (undocumented)
     setXAxis2(xAxis: Vector3d): void;
 }
 
@@ -1926,6 +1916,26 @@ export class ContextRealityModelState {
     readonly url: string;
 }
 
+// @public
+export enum ContextRotationId {
+    // (undocumented)
+    Back = 4,
+    // (undocumented)
+    Bottom = 3,
+    // (undocumented)
+    Face = 7,
+    // (undocumented)
+    Front = 1,
+    // (undocumented)
+    Left = 2,
+    // (undocumented)
+    Right = 5,
+    // (undocumented)
+    Top = 0,
+    // (undocumented)
+    View = 6
+}
+
 // @public (undocumented)
 export enum CoordinateLockOverrides {
     // (undocumented)
@@ -2672,32 +2682,11 @@ export namespace EditManipulator {
         // (undocumented)
         static getBoresite(origin: Point3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Ray3d;
         // (undocumented)
-        static getRotation(rotation: RotationType, viewport: Viewport): Matrix3d | undefined;
-        // (undocumented)
         static isPointVisible(testPt: Point3d, vp: Viewport, borderPaddingFactor?: number): boolean;
         // (undocumented)
         static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
         // (undocumented)
         static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
-    }
-    // (undocumented)
-    export enum RotationType {
-        // (undocumented)
-        Back = 4,
-        // (undocumented)
-        Bottom = 3,
-        // (undocumented)
-        Face = 7,
-        // (undocumented)
-        Front = 1,
-        // (undocumented)
-        Left = 2,
-        // (undocumented)
-        Right = 5,
-        // (undocumented)
-        Top = 0,
-        // (undocumented)
-        View = 6
     }
 }
 
@@ -5874,8 +5863,8 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // @internal (undocumented)
     onUnsuspend(): void;
     // @internal (undocumented)
-    get orientation(): EditManipulator.RotationType;
-    set orientation(option: EditManipulator.RotationType);
+    get orientation(): ContextRotationId;
+    set orientation(option: ContextRotationId);
     // @internal (undocumented)
     protected static _orientationName: string;
     // @internal (undocumented)
@@ -11105,8 +11094,8 @@ export class ViewClipByPlaneTool extends ViewClipTool {
     // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // @internal (undocumented)
-    get orientation(): EditManipulator.RotationType;
-    set orientation(option: EditManipulator.RotationType);
+    get orientation(): ContextRotationId;
+    set orientation(option: ContextRotationId);
     // @internal (undocumented)
     protected setupAndPromptForNextAction(): void;
     // @internal (undocumented)
@@ -11162,8 +11151,8 @@ export class ViewClipByShapeTool extends ViewClipTool {
     // @internal (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
     // @internal (undocumented)
-    get orientation(): EditManipulator.RotationType;
-    set orientation(option: EditManipulator.RotationType);
+    get orientation(): ContextRotationId;
+    set orientation(option: ContextRotationId);
     // @internal (undocumented)
     protected readonly _points: Point3d[];
     // @internal (undocumented)
@@ -11438,7 +11427,7 @@ export class ViewClipTool extends PrimitiveTool {
     // @internal (undocumented)
     static getOffsetValueTransformed(offset: number, transform?: Transform): number;
     // @internal (undocumented)
-    static getPlaneInwardNormal(orientation: EditManipulator.RotationType, viewport: Viewport): Vector3d | undefined;
+    static getPlaneInwardNormal(orientation: ContextRotationId, viewport: Viewport): Vector3d | undefined;
     // (undocumented)
     static hasClip(viewport: Viewport): boolean;
     // @internal (undocumented)
