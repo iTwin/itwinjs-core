@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 05 Apr 2021 16:28:00 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Apr 2021 14:30:09 GMT and should not be manually modified.
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+### Updates
+
+- fix imports in CheckpointConnection.ts to not reference own barrel
 
 ## 2.14.1
 Mon, 05 Apr 2021 16:28:00 GMT
