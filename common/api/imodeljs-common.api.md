@@ -4608,7 +4608,7 @@ export class MeshPolylineList extends Array<MeshPolyline> {
     constructor(...args: MeshPolyline[]);
 }
 
-// @beta
+// @public
 export class ModelClipGroup {
     readonly clip?: ClipVector;
     clone(): ModelClipGroup;
@@ -4619,13 +4619,13 @@ export class ModelClipGroup {
     toJSON(): ModelClipGroupProps;
 }
 
-// @beta
+// @public
 export interface ModelClipGroupProps {
     clip?: ClipVectorProps;
     models?: Id64Array;
 }
 
-// @beta
+// @public
 export class ModelClipGroups {
     constructor(groups?: ModelClipGroup[]);
     clone(): ModelClipGroups;
@@ -7827,17 +7827,14 @@ export class ViewDetails3d extends ViewDetails {
     set allow3dManipulations(allow: boolean);
     // @internal
     getJSON(): Readonly<ViewDetails3dProps>;
-    // @beta
     get modelClipGroups(): ModelClipGroups;
     set modelClipGroups(groups: ModelClipGroups);
-    // @beta
     readonly onModelClipGroupsChanged: BeEvent<(newGroups: ModelClipGroups) => void>;
 }
 
 // @public
 export interface ViewDetails3dProps extends ViewDetailsProps {
     disable3dManipulations?: boolean;
-    // @beta
     modelClipGroups?: ModelClipGroupProps[];
 }
 
