@@ -127,6 +127,7 @@ export class ClipStack {
 
     this._stack.push(clip);
     this._numRowsInUse += clip.numRows;
+    this._numTotalRows = Math.max(this._numRowsInUse, this._numTotalRows);
     this._isStackDirty = true;
   }
 
@@ -176,12 +177,11 @@ export class ClipStack {
 
   // ###TODO: We're keeping the extra trailing union boundary. Will shader ignore it?
   protected updateTexture(): void {
-    if (this._numTotalRows < this._numRowsInUse) {
+    if (this._numTotalRows > 0 && (!this._texture || this._texture.height < this._numTotalRows)) {
       // We need to resize the texture.
       assert(this._isStackDirty);
       this._isStackDirty = true;
       this._texture = dispose(this._texture);
-      this._numTotalRows = this._numRowsInUse;
       this._cpuBuffer = new Uint8Array(this._numTotalRows * 4 * 4);
       this._gpuBuffer = this.allocateGpuBuffer();
     }
@@ -213,12 +213,12 @@ export class ClipStack {
   }
 
   protected uploadTexture(): void {
-    if (this._texture) {
-      assert(this._texture.height === this._numTotalRows);
+    if (this._texture)
       this._texture.replaceTextureData(this._gpuBuffer);
-    } else {
+    else
       this._texture = Texture2DHandle.createForData(this._isFloatTexture ? 1 : 4, this._numTotalRows, this._gpuBuffer, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
-    }
+
+    assert(this._texture!.height === this._numTotalRows);
   }
 
   protected allocateGpuBuffer(): Texture2DData {
