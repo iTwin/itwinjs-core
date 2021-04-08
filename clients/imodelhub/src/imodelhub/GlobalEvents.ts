@@ -38,7 +38,9 @@ export type GlobalEventType =
   /** Sent when a named [[Version]] is created. See [[NamedVersionCreatedEvent]]. */
   "NamedVersionCreatedEvent" |
   /** Sent when a new [[Checkpoint]] is generated. See [[GlobalCheckpointCreatedEvent]]. */
-  "CheckpointCreatedEvent";
+  "CheckpointCreatedEvent" |
+  /** Sent when a new [[CheckpointV2]] is generated. See [[GlobalCheckpointV2CreatedEvent]]. */
+  "CheckpointV2CreatedEvent";
 
 /** Base type for all iModelHub global events.
  * @internal
@@ -150,6 +152,25 @@ export class GlobalCheckpointCreatedEvent extends IModelHubGlobalEvent {
   }
 }
 
+/** Sent when a new [[CheckpointV2]] is generated. [[CheckpointV2]] might be created for every [[ChangeSet]].
+ * @internal
+ */
+export class GlobalCheckpointV2CreatedEvent extends IModelHubGlobalEvent {
+  public changeSetIndex?: string;
+  public changeSetId?: string;
+  public versionId?: GuidString;
+
+  /** Construct this event from object instance.
+   * @param obj Object instance.
+   */
+  public fromJson(obj: any) {
+    super.fromJson(obj);
+    this.changeSetIndex = obj.ChangeSetIndex;
+    this.changeSetId = obj.ChangeSetId;
+    this.versionId = obj.VersionId;
+  }
+}
+
 type GlobalEventConstructor = (new (handler?: IModelBaseHandler, sasToken?: string) => IModelHubGlobalEvent);
 /** Get constructor from GlobalEventType name. */
 function constructorFromEventType(type: GlobalEventType): GlobalEventConstructor {
@@ -166,6 +187,8 @@ function constructorFromEventType(type: GlobalEventType): GlobalEventConstructor
       return NamedVersionCreatedEvent;
     case "CheckpointCreatedEvent":
       return GlobalCheckpointCreatedEvent;
+    case "CheckpointV2CreatedEvent":
+      return GlobalCheckpointV2CreatedEvent;
   }
 }
 
