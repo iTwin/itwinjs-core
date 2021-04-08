@@ -109,6 +109,16 @@ export abstract class IModelDb extends IModel {
   protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
 
+  private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
+  /** called only at shutdown to abandon changes and close any open files. */
+  private static _closeAllOpened() {
+    [...IModelDb._openDbs.values()].forEach((db) => {// note: db.close() removes from _openedDbs, so we can't iterate over that
+      try {
+        db.abandonChanges();
+        db.close();
+      } catch { }
+    });
+  }
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
   /** @internal */
@@ -143,14 +153,8 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
-    IModelHost.onBeforeShutdown.addListener(() => {
-      if (this.isOpen) {
-        try {
-          this.abandonChanges();
-          this.close();
-        } catch { }
-      }
-    });
+    if (undefined === IModelDb._shutdownListener) // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
+      IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(IModelDb._closeAllOpened, IModelDb);
   }
 
   /** Close this IModel, if it is currently open. */
