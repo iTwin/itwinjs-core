@@ -295,6 +295,14 @@ export class CheckpointV2 extends WsgInstance {
 }
 
 // @internal
+export class CheckpointV2CreatedEvent extends IModelHubEvent {
+    changeSetId: string;
+    changeSetIndex: string;
+    fromJson(obj: any): void;
+    versionId?: GuidString;
+}
+
+// @internal
 export enum CheckpointV2ErrorId {
     // (undocumented)
     ApplyChangeSetError = 4,
@@ -503,7 +511,7 @@ export class EventSubscriptionHandler {
 }
 
 // @internal @deprecated (undocumented)
-export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent";
+export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent" | "CheckpointV2CreatedEvent";
 
 // @internal
 export enum GetEventOperationType {
@@ -513,6 +521,17 @@ export enum GetEventOperationType {
 
 // @internal
 export class GlobalCheckpointCreatedEvent extends IModelHubGlobalEvent {
+    // (undocumented)
+    changeSetId?: string;
+    // (undocumented)
+    changeSetIndex?: string;
+    fromJson(obj: any): void;
+    // (undocumented)
+    versionId?: GuidString;
+}
+
+// @internal
+export class GlobalCheckpointV2CreatedEvent extends IModelHubGlobalEvent {
     // (undocumented)
     changeSetId?: string;
     // (undocumented)
@@ -570,7 +589,9 @@ export type GlobalEventType =
 /** Sent when a named [[Version]] is created. See [[NamedVersionCreatedEvent]]. */
 "NamedVersionCreatedEvent" |
 /** Sent when a new [[Checkpoint]] is generated. See [[GlobalCheckpointCreatedEvent]]. */
-"CheckpointCreatedEvent";
+"CheckpointCreatedEvent" |
+/** Sent when a new [[CheckpointV2]] is generated. See [[GlobalCheckpointV2CreatedEvent]]. */
+"CheckpointV2CreatedEvent";
 
 // @internal
 export class HardiModelDeleteEvent extends IModelHubGlobalEvent {
@@ -850,6 +871,8 @@ export enum IModelHubEventType {
     ChangeSetPrePushEvent = "ChangeSetPrePushEvent",
     // @internal
     CheckpointCreatedEvent = "CheckpointCreatedEvent",
+    // @internal
+    CheckpointV2CreatedEvent = "CheckpointV2CreatedEvent",
     // @internal
     CodeEvent = "CodeEvent",
     iModelDeletedEvent = "iModelDeletedEvent",
