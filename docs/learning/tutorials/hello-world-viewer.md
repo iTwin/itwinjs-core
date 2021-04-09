@@ -233,11 +233,11 @@ export class HelloWorldUiProvider implements UiItemsProvider {
 }
 ```
 
-Result when the button is toggled:
+Result when the button is toggled on:
 
 ![Background blue](./images/background_toggled_blue.png)
 
-Result when the button is toggled:
+Result when the button is toggled off:
 
 ![Background pink](./images/background_toggled_pink.png)
 
