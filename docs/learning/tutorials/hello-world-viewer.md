@@ -175,7 +175,7 @@ Instead of a "Hello World" ```span``` in our ```getWidgetContent()```, we can re
 
 Result:
 
-![Notifications Toggle](./images/notifications_toggle.png)
+![Background Color Toggle](./images/background_color_toggle.png)
 
 ### Changing the background color
 
@@ -235,7 +235,11 @@ export class HelloWorldUiProvider implements UiItemsProvider {
 
 Result when the button is toggled:
 
-![Notifications Toggle On](./images/notifications_toggle_on.png)
+![Background blue](./images/background_toggled_blue.png)
+
+Result when the button is toggled:
+
+![Background pink](./images/background_toggled_pink.png)
 
 This is one of infinitely many possible widgets we can create in the iTwin Viewer. Feel free to explore sample widgets on our [sample showcase](https://www.itwinjs.org/sample-showcase/).
 
