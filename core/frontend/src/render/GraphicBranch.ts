@@ -84,9 +84,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
  * @public
  */
 export interface GraphicBranchOptions {
-  /** Clip applied to the graphics in the branch.
-   * @beta
-   */
+  /** Clip applied to the graphics in the branch. */
   clipVolume?: RenderClipVolume;
   /** @internal */
   classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
@@ -111,11 +109,6 @@ export class AnimationBranchState {
     this.transform = transform;
     this.clip = clip;
     this.omit = omit;
-  }
-
-  public dispose(): void {
-    if (this.clip)
-      this.clip.dispose();
   }
 }
 

@@ -145,7 +145,7 @@ describe("Viewport", () => {
     assert.isDefined(plan);
     if (plan) {
       assert.isTrue(plan.is3d);
-      assert.isUndefined(plan.activeClipSettings);
+      assert.isUndefined(plan.clip);
       assert.isDefined(plan.hline);
       assert.isFalse(plan.hline!.visible.ovrColor);
       assert.equal(plan.hline!.hidden.width, undefined);

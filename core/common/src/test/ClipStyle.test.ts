@@ -36,6 +36,11 @@ describe("ClipStyle", () => {
     roundTrip({ produceCutGeometry: true }, "input");
     roundTrip({ cutStyle: { appearance: { weight: 5 } } }, "input");
     roundTrip({ produceCutGeometry: true, cutStyle: { appearance: { weight: 5 } } }, "input");
+
+    roundTrip({ insideColor: { r: 0, g: 127, b: 255 } }, "input");
+    roundTrip({ outsideColor: { r: 255, g: 127, b: 0 } }, "input");
+    roundTrip({ insideColor: { r: 1, g: 2, b: 3 }, outsideColor: { r: 254, g: 253, b: 252 } }, "input");
+    roundTrip({ insideColor: undefined, outsideColor: undefined }, undefined);
   });
 
   it("should serialize to DisplayStyleSettings", () => {
@@ -48,7 +53,12 @@ describe("ClipStyle", () => {
     expect(details.clipStyle.matchesDefaults).to.be.true;
     expect(props.hasOwnProperty("clipStyle")).to.be.false;
 
-    const styleProps = { produceCutGeometry: true, cutStyle: { appearance: { transparency: 0.5 } } };
+    const styleProps = {
+      produceCutGeometry: true,
+      insideColor: { r: 10, g: 20, b: 0 },
+      outsideColor: { r: 100, g: 255, b: 1 },
+      cutStyle: { appearance: { transparency: 0.5 } },
+    };
     details.clipStyle = ClipStyle.fromJSON(styleProps);
     expect(details.clipStyle.matchesDefaults).to.be.false;
     expect(props.hasOwnProperty("clipStyle")).to.be.true;

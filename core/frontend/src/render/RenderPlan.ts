@@ -6,13 +6,12 @@
  * @module Rendering
  */
 
-import { Point3d, Vector3d } from "@bentley/geometry-core";
+import { ClipVector, Point3d, Vector3d } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion, AnalysisStyle, ColorDef, Frustum, GlobeMode, Gradient, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
+  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, Frustum, GlobeMode, Gradient, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
   ThematicDisplay, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
-import { createViewClipSettings, ViewClipSettings } from "./ViewClipSettings";
 
 const scratchPoint3a = new Point3d();
 const scratchPoint3b = new Point3d();
@@ -29,7 +28,8 @@ export interface RenderPlan {
   readonly monochromeMode: MonochromeMode;
   readonly hiliteSettings: Hilite.Settings;
   readonly emphasisSettings: Hilite.Settings;
-  readonly activeClipSettings?: ViewClipSettings;
+  readonly clip?: ClipVector;
+  readonly clipStyle: ClipStyle;
   readonly hline?: HiddenLine.Settings;
   readonly analysisStyle?: AnalysisStyle;
   readonly ao?: AmbientOcclusion.Settings;
@@ -55,6 +55,7 @@ export function createEmptyRenderPlan(): RenderPlan {
     monochromeMode: MonochromeMode.Scaled,
     hiliteSettings: new Hilite.Settings(),
     emphasisSettings: new Hilite.Settings(),
+    clipStyle: ClipStyle.defaults,
     frustum: new Frustum(),
     fraction: 0,
     isFadeOutActive: false,
@@ -87,7 +88,8 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const lights = vp.lightSettings;
 
   const isFadeOutActive = vp.isFadeOutActive;
-  const activeClipSettings = createViewClipSettings(view.getViewClip(), vp.outsideClipColor, vp.insideClipColor);
+  const clip = view.getViewClip();
+  const clipStyle = view.displayStyle.settings.clipStyle;
   const hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
   const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
   const analysisStyle = style.settings.analysisStyle;
@@ -116,7 +118,8 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     monochromeMode,
     hiliteSettings,
     emphasisSettings,
-    activeClipSettings,
+    clip,
+    clipStyle,
     hline,
     analysisStyle,
     ao,
