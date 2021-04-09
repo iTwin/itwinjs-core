@@ -131,7 +131,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     const authorizationUrl = this._client.authorizationUrl(authParams);
 
     // Launch puppeteer with no sandbox only on linux
-    let launchOptions: puppeteer.LaunchOptions = { dumpio: true }; // , headless: false, slowMo: 500 };
+    let launchOptions: puppeteer.LaunchOptions = { dumpio: true }; //, headless: false, slowMo: 500 };
     if (os.platform() === "linux") {
       launchOptions = {
         args: ["--no-sandbox"], // , "--disable-setuid-sandbox"],
@@ -161,6 +161,8 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     await page.goto(authorizationUrl, { waitUntil: "networkidle2" });
 
     try {
+      await this.handleErrorPage(page);
+
       await this.handleLoginPage(page);
 
       await this.handlePingLoginPage(page);
@@ -234,6 +236,20 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       });
     });
   }
+
+  private async handleErrorPage(page: puppeteer.Page): Promise<void> {
+    const errMsgText = await page.evaluate(() => {
+      const title = document.title;
+      console.log(title);
+      if (title.toLocaleLowerCase() == "error")
+        return document.body.textContent;
+      return undefined;
+    });
+
+    if (undefined !== errMsgText && null !== errMsgText)
+      throw new Error(errMsgText);
+  }
+
 
   private async handleLoginPage(page: puppeteer.Page): Promise<void> {
     const loginUrl = url.resolve(this._imsUrl, "/IMS/Account/Login");
