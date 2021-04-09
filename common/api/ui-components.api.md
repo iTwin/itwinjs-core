@@ -3349,6 +3349,10 @@ export interface PropertyCategory {
     label: string;
     // (undocumented)
     name: string;
+    // @alpha (undocumented)
+    renderer?: {
+        name: string;
+    };
 }
 
 // @public
@@ -3554,7 +3558,7 @@ export class PropertyGridEventHandler {
 }
 
 // @internal (undocumented)
-export type PropertyGridEventsRelatedProps = Pick<PropertyListProps, "onPropertyClicked" | "onPropertyRightClicked" | "onPropertyContextMenu" | "onEditCommit" | "onEditCancel" | "selectedPropertyKey" | "editingPropertyKey"> & Pick<CommonPropertyGridProps, "isPropertySelectionEnabled" | "isPropertySelectionOnRightClickEnabled" | "isPropertyHoverEnabled" | "isPropertyEditingEnabled">;
+export type PropertyGridEventsRelatedProps = Pick<PropertyListProps, "onPropertyClicked" | "onPropertyRightClicked" | "onPropertyContextMenu" | "onEditCommit" | "onEditCancel" | "selectedPropertyKey" | "editingPropertyKey"> & Pick<CommonPropertyGridProps, "isPropertySelectionOnRightClickEnabled" | "isPropertyEditingEnabled"> & Required<Pick<CommonPropertyGridProps, "isPropertyHoverEnabled" | "isPropertySelectionEnabled">>;
 
 // @internal
 export class PropertyGridEventsRelatedPropsSupplier extends React.Component<PropertyGridEventsRelatedPropsSupplierProps, PropertyGridEventsRelatedPropsSupplierState> {
@@ -3564,9 +3568,26 @@ export class PropertyGridEventsRelatedPropsSupplier extends React.Component<Prop
 }
 
 // @internal
-export interface PropertyGridEventsRelatedPropsSupplierProps extends Pick<CommonPropertyGridProps, "onPropertyContextMenu" | "isPropertyHoverEnabled" | "isPropertySelectionEnabled" | "isPropertySelectionOnRightClickEnabled" | "isPropertySelectionOnRightClickEnabled" | "onPropertySelectionChanged" | "isPropertyEditingEnabled" | "onPropertyUpdated"> {
-    // (undocumented)
+export type PropertyGridEventsRelatedPropsSupplierProps = Pick<CommonPropertyGridProps, "onPropertyContextMenu" | "isPropertySelectionOnRightClickEnabled" | "isPropertySelectionOnRightClickEnabled" | "onPropertySelectionChanged" | "isPropertyEditingEnabled" | "onPropertyUpdated"> & Required<Pick<CommonPropertyGridProps, "isPropertyHoverEnabled" | "isPropertySelectionEnabled">> & {
     children: (context: PropertyGridEventsRelatedProps) => React.ReactNode;
+};
+
+// @internal
+export interface PropertyGridInternalContext {
+    // (undocumented)
+    className?: string;
+    // (undocumented)
+    gridContext: VirtualizedPropertyGridContext;
+    // (undocumented)
+    gridEventHandler: IPropertyGridEventHandler;
+    // (undocumented)
+    gridItems: FlatGridItem[];
+    // (undocumented)
+    gridModel: IPropertyGridModel;
+    // (undocumented)
+    onItemHeightChanged: (index: number, key: string, height: number) => void;
+    // (undocumented)
+    style?: React.CSSProperties;
 }
 
 // @alpha
@@ -5574,14 +5595,6 @@ export const
  */
 useTreeRendererContext: <P>(component: React.ComponentType<P>) => TreeRendererContext;
 
-// @internal
-export const
-/**
- * Context of [[VirtualizedPropertyGrid]] provider.
- * @internal
- */
-useVirtualizedPropertyGridContext: <P>(component: React.ComponentType<P>) => VirtualizedPropertyGridContext;
-
 // @beta
 export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes;
 
@@ -5700,67 +5713,64 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
     // @internal
     constructor(props: VirtualizedPropertyGridProps);
     // @internal (undocumented)
-    componentDidUpdate(prevProps: VirtualizedPropertyGridProps): void;
+    componentDidUpdate(prevProps: VirtualizedPropertyGridProps, prevState: VirtualizedPropertyGridState): void;
     // @internal (undocumented)
     static getDerivedStateFromProps(props: VirtualizedPropertyGridProps, state: VirtualizedPropertyGridState): VirtualizedPropertyGridState | null;
     // @internal (undocumented)
     render(): JSX.Element;
     }
 
-// @internal
+// @alpha (undocumented)
 export interface VirtualizedPropertyGridContext {
     // (undocumented)
-    gridContext: {
-        style?: React.CSSProperties;
-        className?: string;
-        listWidth: number;
-        orientation: Orientation;
-        actionButtonRenderers?: ActionButtonRenderer[];
-        propertyValueRendererManager?: PropertyValueRendererManager;
-        isPropertyHoverEnabled?: boolean;
-        isPropertySelectionEnabled?: boolean;
-        selectedPropertyKey?: string;
-        onPropertyClicked?: (property: PropertyRecord, key?: string) => void;
-        onPropertyRightClicked?: (property: PropertyRecord, key?: string) => void;
-        onPropertyContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
-        editingPropertyKey?: string;
-        onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
-        onEditCancel?: () => void;
-        onNodeHeightChanged: (index: number, key: string, height: number) => void;
-        columnRatio?: number;
-        onColumnChanged?: (ratio: number) => void | RatioChangeResult;
-        isResizeHandleHovered?: boolean;
-        onResizeHandleHoverChanged?: (isHovered: boolean) => void;
-        isResizeHandleBeingDragged?: boolean;
-        onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
-        columnInfo?: PropertyGridColumnInfo;
-        highlight?: HighlightingComponentProps & {
-            filteredTypes?: FilteredType[];
-        };
+    actionButtonRenderers?: ActionButtonRenderer[];
+    // (undocumented)
+    columnInfo: PropertyGridColumnInfo;
+    // (undocumented)
+    columnRatio: number;
+    // (undocumented)
+    editingPropertyKey?: string;
+    // (undocumented)
+    eventHandler: IPropertyGridEventHandler;
+    // (undocumented)
+    gridWidth: number;
+    // (undocumented)
+    highlight?: HighlightingComponentProps & {
+        filteredTypes?: FilteredType[];
     };
     // (undocumented)
-    gridEventHandler: IPropertyGridEventHandler;
+    isPropertyHoverEnabled: boolean;
     // (undocumented)
-    gridItems: FlatGridItem[];
+    isPropertySelectionEnabled: boolean;
     // (undocumented)
-    gridModel: IPropertyGridModel;
+    isResizeHandleBeingDragged: boolean;
+    // (undocumented)
+    isResizeHandleHovered: boolean;
+    // (undocumented)
+    onColumnRatioChanged: (ratio: number) => void | RatioChangeResult;
+    // (undocumented)
+    onEditCancel?: () => void;
+    // (undocumented)
+    onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
+    // (undocumented)
+    onPropertyClicked?: (property: PropertyRecord, key?: string) => void;
+    // (undocumented)
+    onPropertyContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
+    // (undocumented)
+    onPropertyRightClicked?: (property: PropertyRecord, key?: string) => void;
+    // (undocumented)
+    onResizeHandleDragChanged: (newValue: boolean) => void;
+    // (undocumented)
+    onResizeHandleHoverChanged: (newValue: boolean) => void;
+    // (undocumented)
+    orientation: Orientation;
+    // (undocumented)
+    propertyCategoryRendererManager?: PropertyCategoryRendererManager;
+    // (undocumented)
+    propertyValueRendererManager?: PropertyValueRendererManager;
+    // (undocumented)
+    selectedPropertyKey?: string;
 }
-
-// @internal
-export const
-/**
- * Context of [[VirtualizedPropertyGrid]] provider.
- * @internal
- */
-VirtualizedPropertyGridContextConsumer: React.ExoticComponent<React.ConsumerProps<VirtualizedPropertyGridContext>>;
-
-// @internal
-export const
-/**
- * Context of [[VirtualizedPropertyGrid]] provider.
- * @internal
- */
-VirtualizedPropertyGridContextProvider: React.ProviderExoticComponent<React.ProviderProps<VirtualizedPropertyGridContext>>;
 
 // @alpha
 export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
@@ -5772,6 +5782,8 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     };
     // (undocumented)
     model: IPropertyGridModel;
+    // (undocumented)
+    propertyCategoryRendererManager?: PropertyCategoryRendererManager;
 }
 
 // @alpha
@@ -5785,6 +5797,8 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
     highlight?: HighlightingComponentProps & {
         filteredTypes?: FilteredType[];
     };
+    // (undocumented)
+    propertyCategoryRendererManager?: PropertyCategoryRendererManager;
 }
 
 // @beta

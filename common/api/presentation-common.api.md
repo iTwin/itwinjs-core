@@ -76,6 +76,7 @@ export interface CategoryDescription {
     name: string;
     parent?: CategoryDescription;
     priority: number;
+    renderer?: RendererDescription;
 }
 
 // @public (undocumented)
@@ -99,6 +100,8 @@ export interface CategoryDescriptionJSON {
     parent?: string;
     // (undocumented)
     priority: number;
+    // (undocumented)
+    renderer?: RendererDescription;
 }
 
 // @public
@@ -1830,6 +1833,7 @@ export interface PropertyCategorySpecification {
     id: string;
     label: string;
     priority?: number;
+    renderer?: PropertyRendererSpecification;
 }
 
 // @public

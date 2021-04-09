@@ -397,7 +397,8 @@ public;PropertyGridContextMenuArgs
 alpha;PropertyGridEventHandler
 internal;PropertyGridEventsRelatedProps = Pick
 internal;PropertyGridEventsRelatedPropsSupplier 
-internal;PropertyGridEventsRelatedPropsSupplierProps 
+internal;PropertyGridEventsRelatedPropsSupplierProps = Pick
+internal;PropertyGridInternalContext
 alpha;PropertyGridModelChangeEvent 
 alpha;PropertyGridModelChangeListener = () => void
 alpha;PropertyGridModelSource 
@@ -619,7 +620,7 @@ public;ViewRotationChangeEvent
 public;ViewRotationChangeEventArgs
 public;ViewStateProp = ViewState | (() => ViewState)
 alpha;VirtualizedPropertyGrid 
-internal;VirtualizedPropertyGridContext
+alpha;VirtualizedPropertyGridContext
 alpha;VirtualizedPropertyGridProps 
 alpha;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
 alpha;VirtualizedPropertyGridWithDataProviderProps 
