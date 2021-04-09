@@ -41,8 +41,31 @@ export class Relationship extends Entity implements RelationshipProps {
     return val;
   }
 
+  /**
+   * Callback invoked by saveChanges on an ElementDrivesElement relationship when either its input or output has changed or is the output of an upstream relationship.
+   * This callback is invoked after the input element has been processed by upstream relationships.
+   * A subclass of ElementDrivesElement can re-implement this static method to take some action. onRootChanged may modify the output element only.
+   * @param _props The ElementDrivesElement relationship instance.
+   * @param _iModel The iModel
+   */
   public static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void { }
+
+  /**
+   * Callback invoked by saveChanges on an ElementDrivesElement relationship when targets the same element as some other ElementDrivesElement relationship.
+   * A subclass of ElementDrivesElement can re-implement this static method to verify that the the output element is in an acceptable state. This prevents
+   * one relationship from disturbing the results of another.
+   * This callback is invoked after all relationships have received their onRootChanged callbacks and the output elements are supposed to be in their final state.
+   * @param _props The ElementDrivesElement relationship instance.
+   * @param _iModel The iModel
+   */
   public static onValidateOutput(_props: RelationshipProps, _iModel: IModelDb): void { }
+
+  /**
+   * Callback invoked by saveChanges on an ElementDrivesElement relationship when the relationship instance has been deleted.
+   * A subclass of ElementDrivesElement can re-implement this static method to take some action.
+   * @param _props The deleted ElementDrivesElement relationship instance.
+   * @param _iModel The iModel
+   */
   public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 
   /** Insert this Relationship into the iModel. */
@@ -188,7 +211,59 @@ export interface ElementDrivesElementProps extends RelationshipProps {
   priority: number;
 }
 
-/** A Relationship where one Element *drives* another Element
+/** A Relationship indicating that one Element *drives* another Element.
+ * Using ElementDrivesElements, an app can create and store a graph of dependencies between elements in an iModel.
+ * An ElementDrivesElement relationship indicates a one-way driving relationship from the source to the target.
+ * When the input to an ElementDrivesElement relationship changes, the ElementDrivesElement itself can get a callback, and both the input and output elements can get callbacks.
+ *
+ * For example, to make element e1 drive element e2, create a relationship between them like this:
+ * ```ts
+ *  const ede = ElementDrivesElement.create(iModel, e1id, e2id);
+ *  ede.insert();
+ * ```
+ * All of the ElementDrivesElement relationships in an iModel make up a graph.
+ * You could create many such relationships to define a more complex graph like this, for example:
+ * ```
+ *       e21
+ *          \
+ * e1 --> e2 --> e3 --> e4
+ *    /
+ * e11
+ * ```
+ * This graph has the following ElementDrivesElement relationships:
+ * * e1 -> e2
+ * * e11 -> e2
+ * * e2 -> e3
+ * * e21 -> e3
+ * * e3 -> e4
+ *
+ * Callbacks:
+ * Callbacks are invoked by BriefcaseDb.saveChanges to notify handlers about changes.
+ * They are invoked in dependency (topological) order.
+ *
+ * The following callbacks are invoked in an ElementDrivesElement relationship class:
+ * * onRootChanged
+ * * onValidateOutput
+ * * onDeletedDependency
+ * Note that these are static methods. Their default implementations do nothing.
+ * To receive and act on these callbacks, and app should define a subclass of ElementDrivesElement and use that to create relationships.
+ * The subclass should then implement any of the callbacks listed above that it would like to act on.
+ *
+ * A ElementDrivesElement callback is expected to make changes to the output element only!
+ *
+ * Input and output elements can also receive callbacks. See
+ * * Element.onDirectChangeHandled
+ * * Element.onBeforeOutputsHandled
+ * * Element.onAllInputsHandled
+ *
+ * These are static methods that an Element subclass may re-implement.
+ *
+ * The ElementDrivesElement are the "edges" of the graph, and the Elements are the "nodes".
+ *
+ * Note that while an ElementDrivesElement relationship is between one input element and one output element, there is no limit to how
+ * many inputs can flow into a given element or how many outputs can flow out of it. By implementing callbacks on elements,
+ * you can define many:many driving relationships.
+ *
  * @beta
  */
 export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {

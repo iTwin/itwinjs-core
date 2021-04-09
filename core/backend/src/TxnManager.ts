@@ -151,6 +151,10 @@ export class TxnManager {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
   }
   /** @internal */
+  protected _onDirectChange(elClassName: string, elId: Id64String): void {
+    (this._getElementClass(elClassName) as any).onDirectChangeHandled(elId, this._iModel);
+  }
+  /** @internal */
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
     (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel);
   }
