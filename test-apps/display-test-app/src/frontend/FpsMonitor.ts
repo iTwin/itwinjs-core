@@ -42,7 +42,9 @@ export class FpsMonitor {
 
     this._enabled = enabled;
     this._frameCount = 0;
-    IModelApp.viewManager.forEachViewport((vp) => vp.continuousRendering = enabled);
+    for (const vp of IModelApp.viewManager)
+      vp.continuousRendering = enabled;
+
     this._label.innerText = `FPS${this.enabled ? ":" : ""}`;
     this._output.innerText = "";
     if (enabled) {
