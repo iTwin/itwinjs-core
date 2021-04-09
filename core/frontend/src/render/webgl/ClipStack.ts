@@ -34,16 +34,7 @@ const scratchRangeCorners = [
 ];
 
 function getRangeCorners(r: Range3d): Point3d[] {
-  const p = scratchRangeCorners;
-  p[0].setFromPoint3d(r.low);
-  p[1].set(r.high.x, r.low.y, r.low.z);
-  p[2].set(r.low.x, r.high.y, r.low.z);
-  p[3].set(r.high.x, r.high.y, r.low.z);
-  p[4].set(r.low.x, r.low.y, r.high.z);
-  p[5].set(r.high.x, r.low.y, r.high.z);
-  p[6].set(r.low.x, r.high.y, r.high.z);
-  p[7].setFromPoint3d(r.high);
-  return p;
+  return r.corners(scratchRangeCorners);
 }
 
 /** Maintains a stack of ClipVolumes. The volumes nest such that the stack represents the intersection of all the volumes.
