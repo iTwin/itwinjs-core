@@ -9,7 +9,7 @@
 import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { AccuDrawFlags } from "../AccuDraw";
+import { AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -842,7 +842,12 @@ export abstract class ElementSetTool extends PrimitiveTool {
   protected async gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined> {
     if (undefined === this.anchorPoint) {
       this.anchorPoint = ev.point.clone();
-      IModelApp.accuDraw.setContext(AccuDrawFlags.AlwaysSetOrigin, this.anchorPoint);
+
+      const hints = new AccuDrawHintBuilder();
+
+      hints.setOriginAlways = true;
+      hints.setOrigin(this.anchorPoint);
+      hints.sendHints();
     }
 
     if (!this.wantProcessAgenda(ev)) {

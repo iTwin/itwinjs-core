@@ -7,7 +7,7 @@
 import { GeodeticDatum, GeodeticDatumProps } from "./GeodeticDatum";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
 import { MinMax, MinMaxProps, Projection, ProjectionProps } from "./Projection";
-
+import { AdditionalTransform, AdditionalTransformProps } from "./AdditionalTransform";
 /** This type indicates possible linear and angular units supported.
  *  @alpha
 */
@@ -296,6 +296,8 @@ export interface GeographicCRSProps {
   horizontalCRS?: HorizontalCRSProps;
   /** The vertical portion of the geographic coordinate reference system. */
   verticalCRS?: VerticalCRSProps;
+  /** The optional additional transform the geographic coordinate reference system. */
+  additionalTransform?: AdditionalTransformProps;
 }
 
 /** Geographic Coordinate Reference System implementation. This is the class that indicates the definition of a Geographic
@@ -328,11 +330,14 @@ export class GeographicCRS implements GeographicCRSProps {
   public readonly horizontalCRS?: HorizontalCRS;
   /** The vertical portion of the geographic coordinate reference system. */
   public readonly verticalCRS?: VerticalCRS;
+  /** The optional additional transform the geographic coordinate reference system. */
+  public readonly additionalTransform?: AdditionalTransform;
 
   public constructor(data?: GeographicCRSProps) {
     if (data) {
       this.horizontalCRS = data.horizontalCRS ? HorizontalCRS.fromJSON(data.horizontalCRS) : undefined;
       this.verticalCRS = data.verticalCRS ? VerticalCRS.fromJSON(data.verticalCRS) : undefined;
+      this.additionalTransform = data.additionalTransform ? AdditionalTransform.fromJSON(data.additionalTransform) : undefined;
     }
   }
 
@@ -346,6 +351,7 @@ export class GeographicCRS implements GeographicCRSProps {
     const data: GeographicCRSProps = {};
     data.horizontalCRS = this.horizontalCRS ? this.horizontalCRS.toJSON() : undefined;
     data.verticalCRS = this.verticalCRS ? this.verticalCRS.toJSON() : undefined;
+    data.additionalTransform = this.additionalTransform ? this.additionalTransform.toJSON() : undefined;
     return data;
   }
 
@@ -361,6 +367,12 @@ export class GeographicCRS implements GeographicCRSProps {
       return false;
 
     if (this.verticalCRS && !this.verticalCRS.equals(other.verticalCRS!))
+      return false;
+
+    if ((this.additionalTransform === undefined) !== (other.additionalTransform === undefined))
+      return false;
+
+    if (this.additionalTransform && !this.additionalTransform.equals(other.additionalTransform!))
       return false;
 
     return true;
