@@ -1,15 +1,15 @@
 # iTwin Viewer - "Hello World"
 
-## Understanding the basics
+## Customizing the iTwin Viewer - "The Basics"
 
-Once your iTwin Viewer has been initialized and hooked up to your iModel, several files get generated but the only file that you'll need to take a look at to start customizing your iTwin Viewer is "```App.tsx```".
+On creation, the iTwin Viewer generates several files. The ```App.tsx``` file should be the start in customizing our iTwin Viewer.
 
-```App.tsx``` is responsible for two things when it first gets created:
+```App.tsx``` has two responsibilities on initialization:
 
 1. Authentication
 2. Render ``` Viewer ```  Component
 
-The ``` Viewer ``` component is where you'll be adding most of your modifications in to start building your application - and this is contained in the ``` return ```  function at the bottom of the file ```App.tsx```:
+The ``` Viewer ``` component will contain most of our modifications. ```Viewer``` is returned in the ``` return ```  function at the bottom of file ```App.tsx```:
 
 ``` typescript
   return (
@@ -34,8 +34,8 @@ The ``` Viewer ``` component is where you'll be adding most of your modification
   );
 ```
 
-You'll notice that ``` App ```  is just a react component. Like any react component, you can start adding your own HTML elements in the ``` render ```  function.
-You can render a "Hello World" ``` span ```  above the viewer by simply creating the element above the component - Note that this needs to be surrounded in a ``` div ```  per the single parent rule for react:
+``` App ```  is just a react component. Like any react component, we can start adding HTML elements in the ``` render ```  function.
+We can render a "Hello World" ``` span ```  above the viewer by simply creating the element above the component. Note that this needs to be surrounded in a ``` div ```  per the single parent rule for react:
 
 ``` HTML
     <div style={{height: "100%"}}>
@@ -52,7 +52,7 @@ Result:
 
 ![HelloWorldAbove](./images/hello_world_above.png)
 
-You'll notice that we're not influencing any elements inside the viewer - we've just added a ``` span ```  above the viewer. In order to add our "Hello World" ``` span ``` into the viewer, we need to pass ``` uiProvider ``` as a prop to the ``` Viewer ```  component to let it register our "Hello World" element.
+We're not influencing any elements inside the viewer yet. We've just added a ``` span ```  above the viewer. To add our "Hello World" ``` span ``` into the viewer, we need to pass ``` uiProvider ``` as a prop to the ``` Viewer ```  component to let it register our "Hello World" element.
 
 ``` HTML
       <Viewer
@@ -64,9 +64,9 @@ You'll notice that we're not influencing any elements inside the viewer - we've 
   );
 ```
 
-A [UI Provider](https://www.itwinjs.org/reference/ui-framework/uiprovider/?term=uiprovider) is an interface you can implement that will extend the ```Viewer``` with your custom UI components. We're going to add a widget on the right side of our viewer to contain our "Hello World" string. To do this, we need to define our ```HelloWorldUiProvider``` class and implement the ```UiItemsProvider``` interface.
+A [UI Provider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/) is an interface we can implement that extends the ```Viewer``` with custom UI components. To add a component that contains our "Hello World" string, we need to define our ```HelloWorldUiProvider``` class and implement the ```UiItemsProvider``` interface.
 
-Create a new file called "```HelloWorldUiProvider.tsx```" with the following contents:
+Create a new file called ```HelloWorldUiProvider.tsx``` with the following contents:
 
 ``` typescript
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsProvider } from "@bentley/ui-abstract";
@@ -94,18 +94,20 @@ export class HelloWorldUiProvider implements UiItemsProvider {
 }
 ```
 
-The only function we define in the provider is ``` provideWidgets ```, and we return a single widget that returns "Hello World" at ``` StagePanelLocation.Right ```. All providers require ``` public readonly id ``` to distinguish between different providers.
+The only function defined in the provider is ``` provideWidgets ``` that returns a single widget containing string "Hello World" at ``` StagePanelLocation.Right ```. All providers require ``` public readonly id ``` to distinguish between different providers.
 
-We pass three attributes into the ```helloWidget```:
+Three attributes are passed into the ```helloWidget```:
 1. ``` id ``` - used to uniquely identify the widget
 2. ``` label ``` - description label for our widget
 3. ``` getWidgetContent() ``` - our custom UI component
 
-This is sufficient for our "Hello World" Widget for now. Don't forget to add:
+The component is sufficient for our "Hello World" widget for now. We need to import ```HelloWorldUiProvider``` at the top of file ```App.tsx```:
 
-```import { HelloWorldUiProvider } from "./HelloWorldUiProvider";```
+``` Typescript
+import { HelloWorldUiProvider } from "./HelloWorldUiProvider";
+```
 
-To the top of App.tsx. We'll also remove our old ```span``` and ```div```, so our final code for our ``` return ``` function in ```App.tsx``` should look like:
+We'll also remove our old ```span``` and ```div```, so our final code for the ``` return ``` function in ```App.tsx``` should look similar to:
 
 
 ``` typescript
@@ -136,15 +138,173 @@ Result:
 
 ![HelloWorldWidget](./images/hello_world_widget.png)
 
+## Improving our widget
+
+Instead of a "Hello World" string in our ```getWidgetContent()```, we can return react components in our widget to improve functionality. We will use component [Button](https://www.itwinjs.org/reference/ui-core/button/) in place of our "Hello World" string to toggle notifications:
+
+``` ```
+
+``` typescript
+    if (location === StagePanelLocation.Right) {
+      const notificationsWidget: AbstractWidgetProps = {
+        id: "NotificationWidget",
+        label: "Notification Toggle",
+        getWidgetContent() {
+          return <Button id="NotificationsToggle">Notifications Off</Button>
+        }
+      }
+
+      widgets.push(notificationsWidget);
+    }
+```
+
+Result:
+
+![Notifications Toggle](./images/notifications_toggle.png)
+
+To track our toggle state, create a ```static toggle``` variable to class HelloWorldUiProvider:
+
+``` typescript
+export class HelloWorldUiProvider implements UiItemsProvider {
+  public readonly id = "HelloWorldProvider";
+  static toggle: boolean = false;
+  ...
+```
+
+We need to bind an onClick event to our Button and call ```toggleNotifications``` to toggle our variable:
+
+``` typescript
+        getWidgetContent() {
+          return <Button id="NotificationsToggle" onClick={toggleNotifications}>Notifications Off</Button>
+        }
+```
+
+Define ```toggleNotifications``` under the ```provideWidgets``` function to toggle the static variable and swap the innerText of button id ```NotificationsToggle```
+
+``` typescript
+    public provideWidgets(...) {
+    ...
+
+    const toggleNotifications = () => {
+      HelloWorldUiProvider.toggle = !HelloWorldUiProvider.toggle;
+      if (HelloWorldUiProvider.toggle) {
+        document.getElementById("NotificationsToggle")!.innerText = "Notifications On"
+      } else {
+        document.getElementById("NotificationsToggle")!.innerText = "Notifications Off"
+      }
+    }
+
+    ...
+    }
+```
+
+The button message will swap to "Notifications On" on click now. Along with changing the innerText of our button, we will add a listener to notify the selected element ID on element selection by using the [Presentation](https://www.itwinjs.org/reference/presentation-frontend/core/presentation) class:
+
+``` typescript
+    const toggleNotifications = () => {
+      HelloWorldUiProvider.toggle = !HelloWorldUiProvider.toggle;
+      if (HelloWorldUiProvider.toggle) {
+        Presentation.selection.selectionChange.addListener(onSelectionChanged);
+        document.getElementById("NotificationsToggle")!.innerText = "Notifications On"
+      } else {
+        Presentation.selection.selectionChange.removeListener(onSelectionChanged);
+        document.getElementById("NotificationsToggle")!.innerText = "Notifications Off"
+      }
+    }
+
+```
+
+Define ```onSelectionChanged``` listener above ```toggleNotifications``` as:
+
+``` typescript
+    const onSelectionChanged = async (evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider) => {
+      const selection = selectionProvider.getSelection(evt.imodel, evt.level);
+      const keys = new KeySet(selection);
+
+      keys.forEach((key) => {
+        if (Key.isInstanceKey(key))
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Element " + key.id + " selected"));
+      })
+    };
+```
+
+The [ISelectionProvider](https://www.itwinjs.org/reference/presentation-frontend/unifiedselection/iselectionprovider/) is in charge of tracing selections in the viewer.
+
+We use class [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/)'s built-in static function [outputMessage()](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) to display a toast message of the selected element ID.
+
+Our completed ```HelloWorldUiProvider.tsx``` file should look similar to this:
+
+``` typescript
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { Key, KeySet } from "@bentley/presentation-common";
+import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
+import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsProvider } from "@bentley/ui-abstract";
+import { Button } from "@bentley/ui-core";
+
+import * as React from "react";
+
+export class HelloWorldUiProvider implements UiItemsProvider {
+  public readonly id = "HelloWorldProvider";
+  static toggle: boolean = false;
+
+  public provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) : ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+
+    // This method is called when the user selects an element
+    const onSelectionChanged = async (evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider) => {
+      const selection = selectionProvider.getSelection(evt.imodel, evt.level);
+      const keys = new KeySet(selection);
+
+      keys.forEach((key) => {
+        if (Key.isInstanceKey(key))
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Element " + key.id + " selected"));
+      })
+    };
+
+    const toggleNotifications = () => {
+      HelloWorldUiProvider.toggle = !HelloWorldUiProvider.toggle;
+      if (HelloWorldUiProvider.toggle) {
+        Presentation.selection.selectionChange.addListener(onSelectionChanged);
+        document.getElementById("NotificationsToggle")!.innerText = "Notifications On"
+      } else {
+        Presentation.selection.selectionChange.removeListener(onSelectionChanged);
+        document.getElementById("NotificationsToggle")!.innerText = "Notifications Off"
+      }
+    }
+
+    if (location === StagePanelLocation.Right) {
+      const notificationsWidget: AbstractWidgetProps = {
+        id: "NotificationWidget",
+        label: "Notification Toggle",
+        getWidgetContent() {
+          return <Button id="NotificationsToggle" onClick={toggleNotifications}>Notifications Off</Button>
+        }
+      }
+
+      widgets.push(notificationsWidget);
+    }
+
+    return widgets;
+  }
+}
+```
+
+Result when notification is toggled and selecting an element:
+
+![Notifications Toggle On](./images/notifications_toggle_on.png)
+
+This is one of infinitely many possible widgets we can create in the iTwin Viewer. Feel free to explore sample widgets on our [sample showcase](https://www.itwinjs.org/sample-showcase/).
+
+In the next tutorial, we will take widgets from the sample showcase and use them in our iTwin Viewer.
 
 ## Useful Links
 
-- [Create React App](https://create-react-app.dev/)
-- [iTwin Viewer React](https://www.npmjs.com/package/@bentley/itwin-viewer-react)
-- [iTwin Viewer Create React App Template](https://www.npmjs.com/package/@bentley/cra-template-itwin-viewer)
-- [Bentley React Scripts](https://www.npmjs.com/package/@bentley/react-scripts)
+- [UI Provider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/)
+- [ISelectionProvider](https://www.itwinjs.org/reference/presentation-frontend/unifiedselection/iselectionprovider/)
+- [outputMessage()](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/)
+- [iTwin Sample Showcase](https://www.itwinjs.org/sample-showcase/)
 
 ## Next Steps
 
-- [Visit the iTwin Sample Showcase](https://www.itwinjs.org/sample-showcase/)
+- [Using the Sample Showcase](https://www.itwinjs.org/sample-showcase/)
 
