@@ -30,6 +30,8 @@
 }
 
 .uifw-statusbar-docked {
+  display: flex;
+  align-content: center;
   width: 100%;
   background-color: $buic-background-statusbar;
 }
