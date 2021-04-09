@@ -40,13 +40,13 @@ class TileMemoryTracer {
 
     const imodels = new Set<IModelConnection>();
     const selectedTiles = new Set<Tile>();
-    IModelApp.tileAdmin.forEachViewport((vp) => {
+    for (const vp of IModelApp.viewManager) {
       imodels.add(vp.iModel);
       const tiles = IModelApp.tileAdmin.getTilesForViewport(vp)?.selected;
       if (tiles)
         for (const tile of tiles)
           selectedTiles.add(tile);
-    });
+    }
 
     for (const selected of selectedTiles)
       this.add(selected, TileMemorySelector.Selected);
