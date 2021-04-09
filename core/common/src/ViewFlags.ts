@@ -77,7 +77,7 @@ export interface ViewFlagProps {
   hidEdges?: boolean;
   /** If true, show shadows. */
   shadows?: boolean;
-  /** If true, use clipping volume. */
+  /** If true, use the view's clipping volume. Has no effect on other types of clips like [[ModelClipGroups]]. */
   clipVol?: boolean;
   /** If true, use hidden line material colors. */
   hlMatColors?: boolean;
@@ -157,7 +157,7 @@ export class ViewFlags {
   public solarLight: boolean = false;
   /** Shows or hides shadows. */
   public shadows: boolean = false;
-  /** Controls whether the clip volume is applied. */
+  /** Controls whether the view's clip volume is applied. Has no effect on other types of clips like [[ModelClipGroups]]. */
   public clipVolume: boolean = true;
   /** Shows or hides construction class geometry. */
   public constructions: boolean = false;

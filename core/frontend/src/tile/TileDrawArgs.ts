@@ -41,9 +41,7 @@ export interface TileDrawArgParams {
   now: BeTimePoint;
   /** Overrides to apply to the view's [ViewFlags]($common) when drawing the tiles. */
   viewFlagOverrides: ViewFlagOverrides;
-  /** Clip volume used to clip the tiles.
-   * @beta
-   */
+  /** Clip volume used to clip the tiles. */
   clipVolume?: RenderClipVolume;
   /** @internal */
   parentsAndChildrenExclusive: boolean;
@@ -67,9 +65,7 @@ export class TileDrawArgs {
   public readonly location: Transform;
   /** The tile tree being drawn. */
   public readonly tree: TileTree;
-  /** Optional clip volume applied to the tiles.
-   * @beta
-   */
+  /** Optional clip volume applied to the tiles. */
   public clipVolume: RenderClipVolume | undefined;
   /** The context in which the tiles will be drawn, exposing, e.g., the [[Viewport]] and accepting [[RenderGraphic]]s to be drawn. */
   public readonly context: SceneContext;
@@ -247,7 +243,8 @@ export class TileDrawArgs {
     this._appearanceProvider = params.appearanceProvider;
     this.hiddenLineSettings = params.hiddenLineSettings;
 
-    if (undefined !== clipVolume && !clipVolume.hasOutsideClipColor)
+    // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
+    if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
       this.clipVolume = clipVolume;
 
     this.graphics.setViewFlagOverrides(viewFlagOverrides);
@@ -261,8 +258,10 @@ export class TileDrawArgs {
     this.drape = context.getTextureDrapeForModel(tree.modelId);
 
     // NB: If the tile tree has its own clip, do not also apply the view's clip.
-    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolumeOverride && undefined === clipVolume)
-      this.viewClip = undefined === context.viewport.outsideClipColor ? context.viewport.view.getViewClip() : undefined;
+    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolumeOverride && undefined === clipVolume) {
+      const outsideClipColor = context.viewport.displayStyle.settings.clipStyle.outsideColor;
+      this.viewClip = undefined === outsideClipColor ? context.viewport.view.getViewClip() : undefined;
+    }
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
     if (context.viewport.view.isCameraEnabled())

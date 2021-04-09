@@ -8,12 +8,7 @@
  */
 
 import {
-  ClipStyle,
-  ClipStyleProps,
-  ColorByName,
-  ColorDef,
-  LinePixels,
-  RenderMode,
+  ClipStyle, ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor,
 } from "@bentley/imodeljs-common";
 import { IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
@@ -43,38 +38,33 @@ export class ClipColorTool extends Tool {
   private _clearClipColors() {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp) {
-      vp.insideClipColor = undefined;
-      vp.outsideClipColor = undefined;
+      const props = vp.displayStyle.settings.clipStyle.toJSON() ?? { };
+      props.insideColor = props.outsideColor = undefined;
+      vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
     }
   }
 
-  private _setInsideClipColor(colStr: string) {
+  private setClipColor(colStr: string, which: "insideColor" | "outsideColor") {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      vp.insideClipColor = colStr === "clear" ? undefined : ColorDef.fromString(colStr);
-  }
-
-  private _setOutsideClipColor(colStr: string) {
-    const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      vp.outsideClipColor = colStr === "clear" ? undefined : ColorDef.fromString(colStr);
+    if (vp) {
+      const props = vp.displayStyle.settings.clipStyle.toJSON() ?? { };
+      props[which] = colStr === "clear" ? undefined : RgbColor.fromColorDef(ColorDef.fromString(colStr));
+      vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
+    }
   }
 
   public parseAndRun(...args: string[]): boolean {
     if (1 === args.length) {
-      if (args[0] === "clear") {
+      if (args[0] === "clear")
         this._clearClipColors();
-        return true;
-      }
-      return false;
+
+      return true;
     }
 
-    if (args[0] === "inside")
-      this._setInsideClipColor(args[1]);
-    else if (args[0] === "outside")
-      this._setOutsideClipColor(args[1]);
-    else
-      return false;
+    const which = args[0];
+    if (which === "inside" || which === "outside")
+      this.setClipColor(args[1], "inside" === which ? "insideColor" : "outsideColor");
+
     return true;
   }
 }
