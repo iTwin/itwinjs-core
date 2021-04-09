@@ -1059,8 +1059,6 @@ export class AnimationBranchState {
     // (undocumented)
     readonly clip?: RenderClipVolume;
     // (undocumented)
-    dispose(): void;
-    // (undocumented)
     readonly omit?: boolean;
     // (undocumented)
     readonly transform?: Transform;
@@ -3837,7 +3835,6 @@ export interface GraphicBranchOptions {
     appearanceProvider?: FeatureAppearanceProvider;
     // @internal (undocumented)
     classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
-    // @beta
     clipVolume?: RenderClipVolume;
     // @internal (undocumented)
     frustum?: GraphicBranchFrustum;
@@ -7571,17 +7568,10 @@ export class RemoteBriefcaseConnection extends CheckpointConnection {
     updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
 }
 
-// @beta
-export abstract class RenderClipVolume implements IDisposable {
+// @public
+export abstract class RenderClipVolume {
     protected constructor(clipVector: ClipVector);
     readonly clipVector: ClipVector;
-    // @internal (undocumented)
-    abstract collectStatistics(stats: RenderMemory.Statistics): void;
-    abstract dispose(): void;
-    // @internal
-    abstract get hasOutsideClipColor(): boolean;
-    // @internal (undocumented)
-    abstract setClipColors(outsideColor: ColorDef | undefined, insideColor: ColorDef | undefined): void;
 }
 
 // @public
@@ -7802,8 +7792,6 @@ export namespace RenderMemory {
 // @internal
 export interface RenderPlan {
     // (undocumented)
-    readonly activeClipSettings?: ViewClipSettings;
-    // (undocumented)
     readonly analysisStyle?: AnalysisStyle;
     // (undocumented)
     readonly analysisTexture?: RenderTexture;
@@ -7813,6 +7801,10 @@ export interface RenderPlan {
     readonly backgroundMapOn: boolean;
     // (undocumented)
     readonly bgColor: ColorDef;
+    // (undocumented)
+    readonly clip?: ClipVector;
+    // (undocumented)
+    readonly clipStyle: ClipStyle;
     // (undocumented)
     readonly emphasisSettings: Hilite.Settings;
     // (undocumented)
@@ -8053,7 +8045,6 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
-    // @internal (undocumented)
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     // @internal (undocumented)
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
@@ -9463,8 +9454,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get currentBranch(): BranchState;
     // (undocumented)
-    get currentClipVolume(): ClipVolume | undefined;
-    // (undocumented)
     get currentEdgeSettings(): EdgeSettings;
     // (undocumented)
     get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides;
@@ -10115,7 +10104,6 @@ export interface TiledGraphicsProvider {
 // @public
 export interface TileDrawArgParams {
     appearanceProvider?: FeatureAppearanceProvider;
-    // @beta
     clipVolume?: RenderClipVolume;
     context: SceneContext;
     hiddenLineSettings?: HiddenLine.Settings;
@@ -10136,7 +10124,6 @@ export class TileDrawArgs {
     get appearanceProvider(): FeatureAppearanceProvider | undefined;
     // @internal (undocumented)
     get clip(): ClipVector | undefined;
-    // @beta
     clipVolume: RenderClipVolume | undefined;
     protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number;
     readonly context: SceneContext;
@@ -10446,7 +10433,6 @@ export interface TileTreeOwner {
 
 // @public
 export interface TileTreeParams {
-    // @beta
     clipVolume?: RenderClipVolume;
     contentRange?: ElementAlignedBox3d;
     expirationTime?: BeDuration;
@@ -10473,7 +10459,6 @@ export abstract class TileTreeReference {
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     draw(args: TileDrawArgs): void;
     protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined;
-    // @beta
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
     protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
@@ -12135,9 +12120,6 @@ export abstract class Viewport implements IDisposable {
     get hilite(): Hilite.Settings;
     set hilite(hilite: Hilite.Settings);
     get iModel(): IModelConnection;
-    // @beta
-    get insideClipColor(): ColorDef | undefined;
-    set insideClipColor(color: ColorDef | undefined);
     // @internal (undocumented)
     invalidateController(): void;
     invalidateDecorations(): void;
@@ -12192,9 +12174,6 @@ export abstract class Viewport implements IDisposable {
     readonly onViewedModelsChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewportChanged: BeEvent<(vp: Viewport, changed: ChangeFlags) => void>;
     readonly onViewUndoRedo: BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>;
-    // @beta
-    get outsideClipColor(): ColorDef | undefined;
-    set outsideClipColor(color: ColorDef | undefined);
     // @beta
     overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;
     overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void;
