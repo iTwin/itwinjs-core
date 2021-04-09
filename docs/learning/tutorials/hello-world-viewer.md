@@ -15,14 +15,14 @@ This tutorial will take you through the first steps of customizing your iTwin We
 
 ### Hello World
 
-On creation, the iTwin Viewer generates several files. The ```App.tsx``` file should be the start in customizing our iTwin Viewer.
+The iTwin Web Viewer viewer template generates several files. To start with, let's take a look at the ```App.tsx``` file.  This is where you should start in customizing your iTwin Viewer.
 
-```App.tsx``` has two responsibilities on initialization:
+To start with ```App.tsx``` contains a single react functional component fittingly called ```App```.  The ```App``` component is responsible for:
 
-1. Authentication
-2. Render ``` Viewer ```  Component
+1. Authenticating the user
+2. Rendering the ```Viewer``` component
 
-The ``` Viewer ``` component will contain most of our modifications. ```Viewer``` is returned in the ``` return ```  function at the bottom of file ```App.tsx```:
+At the bottom of ```App.tsx``` you can see the ```return``` statement where the ```Viewer``` component is configured.  Let's focus on that for the now:
 
 ``` typescript
   return (
@@ -47,8 +47,7 @@ The ``` Viewer ``` component will contain most of our modifications. ```Viewer``
   );
 ```
 
-``` App ```  is just a react component. Like any react component, we can start adding HTML elements in the ``` render ```  function.
-We can render a "Hello World" ``` span ```  above the viewer by simply creating the element above the component. Note that this needs to be surrounded in a ``` div ```  per the single parent rule for react:
+```App``` is just a react component. Like any react component, it returns JSX to tell react how to create HTML for the browser to render.  Let's start off by adding some custom code to our JSX.  We can render a "Hello World" ```span```  above the viewer by simply creating the element above the component. Note that this needs to be surrounded in a ```div```  per the single parent rule for react:
 
 ``` HTML
     <div style={{height: "100%"}}>
