@@ -157,8 +157,6 @@ Result:
 
 Instead of a "Hello World" string in our ```getWidgetContent()```, we can return react components in our widget to improve functionality. We will use component [Button](https://www.itwinjs.org/reference/ui-core/button/) in place of our "Hello World" string to toggle notifications:
 
-``````
-
 ``` typescript
     if (location === StagePanelLocation.Right) {
       const notificationsWidget: AbstractWidgetProps = {
