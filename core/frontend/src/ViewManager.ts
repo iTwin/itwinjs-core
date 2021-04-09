@@ -75,7 +75,7 @@ export interface ToolTipProvider {
  * The ViewManager controls the render loop, which causes the contents of each registered [[Viewport]] to update on the screen.
  * @public
  */
-export class ViewManager {
+export class ViewManager implements Iterable<ScreenViewport> {
   public inDynamicsMode = false;
   public cursor = "default";
   private readonly _viewports: ScreenViewport[] = [];
@@ -304,7 +304,14 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
-  /** Call the specified function on each [[Viewport]] registered with the ViewManager. */
+  /** Iterate over the viewports registered with the view manager. */
+  public [Symbol.iterator](): Iterator<ScreenViewport> {
+    return this._viewports[Symbol.iterator]();
+  }
+
+  /** Call the specified function on each [[Viewport]] registered with the ViewManager.
+   * @deprecated Use a `for..of` loop.
+   */
   public forEachViewport(func: (vp: ScreenViewport) => void) {
     this._viewports.forEach((vp) => func(vp));
   }
