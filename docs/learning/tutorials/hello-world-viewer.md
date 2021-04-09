@@ -155,13 +155,13 @@ Now we have our "Hello World" ```span``` displaying in a panel within the ```Vie
 
 ![HelloWorldWidget](./images/hello_world_widget.png)
 
-### Improving your widget
+### Beyond Hello World
 
-Instead of a "Hello World" ```span``` in our ```getWidgetContent()```, we can return react components in our widget to improve functionality. We will use component [Toggle](https://www.itwinjs.org/reference/ui-core/toggle/toggle/) in place of our "Hello World" ```span``` to toggle the background color:
+Saying hello to the world can be fun but we need to get past that.  For this next step we'll swap out our trivial ```helloWidget``` with something a little more interactive: a [Toggle](https://www.itwinjs.org/reference/ui-core/toggle/toggle/).  Eventually this toggle will control the background color, so we'll name our new widget ```backgroundColorWidget```.  Instead of returning a ```span``` we'll return a ```Toggle```.  The new widget should look like this:
 
 ``` typescript
     if (location === StagePanelLocation.Right) {
-      const notificationsWidget: AbstractWidgetProps = {
+      const backgroundColorWidget: AbstractWidgetProps = {
         id: "BackgroundColorWidget",
         label: "Background Color Toggle",
         getWidgetContent() {
@@ -169,7 +169,7 @@ Instead of a "Hello World" ```span``` in our ```getWidgetContent()```, we can re
         }
       }
 
-      widgets.push(notificationsWidget);
+      widgets.push(backgroundColorWidget);
     }
 ```
 
