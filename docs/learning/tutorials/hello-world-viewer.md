@@ -74,22 +74,22 @@ So far, we haven't done anything to change the way the viewer works.  We've only
         contextId={process.env.IMJS_CONTEXT_ID ?? ""}
         iModelId={process.env.IMJS_IMODEL_ID ?? ""}
         authConfig={{ oidcClient: AuthorizationClient.oidcClient }}
-        uiProvider={[new HelloWorldUiProvider()]}
+        uiProvider={[new MyFirstUiProvider()]}
       />
   );
 ```
 
-The ```uiProvider``` prop is typed to require an object that implements the [UIItemsProvider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/) interface.  Passing in this object will allow us to extend the ```Viewer``` with custom UI components. To do that, we need to define our ```HelloWorldUiProvider``` class so that it implements the ```UiItemsProvider``` interface.  Our new provider will tell the ```Viewer``` to include our "Hello world" ```span``` within the view.
+The ```uiProvider``` prop is typed to require an object that implements the [UIItemsProvider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/) interface.  Passing in this object will allow us to extend the ```Viewer``` with custom UI components. To do that, we need to define our ```MyFirstUiProvider``` class so that it implements the ```UiItemsProvider``` interface.  Our new provider will tell the ```Viewer``` to include our "Hello world" ```span``` within the view.
 
-Create a new file called ```HelloWorldUiProvider.tsx``` with the following contents:
+Create a new file called ```MyFirstUiProvider.tsx``` with the following contents:
 
 ``` typescript
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsProvider } from "@bentley/ui-abstract";
 
 import * as React from "react";
 
-export class HelloWorldUiProvider implements UiItemsProvider {
-  public readonly id = "HelloWorldProvider";
+export class MyFirstUiProvider implements UiItemsProvider {
+  public readonly id = "MyFirstProviderId";
 
   public provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) : ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
@@ -111,7 +111,7 @@ export class HelloWorldUiProvider implements UiItemsProvider {
 }
 ```
 
-Let's review that code.  We've defined our new ```HelloWorldUiProvider``` class.  In the new class we've defined ``` public readonly id ``` which is required to distinguish between different providers.  Then notice that we've defined just one function called ``` provideWidgets ```.  This function will be called several times as the ```Viewer``` is building up the user interface.  We will return an empty array except for when the ```location``` is equal to ```StagePanelLocation.Right```.  In that case, we will return a single widget that will supply our "Hello World" ```span```.
+Let's review that code.  We've defined our new ```MyFirstUiProvider``` class.  In the new class we've defined ``` public readonly id ``` which is required to distinguish between different providers.  Then notice that we've defined just one function called ``` provideWidgets ```.  This function will be called several times as the ```Viewer``` is building up the user interface.  We will return an empty array except for when the ```location``` is equal to ```StagePanelLocation.Right```.  In that case, we will return a single widget that will supply our "Hello World" ```span```.
 
 Our ```helloWidget``` consists of three attributes:
 
@@ -119,13 +119,13 @@ Our ```helloWidget``` consists of three attributes:
 2. ``` label ``` - description label for our widget
 3. ``` getWidgetContent() ``` - returns our custom UI component
 
-At this point we need to import ```HelloWorldUiProvider``` at the top of file ```App.tsx```:
+At this point we need to import ```MyFirstUiProvider``` at the top of file ```App.tsx```:
 
 ``` Typescript
-import { HelloWorldUiProvider } from "./HelloWorldUiProvider";
+import { MyFirstUiProvider } from "./MyFirstUiProvider";
 ```
 
-Finally, let's clean up the ```span``` and ```div``` that we added directly into the App component earlier.  Now the ``` return ``` statement in ```App.tsx``` should look like this:
+Finally, let's clean up the ```span``` and ```div``` that we added directly into the ```App``` component earlier.  Now the ``` return ``` statement in ```App.tsx``` should look like this:
 
 ``` typescript
   return (
@@ -143,7 +143,7 @@ Finally, let's clean up the ```span``` and ```div``` that we added directly into
             contextId={process.env.IMJS_CONTEXT_ID ?? ""}
             iModelId={process.env.IMJS_IMODEL_ID ?? ""}
             authConfig={{ oidcClient: AuthorizationClient.oidcClient }}
-            uiProviders={[new HelloWorldUiProvider()]}
+            uiProviders={[new MyFirstUiProvider()]}
           />
         )
       )}
@@ -157,7 +157,9 @@ Now we have our "Hello World" ```span``` displaying in a panel within the ```Vie
 
 ### Beyond Hello World
 
-Saying hello to the world can be fun but we need to get past that.  For this next step we'll swap out our trivial ```helloWidget``` with something a little more interactive: a [Toggle](https://www.itwinjs.org/reference/ui-core/toggle/toggle/).  Eventually this toggle will control the background color, so we'll name our new widget ```backgroundColorWidget```.  Instead of returning a ```span``` we'll return a ```Toggle```.  The new widget should look like this:
+Saying hello to the world can be fun but we need to get past that.  For this next step we'll swap out our trivial ```helloWidget``` with something a little more interactive: a [Toggle](https://www.itwinjs.org/reference/ui-core/toggle/toggle/).  Eventually this toggle will control the background color, so we'll name our new widget ```backgroundColorWidget```.  Instead of returning a ```span``` we'll return a ```Toggle```.
+
+Start by navigating back to ```MyFirstUiProvider.tsx```.  Next switch out the ```helloWidget``` with the new ```backgroundColorWidget``` here:
 
 ``` typescript
     if (location === StagePanelLocation.Right) {
@@ -173,27 +175,26 @@ Saying hello to the world can be fun but we need to get past that.  For this nex
     }
 ```
 
-Result:
+Notice the only significant difference is that ```getWidgetContent``` is new returning a ```Toggle```.  It doesn't do anything interesting yet, but it should look like this:
 
 ![Background Color Toggle](./images/background_color_toggle.png)
 
 ### Changing the background color
 
-```Toggle``` has prop ```onChange``` where we can catch the "on" and "off" state. If the toggle is on, we'll override the background color to "skyblue". If we toggle it again to off, we'll change the background color to "pink":
+For this last step, let's put our new toggle to work.  We want the toggle to control the background color in the view of our house iModel.  When the toggle is on, we'll override the background color to "skyblue". When the toggle is off, we'll change the background color to "pink".
+
+To do this, we need to pass the ```onChange``` prop to the ```Toggle``` component like this:
 
 ``` typescript
           return <Toggle onChange={(toggle) => {
-            if (toggle) {
-              IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: ColorDef.computeTbgrFromString("skyblue")})
-            } else {
-              IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: ColorDef.computeTbgrFromString("pink")})
-            }
+            const color = toggle ? "skyblue" : "pink";
+            IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: ColorDef.computeTbgrFromString(color)})
           }}></Toggle>
 ```
 
-We can get change the background color using function [overrideDisplayStyle()](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewport/overridedisplaystyle/) through global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) in property [viewManager](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewmanager/).
+Notice we using the function [overrideDisplayStyle()](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewport/overridedisplaystyle/) on the currently selected view.  To get the view, we use the global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) to get to the [viewManager](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewmanager/).
 
-Our completed ```HelloWorldUiProvider.tsx``` file should look similar to this:
+Our completed ```MyFirstUiProvider.tsx``` file should look similar to this:
 
 ``` typescript
 import { ColorDef } from "@bentley/imodeljs-common";
@@ -203,8 +204,8 @@ import { Toggle } from "@bentley/ui-core";
 
 import * as React from "react";
 
-export class HelloWorldUiProvider implements UiItemsProvider {
-  public readonly id = "HelloWorldProvider";
+export class MyFirstUiProvider implements UiItemsProvider {
+  public readonly id = "MyFirstProviderId";
 
   public provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) : ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
@@ -215,11 +216,8 @@ export class HelloWorldUiProvider implements UiItemsProvider {
         label: "Background Color Toggle",
         getWidgetContent() {
           return <Toggle onChange={(toggle) => {
-            if (toggle) {
-              IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: ColorDef.computeTbgrFromString("skyblue")})
-            } else {
-              IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: ColorDef.computeTbgrFromString("pink")})
-            }
+            const color = toggle ? "skyblue" : "pink";
+            IModelApp.viewManager.selectedView!.overrideDisplayStyle({backgroundColor: ColorDef.computeTbgrFromString(color)})
           }}></Toggle>
         }
       }
@@ -232,13 +230,15 @@ export class HelloWorldUiProvider implements UiItemsProvider {
 }
 ```
 
-Result when the button is toggled on:
+Result when the toggled in on:
 
 ![Background blue](./images/background_toggled_blue.png)
 
-Result when the button is toggled off:
+Result when the toggled is off:
 
 ![Background pink](./images/background_toggled_pink.png)
+
+### What's next?
 
 This is one of infinitely many possible widgets we can create in the iTwin Viewer. Feel free to explore sample widgets on our [sample showcase](https://www.itwinjs.org/sample-showcase/).
 
