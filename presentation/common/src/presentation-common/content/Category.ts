@@ -6,6 +6,8 @@
  * @module Content
  */
 
+import { RendererDescription } from "./Renderer";
+
 /**
  * A data structure that describes a [[Field]] category.
  * @public
@@ -23,6 +25,8 @@ export interface CategoryDescription {
   expand: boolean;
   /** Parent category description */
   parent?: CategoryDescription;
+  /** Custom renderer description */
+  renderer?: RendererDescription;
 }
 /** @public */
 export namespace CategoryDescription {
@@ -73,4 +77,5 @@ export interface CategoryDescriptionJSON {
   priority: number;
   expand: boolean;
   parent?: string;
+  renderer?: RendererDescription;
 }

@@ -6,13 +6,14 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { IMutableCategorizedPropertyItem, IMutableGridCategoryItem } from "./MutableFlatGridItem";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { MutableCategorizedPrimitiveProperty } from "./MutableCategorizedPrimitiveProperty";
-import { MutableCategorizedArrayProperty } from "./MutableCategorizedArrayProperty";
-import { MutableCategorizedStructProperty } from "./MutableCategorizedStructProperty";
-import { CategoryRecordsDict, MutableGridCategory } from "./MutableGridCategory";
 import { PropertyCategory } from "../../PropertyDataProvider";
+import { MutableCategorizedArrayProperty } from "./MutableCategorizedArrayProperty";
+import { MutableCategorizedPrimitiveProperty } from "./MutableCategorizedPrimitiveProperty";
+import { MutableCategorizedStructProperty } from "./MutableCategorizedStructProperty";
+import { MutableCustomGridCategory } from "./MutableCustomGridCategory";
+import { IMutableCategorizedPropertyItem, IMutableGridCategoryItem } from "./MutableFlatGridItem";
+import { CategoryRecordsDict, MutableGridCategory } from "./MutableGridCategory";
 
 /**
  * IMutableGridItemFactory interface for creating MutableGridItem objects
@@ -121,6 +122,9 @@ export class MutableGridItemFactory implements IMutableGridItemFactory {
     parentSelectionKey?: string,
     depth?: number,
   ): IMutableGridCategoryItem {
+    if (category.renderer !== undefined)
+      return new MutableCustomGridCategory(category, recordsDict, this, parentSelectionKey, depth ?? 0);
+
     if (parentSelectionKey !== undefined && depth !== undefined)
       return new MutableGridCategory(category, recordsDict, this, parentSelectionKey, depth);
 

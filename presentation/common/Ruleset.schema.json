@@ -2098,6 +2098,10 @@
         "priority": {
           "description": "Priority of the category. Higher priority categories are displayed on top. Defaults to `1000`.",
           "type": "integer"
+        },
+        "renderer": {
+          "$ref": "#/definitions/PropertyRendererSpecification",
+          "description": "Custom category renderer specification."
         }
       },
       "required": [
