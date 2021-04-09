@@ -166,6 +166,12 @@ export class DisplayTestApp {
           uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001",
           info: { title: "DisplayTestApp", version: "v1.0" },
         },
+        authConfig: {
+          clientId: "imodeljs-spa-test",
+          redirectUri: "http://localhost:3000/signin-callback",
+          scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api imodeljs-router",
+          responseType: "code",
+        },
       },
       localhostIpcApp: {
         socketPort: 3002,
