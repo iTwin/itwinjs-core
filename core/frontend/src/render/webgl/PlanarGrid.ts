@@ -7,7 +7,7 @@
  */
 
 import { Plane3dByOriginAndUnitNormal, Point2d } from "@bentley/geometry-core";
-import { Frustum, QPoint2dList, QPoint3dList } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum, QPoint2dList, QPoint3dList } from "@bentley/imodeljs-common";
 import { PlanarGridProps } from "../primitives/PlanarGrid";
 import { RenderMemory } from "../RenderMemory";
 import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
@@ -23,7 +23,7 @@ class PlanarGridGeometryParams extends IndexedGeometryParams {
 
   public readonly uvParams: QBufferHandle2d;
 
-  public constructor(positions: QBufferHandle3d, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number,) {
+  public constructor(positions: QBufferHandle3d, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, public readonly planeColor: ColorDef) {
     super(positions, indices, numIndices);
     const attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.PlanarGrid, false);
     assert(attrParams !== undefined);
@@ -33,14 +33,17 @@ class PlanarGridGeometryParams extends IndexedGeometryParams {
 }
 export class PlanarGridGeometry extends IndexedGeometry  {
   public get techniqueId(): TechniqueId { return TechniqueId.PlanarGrid; }
-  public getRenderPass(_target: Target): RenderPass { return RenderPass.WorldOverlay; }
+  public getRenderPass(_target: Target): RenderPass { return RenderPass.Translucent; }
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
   public get renderOrder(): RenderOrder { return RenderOrder.UnlitSurface; }
   public readonly uvParams: QBufferHandle2d;
+  public readonly planeColor: ColorDef;
+  public get asPlanarGrid(): PlanarGridGeometry | undefined { return this; }
 
   private constructor(params: PlanarGridGeometryParams) {
     super(params);
     this.uvParams = params.uvParams;
+    this.planeColor = params.planeColor;
   }
 
   public static create(frustum: Frustum, grid: PlanarGridProps): PlanarGridGeometry | undefined {
@@ -72,9 +75,11 @@ export class PlanarGridGeometry extends IndexedGeometry  {
     }
     const pointBuffer = QBufferHandle3d.create(qPoints.params, qPoints.toTypedArray());
     const paramBuffer =  QBufferHandle2d.create(qParams.params, qParams.toTypedArray());
-    const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
+    const indBuffer = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
+    if (!pointBuffer || !paramBuffer || !indBuffer)
+      return undefined;
 
-    const geomParams = new PlanarGridGeometryParams(pointBuffer!, paramBuffer!, indBuf!, indices.length);
+    const geomParams = new PlanarGridGeometryParams(pointBuffer, paramBuffer, indBuffer, indices.length, grid.planeColor);
     if (!geomParams)
       return undefined;
 

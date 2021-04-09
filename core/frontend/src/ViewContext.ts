@@ -352,16 +352,10 @@ export class DecorateContext extends RenderContext {
   /** @internal */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
-    if (drawRasterGrid) {
-      const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(),  { origin: gridOrigin, rMatrix, spacing, gridsPerRef } );
-      if (planarGrid)
-        this.addDecoration(GraphicType.WorldDecoration, planarGrid);
-    }
-    if (!drawVectorGrid)
-      return;
 
     if (vp.viewingGlobe)
       return;
+
     const eyePoint = vp.worldToViewMap.transform1.columnZ();
     const eyeDir = Vector3d.createFrom(eyePoint);
     const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);
@@ -376,6 +370,18 @@ export class DecorateContext extends RenderContext {
     const eyeDot = eyeDir.dotProduct(zVec);
     if (!vp.isCameraOn && Math.abs(eyeDot) < 0.005)
       return;
+
+    const color = vp.getContrastToBackgroundColor();
+    const planeColor = (eyeDot < 0.0 ? ColorDef.red : color).withTransparency(GridDisplaySettings.planeTransparency);
+
+    if (drawRasterGrid) {
+      const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(),  { origin: gridOrigin, rMatrix, spacing, gridsPerRef, planeColor } );
+      if (planarGrid) {
+        this.addDecoration(GraphicType.WorldDecoration, planarGrid);
+        if (!drawVectorGrid)
+          return;
+      }
+    }
 
     const plane = Plane3dByOriginAndUnitNormal.create(gridOrigin, zVec);
     if (undefined === plane)
@@ -392,8 +398,6 @@ export class DecorateContext extends RenderContext {
     const viewZ = vp.rotation.getRow(2);
     const gridOffset = Point3d.create(viewZ.x * meterPerPixel, viewZ.y * meterPerPixel, viewZ.z * meterPerPixel); // Avoid z fighting with coincident geometry
     const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, Transform.createTranslation(gridOffset));
-    const color = vp.getContrastToBackgroundColor();
-    const planeColor = (eyeDot < 0.0 ? ColorDef.red : color).withTransparency(GridDisplaySettings.planeTransparency);
 
     builder.setBlankingFill(planeColor);
     builder.addShape(shapePoints);
