@@ -8,8 +8,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { copyStyles } from "./CopyStyles";
 import { Provider } from "react-redux";
-import { SampleAppIModelApp } from "../../..";
-import { ThemeManager, UiFramework, UiSettingsProvider } from "@bentley/ui-framework";
+import { StateManager, UiFramework, UiSettingsProvider } from "@bentley/ui-framework";
 
 export interface OpenPopoutWindow {
   contentId: string;
@@ -24,9 +23,6 @@ export interface PopoutWindowLocationProps {
   top: number;
 }
 
-// <React.StrictMode>
-// </React.StrictMode>,
-
 export class PopoutManager {
   private _openPopoutWindows: OpenPopoutWindow[] = [];
 
@@ -37,16 +33,15 @@ export class PopoutManager {
       popoutWindow.document.documentElement.setAttribute("data-theme", UiFramework.getColorTheme());
 
       ReactDOM.render(
-        <Provider store={SampleAppIModelApp.store} >
-          <ThemeManager>
-            {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
+        <React.StrictMode>
+          <Provider store={StateManager.store} >
             <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
               <div className="widget-popout-container nz-widget-widget">
                 {content}
               </div>
             </UiSettingsProvider>
-          </ThemeManager>
-        </Provider>,
+          </Provider>
+        </React.StrictMode>,
         reactConnectionDiv
       );
 
