@@ -8,13 +8,15 @@ This tutorial assumes that you already have:
 - Your own local source for the iTwin Web Viewer based on the template @bentley/itwin-viewer
 - Configured your local source to open the "House Model" sample iModel.
   - Instructions to use this sample iModel can be found [here](https://www.itwinjs.org/learning/tutorials/create-test-imodel-sample/).
-- Understand the concept of a [UI Provider](https://www.itwinjs.org/learning/ui/abstract/uiitemsprovider).
+- Understand the concept of a [UI Provider](https://www.itwinjs.org/learning/ui/abstract/uiitemsprovider) and adding [widgets](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/#providewidgets).
 
 ### Goal
 
 This tutorial will take widgets from the sample showcase and add them into our iTwin Viewer using the ```uiProvider``` prop.
 
-### View Attributes Sample
+### Selecting a Sample
+
+The sample showcases a number of widgets and APIs that can be used in your iTwin Viewer. We will taking the widget used in the [View Attributes](https://www.itwinjs.org/sample-showcase/?group=Viewer&sample=view-attributes-sample&imodel=Metrostation+Sample) sample and porting it over to our iTwin Viewer.
 
 The iTwin Web Viewer viewer template generates several files. To start with, let's take a look at the ```App.tsx``` file.  This is where you should start in customizing your iTwin Viewer.
 

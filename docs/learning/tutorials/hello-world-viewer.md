@@ -230,11 +230,11 @@ export class MyFirstUiProvider implements UiItemsProvider {
 }
 ```
 
-Result when the toggled in on:
+Result when the toggle is on:
 
 ![Background blue](./images/background_toggled_blue.png)
 
-Result when the toggled is off:
+Result when the toggle is off:
 
 ![Background pink](./images/background_toggled_pink.png)
 
