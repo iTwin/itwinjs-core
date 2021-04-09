@@ -128,7 +128,7 @@ export class ElectronHost {
       // console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
     }
     if (!assetPath.startsWith(this.webResourcesPath))
-      throw new Error("Access outside that path is prohibited");
+      throw new Error(`Access to files outside installation directory (${this.webResourcesPath}) is prohibited`);
     return assetPath;
   }
 
