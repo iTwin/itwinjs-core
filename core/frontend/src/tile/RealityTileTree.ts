@@ -132,7 +132,7 @@ export class RealityTileTree extends TileTree {
   public get isTransparent() { return false; }
 
   protected _selectTiles(args: TileDrawArgs): Tile[] { return this.selectRealityTiles(args, []); }
-  public get viewFlagOverrides() { return this.loader.viewFlagOverrides; }
+  public get viewFlagOverrides(): ViewFlagOverrides { return this.loader.viewFlagOverrides; }
   public get parentsAndChildrenExclusive() { return this.loader.parentsAndChildrenExclusive; }
 
   public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
@@ -199,10 +199,7 @@ export class RealityTileTree extends TileTree {
                       plane.offsetDistance(-displayedDescendant.radius * .05);     // Overlap with existing (high resolution) tile slightly to avoid cracks.
 
               const branch = new GraphicBranch(false);
-              const doClipOverride = new ViewFlagOverrides();
-              doClipOverride.setShowClipVolume(true);
               branch.add(graphics);
-              branch.setViewFlagOverrides(doClipOverride);
               const clipVolume = args.context.target.renderSystem.createClipVolume(clipVector);
               targetBranch.add(args.context.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume }));
             }
