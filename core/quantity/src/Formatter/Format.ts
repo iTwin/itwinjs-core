@@ -107,27 +107,19 @@ export class Format {
     if (isCustomFormatProps(formatProps))
       this._customProps = formatProps.custom;
 
-    const formatType = parseFormatType(formatProps.type, this.name);
-    if (formatType === undefined)
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'type' attribute.`);
-    this._type = formatType;
+    this._type = parseFormatType(formatProps.type, this.name);
 
     if (formatProps.precision !== undefined) {
       if (!Number.isInteger(formatProps.precision)) // mut be an integer
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'precision' attribute. It should be an integer.`);
 
-      const precision = parsePrecision(formatProps.precision, this._type, this.name);
-      if (precision === undefined)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has invalid 'precision' attribute.`);
-      this._precision = precision;
+      this._precision = parsePrecision(formatProps.precision, this._type, this.name);
     }
     if (this.type === FormatType.Scientific) {
       if (undefined === formatProps.scientificType) // if format type is scientific and scientific type is undefined, throw
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has type 'Scientific' therefore attribute 'scientificType' is required.`);
-      const scientificType = parseScientificType(formatProps.scientificType, this.name);
-      if (scientificType === undefined)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'scientificType' attribute.`);
-      this._scientificType = scientificType;
+
+      this._scientificType = parseScientificType(formatProps.scientificType, this.name);
     }
 
     if (this.type === FormatType.Station) {
@@ -152,10 +144,7 @@ export class Format {
     }
 
     if (undefined !== formatProps.showSignOption) { // optional; default is "onlyNegative"
-      const signOption = parseShowSignOption(formatProps.showSignOption, this.name);
-      if (signOption === undefined)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
-      this._showSignOption = signOption;
+      this._showSignOption = parseShowSignOption(formatProps.showSignOption, this.name);
     }
 
     if (undefined !== formatProps.formatTraits && formatProps.formatTraits.length !== 0) { // FormatTraits is optional
