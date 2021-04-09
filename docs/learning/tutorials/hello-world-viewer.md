@@ -175,7 +175,7 @@ Start by navigating back to ```MyFirstUiProvider.tsx```.  Next switch out the ``
     }
 ```
 
-Notice the only significant difference is that ```getWidgetContent``` is new returning a ```Toggle```.  It doesn't do anything interesting yet, but it should look like this:
+Notice the only significant difference is that ```getWidgetContent``` is now returning a ```Toggle```.  It doesn't do anything interesting yet, but it should look like this:
 
 ![Background Color Toggle](./images/background_color_toggle.png)
 
