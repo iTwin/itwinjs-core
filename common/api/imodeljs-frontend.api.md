@@ -11755,7 +11755,8 @@ export abstract class ViewingToolHandle {
 }
 
 // @public
-export class ViewManager {
+export class ViewManager implements Iterable<ScreenViewport> {
+    [Symbol.iterator](): Iterator<ScreenViewport>;
     addDecorator(decorator: Decorator): () => void;
     // @internal
     addToolTipProvider(provider: ToolTipProvider): () => void;
@@ -11779,6 +11780,7 @@ export class ViewManager {
     get dynamicsCursor(): string;
     // @internal (undocumented)
     endDynamicsMode(): void;
+    // @deprecated
     forEachViewport(func: (vp: ScreenViewport) => void): void;
     // @internal
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;

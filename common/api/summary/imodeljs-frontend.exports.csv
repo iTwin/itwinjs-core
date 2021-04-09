@@ -606,7 +606,7 @@ internal;ViewHandleArray
 internal;ViewHandleType
 public;ViewingSpace
 internal;class ViewingToolHandle
-public;ViewManager
+public;ViewManager 
 public;class ViewManip 
 public;class Viewport 
 public;ViewportDecorator

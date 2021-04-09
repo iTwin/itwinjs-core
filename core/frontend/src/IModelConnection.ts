@@ -541,10 +541,10 @@ export abstract class IModelConnection extends IModel {
    */
   public expandDisplayedExtents(range: Range3d): void {
     this.displayedExtents.extendRange(range);
-    IModelApp.viewManager.forEachViewport((vp) => {
+    for (const vp of IModelApp.viewManager) {
       if (vp.view.isSpatialView() && vp.iModel === this)
         vp.invalidateController();
-    });
+    }
   }
 
   /** @internal */
