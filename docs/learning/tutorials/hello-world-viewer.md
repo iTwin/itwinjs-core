@@ -2,6 +2,19 @@
 
 ## Customizing the iTwin Viewer - "The Basics"
 
+### Prerequisites
+
+This tutorial assumes that you already have:
+
+- Your own local source for the iTwin Web Viewer based on the template @bentley/itwin-viewer
+- Configured your local source to open the "NEEDSWORK" sample iModel.
+
+### Goal
+
+This tutorial will take you through the first steps of customizing your iTwin Web Viewer.  First you will learn how to add a new user interface component.  Later you will customize that component to listen for user actions and display the id of the element the user has selected.
+
+### Hello World
+
 On creation, the iTwin Viewer generates several files. The ```App.tsx``` file should be the start in customizing our iTwin Viewer.
 
 ```App.tsx``` has two responsibilities on initialization:
@@ -52,6 +65,8 @@ Result:
 
 ![HelloWorldAbove](./images/hello_world_above.png)
 
+### Your first UI Widget
+
 We're not influencing any elements inside the viewer yet. We've just added a ``` span ```  above the viewer. To add our "Hello World" ``` span ``` into the viewer, we need to pass ``` uiProvider ``` as a prop to the ``` Viewer ```  component to let it register our "Hello World" element.
 
 ``` HTML
@@ -97,6 +112,7 @@ export class HelloWorldUiProvider implements UiItemsProvider {
 The only function defined in the provider is ``` provideWidgets ``` that returns a single widget containing string "Hello World" at ``` StagePanelLocation.Right ```. All providers require ``` public readonly id ``` to distinguish between different providers.
 
 Three attributes are passed into the ```helloWidget```:
+
 1. ``` id ``` - used to uniquely identify the widget
 2. ``` label ``` - description label for our widget
 3. ``` getWidgetContent() ``` - our custom UI component
@@ -108,7 +124,6 @@ import { HelloWorldUiProvider } from "./HelloWorldUiProvider";
 ```
 
 We'll also remove our old ```span``` and ```div```, so our final code for the ``` return ``` function in ```App.tsx``` should look similar to:
-
 
 ``` typescript
   return (
@@ -138,11 +153,11 @@ Result:
 
 ![HelloWorldWidget](./images/hello_world_widget.png)
 
-## Improving our widget
+### Improving your widget
 
 Instead of a "Hello World" string in our ```getWidgetContent()```, we can return react components in our widget to improve functionality. We will use component [Button](https://www.itwinjs.org/reference/ui-core/button/) in place of our "Hello World" string to toggle notifications:
 
-``` ```
+``````
 
 ``` typescript
     if (location === StagePanelLocation.Right) {
@@ -197,6 +212,8 @@ Define ```toggleNotifications``` under the ```provideWidgets``` function to togg
     ...
     }
 ```
+
+### Listening for user activity
 
 The button message will swap to "Notifications On" on click now. Along with changing the innerText of our button, we will add a listener to notify the selected element ID on element selection by using the [Presentation](https://www.itwinjs.org/reference/presentation-frontend/core/presentation) class:
 
@@ -307,4 +324,3 @@ In the next tutorial, we will take widgets from the sample showcase and use them
 ## Next Steps
 
 - [Using the Sample Showcase](https://www.itwinjs.org/sample-showcase/)
-
