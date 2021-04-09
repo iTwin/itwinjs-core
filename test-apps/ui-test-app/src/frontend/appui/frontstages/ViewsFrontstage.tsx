@@ -253,12 +253,11 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={250}
             widgets={
               [
-                /*
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
                   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
                   syncEventIds={[SampleAppUiActionId.setTestProperty]}
                   stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-                />, */
+                />,
               ]}
           />
         }
