@@ -55,9 +55,7 @@ export enum GridOrientationType {
 export interface ViewDetails3dProps extends ViewDetailsProps {
   /** Whether viewing tools are prohibited from operating in 3 dimensions on this view. Default: false. */
   disable3dManipulations?: boolean;
-  /** Defines how to clip groups of models.
-   * @beta
-   */
+  /** Defines how to clip groups of models. */
   modelClipGroups?: ModelClipGroupProps[];
 }
 
@@ -172,9 +170,7 @@ export class ViewDetails3d extends ViewDetails {
     return this._json as ViewDetails3dProps;
   }
 
-  /** Event raised when just before assignment to the [[modelClipGroups]] property.
-   * @beta
-   */
+  /** Event raised when just before assignment to the [[modelClipGroups]] property. */
   public readonly onModelClipGroupsChanged = new BeEvent<(newGroups: ModelClipGroups) => void>();
 
   /** @internal */
@@ -191,10 +187,9 @@ export class ViewDetails3d extends ViewDetails {
   }
 
   /** Groups of models associated with [ClipVector]($geometry-core)s by which those models should be clipped.
-   * If `this.clipVector` is not undefined, then the view as a whole will be clipped by that clip; the per-model group clips will have no effect.
-   * If the `clipVolume` [[ViewFlags]] is `false`, no clipping will be applied.
+   * If the view and the model both have a clip vector defined, geometry in the model will be clipped by the intersection of the two clip vectors.
+   * [[ViewFlags.clipVolume]] has no effect on model clips, only the view clip - model clips are always applied.
    * @note Do **not** modify the returned object directly. Instead, clone it, modify the clone, and pass the clone to the property setter.
-   * @beta
    */
   public get modelClipGroups(): ModelClipGroups {
     if (!this._modelClipGroups)

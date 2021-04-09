@@ -9,7 +9,7 @@
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import {
   Arc3d, AxisOrder, CurveCurve, CurvePrimitive, Geometry, IModelJson as GeomJson, LineSegment3d, LineString3d, Matrix3d, Point2d, Point3d,
-  PointString3d, Transform, Vector3d,
+  PointString3d, Ray3d, Transform, Vector3d,
 } from "@bentley/geometry-core";
 import { ColorByName, ColorDef, GeometryStreamProps, LinePixels } from "@bentley/imodeljs-common";
 import { TentativeOrAccuSnap } from "./AccuSnap";
@@ -26,6 +26,7 @@ import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 import { QuantityType } from "./quantity-formatting/QuantityFormatter";
 import { ParseError, Parser, QuantityParseResult } from "@bentley/imodeljs-quantity";
+import { EditManipulator } from "./tools/EditManipulator";
 
 // cspell:ignore dont primitivetools
 
@@ -1316,10 +1317,10 @@ export class AccuDraw {
   public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean = true): void {
     // When modeling with multiple spatial views open, you'd typically want the same ACS in all views...
     if (allViews && vp.view.isSpatialView()) {
-      IModelApp.viewManager.forEachViewport((otherVp) => {
+      for (const otherVp of IModelApp.viewManager) {
         if (otherVp !== vp && otherVp.view.isSpatialView())
           otherVp.view.setAuxiliaryCoordinateSystem(acs);
-      });
+      }
     }
 
     vp.view.setAuxiliaryCoordinateSystem(acs);
@@ -3068,14 +3069,20 @@ export class AccuDraw {
   }
 }
 
-/** AccuDrawHintBuilder is a Tool helper class that facilitates AccuDraw interaction.
+/** Specify the rotation to return from [[AccuDrawHintBuilder.getContextRotation]].
+ * @public
+ */
+export enum ContextRotationId { Top, Front, Left, Bottom, Back, Right, View, Face }
+
+/** [[AccuDrawHintBuilder]] is an [[InteractiveTool]] helper class that facilitates AccuDraw interaction.
  * Accudraw is an aide for entering coordinate data.
- * The tool does not directly change the current AccuDraw state; the tool's job is merely
+ * A tool does not directly change the current AccuDraw state; the tool's job is merely
  * to supply "hints" to AccuDraw regarding its preferred AccuDraw configuration for the
  * current tool state. User settings such as "Context Sensitivity" and "Floating Origin"
- * affect how/which hints get applied.
+ * affect how and which hints are applied. Additionally the user can drive AccuDraw
+ * through keyboard shortcuts.
  * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)*
- * @beta
+ * @public
  */
 export class AccuDrawHintBuilder {
   private _flagOrigin = false;
@@ -3093,31 +3100,73 @@ export class AccuDrawHintBuilder {
   private _distance = 0;
   private _angle = 0;
 
+  /** Don't automatically set compass origin to point from data button events */
   public setOriginFixed = false;
+  /** Override "fixed" and "floating" origin settings for [[setOrigin] hint */
   public setOriginAlways = false;
+  /** Lock current distance value in polar mode */
   public setLockDistance = false;
+  /** Lock current angle value in polar mode */
   public setLockAngle = false;
+  /** Lock current x delta value in rectanglar mode */
   public setLockX = false;
+  /** Lock current y delta value in rectanglar mode  */
   public setLockY = false;
+  /** Lock current z delta value in 3d views */
   public setLockZ = false;
+  /** Set the initial compass orientation from the current [[SnapDetail]] when activating */
   public enableSmartRotation = false;
-  public setOrigin(origin: Point3d) { this._origin = origin.clone(); this._flagOrigin = true; }
-  public setRotation(rMatrix: Matrix3d) { this._rMatrix = rMatrix.clone(); this._flagRotation = true; this._flagXAxis = this._flagNormal = false; }
-  public setXAxis(xAxis: Vector3d) { this._axis = xAxis.clone(); this._flagXAxis = true; this._flagRotation = this._flagNormal = this._flagXAxis2 = false; }
-  public setXAxis2(xAxis: Vector3d) { this._axis = xAxis.clone(); this._flagXAxis2 = true; this._flagRotation = this._flagNormal = this._flagXAxis = false; }
-  public setNormal(normal: Vector3d) { this._axis = normal.clone(); this._flagNormal = true; this._flagRotation = this._flagXAxis = this._flagXAxis2 = false; }
-  public setModePolar() { this._flagModePolar = true; this._flagModeRectangular = false; }
-  public setModeRectangular() { this._flagModeRectangular = true; this._flagModePolar = false; }
-  public setDistance(distance: number) { this._distance = distance; this._flagDistance = true; }
-  public setAngle(angle: number) { this._angle = angle; this._flagAngle = true; }
 
-  /* Enable AccuDraw for the current tool without sending any hints */
-  public static activate() { IModelApp.accuDraw.activate(); }
-  /* Disable AccuDraw for the current tool */
-  public static deactivate() { IModelApp.accuDraw.deactivate(); }
+  /** Add hint to specify a new compass origin */
+  public setOrigin(origin: Point3d): void { this._origin = origin.clone(); this._flagOrigin = true; }
+
+  /** Add hint to fully specify compass orientation from a Matrix3d */
+  public setMatrix(matrix: Matrix3d): boolean {
+    const invMatrix = matrix.inverse();
+    if (undefined === invMatrix)
+      return false;
+    this.setRotation(invMatrix);
+    return true;
+  }
+
+  /** @internal Add hint to fully specify compass orientation from a Matrix3d in row format */
+  public setRotation(rowMatrix: Matrix3d): void { this._rMatrix = rowMatrix.clone(); this._flagRotation = true; this._flagXAxis = this._flagNormal = false; }
+
+  /** Add hint to change compass orientation by combining the supplied x axis direction with the current base rotation */
+  public setXAxis(xAxis: Vector3d): void { this._axis = xAxis.clone(); this._flagXAxis = true; this._flagRotation = this._flagNormal = this._flagXAxis2 = false; }
+
+  /** Add hint to change compass orientation by combining the supplied x axis direction with the current base rotation preferring the result most closely aligned to the view */
+  public setXAxis2(xAxis: Vector3d): void { this._axis = xAxis.clone(); this._flagXAxis2 = true; this._flagRotation = this._flagNormal = this._flagXAxis = false; }
+
+  /** Add hint to change compass orientation by combining the supplied z axis direction with the current base rotation */
+  public setNormal(normal: Vector3d): void { this._axis = normal.clone(); this._flagNormal = true; this._flagRotation = this._flagXAxis = this._flagXAxis2 = false; }
+
+  /** Add hint to change compass to polar mode */
+  public setModePolar(): void { this._flagModePolar = true; this._flagModeRectangular = false; }
+
+  /** Add hint to change compass to rectangular mode */
+  public setModeRectangular(): void { this._flagModeRectangular = true; this._flagModePolar = false; }
+
+  /** Set current distance value in polar mode */
+  public setDistance(distance: number): void { this._distance = distance; this._flagDistance = true; }
+
+  /** Set current angle value in polar mode */
+  public setAngle(angle: number): void { this._angle = angle; this._flagAngle = true; }
+
+  /** Enable AccuDraw for the current tool without sending any hints */
+  public static activate(): void { IModelApp.accuDraw.activate(); }
+
+  /** Disable AccuDraw for the current tool */
+  public static deactivate(): void { IModelApp.accuDraw.deactivate(); }
+
+  /** Whether AccuDraw is enabled by the host application this session and can be used */
+  public static get isEnabled(): boolean { return IModelApp.accuDraw.isEnabled; }
+
+  /** Whether AccuDraw compass is currently displayed and points are being adjusted */
+  public static get isActive(): boolean { return IModelApp.accuDraw.isEnabled; }
 
   /**
-   * Calls AccuDraw.setContext using the current builder state.
+   * Provide hints to AccuDraw using the current builder state.
    * @return true if hints were successfully sent.
    */
   public sendHints(activate = true): boolean {
@@ -3146,5 +3195,65 @@ export class AccuDrawHintBuilder {
       accuDraw.activate(); // If not already enabled (ex. dynamics not started) most/all callers would want to enable it now (optional activate arg provided just in case)...
 
     return true;
+  }
+
+  /** Create a [[Ray3d]] whose origin is the supplied space point and direction is into the view */
+  public static getBoresite(spacePt: Point3d, vp: Viewport, checkAccuDraw: boolean = false, checkACS: boolean = false): Ray3d {
+    return EditManipulator.HandleUtils.getBoresite(spacePt, vp, checkAccuDraw, checkACS);
+  }
+
+  /** Return ray intersection with a plane defined by a point and normal
+   * @see [[getBoresite]]
+   */
+  public static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw: boolean = false, checkACS: boolean = false): Point3d | undefined {
+    return EditManipulator.HandleUtils.projectPointToPlaneInView(spacePt, planePt, planeNormal, vp, checkAccuDraw, checkACS);
+  }
+
+  /** Return ray intersection with a line defined by a point and direction
+   * @see [[getBoresite]]
+   */
+  public static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw: boolean = false, checkACS: boolean = false): Point3d | undefined {
+    return EditManipulator.HandleUtils.projectPointToLineInView(spacePt, linePt, lineDirection, vp, checkAccuDraw, checkACS);
+  }
+
+  /** Return a [[Matrix3d]] representing the current working plane specified by AccuDraw, [[Viewport.auxCoordSystem]], or [[Viewport.rotation]]. */
+  public static getCurrentRotation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, matrix?: Matrix3d): Matrix3d | undefined {
+    const current = AccuDraw.getCurrentOrientation(vp, checkAccuDraw, checkACS, matrix);
+    return (undefined !== current ? current.inverse() : undefined);
+  }
+
+  /** Return a [[Matrix3d]] corresponding to the supplied [[ContextRotationId]].
+   * A [[ContextRotationId]] that corresponds to a standard view, "Top", "Front", etc. will return a [[Matrix3d]] that
+   * is relative to the current [[Viewport.auxCoordSystem]] when ACS context lock is enabled.
+   * @see [[ToolAdmin.acsContextLock]]
+   */
+  public static getContextRotation(id: ContextRotationId, vp: Viewport): Matrix3d | undefined {
+    switch (id) {
+      case ContextRotationId.Top:
+        return AccuDraw.getStandardRotation(StandardViewId.Top, vp, vp.isContextRotationRequired).inverse();
+      case ContextRotationId.Front:
+        return AccuDraw.getStandardRotation(StandardViewId.Front, vp, vp.isContextRotationRequired).inverse();
+      case ContextRotationId.Left:
+        return AccuDraw.getStandardRotation(StandardViewId.Left, vp, vp.isContextRotationRequired).inverse();
+      case ContextRotationId.Bottom:
+        return AccuDraw.getStandardRotation(StandardViewId.Bottom, vp, vp.isContextRotationRequired).inverse();
+      case ContextRotationId.Back:
+        return AccuDraw.getStandardRotation(StandardViewId.Back, vp, vp.isContextRotationRequired).inverse();
+      case ContextRotationId.Right:
+        return AccuDraw.getStandardRotation(StandardViewId.Right, vp, vp.isContextRotationRequired).inverse();
+      case ContextRotationId.View:
+        return vp.view.getRotation().inverse();
+      case ContextRotationId.Face:
+        const snap = TentativeOrAccuSnap.getCurrentSnap(false);
+        if (undefined === snap || undefined === snap.normal)
+          return undefined;
+        const normal = Vector3d.createZero();
+        const boresite = this.getBoresite(snap.hitPoint, vp);
+        if (snap.normal.dotProduct(boresite.direction) < 0.0)
+          normal.setFrom(snap.normal);
+        else
+          snap.normal.negate(normal);
+        return Matrix3d.createRigidHeadsUp(normal);
+    }
   }
 }

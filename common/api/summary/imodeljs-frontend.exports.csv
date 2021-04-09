@@ -4,7 +4,7 @@ internal;AccuDraw
 internal;AccuDrawChangeModeTool 
 internal;AccudrawData
 internal;AccuDrawFlags
-beta;AccuDrawHintBuilder
+public;AccuDrawHintBuilder
 internal;AccuDrawRotateAxesTool 
 internal;AccuDrawRotateCycleTool 
 internal;AccuDrawRotateElementTool 
@@ -91,6 +91,7 @@ public;Cluster
 internal;CompassMode
 internal;ContextMode
 beta;ContextRealityModelState
+public;ContextRotationId
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
@@ -418,7 +419,7 @@ internal;RealityTileTree
 internal;RealityTileTreeParams 
 public;RemoteBriefcaseConnection 
 deprecated;RemoteBriefcaseConnection 
-beta;class RenderClipVolume 
+public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics
 public;class RenderGraphic 
@@ -605,7 +606,7 @@ internal;ViewHandleArray
 internal;ViewHandleType
 public;ViewingSpace
 internal;class ViewingToolHandle
-public;ViewManager
+public;ViewManager 
 public;class ViewManip 
 public;class Viewport 
 public;ViewportDecorator

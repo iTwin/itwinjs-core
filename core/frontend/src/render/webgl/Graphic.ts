@@ -246,8 +246,6 @@ export class Branch extends Graphic {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.branch.collectStatistics(stats);
-    if (undefined !== this.clips)
-      this.clips.collectStatistics(stats);
   }
 
   public addCommands(commands: RenderCommands): void {
