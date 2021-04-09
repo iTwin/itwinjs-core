@@ -67,7 +67,7 @@ Result:
 
 ### Your first UI Widget
 
-We're not influencing any elements inside the viewer yet. We've just added a ``` span ```  above the viewer. To add our "Hello World" ``` span ``` into the viewer, we need to pass ``` uiProvider ``` as a prop to the ``` Viewer ```  component to let it register our "Hello World" element.
+So far, we haven't done anything to change the way the viewer works.  We've only just added a new ```span``` element *above* the viewer. To add our "Hello World" ```span``` into the viewer, we need to pass the ```uiProvider``` prop to the ```Viewer```  component, like this:
 
 ``` HTML
       <Viewer
@@ -79,7 +79,7 @@ We're not influencing any elements inside the viewer yet. We've just added a ```
   );
 ```
 
-A [UI Provider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/) is an interface we can implement that extends the ```Viewer``` with custom UI components. To add a component that contains our "Hello World" span, we need to define our ```HelloWorldUiProvider``` class and implement the ```UiItemsProvider``` interface.
+The ```uiProvider``` prop is typed to require an object that implements the [UIItemsProvider](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/) interface.  Passing in this object will allow us to extend the ```Viewer``` with custom UI components. To do that, we need to define our ```HelloWorldUiProvider``` class so that it implements the ```UiItemsProvider``` interface.  Our new provider will tell the ```Viewer``` to include our "Hello world" ```span``` within the view.
 
 Create a new file called ```HelloWorldUiProvider.tsx``` with the following contents:
 
@@ -111,21 +111,21 @@ export class HelloWorldUiProvider implements UiItemsProvider {
 }
 ```
 
-The only function defined in the provider is ``` provideWidgets ``` that returns a single widget containing span "Hello World" at ``` StagePanelLocation.Right ```. All providers require ``` public readonly id ``` to distinguish between different providers.
+Let's review that code.  We've defined our new ```HelloWorldUiProvider``` class.  In the new class we've defined ``` public readonly id ``` which is required to distinguish between different providers.  Then notice that we've defined just one function called ``` provideWidgets ```.  This function will be called several times as the ```Viewer``` is building up the user interface.  We will return an empty array except for when the ```location``` is equal to ```StagePanelLocation.Right```.  In that case, we will return a single widget that will supply our "Hello World" ```span```.
 
-Three attributes are passed into the ```helloWidget```:
+Our ```helloWidget``` consists of three attributes:
 
 1. ``` id ``` - used to uniquely identify the widget
 2. ``` label ``` - description label for our widget
-3. ``` getWidgetContent() ``` - our custom UI component
+3. ``` getWidgetContent() ``` - returns our custom UI component
 
-The component is sufficient for our "Hello World" widget for now. We need to import ```HelloWorldUiProvider``` at the top of file ```App.tsx```:
+At this point we need to import ```HelloWorldUiProvider``` at the top of file ```App.tsx```:
 
 ``` Typescript
 import { HelloWorldUiProvider } from "./HelloWorldUiProvider";
 ```
 
-We'll also remove our old ```span``` and ```div```, so our final code for the ``` return ``` function in ```App.tsx``` should look similar to:
+Finally, let's clean up the ```span``` and ```div``` that we added directly into the App component earlier.  Now the ``` return ``` statement in ```App.tsx``` should look like this:
 
 ``` typescript
   return (
@@ -151,7 +151,7 @@ We'll also remove our old ```span``` and ```div```, so our final code for the ``
   );
 ```
 
-Result:
+Now we have our "Hello World" ```span``` displaying in a panel within the ```Viewer``` component.  It should look like this:
 
 ![HelloWorldWidget](./images/hello_world_widget.png)
 
@@ -192,7 +192,6 @@ Result:
 ```
 
 We can get change the background color using function [overrideDisplayStyle()](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewport/overridedisplaystyle/) through global singleton [IModelApp](https://www.itwinjs.org/reference/imodeljs-frontend/imodelapp/imodelapp/) in property [viewManager](https://www.itwinjs.org/reference/imodeljs-frontend/views/viewmanager/).
-
 
 Our completed ```HelloWorldUiProvider.tsx``` file should look similar to this:
 
