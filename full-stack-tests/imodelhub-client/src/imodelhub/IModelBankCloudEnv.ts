@@ -13,9 +13,11 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { UserInfo } from "@bentley/itwin-client";
+import { RequestGlobalOptions, UserInfo } from "@bentley/itwin-client";
 import { workDir } from "./TestConstants";
 import { createIModelBankFileHandler } from "./FileHandler";
+import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
+import { TestConfig } from "../TestConfig";
 
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt
@@ -25,7 +27,27 @@ import { createIModelBankFileHandler } from "./FileHandler";
 // set imjs_test_imodel_bank_run_orchestrator=%SrcRoot%\imodel-bank\local-orchestrator\lib\server.js
 // set imjs_test_imodel_bank_logging_config=<somewhere>logging.config.json
 
+before(() => {
+  if (TestConfig.enableIModelBank && !TestConfig.enableMocks) {
+    RequestGlobalOptions.timeout = {
+      deadline: 60000,
+      response: 60000,
+    };
+  }
+});
+
 let imodelBankClient: IModelBankClient;
+
+const authorizationClientFactory = (authScheme: string, userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient => {
+  switch (authScheme) {
+    case "bearer":
+      return new TestIModelHubOidcAuthorizationClient(userInfo, userCredentials);
+    case "basic":
+      return new IModelBankBasicAuthorizationClient(userInfo, userCredentials);
+    default:
+      return new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+  }
+};
 
 export function setIModelBankClient(_client: IModelBankClient) {
   imodelBankClient = _client;
@@ -37,12 +59,9 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
 
   const orchestratorUrl: string = Config.App.get("imjs_test_imodel_bank_url", "");
 
-  const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient => {
-    return basicAuthentication
-      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
-      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
-  };
+  const authScheme: string = String(Config.App.get("imjs_test_imodel_bank_auth_scheme")).toLowerCase();
+  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient =>
+    authorizationClientFactory(authScheme, userInfo, userCredentials);
 
   let bankClient: IModelBankClient;
   if (imodelBankClient)
@@ -154,12 +173,9 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     });
   }
 
-  const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient => {
-    return basicAuthentication
-      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
-      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
-  };
+  const authScheme: string = String(Config.App.get("imjs_test_imodel_bank_auth_scheme")).toLowerCase();
+  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient =>
+    authorizationClientFactory(authScheme, userInfo, userCredentials);
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;
   const bankClient = new IModelBankClient(orchestratorUrl, createIModelBankFileHandler());
