@@ -28,9 +28,7 @@ export interface TileTreeParams {
   iModel: IModelConnection;
   /** Transform from tile tree coordinates to iModel coordinates. */
   location: Transform;
-  /** Optional clip volume applied to all tiles in the tree.
-   * @beta
-   */
+  /** Optional clip volume applied to all tiles in the tree. */
   clipVolume?: RenderClipVolume;
   /** Loose description of the "importance" of the tiles exposed by this tile tree, used for prioritizing requests for tile content. */
   priority: TileLoadPriority;

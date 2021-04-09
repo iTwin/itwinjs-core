@@ -75,7 +75,7 @@ export interface ToolTipProvider {
  * The ViewManager controls the render loop, which causes the contents of each registered [[Viewport]] to update on the screen.
  * @public
  */
-export class ViewManager {
+export class ViewManager implements Iterable<ScreenViewport> {
   public inDynamicsMode = false;
   public cursor = "default";
   private readonly _viewports: ScreenViewport[] = [];
@@ -238,7 +238,8 @@ export class ViewManager {
   /** Check if only a single viewport is being used.  If so, render directly on-screen using its WebGL canvas.  Otherwise, render each view offscreen. */
   private updateRenderToScreen() {
     const renderToScreen = 1 === this._viewports.length;
-    this.forEachViewport((vp) => vp.rendersToScreen = renderToScreen);
+    for (const vp of this)
+      vp.rendersToScreen = renderToScreen;
   }
 
   /** Add a new Viewport to the list of opened views and create an EventController for it.
@@ -304,7 +305,14 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
-  /** Call the specified function on each [[Viewport]] registered with the ViewManager. */
+  /** Iterate over the viewports registered with the view manager. */
+  public [Symbol.iterator](): Iterator<ScreenViewport> {
+    return this._viewports[Symbol.iterator]();
+  }
+
+  /** Call the specified function on each [[Viewport]] registered with the ViewManager.
+   * @deprecated Use a `for..of` loop.
+   */
   public forEachViewport(func: (vp: ScreenViewport) => void) {
     this._viewports.forEach((vp) => func(vp));
   }
@@ -316,34 +324,40 @@ export class ViewManager {
    */
   public invalidateCachedDecorationsAllViews(decorator: ViewportDecorator): void {
     if (decorator.useCachedDecorations)
-      this.forEachViewport((vp) => vp.invalidateCachedDecorations(decorator));
+      for (const vp of this)
+        vp.invalidateCachedDecorations(decorator);
   }
 
   /** Force each registered [[Viewport]] to regenerate its [[Decorations]] on the next frame. */
   public invalidateDecorationsAllViews(): void {
-    this.forEachViewport((vp) => vp.invalidateDecorations());
+    for (const vp of this)
+      vp.invalidateDecorations();
   }
 
   /** Force each registered [[Viewport]] to regenerate its [[FeatureSymbology.Overrides]] on the next frame.
    * @alpha
    */
   public invalidateSymbologyOverridesAllViews(): void {
-    this.forEachViewport((vp) => vp.setFeatureOverrideProviderChanged());
+    for (const vp of this)
+      vp.setFeatureOverrideProviderChanged();
   }
 
   /** @internal */
   public onSelectionSetChanged(_iModel: IModelConnection) {
-    this.forEachViewport((vp) => vp.markSelectionSetDirty());
+    for (const vp of this)
+      vp.markSelectionSetDirty();
   }
 
   /** @internal */
   public invalidateViewportScenes(): void {
-    this.forEachViewport((vp) => vp.invalidateScene());
+    for (const vp of this)
+      vp.invalidateScene();
   }
 
   /** @internal */
   public validateViewportScenes(): void {
-    this.forEachViewport((vp) => vp.setValidScene());
+    for (const vp of this)
+      vp.setValidScene();
   }
 
   /** @internal */
@@ -539,7 +553,9 @@ export class ViewManager {
    * @beta
    */
   public setAntialiasingAllViews(numSamples: number): void {
-    this.forEachViewport((vp) => vp.antialiasSamples = numSamples);
+    for (const vp of this)
+      vp.antialiasSamples = numSamples;
+
     System.instance.antialiasSamples = numSamples;
   }
 }

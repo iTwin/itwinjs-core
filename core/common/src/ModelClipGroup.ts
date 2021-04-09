@@ -10,7 +10,7 @@ import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, ClipVectorProps } from "@bentley/geometry-core";
 
 /** JSON representation of a [[ModelClipGroup]].
- * @beta
+ * @public
  */
 export interface ModelClipGroupProps {
   /** The Ids of the models in the group. */
@@ -20,8 +20,8 @@ export interface ModelClipGroupProps {
 }
 
 /** Describes how to clip a group of models in the context of a [ViewDefinition3d]($backend) by applying a single [ClipVector]($geometry-core] to each model in the group.
- * @see [[ModelClipGroups]].
- * @beta
+ * @see [[ModelClipGroups]] to define multiple groups of models with different clip vectors.
+ * @public
  */
 export class ModelClipGroup {
   /** The Ids of the models to be clipped, or undefined if the group includes all models. */
@@ -77,7 +77,7 @@ export class ModelClipGroup {
  * A group of models can be exempted from clipping by a ModelClipGroup with an `undefined` ClipVector.
  * @note A ModelClipGroups obtained from a [[ViewDetails3d]] should **not** be modified directly. Clone it instead and modify the clone.
  * @see [[ViewDetails3d.modelClipGroups]] to define the clip groups for a [ViewDefinition3d]($backend) or [ViewState3d]($frontend).
- * @beta
+ * @public
  */
 export class ModelClipGroups {
   /** The groups of models and their associated clips. */
