@@ -23,6 +23,17 @@ import { IModelDb } from "./IModelDb";
 import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
+export interface ElementCallback {
+  iModel: IModelDb;
+}
+export interface ElementPropsCallback extends ElementCallback {
+  props: Readonly<ElementProps>;
+}
+
+export interface ElementIdCallback extends ElementCallback {
+  id: Id64String;
+}
+
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
  * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model
  * other Elements that represent larger scale real world entities. Using this recursive modeling strategy,
@@ -125,9 +136,9 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onInsert(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert);
+  protected static onInsert(arg: ElementPropsCallback): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Insert);
     }
   }
   /** Called before an Element is updated.
@@ -135,9 +146,9 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onUpdate(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update);
+  protected static onUpdate(arg: ElementPropsCallback): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Update);
     }
   }
   /** Called before an Element is deleted.
@@ -145,9 +156,11 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onDelete(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
+  protected static onDelete(arg: ElementIdCallback): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      const props = arg.iModel.elements.tryGetElementProps(arg.id);
+      if (props !== undefined)
+        arg.iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
     }
   }
   /** Called after a new Element was inserted.
@@ -155,9 +168,9 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onInserted(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert);
+  protected static onInserted(arg: ElementIdCallback): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Insert);
     }
   }
   /** Called after an Element was updated.
@@ -165,9 +178,9 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onUpdated(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update);
+  protected static onUpdated(arg: ElementIdCallback): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Update);
     }
   }
   /** Called after an Element was deleted.
@@ -175,7 +188,8 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onDeleted(_props: Readonly<ElementProps>, _iModel: IModelDb): void { }
+  protected static onDeleted(_arg: ElementIdCallback): void { }
+
   /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
    * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.
    * This callback is only meant to be overridden if there are other Ids in non-standard locations that need to be remapped or other data that needs to be fixed up after the clone.

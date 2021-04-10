@@ -10,7 +10,7 @@ import { DbOpcode, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps,
 } from "@bentley/imodeljs-common";
-import { DefinitionElement } from "./Element";
+import { DefinitionElement, ElementIdCallback } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
 
@@ -150,14 +150,6 @@ export class DrawingCategory extends Category {
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 
-  /** Tell monitors about the automatic insertion of my default sub-category */
-  protected static onInserted(props: Readonly<ElementProps>, iModel: IModelDb): void {
-    super.onInserted(props, iModel);
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
-    }
-  }
-
   /** Get the name of the CodeSpec that is used by DrawingCategory objects. */
   public static getCodeSpecName(): string { return BisCodeSpec.drawingCategory; }
 
@@ -224,14 +216,6 @@ export class SpatialCategory extends Category {
    * @internal
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
-
-  /** Tell monitors about the sneaky insertion of my default sub-category */
-  protected static onInserted(props: ElementProps, iModel: IModelDb): void {
-    super.onInserted(props, iModel);
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
-    }
-  }
 
   /** Get the name of the CodeSpec that is used by SpatialCategory objects. */
   public static getCodeSpecName(): string { return BisCodeSpec.spatialCategory; }

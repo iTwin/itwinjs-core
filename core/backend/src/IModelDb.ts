@@ -1602,7 +1602,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (code.value === undefined)
         throw new IModelError(IModelStatus.InvalidCode, "Invalid Code", Logger.logWarning, loggerCategory);
 
-      return this._iModel.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?`, (stmt: ECSqlStatement) => {
+      return this._iModel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, code.spec);
         stmt.bindId(2, Id64.fromString(code.scope));
         stmt.bindString(3, code.value);
@@ -1617,7 +1617,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @internal
      */
     public queryLastModifiedTime(elementId: Id64String): string {
-      const sql = `SELECT LastMod FROM ${Element.classFullName} WHERE ECInstanceId=:elementId`;
+      const sql = "SELECT LastMod FROM BisCore:Element WHERE ECInstanceId=:elementId";
       return this._iModel.withPreparedStatement<string>(sql, (statement: ECSqlStatement): string => {
         statement.bindId("elementId", elementId);
         if (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -1639,18 +1639,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to insert the element.
      */
     public insertElement(elProps: ElementProps): Id64String {
-      const json = elProps instanceof Element ? elProps.toJSON() : elProps;
-      const iModel = this._iModel;
-      const jsClass = iModel.getJsClass<typeof Element>(json.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onInsert(json, iModel);
-
-      const val = iModel.nativeDb.insertElement(json);
+      const val = this._iModel.nativeDb.insertElement(elProps instanceof Element ? elProps.toJSON() : elProps);
       if (val.error)
-        throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: json.classFullName }));
+        throw new IModelError(val.error.status, `Error inserting element, class=${elProps.classFullName}`);
 
-      elProps.id = json.id = Id64.fromJSON(val.result!.id);
-      jsClass.onInserted(json, iModel);
-      return json.id;
+      elProps.id = Id64.fromJSON(val.result!.id);
+      return elProps.id;
     }
 
     /** Update some properties of an existing element.
@@ -1661,16 +1655,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
-      const json = elProps instanceof Element ? elProps.toJSON() : elProps;
-      const iModel = this._iModel;
-      const jsClass = iModel.getJsClass<typeof Element>(json.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onUpdate(json, iModel);
-
-      const stat = iModel.nativeDb.updateElement(json);
+      const stat = this._iModel.nativeDb.updateElement(elProps instanceof Element ? elProps.toJSON() : elProps);
       if (stat !== IModelStatus.Success)
-        throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: json.id }));
-
-      jsClass.onUpdated(json, iModel);
+        throw new IModelError(stat, `Error updating element, id:${elProps.id}`);
     }
 
     /** Delete one or more elements from this iModel.
@@ -1681,22 +1668,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
-        const props = this.tryGetElementProps(id);
-        if (props === undefined) // this may be a child element which was deleted earlier as a consequence of deleting its parent.
-          return;
-
-        const jsClass = iModel.getJsClass<typeof Element>(props.classFullName) as any; // "as any" so we can call the protected methods
-        jsClass.onDelete(props, iModel);
-
-        const childIds: Id64String[] = this.queryChildren(id);
-        if (childIds.length > 0)
-          this.deleteElement(childIds);
-
         const error = iModel.nativeDb.deleteElement(id);
         if (error !== IModelStatus.Success)
-          throw new IModelError(error, "Error deleting element", Logger.logWarning, loggerCategory, () => ({ elementId: props.id }));
-
-        jsClass.onDeleted(props, iModel);
+          throw new IModelError(error, `Error deleting element, id:${id}`);
       });
     }
 
@@ -1713,9 +1687,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
       const usageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(definitionElementIds);
       if (!usageInfo) {
-        throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage", Logger.logError, loggerCategory);
+        throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
       }
-      const usedIdSet: Id64Set = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
+      const usedIdSet = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
       const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set): void => {
         if (ids) { ids.forEach((id) => { if (!used.has(id)) { this._iModel.elements.deleteElement(id); } }); }
       };
@@ -1768,7 +1742,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]]
      */
     public queryChildren(elementId: Id64String): Id64String[] {
-      const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=:elementId`;
+      const sql = "SELECT ECInstanceId FROM BisCore:Element WHERE Parent.Id=:elementId";
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String[] => {
         statement.bindId("elementId", elementId);
         const childIds: Id64String[] = [];
@@ -1787,7 +1761,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         return false; // Special case since the RepositoryModel does not sub-model the root Subject
       }
       // A sub-model will have the same Id value as the element it is describing
-      const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ECInstanceId=:elementId`;
+      const sql = "SELECT ECInstanceId FROM BisCore:Model WHERE ECInstanceId=:elementId";
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
         statement.bindId("elementId", elementId);
         return DbResult.BE_SQLITE_ROW === statement.step();
