@@ -21,40 +21,55 @@ const computeTexCoord = "return unquantize2d(a_uvParam, u_qTexCoordParams);";
 
 const computeBaseColor = `
   vec4 color = u_planeColor;
-  vec2 deriv = fwidth(v_texCoord);
-  if (deriv.x != 0.0 && deriv.y != 0.0) {
-    vec2 grid = abs(fract(v_texCoord - 0.5) - 0.5) / deriv;
-    float line = min(grid.x, grid.y);
-    if (line < 1.0)
-      color.a *= (1.0 + .5 * (1.0 - min(line, 1.0)));
-    }
+  float refsPerGrid = 10.0;
+  if (!drawGridLine(color, 1.0 / refsPerGrid, 1.0))
+    drawGridLine(color, 1.0, .5);
 
   return color;
+`;
+
+const drawGridLine = `
+  bool drawGridLine(inout vec4 color, float mult, float alphaScale) {
+    vec2 scaledTexCoord = v_texCoord * mult;
+    vec2 deriv = mult * fwidth(v_texCoord);
+    if (deriv.x != 0.0 && deriv.y != 0.0) {
+      vec2 grid = abs(fract(mult * v_texCoord - 0.5) - 0.5) / deriv;
+      float line = min(grid.x, grid.y);
+      if (line < 1.0) {
+        color.rgb = vec3(1.0);
+        color.a *= (1.0 + alphaScale * (1.0 - min(line, 1.0)));
+        return true;
+        }
+      }
+    return false;
+   }
 `;
 
 /** @internal */
 export default function createPlanarGridProgram(context: WebGLContext): ShaderProgram {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.PlanarGrid, false));
   const vert = builder.vert;
+  const frag = builder.frag;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
   addShaderFlags(builder);
   addTranslucency(builder);
 
-  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+  frag.addFunction(drawGridLine);
+  frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 
-  builder.vert.headerComment = `//!V! PlanarGrid"}`;
-  builder.frag.headerComment = `//!F! PlanarGrid`;
+  vert.headerComment = `//!V! PlanarGrid"}`;
+  frag.headerComment = `//!F! PlanarGrid`;
 
-  builder.vert.addFunction(unquantize2d);
+  vert.addFunction(unquantize2d);
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
-  builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
+  vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
       const planarGrid = params.geometry.asPlanarGrid!;
       uniform.setUniform4fv(planarGrid.uvParams.params);
     });
   });
-  builder.frag.addUniform("u_planeColor", VariableType.Vec4, (prog) => {
+  frag.addUniform("u_planeColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_planeColor", (uniform, params) => {
       const planarGrid = params.geometry.asPlanarGrid!;
       const planeColor = planarGrid.planeColor.colors;
