@@ -271,9 +271,10 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     const exaggerate = context.viewport.view.getAspectRatioSkew();
     const scale = context.getPixelSizeAtPoint(drawOrigin) * pixelSize;
     const rMatrix = this.getRotation();
-    rMatrix.inverse(rMatrix);
-    rMatrix.scaleRows(scale, scale / exaggerate, scale, rMatrix);
-    const transform = Transform.createOriginAndMatrix(drawOrigin, rMatrix);
+
+    rMatrix.transposeInPlace();
+    rMatrix.scaleColumns(scale, scale / exaggerate, scale, rMatrix);
+    const transform = Transform.createRefs(drawOrigin, rMatrix);
 
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform);
     const vp = context.viewport;
