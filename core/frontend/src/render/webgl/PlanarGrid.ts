@@ -23,7 +23,7 @@ class PlanarGridGeometryParams extends IndexedGeometryParams {
 
   public readonly uvParams: QBufferHandle2d;
 
-  public constructor(positions: QBufferHandle3d, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, public readonly planeColor: ColorDef) {
+  public constructor(positions: QBufferHandle3d, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, public readonly props: PlanarGridProps) {
     super(positions, indices, numIndices);
     const attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.PlanarGrid, false);
     assert(attrParams !== undefined);
@@ -43,7 +43,7 @@ export class PlanarGridGeometry extends IndexedGeometry  {
   private constructor(params: PlanarGridGeometryParams) {
     super(params);
     this.uvParams = params.uvParams;
-    this.planeColor = params.planeColor;
+    this.planeColor = params.props.planeColor;
   }
 
   public static create(frustum: Frustum, grid: PlanarGridProps): PlanarGridGeometry | undefined {
@@ -79,7 +79,7 @@ export class PlanarGridGeometry extends IndexedGeometry  {
     if (!pointBuffer || !paramBuffer || !indBuffer)
       return undefined;
 
-    const geomParams = new PlanarGridGeometryParams(pointBuffer, paramBuffer, indBuffer, indices.length, grid.planeColor);
+    const geomParams = new PlanarGridGeometryParams(pointBuffer, paramBuffer, indBuffer, indices.length, grid);
     if (!geomParams)
       return undefined;
 

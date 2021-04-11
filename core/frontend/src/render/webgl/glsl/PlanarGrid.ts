@@ -57,7 +57,7 @@ export default function createPlanarGridProgram(context: WebGLContext): ShaderPr
   addShaderFlags(builder);
   addTranslucency(builder);
 
-  if (System.instance.supportsLogZBuffer) {
+  if (System.instance.supportsLogZBuffer)
     addLogDepth(builder);
 
   frag.addFunction(drawGridLine);
