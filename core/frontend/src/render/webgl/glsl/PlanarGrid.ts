@@ -10,9 +10,11 @@ import { WebGLContext } from "@bentley/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
+import { System } from "../System";
 import { TechniqueId } from "../TechniqueId";
 import { addShaderFlags } from "./Common";
 import { unquantize2d } from "./Decode";
+import { addLogDepth } from "./LogarithmicDepthBuffer";
 import { addTranslucency } from "./Translucency";
 import { addModelViewProjectionMatrix } from "./Vertex";
 
@@ -54,6 +56,9 @@ export default function createPlanarGridProgram(context: WebGLContext): ShaderPr
   addModelViewProjectionMatrix(vert);
   addShaderFlags(builder);
   addTranslucency(builder);
+
+  if (System.instance.supportsLogZBuffer) {
+    addLogDepth(builder);
 
   frag.addFunction(drawGridLine);
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
