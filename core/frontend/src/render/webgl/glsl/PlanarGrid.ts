@@ -23,8 +23,8 @@ const computeTexCoord = "return unquantize2d(a_uvParam, u_qTexCoordParams);";
 
 const computeBaseColor = `
   vec4 color = u_planeColor;
-  float refsPerGrid = 10.0;
-  if (!drawGridLine(color, 1.0 / refsPerGrid, 1.0))
+  float refsPerGrid = u_gridProps.x;
+  if (0.0 == refsPerGrid || !drawGridLine(color, 1.0 / refsPerGrid, 1.0))
     drawGridLine(color, 1.0, .5);
 
   return color;
@@ -77,8 +77,14 @@ export default function createPlanarGridProgram(context: WebGLContext): ShaderPr
   frag.addUniform("u_planeColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_planeColor", (uniform, params) => {
       const planarGrid = params.geometry.asPlanarGrid!;
-      const planeColor = planarGrid.planeColor.colors;
+      const planeColor = planarGrid.props.planeColor.colors;
       uniform.setUniform4fv([planeColor.r / 255, planeColor.g / 255, planeColor.b / 255, 1 - planeColor.t / 255]);
+    });
+  });
+  frag.addUniform("u_gridProps", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_gridProps", (uniform, params) => {
+      const planarGridProps = params.geometry.asPlanarGrid!.props;
+      uniform.setUniform4fv([planarGridProps.gridsPerRef, 0.0, 0.0, 0.0]);
     });
   });
 

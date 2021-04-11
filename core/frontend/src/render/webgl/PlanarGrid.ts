@@ -7,7 +7,7 @@
  */
 
 import { Plane3dByOriginAndUnitNormal, Point2d } from "@bentley/geometry-core";
-import { ColorDef, Frustum, QPoint2dList, QPoint3dList } from "@bentley/imodeljs-common";
+import { Frustum, QPoint2dList, QPoint3dList } from "@bentley/imodeljs-common";
 import { PlanarGridProps } from "../primitives/PlanarGrid";
 import { RenderMemory } from "../RenderMemory";
 import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
@@ -37,13 +37,13 @@ export class PlanarGridGeometry extends IndexedGeometry  {
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
   public get renderOrder(): RenderOrder { return RenderOrder.UnlitSurface; }
   public readonly uvParams: QBufferHandle2d;
-  public readonly planeColor: ColorDef;
+  public readonly props: PlanarGridProps;
   public get asPlanarGrid(): PlanarGridGeometry | undefined { return this; }
 
   private constructor(params: PlanarGridGeometryParams) {
     super(params);
     this.uvParams = params.uvParams;
-    this.planeColor = params.props.planeColor;
+    this.props = params.props;
   }
 
   public static create(frustum: Frustum, grid: PlanarGridProps): PlanarGridGeometry | undefined {
@@ -55,12 +55,12 @@ export class PlanarGridGeometry extends IndexedGeometry  {
 
     const xVector = grid.rMatrix.rowX();
     const yVector = grid.rMatrix.rowY();
-    const xOrigin = xVector.dotProduct(grid.origin) % 1;
-    const yOrigin = yVector.dotProduct(grid.origin) % 1;
+    const xOrigin = xVector.dotProduct(grid.origin);
+    const yOrigin = yVector.dotProduct(grid.origin);
     const params = [];
     for (const polygonPoint of polygon) {
-      const x = (xOrigin + xVector.dotProduct(polygonPoint)) / grid.spacing.x;
-      const y = (yOrigin + yVector.dotProduct(polygonPoint)) / grid.spacing.y;
+      const x = (xVector.dotProduct(polygonPoint) - xOrigin) / grid.spacing.x;
+      const y = (yVector.dotProduct(polygonPoint) - yOrigin) / grid.spacing.y;
       params.push(Point2d.create(x, y));
     }
 
