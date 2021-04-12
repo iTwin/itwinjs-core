@@ -251,4 +251,4 @@ In the next tutorial, we will take widgets from the sample showcase and use them
 
 ## Next Steps
 
-- [Using the Sample Showcase](https://www.itwinjs.org/sample-showcase/)
+- [Adding sample showcase widgets to your iTwin Viewer](./showcase-to-viewer.md)
