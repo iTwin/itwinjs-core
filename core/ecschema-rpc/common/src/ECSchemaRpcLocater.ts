@@ -11,39 +11,39 @@ import { ECSchemaRpcInterface } from "./ECSchemaRpcInterface";
  * @alpha
  */
 export class ECSchemaRpcLocater implements ISchemaLocater {
-    public readonly token: IModelRpcProps;
-    
-    constructor(token: IModelRpcProps) { this.token = token; }
+  public readonly token: IModelRpcProps;
 
-    /**
-     * Attempts to get a schema from the schema rpc locater. Yields undefined if no matching schema is found.
-     * @param schemaKey Key to look up
-     * @param matchType How to match key against candidate schemas
-     * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
-    */
-    public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-        const schemaJson = JSON.parse(await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name)) as SchemaProps;
-        const schema = await Schema.fromJson(schemaJson, context || new SchemaContext());
-        if (schema !== undefined && schema.schemaKey.matches(schemaKey, matchType)) {
-          return schema as T;
-        }
-        return undefined;
-    }
+  constructor(token: IModelRpcProps) { this.token = token; }
 
-    /**
-     * Attempts to get a schema from the schema rpc locater. Yields undefined if no matching schema is found.
-     * @param schemaKey Key to look up
-     * @param matchType How to match key against candidate schemas
-     * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
-    */
-    public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-      const schemaJson = ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name).then((jsonString: string) => {
-        return JSON.parse(jsonString) as SchemaProps;
-      });
-      const schema = Schema.fromJsonSync(schemaJson, context || new SchemaContext());
-      if (schema !== undefined && schema.schemaKey.matches(schemaKey, matchType)) {
-        return schema as T;
-      }
-      return undefined;
+  /**
+   * Attempts to get a schema from the schema rpc locater. Yields undefined if no matching schema is found.
+   * @param schemaKey Key to look up
+   * @param matchType How to match key against candidate schemas
+   * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
+  */
+  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+    const schemaJson = JSON.parse(await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name)) as SchemaProps;
+    const schema = await Schema.fromJson(schemaJson, context || new SchemaContext());
+    if (schema !== undefined && schema.schemaKey.matches(schemaKey, matchType)) {
+      return schema as T;
     }
+    return undefined;
+  }
+
+  /**
+   * Attempts to get a schema from the schema rpc locater. Yields undefined if no matching schema is found.
+   * @param schemaKey Key to look up
+   * @param matchType How to match key against candidate schemas
+   * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
+  */
+  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+    const schemaJson = ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name).then((jsonString: string) => {
+      return JSON.parse(jsonString) as SchemaProps;
+    });
+    const schema = Schema.fromJsonSync(schemaJson, context || new SchemaContext());
+    if (schema !== undefined && schema.schemaKey.matches(schemaKey, matchType)) {
+      return schema as T;
+    }
+    return undefined;
+  }
 }
