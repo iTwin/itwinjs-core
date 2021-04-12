@@ -89,7 +89,7 @@ Running our iTwin Viewer now, you'll notice the exact same widget from the sampl
 
 ![ViewAttributesResults](./images/view_attributes_ported_results.png)
 
-Feel free to customize these widgets away to your liking.
+Feel free to customize these widgets to your liking.
 
 ## Useful Links
 
