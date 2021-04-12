@@ -9,6 +9,7 @@ This tutorial assumes that you already have:
 - Configured your local source to open the "House Model" sample iModel.
   - Instructions to use this sample iModel can be found [here](https://www.itwinjs.org/learning/tutorials/create-test-imodel-sample/).
 - Understand the concept of a [UI Provider](https://www.itwinjs.org/learning/ui/abstract/uiitemsprovider) and adding [widgets](https://www.itwinjs.org/reference/ui-abstract/uiitemsprovider/uiitemsprovider/#providewidgets).
+- Completed ["Customizing the iTwin Viewer"](./hello-world-viewer.md) tutorial.
 
 ### Goal
 
@@ -75,11 +76,62 @@ For this tutorial, these files will be placed directly in our src directory so y
 
 ![ViewAttributesStructure](./images/sample_viewer_port_to_itwin_viewer.png)
 
-Running our iTwin Viewer now, you'll notice the exact same widget from the sample showcase in your iTwin Viewer that is also fully functional:
+Running our iTwin Viewer now, you'll notice the exact same fully functional widget from the sample showcase in your iTwin Viewer.
 
 ![ViewAttributesResults](./images/view_attributes_ported_results.png)
 
 Feel free to customize these widgets to your liking.
+
+### Multiple ways to extend uiProvider
+
+If you already have a ```uiProviders``` prop passed in or would like to add more widgets from the sample showcase, the  ```uiProviders``` prop takes in an array of providers. Extending the widget is as simple as appending to your array.
+
+You can add to the uiProviders const variable, i.e.:
+
+``` typescript
+const uiProviders = [new ViewAttributesWidgetProvider(), new HyerModelingWidgetProvider(), ...]
+```
+
+or ignore the variable completely and pass the array in directly:
+
+``` HTML
+        <Viewer
+          contextId={sampleIModelInfo.contextId}
+          iModelId={sampleIModelInfo.iModelId}
+          authConfig={{ oidcClient: AuthorizationClient.oidcClient }}
+          viewportOptions={viewportOptions}
+          onIModelConnected={_oniModelReady}
+          defaultUiConfig={default3DSandboxUi}
+          theme="dark"
+          uiProviders={[new ViewAttributesWidgetProvider(), new HyperModelingWidgetProvider(), ...]}
+        />
+```
+
+Just remember to copy corresponding files to your source.
+
+If you'd like to use an existing UiItemsProvider instead of passing in multiple new ones, just add the widget in your ```provideWigets()``` function along with copying and pasting the react component to your desired location:
+
+``` typescript
+export class MyCustomUiProvider extends UiItemsProvider
+{
+  ... // Your custom code
+  public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, _section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+    if (location === StagePanelLocation.Right) {
+      widgets.push(
+        {
+          id: "ViewAttributesWidget",
+          label: "View Attributes Controls",
+          defaultState: WidgetState.Floating,
+          getWidgetContent: () => <ViewAttributesWidget />, // Don't forget to copy code for the ViewAttributesWidget
+        }
+      );
+    }
+}
+```
+
+As you can see, extending your iTwin Viewer with multiple widgets is simple.
+It's completely up to you on how you want to structure your directories and components. Feel free to extend as many widgets as you like.
 
 ## Useful Links
 
