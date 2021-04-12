@@ -23,23 +23,45 @@ import { IModelDb } from "./IModelDb";
 import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
+/** Argument for the `Element.onXxx` events
+ * @beta
+ */
 export interface OnElementArg {
+  /** The iModel for the Element affected by this event. */
   iModel: IModelDb;
 }
+/** Argument for the `Element.onXxx` events that supply the properties of an Element to be inserted or updated.
+ * @beta
+ */
 export interface OnElementPropsArg extends OnElementArg {
+  /** The new properties of the Element affected by this event. */
   props: Readonly<ElementProps>;
 }
-
+/** Argument for the `Element.onXxx` events that only supply the Id of the affected Element.
+ * @beta
+ */
 export interface OnElementIdArg extends OnElementArg {
+  /** The Id of the Element affected by this event */
   id: Id64String;
 }
+/** Argument for the `Element.onChildXxx` events
+ * @beta
+ */
 export interface OnChildElementArg extends OnElementArg {
   parentId: Id64String;
 }
+/** Argument for the `Element.onChildXxx` events that supply the properties of the child Element to be inserted or updated.
+ * @beta
+ */
 export interface OnChildElementPropsArg extends OnChildElementArg {
+  /** The new properties of the child Element for this event. */
   childProps: Readonly<ElementProps>;
 }
+/** Arguments for the `Element.onChildXxx` events that only supply the Id of the child Element.
+ * @beta
+ */
 export interface OnChildElementIdArg extends OnChildElementArg {
+  /** The Id of the child element for this event */
   childId: Id64String;
 }
 

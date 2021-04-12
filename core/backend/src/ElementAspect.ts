@@ -12,13 +12,25 @@ import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DbResult, Id64String } from "@bentley/bentleyjs-core";
 
+/** Argument for the `ElementAspect.onXxx` events
+ * @beta
+ */
 export interface OnAspectArg {
+  /** The iModel for the aspect affected by this event. */
   iModel: IModelDb;
 }
+/** Argument for the `ElementAspect.onXxx` events that supply the properties of an aspect to be inserted or updated.
+ * @beta
+ */
 export interface OnAspectPropsArg extends OnAspectArg {
+  /** The new properties of the aspect affected by this event. */
   props: Readonly<ElementAspectProps>;
 }
+/** Argument for the `ElementAspect.onXxx` events that only supply the Id of the affected aspect.
+ * @beta
+ */
 export interface OnAspectIdArg extends OnAspectArg {
+  /** The Id of the aspect affected by this event */
   aspectId: Id64String;
 }
 
@@ -47,31 +59,37 @@ export class ElementAspect extends Entity implements ElementAspectProps {
 
   /** Called before a new ElementAspect is inserted.
    * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @beta
    */
   protected static onInsert(_arg: OnAspectPropsArg): void { }
   /** Called before an ElementAspect is updated.
    * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @beta
    */
   protected static onUpdate(_arg: OnAspectPropsArg): void { }
   /** Called before an ElementAspect is deleted.
    * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @beta
    */
   protected static onDelete(_arg: OnAspectIdArg): void { }
   /** Called after a new ElementAspect was inserted.
    * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @beta
    */
   protected static onInserted(_arg: OnAspectPropsArg): void { }
   /** Called after an ElementAspect was updated.
    * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @beta
    */
   protected static onUpdated(_arg: OnAspectPropsArg): void { }
   /** Called after an ElementAspect was deleted.
    * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @beta
    */
   protected static onDeleted(_arg: OnAspectIdArg): void { }

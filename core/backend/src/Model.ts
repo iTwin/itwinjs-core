@@ -21,21 +21,39 @@ import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 
+/** Argument for the `Model.onXxx` events
+ * @beta
+ */
 export interface OnModelArg {
+  /** The iModel for the Model affected by this event. */
   iModel: IModelDb;
 }
+/** Argument for the `Model.onXxx` events that supply the properties of a Model to be inserted or updated.
+ * @beta
+ */
 export interface OnModelPropsArg extends OnModelArg {
+  /** The new properties of the Model affected by this event. */
   props: Readonly<ModelProps>;
 }
-
+/** Argument for the `Model.onXxx` events that only supply the Id of the affected Model.
+ * @beta
+ */
 export interface OnModelIdArg extends OnModelArg {
+  /** The Id of the Model affected by this event */
   id: Id64String;
 }
+/** Argument for the `Model.onElementXxx` events that supply the properties of an Element to be inserted or updated in the Model.
+ * @beta
+ */
 export interface OnElementInModelPropsArg extends OnModelIdArg {
+  /** The new properties of an Element for the affected Model for this event */
   elementProps: Readonly<ElementProps>;
 }
-
+/** Argument for the `Model.onElementXxx` events that supply the properties of an Element for the Model.
+ * @beta
+ */
 export interface OnElementInModelIdArg extends OnModelIdArg {
+  /** The Id of the Element for the affected Model of this event */
   elementId: Id64String;
 }
 
@@ -113,6 +131,7 @@ export class Model extends Entity implements ModelProps {
 
   /** Called before a new model is inserted.
    * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model to be inserted
    * @beta
    */
@@ -122,6 +141,7 @@ export class Model extends Entity implements ModelProps {
     }
   }
   /** Called after a new model is inserted.
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model inserted
    * @beta
    */
@@ -132,6 +152,7 @@ export class Model extends Entity implements ModelProps {
   }
   /** Called before a model is updated.
    * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model to be updated
    * @beta
    */
@@ -142,6 +163,7 @@ export class Model extends Entity implements ModelProps {
   }
   /** Called after a model is updated.
    * @beta
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model updated.
    */
   protected static onUpdated(arg: OnModelIdArg): void {
@@ -151,6 +173,7 @@ export class Model extends Entity implements ModelProps {
   }
   /** Called before a model is deleted.
    * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model to be deleted
    * @beta
    */
@@ -163,44 +186,51 @@ export class Model extends Entity implements ModelProps {
 
   /** Called after a model is deleted.
    * @beta
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model deleted
    */
   protected static onDeleted(_arg: OnModelIdArg): void { }
 
-  /** Called before an Element is to be inserted into the supplied ModelId.
+  /** Called before an Element is to be inserted into an instance of a Model of this class.
    * @throws [[IModelError]] to disallow the element to be inserted into the Model
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model to hold the element
    * @beta
    */
   protected static onInsertElement(_arg: OnElementInModelPropsArg): void { }
 
-  /** Called after an Element has been inserted into the supplied ModelId.
+  /** Called after an Element has been inserted into an instance of a Model of this class.
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model holding the element
    * @beta
    */
   protected static onInsertedElement(_arg: OnElementInModelIdArg): void { }
 
-  /** Called when an Element in the supplied ModelId is about to be updated.
+  /** Called when an Element in an instance of a Model of this class is about to be updated.
    * @throws [[IModelError]] to disallow the update
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model holding the element
    * @beta
    */
   protected static onUpdateElement(_arg: OnElementInModelPropsArg): void { }
 
-  /** Called after an Element in the supplied ModelId has been updated.
+  /** Called after an Element in an instance of a Model of this class has been updated.
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model holding the element
    * @beta
    */
   protected static onUpdatedElement(_arg: OnElementInModelIdArg): void { }
 
-  /** Called when an Element in the supplied ModelId is about to be deleted.
+  /** Called when an Element in an instance of a Model of this class is about to be deleted.
    * @throws [[IModelError]] to disallow the delete
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model holding the element
    * @beta
    */
   protected static onDeleteElement(_arg: OnElementInModelIdArg): void { }
 
-  /** Called after an Element in the supplied ModelId has been deleted.
+  /** Called after an Element in an instance of a Model of this class has been deleted.
+   * @note If you override this method, you must call super.
    * @note `this` is the class of the Model that held the element
    * @beta
    */
