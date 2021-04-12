@@ -12,7 +12,7 @@ import { BackgroundMapSettings, BackgroundMapType } from "./BackgroundMapSetting
 export type SubLayerId = string | number;
 
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
- * A map sub layer represents a set of objects within the layer that can be controlled seperately.  These
+ * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
  * @see [[MapLayerProps]]
  * @beta
@@ -28,9 +28,9 @@ export interface MapSubLayerProps {
 
 /** Normalized representation of a [[MapSubLayerProps]] for which values
  * have been validated and default values have been applied where explicit values not defined.
- * A map sub layer represents a set of objects within the layer that can be controlled seperately.  These
+ * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
- * [[MapSubLayers]] can represent a hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
+ * This class can represent an hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
  * @see [[MapLayerSettings]]
  * @beta
  */
