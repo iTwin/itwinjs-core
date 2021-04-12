@@ -14,7 +14,7 @@ import {
   BentleyStatus, ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps,
 } from "@bentley/imodeljs-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
-import { AccuDrawHintBuilder } from "../AccuDraw";
+import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail, HitGeomType } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -25,7 +25,6 @@ import { CanvasDecoration } from "../render/CanvasDecoration";
 import { GraphicType } from "../render/GraphicBuilder";
 import { DecorateContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
-import { EditManipulator } from "./EditManipulator";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButtonEvent, BeModifierKeys, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
@@ -822,7 +821,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   public static toolId = "Measure.AreaByPoints";
   public static iconSpec = "icon-measure-2d";
   /** @internal */
-  private _orientationValue: DialogItemValue = { value: EditManipulator.RotationType.Top };
+  private _orientationValue: DialogItemValue = { value: ContextRotationId.Top };
   /** @internal */
   protected readonly _points: Point3d[] = [];
   /** @internal */
@@ -843,8 +842,8 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   protected _lastMotionPt?: Point3d;
 
   /** @internal */
-  public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
-  public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
+  public get orientation(): ContextRotationId { return this._orientationValue.value as ContextRotationId; }
+  public set orientation(option: ContextRotationId) { this._orientationValue.value = option; }
 
   /** @internal */
   protected static _orientationName = "enumAsOrientation";
@@ -858,14 +857,14 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       typename: "enum",
       enum: {
         choices: [
-          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Top"), value: EditManipulator.RotationType.Top },
-          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Front"), value: EditManipulator.RotationType.Front },
-          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Left"), value: EditManipulator.RotationType.Left },
-          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Bottom"), value: EditManipulator.RotationType.Bottom },
-          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Back"), value: EditManipulator.RotationType.Back },
-          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Right"), value: EditManipulator.RotationType.Right },
-          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("View"), value: EditManipulator.RotationType.View },
-          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Face"), value: EditManipulator.RotationType.Face },
+          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Top"), value: ContextRotationId.Top },
+          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Front"), value: ContextRotationId.Front },
+          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Left"), value: ContextRotationId.Left },
+          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Bottom"), value: ContextRotationId.Bottom },
+          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Back"), value: ContextRotationId.Back },
+          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Right"), value: ContextRotationId.Right },
+          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("View"), value: ContextRotationId.View },
+          { label: MeasureAreaByPointsTool.enumAsOrientationMessage("Face"), value: ContextRotationId.Face },
         ],
       },
     };
@@ -966,14 +965,14 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     hints.setOrigin(this._points[this._points.length - 1]);
     if (this._matrix) {
       if (1 === this._points.length) {
-        hints.setRotation(this._matrix.inverse()!);
+        hints.setMatrix(this._matrix);
         hints.setModeRectangular();
       } else if (this._points.length > 1 && !(this._points[this._points.length - 1].isAlmostEqual(this._points[this._points.length - 2]))) {
         const xVec = Vector3d.createStartEnd(this._points[this._points.length - 2], this._points[this._points.length - 1]);
         const zVec = this._matrix.getColumn(2);
         const matrix = Matrix3d.createRigidFromColumns(xVec, zVec, AxisOrder.XZY);
         if (undefined !== matrix)
-          hints.setRotation(matrix.inverse()!); // Rotate AccuDraw x axis to last segment preserving current up vector...
+          hints.setMatrix(matrix); // Rotate AccuDraw x axis to last segment preserving current up vector...
       }
     }
     hints.setLockZ = true;
@@ -992,14 +991,14 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       return points;
 
     const normal = this._matrix.getColumn(2);
-    let currentPt = EditManipulator.HandleUtils.projectPointToPlaneInView(cursorPt, points[0], normal, this.targetView, true);
+    let currentPt = AccuDrawHintBuilder.projectPointToPlaneInView(cursorPt, points[0], normal, this.targetView, true);
     if (undefined === currentPt)
       currentPt = cursorPt.clone();
     if (2 === points.length && 0 === (IModelApp.toolAdmin.currentInputState.qualifiers & BeModifierKeys.Control)) {
       const xDir = Vector3d.createStartEnd(points[0], points[1]);
       const xLen = xDir.magnitude(); xDir.normalizeInPlace();
       const yDir = xDir.crossProduct(normal); yDir.normalizeInPlace();
-      const cornerPt = EditManipulator.HandleUtils.projectPointToLineInView(currentPt, points[1], yDir, this.targetView, true);
+      const cornerPt = AccuDrawHintBuilder.projectPointToLineInView(currentPt, points[1], yDir, this.targetView, true);
       if (undefined !== cornerPt) {
         points.push(cornerPt);
         cornerPt.plusScaled(xDir, -xLen, currentPt);
@@ -1156,12 +1155,12 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       return EventHandled.No;
     }
 
-    if (undefined === this._matrix && undefined === (this._matrix = EditManipulator.HandleUtils.getRotation(this.orientation, this.targetView)))
+    if (undefined === this._matrix && undefined === (this._matrix = AccuDrawHintBuilder.getContextRotation(this.orientation, this.targetView)))
       return EventHandled.No;
 
     const currPt = ev.point.clone();
     if (this._points.length > 0) {
-      const planePt = EditManipulator.HandleUtils.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), ev.viewport!, true);
+      const planePt = AccuDrawHintBuilder.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), ev.viewport!, true);
       if (undefined !== planePt)
         currPt.setFrom(planePt);
     }

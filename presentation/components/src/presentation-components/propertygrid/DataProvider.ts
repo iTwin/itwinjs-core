@@ -19,6 +19,7 @@ import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
 import { ContentBuilder, FieldRecord } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
+import { DiagnosticsProps } from "../common/Diagnostics";
 import { createLabelRecord, priorityAndNameSortFunction } from "../common/Utils";
 import { FAVORITES_CATEGORY_NAME, getFavoritesCategory } from "../favorite-properties/DataProvider";
 
@@ -44,7 +45,7 @@ export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContent
  * Properties for creating a `LabelsProvider` instance.
  * @public
  */
-export interface PresentationPropertyDataProviderProps {
+export interface PresentationPropertyDataProviderProps extends DiagnosticsProps {
   /** IModelConnection to use for requesting property data. */
   imodel: IModelConnection;
 
@@ -87,6 +88,8 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
       ruleset: props.ruleset ? props.ruleset : DEFAULT_PROPERTY_GRID_RULESET.id,
       displayType: DefaultContentDisplayTypes.PropertyPane,
       enableContentAutoUpdate: props.enableContentAutoUpdate,
+      ruleDiagnostics: props.ruleDiagnostics,
+      devDiagnostics: props.devDiagnostics,
     });
     this._useDefaultRuleset = !props.ruleset;
     this._includeFieldsWithNoValues = true;

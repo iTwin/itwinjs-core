@@ -9,9 +9,12 @@
 import memoize from "micro-memoize";
 import { IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ExtendedHierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset } from "@bentley/presentation-common";
+import {
+  DiagnosticsOptionsWithHandler, ExtendedHierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset,
+} from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@bentley/ui-components";
+import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
@@ -21,7 +24,7 @@ import { CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentati
  * Properties for creating a `PresentationTreeDataProvider` instance.
  * @public
  */
-export interface PresentationTreeDataProviderProps {
+export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
   /** IModel to pull data from. */
   imodel: IModelConnection;
 
@@ -81,6 +84,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private _appendChildrenCountForGroupingNodes?: boolean;
   private _disposeVariablesChangeListener: () => void;
   private _dataSource: PresentationTreeDataProviderDataSourceEntryPoints;
+  private _diagnosticsOptions?: DiagnosticsOptionsWithHandler;
 
   /** Constructor. */
   public constructor(props: PresentationTreeDataProviderProps) {
@@ -98,6 +102,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
       this._getNodesAndCount.cache.values.length = 0;
       this._getNodesAndCount.cache.keys.length = 0;
     });
+    this._diagnosticsOptions = createDiagnosticsOptions(props);
   }
 
   /** Destructor. Must be called to clean up.  */
@@ -125,6 +130,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
       imodel: this._imodel,
       rulesetOrId: this._rulesetRegistration.rulesetId,
       ...(parentKey ? { parentKey } : undefined),
+      ...(this._diagnosticsOptions ? { diagnostics: this._diagnosticsOptions } : undefined),
     };
   }
 

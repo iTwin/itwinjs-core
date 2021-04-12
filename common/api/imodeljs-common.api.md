@@ -865,12 +865,14 @@ export interface ClassifierTileTreeId {
 
 // @public
 export class ClipStyle {
-    static create(produceCutGeometry: boolean, cutStyle: CutStyle): ClipStyle;
+    static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle;
     readonly cutStyle: CutStyle;
     static readonly defaults: ClipStyle;
     // (undocumented)
     static fromJSON(props?: ClipStyleProps): ClipStyle;
+    readonly insideColor?: RgbColor;
     get matchesDefaults(): boolean;
+    readonly outsideColor?: RgbColor;
     readonly produceCutGeometry: boolean;
     toJSON(): ClipStyleProps | undefined;
 }
@@ -878,6 +880,8 @@ export class ClipStyle {
 // @public
 export interface ClipStyleProps {
     cutStyle?: CutStyleProps;
+    insideColor?: RgbColorProps;
+    outsideColor?: RgbColorProps;
     produceCutGeometry?: boolean;
 }
 
@@ -4604,7 +4608,7 @@ export class MeshPolylineList extends Array<MeshPolyline> {
     constructor(...args: MeshPolyline[]);
 }
 
-// @beta
+// @public
 export class ModelClipGroup {
     readonly clip?: ClipVector;
     clone(): ModelClipGroup;
@@ -4615,13 +4619,13 @@ export class ModelClipGroup {
     toJSON(): ModelClipGroupProps;
 }
 
-// @beta
+// @public
 export interface ModelClipGroupProps {
     clip?: ClipVectorProps;
     models?: Id64Array;
 }
 
-// @beta
+// @public
 export class ModelClipGroups {
     constructor(groups?: ModelClipGroup[]);
     clone(): ModelClipGroups;
@@ -7823,17 +7827,14 @@ export class ViewDetails3d extends ViewDetails {
     set allow3dManipulations(allow: boolean);
     // @internal
     getJSON(): Readonly<ViewDetails3dProps>;
-    // @beta
     get modelClipGroups(): ModelClipGroups;
     set modelClipGroups(groups: ModelClipGroups);
-    // @beta
     readonly onModelClipGroupsChanged: BeEvent<(newGroups: ModelClipGroups) => void>;
 }
 
 // @public
 export interface ViewDetails3dProps extends ViewDetailsProps {
     disable3dManipulations?: boolean;
-    // @beta
     modelClipGroups?: ModelClipGroupProps[];
 }
 

@@ -8,7 +8,7 @@
 
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
-  ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GridInViewContext, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
+  Geometry, GridInViewContext, Matrix3d, Point2d,
   Point3d, Range1d, Range3d, Segment1d, Transform, Vector2d, Vector3d, ViewportGraphicsGridLineIdentifier, ViewportGraphicsGridSpacingOptions, XAndY} from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
@@ -308,41 +308,6 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  private getClippedGridPlanePoints(vp: Viewport, plane: Plane3dByOriginAndUnitNormal, loopPt: Point3d): Point3d[] | undefined {
-    const frust = vp.getFrustum();
-    const geom = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(ConvexClipPlaneSet.createPlanes([ClipPlane.createPlane(plane)]), frust.toRange(), true, false, true);
-    if (undefined === geom || 1 !== geom.length)
-      return undefined;
-    const loop = geom[0];
-    if (!(loop instanceof Loop) || 1 !== loop.children.length)
-      return undefined;
-    const child = loop.getChild(0);
-    if (!(child instanceof LineString3d))
-      return undefined;
-
-    const work = new GrowableXYZArray();
-    const finalPoints = new GrowableXYZArray();
-    const convexSet = frust.getRangePlanes(false, false, 0);
-    convexSet.polygonClip(child.points, finalPoints, work);
-    if (finalPoints.length < 4)
-      return undefined;
-
-    const shapePoints = finalPoints.getPoint3dArray();
-    let closeIndex = 0;
-    if (vp.isCameraOn) {
-      let lastZ = 0.0;
-      for (let i = 0; i < shapePoints.length; ++i) {
-        vp.worldToView(shapePoints[i], loopPt);
-        if (i === 0 || loopPt.z > lastZ) {
-          lastZ = loopPt.z;
-          closeIndex = i;
-        }
-      }
-    }
-    loopPt.setFrom(shapePoints[closeIndex]);
-    return shapePoints;
-  }
-
   /** @internal */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
@@ -363,26 +328,10 @@ export class DecorateContext extends RenderContext {
     if (!vp.isCameraOn && Math.abs(eyeDot) < 0.005)
       return;
 
-    const plane = Plane3dByOriginAndUnitNormal.create(gridOrigin, zVec);
-    if (undefined === plane)
-      return;
-
-    const loopPt = Point3d.createZero();
-    const shapePoints = this.getClippedGridPlanePoints(vp, plane, loopPt);
-    if (undefined === shapePoints)
-      return;
-
-    const meterPerPixel = vp.getPixelSizeAtPoint(loopPt);
     const refSpacing = Vector2d.create(spacing.x, spacing.y);
-
-    const viewZ = vp.rotation.getRow(2);
-    const gridOffset = Point3d.create(viewZ.x * meterPerPixel, viewZ.y * meterPerPixel, viewZ.z * meterPerPixel); // Avoid z fighting with coincident geometry
-    const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, Transform.createTranslation(gridOffset));
+    const builder = this.createGraphicBuilder(GraphicType.WorldDecoration);
     const color = vp.getContrastToBackgroundColor();
     const planeColor = (eyeDot < 0.0 ? ColorDef.red : color).withTransparency(GridDisplaySettings.planeTransparency);
-
-    builder.setBlankingFill(planeColor);
-    builder.addShape(shapePoints);
 
     const addGridLine = (pointA: Point3d, pointB: Point3d, startEndDistances: Segment1d | undefined, gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
       if (skipRefLines && (0 === gridLineIdentifier.index % gridsPerRef)) {
@@ -452,22 +401,27 @@ export class DecorateContext extends RenderContext {
         gridLineIdentifier: ViewportGraphicsGridLineIdentifier) => {
         addGridLine(pointA, pointB, startEndDistances, gridLineIdentifier);
       });
+
     // add first line now if it ended up being the only one in the view due to zoom level...
     if (undefined !== firstLine) {
       builder.setSymbology(color.withTransparency(lineTransparency), planeColor, 1, linePattern);
       builder.addLineString(firstLine);
     }
+
+    if (undefined !== gridInViewContext && gridInViewContext.xyzLoop.length > 2) {
+      builder.setBlankingFill(planeColor);
+      builder.addShape(gridInViewContext.xyzLoop);
+    }
+
     // might still need grid lines even if no ref lines are visible in the view due to zoom level...
     if (noOutput || undefined !== firstLine)
       drawGridLines = true;
 
     if (drawGridLines) {
-
       lineTransparency = GridDisplaySettings.lineTransparency;
       linePattern = LinePixels.Solid;
       skipRefLines = true;
       gridOptions.gridMultiple = 1;
-      // const gridInViewContext1 = GridInViewContext.create(gridOrigin, gridRefXStep, gridRefYStep, vp.worldToViewMap, npcRange, GridDisplaySettings.lineLimiter);
       gridInViewContext?.processGrid (gridOptions,
         (pointA: Point3d, pointB: Point3d, _perspectiveZA: number | undefined, _perspectiveZB: number | undefined,
           startEndDistances: Segment1d | undefined,

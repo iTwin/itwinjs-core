@@ -188,7 +188,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _onModelsChecked = (items: ListItem[], checked: boolean) => {
     if (!IModelApp.viewManager) return;
 
-    IModelApp.viewManager.forEachViewport(async (vp: Viewport) => {
+    IModelApp.viewManager.forEachViewport(async (vp: Viewport) => { // eslint-disable-line deprecation/deprecation
       if (!(vp.view instanceof SpatialViewState)) return;
 
       const modelIds = items.map((item) => {
@@ -245,7 +245,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     // This property let us act on all viewports or just on the selected one, configurable by the app
     if (this.props.allViewports) {
-      IModelApp.viewManager.forEachViewport(updateViewport);
+      IModelApp.viewManager.forEachViewport(updateViewport); // eslint-disable-line deprecation/deprecation
     } else if (IModelApp.viewManager.selectedView) {
       updateViewport(IModelApp.viewManager.selectedView);
     }

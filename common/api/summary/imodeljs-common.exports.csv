@@ -322,9 +322,9 @@ internal;MeshEdge
 internal;MeshEdges
 internal;MeshPolyline
 internal;MeshPolylineList 
-beta;ModelClipGroup
-beta;ModelClipGroupProps
-beta;ModelClipGroups
+public;ModelClipGroup
+public;ModelClipGroupProps
+public;ModelClipGroups
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps

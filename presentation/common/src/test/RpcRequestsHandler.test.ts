@@ -15,6 +15,7 @@ import {
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import { ItemJSON } from "../presentation-common/content/Item";
+import { DiagnosticsScopeLogs } from "../presentation-common/Diagnostics";
 import { InstanceKeyJSON } from "../presentation-common/EC";
 import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
 import {
@@ -36,8 +37,8 @@ describe("RpcRequestsHandler", () => {
   let clientId: string;
   let defaultRpcHandlerOptions: { imodel: IModelRpcProps };
   const token: IModelRpcProps = { key: "test", iModelId: "test", contextId: "test" };
-  const successResponse = async <TResult>(result: TResult): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result });
-  const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined });
+  const successResponse = async <TResult>(result: TResult, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result, diagnostics });
+  const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined, diagnostics });
 
   beforeEach(() => {
     clientId = faker.random.uuid();
@@ -85,6 +86,16 @@ describe("RpcRequestsHandler", () => {
         expect(actualResult).to.eq(result);
       });
 
+      it("calls diagnostics handler if provided", async () => {
+        const result = faker.random.number();
+        const diagnosticsOptions = {
+          handler: sinon.spy(),
+        };
+        const diagnosticsResult: DiagnosticsScopeLogs[] = [];
+        await handler.request(async () => successResponse(result, diagnosticsResult), { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions });
+        expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
+      });
+
     });
 
     describe("when request throws unknown exception", () => {
@@ -101,6 +112,16 @@ describe("RpcRequestsHandler", () => {
       it("throws an exception", async () => {
         const func = async () => errorResponse(PresentationStatus.Error);
         await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
+      });
+
+      it("calls diagnostics handler if provided", async () => {
+        const diagnosticsOptions = {
+          handler: sinon.spy(),
+        };
+        const diagnosticsResult: DiagnosticsScopeLogs[] = [];
+        const func = async () => errorResponse(PresentationStatus.Error, undefined, diagnosticsResult);
+        await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
+        expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
       });
 
     });

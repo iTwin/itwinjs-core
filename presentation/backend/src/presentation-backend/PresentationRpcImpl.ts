@@ -109,11 +109,11 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     if (diagnosticsOptions) {
       managerRequestOptions.diagnostics = {
         ...diagnosticsOptions,
-        listener: (logs: DiagnosticsScopeLogs) => {
+        handler: (logs: DiagnosticsScopeLogs[]) => {
           // istanbul ignore else
           if (!diagnosticLogs)
             diagnosticLogs = [];
-          diagnosticLogs.push(logs);
+          diagnosticLogs.push(...logs);
         },
       };
     }

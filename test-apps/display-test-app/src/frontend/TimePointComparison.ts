@@ -7,7 +7,8 @@ import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Transform, Vector3d,
 } from "@bentley/geometry-core";
 import {
-  EditManipulator, FeatureSymbology, GraphicBranch, IModelApp, RenderClipVolume, SceneContext, ScreenViewport, TileTreeReference, Tool,
+  AccuDrawHintBuilder,
+  FeatureSymbology, GraphicBranch, IModelApp, RenderClipVolume, SceneContext, ScreenViewport, TileTreeReference, Tool,
 } from "@bentley/imodeljs-frontend";
 
 /** Prototype for SYNCHRO feature. Split the viewport down the middle. Left-hand side remains frozen at current time point. Right-hand side updates when time point changes. */
@@ -18,10 +19,6 @@ class TimePointComparison {
   private constructor(clip: ClipVector, timePoint: number) {
     this._clipVolume = IModelApp.renderSystem.createClipVolume(clip);
     this._timePoint = timePoint;
-  }
-
-  public dispose(): void {
-    this._clipVolume?.dispose();
   }
 
   public forEachTileTreeRef(viewport: ScreenViewport, func: (ref: TileTreeReference) => void): void {
@@ -74,7 +71,7 @@ class TimePointComparison {
       let point = new Point3d(rect.width / 2, rect.height / 2, 0);
       point = vp.viewToWorld(point);
 
-      const boresite = EditManipulator.HandleUtils.getBoresite(point, vp);
+      const boresite = AccuDrawHintBuilder.getBoresite(point, vp);
       const viewY = vp.rotation.rowY();
       const normal = viewY.crossProduct(boresite.direction);
 
@@ -89,7 +86,6 @@ class TimePointComparison {
       vp.viewFlags.clipVolume = true;
     } else {
       vp.dropTiledGraphicsProvider(provider);
-      provider.dispose();
       vp.view.setViewClip(undefined);
     }
 

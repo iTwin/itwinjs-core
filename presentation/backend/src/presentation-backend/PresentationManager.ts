@@ -13,21 +13,21 @@ import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodelj
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
-  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
-  ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition,
-  LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions,
-  PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope,
-  SelectionScopeRequestOptions,
+  DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
+  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyRequestOptions, InstanceKey,
+  KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification,
+  PresentationDataCompareOptions, PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo,
+  SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import { createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
+import { PresentationIpcHandler } from "./PresentationIpcHandler";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { BackendDiagnosticsOptions, getElementKey, WithClientRequestContext } from "./Utils";
-import { PresentationIpcHandler } from "./PresentationIpcHandler";
+import { getElementKey, WithClientRequestContext } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -860,7 +860,7 @@ export class PresentationManager {
     return SelectionScopesHelper.computeSelection(requestOptions, ids, scopeId);
   }
 
-  private async request<TParams extends { requestContext: ClientRequestContext, diagnostics?: BackendDiagnosticsOptions, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: PresentationUnitSystem }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
+  private async request<TParams extends { requestContext: ClientRequestContext, diagnostics?: DiagnosticsOptionsWithHandler, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: PresentationUnitSystem }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
     const { requestContext, requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const nativeRequestParams: any = {
@@ -874,14 +874,14 @@ export class PresentationManager {
 
     let diagnosticsListener;
     if (diagnostics) {
-      const { listener: tempDiagnosticsListener, ...tempDiagnosticsOptions } = diagnostics;
+      const { handler: tempDiagnosticsListener, ...diagnosticsOptions } = diagnostics;
       diagnosticsListener = tempDiagnosticsListener;
-      nativeRequestParams.params.diagnostics = tempDiagnosticsOptions;
+      nativeRequestParams.params.diagnostics = diagnosticsOptions;
     }
 
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
     requestContext.enter();
-    diagnosticsListener && response.diagnostics && diagnosticsListener(response.diagnostics);
+    diagnosticsListener && response.diagnostics && diagnosticsListener([response.diagnostics]);
     return JSON.parse(response.result, reviver);
   }
 

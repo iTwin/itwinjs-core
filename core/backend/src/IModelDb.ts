@@ -10,21 +10,20 @@
 
 import {
   assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus,
-  JsonUtils, Logger, OpenMode,
+  IModelStatus, JsonUtils, Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
-  CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
-  ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
-  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,
-  IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelTileTreeProps, IModelVersion, LocalBriefcaseProps,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
-  PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SchemaState, SheetProps, SnapRequestProps,
-  SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureLoadProps, ThumbnailProps, UpgradeOptions,
-  ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
+  CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps,
+  ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps,
+  EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
+  GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps,
+  IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
+  ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
+  SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
+  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -34,19 +33,19 @@ import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./Check
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrencyControl } from "./ConcurrencyControl";
-import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
+import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
+import { generateElementGraphics } from "./ElementGraphics";
 import { Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
-import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
+import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { generateElementGraphics } from "./ElementGraphics";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -102,13 +101,14 @@ export abstract class IModelDb extends IModel {
   public readonly tiles = new IModelDb.Tiles(this);
   private _relationships?: Relationships;
   private _concurrentQueryInitialized: boolean = false;
-  private readonly _statementCache = new ECSqlStatementCache();
-  private readonly _sqliteStatementCache = new SqliteStatementCache();
+  private readonly _statementCache = new StatementCache<ECSqlStatement>();
+  private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
   protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
+  private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
@@ -144,14 +144,17 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
-    IModelHost.onBeforeShutdown.addListener(() => {
-      if (this.isOpen) {
-        try {
-          this.abandonChanges();
-          this.close();
-        } catch { }
-      }
-    });
+
+    if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
+      IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
+        IModelDb._openDbs.forEach((db) => { // N.B.: db.close() removes from _openedDbs
+          try {
+            db.abandonChanges();
+            db.close();
+          } catch { }
+        });
+      });
+    }
   }
 
   /** Close this IModel, if it is currently open. */
@@ -216,52 +219,23 @@ export abstract class IModelDb extends IModel {
   /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return this.isOpen ? this.nativeDb.getBriefcaseId() : BriefcaseIdValue.Illegal; }
 
-  /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
-   * @param ecsql The ECSQL statement to prepare
-   * @returns the prepared statement
-   * @throws [[IModelError]] if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
-   */
-  private getPreparedStatement(ecsql: string): ECSqlStatement {
-    const cachedStatement = this._statementCache.find(ecsql);
-    if (cachedStatement !== undefined && cachedStatement.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      cachedStatement.useCount++;
-      return cachedStatement.statement;
-    }
-
-    this._statementCache.removeUnusedStatementsIfNecessary();
-    const stmt = this.prepareStatement(ecsql);
-    if (cachedStatement)
-      this._statementCache.replace(ecsql, stmt);
-    else
-      this._statementCache.add(ecsql, stmt);
-
-    return stmt;
-  }
-
-  /** Use a prepared ECSQL statement. This function takes care of preparing the statement and then releasing it.
-   *
-   * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
-   * the already prepared statement from the cache will be reused.
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
+  /**
+   * Use a prepared ECSQL statement, potentially from the statement cache. If the requested statement doesn't exist
+   * in the statement cache, a new statement is prepared. After the callback completes, the statement is reset and saved
+   * in the statement cache so it can be reused in the future. Use this method for ECSQL statements that will be
+   * reused often and are expensive to prepare. The statement cache holds the most recently used statements, discarding
+   * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withStatement]].
+   * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
-   * @returns the value returned by cb
+   * @returns the value returned by `callback`.
+   * @see [[withStatement]]
+   * @public
    */
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
-    const stmt = this.getPreparedStatement(ecsql);
-    const release = () => {
-      if (stmt.isShared)
-        this._statementCache.release(stmt);
-      else
-        stmt.dispose();
-    };
-
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql);
+    const release = () => this._statementCache.addOrDispose(stmt);
     try {
-      const val: T = callback(stmt);
+      const val = callback(stmt);
       if (val instanceof Promise) {
         val.then(release, release);
       } else {
@@ -270,10 +244,37 @@ export abstract class IModelDb extends IModel {
       return val;
     } catch (err) {
       release();
-      Logger.logError(loggerCategory, err.toString());
       throw err;
     }
   }
+
+  /**
+   * Prepared and execute a callback on an ECSQL statement. After the callback completes the statement is disposed.
+   * Use this method for ECSQL statements are either not expected to be reused, or are not expensive to prepare.
+   * For statements that will be reused often, instead use [[withPreparedStatement]].
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by `callback`.
+   * @see [[withPreparedStatement]]
+   * @public
+   */
+  public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
+    const stmt = this.prepareStatement(ecsql);
+    const release = () => stmt.dispose();
+    try {
+      const val = callback(stmt);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err) {
+      release();
+      throw err;
+    }
+  }
+
   /** Compute number of rows that would be returned by the ECSQL.
    *
    * See also:
@@ -521,22 +522,21 @@ export abstract class IModelDb extends IModel {
     } while (result.status !== QueryResponseStatus.Done);
   }
 
-  /** Use a prepared SQLite SQL statement. This function takes care of preparing the statement and then releasing it.
-   * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
-   * the already prepared statement from the cache will be reused.
+  /**
+   * Use a prepared SQL statement, potentially from the statement cache. If the requested statement doesn't exist
+   * in the statement cache, a new statement is prepared. After the callback completes, the statement is reset and saved
+   * in the statement cache so it can be reused in the future. Use this method for SQL statements that will be
+   * reused often and are expensive to prepare. The statement cache holds the most recently used statements, discarding
+   * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withSqliteStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
-   * @returns the value returned by cb
-   * @internal
+   * @returns the value returned by `callback`.
+   * @see [[withPreparedStatement]]
+   * @public
    */
   public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
-    const stmt = this.getPreparedSqlStatement(sql);
-    const release = () => {
-      if (stmt.isShared)
-        this._sqliteStatementCache.release(stmt);
-      else
-        stmt.dispose();
-    };
+    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
+    const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
       const val: T = callback(stmt);
       if (val instanceof Promise) {
@@ -547,40 +547,44 @@ export abstract class IModelDb extends IModel {
       return val;
     } catch (err) {
       release();
-      Logger.logError(loggerCategory, err.toString());
       throw err;
     }
   }
 
-  /** Prepare an SQLite SQL statement.
-   * @param sql The SQLite SQL statement to prepare
+  /**
+   * Prepared and execute a callback on a SQL statement. After the callback completes the statement is disposed.
+   * Use this method for SQL statements are either not expected to be reused, or are not expensive to prepare.
+   * For statements that will be reused often, instead use [[withPreparedSqliteStatement]].
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by `callback`.
+   * @public
+   */
+  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
+    const stmt = this.prepareSqliteStatement(sql);
+    const release = () => stmt.dispose();
+    try {
+      const val: T = callback(stmt);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err) {
+      release();
+      throw err;
+    }
+  }
+
+  /** Prepare an SQL statement.
+   * @param sql The SQL statement to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
    * @internal
    */
   public prepareSqliteStatement(sql: string): SqliteStatement {
-    const stmt = new SqliteStatement();
-    stmt.prepare(this.nativeDb, sql);
-    return stmt;
-  }
-
-  /** Get a prepared SQLite SQL statement - may require preparing the statement, if not found in the cache.
-   * @param sql The SQLite SQL statement to prepare
-   * @returns the prepared statement
-   * @throws [[IModelError]] if the statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
-   */
-  private getPreparedSqlStatement(sql: string): SqliteStatement {
-    const cachedStatement: CachedSqliteStatement | undefined = this._sqliteStatementCache.find(sql);
-    if (cachedStatement !== undefined && cachedStatement.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      cachedStatement.useCount++;
-      return cachedStatement.statement;
-    }
-
-    this._sqliteStatementCache.removeUnusedStatementsIfNecessary();
-    const stmt: SqliteStatement = this.prepareSqliteStatement(sql);
-    if (cachedStatement)
-      this._sqliteStatementCache.replace(sql, stmt);
-    else
-      this._sqliteStatementCache.add(sql, stmt);
+    const stmt = new SqliteStatement(sql);
+    stmt.prepare(this.nativeDb);
     return stmt;
   }
 
@@ -620,20 +624,17 @@ export abstract class IModelDb extends IModel {
     return ids;
   }
 
-  /** Empty the [ECSqlStatementCache]($backend) for this iModel.
+  /** Empty the ECSqlStatementCache for this iModel.
    * @deprecated use clearCaches
    */
   public clearStatementCache(): void { this._statementCache.clear(); }
 
-  /** Empty the [SqliteStatementCache]($backend) for this iModel.
+  /** Empty the SqliteStatementCache for this iModel.
    * @deprecated use clearCaches
    */
   public clearSqliteStatementCache(): void { this._sqliteStatementCache.clear(); }
 
-  /** Clear all in-memory caches held in this IModelDb.
-   * @see [ECSqlStatementCache]($backend)
-   * @see [SqliteStatementCache]($backend)
-   */
+  /** Clear all in-memory caches held in this IModelDb. */
   public clearCaches() {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();

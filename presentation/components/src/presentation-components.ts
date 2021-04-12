@@ -19,6 +19,7 @@ export { ContentBuilder } from "./presentation-components/common/ContentBuilder"
 export { IContentDataProvider, ContentDataProvider, ContentDataProviderProps, CacheInvalidationProps } from "./presentation-components/common/ContentDataProvider";
 export { DataProvidersFactory, DataProvidersFactoryProps } from "./presentation-components/DataProvidersFactory";
 export { useRulesetRegistration } from "./presentation-components/hooks/UseRulesetRegistration";
+export * from "./presentation-components/common/Diagnostics";
 
 /**
  * @module Logging

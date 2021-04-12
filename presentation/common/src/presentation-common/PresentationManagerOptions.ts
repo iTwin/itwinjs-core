@@ -8,6 +8,7 @@
 
 import { DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
+import { DiagnosticsOptionsWithHandler } from "./Diagnostics";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
 
@@ -50,6 +51,9 @@ export interface RequestOptions<TIModel> {
    * Defaults to [[RequestPriority.Normal]]
    */
   priority?: number;
+
+  /** @alpha */
+  diagnostics?: DiagnosticsOptionsWithHandler;
 }
 
 /**

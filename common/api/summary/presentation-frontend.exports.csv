@@ -1,5 +1,7 @@
 sep=;
 Release Tag;API Item
+alpha;consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void
+alpha;createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[]): (scopeLogs: DiagnosticsScopeLogs[]) => void
 internal;createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[]
 beta;FavoritePropertiesManager 
 beta;FavoritePropertiesOrderInfo

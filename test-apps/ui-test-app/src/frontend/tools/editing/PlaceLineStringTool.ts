@@ -5,7 +5,6 @@
 import { IModelJson as GeomJson, LineString3d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, ElementGeometry, GeometryStreamBuilder, GeometryStreamProps, PhysicalElementProps } from "@bentley/imodeljs-common";
 import {
-  AccuDraw,
   AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, NotifyMessageDetails,
   OutputMessagePriority,
 } from "@bentley/imodeljs-frontend";
@@ -89,8 +88,8 @@ export class PlaceLineStringTool extends PrimitiveToolEx {
 
     const origin = this.points[0];
     const angles = new YawPitchRollAngles();
-    const matrix = AccuDraw.getCurrentOrientation(vp, true, true);
-    ElementGeometry.Builder.placementAnglesFromPoints(this.points, matrix?.getRow(2), angles);
+    const matrix = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
+    ElementGeometry.Builder.placementAnglesFromPoints(this.points, matrix?.getColumn(2), angles);
 
     try {
       this._startedCmd = await this.startCommand();
