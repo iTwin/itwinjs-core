@@ -1,6 +1,6 @@
 {
   "name": "@bentley/itwin-client",
-  "version": "2.16.0-dev.3",
+  "version": "2.16.0-dev.5",
   "description": "Base client package for iTwin applications",
   "main": "lib/itwin-client.js",
   "typings": "lib/itwin-client",
@@ -30,18 +30,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.3"
+    "@bentley/bentleyjs-core": "^2.16.0-dev.5"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.3",
-    "@bentley/build-tools": "2.16.0-dev.3",
-    "@bentley/certa": "2.16.0-dev.3",
-    "@bentley/config-loader": "2.16.0-dev.3",
-    "@bentley/eslint-plugin": "2.16.0-dev.3",
+    "@bentley/bentleyjs-core": "2.16.0-dev.5",
+    "@bentley/build-tools": "2.16.0-dev.5",
+    "@bentley/certa": "2.16.0-dev.5",
+    "@bentley/config-loader": "2.16.0-dev.5",
+    "@bentley/eslint-plugin": "2.16.0-dev.5",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
