@@ -1867,7 +1867,7 @@ export class Matrix3d implements BeJSONFunctions {
       // swap the contents (preserve pointers .. caller better know what they are doing)
       PackedMatrix3dOps.copy(this.coffs, Matrix3d._productBuffer);
       PackedMatrix3dOps.copy(this.inverseCoffs!, this.coffs);
-      PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.coffs);
+      PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs!);
 
       return result;
     }
