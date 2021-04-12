@@ -7,6 +7,11 @@
         <SchemaHasBehavior xmlns="BisCore.1.0"/>
     </ECCustomAttributes>
 
+    <ECEntityClass typeName="TestFuncModel" displayLabel="Test Functional Model">
+        <BaseClass>func:FunctionalModel</BaseClass>
+        <ECProperty propertyName="StringProperty" typeName="string"/>
+    </ECEntityClass>
+
     <ECEntityClass typeName="Breakdown" displayLabel="Test Functional Breakdown">
         <BaseClass>func:FunctionalBreakdownElement</BaseClass>
         <ECProperty propertyName="StringProperty" typeName="string"/>
