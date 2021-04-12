@@ -1,6 +1,6 @@
 {
   "name": "@bentley/logger-config",
-  "version": "2.16.0-dev.3",
+  "version": "2.16.0-dev.5",
   "description": "Logger configuration",
   "main": "lib/logger-config.js",
   "typings": "lib/logger-config",
@@ -30,16 +30,16 @@
     "iModel"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.3",
+    "@bentley/bentleyjs-core": "^2.16.0-dev.5",
     "bunyan": "^1.8.12",
     "bunyan-seq": "^0.2.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.3",
-    "@bentley/build-tools": "2.16.0-dev.3",
-    "@bentley/eslint-plugin": "2.16.0-dev.3",
+    "@bentley/bentleyjs-core": "2.16.0-dev.5",
+    "@bentley/build-tools": "2.16.0-dev.5",
+    "@bentley/eslint-plugin": "2.16.0-dev.5",
     "@types/bunyan": "^1.8.4",
     "@types/bunyan-seq": "^0.2.0",
     "@types/node": "10.14.1",

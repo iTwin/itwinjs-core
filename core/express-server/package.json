@@ -1,6 +1,6 @@
 {
   "name": "@bentley/express-server",
-  "version": "2.16.0-dev.3",
+  "version": "2.16.0-dev.5",
   "description": "iModel.js express utilities",
   "main": "lib/ExpressServer.js",
   "typings": "lib/ExpressServer",
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.3",
-    "@bentley/eslint-plugin": "2.16.0-dev.3",
-    "@bentley/imodeljs-common": "2.16.0-dev.3",
+    "@bentley/build-tools": "2.16.0-dev.5",
+    "@bentley/eslint-plugin": "2.16.0-dev.5",
+    "@bentley/imodeljs-common": "2.16.0-dev.5",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.16.1",
