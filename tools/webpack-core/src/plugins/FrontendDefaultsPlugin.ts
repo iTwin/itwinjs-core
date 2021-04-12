@@ -23,5 +23,6 @@ export class FrontendDefaultsPlugin {
     new ExternalsPlugin("commonjs", [
       "electron",
     ]).apply(compiler);
+    new ExternalsPlugin("node-fetch", "node-fetch").apply(compiler);
   }
 }
