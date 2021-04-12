@@ -189,7 +189,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (!IModelApp.viewManager) return;
 
     for (const vp of IModelApp.viewManager) {
-      if (!(vp.view instanceof SpatialViewState)) return;
+      if (!(vp.view instanceof SpatialViewState)) continue;
 
       const modelIds = items.map((item) => {
         item.enabled = checked;
