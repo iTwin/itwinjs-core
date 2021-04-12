@@ -142,7 +142,8 @@ export class Element extends Entity implements ElementProps {
 
   /** Called before a new Element is inserted.
    * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element to be inserted
    * @beta
    */
   protected static onInsert(arg: OnElementPropsArg): void {
@@ -152,7 +153,8 @@ export class Element extends Entity implements ElementProps {
   }
   /** Called before an Element is updated.
    * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element to be updated
    * @beta
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
@@ -162,7 +164,8 @@ export class Element extends Entity implements ElementProps {
   }
   /** Called before an Element is deleted.
    * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element to be deleted
    * @beta
    */
   protected static onDelete(arg: OnElementIdArg): void {
@@ -173,8 +176,8 @@ export class Element extends Entity implements ElementProps {
     }
   }
   /** Called after a new Element was inserted.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element that was inserted
    * @beta
    */
   protected static onInserted(arg: OnElementIdArg): void {
@@ -183,8 +186,8 @@ export class Element extends Entity implements ElementProps {
     }
   }
   /** Called after an Element was updated.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element that was updated
    * @beta
    */
   protected static onUpdated(arg: OnElementIdArg): void {
@@ -193,33 +196,77 @@ export class Element extends Entity implements ElementProps {
     }
   }
   /** Called after an Element was deleted.
-   * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Element that was deleted
    * @beta
    */
   protected static onDeleted(_arg: OnElementIdArg): void { }
 
-  /** Called when an child element of this element is about to be deleted.
-   * Subclasses may override this method to block deletion of their children.
+  /** Called when an element with an instance of this class as its parent is about to be deleted.
    * @throws [[IModelError]] if the element should not be deleted
    * @note implementers should not presume that the element was deleted if this method does not throw,
    * since the delete may fail for other reasons. Instead, rely on [[onChildDeleted]] for that purpose.
+   * @note `this` is the class of the parent Element whose child will be deleted
    * @beta
    */
   protected static onChildDelete(_arg: OnChildElementIdArg): void { }
 
-  /** Called after an element, with `parentId` as its parent, was successfully deleted.
+  /** Called after an element with an instance of this class as its parent was successfully deleted.
+   * @note `this` is the class of the parent Element whose child was deleted
    * @beta
    */
   protected static onChildDeleted(_arg: OnChildElementIdArg): void { }
 
+  /** Called when a *new element* with an instance of this class as its parent is about to be inserted.
+   * @throws [[IModelError]] if the element should not be inserted
+   * @note `this` is the class of the prospective parent Element.
+   * @beta
+   */
   protected static onChildInsert(_arg: OnChildElementPropsArg): void { }
+
+  /** Called after a *new element* with an instance of this class as its parent was inserted.
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
   protected static onChildInserted(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an element with an instance of this class as its parent is about to be updated.
+   * @throws [[IModelError]] if the element should not be updated
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
   protected static onChildUpdate(_arg: OnChildElementPropsArg): void { }
+
+  /** Called after an element with an instance of this the class as its parent was updated.
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
   protected static onChildUpdated(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an *existing element* is about to be updated so that an instance of this class will become its new parent.
+   * @throws [[IModelError]] if the element should not be updated
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
   protected static onChildAdd(_arg: OnChildElementPropsArg): void { }
+
+  /** Called after an *existing element* has been updated so that an instance of this class is its new parent.
+   * @note `this` is the class of the prospective parent Element.
+   * @beta
+   */
   protected static onChildAdded(_arg: OnChildElementIdArg): void { }
+
+  /** Called when an element with an instance of this class as its parent is about to be updated change its parent.
+   * @throws [[IModelError]] if the element should not be updated
+   * @note `this` is the class of the parent Element.
+   * @beta
+   */
   protected static onChildDrop(_arg: OnChildElementIdArg): void { }
+
+  /** Called after an element with an instance of this class is its parent was updated to have a new parent.
+   * @note `this` is the class of the previous parent Element.
+   * @beta
+   */
   protected static onChildDropped(_arg: OnChildElementIdArg): void { }
 
   /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
@@ -229,7 +276,7 @@ export class Element extends Entity implements ElementProps {
    * @param _sourceProps The ElementProps for the source Element that was cloned.
    * @param _targetProps The ElementProps that are a result of the clone. These can be further modified.
    * @throws [[IModelError]] if there is a problem
-   * @note Any class that overrides this method must call super.
+   * @note If you override this method, you must call super.
    * @alpha
    */
   protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
