@@ -13,18 +13,18 @@ import { IModelConnection } from "../IModelConnection";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { TileLoadPriority } from "./internal";
 
-/**
- * Parameters used to construct a TileTree
- * @beta
+/** Parameters used to construct a [[TileTree]].
+ * @public
  */
 export interface TileTreeParams {
-  /** Uniquely identifies this tile tree. */
+  /** Uniquely identifies the tile tree in the context of the [[IModelConnection]]. */
   id: string;
-  /** A 64-bit identifier for this tile tree, unique within the context of its [[IModelConnection]]. For a tile tree associated with a [[GeometricModelState]], this is the Id of the model; other types of tile treees typically use a transient Id.
-   * @see [[IModelConnection.transientIds]].
+  /** A 64-bit identifier for the tile tree, unique  within the context of its [[IModelConnection]].
+   * For a tile tree associated with a [[GeometricModelState]], this is the Id of the model. Other types of tile trees
+   * typically use a transient Id obtained from [[IModelConnection.transientIds]].
    */
   modelId: Id64String;
-  /** The IModelConnection to which the tile tree belongs. The tile tree will be disposed when the IModelConnection is closed. */
+  /** The IModelConnection to which the tile tree belongs. The tile tree will be disposed of when the IModelConnection is closed. */
   iModel: IModelConnection;
   /** Transform from tile tree coordinates to iModel coordinates. */
   location: Transform;

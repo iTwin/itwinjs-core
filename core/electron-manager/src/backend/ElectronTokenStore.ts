@@ -18,7 +18,6 @@ import { IModelHost } from "@bentley/imodeljs-backend";
  */
 export class ElectronTokenStore {
   private _appStorageKey: string;
-  private readonly _keyChainStore = IModelHost.platform.KeyTar;
 
   public constructor(clientId: string) {
     this._appStorageKey = `Bentley.iModelJs.OidcTokenStore.${clientId}`;
@@ -33,11 +32,14 @@ export class ElectronTokenStore {
 
   /** Load token if available */
   public async load(): Promise<TokenResponse | undefined> {
+    if (undefined === IModelHost.platform.KeyTar) // no keytar on Linux yet
+      return undefined;
+
     const userName = await this.getUserName();
     if (!userName)
       return;
 
-    const tokenResponseStr = await this._keyChainStore.getPassword(this._appStorageKey, userName);
+    const tokenResponseStr = await IModelHost.platform.KeyTar.getPassword(this._appStorageKey, userName);
     if (!tokenResponseStr) {
       return undefined;
     }
@@ -48,6 +50,9 @@ export class ElectronTokenStore {
 
   /** Save token after signin */
   public async save(tokenResponse: TokenResponse): Promise<void> {
+    if (undefined === IModelHost.platform.KeyTar) // no keytar on Linux yet
+      return;
+
     const userName = await this.getUserName();
     if (!userName)
       return;
@@ -57,15 +62,18 @@ export class ElectronTokenStore {
     tokenResponseObj.idToken = "";
 
     const tokenResponseStr = JSON.stringify(tokenResponseObj.toJson());
-    await this._keyChainStore.setPassword(this._appStorageKey, userName, tokenResponseStr);
+    await IModelHost.platform.KeyTar.setPassword(this._appStorageKey, userName, tokenResponseStr);
   }
 
   /** Delete token after signout */
   public async delete(): Promise<void> {
+    if (undefined === IModelHost.platform.KeyTar) // no keytar on Linux yet
+      return;
+
     const userName = await this.getUserName();
     if (!userName)
       return;
 
-    await this._keyChainStore.deletePassword(this._appStorageKey, userName);
+    await IModelHost.platform.KeyTar.deletePassword(this._appStorageKey, userName);
   }
 }

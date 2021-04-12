@@ -1,0 +1,80 @@
+{
+  "name": "@bentley/ecschema-rpcinterface-tests",
+  "version": "2.16.0-dev.5",
+  "description": "Integration tests for the Schema RPC Interface",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/full-stack-tests/ecschema-rpc-interface"
+  },
+  "scripts": {
+    "compile": "npm run build",
+    "build": "tsc 1>&2 && npm run webpack:frontend",
+    "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
+    "cover": "",
+    "docs": "",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "optest": "certa -r chrome --fgrep \"Operational: \"",
+    "start:backend": "node ./lib/test/backend.js",
+    "test": "",
+    "test:integration": "npm-run-all -r -p start:backend test:integration:chrome",
+    "test:integration:chrome": "certa -r chrome",
+    "webpack:frontend": "webpack --config webpack.config.js 1>&2"
+  },
+  "dependencies": {
+    "@bentley/backend-itwin-client": "2.16.0-dev.5",
+    "@bentley/bentleyjs-core": "2.16.0-dev.5",
+    "@bentley/build-tools": "2.16.0-dev.5",
+    "@bentley/certa": "2.16.0-dev.5",
+    "@bentley/config-loader": "2.16.0-dev.5",
+    "@bentley/ecschema-metadata": "2.16.0-dev.5",
+    "@bentley/geometry-core": "2.16.0-dev.5",
+    "@bentley/imodelhub-client": "2.16.0-dev.5",
+    "@bentley/imodeljs-common": "2.16.0-dev.5",
+    "@bentley/imodeljs-frontend": "2.16.0-dev.5",
+    "@bentley/imodeljs-i18n": "2.16.0-dev.5",
+    "@bentley/imodeljs-quantity": "2.16.0-dev.5",
+    "@bentley/itwin-client": "2.16.0-dev.5",
+    "@bentley/oidc-signin-tool": "2.16.0-dev.5",
+    "@bentley/presentation-common": "2.16.0-dev.5",
+    "@bentley/presentation-frontend": "2.16.0-dev.5",
+    "@bentley/rbac-client": "2.16.0-dev.5",
+    "@bentley/ecschema-rpcinterface-common": "2.16.0-dev.5",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "dotenv": "^8.2.0",
+    "dotenv-expand": "^5.1.0",
+    "mocha": "^5.2.0",
+    "openid-client": "^3.15.3",
+    "puppeteer": "chrome-86"
+  },
+  "devDependencies": {
+    "@bentley/eslint-plugin": "2.16.0-dev.5",
+    "@bentley/express-server": "2.16.0-dev.5",
+    "@bentley/imodeljs-backend": "2.16.0-dev.5",
+    "@types/chai": "^4.1.4",
+    "@types/chai-as-promised": "^7",
+    "@types/dotenv": "^6.1.1",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "10.14.1",
+    "@types/puppeteer": "2.0.1",
+    "cpx": "^1.5.0",
+    "eslint": "^6.8.0",
+    "null-loader": "^0.1.1",
+    "rimraf": "^3.0.2",
+    "npm-run-all": "^4.1.5",
+    "source-map-loader": "^1.0.0",
+    "typescript": "~4.1.0",
+    "webpack": "4.42.0",
+    "webpack-cli": "^3.1.0"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
+  }
+}

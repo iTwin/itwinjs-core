@@ -65,9 +65,13 @@ public;Descriptor
 public;DescriptorJSON
 public;DescriptorOverrides
 public;DescriptorSource
+alpha;DiagnosticsHandler = (logs: DiagnosticsScopeLogs[]) => void
+alpha;DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs
+alpha;DiagnosticsLogEntry
 alpha;DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace"
 alpha;DiagnosticsLogMessage
 alpha;DiagnosticsOptions
+alpha;DiagnosticsOptionsWithHandler 
 alpha;DiagnosticsScopeLogs
 public;DisabledSortingRule 
 beta;DisplayLabelRequestOptions

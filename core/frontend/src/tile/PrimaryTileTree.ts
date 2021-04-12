@@ -13,7 +13,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { InteractiveEditingSession } from "../InteractiveEditingSession";
+import { GraphicalEditingScope } from "../GraphicalEditingScope";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderScheduleState } from "../RenderScheduleState";
@@ -44,10 +44,10 @@ class PlanProjectionTileTree extends IModelTileTree {
 
 class PrimaryTreeSupplier implements TileTreeSupplier {
   public constructor() {
-    InteractiveEditingSession.onBegin.addListener((session) => {
-      session.onEnded.addOnce((sesh) => {
-        assert(sesh === session);
-        this.onSessionEnd(session);
+    GraphicalEditingScope.onEnter.addListener((scope) => {
+      scope.onExited.addOnce((sesh) => {
+        assert(sesh === scope);
+        this.onExitScope(scope);
       });
     });
   }
@@ -101,10 +101,10 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     return iModel.tiles.getTileTreeOwner(id, this);
   }
 
-  private onSessionEnd(session: InteractiveEditingSession): void {
-    // Reset tile trees for any models that were modified during the session.
-    const changes = session.getGeometryChanges();
-    const trees = session.iModel.tiles.getTreeOwnersForSupplier(this);
+  private onExitScope(scope: GraphicalEditingScope): void {
+    // Reset tile trees for any models that were modified within the scope.
+    const changes = scope.getGeometryChanges();
+    const trees = scope.iModel.tiles.getTreeOwnersForSupplier(this);
     for (const kvp of trees) {
       const id = kvp.id as PrimaryTreeId;
       assert(undefined !== id.modelId);

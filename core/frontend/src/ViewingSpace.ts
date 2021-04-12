@@ -18,8 +18,9 @@ import { ViewState } from "./ViewState";
 import { Frustum2d } from "./Frustum2d";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
- * instance of ViewingSpace is created every time the Viewport's camera or volume changes.
- * @beta
+ * instance of ViewingSpace is created every time the Viewport's frustum changes.
+ * @see [[Viewport.viewingSpace]].
+ * @public
  */
 export class ViewingSpace {
   private readonly _viewRange = new ViewRect(); // scratch variable
@@ -45,13 +46,13 @@ export class ViewingSpace {
   public readonly viewDeltaUnexpanded = new Vector3d();
   /** View rotation matrix (copied from ViewState) */
   public readonly rotation = new Matrix3d();
-  /** @internal */
+  /** Provides conversions between world and view coordinates. */
   public readonly worldToViewMap = Map4d.createIdentity();
-  /** @internal */
+  /** Providers conversions between world and Npc (non-dimensional perspective) coordinates. */
   public readonly worldToNpcMap = Map4d.createIdentity();
   /** @internal */
   public readonly zClipAdjusted: boolean = false;    // were the view z clip planes adjusted due to front/back clipping off?
-  /** Eye point - undefined if not 3D or parallel projection. */
+  /** Eye point - undefined if not a perspective projection. */
   public readonly eyePoint: Point3d | undefined;
 
   private _view: ViewState;
@@ -310,7 +311,7 @@ export class ViewingSpace {
     this.worldToViewMap.setFrom(this.calcNpcToView().multiplyMapMap(this.worldToNpcMap));
   }
 
-  /** @internal */
+  /** Create from a Viewport. */
   public static createFromViewport(vp: Viewport): ViewingSpace | undefined {
     return new ViewingSpace(vp);
   }

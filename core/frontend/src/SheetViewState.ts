@@ -317,7 +317,7 @@ export class SheetViewState extends ViewState2d {
     return this._attachments?.attachments;
   }
 
-  /** @internal */
+  /** @internal override */
   public isDrawingView(): this is DrawingViewState { return false; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
@@ -355,7 +355,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
-   * @internal
+   * @internal override
    */
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
@@ -363,39 +363,39 @@ export class SheetViewState extends ViewState2d {
       trees.disclose(this._attachments);
   }
 
-  /** @internal */
+  /** @internal override */
   public collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void {
     super.collectNonTileTreeStatistics(stats);
     if (this._attachments)
       this._attachments.collectStatistics(stats);
   }
 
-  /** @internal */
+  /** @internal override */
   public get defaultExtentLimits() {
     return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 };
   }
 
-  /** @internal */
+  /** @internal override */
   public getViewedExtents(): AxisAlignedBox3d {
     return this._viewedExtents;
   }
 
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics.
-   * @internal
+   * @internal override
    */
   public async load(): Promise<void> {
     await super.load();
     await this._attachmentsInfo.load(this.iModel);
   }
 
-  /** @internal */
+  /** @internal override */
   public createScene(context: SceneContext): void {
     super.createScene(context);
     if (this._attachments)
       this._attachments.addToScene(context);
   }
 
-  /** @internal */
+  /** @internal override */
   public get secondaryViewports(): Iterable<Viewport> {
     const attachments = this._attachments;
     if (!attachments)
@@ -424,7 +424,7 @@ export class SheetViewState extends ViewState2d {
     return ids;
   }
 
-  /** @internal */
+  /** @internal override */
   public async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const attachmentIds = await this.queryAttachmentIds();
@@ -433,20 +433,20 @@ export class SheetViewState extends ViewState2d {
     assert(undefined === this._attachments);
   }
 
-  /** @internal */
+  /** @internal override */
   public attachToViewport(): void {
     super.attachToViewport();
     assert(undefined === this._attachments);
     this._attachments = this._attachmentsInfo.createAttachments(this);
   }
 
-  /** @internal */
+  /** @internal override */
   public detachFromViewport(): void {
     super.detachFromViewport();
     this._attachments = dispose(this._attachments);
   }
 
-  /** @internal */
+  /** @internal override */
   public get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded);
   }
@@ -459,7 +459,7 @@ export class SheetViewState extends ViewState2d {
     return builder.finish();
   }
 
-  /** @internal */
+  /** @internal override */
   public decorate(context: DecorateContext): void {
     super.decorate(context);
     if (this.sheetSize !== undefined) {
@@ -468,7 +468,7 @@ export class SheetViewState extends ViewState2d {
     }
   }
 
-  /** @internal */
+  /** @internal override */
   public computeFitRange(): Range3d {
     const size = this.sheetSize;
     if (0 >= size.x || 0 >= size.y)

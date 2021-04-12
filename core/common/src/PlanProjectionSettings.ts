@@ -6,9 +6,8 @@
  * @module DisplayStyles
  */
 
-/** Describes how to draw a "plan projection" model. A plan projection model is a 3d model whose geometry
- * lies in the XY plane. Multiple such models can be combined in a single view as "layers".
- * @beta
+/** Wire format describing [[PlanProjectionSettings]].
+ * @public
  */
 export interface PlanProjectionSettingsProps {
   /** If defined, the absolute height in meters at which to display the model. */
@@ -25,9 +24,12 @@ export interface PlanProjectionSettingsProps {
   enforceDisplayPriority?: boolean;
 }
 
-/** An immutable description of how to draw a "plan projection" models.
- * @see [[PlanProjectionSettingsProps]].
- * @beta
+/** Describes how to draw a plan projection model. A plan projection model is a [GeometricModel3d]($backend) whose geometry all lies in
+ * a single XY plane, wherein the Z coordinate of the plane may be arbitrary or flexible. Multiple plan projection models can be combined into one view
+ * and drawn as "layers" with relative priorities.
+ * @see [[DisplayStyle3dSettings.setPlanProjectionSettings]] to define plan projection settings for a [DisplayStyle3dState]($frontend).
+ * @see [GeometricModel3d.isPlanProjection]($backend).
+ * @public
  */
 export class PlanProjectionSettings {
   /** @see [[PlanProjectionSettingsProps.elevation]] */
@@ -58,6 +60,7 @@ export class PlanProjectionSettings {
     return new PlanProjectionSettings(props);
   }
 
+  /** @internal */
   public constructor(props: PlanProjectionSettingsProps) {
     this.elevation = props.elevation;
     this.overlay = true === props.overlay;

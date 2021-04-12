@@ -10,7 +10,7 @@ import { ContentDescriptorRequestOptions } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
-import { DiagnosticsOptions } from '@bentley/presentation-common';
+import { DiagnosticsOptionsWithHandler } from '@bentley/presentation-common';
 import { DiagnosticsScopeLogs } from '@bentley/presentation-common';
 import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
 import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
@@ -45,12 +45,6 @@ import { UpdateInfoJSON } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 import { VariableValueJSON } from '@bentley/presentation-common';
 import { VariableValueTypes } from '@bentley/presentation-common';
-
-// @alpha (undocumented)
-export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
-    // (undocumented)
-    listener: (diagnostics: DiagnosticsScopeLogs) => void;
-}
 
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -339,7 +333,7 @@ export interface RulesetVariablesManager {
 // @beta
 export type WithClientRequestContext<T> = T & {
     requestContext: ClientRequestContext;
-    diagnostics?: BackendDiagnosticsOptions;
+    diagnostics?: DiagnosticsOptionsWithHandler;
 };
 
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core";
 import {
-  ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor,
+  ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor,
 } from "@bentley/imodeljs-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, OffScreenViewport,
@@ -687,15 +687,15 @@ describe("RenderTarget", () => {
       }]);
       expect(clip).to.not.be.undefined;
       vp.view.setViewClip(clip);
-      vp.outsideClipColor = ColorDef.red;
-      vp.insideClipColor = ColorDef.green;
+      vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON({
+        ...vp.displayStyle.settings.clipStyle.toJSON(),
+        outsideColor: { r: 255, g: 0, b: 0 },
+        insideColor: { r: 0, g: 255, b: 0 },
+      });
 
       await vp.waitForAllTilesToRender();
       expect(vp.numRequestedTiles).to.equal(0);
       expect(vp.numSelectedTiles).to.equal(1);
-
-      vp.outsideClipColor = ColorDef.red;
-      vp.insideClipColor = ColorDef.green;
 
       // White rectangle is centered in view with black background surrounding. Clipping shape and colors splits the shape into red and green halves. Lighting is on so rectangle will not be pure red and green.
       const colors = vp.readUniqueColors();

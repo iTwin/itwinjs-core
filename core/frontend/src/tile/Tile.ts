@@ -48,6 +48,7 @@ const scratchPoint4d = Point4d.createZero();
 const scratchFrustum = new Frustum();
 
 /** A 3d tile within a [[TileTree]].
+ *
  * A tile represents the contents of some sub-volume of the tile tree's volume. It may produce graphics representing those contents, or may have no graphics.
  * A tile can have child tiles that further sub-divide its own volume, providing higher-resolution representations of its contents. A tile that has no children is
  * referred to as a "leaf" of the tile tree. A non-leaf tile's children are produced when they are needed, and discarded when no longer needed.
@@ -55,8 +56,8 @@ const scratchFrustum = new Frustum();
  * [[Tile.dispose]].
  *
  * Several public [[Tile]] methods carry a warning that they should **not** be overridden by subclasses; typically a protected method exists that can be overridden instead.
- * For example, [[collectStatistics]] should not be overridden, but it calls [[_collectStatistics]], which should be overridden if the tile owns WebGL resources besides its [[RenderGraphic]].
- * @beta
+ * For example, [[loadChildren]] should not be overridden, but it calls [[_loadChildren]], which must be overridden because it is abstract.
+ * @public
  */
 export abstract class Tile {
   private _state: TileState = TileState.NotReady;
@@ -67,9 +68,9 @@ export abstract class Tile {
   protected _graphic?: RenderGraphic;
   /** True if this tile ever had graphics loaded. Used to determine when a tile's graphics were later freed to conserve memory. */
   protected _hadGraphics = false;
-  /** Uniquely identifies this tile's content. */
+  /** Uniquely identifies this tile's content in the context of its tree. */
   protected _contentId: string;
-  /** Child tiles are loaded on-demand, potentially asynchronously. This tracks their current loading state. */
+  /** The current loading state of this tile's children. Child tiles are loaded on-demand, potentially asynchronously. */
   protected _childrenLoadStatus: TileTreeLoadStatus;
   /** @internal */
   protected _request?: TileRequest;
@@ -112,7 +113,7 @@ export abstract class Tile {
    * @note The channel *must* be registered with `IModelApp.tileAdmin.channels`.
    * @see [[TileRequestChannels.getForHttp]] to create a channel that requests content over HTTP.
    * @see [[TileAdmin.channels]].
-   * @beta
+   * @public
    */
   public abstract get channel(): TileRequestChannel;
 
@@ -186,12 +187,12 @@ export abstract class Tile {
   /** True if this tile's content has been loaded and is ready to be drawn. */
   public get isReady(): boolean { return TileLoadStatus.Ready === this.loadStatus; }
 
-  /** @internal */
+  /** @public */
   public setNotFound(): void {
     this._state = TileState.NotFound;
   }
 
-  /** @internal */
+  /** @public */
   public setIsReady(): void {
     if (this.hasGraphics)
       this._hadGraphics = true;
@@ -200,7 +201,7 @@ export abstract class Tile {
     IModelApp.tileAdmin.onTileContentLoaded(this);
   }
 
-  /** @internal */
+  /** @public */
   public setLeaf(): void {
     // Don't potentially re-request the children later.
     this.disposeChildren();
@@ -228,7 +229,11 @@ export abstract class Tile {
     this._request = request;
   }
 
-  /** @internal */
+  /** Compute the load priority of this tile. This determines which tiles' contents are requested first.
+   * @param _viewports The viewports for which the tile has been requested for display.
+   * @returns The priority.
+   * @see [[TileLoadPriority]] for suggested priority values.
+   */
   public computeLoadPriority(_viewports: Iterable<Viewport>): number {
     return this.depth;
   }
@@ -303,7 +308,7 @@ export abstract class Tile {
     this.setIsReady();
   }
 
-  /** Disclose any additional resources owned by this tile.
+  /** Disclose any resources owned by this tile, other than its [[RenderGraphic]].
    * @internal
    */
   protected _collectStatistics(_stats: RenderMemory.Statistics): void { }
@@ -449,7 +454,7 @@ export abstract class Tile {
     }
   }
 
-  /** @internal */
+  /** Primarily for debugging purposes, compute the number of tiles below this one in the [[TileTree]]. */
   public countDescendants(): number {
     const children = this.children;
     if (undefined === children || 0 === children.length)
@@ -523,15 +528,16 @@ export abstract class Tile {
       addRangeGraphic(builder, range, this.tree.is2d);
     }
   }
-  /** If size projection corners are used to compute the screen size of the tile.   These are are used for reality tiles
-   * with OBB to produce more accurate size calculation.
-   * @internal */
+
+  /** Optional corners used to compute the screen size of the tile. These are used, e.g., by reality tiles with oriented bounding boxes to
+   * produce more accurate size calculation.
+   */
   public getSizeProjectionCorners(): Point3d[] | undefined { return undefined; }
 }
 
-/**
- * Describes the current status of a Tile's content. Tile content is loaded via an asynchronous [[TileRequest]].
- * @beta
+/** Describes the current status of a [[Tile]]'s content. Tile content is loaded via an asynchronous [[TileRequest]].
+ * @see [[Tile.loadStatus]].
+ * @public
  */
 export enum TileLoadStatus {
   /** No attempt to load the tile's content has been made, or the tile has since been unloaded. It currently has no graphics. */
@@ -550,7 +556,7 @@ export enum TileLoadStatus {
 
 /**
  * Describes the visibility of a tile based on its size and a view frustum.
- * @beta
+ * @public
  */
 export enum TileVisibility {
   /** The tile is entirely outside of the viewing frustum. */
@@ -562,9 +568,9 @@ export enum TileVisibility {
 }
 
 /**
- * Loosely describes the "importance" of a tile. Requests for tiles of more "importance" are prioritized for loading.
- * @note A lower LoadPriority value indicates higher importance.
- * @beta
+ * Loosely describes the "importance" of a [[Tile]]. Requests for tiles of greater "importance" are prioritized for loading.
+ * @note A lower priority value indicates higher importance.
+ * @public
  */
 export enum TileLoadPriority {
   /** Contents of geometric models that are being interactively edited. */
@@ -589,7 +595,7 @@ export enum TileLoadPriority {
  *  - Green: An ordinary tile (sub-divides into 4 or 8 child tiles).
  *  - Red: A tile which refines to a single higher-resolution child occupying the same volume.
  * @see [[Viewport.debugBoundingBoxes]]
- * @internal
+ * @public
  */
 export enum TileBoundingBoxes {
   /** Display no bounding boxes */

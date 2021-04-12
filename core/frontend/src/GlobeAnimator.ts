@@ -14,9 +14,10 @@ import {
 import { ScreenViewport } from "./Viewport";
 import { Animator } from "./ViewAnimation";
 
-/** Object to animate a frustum transition of a viewport moving across the earth. The [[Viewport]] will show as many frames as necessary. The animation will last a variable length of time depending on the distance traversed.
- * This operates on the previous frustum and a destination cartographic coordinate, flying along an earth ellipsoid or flat plane.
- * @internal
+/** Animates the transition of a [[Viewport]] to view a location on the Earth. The animation traces a flight path from the viewport's current [Frustum]($common) to the destination.
+ * The duration of the animation varies based on the distance traversed.
+ * @see [[Viewport.animateFlyoverToGlobalLocation]].
+ * @public
  */
 export class GlobeAnimator implements Animator {
   protected _flightTweens = new Tweens();
@@ -79,7 +80,7 @@ export class GlobeAnimator implements Animator {
     return false;
   }
 
-  // Apply a SmoothTransformBetweenFrusta interpolator to the view based on a fraction.
+  /** Apply a SmoothTransformBetweenFrusta interpolator to the view based on a fraction. */
   protected _moveFixToFraction(fract: number, interpolator: SmoothTransformBetweenFrusta): boolean {
     let done = false;
 
@@ -93,11 +94,16 @@ export class GlobeAnimator implements Animator {
     return done;
   }
 
+  /** Create an animator to transition to the specified destination.
+   * @param viewport The viewport to animate.
+   * @param destination The destination to travel to.
+   * @returns An animator, or undefined if the viewport's iModel is not geolocated or its view is not 3d.
+   */
   public static async create(viewport: ScreenViewport, destination: GlobalLocation): Promise<GlobeAnimator | undefined> {
     const view = viewport.view;
 
     if (!(view.is3d()) || !viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
-      return;
+      return undefined;
 
     const endHeight = destination.area !== undefined ? await areaToEyeHeightFromGcs(view, destination.area, destination.center.height) : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
 
@@ -194,6 +200,7 @@ export class GlobeAnimator implements Animator {
     });
   }
 
+  /** @internal */
   public animate() {
     if (this._flightLength <= 0) {
       this._moveFlightToFraction(1.0); // Skip to final frustum
@@ -202,6 +209,7 @@ export class GlobeAnimator implements Animator {
     return !this._flightTweens.update();
   }
 
+  /** @internal */
   public interrupt() {
     this._moveFlightToFraction(1.0); // Skip to final frustum
   }

@@ -13,7 +13,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
-import { InteractiveEditingSession } from "./InteractiveEditingSession";
+import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 
 /** A connection to an editable briefcase on the backend. This class uses [Ipc]($docs/learning/IpcInterface.md) to communicate
@@ -21,13 +21,12 @@ import { BriefcaseTxns } from "./BriefcaseTxns";
  * @public
  */
 export class BriefcaseConnection extends IModelConnection {
-  private _editingSession?: InteractiveEditingSession;
+  private _editingScope?: GraphicalEditingScope;
   protected _isClosed?: boolean;
-  /** Provides notifications about changes to the iModel.
-   * @beta
-   */
+  /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
 
+  /** @internal */
   public isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
   /** The Guid that identifies the *context* that owns this iModel. */
@@ -70,9 +69,9 @@ export class BriefcaseConnection extends IModelConnection {
     if (this.isClosed)
       return;
 
-    if (this._editingSession) {
-      await this._editingSession.end();
-      this._editingSession = undefined;
+    if (this._editingScope) {
+      await this._editingScope.exit();
+      this._editingScope = undefined;
     }
 
     this.beforeClose();
@@ -87,19 +86,21 @@ export class BriefcaseConnection extends IModelConnection {
       throw new IModelError(IModelStatus.WrongIModel, "iModel has no timeline");
   }
 
-  /** @beta */
+  /** Query if there are any pending Txns in this briefcase that are waiting to be pushed. */
   public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
     return this.txns.hasPendingTxns();
   }
 
-  /** @beta */
+  /** Commit pending changes to this briefcase.
+   * @param description Optional description of the changes.
+   */
   public async saveChanges(description?: string): Promise<void> {
     await IpcApp.callIpcHost("saveChanges", this.key, description);
   }
 
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
-   * @param version The version to pull changes to. If` undefined`, pull all changes.
-   * @beta */
+   * @param version The version to pull changes to. If `undefined`, pull all changes.
+   */
   public async pullAndMergeChanges(version?: IModelVersionProps): Promise<void> {
     this.requireTimeline();
     return IpcApp.callIpcHost("pullAndMergeChanges", this.key, version);
@@ -108,43 +109,39 @@ export class BriefcaseConnection extends IModelConnection {
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.
    * @param description The description for the changeset
    * @returns the changesetId of the pushed changes
-   * @beta */
+   */
   public async pushChanges(description: string): Promise<string> {
     this.requireTimeline();
     return IpcApp.callIpcHost("pushChanges", this.key, description);
   }
 
-  /** The current editing session, if one is in progress.
-   * @see [[beginEditingSession]] to begin an editing session.
-   * @beta
+  /** The current graphical editing scope, if one is in progress.
+   * @see [[enterEditingScope]] to begin graphical editing.
    */
-  public get editingSession(): InteractiveEditingSession | undefined {
-    return this._editingSession;
+  public get editingScope(): GraphicalEditingScope | undefined {
+    return this._editingScope;
   }
 
-  /** Return whether interactive editing is supported for this briefcase. It is not supported if the briefcase is read-only, or the briefcase contains a version of
+  /** Return whether graphical editing is supported for this briefcase. It is not supported if the briefcase is read-only, or the briefcase contains a version of
    * the BisCore ECSchema older than v0.1.11.
-   * @see [[beginEditingSession]] to begin an interactive editing session.
-   * @beta
+   * @see [[enterEditingScope]] to enable graphical editing.
    */
-  public async supportsInteractiveEditing(): Promise<boolean> {
-    return IpcApp.callIpcHost("isInteractiveEditingSupported", this.key);
+  public async supportsGraphicalEditing(): Promise<boolean> {
+    return IpcApp.callIpcHost("isGraphicalEditingSupported", this.key);
   }
 
-  /** Begin a new editing session. This briefcase's [[editingSession]] property will be set to the new session until the session is ended.
-   * @note The session should be ended before the briefcase is closed.
-   * @throws Error if a session is already in progress or a session could not be started.
-   * @see [[InteractiveEditingSession.end]] to end the session.
-   * @see [[supportsInteractiveEditing]] to determine whether this method should be expected to succeed.
-   * @see [[editingSession]] to obtain the current editing session, if one is in progress.
-   * @beta
+  /** Begin a new graphical editing scope.
+   * @throws Error if an editing scope already exists or one could not be created.
+   * @see [[GraphicalEditingScope.exit]] to exit the scope.
+   * @see [[supportsGraphicalEditing]] to determine whether this method should be expected to succeed.
+   * @see [[editingScope]] to obtain the current editing scope, if one is in progress.
    */
-  public async beginEditingSession(): Promise<InteractiveEditingSession> {
-    if (this.editingSession)
-      throw new Error("Cannot create an editing session for an iModel that already has one");
+  public async enterEditingScope(): Promise<GraphicalEditingScope> {
+    if (this.editingScope)
+      throw new Error("Cannot create an editing scope for an iModel that already has one");
 
-    this._editingSession = await InteractiveEditingSession.begin(this);
-    this._editingSession.onEnded.addOnce(() => this._editingSession = undefined);
-    return this._editingSession;
+    this._editingScope = await GraphicalEditingScope.enter(this);
+    this._editingScope.onExited.addOnce(() => this._editingScope = undefined);
+    return this._editingScope;
   }
 }
