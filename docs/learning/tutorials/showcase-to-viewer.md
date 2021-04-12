@@ -75,16 +75,6 @@ For this tutorial, these files will be placed directly in our src directory so y
 
 ![ViewAttributesStructure](./images/sample_viewer_port_to_itwin_viewer.png)
 
-Unless you're also using the ```dark``` theme in your ```Viewer``` like the sample showcase, we'll also need to modify css class ```.sample-options``` to use color ```black``` instead of ```white``` in file ```ViewAttributes.scss```:
-
-``` css
-.sample-options {
-  color: black;
-  padding: 8px;
-}
-
-```
-
 Running our iTwin Viewer now, you'll notice the exact same widget from the sample showcase in your iTwin Viewer that is also fully functional:
 
 ![ViewAttributesResults](./images/view_attributes_ported_results.png)
