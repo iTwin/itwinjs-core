@@ -279,8 +279,14 @@ export abstract class RenderSystem implements IDisposable {
   public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
-  /** @internal */
+
+  /** Create a clip volume to clip geometry.
+   * @note The clip volume takes ownership of the ClipVector, which must not be subsequently mutated.
+   * @param _clipVector Defines how the volume clips geometry.
+   * @returns A clip volume, or undefined if, e.g., the clip vector does not clip anything.
+   */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
+
   /** @internal */
   public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
