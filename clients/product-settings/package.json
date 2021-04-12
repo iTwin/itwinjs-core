@@ -1,6 +1,6 @@
 {
   "name": "@bentley/product-settings-client",
-  "version": "2.16.0-dev.3",
+  "version": "2.16.0-dev.5",
   "description": "iModel.js Product Settings Client",
   "main": "lib/product-settings-client.js",
   "typings": "lib/product-settings-client",
@@ -36,18 +36,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.3",
-    "@bentley/itwin-client": "^2.16.0-dev.3"
+    "@bentley/bentleyjs-core": "^2.16.0-dev.5",
+    "@bentley/itwin-client": "^2.16.0-dev.5"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.3",
-    "@bentley/certa": "2.16.0-dev.3",
-    "@bentley/config-loader": "2.16.0-dev.3",
-    "@bentley/context-registry-client": "2.16.0-dev.3",
-    "@bentley/eslint-plugin": "2.16.0-dev.3",
-    "@bentley/imodelhub-client": "2.16.0-dev.3",
-    "@bentley/oidc-signin-tool": "2.16.0-dev.3",
-    "@bentley/rbac-client": "2.16.0-dev.3",
+    "@bentley/build-tools": "2.16.0-dev.5",
+    "@bentley/certa": "2.16.0-dev.5",
+    "@bentley/config-loader": "2.16.0-dev.5",
+    "@bentley/context-registry-client": "2.16.0-dev.5",
+    "@bentley/eslint-plugin": "2.16.0-dev.5",
+    "@bentley/imodelhub-client": "2.16.0-dev.5",
+    "@bentley/oidc-signin-tool": "2.16.0-dev.5",
+    "@bentley/rbac-client": "2.16.0-dev.5",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

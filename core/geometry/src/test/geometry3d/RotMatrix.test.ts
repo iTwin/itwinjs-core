@@ -51,7 +51,7 @@ function verifyMatrix3dInverseProperties(ck: Checker, matrixA: Matrix3d) {
   matrixA.setRow(0, Vector3d.create(1, 2, 3));
   verifyInverseGo(ck, matrixA);
 }
-describe("Matrix3d", () => {
+describe.only("Matrix3d", () => {
   it("CachedInverse", () => {
     const ck = new Checker();
 

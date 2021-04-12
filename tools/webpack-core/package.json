@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools-core",
-  "version": "2.16.0-dev.3",
+  "version": "2.16.0-dev.5",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
@@ -37,8 +37,8 @@
     "webpack": "4.42.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.3",
-    "@bentley/eslint-plugin": "2.16.0-dev.3",
+    "@bentley/build-tools": "2.16.0-dev.5",
+    "@bentley/eslint-plugin": "2.16.0-dev.5",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/node": "10.14.1",

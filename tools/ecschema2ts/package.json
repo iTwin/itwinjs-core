@@ -2,7 +2,7 @@
   "name": "@bentley/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "2.16.0-dev.3",
+  "version": "2.16.0-dev.5",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
@@ -35,8 +35,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.16.0-dev.3",
-    "@bentley/eslint-plugin": "2.16.0-dev.3",
+    "@bentley/build-tools": "2.16.0-dev.5",
+    "@bentley/eslint-plugin": "2.16.0-dev.5",
     "@types/chai": "^4.1.4",
     "@types/chai-string": "^1.4.1",
     "@types/fs-extra": "^4.0.7",
@@ -54,17 +54,17 @@
     "typescript": "~4.1.0"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "2.16.0-dev.3",
-    "@bentley/bentleyjs-core": "2.16.0-dev.3",
-    "@bentley/ecschema-locaters": "2.16.0-dev.3",
-    "@bentley/ecschema-metadata": "2.16.0-dev.3",
-    "@bentley/frontend-authorization-client": "2.16.0-dev.3",
-    "@bentley/geometry-core": "2.16.0-dev.3",
-    "@bentley/imodelhub-client": "2.16.0-dev.3",
-    "@bentley/imodeljs-backend": "2.16.0-dev.3",
-    "@bentley/imodeljs-common": "2.16.0-dev.3",
-    "@bentley/itwin-client": "2.16.0-dev.3",
-    "@bentley/rbac-client": "2.16.0-dev.3",
+    "@bentley/backend-itwin-client": "2.16.0-dev.5",
+    "@bentley/bentleyjs-core": "2.16.0-dev.5",
+    "@bentley/ecschema-locaters": "2.16.0-dev.5",
+    "@bentley/ecschema-metadata": "2.16.0-dev.5",
+    "@bentley/frontend-authorization-client": "2.16.0-dev.5",
+    "@bentley/geometry-core": "2.16.0-dev.5",
+    "@bentley/imodelhub-client": "2.16.0-dev.5",
+    "@bentley/imodeljs-backend": "2.16.0-dev.5",
+    "@bentley/imodeljs-common": "2.16.0-dev.5",
+    "@bentley/itwin-client": "2.16.0-dev.5",
+    "@bentley/rbac-client": "2.16.0-dev.5",
     "chai-string": "^1.5.0",
     "chalk": "^3.0.0",
     "commander": "^2.14.1",

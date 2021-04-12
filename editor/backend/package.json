@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-backend",
-  "version": "2.16.0-dev.3",
+  "version": "2.16.0-dev.5",
   "description": "iModel.js editor backend",
   "main": "lib/imodeljs-editor-backend.js",
   "typings": "lib/imodeljs-editor-backend",
@@ -34,22 +34,22 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.16.0-dev.3",
-    "@bentley/geometry-core": "^2.16.0-dev.3",
-    "@bentley/imodeljs-backend": "2.16.0-dev.3",
-    "@bentley/imodeljs-common": "^2.16.0-dev.3"
+    "@bentley/bentleyjs-core": "^2.16.0-dev.5",
+    "@bentley/geometry-core": "^2.16.0-dev.5",
+    "@bentley/imodeljs-backend": "2.16.0-dev.5",
+    "@bentley/imodeljs-common": "^2.16.0-dev.5"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.16.0-dev.3",
-    "@bentley/build-tools": "2.16.0-dev.3",
-    "@bentley/eslint-plugin": "2.16.0-dev.3",
-    "@bentley/geometry-core": "2.16.0-dev.3",
-    "@bentley/imodeljs-backend": "2.16.0-dev.3",
-    "@bentley/imodeljs-common": "2.16.0-dev.3",
+    "@bentley/bentleyjs-core": "2.16.0-dev.5",
+    "@bentley/build-tools": "2.16.0-dev.5",
+    "@bentley/eslint-plugin": "2.16.0-dev.5",
+    "@bentley/geometry-core": "2.16.0-dev.5",
+    "@bentley/imodeljs-backend": "2.16.0-dev.5",
+    "@bentley/imodeljs-common": "2.16.0-dev.5",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",
@@ -70,7 +70,7 @@
     "typescript": "~4.1.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-editor-common": "2.16.0-dev.3"
+    "@bentley/imodeljs-editor-common": "2.16.0-dev.5"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
