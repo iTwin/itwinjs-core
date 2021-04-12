@@ -5,21 +5,28 @@
 
 import * as path from "path";
 import * as Yargs from "yargs";
-import { Config, Guid, GuidString, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { BackendLoggerCategory, BriefcaseDb, BriefcaseManager, IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
-import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
-import { progressLoggerCategory, Transformer } from "./Transformer";
-import { IModelHubUtils } from "./IModelHubUtils";
+import { assert, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { BackendLoggerCategory, IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { IModelHubUtils } from "./IModelHubUtils";
+import { Transformer } from "./Transformer";
+
+const loggerCategory = "imodel-transformer";
 
 interface CommandLineArgs {
   hub?: string;
   sourceFile?: string;
-  sourceContextId?: string;
+  sourceContextId?: GuidString;
   sourceIModelId?: GuidString;
   sourceIModelName?: string;
   targetFile: string;
+  targetContextId?: GuidString;
+  targetIModelId?: GuidString;
+  targetIModelName?: string;
   clean?: boolean;
+  logChangeSets: boolean;
+  logNamedVersions: boolean;
   simplifyElementGeometry?: boolean;
   combinePhysicalModels?: boolean;
   deleteUnusedGeometryParts?: boolean;
@@ -35,7 +42,6 @@ interface CommandLineArgs {
 
     // used if the source iModel is a snapshot
     Yargs.option("sourceFile", { desc: "The full path to the source iModel", type: "string" });
-    // Yargs.demandOption("sourceFile");
 
     // used if the source iModel is on iModelHub
     Yargs.option("sourceContextId", { desc: "The iModelHub context containing the source iModel", type: "string" });
@@ -51,10 +57,13 @@ interface CommandLineArgs {
     Yargs.option("targetContextId", { desc: "The iModelHub context containing the target iModel", type: "string" });
     Yargs.option("targetIModelId", { desc: "The guid of the target iModel", type: "string", default: undefined });
     Yargs.option("targetIModelName", { desc: "The name of the target iModel", type: "string", default: undefined });
-    // Yargs.demandOption("targetFile");
 
     // target iModel management options
-    Yargs.option("clean", { desc: "If true, clean/delete the target before beginning", type: "boolean", default: undefined });
+    Yargs.option("clean", { desc: "If true, refetch briefcases and clean/delete the target before beginning", type: "boolean", default: undefined });
+
+    // print/debug options
+    Yargs.option("logChangeSets", { desc: "If true, log the list of changeSets", type: "boolean", default: false });
+    Yargs.option("logNamedVersions", { desc: "If true, log the list of named versions", type: "boolean", default: false });
 
     // transformation options
     Yargs.option("simplifyElementGeometry", { desc: "Simplify element geometry upon import into target iModel", type: "boolean", default: false });
@@ -68,54 +77,92 @@ interface CommandLineArgs {
     await IModelHost.startup();
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Error);
-    Logger.setLevel(progressLoggerCategory, LogLevel.Info);
+    Logger.setLevel(loggerCategory, LogLevel.Info);
 
-    if (false) { // set to true to enable additional low-level transformation logging
+    if (true) { // set to true to enable additional low-level transformation logging
       Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
       Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
       Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
 
-    Logger.logInfo(progressLoggerCategory, `sourceContextId=${args.sourceContextId}`);
-    Logger.logInfo(progressLoggerCategory, `sourceIModelId=${args.sourceIModelId}`);
-
     let requestContext: AuthorizedClientRequestContext | undefined;
+    let contextRegistry: ContextRegistryClient | undefined;
     let sourceDb: IModelDb;
     let targetDb: IModelDb;
 
-    if (args.sourceContextId) {
+    if (args.sourceContextId || args.targetContextId) {
       requestContext = await IModelHubUtils.getAuthorizedClientRequestContext();
-      const sourceContextId = args.sourceContextId;
-      const sourceIModelId = args.sourceIModelId ? Guid.normalize(args.sourceIModelId) : undefined;
-      const sourceBriefcaseProps = await BriefcaseManager.downloadBriefcase(requestContext, {
-        contextId: sourceContextId,
-        iModelId: sourceIModelId!,
-        asOf: IModelVersion.latest().toJSON(),
+      contextRegistry = new ContextRegistryClient();
+    }
+
+    if (args.sourceContextId) {
+      // source is from iModelHub
+      assert(undefined !== requestContext);
+      assert(undefined !== contextRegistry);
+      assert(undefined !== args.sourceIModelId);
+      const sourceContextId = Guid.normalize(args.sourceContextId);
+      const sourceIModelId = Guid.normalize(args.sourceIModelId);
+      const sourceContext = await contextRegistry.getProject(requestContext, {
+        $filter: `$id+eq+'${sourceContextId}'`,
       });
-      sourceDb = await BriefcaseDb.open(requestContext, {
-        fileName: sourceBriefcaseProps.fileName,
-      });
+      assert(undefined !== sourceContext);
+      Logger.logInfo(loggerCategory, `sourceContextId=${sourceContextId}, name=${sourceContext.name}`);
+      Logger.logInfo(loggerCategory, `sourceIModelId=${sourceIModelId}`);
+
+      if (args.logChangeSets) {
+        await IModelHubUtils.logChangeSets(requestContext, sourceIModelId, loggerCategory);
+      }
+
+      if (args.logNamedVersions) {
+        await IModelHubUtils.logNamedVersions(requestContext, sourceIModelId, loggerCategory);
+      }
+
+      sourceDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, sourceContextId, sourceIModelId);
     } else {
-      Yargs.demandOption("sourceFile");
-      const sourceFile = args.sourceFile ? path.normalize(args.sourceFile) : "";
+      // source is a local snapshot file
+      assert(undefined !== args.sourceFile);
+      const sourceFile = path.normalize(args.sourceFile);
+      Logger.logInfo(loggerCategory, `sourceFile=${sourceFile}`);
       sourceDb = SnapshotDb.openFile(sourceFile);
     }
 
-    let excludeSubCategories: string[] | undefined;
-    if (args.excludeSubCategories) {
-      excludeSubCategories = args.excludeSubCategories.split(",");
-    }
+    if (args.targetContextId) {
+      // target is from iModelHub
+      assert(undefined !== requestContext);
+      assert(undefined !== args.targetIModelId || undefined !== args.targetIModelName, "must be able to identify the iModel by either name or id");
+      const targetContextId = Guid.normalize(args.targetContextId);
+      let targetIModelId = args.targetIModelId ? Guid.normalize(args.targetIModelId) : undefined;
+      if (undefined !== args.targetIModelName) {
+        assert(undefined === targetIModelId, "should not specify targetIModelId if targetIModelName is specified");
+        targetIModelId = await IModelHubUtils.queryIModelId(requestContext, targetContextId, args.targetIModelName);
+        if ((args.clean) && (undefined !== targetIModelId)) {
+          await IModelHost.iModelClient.iModels.delete(requestContext, targetContextId, targetIModelId);
+          targetIModelId = undefined;
+        }
+        if (undefined === targetIModelId) {
+          // create target iModel if it doesn't yet exist or was just cleaned/deleted above
+          const targetHubIModel = await IModelHost.iModelClient.iModels.create(requestContext, targetContextId, args.targetIModelName);
+          targetIModelId = targetHubIModel.id;
+        }
+      }
+      assert(undefined !== targetIModelId);
+      Logger.logInfo(loggerCategory, `targetContextId=${targetContextId}`);
+      Logger.logInfo(loggerCategory, `targetIModelId=${targetIModelId}`);
 
-    // validate source iModel exists before continuing
+      if (args.logChangeSets) {
+        await IModelHubUtils.logChangeSets(requestContext, targetIModelId, loggerCategory);
+      }
 
-    if (args.targetFile === "x") { // WIP
-      // target is on iModelHub
-      throw new Error("not implemented yet!");
+      if (args.logNamedVersions) {
+        await IModelHubUtils.logNamedVersions(requestContext, targetIModelId, loggerCategory);
+      }
+
+      targetDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, targetContextId, targetIModelId);
     } else {
-      Yargs.demandOption("targetFile");
+      assert(undefined !== args.targetFile);
       // target is a local snapshot file
       const targetFile = args.targetFile ? path.normalize(args.targetFile) : "";
-      // clean target output file before continuing
+      // clean target output file before continuing (regardless of args.clean value)
       if (IModelJsFs.existsSync(targetFile)) {
         IModelJsFs.removeSync(targetFile);
       }
@@ -123,6 +170,11 @@ interface CommandLineArgs {
         rootSubject: { name: `${sourceDb.rootSubject.name}-Transformed` },
         ecefLocation: sourceDb.ecefLocation,
       });
+    }
+
+    let excludeSubCategories: string[] | undefined;
+    if (args.excludeSubCategories) {
+      excludeSubCategories = args.excludeSubCategories.split(",");
     }
 
     await Transformer.transformAll(sourceDb, targetDb, {
