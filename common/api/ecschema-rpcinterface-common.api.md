@@ -24,15 +24,13 @@ export abstract class ECSchemaRpcInterface extends RpcInterface {
     static version: string;
 }
 
-// @internal
+// @alpha
 export class ECSchemaRpcLocater implements ISchemaLocater {
     constructor(token: IModelRpcProps);
-    // (undocumented)
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
-    // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
     // (undocumented)
-    token: IModelRpcProps;
+    readonly token: IModelRpcProps;
 }
 
 
