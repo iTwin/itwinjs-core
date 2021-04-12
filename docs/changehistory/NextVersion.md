@@ -19,3 +19,12 @@ The contents of a [ViewState]($frontend) can be clipped by applying a [ClipVecto
 
 Clip volumes now nest. For example, if you define a view clip, a model clip group, and a schedule script that applies its own clip volume, then geometry will be clipped by the **intersection** of all three clip volumes. Previously, only one clip volume could be active at a time.
 
+## Promoted APIs
+
+The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
+
+### @bentley/webgl-compatibility
+
+* The WebGL compatibility module API has been promoted to public. This API allows a user to determine the client system's level of compatibility with the iTwin.js rendering system's requirements for various features, both required and optional.
+* See [queryRenderCompatibility]($webgl-compatibility) for an overview of how to query the client's compatibility.
+* See [WebGLRenderCompatibilityInfo]($webgl-compatibility) for a description of the client's compatibility.
