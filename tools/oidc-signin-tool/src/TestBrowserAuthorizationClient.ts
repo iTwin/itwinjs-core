@@ -131,7 +131,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     const authorizationUrl = this._client.authorizationUrl(authParams);
 
     // Launch puppeteer with no sandbox only on linux
-    let launchOptions: puppeteer.LaunchOptions = { dumpio: true }; //, headless: false, slowMo: 500 };
+    let launchOptions: puppeteer.LaunchOptions = { dumpio: true }; // , headless: false, slowMo: 500 };
     if (os.platform() === "linux") {
       launchOptions = {
         args: ["--no-sandbox"], // , "--disable-setuid-sandbox"],
@@ -249,7 +249,6 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     if (undefined !== errMsgText && null !== errMsgText)
       throw new Error(errMsgText);
   }
-
 
   private async handleLoginPage(page: puppeteer.Page): Promise<void> {
     const loginUrl = url.resolve(this._imsUrl, "/IMS/Account/Login");
